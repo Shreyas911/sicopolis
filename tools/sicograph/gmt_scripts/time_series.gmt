@@ -1,0 +1,191 @@
+#!/bin/bash
+# (Selection of shell)
+
+#-------- Directories --------
+
+GMT_SCRIPT_PATH=${PWD}'/gmt_scripts/'
+
+TMP=tmp      # temporary data files, relative to GMT_SCRIPT_PATH
+PLOTS=plots  # plots to be produced, relative to GMT_SCRIPT_PATH
+
+#-------- System commands used by this script --------
+
+RM=/bin/rm
+CP=/bin/cp
+MV=/bin/mv
+
+#-------- Computational domain, name of run and quantity to be plotted --------
+
+domain=${1}
+plotname=${2}
+data=${3}
+
+#-------- Plot size (in cm) --------
+
+# size_hori=10c
+# size_vert=7c
+# size_hori=8.0c
+# size_vert=3.5c
+size_hori=8.0c
+size_vert=5.0c
+
+#-------- Axis limits --------
+
+time_min=${4}
+time_max=${5}
+time_stp=${6}
+
+data_min=${7}
+data_max=${8}
+data_stp=${9}
+
+#-------- Axis labels --------
+
+time_lbl="${10}"
+data_lbl="${11}"
+
+#-------- Plotting --------
+
+cd ${GMT_SCRIPT_PATH}
+
+if [ ${time_min} = "none" ] ; then
+
+#  ------ Automatic computation of plot parameters
+
+   plotr=`cat ${TMP}/${plotname}_tmp.ser | minmax -I1/1 -C`
+
+   time_min=${plotr[1]}
+   time_max=${plotr[2]}
+   time_stp=`gmtmath -Q ${plotr[2]} ${plotr[1]} SUB 5 DIV =`
+
+   data_min=${plotr[3]}
+   data_max=${plotr[4]}
+   data_stp=`gmtmath -Q ${plotr[4]} ${plotr[3]} SUB 5 DIV =`
+
+   if [ ${domain} != "nmars" ] && [ ${domain} != "smars" ] ; then
+
+      time_lbl="t\ \(ka\)"
+
+      if [ ${data} = "D_Ts" ] ; then
+         data_lbl="Delta_Ts\ \(deg\ C\)"
+      fi
+      if [ ${data} = "z_sl" ] ; then
+         data_lbl="z_sl\ \(m\)"
+      fi
+      if [ ${data} = "H_max" ] ; then
+         data_lbl="H_max\ \(km\)"
+      fi
+      if [ ${data} = "zs_max" ] ; then
+         data_lbl="h_max\ \(km\)"
+      fi
+      if [ ${data} = "V_tot" ] ; then
+         data_lbl="V_tot\ \(10^6\ km^3\)"
+      fi
+      if [ ${data} = "V_temp" ] ; then
+         data_lbl="V_temp\ \(10^3\ km^3\)"
+      fi
+      if [ ${data} = "V_fw" ] ; then
+         data_lbl="Q_fw\ \(km^3/a\)"
+      fi
+      if [ ${data} = "V_sle" ] ; then
+         data_lbl="V_sle\ \(m\)"
+      fi
+      if [ ${data} = "A_tot" ] ; then
+         data_lbl="A_tot\ \(10^6\ km^2\)"
+      fi
+      if [ ${data} = "A_temp" ] ; then
+         data_lbl="A_temp\ \(10^6\ km^2\)"
+      fi
+      if [ ${data} = "V_bm" ] ; then
+         data_lbl="Q_bm\ \(km^3/a\)"
+      fi
+      if [ ${data} = "V_tld" ] ; then
+         data_lbl="Q_tld\ \(km^3/a\)"
+      fi
+      if [ ${data} = "H_t_max" ] ; then
+         data_lbl="H_t_max\ \(m\)"
+      fi
+      if [ ${data} = "vs_max" ] ; then
+         data_lbl="vs_max\ \(m/a\)"
+      fi
+
+   else
+
+      time_lbl="t\ \(Ma\)"
+
+      if [ ${data} = "D_Ts" ] ; then
+         data_lbl="Delta_Ts\ \(deg\ C\)"
+      fi
+      if [ ${data} = "z_sl" ] ; then
+         data_lbl="z_sl\ \(m\)"
+      fi
+      if [ ${data} = "H_max" ] ; then
+         data_lbl="H_max\ \(km\)"
+      fi
+      if [ ${data} = "zs_max" ] ; then
+         data_lbl="h_max\ \(km\)"
+      fi
+      if [ ${data} = "V_tot" ] ; then
+         data_lbl="V_tot\ \(10^6\ km^3\)"
+      fi
+      if [ ${data} = "V_temp" ] ; then
+         data_lbl="V_temp\ \(10^3\ km^3\)"
+      fi
+      if [ ${data} = "V_fw" ] ; then
+         data_lbl="Q_fw\ \(km^3/a\)"
+      fi
+      if [ ${data} = "V_sle" ] ; then
+         data_lbl="V_sle\ \(m\)"
+      fi
+      if [ ${data} = "A_tot" ] ; then
+         data_lbl="A_tot\ \(10^6\ km^2\)"
+      fi
+      if [ ${data} = "A_temp" ] ; then
+         data_lbl="A_temp\ \(10^6\ km^2\)"
+      fi
+      if [ ${data} = "V_bm" ] ; then
+         data_lbl="Q_bm\ \(km^3/a\)"
+      fi
+      if [ ${data} = "V_tld" ] ; then
+         data_lbl="Q_tld\ \(km^3/a\)"
+      fi
+      if [ ${data} = "H_t_max" ] ; then
+         data_lbl="H_t_max\ \(m\)"
+      fi
+      if [ ${data} = "vs_max" ] ; then
+         data_lbl="vs_max\ \(mm/a\)"
+      fi
+
+   fi
+
+fi
+
+#  ------ Basemap
+
+time_stp_2=`gmtmath -Q $time_stp 2 DIV =`
+data_stp_2=`gmtmath -Q $data_stp 2 DIV =`
+
+psbasemap -JX${size_hori}/${size_vert} \
+          -R${time_min}/${time_max}/${data_min}/${data_max} \
+          -Ba${time_stp}f${time_stp_2}:"${time_lbl}":/a${data_stp}f${data_stp_2}:"${data_lbl}":WSne \
+          -P -K \
+          >${PLOTS}/${plotname}.ps
+
+#  ------ x-y plot
+
+psxy ${TMP}/${plotname}_tmp.ser \
+     -JX${size_hori}/${size_vert} \
+     -R${time_min}/${time_max}/${data_min}/${data_max} \
+     -W1p -A -P -O \
+     >>${PLOTS}/${plotname}.ps
+
+#  ------ Fine-tuning of output file
+
+eps2eps ${PLOTS}/${plotname}.ps ${PLOTS}/${plotname}.eps
+$RM -f ${PLOTS}/${plotname}.ps
+
+#-------- Deleting of temporary files --------
+
+cd ${TMP}
+$RM -f *
+cd ..

@@ -1,0 +1,794 @@
+#!/bin/bash
+# (Selection of shell)
+
+#-------- Directories --------
+
+GMT_SCRIPT_PATH=${PWD}'/gmt_scripts/'
+
+TMP=tmp      # temporary data files, relative to GMT_SCRIPT_PATH
+CPT=cpt      # colour-palette-table files, relative to GMT_SCRIPT_PATH
+PLOTS=plots  # plots to be produced, relative to GMT_SCRIPT_PATH
+
+cd ${GMT_SCRIPT_PATH}
+
+#-------- System commands used by this script --------
+
+RM=/bin/rm
+CP=/bin/cp
+MV=/bin/mv
+
+#-------- Units --------
+
+gmtset MEASURE_UNIT cm
+
+#-------- Computational domain, name of plot and quantity to be plotted --------
+
+domain=${1}
+plotname=${2}
+data=${3}
+data_unit="${4}"
+
+#-------- Grid spacing of data (in km) --------
+
+dx=${5}
+
+#-------- Axis limits --------
+
+x_min=${6}
+x_max=${7}
+x_stp=${8}
+
+y_min=${9}
+y_max=${10}
+y_stp=${11}
+
+#-------- Axis labels --------
+
+x_lbl="${12}"
+y_lbl="${13}"
+
+#-------- Geographical grid --------
+
+lon_ctr=${14}   # Longitude of projection centre
+lat_ctr=${15}   # Latitude of projection centre
+
+lon_lol=${16}   # Longitude of lower left corner
+lat_lol=${17}   # Latitude of lower left corner
+lon_upr=${18}   # Longitude of upper right corner
+lat_upr=${19}   # Latitude of upper right corner
+
+lon_anot=${20}  # Interval for annotated meridians
+lat_anot=${21}  # Interval for annotated parallels
+lon_grid=${22}  # Interval for grid meridians
+lat_grid=${23}  # Interval for grid parallels
+
+geo_grid_flag=1
+
+if [ ${domain} = "asf" ] ; then
+  geo_grid_flag=0
+fi
+
+if [ ${domain} = "emtp2sge" ] ; then
+  geo_grid_flag=0
+fi
+
+if [ ${domain} = "heino" ] ; then
+  geo_grid_flag=0
+fi
+
+#-------- Colour-bar and contour-label flag --------
+
+cb_flag=${24}
+cl_flag=${25}
+
+#-------- Automatic computation of plot parameters --------
+
+dx_4=`gmtmath -Q ${dx} 4 DIV =`
+plotr=`cat ${TMP}/${plotname}_tmp.erg | minmax -I${dx_4}/${dx_4} -C`
+
+if [ ${x_min} = "none" ] ; then
+
+  x_min=${plotr[1]}
+  x_max=${plotr[2]}
+  x_stp=`gmtmath -Q ${plotr[2]} ${plotr[1]} SUB 6 DIV =`
+
+  y_min=${plotr[3]}
+  y_max=${plotr[4]}
+  y_stp=`gmtmath -Q ${plotr[4]} ${plotr[3]} SUB 6 DIV =`
+
+  x_lbl="x\ \(km\)"
+  y_lbl="y\ \(km\)"
+
+  geo_grid_flag=0
+
+fi
+
+#-------- Plot size (in cm) --------
+
+if [ ${domain} = "ant" ] ; then
+   size_hori=12.0
+   size_vert=12.0
+fi
+if [ ${domain} = "asf" ] ; then
+   size_hori=10.2
+   size_vert=9.9
+fi
+if [ ${domain} = "emtp2sge" ] ; then
+   size_hori=12.0
+   size_vert=12.0
+fi
+if [ ${domain} = "grl" ] ; then
+   size_hori=7.77
+   size_vert=14.5
+fi
+if [ ${domain} = "heino" ] ; then
+   size_hori=6.0
+   size_vert=6.0
+fi
+if [ ${domain} = "nhem" ] ; then
+   size_hori=12.0
+   size_vert=12.0
+fi
+if [ ${domain} = "nmars" ] ; then
+   size_hori=12.0
+   size_vert=12.0
+#   size_hori=12.0   # for zoom into Chasma Borealis
+#   size_vert=6.0    # for zoom into Chasma Borealis
+fi
+if [ ${domain} = "scand" ] ; then
+   size_hori=14.5
+   size_vert=6.8
+fi
+if [ ${domain} = "smars" ] ; then
+   size_hori=12.0
+   size_vert=12.0
+fi
+
+#-------- Colour palette table --------
+
+cpt_file=${data}_${domain}.cpt
+
+cpt_flag=0
+if [ -f ${CPT}/${cpt_file} ] ; then
+   cpt_flag=1
+   echo
+   echo " CPT file ${cpt_file} available."
+fi
+
+#  ------ Automatic generation of a cpt file
+
+if [ ${cpt_flag} = 0 ] ; then
+
+   echo
+   echo " CPT file ${cpt_file} not available."
+   cpt_file=auto.cpt
+   echo " Instead, CPT file ${cpt_file} will be generated automatically."
+
+   cont_min=${plotr[5]}
+   cont_max=${plotr[6]}
+   cont_stp=`gmtmath -Q ${plotr[6]} ${plotr[5]} SUB 5 DIV =`
+
+   makecpt -Crainbow -T${cont_min}/${cont_max}/${cont_stp} -Z \
+           >${CPT}/${cpt_file}
+
+fi
+
+#-------- Contour-level file --------
+
+zzz_file=${data}_${domain}.zzz
+
+zzz_flag=0
+if [ -f ${CPT}/${zzz_file} ] ; then
+   zzz_flag=1
+   echo
+   echo " Contour-level file ${zzz_file} available."
+fi
+
+if [ ${zzz_flag} = 0 ] ; then
+
+   echo
+   echo " Contour-level file ${zzz_file} not available."
+
+   zzz_file=${cpt_file}
+
+fi
+
+if [ ${zzz_flag} = 1 ] ; then
+
+   if [ ${cl_flag} = "false" ] ; then
+
+      echo
+      echo " Contour-level file ${zzz_file} will be ignored."
+
+      zzz_file=${cpt_file}
+
+   fi
+
+fi
+
+#-------- Further parameters --------
+
+cont_dist=4   # in cm
+smoothfactor=1
+
+#-------- Plotting --------
+
+#  ------ Conversion of ASCII-table data to grd files
+
+xyz2grd ${TMP}/${plotname}_tmp.erg -G${TMP}/${plotname}_tmp.grd \
+         -I${dx} -R${x_min}/${x_max}/${y_min}/${y_max}   # plot data
+
+xyz2grd ${TMP}/${plotname}_tmp2.erg -G${TMP}/${plotname}_tmp2.grd \
+         -I${dx} -R${x_min}/${x_max}/${y_min}/${y_max}   # ice thickness
+
+xyz2grd ${TMP}/${plotname}_tmp3.erg -G${TMP}/${plotname}_tmp3.grd \
+         -I${dx} -R${x_min}/${x_max}/${y_min}/${y_max}   # surface topography
+
+#  ------ Resample grd files to higher resolution
+
+# dx_plot=10   # spacing of resampled grids (in km)
+
+if [ ${domain} = "ant" ] ; then
+   dx_plot=10   # spacing of resampled grids (in km)
+fi
+if [ ${domain} = "asf" ] ; then
+   dx_plot=1    # spacing of resampled grids (in km)
+fi
+if [ ${domain} = "emtp2sge" ] ; then
+   dx_plot=5    # spacing of resampled grids (in km)
+fi
+if [ ${domain} = "grl" ] ; then
+   dx_plot=5    # spacing of resampled grids (in km)
+fi
+if [ ${domain} = "heino" ] ; then
+   dx_plot=10   # spacing of resampled grids (in km)
+fi
+if [ ${domain} = "nhem" ] ; then
+   dx_plot=10   # spacing of resampled grids (in km)
+fi
+if [ ${domain} = "nmars" ] ; then
+   dx_plot=5    # spacing of resampled grids (in km)
+fi
+if [ ${domain} = "scand" ] ; then
+   dx_plot=10   # spacing of resampled grids (in km)
+fi
+if [ ${domain} = "smars" ] ; then
+   dx_plot=5    # spacing of resampled grids (in km)
+fi
+
+grdsample ${TMP}/${plotname}_tmp.grd -G${TMP}/${plotname}_tmp_highres.grd \
+          -Q -I${dx_plot}  # bilinear interpolation
+#         -I${dx_plot}     # bicubic interpolation
+
+grdsample ${TMP}/${plotname}_tmp2.grd -G${TMP}/${plotname}_tmp2_highres.grd \
+          -Q -I${dx_plot}  # bilinear interpolation
+#         -I${dx_plot}     # bicubic interpolation
+
+grdsample ${TMP}/${plotname}_tmp3.grd -G${TMP}/${plotname}_tmp3_highres.grd \
+          -Q -I${dx_plot}  # bilinear interpolation
+#         -I${dx_plot}     # bicubic interpolation
+
+#  ------ Basemap
+
+psbasemap -JX${size_hori}/${size_vert} \
+          -R${x_min}/${x_max}/${y_min}/${y_max} \
+          -Ba${x_stp}:"${x_lbl}":/a${y_stp}:"${y_lbl}":WSne \
+          -P -K \
+          >${PLOTS}/${plotname}.ps
+
+#  ------ Marking of ice-free land
+
+if [ ${data} = "zs" ] ; then
+
+   icefree_flag=0
+
+   if [ ${domain} = "ant" ] ; then
+      icefree_flag=1
+   fi
+   if [ ${domain} = "asf" ] ; then
+      icefree_flag=1
+   fi
+   if [ ${domain} = "emtp2sge" ] ; then
+      icefree_flag=1
+   fi
+   if [ ${domain} = "grl" ] ; then
+      icefree_flag=1
+   fi
+   if [ ${domain} = "heino" ] ; then
+      icefree_flag=1
+   fi
+   if [ ${domain} = "nhem" ] ; then
+      icefree_flag=1
+   fi
+   if [ ${domain} = "scand" ] ; then
+      icefree_flag=1
+   fi
+
+   if [ ${icefree_flag} = 1 ] ; then
+
+      cpt_file_icefree=icefree.cpt
+
+      if [ -f ${CPT}/${cpt_file_icefree} ] ; then
+         grdimage ${TMP}/${plotname}_tmp_highres.grd \
+                    -JX${size_hori}/${size_vert} \
+                    -C${CPT}/${cpt_file_icefree} \
+                    -P -K -O \
+                    >>${PLOTS}/${plotname}.ps
+      fi
+
+   fi
+
+fi
+
+#  ------ Zero-thickness clipping path 
+
+clip_flag=0
+
+if [ ${data} = "zs" ] ; then
+   if [ ${icefree_flag} = 1 ] ; then
+      clip_flag=1
+   fi
+fi
+if [ ${data} = "H" ] ; then
+   clip_flag=1
+fi
+if [ ${data} = "vs" ] ; then
+   clip_flag=1
+fi
+if [ ${data} = "Tbh" ] ; then
+   clip_flag=1
+fi
+if [ ${data} = "Ts" ] ; then
+   clip_flag=1
+fi
+
+if [ ${clip_flag} = 1 ] ; then
+
+   grdcontour ${TMP}/${plotname}_tmp2_highres.grd \
+              -JX${size_hori}/${size_vert} \
+              -C10 -L0/1 \
+              -S${smoothfactor} \
+              -D${TMP}/clip.xyz \
+              -M -P -K \
+              >${TMP}/dump.ps
+
+#   echo "${x_max}  ${y_max}  0" >>${TMP}/clip.xyz   # for zoom into Chasma Borealis
+#   echo "${x_max}  ${y_min}  0" >>${TMP}/clip.xyz   # for zoom into Chasma Borealis
+
+   psclip ${TMP}/clip.xyz \
+          -JX${size_hori}/${size_vert} \
+          -R${x_min}/${x_max}/${y_min}/${y_max} \
+          -M -P -K -O \
+          >>${PLOTS}/${plotname}.ps
+
+fi
+
+#  ------ Contouring
+
+#    ---- Colour map
+
+grdimage ${TMP}/${plotname}_tmp_highres.grd \
+           -JX${size_hori}/${size_vert} \
+           -C${CPT}/${cpt_file} \
+           -P -K -O \
+           >>${PLOTS}/${plotname}.ps
+
+if [ ${data} = "zs" ] ; then
+   if [ ${clip_flag} = 1 ] ; then
+      psclip -C -K -O >>${PLOTS}/${plotname}.ps
+      clip_flag=0
+   fi   # Zero-thickness clipping path deleted
+fi
+
+#    ---- Contour lines
+
+if [ ${cl_flag} = "true" ] ; then
+#    cl_option="-A+g+o+k0/0/0+r2"
+   cl_option="-A+g+o+k0/0/0+r0.2"
+fi
+if [ ${cl_flag} = "false" ] ; then
+   cl_option="-A-"
+fi
+
+grdcontour ${TMP}/${plotname}_tmp_highres.grd \
+           -JX${size_hori}/${size_vert} \
+           -Ba${x_stp}:"${x_lbl}":/a${y_stp}:"${y_lbl}":WSne \
+           ${cl_option} \
+           -C${CPT}/${zzz_file} \
+           -Gd${cont_dist} \
+           -S${smoothfactor} \
+           -Wa1p -Wc0.5p \
+           -P -K -O \
+           >>${PLOTS}/${plotname}.ps
+
+if [ ${clip_flag} = 1 ] ; then
+   psclip -C -K -O >>${PLOTS}/${plotname}.ps
+fi   # Zero-thickness clipping path deleted
+
+#    ---- Colour bar
+
+if [ ${cb_flag} = "true" ] ; then
+
+   x_pos_bar=`gmtmath -Q ${size_hori} 1.5 ADD =`  # vertical bar
+   y_pos_bar=`gmtmath -Q ${size_vert} 2 DIV =`    # vertical bar
+
+#   x_pos_bar=`gmtmath -Q ${size_hori} 2 DIV =`  # horizontal bar
+#   y_pos_bar=-1.6                               # horizontal bar
+
+#    psscale -D${x_pos_bar}/${y_pos_bar}/${size_vert}/0.5 \
+#            -Ba0.5g0.5/a0.5g0.5:"km": \
+#            -C${CPT}/${cpt_file} \
+#            -P -K -O \
+#            >>${PLOTS}/${plotname}.ps   # vertical bar
+#
+#    At the moment settings only reasonable for zs_nmars!
+#
+
+   psscale -D${x_pos_bar}/${y_pos_bar}/${size_vert}/0.5 \
+           -B/:"${data_unit}": \
+           -C${CPT}/${cpt_file} -E -L \
+           -P -K -O \
+           >>${PLOTS}/${plotname}.ps   # vertical bar
+
+#   bar_length=`gmtmath -Q ${size_hori} 0.8 MUL =`
+#   bar_width=0.3
+#   triangle_length=`gmtmath -Q ${bar_width} 2 MUL =`
+#   psscale -D${x_pos_bar}/${y_pos_bar}/${bar_length}/${bar_width}h \
+#           -B/:"${data_unit}": \
+#           -C${CPT}/${cpt_file} -E${triangle_length} -L \
+#           -P -K -O \
+#           >>${PLOTS}/${plotname}.ps   # horizontal bar
+
+fi
+
+#    ---- Ice margin
+
+if [ ${clip_flag} = 0 ] ; then
+
+   grdcontour ${TMP}/${plotname}_tmp2_highres.grd \
+              -JX${size_hori}/${size_vert} \
+              -C10 -L0/1 \
+              -S${smoothfactor} \
+              -W2p,white \
+              -P -K -O \
+              >>${PLOTS}/${plotname}.ps
+
+#             -W2/0t8_4:0p \
+
+fi
+
+if [ ${clip_flag} = 1 ] ; then
+
+   grdcontour ${TMP}/${plotname}_tmp2_highres.grd \
+              -JX${size_hori}/${size_vert} \
+              -C10 -L0/1 \
+              -S${smoothfactor} \
+              -W1p,black \
+              -P -K -O \
+              >>${PLOTS}/${plotname}.ps
+
+#             -W2/0t8_4:0p \
+
+fi
+
+#    ---- Ice-core locations
+
+if [ ${domain} = "grl" ] ; then
+
+   x_grip=45.2
+   y_grip=-1905.5
+   x_gisp2=18.0
+   y_gisp2=-1905.8
+   x_dye3=-230.2
+   y_dye3=-2731.6
+   x_cc=-526.4
+   y_cc=-1295.7
+   x_ngrip=-94.3
+   y_ngrip=-1625.3
+
+#    echo "${x_grip} ${y_grip}" | psxy \
+#         -JX${size_hori}/${size_vert} \
+#         -R${x_min}/${x_max}/${y_min}/${y_max} \
+#         -Sx0.4c \
+#         -W2p \
+#         -P -K -O \
+#         >>${PLOTS}/${plotname}.ps
+# 
+#    echo "${x_grip} ${y_grip} 14 0.0 1 CT GRIP" | pstext \
+#         -JX${size_hori}/${size_vert} \
+#         -R${x_min}/${x_max}/${y_min}/${y_max} \
+#         -Dj0.3c/0.3c \
+#         -P -K -O \
+#         >>${PLOTS}/${plotname}.ps
+# 
+#    echo "${x_ngrip} ${y_ngrip}" | psxy \
+#         -JX${size_hori}/${size_vert} \
+#         -R${x_min}/${x_max}/${y_min}/${y_max} \
+#         -Sx0.4c \
+#         -W2p \
+#         -P -K -O \
+#         >>${PLOTS}/${plotname}.ps
+# 
+#    echo "${x_ngrip} ${y_ngrip} 14 0.0 1 CB NGRIP" | pstext \
+#         -JX${size_hori}/${size_vert} \
+#         -R${x_min}/${x_max}/${y_min}/${y_max} \
+#         -Dj0.3c/0.3c \
+#         -P -K -O \
+#         >>${PLOTS}/${plotname}.ps
+# 
+#    echo "${x_dye3} ${y_dye3}" | psxy \
+#         -JX${size_hori}/${size_vert} \
+#         -R${x_min}/${x_max}/${y_min}/${y_max} \
+#         -Sx0.4c \
+#         -W2p \
+#         -P -K -O \
+#         >>${PLOTS}/${plotname}.ps
+# 
+#    echo "${x_dye3} ${y_dye3} 14 0.0 1 CB Dye\ 3" | pstext \
+#         -JX${size_hori}/${size_vert} \
+#         -R${x_min}/${x_max}/${y_min}/${y_max} \
+#         -Dj0.3c/0.3c \
+#         -P -K -O \
+#         >>${PLOTS}/${plotname}.ps
+# 
+#    echo "${x_cc} ${y_cc}" | psxy \
+#         -JX${size_hori}/${size_vert} \
+#         -R${x_min}/${x_max}/${y_min}/${y_max} \
+#         -Sx0.4c \
+#         -W2p \
+#         -P -K -O \
+#         >>${PLOTS}/${plotname}.ps
+# 
+#    echo "${x_cc} ${y_cc} 14 0.0 1 LM CC" | pstext \
+#         -JX${size_hori}/${size_vert} \
+#         -R${x_min}/${x_max}/${y_min}/${y_max} \
+#         -Dj0.3c/0.3c \
+#         -P -K -O \
+#         >>${PLOTS}/${plotname}.ps
+
+fi
+
+if [ ${domain} = "ant" ] ; then
+
+   x_vostok=1203.5
+   y_vostok=-363.4
+   x_dome_a=1023.6
+   y_dome_a=229.7
+   x_dome_c=1358.9
+   y_dome_c=-896.0
+   x_dome_f=883.7
+   y_dome_f=1064.4
+   x_kohnen=1.9
+   y_kohnen=1638.8
+   x_byrd=-946.2
+   y_byrd=-535.7
+
+   echo "${x_vostok} ${y_vostok}" | psxy \
+        -JX${size_hori}/${size_vert} \
+        -R${x_min}/${x_max}/${y_min}/${y_max} \
+        -Sx0.4c \
+        -W2p \
+        -P -K -O \
+        >>${PLOTS}/${plotname}.ps
+
+   echo "${x_vostok} ${y_vostok} 14 0.0 1 CT Vostok" | pstext \
+        -JX${size_hori}/${size_vert} \
+        -R${x_min}/${x_max}/${y_min}/${y_max} \
+        -Dj0.3c/0.3c \
+        -P -K -O \
+        >>${PLOTS}/${plotname}.ps
+
+   echo "${x_dome_a} ${y_dome_a}" | psxy \
+        -JX${size_hori}/${size_vert} \
+        -R${x_min}/${x_max}/${y_min}/${y_max} \
+        -Sx0.4c \
+        -W2p \
+        -P -K -O \
+        >>${PLOTS}/${plotname}.ps
+
+   echo "${x_dome_a} ${y_dome_a} 14 0.0 1 CT Dome\ A" | pstext \
+        -JX${size_hori}/${size_vert} \
+        -R${x_min}/${x_max}/${y_min}/${y_max} \
+        -Dj0.3c/0.3c \
+        -P -K -O \
+        >>${PLOTS}/${plotname}.ps
+
+   echo "${x_dome_c} ${y_dome_c}" | psxy \
+        -JX${size_hori}/${size_vert} \
+        -R${x_min}/${x_max}/${y_min}/${y_max} \
+        -Sx0.4c \
+        -W2p \
+        -P -K -O \
+        >>${PLOTS}/${plotname}.ps
+
+   echo "${x_dome_c} ${y_dome_c} 14 0.0 1 CT Dome\ C" | pstext \
+        -JX${size_hori}/${size_vert} \
+        -R${x_min}/${x_max}/${y_min}/${y_max} \
+        -Dj0.3c/0.3c \
+        -P -K -O \
+        >>${PLOTS}/${plotname}.ps
+
+   echo "${x_dome_f} ${y_dome_f}" | psxy \
+        -JX${size_hori}/${size_vert} \
+        -R${x_min}/${x_max}/${y_min}/${y_max} \
+        -Sx0.4c \
+        -W2p \
+        -P -K -O \
+        >>${PLOTS}/${plotname}.ps
+
+   echo "${x_dome_f} ${y_dome_f} 14 0.0 1 CB Dome\ F" | pstext \
+        -JX${size_hori}/${size_vert} \
+        -R${x_min}/${x_max}/${y_min}/${y_max} \
+        -Dj0.3c/0.3c \
+        -P -K -O \
+        >>${PLOTS}/${plotname}.ps
+
+   echo "${x_kohnen} ${y_kohnen}" | psxy \
+        -JX${size_hori}/${size_vert} \
+        -R${x_min}/${x_max}/${y_min}/${y_max} \
+        -Sx0.4c \
+        -W2p \
+        -P -K -O \
+        >>${PLOTS}/${plotname}.ps
+
+   echo "${x_kohnen} ${y_kohnen} 14 0.0 1 CT Kohnen" | pstext \
+        -JX${size_hori}/${size_vert} \
+        -R${x_min}/${x_max}/${y_min}/${y_max} \
+        -Dj0.3c/0.3c \
+        -P -K -O \
+        >>${PLOTS}/${plotname}.ps
+
+   echo "${x_byrd} ${y_byrd}" | psxy \
+        -JX${size_hori}/${size_vert} \
+        -R${x_min}/${x_max}/${y_min}/${y_max} \
+        -Sx0.4c \
+        -W2p \
+        -P -K -O \
+        >>${PLOTS}/${plotname}.ps
+
+   echo "${x_byrd} ${y_byrd} 14 0.0 1 CB Byrd" | pstext \
+        -JX${size_hori}/${size_vert} \
+        -R${x_min}/${x_max}/${y_min}/${y_max} \
+        -Dj0.3c/0.3c \
+        -P -K -O \
+        >>${PLOTS}/${plotname}.ps
+
+fi
+
+if [ ${domain} = "nmars" ] ; then
+
+   x_cb1=-150.0
+   y_cb1=-290.0
+   x_cb2=-300.0
+   y_cb2=-280.0
+
+#   echo "${x_cb1} ${y_cb1}" | psxy \
+#        -JX${size_hori}/${size_vert} \
+#        -R${x_min}/${x_max}/${y_min}/${y_max} \
+#        -Sx0.4c \
+#        -W2p \
+#        -P -K -O \
+#        >>${PLOTS}/${plotname}.ps
+#
+#   echo "${x_cb1} ${y_cb1} 14 0.0 1 RM CB1" | pstext \
+#        -JX${size_hori}/${size_vert} \
+#        -R${x_min}/${x_max}/${y_min}/${y_max} \
+#        -Dj0.3c/0.3c \
+#        -P -K -O \
+#        >>${PLOTS}/${plotname}.ps
+#
+#   echo "${x_cb2} ${y_cb2}" | psxy \
+#        -JX${size_hori}/${size_vert} \
+#        -R${x_min}/${x_max}/${y_min}/${y_max} \
+#        -Sx0.4c \
+#        -W2p \
+#        -P -K -O \
+#        >>${PLOTS}/${plotname}.ps
+#
+#   echo "${x_cb2} ${y_cb2} 14 0.0 1 RM CB2" | pstext \
+#        -JX${size_hori}/${size_vert} \
+#        -R${x_min}/${x_max}/${y_min}/${y_max} \
+#        -Dj0.3c/0.3c \
+#        -P -K -O \
+#        >>${PLOTS}/${plotname}.ps
+
+fi
+
+#    ---- Zero-elevation contour
+
+elev_zero_flag=0
+
+if [ ${data} = "zs" ] ; then
+   elev_zero_flag=1
+fi
+if [ ${data} = "H" ] ; then
+   elev_zero_flag=1
+fi
+if [ ${data} = "vs" ] ; then
+   elev_zero_flag=1
+fi
+if [ ${data} = "Tbh" ] ; then
+   elev_zero_flag=1
+fi
+if [ ${data} = "Ts" ] ; then
+   elev_zero_flag=1
+fi
+if [ ${data} = "precip" ] ; then
+   elev_zero_flag=1
+fi
+if [ ${data} = "precip_lgm_anom" ] ; then
+   elev_zero_flag=1
+fi
+if [ ${data} = "temp_s" ] ; then
+   elev_zero_flag=1
+fi
+if [ ${data} = "temp_s_lgm_anom" ] ; then
+   elev_zero_flag=1
+fi
+if [ ${data} = "qgeo" ] ; then
+   elev_zero_flag=1
+fi
+if [ ${data} = "dH" ] ; then
+   elev_zero_flag=1
+fi
+
+if [ ${domain} = "emtp2sge" ] ; then
+   elev_zero_flag=0
+fi
+
+if [ ${domain} = "heino" ] ; then
+   elev_zero_flag=0
+fi
+
+if [ ${elev_zero_flag} = 1 ] ; then
+
+   if [ ${geo_grid_flag} = 1 ] ; then
+      ps_options="-P -K -O"
+   fi
+   if [ ${geo_grid_flag} = 0 ] ; then
+      ps_options="-P -O"
+   fi
+
+   grdcontour ${TMP}/${plotname}_tmp3_highres.grd \
+              -JX${size_hori}/${size_vert} \
+              -C10 -L0/1 \
+              -S${smoothfactor} \
+              -W1p \
+              ${ps_options} \
+              >>${PLOTS}/${plotname}.ps   # h=0 contour
+
+fi
+
+#  ------ Geographical grid
+
+if [ ${geo_grid_flag} = 1 ] ; then
+
+   if [ ${domain} = "grl" ] ; then
+      gmtset OBLIQUE_ANOTATION 0
+   fi
+
+   psbasemap -JS${lon_ctr}/${lat_ctr}/${size_hori} \
+             -R${lon_lol}/${lat_lol}/${lon_upr}/${lat_upr}r \
+             -Ba${lon_anot}g${lon_grid}/a${lat_anot}g${lat_grid}wsNE \
+             -P -O >>${PLOTS}/${plotname}.ps
+
+fi
+
+#  ------ Fine-tuning of output file
+
+# eps2eps ${PLOTS}/${plotname}.ps ${PLOTS}/${plotname}.eps
+# Does not work any more. No idea why...???
+# Instead simply:
+$CP ${PLOTS}/${plotname}.ps ${PLOTS}/${plotname}.eps
+
+$RM -f ${PLOTS}/${plotname}.ps
+
+#-------- Resets --------
+
+gmtset OBLIQUE_ANOTATION 1
+
+#-------- Deleting of temporary files --------
+
+cd ${TMP}
+$RM -f *
+cd ..

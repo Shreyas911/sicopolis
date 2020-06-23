@@ -1,0 +1,29 @@
+%+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+% Parameters for the plan-view plots of the program sicograph.F90
+% Suitable values for simulations of the north polar cap of Mars.
+%+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+%
+%------------------------|--------.------|--------.------|--------.------|
+% Axis label                 Minimum         Maximum            Step
+%------------------------|--------.------|--------.------|--------.------|
+ x\ \(km\)               |    -560.0     |      40.0     |     100.0     |
+ y\ \(km\)               |    -440.0     |    -140.0     |     100.0     |
+%
+%------------------------|--------.------|--------.------|--------.------|
+% Parameters for the
+% geographical grid             Value
+%------------------------|--------.------|--------.------|--------.------|
+ lon_ctr                 |       0.0     | Longitude of projection centre
+ lat_ctr                 |      90.0     | Latitude of projection centre
+%------------------------|--------.------|--------.------|--------.------|
+ lon_lol                 |     308.157   | Longitude of lower left corner
+ lat_lol                 |      77.765   | Latitude of lower left corner
+ lon_upr                 |      15.945   | Longitude of upper right corner
+ lat_upr                 |      87.490   | Latitude of upper right corner
+%------------------------|--------.------|--------.------|--------.------|
+ lon_anot                |      30.0     | Interval for annotated meridians
+ lat_anot                |      50.0     | Interval for annotated parallels
+ lon_grid                |      30.0     | Interval for grid meridians
+ lat_grid                |      10.0     | Interval for grid parallels
+%
+%------------------- End of file plan_view_nmars.dat ---------------------------

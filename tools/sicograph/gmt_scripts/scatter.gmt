@@ -1,0 +1,119 @@
+#!/bin/bash
+# (Selection of shell)
+
+#-------- Directories --------
+
+GMT_SCRIPT_PATH=${PWD}'/gmt_scripts/'
+
+TMP=tmp      # temporary data files, relative to GMT_SCRIPT_PATH
+CPT=cpt      # colour-palette-table files, relative to GMT_SCRIPT_PATH
+PLOTS=plots  # plots to be produced, relative to GMT_SCRIPT_PATH
+
+cd ${GMT_SCRIPT_PATH}
+
+#-------- System commands used by this script --------
+
+RM=/bin/rm
+CP=/bin/cp
+MV=/bin/mv
+
+#-------- Units --------
+
+gmtset MEASURE_UNIT cm
+
+#-------- Computational domain, name of plot and quantity to be plotted --------
+
+domain=${1}
+plotname=${2}
+data=${3}
+
+#-------- Plot size (in cm) --------
+
+size_hori=6.5c
+size_vert=6.5c
+
+#-------- Axis limits --------
+
+x_min=${4}
+x_max=${5}
+x_stp=${6}
+
+y_min=${7}
+y_max=${8}
+y_stp=${9}
+
+#-------- Axis labels --------
+
+x_lbl="${10}"
+y_lbl="${11}"
+
+#-------- Plotting --------
+
+cd ${GMT_SCRIPT_PATH}
+
+if [ ${x_min} = "none" ] ; then
+
+#  ------ Automatic computation of plot parameters
+
+   plotr=`cat ${TMP}/${plotname}_tmp.sca | minmax -I1/1 -C`
+
+   x_min=${plotr[1]}
+   x_max=${plotr[2]}
+   x_stp=`gmtmath -Q ${plotr[2]} ${plotr[1]} SUB 5 DIV =`
+
+   y_min=${plotr[3]}
+   y_max=${plotr[4]}
+   y_stp=`gmtmath -Q ${plotr[4]} ${plotr[3]} SUB 5 DIV =`
+
+   if [ ${data} = "H" ] ; then
+      x_lbl="H_obs\ \(km\)"
+      y_lbl="H_sim\ \(km\)"
+   fi
+   if [ ${data} = "vs" ] ; then
+      x_lbl="vs_obs\ \(m/a\)"
+      y_lbl="vs_sim\ \(m/a\)"
+   fi
+
+fi
+
+#  ------ Basemap
+
+x_stp_2=`gmtmath -Q $x_stp 2 DIV =`
+y_stp_2=`gmtmath -Q $y_stp 2 DIV =`
+
+psbasemap -JX${size_hori}/${size_vert} \
+          -R${x_min}/${x_max}/${y_min}/${y_max} \
+          -Ba${x_stp}f${x_stp_2}:"${x_lbl}":/a${y_stp}f${y_stp_2}:"${y_lbl}":WSne \
+          -P -K \
+          >${PLOTS}/${plotname}.ps
+
+#  ------ Reference line
+
+echo ${x_min} ${x_min}  >${TMP}/${plotname}_tmp2.sca
+echo ${x_max} ${x_max} >>${TMP}/${plotname}_tmp2.sca
+
+psxy ${TMP}/${plotname}_tmp2.sca \
+     -JX${size_hori}/${size_vert} \
+     -R${x_min}/${x_max}/${y_min}/${y_max} \
+     -W1p -A -P -O -K \
+     >>${PLOTS}/${plotname}.ps
+
+#  ------ x-y plot
+
+psxy ${TMP}/${plotname}_tmp.sca \
+     -JX${size_hori}/${size_vert} \
+     -R${x_min}/${x_max}/${y_min}/${y_max} \
+     -W1p -A -P -O \
+     -Sc0.05c -G0 \
+     >>${PLOTS}/${plotname}.ps
+
+#  ------ Fine-tuning of output file
+
+eps2eps ${PLOTS}/${plotname}.ps ${PLOTS}/${plotname}.eps
+$RM -f ${PLOTS}/${plotname}.ps
+
+#-------- Deleting of temporary files --------
+
+cd ${TMP}
+$RM -f *
+cd ..

@@ -1,0 +1,29 @@
+%+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+% Parameters for the plan-view plots of the program sicograph.F90
+% Suitable values for simulations of the Greenland ice sheet.
+%+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+%
+%------------------------|--------.------|--------.------|--------.------|
+% Axis label                 Minimum         Maximum            Step
+%------------------------|--------.------|--------.------|--------.------|
+ x\ \(km\)               |    -800.0     |     700.0     |     400.0     |
+ y\ \(km\)               |   -3400.0     |    -600.0     |     400.0     |
+%
+%------------------------|--------.------|--------.------|--------.------|
+% Parameters for the
+% geographical grid             Value
+%------------------------|--------.------|--------.------|--------.------|
+ lon_ctr                 |     -39.0     | Longitude of projection centre
+ lat_ctr                 |      90.0     | Latitude of projection centre
+%------------------------|--------.------|--------.------|--------.------|
+ lon_lol                 |     307.759   | Longitude of lower left corner
+ lat_lol                 |      58.629   | Latitude of lower left corner
+ lon_upr                 |      10.399   | Longitude of upper right corner
+ lat_upr                 |      81.529   | Latitude of upper right corner
+%------------------------|--------.------|--------.------|--------.------|
+ lon_anot                |      20.0     | Interval for annotated meridians
+ lat_anot                |       4.0     | Interval for annotated parallels
+ lon_grid                |      10.0     | Interval for grid meridians
+ lat_grid                |       4.0     | Interval for grid parallels
+%
+%------------------- End of file plan_view_grl2.dat ----------------------------

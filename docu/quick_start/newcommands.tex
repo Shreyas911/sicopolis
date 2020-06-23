@@ -1,0 +1,145 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% This is newcommands.tex by Ralf Greve, 2006-07-27
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Mathematical equations:
+\newcommand{\beq}{\begin{equation}}
+\newcommand{\eeq}{\end{equation}}
+\newcommand{\beqa}{\begin{eqnarray}}
+\newcommand{\eeqa}{\end{eqnarray}}
+\newcommand{\beqan}{\begin{eqnarray*}}
+\newcommand{\eeqan}{\end{eqnarray*}}
+
+% Columns and matrices:
+\newcommand{\veczd}[2]{\left(\begin{array}{c}{#1}\\{#2}\end{array}\right)}
+\newcommand{\vecdd}[3]{\left(\begin{array}{c}{#1}\\{#2}\\{#3}\end{array}\right)}
+\newcommand{\vecvd}[4]{\left(\begin{array}{c}{#1}\\{#2}\\{#3}\\{#4}\end{array}\right)}
+\newcommand{\matzd}[4]{\left(\begin{array}{cc}{#1}&{#2}\\{#3}&{#4}\end{array}\right)}
+\newcommand{\matdd}[9]{\left(\begin{array}{ccc}{#1}&{#2}&{#3}\\%
+                                               {#4}&{#5}&{#6}\\%
+                                               {#7}&{#8}&{#9}%
+                                               \end{array}\right)}
+
+% Displaystyle fractions and big integrals in running text:
+\newcommand{\bigfrac}[2]{\mbox{$\displaystyle\frac{#1}{#2}$}}
+\newcommand{\bigint}{\displaystyle\int}
+\newcommand{\bigoint}{\displaystyle\oint}
+\newcommand{\bigsum}{\displaystyle\sum}
+
+% Mathematical abbreviations:
+\newcommand{\err}{I\hspace*{-0.375em}R}
+% \renewcommand{\d}{\partial}
+\newcommand{\pa}{\partial}
+\newcommand{\D}{\mathrm{d}}
+\newcommand{\E}{\mathrm{e}}
+\newcommand{\I}{\mathrm{i}}
+\newcommand{\hdot}{^{\displaystyle\cdot}}
+\newcommand{\grad}{\mbox{grad}\,}
+\newcommand{\divg}{\mbox{div}\,}
+\newcommand{\rot}{\mbox{rot}\,}
+\newcommand{\curl}{\mbox{curl}\,}
+\newcommand{\laplace}{\mathrm{\Delta}}
+\newcommand{\Grad}{\mbox{Grad}\,}
+\newcommand{\Div}{\mbox{Div}\,}
+\newcommand{\Rot}{\mbox{Rot}\,}
+\newcommand{\Curl}{\mbox{Curl}\,}
+\newcommand{\tr}{\mbox{tr}\,}
+% \renewcommand{\Re}{\mbox{Re}\,}
+% \renewcommand{\Im}{\mbox{Im}\,}
+\newcommand{\Real}{\mbox{Re}\,}
+\newcommand{\Imag}{\mbox{Im}\,}
+\newcommand{\sym}{\mbox{sym}\,}
+\newcommand{\skw}{\mbox{skw}\,}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\sgs}{\stackrel{!}{=}}  % sgs: "soll gleich sein"
+\newcommand{\tra}{^{\mathrm{T}}}    % Transposition
+\newcommand{\dev}{^{\mathrm{D}}}    % Deviator
+\newcommand{\erf}{\mbox{erf}}
+\newcommand{\erfc}{\mbox{erfc}}
+
+% Numerical abbreviations:
+\newcommand{\dx}{\Delta x}
+\newcommand{\dy}{\Delta y}
+\newcommand{\dz}{\Delta z}
+\newcommand{\dzc}{\Delta\zeta_c}
+\newcommand{\dzt}{\Delta\zeta_t}
+\newcommand{\dzr}{\Delta\zeta_r}
+\newcommand{\dt}{\Delta t}
+\newcommand{\dtt}{\widetilde{\Delta t}}
+\newcommand{\tabl}[2]{\frac{\D #1}{\D #2}}
+\newcommand{\ttabl}[2]{\frac{\D^2 #1}{\D #2 ^2}}
+\newcommand{\pabl}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\ppabl}[2]{\frac{\partial^2 #1}{\partial #2 ^2}}
+\newcommand{\bigtabl}[2]{\bigfrac{\D #1}{\D #2}}
+\newcommand{\bigttabl}[2]{\bigfrac{\D^2 #1}{\D #2 ^2}}
+\newcommand{\bigpabl}[2]{\bigfrac{\partial #1}{\partial #2}}
+\newcommand{\bigppabl}[2]{\bigfrac{\partial^2 #1}{\partial #2 ^2}}
+
+% Further abbreviations:
+\newcommand{\absatz}{\vspace*{1ex}}
+\newcommand{\nl}{\nonumber\\}
+\newcommand{\hf}{\mbox{$\frac{1}{2}$}}               % small 1/2
+\newcommand{\onethird}{\mbox{$\frac{1}{3}$}}
+\newcommand{\onesixth}{\mbox{$\frac{1}{6}$}}
+\newcommand{\twothirds}{\mbox{$\frac{2}{3}$}}
+\newcommand{\onenineth}{\mbox{$\frac{1}{9}$}}
+\newcommand{\fournineths}{\mbox{$\frac{4}{9}$}}
+\newcommand{\degC}{\ensuremath{^\circ\mathrm{C}}}    % degrees C
+\newcommand{\degN}{\ensuremath{^\circ\mathrm{N}}}    % degrees N (lat)
+\newcommand{\degS}{\ensuremath{^\circ\mathrm{S}}}    % degrees S (lat)
+\newcommand{\degE}{\ensuremath{^\circ\mathrm{E}}}    % degrees E (lon)
+\newcommand{\degW}{\ensuremath{^\circ\mathrm{W}}}    % degrees W (lon)
+\newcommand{\qgeo}{\ensuremath{Q_\mathrm{geoth}^\perp}}
+\newcommand{\qg}{\ensuremath{q_\mathrm{geo}}}
+\newcommand{\qgp}{\ensuremath{\qg^\perp}}
+\newcommand{\qoc}{\ensuremath{Q_\mathrm{oc}^\perp}}
+\newcommand{\pdd}{\ensuremath{P\hspace*{-0.083em}D\hspace*{-0.083em}D}}
+\newcommand{\Fr}{\ensuremath{F\hspace*{-0.083em}r}}      % Froude number
+\newcommand{\Ro}{\ensuremath{R\hspace*{-0.083em}o}}      % Rossby number
+\newcommand{\delo}{\ensuremath{\delta^{18}\mathrm{O}}}   % delta-18-O
+\newcommand{\deld}{\ensuremath{\delta\mathrm{D}}}        % delta-D
+
+% Jump brackets:
+\newcommand{\jl}{\ensuremath{\left[\!\left[}}
+\newcommand{\jr}{\ensuremath{\right]\!\right]}}
+\newcommand{\jlf}{\ensuremath{[\![}}
+\newcommand{\jrf}{\ensuremath{]\!]}}
+
+% Standard definition "poor man's bold":
+\def\pmb#1{\setbox0=\hbox{#1}%
+  \kern-.025em\copy0\kern-\wd0
+  \kern.05em\copy0\kern-\wd0
+  \kern-.025em\raise.0433em\box0}
+
+% "poor man's bold" in math mode:
+\def\pmbm#1{\setbox0=\hbox{$#1$}%
+  \kern-.025em\copy0\kern-\wd0
+  \kern.05em\copy0\kern-\wd0
+  \kern-.025em\raise.0433em\box0}
+
+% Vectors and tensors in formulas:
+
+% \newcommand{\mbf}[1]{\mbox{\boldmath $#1$}} (old definition of \mbf)
+
+\def\vecbi#1{\relax\ifmmode\mathchoice
+  {\mbox{\boldmath$\relax\displaystyle#1$}}
+  {\mbox{\boldmath$\relax\textstyle#1$}}
+  {\mbox{\boldmath$\relax\scriptstyle#1$}}
+  {\mbox{\boldmath$\relax\scriptscriptstyle#1$}}\else
+  \hbox{\boldmath$\relax\textstyle#1$}\fi} % boldface italic symbols
+
+\def\vecbu#1{\relax\ifmmode\mathchoice
+  {\mbox{\boldmath$\bf\displaystyle#1$}}
+  {\mbox{\boldmath$\bf\textstyle#1$}}
+  {\mbox{\boldmath$\bf\scriptstyle#1$}}
+  {\mbox{\boldmath$\bf\scriptscriptstyle#1$}}\else
+  \hbox{\boldmath$\bf\textstyle#1$}\fi}    % boldface upright symbols
+
+\def\tenssu#1{\relax\ifmmode\mathchoice
+    {\mbox{$\sf\displaystyle#1$}}
+    {\mbox{$\sf\textstyle#1$}}
+    {\mbox{$\sf\scriptstyle#1$}}
+    {\mbox{$\sf\scriptscriptstyle#1$}}\else
+    \hbox{$\sf\textstyle#1$}\fi}           % sans-serif upright symbols

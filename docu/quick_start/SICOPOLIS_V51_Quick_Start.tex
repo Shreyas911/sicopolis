@@ -1,0 +1,700 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[DIV=13,BCOR=0mm]{typearea}
+\usepackage{setspace}
+
+\usepackage{natbib}
+\bibpunct[, ]{(}{)}{,}{a}{}{,}
+
+% \usepackage{wasysym}
+
+% Check if we are compiling under latex or pdflatex
+% \ifx\pdftexversion\undefined
+%  \usepackage[dvips]{graphicx}
+% \else
+   \usepackage[pdftex]{graphicx}
+% \fi
+
+% \graphicspath{{../Figs/}}
+
+% Positioning of figures
+% (values chosen such that figure is inserted at the place of the call
+% if possible):
+\setcounter{topnumber}{10}
+\setcounter{bottomnumber}{10}
+\setcounter{totalnumber}{20}
+\renewcommand{\topfraction}{0.99}
+\renewcommand{\textfraction}{0.01}
+\renewcommand{\bottomfraction}{0.99}
+
+\onehalfspacing
+% \setstretch{1.22}
+
+\input{newcommands.tex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\begin{center}
+
+\rule{0mm}{15mm}
+
+\begin{huge}
+  \textbf{SICOPOLIS V5.1\\[-0.5ex]
+          -- Quick Start Manual --}\\[-0.5ex]
+\end{huge}
+
+\rule{0mm}{25mm}
+
+\begin{Large}
+  \textsc{Ralf Greve}
+\end{Large}
+
+\rule{0mm}{15mm}
+
+\begin{large}
+  Institute of Low Temperature Science, Hokkaido University,\\[-0.25ex]
+  Kita-19, Nishi-8, Kita-ku, Sapporo 060-0819, Japan\\[1ex]
+\end{large}
+
+\vfill
+
+\begin{large}December 30, 2019\end{large}
+
+\end{center}
+
+\rule{0mm}{20mm}
+
+\clearpage
+
+\rule{0mm}{0mm}
+
+\vfill
+
+\begin{center}\begin{minipage}{0.85\textwidth}
+
+\begin{small}
+
+\noindent{}Copyright 2009--2019 Ralf Greve\\
+(with contributions by Jorge Bernales, Heinz Blatter, Reinhard Calov, Thorben Dunse, Ben Galton-Fenzi, Thomas G\"olles, Philipp Hancke, Nina Kirchner, Sascha Knell, Alex Robinson, Fuyuki Saito, Tatsuru Sato, Malte Thoma, Roland Warner)
+
+\vspace*{1.5ex}
+
+\noindent{}This file is part of SICOPOLIS.
+
+\vspace*{1.5ex}
+
+\noindent{}SICOPOLIS is free software. It can be redistributed and/or modified under the terms of the GNU General Public License (http://www.gnu.org/licenses/) as published by the Free Software Foundation, either version~3 of the License, or (at the user's option) any later version.
+
+\vspace*{1.5ex}
+
+\noindent{}SICOPOLIS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+\end{small}
+
+\end{minipage}\end{center}
+
+\vfill
+
+\rule{0mm}{0mm}
+
+\clearpage
+
+\section{Requirements}
+
+\begin{itemize}
+
+\item Unix-like system (e.g., Linux).
+
+\item Fortran compiler.
+\\
+So far, the Intel and GNU Fortran compilers are supported. Make sure that the environment variable FC is set to either ifort (Intel) or gfortran (GNU). If you wish to use a different compiler, please contact $<$help@sicopolis.net$>$.
+
+\item SICOPOLIS supports output either in native binary or in NetCDF format (see Sect.~\ref{sect_output}). For the latter (recommended), you need an installation of NetCDF version 3.6.x or newer (http://www.unidata.ucar.edu/software/netcdf/).
+
+\item For the shallow-shelf/shelfy-stream solver, a recent version (1.4.43 or newer) of the Library of Iterative Solvers for Linear Systems (Lis) is required
+\\
+(http://www.ssisc.org/lis/).
+
+\end{itemize}
+
+\section{Download}
+
+\begin{itemize}
+
+\item \textbf{Option 1: Using subversion [recommended]}
+
+The subversion repository of SICOPOLIS is kindly hosted by the FusionForge system AWIForge of the Alfred Wegener Institute for Polar and Marine Research (AWI) in Bremerhaven, Germany (front page: https://swrepo1.awi.de/projects/sicopolis/).
+
+Check out from the subversion repository:
+
+\begin{small}
+\hspace*{3.33mm}\verb+svn checkout --username anonsvn --password anonsvn \+
+\\[-1ex]
+\hspace*{6.67mm}\verb+https://swrepo1.awi.de/svn/sicopolis/tags/version51 sicopolis+
+\\
+\hspace*{3.33mm}(or username/password from your own AWIForge account)
+\end{small}
+
+You should then have a new directory ``sicopolis'' that contains the entire program package.
+
+\item \textbf{Option 2: Downloading a tarball}
+
+Download the gzipped tar archive sicopolis\_v51.tgz from the SICOPOLIS web page (http://www.sicopolis.net/).
+
+Unpacking:
+
+\hspace*{10mm}\verb+tar -x -v -z -f sicopolis_v51.tgz+
+
+You should then have a new directory ``sicopolis'' that contains the entire program package.
+
+
+\end{itemize}
+
+\clearpage
+
+% \begin{spacing}{1.2}
+
+\section{Initial configuration}
+
+\begin{enumerate}
+
+\item Go to the new directory ``sicopolis'' and execute the bash script copy\_templates.sh:
+
+\begin{small}
+\hspace*{3.33mm}\verb+./copy_templates.sh+
+\end{small}
+
+\item Locate the file sico\_configs.sh in the directory sicopolis/runs, and open it with a text editor.
+
+\item Set the flags NETCDF\_FLAG, LIS\_FLAG, OPENMP\_FLAG and LARGE\_DATA\_\-FLAG according to your needs.
+\\
+Pre-selected is NETCDF\_FLAG=``true'' (with NetCDF) and the rest ``false''.
+
+If you wish to create output in native binary format rather than in NetCDF format, set NETCDF\_FLAG to ``false''. For simulations with shallow-shelf dynamics (for floating ice) or hybrid shallow-ice--shelfy-stream dynamics (for grounded ice), LIS\_FLAG and OPENMP\_FLAG must both be set to ``true''. For high-resolution simulations (e.g., Greenland/5\,km or Antarctica/10\,km), LARGE\_DATA\_FLAG must be set to ``true''.
+
+\item If NETCDF\_FLAG=``true'', set NETCDFHOME to the correct path of your NetCDF installation.
+
+If LIS\_FLAG=``true'', set LISHOME to the correct path of your Lis installation.
+
+\item Depending on your system, some additional settings might have to be added in sico\_configs.sh (\verb+module load+\, commands for dynamic loading etc.).
+
+\end{enumerate}
+
+% \end{spacing}
+
+% \clearpage
+
+% \begin{spacing}{1.2}
+
+\section{Files and directories in ``sicopolis''}
+
+\begin{itemize}
+
+\item \textbf{runs}:
+
+Configuration file sico\_configs.sh.
+
+Shell script (bash) sico.sh for running a single simulation.
+
+Shell scripts (bash) multi\_sico\_1.sh and multi\_sico\_2.sh for running multiple simulations by repeated calls of sico.sh.
+
+Subdirectory \textbf{headers}: specification files sico\_specs\_\emph{run\_name}.h (\emph{run\_name}: name of run).
+
+\begin{itemize}
+
+\item
+File included for run v5\_emtp2sge25\_expA
+\\
+$\longrightarrow$ EISMINT Phase~2 Simplified Geometry Experiment A,
+\\
+\phantom{$\longrightarrow$} resolution 25~km, $t=0\ldots{}200\,\mathrm{ka}$ \citep{payne_etal_00}.
+\\
+\phantom{$\longrightarrow$} The thermodynamics solver for this run is the one-layer melting-CTS
+\\
+\phantom{$\longrightarrow$} enthalpy scheme (ENTM), while all other runs employ the 
+\\
+\phantom{$\longrightarrow$} polythermal two-layer scheme (POLY) \citep{greve_blatter_16}.
+
+\item
+File included for run v5\_grl20\_ss25ka
+\\
+$\longrightarrow$ Greenland ice sheet, resolution 20~km,
+\\
+\phantom{$\longrightarrow$} short steady-state run ($t=0\ldots{}25\,\mathrm{ka}$) for modern climate conditions
+\\
+\phantom{$\longrightarrow$} (unpublished).
+
+\item
+File included for run v5\_ant40\_ss25ka
+\\
+$\longrightarrow$ Antarctic ice sheet without ice shelves, resolution 40~km,
+\\
+\phantom{$\longrightarrow$} short steady-state run ($t=0\ldots{}25\,\mathrm{ka}$) for modern climate conditions
+\\
+\phantom{$\longrightarrow$} (unpublished).
+
+\item
+File included for run v5\_grl20\_b2\_paleo21
+\\
+$\longrightarrow$ Greenland ice sheet, resolution 20~km,
+\\
+\phantom{$\longrightarrow$} $t=-140\ldots{}0\,\mathrm{ka}$, basal sliding ramped up during the first 5\,ka
+\\
+\phantom{$\longrightarrow$} [modified, low-resolution version of the spin-up for ISMIP6 InitMIP; 
+\\
+\phantom{$\longrightarrow$} \citet{greve_etal_17a}].
+
+\item
+Files included for runs v5\_grl10\_b2\_paleo21 and
+\\{}
+\hspace*{10.15em}v5\_grl10\_b2\_future21\_ctrl/...\_asmb
+\\
+$\longrightarrow$ Greenland ice sheet, resolution 10~km,
+\\
+\phantom{$\longrightarrow$} $t=-9\ldots{}0\,\mathrm{ka}$ for the paleo run, $t=0\ldots{}100\,\mathrm{a}$ for the future runs
+\\{}
+\phantom{$\longrightarrow$} [10-km version of the spin-up and the schematic future climate runs for 
+\\
+\phantom{$\longrightarrow$} ISMIP6 InitMIP; \citet{greve_etal_17a}].
+
+\item
+Files included for runs v5\_ant64\_b2\_spinup09\_init100a,
+\\
+\hspace*{6.40em}v5\_ant64\_b2\_spinup09\_fixtopo, v5\_ant64\_b2\_spinup09 and
+\\
+\hspace*{6.40em}v5\_ant64\_b2\_future09\_ctrl
+\\
+$\longrightarrow$ Antarctic ice sheet with hybrid shallow-ice--shelfy-stream dynamics
+\\
+\phantom{$\longrightarrow$} \citep{bernales_etal_17} and ice shelves, resolution 64~km,
+\\
+\phantom{$\longrightarrow$} $t=-140.1\ldots{}-140.0\,\mathrm{ka}$ for the init run without basal sliding (...\_init100a),
+\\
+\phantom{$\longrightarrow$} $t=-140\ldots{}0\,\mathrm{ka}$ for the run with almost fixed topography (...\_fixtopo),
+\\
+\hspace*{9.15em} basal sliding ramped up during the first 5\,ka,
+\\
+\phantom{$\longrightarrow$} $t=-0.5\ldots{}0\,\mathrm{ka}$ for the final, freely-evolving-topography part of the
+\\
+\hspace*{9.0em} spin-up (...\_spinup09),
+\\
+\phantom{$\longrightarrow$} $t=0\ldots{}100\,\mathrm{a}$ for the constant-climate control run (...\_future09\_ctrl)
+\\{}
+\phantom{$\longrightarrow$} [64-km version of the spin-up and the constant-climate control run for 
+\\
+\phantom{$\longrightarrow$} ISMIP6 InitMIP; Greve and Galton-Fenzi (pers.\ comm.\ 2017)].
+
+\item
+Files included for runs v5\_asf2\_steady and v5\_asf2\_surge
+\\
+$\longrightarrow$ Austfonna, resolution 2~km, $t=0\ldots{}10\,\mathrm{ka}$
+\\
+\phantom{$\longrightarrow$} [similar to \citeauthor{dunse_etal_11}'s (\citeyear{dunse_etal_11}) Exp.~2 (steady fast flow) and
+\\
+\phantom{$\longrightarrow$} Exp.~5 (surging-type flow), respectively].
+
+\item
+Files included for runs v5\_nmars10\_steady and v5\_smars10\_steady
+\\
+$\longrightarrow$ North-/south-polar cap of Mars, resolution 10~km, $t=-10\,\mathrm{Ma}\ldots{}0$
+\\
+\phantom{$\longrightarrow$} [steady-state runs by \citet{greve_07b}].
+
+\item
+File included for run v5\_nhem80\_nt012\_new
+\\
+$\longrightarrow$ northern hemisphere, resolution 80~km, $t=-250\ldots{}0\,\mathrm{ka}$
+\\
+\phantom{$\longrightarrow$} [similar to run nt012 by \citet{greve_etal_99a}].
+
+\item
+File included for run v5\_heino50\_st
+\\
+$\longrightarrow$ ISMIP HEINO standard run ST,
+\\
+\phantom{$\longrightarrow$} resolution 50~km, $t=0\ldots{}200\,\mathrm{ka}$ \citep{calov_etal_10}.
+
+\end{itemize}
+
+\item \textbf{src}:
+
+Directory that contains the main program file sicopolis.F90.
+
+\begin{itemize}
+
+\item
+Subdirectory \textbf{subroutines/general}: general subroutines, for any modelled domain.
+
+\item
+Subdirectory \textbf{subroutines/ant}: subroutines specific for the Antarctic ice sheet.
+
+\item
+Subdirectory \textbf{subroutines/emtp2sge}: subroutines specific for the EISMINT Phase~2 Simplified Geometry Experiments.
+
+\item
+Subdirectory \textbf{subroutines/grl}: subroutines specific for the Greenland ice sheet.
+
+\item
+Accordingly subdirectories subroutines/asf, nhem, scand, tibet, nmars and smars for Austfonna, the northern hemisphere, Scandinavia, Tibet and the north and south polar caps of Mars, respectively.
+
+\item
+Subdirectory \textbf{subroutines/xyz}: see Appendix~\ref{sect_xyz}.
+
+\end{itemize}
+
+\item \textbf{sico\_in}:
+
+Directory that contains input data files for SICOPOLIS.
+
+\begin{itemize}
+
+\item
+Subdirectory \textbf{general}: general input files, for any modelled domain.
+
+\item
+Subdirectory \textbf{ant}: input files specific for the Antarctic ice sheet.
+
+\item
+Subdirectory \textbf{emtp2sge}: input files specific for the EISMINT Phase~2 Simplified Geometry Experiments.
+
+\item
+Subdirectory \textbf{grl}: input files specific for the Greenland ice sheet.
+
+\item
+Accordingly subdirectories asf, nhem, scand, tibet, nmars and smars for Austfonna, the northern hemisphere, Scandinavia, Tibet and the north and south polar caps of Mars, respectively.
+
+\item
+Subdirectory \textbf{xyz}: see Appendix~\ref{sect_xyz}.
+
+\end{itemize}
+
+\item \textbf{sico\_out}:
+
+Empty directory into which output files of SICOPOLIS simulations are written.
+
+\item \textbf{docu}:
+
+Directory that contains some documentation.
+
+\begin{itemize}
+
+\item
+Subdirectory \textbf{quick\_start}:\\
+\LaTeX{} source for this manual (PDF must be built with make).
+
+\item
+Subdirectory \textbf{doxygen}: documentation to be created by Doxygen\\
+(optional, see doxygen-config/README.txt).
+
+\begin{itemize}
+
+\item html/index.html $\longrightarrow$ Source code browser.
+
+\item latex/refman.pdf $\longrightarrow$ Reference manual.
+
+\end{itemize}
+
+\end{itemize}
+
+\item \textbf{tools}:
+
+See Sects.~\ref{sect_sicograph} and \ref{sect_tools}.
+
+\item \textbf{license}:
+
+Directory that contains a copy of the GNU General Public License (version~3).
+
+\end{itemize}
+
+% \end{spacing}
+
+\section{How to run a simulation}
+
+\begin{enumerate}
+
+\item It is recommended to run SICOPOLIS with output in NetCDF format. If you wish to create output in native binary format instead, set NETCDF to 1 (rather than 2) in all specification files sico\_specs\_\emph{run\_name}.h.
+
+\item In order to run simulation v5\_grl20\_ss25ka, use the script sico.sh. The command is
+\\
+\hspace*{10mm}\verb+(./sico.sh -m v5_grl20_ss25ka) >out_001.dat 2>&1 &+
+\\
+(from directory sicopolis/runs, bash required). Accordingly for the other simulations.
+\\
+For further options, try \verb+./sico.sh -h+.
+
+\item Alternatively, if you prefer to run all simulations consecutively, execute the script multi\_sico\_1.sh:
+\\
+\hspace*{10mm}\verb+(./multi_sico_1.sh) >out_multi_100.dat 2>&1 &+
+\\
+For further options, try \verb+./multi_sico_1.sh -h+.
+
+\end{enumerate}
+
+\subsubsection*{Computing times}
+
+The approximate computing times for the simulations, run with the Intel Fortran Compiler 17.0.1 for Linux (optimization options -xHOST -O3 -no-prec-div) on a $2\times{}14$-Core Intel Xeon E5-2690~v4 (2.6~GHz) PC under openSUSE Leap 42.2, are listed in Table~\ref{table_comp_times} (Appendix~\ref{sect_table}).
+
+\section{Output files}
+\label{sect_output}
+
+Output files are written by default to the directory sicopolis/sico\_out/\emph{run\_name} (this can be changed with the \verb+-d+ option). Four types are produced:
+
+\begin{itemize}
+
+\item \textbf{run\_name.log}:
+
+ASCII file that lists the main specifications of simulation \emph{run\_name}.
+
+\item \textbf{run\_name.ser}:
+
+Time-series file (ASCII) that contains global parameters:
+\begin{itemize}
+\item Time, t
+\item Surface temperature anomaly, D\_Ts, or glacial index, glac\_ind (forcing)
+\item Sea level, z\_sl (forcing)
+\item Total ice volume, V
+\item Volume of grounded ice, V\_g
+\item Volume of floating ice, V\_f
+\item Total ice area, A
+\item Area of grounded ice, A\_g
+\item Area of floating ice, A\_f
+\item Ice volume above flotation in sea level equivalent, V\_sle
+\item Volume of temperate ice, V\_t
+\item Area of temperate-based grounded ice, A\_t
+\item Maximum ice thickness, H\_max
+\item Maximum thickness of temperate ice, H\_t\_max
+\item Maximum surface elevation, zs\_max
+\item Maximum surface speed, vs\_max
+\item Maximum basal temperature (relative to pmp), Tbh\_max
+\end{itemize}
+
+\item \textbf{run\_name.core}:
+
+Time-series file (ASCII) that contains for selected locations xxx:
+\begin{itemize}
+\item Time, t
+\item Surface temperature anomaly, D\_Ts, or glacial index, glac\_ind (forcing)
+\item Sea level, z\_sl (forcing)
+\item Thickness, H\_xxx
+\item Surface velocity, v\_xxx
+\item Basal temperature, T\_xxx
+\end{itemize}
+
+For the Greenland ice sheet, these data are written for seven locations:
+\\
+GRIP (xxx=GR), GISP2 (xxx=G2), Dye 3 (xxx=D3), Camp Century (xxx=CC), NorthGRIP (xxx=NG), NEEM (xxx=NE), EastGRIP (xxx=EG).
+
+For the Antarctic ice sheet, these data are written for six locations:
+\\
+Vostok (xxx=Vo), Dome A (xxx=DA), Dome C (xxx=DC), Dome F (xxx=DF), Kohnen (xxx=Ko), Byrd (xxx=By).
+
+\item \textbf{run\_name0001.nc/.erg}, \textbf{run\_name0002.nc/.erg}, ...:
+
+Complete set of fields (topography, velocity, temperature etc., written either in NetCDF (*.nc) or in native binary (*.erg) format; see subroutines output\_nc and output1, respectively) for selected time slices defined in specifications file.
+\linebreak
+For example, simulation v5\_grl20\_ss25ka produces three files
+\linebreak
+v5\_grl20\_ss25ka0001.nc, v5\_grl20\_ss25ka0002.nc and v5\_grl20\_ss25ka0003.nc, which correspond to $t=0$, 10\,ka and 25\,ka, respectively.
+
+\end{itemize}
+
+\clearpage
+
+\section{Plotting with SICOGRAPH}
+\label{sect_sicograph}
+
+The output described in Sect.~\ref{sect_output} can be visualized with any plotting tool at the user's preference. One possibility is to use SICOGRAPH, which is part of the SICOPOLIS package and based on the Generic Mapping Tools GMT (http://gmt.soest.hawaii.edu/).
+
+\subsection{Installation}
+
+\begin{enumerate}
+
+\item If you do not have an installation of GMT version 4.x yet, download and install the latest version according to the instructions on the GMT web site.
+
+\item SICOGRAPH is included in the subversion repository of SICOPOLIS. You'll find it in the directory sicopolis/tools/sicograph\,.
+
+\end{enumerate}
+
+\subsection{Producing plots}
+
+In order to plot the output of simulation v5\_grl20\_ss25ka, go to the directory sicopolis/tools and execute the script tools.sh interactively:
+\\
+\hspace*{10mm}\verb+./tools.sh -p sicograph -m v5_grl20_ss25ka+
+\\
+(bash required; accordingly for the other simulations).
+\\
+For further options, try \verb+./tools.sh -h+.
+
+\par\vspace*{1ex}\par
+
+\noindent{}You'll get a menu that allows you to choose the type of plot you wish to produce. For example, try the option
+\\
+\hspace*{10mm}(1) Ice-surface topography
+\\
+and enter
+\\
+\hspace*{10mm}Number of time-slice file (with leading zeros, 4 digits) $>$ \verb+0003+
+\\
+\hspace*{10mm}Time-slice file contains:\\
+\hspace*{14mm} (0) only 2-d arrays, (1) full set of 2-d and 3-d arrays $>$ \verb+1+
+\\
+\hspace*{10mm}Plot (1) with or (2) without colour bar? $>$ \verb+1+
+\\
+\hspace*{10mm}Plot (1) with or (2) without contour labels? $>$ \verb+1+
+\\
+You will find the plot in the subdirectory sicograph/gmt\_scripts/plots as file \linebreak{}v5\_grl20\_ss25ka0003\_zs.eps (in EPS format). As a second example, try
+\\
+\hspace*{10mm}(41) Time series
+\\
+and in the following sub-menu choose
+\\
+\hspace*{10mm}(5) Total ice volume
+\\
+This produces the file v5\_grl20\_ss25ka\_V\_tot.eps in the subdirectory
+\linebreak
+sicograph/gmt\_scripts/plots.
+
+\subsection{Manipulating plot appearance}
+
+For all types of plots, the files in the subdirectory sicograph/parameter\_files control the limits and labels of the $x$- and $y$-axes. In addition, for the plan-view plots, the files in the subdirectory sicograph/gmt\_scripts/cpt control the colour scales (*.cpt) and contour levels (*.zzz). If a file is missing, the corresponding parameters are computed automatically.
+
+% \vfill
+
+\section{Plotting with MATLAB}
+\label{sect_matlab}
+
+NetCDF output from SICOPOLIS can be visualized by MATLAB, which has an extensive library for NetCDF files (https://www.mathworks.com/help/matlab/ref/netcdf.html). For instance, the following script plots the final surface topography of the Greenland simulation v5\_grl20\_ss25ka (credit: Mathieu Morlighem, University of California Irvine).
+
+\vspace*{2ex}
+
+\noindent\hspace*{5mm}\verb+filename = 'v5_grl20_ss25ka0003.nc';+
+\\[-0.5ex]
+\hspace*{5mm}\verb+x = ncread(filename,'x');+
+\\[-0.5ex]
+\hspace*{5mm}\verb+y = ncread(filename,'y');+
+\\[-0.5ex]
+\hspace*{5mm}\verb+surf = ncread(filename,'zs');+
+\\[-0.5ex]
+\hspace*{5mm}\verb+% Display surface elevation+
+\\[-0.5ex]
+\hspace*{5mm}\verb+%    (transposition needed because MATLAB is column-oriented)+
+\\[-0.5ex]
+\hspace*{5mm}\verb+imagesc(x*1e-3,y*1e-3,surf'); axis xy equal; caxis([0 3200]); colorbar+
+
+% \vfill
+
+% \clearpage
+
+\section{Some useful tools}
+\label{sect_tools}
+
+In addition to SICOGRAPH, the directory sicopolis/tools contains some further useful tools.
+
+\subsection{Program make\_ismip\_output}
+\label{ssect_make_ismip_output}
+
+Generating ISMIP output (see http://tinyurl.com/clic-ismip6) from the NetCDF time-slice files produced by SICOPOLIS (see Sect.~\ref{sect_output}). For simulation \emph{run\_name}, to be executed by\\
+\hspace*{10mm}\verb+./tools.sh -p make_ismip_output -m run_name+\\
+For further options, try \verb+./tools.sh -h+.
+
+\subsection{Program resolution\_doubler}
+\label{ssect_resolution_doubler}
+
+Doubling the horizontal resolution of a NetCDF time-slice output file produced by SICOPOLIS (see Sect.~\ref{sect_output}). For simulation \emph{run\_name}, to be executed by\\
+\hspace*{10mm}\verb+./tools.sh -p resolution_doubler -m run_name+\\
+For further options, try \verb+./tools.sh -h+.
+
+For example, run v5\_grl10\_b2\_paleo21 (10\,km resolution) requires the resolution-doub\-led output of run v5\_grl20\_b2\_paleo21 (20\,km resolution) for $t=-9\,\mathrm{ka}$ as initial condition. In order to create it, execute the resolution doubler for run v5\_grl20\_\-b2\_paleo21 (i.e., with the option \verb+-m v5_grl20_b2_paleo21+) and enter
+\\
+\hspace*{10mm}Number of time-slice file (with leading zeros, 4 digits) $>$
+\verb+0004+
+\\
+This will convert the original time-slice file v5\_grl20\_b2\_paleo210004.nc to the resolution-doubled file v5\_grl20\_b2\_paleo21\_dbl\_0004.nc that serves as initial conditions for run 
+\linebreak{}
+v5\_grl10\_b2\_paleo21.
+
+\vfill
+
+\begin{appendix}
+
+\section{Domain XYZ}
+\label{sect_xyz}
+
+This framework allows creating new domains (Laurentide ice sheet, simple testing geometry etc.). The directory sicopolis/src/subroutines/xyz, which hosts the domain-specific subroutines, is by default empty. If you want to create a new domain, copy the subroutines from the most similar existing domain (northern hemisphere, EISMINT etc.), e.g.:
+\\
+\hspace*{10mm}\verb+cp sicopolis/src/subroutines/nhem/*.F90 \+
+\\[-0.5ex]
+\hspace*{14.3mm}\verb+ sicopolis/src/subroutines/xyz/ +
+\\
+Then modify the routines according to your needs. Input files (topography etc.) must be placed in sicopolis/sico\_in/xyz and specified in the run-specification header file *.h as usual. The domain must be defined by the domain code `\#define XYZ' in the header file. If the new domain requires new global variables, they can be defined in the module sicopolis/src/subroutines/xyz/sico\_vars.F90.
+
+The subroutines for ISMIP HEINO are available in sicopolis/src/subroutines/xyz/heino, and the input files are in sicopolis/sico\_in/xyz. If you copy the subroutines from sicopo\-lis/src/subroutines/xyz/heino to sicopolis/src/subroutines/xyz, you can run ISMIP HEINO experiments (e.g., the run v5\_heino50\_st for which a header file is available).
+
+\vfill
+
+\clearpage
+
+\section{Table: Simulations and computing times}
+\label{sect_table}
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{lrrr@{.}l} \hline
+Run & Model time & Time step$^\dagger$ 
+                 & \multicolumn{2}{c}{CPU time$^\ddagger$} \\ \hline
+v5\_emtp2sge25\_expA                 &  $200\;\mathrm{ka}$\hspace*{1.0em}
+                                     &   $20\;\mathrm{ a}$\hspace*{1.0em}
+                                     &  7&$2\;\mathrm{min}$ \\
+v5\_grl20\_ss25ka                    &   $25\;\mathrm{ka}$\hspace*{1.0em}
+                                     &    $5\;\mathrm{ a}$\hspace*{1.0em}
+                                     & 11&$1\;\mathrm{min}$ \\
+v5\_ant40\_ss25ka                    &   $25\;\mathrm{ka}$\hspace*{1.0em}
+                                     &   $10\;\mathrm{ a}$\hspace*{1.0em}
+                                     &  9&$7\;\mathrm{min}$ \\ \hline
+v5\_grl20\_b2\_paleo21               &  $140\;\mathrm{ka}$\hspace*{1.0em}
+                                     &    $5\;\mathrm{ a}$\hspace*{1.0em}
+                                     &  1&$5\;\mathrm{hrs}$ \\
+v5\_grl10\_b2\_paleo21$^\ast$        &    $9\;\mathrm{ka}$\hspace*{1.0em}
+                                     &    $1\;\mathrm{ a}$\hspace*{1.0em}
+                                     &  1&$8\;\mathrm{hrs}$ \\
+v5\_grl10\_b2\_future21\_ctrl        &  $100\;\mathrm{ a}$\hspace*{1.47em}
+                                     &    $1\;\mathrm{ a}$\hspace*{1.0em}
+                                     &  1&$7\;\mathrm{min}$ \\
+v5\_grl10\_b2\_future21\_asmb        &  $100\;\mathrm{ a}$\hspace*{1.47em}
+                                     &    $1\;\mathrm{ a}$\hspace*{1.0em}
+                                     &  1&$7\;\mathrm{min}$ \\ \hline
+v5\_ant64\_b2\_spinup09\_init100a    &  $100\;\mathrm{ a}$\hspace*{1.47em}
+                                     & $2\,/\,10\;\mathrm{ a}^{\dagger}$\hspace*{0.6em}
+                                     &  5&$8\;\mathrm{sec}$ \\
+v5\_ant64\_b2\_spinup09\_fixtopo     &  $140\;\mathrm{ka}$\hspace*{1.0em}
+                                     &  $5\,/\,10\;\mathrm{ a}^{\dagger}$\hspace*{0.6em}
+                                     &  1&$0\;\mathrm{hrs}$ \\
+v5\_ant64\_b2\_spinup09              &  $500\;\mathrm{ a}$\hspace*{1.47em}
+                                     & $2\,/\,10\;\mathrm{ a}^{\dagger}$\hspace*{0.6em}
+                                     &  0&$5\;\mathrm{min}$ \\
+v5\_ant64\_b2\_future09\_ctrl        &  $100\;\mathrm{ a}$\hspace*{1.47em}
+                                     & $2\,/\,10\;\mathrm{ a}^{\dagger}$\hspace*{0.6em}
+                                     &  7&$0\;\mathrm{sec}$ \\ \hline
+\end{tabular}
+\caption{Model times, time steps and computing (CPU) times for the EISMINT, Greenland and Antarctica simulations contained in the script multi\_sico\_1.sh, run with SICOPOLIS V5.1 and the Intel Fortran Compiler 17.0.1 for Linux (optimization options -xHOST -O3 -no-prec-div) on a $2\times{}14$-Core Intel Xeon E5-2690~v4 (2.6~GHz) PC under openSUSE Leap 42.3.
+\protect\\
+{}$^\dagger$: If one value is given, this is the common dynamic (velocity, ice thickness) and thermodynamic (temperature, water content, age) time step. If two values are given (marked by the dagger ($^\dagger$) symbol), the first one is the dynamic, the second one the thermodynamic time step.
+\protect\\
+{}$^\ddagger$: All runs were done on a single core only. The v5\_ant64\_b2\_xxx runs that include ice shelves can be done on multiple cores using OpenMP for the SSA solver. However, at the employed, low resolution of 64\,km the solver does not scale well, and the gain in wall clock time by using multiple cores is very small.
+\protect\\
+{}$^\ast$: For this run, see the remark in Sect.~\ref{ssect_resolution_doubler} on the tool resolution\_doubler.}
+\label{table_comp_times}
+\end{table}
+
+\end{appendix}
+
+\clearpage
+
+% \section*{References}
+
+\bibliographystyle{ralf}
+\bibliography{journals2_ralf,Refs_for_Quick_Start}
+
+\end{document}
