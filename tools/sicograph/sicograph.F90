@@ -8,7 +8,7 @@
 !!
 !! @section Date
 !!
-!! 2020-01-02
+!! 2020-01-06
 !!
 !! @section Copyright
 !!
@@ -1800,7 +1800,7 @@ integer(i4b) :: ios
 integer(i1b) :: i_cb_flag, i_cl_flag
 integer(i4b) :: ndata, ndata_mean
 integer(i4b), parameter :: n_unit=11
-integer(i1b), dimension(0:IMAX,0:JMAX) :: maske_gr_sim, maske_gr_sedi
+integer(i1b), dimension(0:IMAX,0:JMAX) :: maske_gr_sim
 real(sp), dimension(0:IMAX,0:JMAX) :: zs_gr_sim, zb_gr_sim, &
                                       zl_gr_sim, zl0_gr_sim, &
                                       H_gr_sim, &
@@ -1936,26 +1936,6 @@ end do
    call read_data(domain, dphi_int, menue_read_data)
 #endif
 
-#if (defined(GRL))
-
-filename_with_path = INPATH//'/grl/'//MASK_SEDI_FILE
-
-open(24, iostat=ios, file=trim(filename_with_path), recl=8192, status='old')
-
-if (ios /= 0) stop ' >>> scatter_plot: Error when opening the NEGIS mask file!'
-
-do m=1, 6; read(24,'(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(24,2300) (maske_gr_sedi(i,j), i=0,IMAX)
-end do
-
-close(24, status='keep')
-
-2300 format(IMAX(i1),i1)
-
-#endif
-
 !-------- Creation of data vectors --------
 
 n              = 0
@@ -1969,41 +1949,33 @@ do j=0, JMAX
 
    if (maske_gr(i,j) < 2) then
 
-#if (defined(GRL))
-      if (maske_gr_sedi(i,j) == 7) then   ! only NEGIS area
-#endif
+      n = n+1
 
-         n = n+1
+      if (menue == 2) then
 
-         if (menue == 2) then
+         data_obs(n)   = H_gr(i,j)
+         data_sim(n)   = H_gr_sim(i,j)
+         ch_data       = 'H'
 
-            data_obs(n)   = H_gr(i,j)
-            data_sim(n)   = H_gr_sim(i,j)
-            ch_data       = 'H'
-
-            if ((data_obs(n) > eps).and.(data_sim(n) > eps)) then
-               ndata_mean     = ndata_mean+1
-               data_diff_mean = data_diff_mean + (data_sim(n)-data_obs(n))
-               data_diff_rms  = data_diff_rms  + (data_sim(n)-data_obs(n))**2
-            end if
-
-         else if (menue == 5) then
-
-            data_obs(n)   = vh_s_gr(i,j)
-            data_sim(n)   = vh_s_gr_sim(i,j)
-            ch_data       = 'vs'
-
-            if ((data_obs(n) > eps).and.(data_sim(n) > eps)) then
-               ndata_mean     = ndata_mean+1
-               data_diff_mean = data_diff_mean + (data_sim(n)-data_obs(n))
-               data_diff_rms  = data_diff_rms  + (data_sim(n)-data_obs(n))**2
-            end if
-
+         if ((data_obs(n) > eps).and.(data_sim(n) > eps)) then
+            ndata_mean     = ndata_mean+1
+            data_diff_mean = data_diff_mean + (data_sim(n)-data_obs(n))
+            data_diff_rms  = data_diff_rms  + (data_sim(n)-data_obs(n))**2
          end if
 
-#if (defined(GRL))
+      else if (menue == 5) then
+
+         data_obs(n)   = vh_s_gr(i,j)
+         data_sim(n)   = vh_s_gr_sim(i,j)
+         ch_data       = 'vs'
+
+         if ((data_obs(n) > eps).and.(data_sim(n) > eps)) then
+            ndata_mean     = ndata_mean+1
+            data_diff_mean = data_diff_mean + (data_sim(n)-data_obs(n))
+            data_diff_rms  = data_diff_rms  + (data_sim(n)-data_obs(n))**2
+         end if
+
       end if
-#endif
 
    end if
 
@@ -2145,13 +2117,14 @@ character(len=  4) :: ergnum
 integer(i1b), dimension(0:IMAX,0:JMAX) :: maske_erg, maske_old_erg
 integer(i1b), dimension(0:IMAX,0:JMAX) :: n_cts_erg
 integer(i4b), dimension(0:IMAX,0:JMAX) :: kc_cts_erg
-real(sp) :: time_erg=0.0, delta_ts_erg=0.0, glac_index_erg=0.0, z_sl_erg=0.0, &
-            V_tot_erg=0.0, V_af_erg=0.0, &
-            A_grounded_erg=0.0, A_floating_erg=0.0, &
-            H_R_erg, &
+real(dp) :: year2sec_erg=0.0_dp, time_erg=0.0_dp, &
+            delta_ts_erg=0.0_dp, glac_index_erg=0.0_dp, z_sl_erg=0.0_dp, &
+            V_tot_erg=0.0_dp, V_af_erg=0.0_dp, &
+            A_grounded_erg=0.0_dp, A_floating_erg=0.0_dp, &
             xi_erg(0:IMAX), eta_erg(0:JMAX), &
             sigma_level_c_erg(0:KCMAX), sigma_level_t_erg(0:KTMAX), &
             sigma_level_r_erg(0:KRMAX)
+real(sp) :: H_R_erg
 real(sp), dimension(0:IMAX,0:JMAX) :: lambda_erg, phi_erg, &
             lon_erg, lat_erg, &
             temp_s_erg, accum_erg, as_perp_erg, as_perp_apl_erg, &
@@ -2191,10 +2164,10 @@ integer(i4b) :: ncid, ncv
 !     ncv:       Variable ID
 #endif
 
-real(sp), parameter :: &
-          pi = 3.141592653589793_sp, pi_inv = 1.0_sp/pi, &
-          pi_180 = pi/180.0_sp, pi_180_inv = 180.0_sp/pi, &
-          eps=1.0e-05_sp
+real(dp), parameter :: pi      = 3.141592653589793_dp
+real(dp), parameter :: rad2deg = 180.0_dp/pi
+
+real(sp), parameter :: eps = 1.0e-05_sp
 
 #if ( defined(ANT) \
       || defined(ASF) \
@@ -2259,6 +2232,7 @@ read(10) ch_attr_source
 read(10) ch_attr_history
 read(10) ch_attr_references
 
+read(10) year2sec_erg
 read(10) time_erg
 read(10) delta_ts_erg
 read(10) z_sl_erg
@@ -2273,6 +2247,7 @@ read(10) eta_erg
 read(10) sigma_level_c_erg
 read(10) sigma_level_t_erg
 read(10) sigma_level_r_erg
+
 read(10) lon_erg
 read(10) lat_erg
 read(10) lambda_erg
@@ -2390,6 +2365,12 @@ if (ios /= nf90_noerr) then
    stop
 end if
 
+if ( nf90_inq_varid(ncid, 'year2sec', ncv) == nf90_noerr ) then 
+   call check( nf90_get_var(ncid, ncv, year2sec_erg) )
+else
+   year2sec_erg = 0.0_dp
+end if
+
 call check( nf90_inq_varid(ncid, 'time', ncv) )
 call check( nf90_get_var(ncid, ncv, time_erg) )
 
@@ -2400,8 +2381,8 @@ else if ( nf90_inq_varid(ncid, 'glac_index', ncv) == nf90_noerr ) then
 else
    write(6,'(/a)') ' >>> read_erg_nc: Neither variable delta_ts nor glac_index'
    write(6, '(a)') '                  available in read file *.nc.'
-   delta_ts_erg   = 0.0
-   glac_index_erg = 0.0
+   delta_ts_erg   = 0.0_dp
+   glac_index_erg = 0.0_dp
 end if
 
 call check( nf90_inq_varid(ncid, 'z_sl', ncv) )
@@ -2415,7 +2396,7 @@ if ( nf90_inq_varid(ncid, 'V_af', ncv) == nf90_noerr ) then
 else
    write(6,'(/a)') ' >>> read_erg_nc: V_af'
    write(6, '(a)') '                  not available in read file *.nc.'
-   V_af_erg = 0.0
+   V_af_erg = 0.0_dp
 end if
 
 call check( nf90_inq_varid(ncid, 'A_grounded', ncv) )
@@ -2459,7 +2440,7 @@ if ( nf90_inq_varid(ncid, 'prec', ncv) == nf90_noerr ) then
 else
    write(6,'(/a)') ' >>> read_erg_nc: Variable prec'
    write(6, '(a)') '                  not available in read file *.nc.'
-   accum_erg = 0.0
+   accum_erg = 0.0_sp
 end if
 
 call check( nf90_inq_varid(ncid, 'as_perp', ncv) )
@@ -2470,7 +2451,7 @@ if ( nf90_inq_varid(ncid, 'as_perp_apl', ncv) == nf90_noerr ) then
 else
    write(6,'(/a)') ' >>> read_erg_nc: Variable as_perp_apl'
    write(6, '(a)') '                  not available in read file *.nc.'
-   as_perp_apl_erg = 0.0
+   as_perp_apl_erg = 0.0_sp
 end if
 
 #if (DISC>0)   /* Ice discharge parameterisation */
@@ -2480,7 +2461,7 @@ if ( nf90_inq_varid(ncid, 'dis_perp', ncv) == nf90_noerr ) then
 else
    write(6,'(/a)') ' >>> read_erg_nc: Variable dis_perp'
    write(6, '(a)') '                  not available in read file *.nc.'
-   dis_perp_erg = 0.0
+   dis_perp_erg = 0.0_sp
 end if
 
 if ( nf90_inq_varid(ncid, 'cst_dist', ncv) == nf90_noerr ) then
@@ -2488,7 +2469,7 @@ if ( nf90_inq_varid(ncid, 'cst_dist', ncv) == nf90_noerr ) then
 else
    write(6,'(/a)') ' >>> read_erg_nc: Variable cst_dist'
    write(6, '(a)') '                  not available in read file *.nc.'
-   cst_dist_erg = 0.0
+   cst_dist_erg = 0.0_sp
 end if
 
 if ( nf90_inq_varid(ncid, 'cos_grad_tc', ncv) == nf90_noerr ) then
@@ -2496,7 +2477,7 @@ if ( nf90_inq_varid(ncid, 'cos_grad_tc', ncv) == nf90_noerr ) then
 else
    write(6,'(/a)') ' >>> read_erg_nc: Variable cos_grad_tc'
    write(6, '(a)') '                  not available in read file *.nc.'
-   cos_grad_tc_erg = 0.0
+   cos_grad_tc_erg = 0.0_sp
 end if
 
 if ( nf90_inq_varid(ncid, 'mask_mar', ncv) == nf90_noerr ) then
@@ -2514,7 +2495,7 @@ if ( nf90_inq_varid(ncid, 'q_geo', ncv) == nf90_noerr ) then
 else
    write(6,'(/a)') ' >>> read_erg_nc: Variable q_geo'
    write(6, '(a)') '                  not available in read file *.nc.'
-   q_geo_erg = 0.0
+   q_geo_erg = 0.0_sp
 end if
 
 call check( nf90_inq_varid(ncid, 'maske', ncv) )
@@ -2551,7 +2532,7 @@ if ( nf90_inq_varid(ncid, 'zl0', ncv) == nf90_noerr ) then
 else
    write(6,'(/a)') ' >>> read_erg_nc: Variable zl0'
    write(6, '(a)') '                  not available in read file *.nc.'
-   zl0_erg = 0.0
+   zl0_erg = 0.0_sp
 end if
 
 call check( nf90_inq_varid(ncid, 'H_cold', ncv) )
@@ -2631,7 +2612,7 @@ if ( nf90_inq_varid(ncid, 'vx_m_g', ncv) == nf90_noerr ) then
 else
    write(6,'(/a)') ' >>> read_erg_nc: Variable vx_m_g'
    write(6, '(a)') '                  not available in read file *.nc.'
-   vx_m_g_erg = 0.0
+   vx_m_g_erg = 0.0_sp
 end if
 
 if ( nf90_inq_varid(ncid, 'vy_m_g', ncv) == nf90_noerr ) then
@@ -2639,7 +2620,7 @@ if ( nf90_inq_varid(ncid, 'vy_m_g', ncv) == nf90_noerr ) then
 else
    write(6,'(/a)') ' >>> read_erg_nc: Variable vy_m_g'
    write(6, '(a)') '                  not available in read file *.nc.'
-   vy_m_g_erg = 0.0
+   vy_m_g_erg = 0.0_sp
 end if
 
 if ( nf90_inq_varid(ncid, 'vh_m', ncv) == nf90_noerr ) then
@@ -2647,7 +2628,7 @@ if ( nf90_inq_varid(ncid, 'vh_m', ncv) == nf90_noerr ) then
 else
    write(6,'(/a)') ' >>> read_erg_nc: Variable vh_m'
    write(6, '(a)') '                  not available in read file *.nc.'
-   vh_m_erg = 0.0
+   vh_m_erg = 0.0_sp
 end if
 
 call check( nf90_inq_varid(ncid, 'temp_b', ncv) )
@@ -2661,7 +2642,7 @@ if ( nf90_inq_varid(ncid, 'tau_b_driving', ncv) == nf90_noerr ) then
 else
    write(6,'(/a)') ' >>> read_erg_nc: Variable tau_b_driving'
    write(6, '(a)') '                  not available in read file *.nc.'
-   tau_b_driving_erg = 0.0
+   tau_b_driving_erg = 0.0_sp
 end if
 
 if ( nf90_inq_varid(ncid, 'tau_b_drag', ncv) == nf90_noerr ) then
@@ -2669,7 +2650,7 @@ if ( nf90_inq_varid(ncid, 'tau_b_drag', ncv) == nf90_noerr ) then
 else
    write(6,'(/a)') ' >>> read_erg_nc: Variable tau_b_drag'
    write(6, '(a)') '                  not available in read file *.nc.'
-   tau_b_drag_erg = 0.0
+   tau_b_drag_erg = 0.0_sp
 end if
 
 call check( nf90_inq_varid(ncid, 'p_b_w', ncv) )
@@ -2686,7 +2667,7 @@ if ( nf90_inq_varid(ncid, 'q_cf_g', ncv) == nf90_noerr ) then
 else
    write(6,'(/a)') ' >>> read_erg_nc: Variable q_cf_g'
    write(6, '(a)') '                  not available in read file *.nc.'
-   q_cf_g_erg = 0.0
+   q_cf_g_erg = 0.0_sp
 end if
 
 if (flag_3d_output == 1) then
@@ -2732,7 +2713,7 @@ if (flag_3d_output == 1) then
    else
       write(6,'(/a)') ' >>> read_erg_nc: Variable enh_c'
       write(6, '(a)') '                  not available in read file *.nc.'
-      enh_c_erg = 0.0
+      enh_c_erg = 0.0_sp
    end if
 
    if ( nf90_inq_varid(ncid, 'enh_t', ncv) == nf90_noerr ) then
@@ -2740,7 +2721,7 @@ if (flag_3d_output == 1) then
    else
       write(6,'(/a)') ' >>> read_erg_nc: Variable enh_t'
       write(6, '(a)') '                  not available in read file *.nc.'
-      enh_t_erg = 0.0
+      enh_t_erg = 0.0_sp
    end if
 
    call check( nf90_inq_varid(ncid, 'age_c', ncv) )
@@ -2803,29 +2784,49 @@ end do
       || defined(EMTP2SGE) \
       || defined(HEINO) )   /* terrestrial ice sheet */
 
-time_gr = time_erg *1.0e-03   ! a -> ka
-write(6,'(/4x,a,es13.6,a)') 'time       = ', time_erg, ' a'
+time_gr = real((time_erg*1.0e-03_dp),sp)   ! a -> ka
+write(6,'(/4x,a,es13.6,a)') 'time = ', time_erg, ' a'
 
 #else   /* Martian ice sheet */
 
-time_gr = time_erg *1.0e-06   ! a -> Ma
-write(6,'(/4x,a,es13.6,a)') 'time       = ', time_erg, ' a'
+time_gr = real((time_erg*1.0e-06_dp),sp)   ! a -> Ma
+write(6,'(/4x,a,es13.6,a)') 'time = ', time_erg, ' a'
 
 #endif
 
-delta_ts_gr   = delta_ts_erg      ! deg C
-glac_index_gr = glac_index_erg    ! 1
-z_sl_gr       = z_sl_erg *0.001   ! m -> km
+delta_ts_gr   = real(delta_ts_erg,sp)         ! deg C
+glac_index_gr = real(glac_index_erg,sp)       ! 1
+z_sl_gr       = real((z_sl_erg*0.001_dp),sp)  ! m -> km
 
-V_tot_gr      = V_tot_erg      *1.0e-09   ! m3 -> km3
-A_grounded_gr = A_grounded_erg *1.0e-06   ! m2 -> km2
-A_floating_gr = A_floating_erg *1.0e-06   ! m2 -> km2
-
-H_R_gr        = H_R_erg*0.001    ! m -> km
+V_tot_gr      = real((V_tot_erg*1.0e-09_dp),sp)       ! m3 -> km3
+A_grounded_gr = real((A_grounded_erg*1.0e-06_dp),sp)  ! m2 -> km2
+A_floating_gr = real((A_floating_erg*1.0e-06_dp),sp)  ! m2 -> km2
 
 write(6,'(4x,a,es13.6,a)') 'V_tot      = ', V_tot_gr, ' km^3'
 write(6,'(4x,a,es13.6,a)') 'A_grounded = ', A_grounded_gr, ' km^2'
 write(6,'(4x,a,es13.6,a)') 'A_floating = ', A_floating_gr, ' km^2'
+
+do i=0, IMAX
+
+#if (GRID==0 || GRID==1)
+   xi_gr(i) = real((xi_erg(i)*0.001_dp),sp)  ! m -> km
+#elif (GRID==2)
+   xi_gr(i) = real((xi_erg(i)*rad2deg),sp)   ! rad -> deg
+#endif
+
+end do
+
+do j=0, JMAX
+
+#if (GRID==0 || GRID==1)
+   eta_gr(j) = real((eta_erg(j)*0.001_dp),sp)  ! m -> km
+#elif (GRID==2)
+   eta_gr(j) = real((eta_erg(j)*rad2deg),sp)   ! rad -> deg
+#endif
+
+end do
+
+H_R_gr = H_R_erg*0.001    ! m -> km
 
 do i=0, IMAX
 do j=0, JMAX
@@ -2833,14 +2834,6 @@ do j=0, JMAX
    maske_gr(i,j)  = maske_erg(i,j)
    n_cts_gr(i,j)  = n_cts_erg(i,j)
    kc_cts_gr(i,j) = kc_cts_erg(i,j)
-
-#if (GRID==0 || GRID==1)
-   xi_gr(i)     = xi_erg(i)  *0.001   ! m -> km
-   eta_gr(j)    = eta_erg(j) *0.001   ! m -> km
-#elif (GRID==2)
-   xi_gr(i)     = xi_erg(i)  *pi_180_inv   ! rad -> deg
-   eta_gr(j)    = eta_erg(j) *pi_180_inv   ! rad -> deg
-#endif
 
    temp_s_gr(i,j)  = temp_s_erg(i,j)            ! deg C
    as_perp_gr(i,j) = as_perp_erg(i,j) *1000.0   ! m/a -> mm/a

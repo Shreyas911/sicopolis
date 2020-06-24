@@ -121,12 +121,14 @@ call error(errormsg)
                                             flag_grounded_front_b_1_conv, &
                                             flag_grounded_front_b_2_conv
   integer(i4b), dimension(0:IMAX,0:JMAX) :: kc_cts_conv
-  real(sp) :: time_conv, dummy_conv, z_sl_conv, &
-              V_tot_conv, A_grounded_conv, A_floating_conv, &
-              H_R_conv, &
+
+  real(dp) :: year2sec_conv, time_conv, z_sl_conv, dummy_conv, &
               xi_conv(0:IMAX), eta_conv(0:JMAX), &
               sigma_level_c_conv(0:KCMAX), sigma_level_t_conv(0:KTMAX), &
               sigma_level_r_conv(0:KRMAX)
+
+  real(sp) :: H_R_conv
+
   real(sp), dimension(0:IMAX,0:JMAX) :: lambda_conv, phi_conv, &
               lon_conv, lat_conv, &
               temp_maat_conv, temp_s_conv, accum_conv, &
@@ -199,6 +201,7 @@ call error(errormsg)
   read(unit=11) ch_attr_history
   read(unit=11) ch_attr_references
 
+  read(unit=11) year2sec_conv
   read(unit=11) time_conv
   read(unit=11) dummy_conv   ! this is either delta_ts or glac_index; not needed
   read(unit=11) z_sl_conv
@@ -334,6 +337,12 @@ call error(errormsg)
      call error(errormsg)
   end if
 
+  if ( nf90_inq_varid(ncid, 'year2sec', ncv) == nf90_noerr ) then
+     call check( nf90_get_var(ncid, ncv, year2sec_conv) )
+  else
+     year2sec_conv = 0.0_dp
+  end if
+
   call check( nf90_inq_varid(ncid, 'time', ncv) )
   call check( nf90_get_var(ncid, ncv, time_conv) )
 
@@ -342,7 +351,7 @@ call error(errormsg)
   else if ( nf90_inq_varid(ncid, 'glac_index', ncv) == nf90_noerr ) then
      call check( nf90_get_var(ncid, ncv, dummy_conv) )
   else
-     dummy_conv = 0.0_sp
+     dummy_conv = 0.0_dp
   end if
 
   call check( nf90_inq_varid(ncid, 'z_sl', ncv) )
@@ -706,17 +715,17 @@ call error(errormsg)
 
   if (.not.flag_temp_age_only) then
 
-     z_sl = real(z_sl_conv,dp)
-
-     H_R  = real(H_R_conv,dp)
+     z_sl = z_sl_conv
 
      do i=0, IMAX
-        xi(i)  = real(xi_conv(i),dp)
+        xi(i)  = xi_conv(i)
      end do
 
      do j=0, JMAX
-        eta(j) = real(eta_conv(j),dp)
+        eta(j) = eta_conv(j)
      end do
+
+     H_R  = real(H_R_conv,dp)
 
      do i=0, IMAX
      do j=0, JMAX

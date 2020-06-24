@@ -196,12 +196,15 @@ integer(i1b), dimension(0:IMAX,0:JMAX) :: flag_grounding_line_1_conv, &
                                           flag_grounded_front_b_1_conv, &
                                           flag_grounded_front_b_2_conv
 
-real(sp) :: time_conv, delta_ts_conv, glac_index_conv, z_sl_conv, &
+real(dp) :: year2sec_conv, time_conv, &
+            delta_ts_conv, glac_index_conv, z_sl_conv, &
             V_tot_conv, V_af_conv, A_grounded_conv, A_floating_conv, &
-            H_R_conv, &
             xi_conv(0:IMAX), eta_conv(0:JMAX), &
             sigma_level_c_conv(0:KCMAX), sigma_level_t_conv(0:KTMAX), &
             sigma_level_r_conv(0:KRMAX)
+
+real(sp) :: H_R_conv
+
 real(sp), dimension(0:IMAX,0:JMAX) :: lambda_conv, phi_conv, &
             lond_conv, latd_conv, &
             temp_maat_conv, temp_s_conv, accum_conv, &
@@ -505,9 +508,23 @@ call check( nf90_put_att(ncid, ncv, 'false_northing', 0.0_dp), &
 
 #endif
 
+!    ---- year2sec
+
+call check( nf90_def_var(ncid, 'year2sec', NF90_DOUBLE, ncv), &
+            thisroutine )
+buffer = 's a-1'
+call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
+            thisroutine )
+buffer = 'seconds_per_year'
+call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
+            thisroutine )
+buffer = '1 year (1 a) in seconds'
+call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
+            thisroutine )
+
 !    ---- time
 
-call check( nf90_def_var(ncid, 'time', NF90_FLOAT, ncv), &
+call check( nf90_def_var(ncid, 'time', NF90_DOUBLE, ncv), &
             thisroutine )
 buffer = 'a'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
@@ -523,7 +540,7 @@ if ((forcing_flag == 1).or.(forcing_flag == 3)) then
 
 !    ---- delta_ts
 
-   call check( nf90_def_var(ncid, 'delta_ts', NF90_FLOAT, ncv), &
+   call check( nf90_def_var(ncid, 'delta_ts', NF90_DOUBLE, ncv), &
                thisroutine )
    buffer = 'degC'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
@@ -539,7 +556,7 @@ else if (forcing_flag == 2) then
 
 !    ---- glac_index
 
-   call check( nf90_def_var(ncid, 'glac_index', NF90_FLOAT, ncv), &
+   call check( nf90_def_var(ncid, 'glac_index', NF90_DOUBLE, ncv), &
                thisroutine )
    buffer = '1'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
@@ -555,7 +572,7 @@ end if
 
 !    ---- z_sl
 
-call check( nf90_def_var(ncid, 'z_sl', NF90_FLOAT, ncv), &
+call check( nf90_def_var(ncid, 'z_sl', NF90_DOUBLE, ncv), &
             thisroutine )
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
@@ -569,7 +586,7 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
 
 !    ---- V_tot
 
-call check( nf90_def_var(ncid, 'V_tot', NF90_FLOAT, ncv), &
+call check( nf90_def_var(ncid, 'V_tot', NF90_DOUBLE, ncv), &
             thisroutine )
 buffer = 'm3'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
@@ -583,7 +600,7 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
 
 !    ---- V_af
 
-call check( nf90_def_var(ncid, 'V_af', NF90_FLOAT, ncv), &
+call check( nf90_def_var(ncid, 'V_af', NF90_DOUBLE, ncv), &
             thisroutine )
 buffer = 'm3'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
@@ -597,7 +614,7 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
 
 !    ---- A_grounded
 
-call check( nf90_def_var(ncid, 'A_grounded', NF90_FLOAT, ncv), &
+call check( nf90_def_var(ncid, 'A_grounded', NF90_DOUBLE, ncv), &
             thisroutine )
 buffer = 'm2'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
@@ -611,7 +628,7 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
 
 !    ---- A_floating
 
-call check( nf90_def_var(ncid, 'A_floating', NF90_FLOAT, ncv), &
+call check( nf90_def_var(ncid, 'A_floating', NF90_DOUBLE, ncv), &
             thisroutine )
 buffer = 'm2'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
@@ -627,7 +644,7 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc1d), &
             thisroutine )
-call check( nf90_def_var(ncid, 'x', NF90_FLOAT, nc1d, ncv), &
+call check( nf90_def_var(ncid, 'x', NF90_DOUBLE, nc1d, ncv), &
             thisroutine )
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
@@ -645,7 +662,7 @@ call check( nf90_put_att(ncid, ncv, 'axis', 'x'), &
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc1d), &
             thisroutine )
-call check( nf90_def_var(ncid, 'y', NF90_FLOAT, nc1d, ncv), &
+call check( nf90_def_var(ncid, 'y', NF90_DOUBLE, nc1d, ncv), &
             thisroutine )
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
@@ -663,7 +680,7 @@ call check( nf90_put_att(ncid, ncv, 'axis', 'y'), &
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(3)), nc1d), &
             thisroutine )
-call check( nf90_def_var(ncid, 'sigma_level_c', NF90_FLOAT, nc1d, ncv), &
+call check( nf90_def_var(ncid, 'sigma_level_c', NF90_DOUBLE, nc1d, ncv), &
             thisroutine )
 buffer = 'up'
 call check( nf90_put_att(ncid, ncv, 'positive', trim(buffer)), &
@@ -679,7 +696,7 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(4)), nc1d), &
             thisroutine )
-call check( nf90_def_var(ncid, 'sigma_level_t', NF90_FLOAT, nc1d, ncv), &
+call check( nf90_def_var(ncid, 'sigma_level_t', NF90_DOUBLE, nc1d, ncv), &
             thisroutine )
 buffer = 'up'
 call check( nf90_put_att(ncid, ncv, 'positive', trim(buffer)), &
@@ -695,7 +712,7 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(5)), nc1d), &
             thisroutine )
-call check( nf90_def_var(ncid, 'sigma_level_r', NF90_FLOAT, nc1d, ncv), &
+call check( nf90_def_var(ncid, 'sigma_level_r', NF90_DOUBLE, nc1d, ncv), &
             thisroutine )
 buffer = 'up'
 call check( nf90_put_att(ncid, ncv, 'positive', trim(buffer)), &
@@ -3333,43 +3350,46 @@ call error(errormsg)
 
 if (.not.flag_compute_flux_vars_only) then
 
+year2sec_conv = year2sec
+
 #if (!defined(OUT_TIMES) || OUT_TIMES==1)
-time_conv = real(time*sec2year,sp)
+time_conv = time*sec2year
 #elif (OUT_TIMES==2)
-time_conv = real((time+year_zero)*sec2year,sp)
+time_conv = (time+year_zero)*sec2year
 #else
 errormsg = ' >>> output1: OUT_TIMES must be either 1 or 2!'
 call error(errormsg)
 #endif
 
-delta_ts_conv   = real(delta_ts,sp)
-glac_index_conv = real(glac_index,sp)
-z_sl_conv       = real(z_sl,sp)
-V_tot_conv      = real(V_tot,sp)
-V_af_conv       = real(V_af,sp)
-A_grounded_conv = real(A_grounded,sp)
-A_floating_conv = real(A_floating,sp)
-H_R_conv        = real(H_R,sp)
+delta_ts_conv   = delta_ts
+glac_index_conv = glac_index
+z_sl_conv       = z_sl
+V_tot_conv      = V_tot
+V_af_conv       = V_af
+A_grounded_conv = A_grounded
+A_floating_conv = A_floating
 
 do i=0, IMAX
-   xi_conv(i) = real(xi(i),sp)
+   xi_conv(i) = xi(i)
 end do
 
 do j=0, JMAX
-   eta_conv(j) = real(eta(j),sp)
+   eta_conv(j) = eta(j)
 end do
 
 do kc=0, KCMAX
-   sigma_level_c_conv(kc) = real(eaz_c_quotient(kc),sp)
+   sigma_level_c_conv(kc) = eaz_c_quotient(kc)
 end do
 
 do kt=0, KTMAX
-   sigma_level_t_conv(kt) = real(zeta_t(kt),sp)
+   sigma_level_t_conv(kt) = zeta_t(kt)
 end do
 
 do kr=0, KRMAX
-   sigma_level_r_conv(kr) = real(kr,sp)/real(KRMAX,sp)
+   sigma_level_r_conv(kr) = real(kr,dp)/real(KRMAX,dp)
 end do
+
+H_R_conv = real(H_R,sp)
 
 do i=0, IMAX
 do j=0, JMAX
@@ -3574,6 +3594,7 @@ if (.not.flag_compute_flux_vars_only) then
 
 #if (NETCDF==1)   /* time-slice file in native binary format */
 
+write(unit=11) year2sec_conv
 write(unit=11) time_conv
 if ((forcing_flag == 1).or.(forcing_flag == 3)) then
    write(unit=11) delta_ts_conv
@@ -3592,6 +3613,7 @@ write(unit=11) eta_conv
 write(unit=11) sigma_level_c_conv
 write(unit=11) sigma_level_t_conv
 write(unit=11) sigma_level_r_conv
+
 write(unit=11) lond_conv
 write(unit=11) latd_conv
 write(unit=11) lambda_conv
@@ -3705,6 +3727,9 @@ end if
 
 call check( nf90_inq_varid(ncid, 'mapping', ncv), thisroutine )
 call check( nf90_put_var(ncid, ncv, 0), thisroutine )
+
+call check( nf90_inq_varid(ncid, 'year2sec', ncv), thisroutine )
+call check( nf90_put_var(ncid, ncv, year2sec_conv), thisroutine )
 
 call check( nf90_inq_varid(ncid, 'time', ncv), thisroutine )
 call check( nf90_put_var(ncid, ncv, time_conv), thisroutine )

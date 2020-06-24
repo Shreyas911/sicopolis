@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2020-01-02
+!! 2020-01-06
 !!
 !! @section Copyright
 !!
@@ -88,12 +88,13 @@ real(dp) :: mapping_semi_major_axis_erg, &
             mapping_reference_longitude_erg, &
             mapping_false_E_erg, &
             mapping_false_N_erg
-real(sp) :: time_erg, delta_ts_erg, glac_index_erg, z_sl_erg, &
+real(dp) :: year2sec_erg, time_erg, &
+            delta_ts_erg, glac_index_erg, z_sl_erg, &
             V_tot_erg, V_af_erg, A_grounded_erg, A_floating_erg, &
-            H_R_erg, &
             xi_erg(0:IMAX), eta_erg(0:JMAX), &
             sigma_level_c_erg(0:KCMAX), sigma_level_t_erg(0:KTMAX), &
             sigma_level_r_erg(0:KRMAX)
+real(sp) :: H_R_erg
 real(sp), dimension(0:IMAX,0:JMAX) :: lambda_erg, phi_erg, &
             lon_erg, lat_erg, &
             temp_s_erg, prec_erg, &
@@ -158,12 +159,13 @@ real(dp) :: mapping_semi_major_axis_dbl, &
             mapping_reference_longitude_dbl, &
             mapping_false_E_dbl, &
             mapping_false_N_dbl
-real(sp) :: time_dbl, delta_ts_dbl, glac_index_dbl, z_sl_dbl, &
+real(dp) :: year2sec_dbl, time_dbl, &
+            delta_ts_dbl, glac_index_dbl, z_sl_dbl, &
             V_tot_dbl, V_af_dbl, A_grounded_dbl, A_floating_dbl, &
-            H_R_dbl, &
             xi_dbl(0:2*IMAX), eta_dbl(0:2*JMAX), &
             sigma_level_c_dbl(0:KCMAX), sigma_level_t_dbl(0:KTMAX), &
             sigma_level_r_dbl(0:KRMAX)
+real(sp) :: H_R_dbl
 real(sp), dimension(0:2*IMAX,0:2*JMAX) :: lambda_dbl, phi_dbl, &
             lon_dbl, lat_dbl, &
             temp_s_dbl, prec_dbl, &
@@ -268,13 +270,15 @@ real(dp) :: r_aux
 
 character(len=64) :: ch_aux
 
-time_erg       = 0.0
-delta_ts_erg   = 0.0
-glac_index_erg = 0.0
-z_sl_erg       = 0.0
-V_tot_erg      = 0.0
-A_grounded_erg = 0.0
-A_floating_erg = 0.0
+year2sec_erg   = 0.0_dp
+time_erg       = 0.0_dp
+delta_ts_erg   = 0.0_dp
+glac_index_erg = 0.0_dp
+z_sl_erg       = 0.0_dp
+V_tot_erg      = 0.0_dp
+V_af_erg       = 0.0_dp
+A_grounded_erg = 0.0_dp
+A_floating_erg = 0.0_dp
 
 !-------- Enter name of time-slice file --------
 
@@ -351,6 +355,12 @@ call check( nf90_get_att(ncid, ncv, 'false_northing', mapping_false_N_erg) )
 
 #endif
 
+if ( nf90_inq_varid(ncid, 'year2sec', ncv) == nf90_noerr ) then 
+   call check( nf90_get_var(ncid, ncv, year2sec_erg) )
+else
+   year2sec_erg = 0.0_dp
+end if
+
 call check( nf90_inq_varid(ncid, 'time', ncv) )
 call check( nf90_get_var(ncid, ncv, time_erg) )
 
@@ -364,8 +374,8 @@ else
    forcing_flag = 0
    write(6,'(/a)') ' >>> read_nc: Neither variable delta_ts nor glac_index'
    write(6, '(a)') '              available in read file *.nc.'
-   delta_ts_erg   = 0.0_sp
-   glac_index_erg = 0.0_sp
+   delta_ts_erg   = 0.0_dp
+   glac_index_erg = 0.0_dp
 end if
 
 call check( nf90_inq_varid(ncid, 'z_sl', ncv) )
@@ -769,6 +779,7 @@ mapping_reference_longitude_dbl = mapping_reference_longitude_erg
 mapping_false_E_dbl             = mapping_false_E_erg
 mapping_false_N_dbl             = mapping_false_N_erg
 
+year2sec_dbl   = year2sec_erg
 time_dbl       = time_erg
 delta_ts_dbl   = delta_ts_erg
 glac_index_dbl = glac_index_erg
@@ -1238,11 +1249,11 @@ kc_cts_dbl = ceiling(r_kc_cts_dbl,i4b)
 !-------- Interpolation for 2-D and 3-D fields
 !                                   (staggered grid in x-direction) --------
 
-qx_dbl(2*IMAX,:)     = 0.0   ! outside domain -> undefined
-vx_m_sia_dbl(2*IMAX,:) = 0.0   ! outside domain -> undefined
-vx_m_ssa_dbl(2*IMAX,:) = 0.0   ! outside domain -> undefined
-vx_c_dbl(2*IMAX,:,:) = 0.0   ! outside domain -> undefined
-vx_t_dbl(2*IMAX,:,:) = 0.0   ! outside domain -> undefined
+qx_dbl(2*IMAX,:)       = 0.0_sp   ! outside domain -> undefined
+vx_m_sia_dbl(2*IMAX,:) = 0.0_sp   ! outside domain -> undefined
+vx_m_ssa_dbl(2*IMAX,:) = 0.0_sp   ! outside domain -> undefined
+vx_c_dbl(2*IMAX,:,:)   = 0.0_sp   ! outside domain -> undefined
+vx_t_dbl(2*IMAX,:,:)   = 0.0_sp   ! outside domain -> undefined
 
 do jj = 0, 2*JMAX, 2
 
@@ -1350,11 +1361,11 @@ end do
 !-------- Interpolation for 2-D and 3-D fields
 !                                   (staggered grid in y-direction) --------
 
-qy_dbl(:,2*JMAX)     = 0.0   ! outside domain -> undefined
-vy_m_sia_dbl(:,2*JMAX) = 0.0   ! outside domain -> undefined
-vy_m_ssa_dbl(:,2*JMAX) = 0.0   ! outside domain -> undefined
-vy_c_dbl(:,2*JMAX,:) = 0.0   ! outside domain -> undefined
-vy_t_dbl(:,2*JMAX,:) = 0.0   ! outside domain -> undefined
+qy_dbl(:,2*JMAX)       = 0.0_sp   ! outside domain -> undefined
+vy_m_sia_dbl(:,2*JMAX) = 0.0_sp   ! outside domain -> undefined
+vy_m_ssa_dbl(:,2*JMAX) = 0.0_sp   ! outside domain -> undefined
+vy_c_dbl(:,2*JMAX,:)   = 0.0_sp   ! outside domain -> undefined
+vy_t_dbl(:,2*JMAX,:)   = 0.0_sp   ! outside domain -> undefined
 
 do ii = 0, 2*IMAX, 2
 
@@ -1859,9 +1870,19 @@ call check( nf90_put_att(ncid, ncv, 'straight_vertical_longitude_from_pole', &
 call check( nf90_put_att(ncid, ncv, 'false_easting', mapping_false_E_dbl) )
 call check( nf90_put_att(ncid, ncv, 'false_northing', mapping_false_N_dbl) )
 
+!    ---- year2sec
+
+call check( nf90_def_var(ncid, 'year2sec', NF90_DOUBLE, ncv) )
+buffer = 's a-1'
+call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
+buffer = 'seconds_per_year'
+call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)) )
+buffer = '1 year (1 a) in seconds'
+call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
+
 !    ---- time
 
-call check( nf90_def_var(ncid, 'time', NF90_FLOAT, ncv) )
+call check( nf90_def_var(ncid, 'time', NF90_DOUBLE, ncv) )
 buffer = 'a'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'time'
@@ -1873,7 +1894,7 @@ if (forcing_flag == 1) then
 
 !    ---- delta_ts
 
-   call check( nf90_def_var(ncid, 'delta_ts', NF90_FLOAT, ncv) )
+   call check( nf90_def_var(ncid, 'delta_ts', NF90_DOUBLE, ncv) )
    buffer = 'degC'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
    buffer = 'surface_temperature_anomaly'
@@ -1885,7 +1906,7 @@ else if (forcing_flag == 2) then
 
 !    ---- glac_index
 
-   call check( nf90_def_var(ncid, 'glac_index', NF90_FLOAT, ncv) )
+   call check( nf90_def_var(ncid, 'glac_index', NF90_DOUBLE, ncv) )
    buffer = '1'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
    buffer = 'glacial_index'
@@ -1897,7 +1918,7 @@ end if
 
 !    ---- z_sl
 
-call check( nf90_def_var(ncid, 'z_sl', NF90_FLOAT, ncv) )
+call check( nf90_def_var(ncid, 'z_sl', NF90_DOUBLE, ncv) )
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'global_average_sea_level_change'
@@ -1907,7 +1928,7 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 
 !    ---- V_tot
 
-call check( nf90_def_var(ncid, 'V_tot', NF90_FLOAT, ncv) )
+call check( nf90_def_var(ncid, 'V_tot', NF90_DOUBLE, ncv) )
 buffer = 'm3'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'land_ice_volume'
@@ -1917,7 +1938,7 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 
 !    ---- V_af
 
-call check( nf90_def_var(ncid, 'V_af', NF90_FLOAT, ncv) )
+call check( nf90_def_var(ncid, 'V_af', NF90_DOUBLE, ncv) )
 buffer = 'm3'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'land_ice_volume_not_displacing_sea_water'
@@ -1927,7 +1948,7 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 
 !    ---- A_grounded
 
-call check( nf90_def_var(ncid, 'A_grounded', NF90_FLOAT, ncv) )
+call check( nf90_def_var(ncid, 'A_grounded', NF90_DOUBLE, ncv) )
 buffer = 'm2'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'grounded_land_ice_area'
@@ -1937,7 +1958,7 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 
 !    ---- A_floating
 
-call check( nf90_def_var(ncid, 'A_floating', NF90_FLOAT, ncv) )
+call check( nf90_def_var(ncid, 'A_floating', NF90_DOUBLE, ncv) )
 buffer = 'm2'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'floating_ice_shelf_area'
@@ -1948,7 +1969,7 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 !    ---- x (= xi)
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc1d) )
-call check( nf90_def_var(ncid, 'x', NF90_FLOAT, nc1d, ncv) )
+call check( nf90_def_var(ncid, 'x', NF90_DOUBLE, nc1d, ncv) )
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'projection_x_coordinate'
@@ -1960,7 +1981,7 @@ call check( nf90_put_att(ncid, ncv, 'axis', 'x') )
 !    ---- y (= eta)
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc1d) )
-call check( nf90_def_var(ncid, 'y', NF90_FLOAT, nc1d, ncv) )
+call check( nf90_def_var(ncid, 'y', NF90_DOUBLE, nc1d, ncv) )
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'projection_y_coordinate'
@@ -1972,7 +1993,7 @@ call check( nf90_put_att(ncid, ncv, 'axis', 'y') )
 !    ---- sigma_level_c
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(3)), nc1d) )
-call check( nf90_def_var(ncid, 'sigma_level_c', NF90_FLOAT, nc1d, ncv) )
+call check( nf90_def_var(ncid, 'sigma_level_c', NF90_DOUBLE, nc1d, ncv) )
 buffer = 'up'
 call check( nf90_put_att(ncid, ncv, 'positive', trim(buffer)) )
 buffer = 'land_ice_kc_layer_sigma_coordinate'
@@ -1983,7 +2004,7 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 !    ---- sigma_level_t
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(4)), nc1d) )
-call check( nf90_def_var(ncid, 'sigma_level_t', NF90_FLOAT, nc1d, ncv) )
+call check( nf90_def_var(ncid, 'sigma_level_t', NF90_DOUBLE, nc1d, ncv) )
 buffer = 'up'
 call check( nf90_put_att(ncid, ncv, 'positive', trim(buffer)) )
 buffer = 'land_ice_kt_layer_sigma_coordinate'
@@ -1994,7 +2015,7 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 !    ---- sigma_level_r
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(5)), nc1d) )
-call check( nf90_def_var(ncid, 'sigma_level_r', NF90_FLOAT, nc1d, ncv) )
+call check( nf90_def_var(ncid, 'sigma_level_r', NF90_DOUBLE, nc1d, ncv) )
 buffer = 'up'
 call check( nf90_put_att(ncid, ncv, 'positive', trim(buffer)) )
 buffer = 'lithosphere_layer_sigma_coordinate'
@@ -3355,6 +3376,9 @@ write (6,'(/a)') ' Now writing data ...'
 
 call check( nf90_inq_varid(ncid, 'mapping', ncv) )
 call check( nf90_put_var(ncid, ncv, mapping_dbl) )
+
+call check( nf90_inq_varid(ncid, 'year2sec', ncv) )
+call check( nf90_put_var(ncid, ncv, year2sec_dbl) )
 
 call check( nf90_inq_varid(ncid, 'time', ncv) )
 call check( nf90_put_var(ncid, ncv, time_dbl) )
