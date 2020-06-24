@@ -1090,10 +1090,10 @@ call check( nf90_def_var(ncid, 'Q_b_apl', NF90_FLOAT, nc2d, ncv), &
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
-buffer = 'Applied total basal melt'
+buffer = 'applied_total_basal_melt'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
             thisroutine )
-buffer = 'applied_total_basal_melt'
+buffer = 'Applied total basal melt'
 call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
             thisroutine )
 call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
