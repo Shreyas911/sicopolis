@@ -373,8 +373,7 @@ ch_attr_title = 'Time-slice output no. '//ch_ndat//' of simulation ' &
                                         //trim(runname)
 write(unit=11) ch_attr_title
 
-ch_attr_institution = 'Institute of Low Temperature Science, '// &
-                      'Hokkaido University, Sapporo, Japan'
+call set_ch_institution(ch_attr_institution)
 write(unit=11) ch_attr_institution
 
 ch_attr_source = 'SICOPOLIS Version '//VERSION
@@ -413,8 +412,7 @@ buffer = 'Time-slice output no. '//ch_ndat//' of simulation ' &
 call check( nf90_put_att(ncid, NF90_GLOBAL, 'title', trim(buffer)), &
             thisroutine )
 
-buffer = 'Institute of Low Temperature Science, Hokkaido University, '// &
-         'Sapporo, Japan'
+call set_ch_institution(buffer)
 call check( nf90_put_att(ncid, NF90_GLOBAL, 'institution', trim(buffer)), &
             thisroutine )
 
@@ -4837,8 +4835,7 @@ if (firstcall_output2) then
    call check( nf90_put_att(ncid, NF90_GLOBAL, 'title', trim(buffer)), &
                thisroutine )
 
-   buffer = 'Institute of Low Temperature Science, Hokkaido University, '// &
-            'Sapporo, Japan'
+   call set_ch_institution(buffer)
    call check( nf90_put_att(ncid, NF90_GLOBAL, 'institution', trim(buffer)), &
                thisroutine )
 
@@ -6176,8 +6173,7 @@ if (n_core >= 1) then
       call check( nf90_put_att(ncid, NF90_GLOBAL, 'title', trim(buffer)), &
                   thisroutine )
 
-      buffer = 'Institute of Low Temperature Science, Hokkaido University, '// &
-               'Sapporo, Japan'
+      call set_ch_institution(buffer)
       call check( nf90_put_att(ncid, NF90_GLOBAL, 'institution', &
                                trim(buffer)), &
                   thisroutine )
@@ -6901,6 +6897,46 @@ end subroutine output5
 #endif /* Normal vs. OpenAD */
 
   end subroutine borehole
+
+!-------------------------------------------------------------------------------
+!> Set the value of the institution string ch_institution.
+!<------------------------------------------------------------------------------
+  subroutine set_ch_institution(ch_institution)
+
+  implicit none
+
+  character(len=*), intent(out) :: ch_institution
+
+  integer(i4b)       :: istat
+  character(len=256) :: ch_institution_default, ch_value
+
+  ch_institution_default = 'Institute of Low Temperature Science, '// &
+                           'Hokkaido University'
+
+  call get_environment_variable(name='SICO_INSTITUTION', value=ch_value, &
+                                status=istat, trim_name=.true.)
+
+  if (istat /= 0) then 
+
+    ch_institution = ch_institution_default
+
+  else
+
+     if (     (trim(ch_value)=='default') &
+          .or.(trim(ch_value)=='Default') &
+          .or.(trim(ch_value)=='DEFAULT') ) then
+
+       ch_institution = ch_institution_default
+
+     else
+
+       ch_institution = trim(ch_value)
+
+     end if
+
+  end if
+
+  end subroutine set_ch_institution
 
 !-------------------------------------------------------------------------------
 !> Set the value of the auxiliary variable grads_nc_tweaks.
