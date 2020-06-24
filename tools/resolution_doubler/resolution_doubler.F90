@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2020-01-06
+!! 2020-01-15
 !!
 !! @section Copyright
 !!
@@ -1812,8 +1812,7 @@ buffer = 'Time-slice output no. '//trim(ergnum)//' '// &
          'of simulation '//trim(runname)//' (doubled horizontal resolution)'
 call check( nf90_put_att(ncid, NF90_GLOBAL, 'title', trim(buffer)) )
 
-buffer = 'Institute of Low Temperature Science, Hokkaido University, '// &
-         'Sapporo, Japan'
+call set_ch_institution(buffer)
 call check( nf90_put_att(ncid, NF90_GLOBAL, 'institution', trim(buffer)) )
 
 buffer = 'SICOPOLIS Version '//SICO_VERSION
@@ -3840,6 +3839,48 @@ call check( nf90_close(ncid) )
 write (6,'(/a/)') ' Done!'
 
 end subroutine write_nc_double
+
+!-------------------------------------------------------------------------------
+!> Set the value of the institution string ch_institution.
+!<------------------------------------------------------------------------------
+subroutine set_ch_institution(ch_institution)
+
+use resolution_doubler_types
+
+implicit none
+
+character(len=*), intent(out) :: ch_institution
+
+integer(i4b)       :: istat
+character(len=256) :: ch_institution_default, ch_value
+
+ch_institution_default = 'Institute of Low Temperature Science, '// &
+                         'Hokkaido University'
+
+call get_environment_variable(name='SICO_INSTITUTION', value=ch_value, &
+                              status=istat, trim_name=.true.)
+
+if (istat /= 0) then 
+
+  ch_institution = ch_institution_default
+
+else
+
+   if (     (trim(ch_value)=='default') &
+        .or.(trim(ch_value)=='Default') &
+        .or.(trim(ch_value)=='DEFAULT') ) then
+
+     ch_institution = ch_institution_default
+
+   else
+
+     ch_institution = trim(ch_value)
+
+   end if
+
+end if
+
+end subroutine set_ch_institution
 
 !-------------------------------------------------------------------------------
 !> NetCDF error capturing.

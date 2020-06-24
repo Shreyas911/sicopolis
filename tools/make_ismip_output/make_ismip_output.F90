@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2020-01-02
+!! 2020-01-15
 !!
 !! @section Copyright
 !!
@@ -284,11 +284,11 @@ end do   ! n_variable_type = 1, 2
 
 end do   ! n_variable_dim = 1, 2
 
-end program make_ismip_output
+contains
 
-!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!-------------------------------------------------------------------------------
 !> Reading and processing of data of the time-dependent NetCDF data.
-!<++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!<------------------------------------------------------------------------------
 subroutine read_nc(runname, n_variable_dim, n_variable_type, ergnum, n, &
                    mapping_r, &
                    mapping_grid_mapping_name_r, &
@@ -930,9 +930,9 @@ end if
 
 end subroutine read_nc
 
-!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!-------------------------------------------------------------------------------
 !> Initialization of ISMIP6 NetCDF file.
-!<++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!<------------------------------------------------------------------------------
 subroutine init_ismip_netcdf(runname, n_variable_dim, n_variable_type, &
                    mapping_grid_mapping_name_val, &
                    mapping_ellipsoid_val, &
@@ -1029,8 +1029,7 @@ end if
 buffer = 'ISMIP6 output of simulation '//trim(runname)
 call check( nf90_put_att(ncid, NF90_GLOBAL, 'title', trim(buffer)) )
 
-buffer = 'Institute of Low Temperature Science, Hokkaido University, '// &
-         'Sapporo, Japan'
+call set_ch_institution(buffer)
 call check( nf90_put_att(ncid, NF90_GLOBAL, 'institution', trim(buffer)) )
 
 buffer = 'SICOPOLIS Version '//SICO_VERSION
@@ -1921,18 +1920,18 @@ call check( nf90_enddef(ncid) )
 
 end subroutine init_ismip_netcdf
 
-!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!-------------------------------------------------------------------------------
 !> Writing of ISMIP6 NetCDF file.
-!<++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!<------------------------------------------------------------------------------
 subroutine write_ismip_netcdf(runname, n_variable_dim, n_variable_type, &
-                    n, ncid, mapping_val, &
-                    time_val, year_val, time_bnds_val, x_val, y_val, &
+                    n, ncid, mapping_aux, &
+                    time_aux, year_aux, time_bnds_val, x_val, y_val, &
                     lon_val, lat_val, &
-                    lim_val, limnsw_val, iareagr_val, iareafl_val, &
-                    tendacabf_val, &
-                    tendlibmassbf_val, tendlibmassbffl_val, &
-                    tendlicalvf_val, tendlifmassbf_val, &
-                    tendligroundf_val, &
+                    lim_aux, limnsw_aux, iareagr_aux, iareafl_aux, &
+                    tendacabf_aux, &
+                    tendlibmassbf_aux, tendlibmassbffl_aux, &
+                    tendlicalvf_aux, tendlifmassbf_aux, &
+                    tendligroundf_aux, &
                     lithk_val, orog_val, base_val, topg_val, &
                     acabf_val, &
                     libmassbf_val, libmassbfgr_val, libmassbffl_val, &
@@ -1955,23 +1954,23 @@ implicit none
 character(len=256), intent(in) :: runname
 integer(i4b),       intent(in) :: n_variable_dim, n_variable_type, n
 integer(i4b),       intent(in) :: ncid   ! ID of the NetCDF file
-integer(i1b),       intent(in) :: mapping_val(1)
-real(dp),           intent(in) :: time_val(1), year_val(1)
+integer(i1b),       intent(in) :: mapping_aux
+real(dp),           intent(in) :: time_aux, year_aux
 real(dp),           intent(in) :: time_bnds_val(2)
 real(dp),           intent(in) :: x_val(0:IMAX)
 real(dp),           intent(in) :: y_val(0:JMAX)
 real(dp),           intent(in) :: lon_val(0:IMAX,0:JMAX)
 real(dp),           intent(in) :: lat_val(0:IMAX,0:JMAX)
-real(dp),           intent(in) :: lim_val(1)
-real(dp),           intent(in) :: limnsw_val(1)
-real(dp),           intent(in) :: iareagr_val(1)
-real(dp),           intent(in) :: iareafl_val(1)
-real(dp),           intent(in) :: tendacabf_val(1)
-real(dp),           intent(in) :: tendlibmassbf_val(1)
-real(dp),           intent(in) :: tendlibmassbffl_val(1)
-real(dp),           intent(in) :: tendlicalvf_val(1)
-real(dp),           intent(in) :: tendlifmassbf_val(1)
-real(dp),           intent(in) :: tendligroundf_val(1)
+real(dp),           intent(in) :: lim_aux
+real(dp),           intent(in) :: limnsw_aux
+real(dp),           intent(in) :: iareagr_aux
+real(dp),           intent(in) :: iareafl_aux
+real(dp),           intent(in) :: tendacabf_aux
+real(dp),           intent(in) :: tendlibmassbf_aux
+real(dp),           intent(in) :: tendlibmassbffl_aux
+real(dp),           intent(in) :: tendlicalvf_aux
+real(dp),           intent(in) :: tendlifmassbf_aux
+real(dp),           intent(in) :: tendligroundf_aux
 real(dp),           intent(in) :: lithk_val(0:IMAX,0:JMAX)
 real(dp),           intent(in) :: orog_val(0:IMAX,0:JMAX)
 real(dp),           intent(in) :: base_val(0:IMAX,0:JMAX)
@@ -2027,6 +2026,33 @@ integer(i4b) :: nc1cnt(1), nc2cnt(2), nc3cnt(3)
 character(len= 16) :: ch_date, ch_time, ch_zone
 character(len=256) :: filename, buffer
 character          :: ch_empty
+
+integer(i1b) :: mapping_val(1)
+real(dp)     :: time_val(1), year_val(1)
+real(dp)     :: lim_val(1)
+real(dp)     :: limnsw_val(1)
+real(dp)     :: iareagr_val(1)
+real(dp)     :: iareafl_val(1)
+real(dp)     :: tendacabf_val(1)
+real(dp)     :: tendlibmassbf_val(1)
+real(dp)     :: tendlibmassbffl_val(1)
+real(dp)     :: tendlicalvf_val(1)
+real(dp)     :: tendlifmassbf_val(1)
+real(dp)     :: tendligroundf_val(1)
+
+mapping_val(1)         = mapping_aux
+time_val(1)            = time_aux
+year_val(1)            = year_aux
+lim_val(1)             = lim_aux
+limnsw_val(1)          = limnsw_aux
+iareagr_val(1)         = iareagr_aux
+iareafl_val(1)         = iareafl_aux
+tendacabf_val(1)       = tendacabf_aux
+tendlibmassbf_val(1)   = tendlibmassbf_aux
+tendlibmassbffl_val(1) = tendlibmassbffl_aux
+tendlicalvf_val(1)     = tendlicalvf_aux
+tendlifmassbf_val(1)   = tendlifmassbf_aux
+tendligroundf_val(1)   = tendligroundf_aux
 
 !-------- Writing of data on NetCDF file --------
 
@@ -2469,9 +2495,9 @@ end if
 
 end subroutine write_ismip_netcdf
 
-!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!-------------------------------------------------------------------------------
 !> Closing of ISMIP6 NetCDF file.
-!<++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!<------------------------------------------------------------------------------
 subroutine close_ismip_netcdf(ncid)
 
 use make_ismip_output_common
@@ -2491,9 +2517,51 @@ write(6,'(a/)') ' Done!'
 
 end subroutine close_ismip_netcdf
 
-!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!-------------------------------------------------------------------------------
+!> Set the value of the institution string ch_institution.
+!<------------------------------------------------------------------------------
+subroutine set_ch_institution(ch_institution)
+
+use make_ismip_output_common
+
+implicit none
+
+character(len=*), intent(out) :: ch_institution
+
+integer(i4b)       :: istat
+character(len=256) :: ch_institution_default, ch_value
+
+ch_institution_default = 'Institute of Low Temperature Science, '// &
+                         'Hokkaido University'
+
+call get_environment_variable(name='SICO_INSTITUTION', value=ch_value, &
+                              status=istat, trim_name=.true.)
+
+if (istat /= 0) then 
+
+  ch_institution = ch_institution_default
+
+else
+
+   if (     (trim(ch_value)=='default') &
+        .or.(trim(ch_value)=='Default') &
+        .or.(trim(ch_value)=='DEFAULT') ) then
+
+     ch_institution = ch_institution_default
+
+   else
+
+     ch_institution = trim(ch_value)
+
+   end if
+
+end if
+
+end subroutine set_ch_institution
+
+!-------------------------------------------------------------------------------
 !> NetCDF error capturing.
-!<++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!<------------------------------------------------------------------------------
 subroutine check(status)
 
 use make_ismip_output_common
@@ -2509,6 +2577,10 @@ if (status /= nf90_noerr) then
 end if
 
 end subroutine check  
+
+!-------- End of program --------
+
+end program make_ismip_output
 
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !                        End of make_ismip_output.F90
