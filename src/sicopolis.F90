@@ -4,8 +4,8 @@
 !             (SImulation COde for POLythermal Ice Sheets)
 !
 #define       MODEL_SICOPOLIS
-#define       VERSION '5.1'
-#define       DATE    '2019-12-30'
+#define       VERSION '5-dev'
+#define       DATE    '2020-01-02'
 !
 !> @mainpage
 !!
@@ -76,7 +76,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2019 Ralf Greve\n
+!! Copyright 2009-2020 Ralf Greve\n
 !! (with contributions by Jorge Bernales, Heinz Blatter, Reinhard Calov,
 !! Thorben Dunse, Ben Galton-Fenzi, Thomas Goelles, Philipp Hancke,
 !! Nina Kirchner, Sascha Knell, Alex Robinson, Tatsuru Sato, Malte Thoma,
@@ -103,7 +103,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2019 Ralf Greve
+!! Copyright 2009-2020 Ralf Greve
 !!
 !! @section License
 !!

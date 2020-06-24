@@ -1,18 +1,18 @@
-all: clean SICOPOLIS_V51_Quick_Start.pdf
+all: clean SICOPOLIS_V5dev_Quick_Start.pdf
 
-pdf: SICOPOLIS_V51_Quick_Start.pdf
+pdf: SICOPOLIS_V5dev_Quick_Start.pdf
 
-SICOPOLIS_V51_Quick_Start.pdf: SICOPOLIS_V51_Quick_Start.tex
-	pdflatex SICOPOLIS_V51_Quick_Start.tex
-	pdflatex SICOPOLIS_V51_Quick_Start.tex
-	pdflatex SICOPOLIS_V51_Quick_Start.tex
-	bibtex SICOPOLIS_V51_Quick_Start
-	bibtex SICOPOLIS_V51_Quick_Start
-	bibtex SICOPOLIS_V51_Quick_Start
-	pdflatex SICOPOLIS_V51_Quick_Start.tex
-	pdflatex SICOPOLIS_V51_Quick_Start.tex
-	pdflatex SICOPOLIS_V51_Quick_Start.tex
+SICOPOLIS_V5dev_Quick_Start.pdf: SICOPOLIS_V5dev_Quick_Start.tex
+	pdflatex SICOPOLIS_V5dev_Quick_Start.tex
+	pdflatex SICOPOLIS_V5dev_Quick_Start.tex
+	pdflatex SICOPOLIS_V5dev_Quick_Start.tex
+	bibtex SICOPOLIS_V5dev_Quick_Start
+	bibtex SICOPOLIS_V5dev_Quick_Start
+	bibtex SICOPOLIS_V5dev_Quick_Start
+	pdflatex SICOPOLIS_V5dev_Quick_Start.tex
+	pdflatex SICOPOLIS_V5dev_Quick_Start.tex
+	pdflatex SICOPOLIS_V5dev_Quick_Start.tex
 
 clean:
 	rm -f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.bbl *.blg \
-              *.log *.out SICOPOLIS_V51_Quick_Start.pdf
+              *.log *.out SICOPOLIS_V5dev_Quick_Start.pdf

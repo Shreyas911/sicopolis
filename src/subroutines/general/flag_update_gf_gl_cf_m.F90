@@ -9,7 +9,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2018-2019 Ralf Greve
+!! Copyright 2018-2020 Ralf Greve
 !!
 !! @section License
 !!

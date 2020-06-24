@@ -41,7 +41,7 @@
 \rule{0mm}{15mm}
 
 \begin{huge}
-  \textbf{SICOPOLIS V5.1\\[-0.5ex]
+  \textbf{SICOPOLIS V5-dev\\[-0.5ex]
           -- Quick Start Manual --}\\[-0.5ex]
 \end{huge}
 
@@ -60,7 +60,7 @@
 
 \vfill
 
-\begin{large}December 30, 2019\end{large}
+\begin{large}\today\end{large}
 
 \end{center}
 
@@ -76,7 +76,7 @@
 
 \begin{small}
 
-\noindent{}Copyright 2009--2019 Ralf Greve\\
+\noindent{}Copyright 2009--2020 Ralf Greve\\
 (with contributions by Jorge Bernales, Heinz Blatter, Reinhard Calov, Thorben Dunse, Ben Galton-Fenzi, Thomas G\"olles, Philipp Hancke, Nina Kirchner, Sascha Knell, Alex Robinson, Fuyuki Saito, Tatsuru Sato, Malte Thoma, Roland Warner)
 
 \vspace*{1.5ex}
@@ -123,32 +123,32 @@ So far, the Intel and GNU Fortran compilers are supported. Make sure that the en
 
 \begin{itemize}
 
-\item \textbf{Option 1: Using subversion [recommended]}
+\item \textbf{Using subversion}
 
 The subversion repository of SICOPOLIS is kindly hosted by the FusionForge system AWIForge of the Alfred Wegener Institute for Polar and Marine Research (AWI) in Bremerhaven, Germany (front page: https://swrepo1.awi.de/projects/sicopolis/).
 
-Check out from the subversion repository:
+Check out the latest revision (``bleeding edge'') from the subversion repository:
 
 \begin{small}
 \hspace*{3.33mm}\verb+svn checkout --username anonsvn --password anonsvn \+
 \\[-1ex]
-\hspace*{6.67mm}\verb+https://swrepo1.awi.de/svn/sicopolis/tags/version51 sicopolis+
+\hspace*{6.67mm}\verb+https://swrepo1.awi.de/svn/sicopolis/trunk sicopolis+
 \\
 \hspace*{3.33mm}(or username/password from your own AWIForge account)
 \end{small}
 
-You should then have a new directory ``sicopolis'' that contains the entire program package.
+Alternatively, check out any previous revision no.\ REVNUM\\
+(changelog: http://tinyurl.com/commit-logs-sico-trunk/):
 
-\item \textbf{Option 2: Downloading a tarball}
+\begin{small}
+\hspace*{3.33mm}\verb+svn checkout --username anonsvn --password anonsvn -r REVNUM \+
+\\[-1ex]
+\hspace*{6.67mm}\verb+https://swrepo1.awi.de/svn/sicopolis/trunk sicopolis+
+\\
+\hspace*{3.33mm}(or username/password from your own AWIForge account)
+\end{small}
 
-Download the gzipped tar archive sicopolis\_v51.tgz from the SICOPOLIS web page (http://www.sicopolis.net/).
-
-Unpacking:
-
-\hspace*{10mm}\verb+tar -x -v -z -f sicopolis_v51.tgz+
-
-You should then have a new directory ``sicopolis'' that contains the entire program package.
-
+Either way, you should then have a new directory ``sicopolis'' that contains the entire program package.
 
 \end{itemize}
 
@@ -678,7 +678,7 @@ v5\_ant64\_b2\_future09\_ctrl        &  $100\;\mathrm{ a}$\hspace*{1.47em}
                                      & $2\,/\,10\;\mathrm{ a}^{\dagger}$\hspace*{0.6em}
                                      &  7&$0\;\mathrm{sec}$ \\ \hline
 \end{tabular}
-\caption{Model times, time steps and computing (CPU) times for the EISMINT, Greenland and Antarctica simulations contained in the script multi\_sico\_1.sh, run with SICOPOLIS V5.1 and the Intel Fortran Compiler 17.0.1 for Linux (optimization options -xHOST -O3 -no-prec-div) on a $2\times{}14$-Core Intel Xeon E5-2690~v4 (2.6~GHz) PC under openSUSE Leap 42.3.
+\caption{Model times, time steps and computing (CPU) times for the EISMINT, Greenland and Antarctica simulations contained in the script multi\_sico\_1.sh, run with SICOPOLIS V5-dev (revision 1392) and the Intel Fortran Compiler 17.0.1 for Linux (optimization options -xHOST -O3 -no-prec-div) on a $2\times{}14$-Core Intel Xeon E5-2690~v4 (2.6~GHz) PC under openSUSE Leap 42.3.
 \protect\\
 {}$^\dagger$: If one value is given, this is the common dynamic (velocity, ice thickness) and thermodynamic (temperature, water content, age) time step. If two values are given (marked by the dagger ($^\dagger$) symbol), the first one is the dynamic, the second one the thermodynamic time step.
 \protect\\

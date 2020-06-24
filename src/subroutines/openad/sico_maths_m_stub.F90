@@ -8,7 +8,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2018 Ralf Greve, Tatsuru Sato
+!! Copyright 2009-2020 Ralf Greve, Tatsuru Sato
 !!
 !! @section License
 !!

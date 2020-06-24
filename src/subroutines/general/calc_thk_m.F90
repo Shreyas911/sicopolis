@@ -8,7 +8,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2019 Ralf Greve, Reinhard Calov, Tatsuru Sato
+!! Copyright 2009-2020 Ralf Greve, Reinhard Calov, Tatsuru Sato
 !!
 !! @section License
 !!
