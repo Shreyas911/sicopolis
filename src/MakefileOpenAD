@@ -22,10 +22,10 @@ LIS_TEMPATE=./oad_template_sico_lis_solver.f90
 LISFLAG=-DBUILD_LIS -I${LISDIR}/include/
 endif
 
-F90FLAGS= -O3 -g -mcmodel=medium -fno-range-check -ffpe-trap=invalid,zero 
+F90FLAGS= -O3 -g -DRUN_SPECS_HEADER=\"sico_specs.h\" -mcmodel=medium -fno-range-check -ffpe-trap=invalid,zero 
 CFLAGS= -O3 -g
 
-#F90FLAGS= -O0 -g -mcmodel=medium -fno-range-check -ffpe-trap=invalid,zero
+#F90FLAGS= -O0 -g -DRUN_SPECS_HEADER=\"sico_specs.h\" -mcmodel=medium -fno-range-check -ffpe-trap=invalid,zero
 #CFLAGS= -O0 -g
 
 SRC_SICO_PASSIVE=\
@@ -76,7 +76,7 @@ subroutines/openad/ctrl_m.F90
 SRC=\
 sicopolis.F90
 
-CPPCMD = cat $< |  cpp -DALLOW_OPENAD_DIFFERENTIATE=1 -DALLOW_OPENAD=1 -I../ -I./ -traditional-cpp -P 
+CPPCMD = cat $< |  cpp -DRUN_SPECS_HEADER=\"sico_specs.h\" -DALLOW_OPENAD_DIFFERENTIATE=1 -DALLOW_OPENAD=1 -I../ -I./ -traditional-cpp -P 
 
 numCore.f90: numCore.F90
 	$(CPPCMD) > numcore_temp.F90
