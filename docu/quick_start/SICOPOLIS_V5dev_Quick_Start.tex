@@ -17,6 +17,17 @@
 
 % \graphicspath{{../Figs/}}
 
+\usepackage{hyperref}
+\usepackage{hyperxmp}
+\hypersetup{
+    pdfauthor={Ralf Greve},
+    pdftitle={SICOPOLIS V5-dev - Quick Start Manual},
+    pdfsubject={Ice sheet model},
+    pdfkeywords={Ice sheet, Model, Modelling, %
+                 Open source, Free software, SICOPOLIS},
+    pdfcopyright={GNU General Public License version 3 or later},
+    pdflicenseurl={http://www.gnu.org/licenses/}}
+
 % Positioning of figures
 % (values chosen such that figure is inserted at the place of the call
 % if possible):
@@ -179,6 +190,8 @@ If you wish to create output in native binary format rather than in NetCDF forma
 If LIS\_FLAG=``true'', set LISHOME to the correct path of your Lis installation.
 
 \item Depending on your system, some additional settings might have to be added in sico\_configs.sh (\verb+module load+\, commands for dynamic loading etc.).
+
+\item Locate the file sico\_environment.sh in the directory sicopolis/runs, open it with a text editor, and replace the ``Default'' entry for SICO\_INSTITUTION by the name of your institution (max.\ 256 characters).
 
 \end{enumerate}
 
