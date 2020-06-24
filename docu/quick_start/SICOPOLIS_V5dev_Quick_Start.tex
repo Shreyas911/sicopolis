@@ -413,7 +413,7 @@ Subdirectory \textbf{doxygen}: documentation to be created by Doxygen\\
 
 \item \textbf{tools}:
 
-See Sects.~\ref{sect_sicograph} and \ref{sect_tools}.
+See Sect.~\ref{sect_tools}.
 
 \item \textbf{license}:
 
@@ -460,9 +460,9 @@ Output files are written by default to the directory sicopolis/sico\_out/\emph{r
 
 ASCII file that lists the main specifications of simulation \emph{run\_name}.
 
-\item \textbf{run\_name.ser}:
+\item \textbf{run\_name.ser, run\_name\_ser.nc}:
 
-Time-series file (ASCII) that contains global parameters:
+Time-series files (ASCII, NetCDF) that contain scalar variables:
 \begin{itemize}
 \item Time, t
 \item Surface temperature anomaly, D\_Ts, or glacial index, glac\_ind (forcing)
@@ -481,11 +481,12 @@ Time-series file (ASCII) that contains global parameters:
 \item Maximum surface elevation, zs\_max
 \item Maximum surface speed, vs\_max
 \item Maximum basal temperature (relative to pmp), Tbh\_max
+\item (Some more in the NetCDF file, try \verb+ncdump -h run_name_ser.nc+)
 \end{itemize}
 
-\item \textbf{run\_name.core}:
+\item \textbf{run\_name.core, run\_name\_core.nc}:
 
-Time-series file (ASCII) that contains for selected locations xxx:
+Time-series files (ASCII, NetCDF) that contain for selected locations xxx:
 \begin{itemize}
 \item Time, t
 \item Surface temperature anomaly, D\_Ts, or glacial index, glac\_ind (forcing)
@@ -493,6 +494,7 @@ Time-series file (ASCII) that contains for selected locations xxx:
 \item Thickness, H\_xxx
 \item Surface velocity, v\_xxx
 \item Basal temperature, T\_xxx
+\item (Some more in the NetCDF file, try \verb+ncdump -h run_name_core.nc+)
 \end{itemize}
 
 For the Greenland ice sheet, these data are written for seven locations:
@@ -515,70 +517,12 @@ v5\_grl20\_ss25ka0001.nc, v5\_grl20\_ss25ka0002.nc and v5\_grl20\_ss25ka0003.nc,
 
 \clearpage
 
-\section{Plotting with SICOGRAPH}
-\label{sect_sicograph}
-
-The output described in Sect.~\ref{sect_output} can be visualized with any plotting tool at the user's preference. One possibility is to use SICOGRAPH, which is part of the SICOPOLIS package and based on the Generic Mapping Tools GMT (http://gmt.soest.hawaii.edu/).
-
-\subsection{Installation}
-
-\begin{enumerate}
-
-\item If you do not have an installation of GMT version 4.x yet, download and install the latest version according to the instructions on the GMT web site.
-
-\item SICOGRAPH is part of the SICOPOLIS package. You'll find it in the directory sicopolis/tools/sicograph\,.
-
-\end{enumerate}
-
-\subsection{Producing plots}
-
-In order to plot the output of simulation v5\_grl20\_ss25ka, go to the directory sicopolis/tools and execute the script tools.sh interactively:
-\\
-\hspace*{10mm}\verb+./tools.sh -p sicograph -m v5_grl20_ss25ka+
-\\
-(bash required; accordingly for the other simulations).
-\\
-For further options, try \verb+./tools.sh -h+.
-
-\par\vspace*{1ex}\par
-
-\noindent{}You'll get a menu that allows you to choose the type of plot you wish to produce. For example, try the option
-\\
-\hspace*{10mm}(1) Ice-surface topography
-\\
-and enter
-\\
-\hspace*{10mm}Number of time-slice file (with leading zeros, 4 digits) $>$ \verb+0003+
-\\
-\hspace*{10mm}Time-slice file contains:\\
-\hspace*{14mm} (0) only 2-d arrays, (1) full set of 2-d and 3-d arrays $>$ \verb+1+
-\\
-\hspace*{10mm}Plot (1) with or (2) without colour bar? $>$ \verb+1+
-\\
-\hspace*{10mm}Plot (1) with or (2) without contour labels? $>$ \verb+1+
-\\
-You will find the plot in the subdirectory sicograph/gmt\_scripts/plots as file \linebreak{}v5\_grl20\_ss25ka0003\_zs.eps (in EPS format). As a second example, try
-\\
-\hspace*{10mm}(41) Time series
-\\
-and in the following sub-menu choose
-\\
-\hspace*{10mm}(5) Total ice volume
-\\
-This produces the file v5\_grl20\_ss25ka\_V\_tot.eps in the subdirectory
-\linebreak
-sicograph/gmt\_scripts/plots.
-
-\subsection{Manipulating plot appearance}
-
-For all types of plots, the files in the subdirectory sicograph/parameter\_files control the limits and labels of the $x$- and $y$-axes. In addition, for the plan-view plots, the files in the subdirectory sicograph/gmt\_scripts/cpt control the colour scales (*.cpt) and contour levels (*.zzz). If a file is missing, the corresponding parameters are computed automatically.
-
 % \vfill
 
-\section{Plotting with MATLAB}
-\label{sect_matlab}
+\section{Plotting}
+\label{sect_plotting}
 
-NetCDF output from SICOPOLIS can be visualized by MATLAB, which has an extensive library for NetCDF files (https://www.mathworks.com/help/matlab/ref/netcdf.html). For instance, the following script plots the final surface topography of the Greenland simulation v5\_grl20\_ss25ka (credit: Mathieu Morlighem, University of California Irvine).
+The output described in Sect.~\ref{sect_output} can be visualized with any plotting tool at the user's preference. Ncview (http://meteora.ucsd.edu/$\sim${}pierce/ncview\_home\_page.html) is a very nice browser for NetCDF files to get a quick and easy look. For more sophisticated plots, one possibility is to use MATLAB, which has an extensive library for NetCDF files (https://www.mathworks.com/help/matlab/network-common-data-form.html). For instance, the following script plots the final surface topography of the Greenland simulation v5\_grl20\_ss25ka (credit: Mathieu Morlighem, University of California Irvine).
 
 \vspace*{2ex}
 
@@ -603,7 +547,7 @@ NetCDF output from SICOPOLIS can be visualized by MATLAB, which has an extensive
 \section{Some useful tools}
 \label{sect_tools}
 
-In addition to SICOGRAPH, the directory sicopolis/tools contains some further useful tools.
+The directory sicopolis/tools contains some useful tools.
 
 \subsection{Program make\_ismip\_output}
 \label{ssect_make_ismip_output}
