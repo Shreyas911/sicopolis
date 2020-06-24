@@ -10,7 +10,7 @@ LANG=C
 #
 #  Authors: Malte Thoma, Thomas Goelles, Ralf Greve, Fuyuki Saito
 #
-#  Date: 2020-04-01
+#  Date: 2020-04-02
 #
 #    Execute script 
 #       ./tools.sh -p <program> -m <run_name> [further options...]
@@ -83,7 +83,7 @@ function check_args()
       # ls *.F90 | sed 's/.F90//g' 
       info "make_ismip_output"
       info "resolution_doubler"
-      info "sicograph"
+      # info "sicograph"
       exit 1
    fi
    if [ ! -e $PROGNAME/$PROGNAME.F90 ]; then 
