@@ -4906,10 +4906,24 @@ if (firstcall_output2) then
 
    end if
 
+!    ---- year2sec
+
+   call check( nf90_def_var(ncid, 'year2sec', NF90_DOUBLE, ncv), &
+            thisroutine )
+   buffer = 's a-1'
+   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
+               thisroutine )
+   buffer = 'seconds_per_year'
+   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
+               thisroutine )
+   buffer = '1 year (1 a) in seconds'
+   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
+               thisroutine )
+
 !    ---- Time
 
    call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 't', NF90_FLOAT, nc1d, ncv), &
+   call check( nf90_def_var(ncid, 't', NF90_DOUBLE, nc1d, ncv), &
                thisroutine )
    buffer = 'a'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
@@ -4927,7 +4941,7 @@ if (firstcall_output2) then
 !    ---- Time offset
 
       call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-      call check( nf90_def_var(ncid, 't_add_offset', NF90_FLOAT, nc1d, ncv), &
+      call check( nf90_def_var(ncid, 't_add_offset', NF90_DOUBLE, nc1d, ncv), &
                   thisroutine )
       buffer = 'a'
       call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
@@ -5734,21 +5748,30 @@ call error(errormsg)
 
 !  ------ Writing of data on NetCDF file
 
-if (firstcall_output2.and.grads_nc_tweaks) then
-
-   nc1cor = (/ 1 /)
-
-   call check( nf90_inq_varid(ncid, 'x', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, 0.0_sp, start=nc1cor), thisroutine )
-
-   call check( nf90_inq_varid(ncid, 'y', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, 0.0_sp, start=nc1cor), thisroutine )
-
-   call check( nf90_sync(ncid), thisroutine )
-
-end if
-
 if (.not.flag_compute_flux_vars_only) then
+
+   if (firstcall_output2) then
+
+      if (grads_nc_tweaks) then
+
+         nc1cor = (/ 1 /)
+
+         call check( nf90_inq_varid(ncid, 'x', ncv), thisroutine )
+         call check( nf90_put_var(ncid, ncv, 0.0_sp, &
+                                             start=nc1cor), thisroutine )
+
+         call check( nf90_inq_varid(ncid, 'y', ncv), thisroutine )
+         call check( nf90_put_var(ncid, ncv, 0.0_sp, &
+                                             start=nc1cor), thisroutine )
+
+      end if
+
+      call check( nf90_inq_varid(ncid, 'year2sec', ncv), thisroutine )
+      call check( nf90_put_var(ncid, ncv, year2sec), thisroutine )
+
+      call check( nf90_sync(ncid), thisroutine )
+
+   end if
 
    nc1cor(1) = counter
    ! nc1cnt(1) = 1   ! (not needed, and causes troubles for whatever reason)
@@ -5756,17 +5779,15 @@ if (.not.flag_compute_flux_vars_only) then
    call check( nf90_inq_varid(ncid, 't', ncv), thisroutine )
 
    if (.not.grads_nc_tweaks) then
-      call check( nf90_put_var(ncid, ncv, real(time_val,sp), &
+      call check( nf90_put_var(ncid, ncv, time_val, &
                                start=nc1cor), thisroutine )
    else
-      call check( nf90_put_var(ncid, ncv, &
-                               real(time_val-time_add_offset_val,sp), &
+      call check( nf90_put_var(ncid, ncv, time_val-time_add_offset_val, &
                                start=nc1cor), thisroutine )
                             ! this makes sure that all times are >=0
                             ! (GrADS doesn't like negative numbers)
       call check( nf90_inq_varid(ncid, 't_add_offset', ncv), thisroutine )
-      call check( nf90_put_var(ncid, ncv, &
-                               real(time_add_offset_val,sp), &
+      call check( nf90_put_var(ncid, ncv, time_add_offset_val, &
                                start=nc1cor), thisroutine )
    end if
 
@@ -5953,7 +5974,7 @@ real(dp), intent(in) :: time, dxi, deta, delta_ts, glac_index, z_sl
 
 integer(i4b)                        :: i, j, n
 integer(i4b)                        :: ios
-real(sp), dimension(:), allocatable :: r_n_core
+real(dp), dimension(:), allocatable :: r_n_core
 real(dp)                            :: time_val
 real(dp), dimension(0:JMAX,0:IMAX)  :: field
 real(dp), dimension(:), allocatable :: H_core, temp_b_core, &
@@ -5994,7 +6015,7 @@ if (n_core >= 1) then
 
 !  ------Ice core number
 
-      r_n_core(n) = real(n,sp)
+      r_n_core(n) = real(n,dp)
 
 !  ------ Ice thickness
 
@@ -6226,10 +6247,24 @@ if (n_core >= 1) then
 
       end if
 
+!    ---- year2sec
+
+      call check( nf90_def_var(ncid, 'year2sec', NF90_DOUBLE, ncv), &
+               thisroutine )
+      buffer = 's a-1'
+      call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'seconds_per_year'
+      call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = '1 year (1 a) in seconds'
+      call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
+
 !    ---- Time
 
       call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-      call check( nf90_def_var(ncid, 't', NF90_FLOAT, nc1d, ncv), &
+      call check( nf90_def_var(ncid, 't', NF90_DOUBLE, nc1d, ncv), &
                   thisroutine )
       buffer = 'a'
       call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
@@ -6248,7 +6283,7 @@ if (n_core >= 1) then
 
          call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
          call check( nf90_def_var(ncid, 't_add_offset', &
-                                  NF90_FLOAT, nc1d, ncv), &
+                                  NF90_DOUBLE, nc1d, ncv), &
                      thisroutine )
          buffer = 'a'
          call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
@@ -6267,7 +6302,7 @@ if (n_core >= 1) then
 !    ---- Ice core number
 
       call check( nf90_inq_dimid(ncid, 'n', nc1d), thisroutine )
-      call check( nf90_def_var(ncid, 'n', NF90_FLOAT, nc1d, ncv), &
+      call check( nf90_def_var(ncid, 'n', NF90_DOUBLE, nc1d, ncv), &
                   thisroutine )
       buffer = '1'
       call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
@@ -6439,27 +6474,32 @@ if (n_core >= 1) then
 
 !  ------ Writing of data on NetCDF file
 
-   if (firstcall_output4.and.grads_nc_tweaks) then
-
-      nc1cor = (/ 1 /)
-
-      call check( nf90_inq_varid(ncid, 'x', ncv), thisroutine )
-      call check( nf90_put_var(ncid, ncv, 0.0_sp, start=nc1cor), thisroutine )
-
-      call check( nf90_inq_varid(ncid, 'y', ncv), thisroutine )
-      call check( nf90_put_var(ncid, ncv, 0.0_sp, start=nc1cor), thisroutine )
-
-      call check( nf90_sync(ncid), thisroutine )
-
-   end if
-
    if (firstcall_output4) then
+
+      if (grads_nc_tweaks) then
+
+         nc1cor = (/ 1 /)
+
+         call check( nf90_inq_varid(ncid, 'x', ncv), thisroutine )
+         call check( nf90_put_var(ncid, ncv, 0.0_sp, &
+                                             start=nc1cor), thisroutine )
+
+         call check( nf90_inq_varid(ncid, 'y', ncv), thisroutine )
+         call check( nf90_put_var(ncid, ncv, 0.0_sp, &
+                                             start=nc1cor), thisroutine )
+
+      end if
 
       nc1cor = (/ 1 /)
 
       call check( nf90_inq_varid(ncid, 'n', ncv), thisroutine )
       call check( nf90_put_var(ncid, ncv, r_n_core, &
                                start=nc1cor), thisroutine )
+
+      call check( nf90_inq_varid(ncid, 'year2sec', ncv), thisroutine )
+      call check( nf90_put_var(ncid, ncv, year2sec), thisroutine )
+
+      call check( nf90_sync(ncid), thisroutine )
 
    end if
 
@@ -6474,17 +6514,15 @@ if (n_core >= 1) then
    call check( nf90_inq_varid(ncid, 't', ncv), thisroutine )
 
    if (.not.grads_nc_tweaks) then
-      call check( nf90_put_var(ncid, ncv, real(time_val,sp), &
+      call check( nf90_put_var(ncid, ncv, time_val, &
                                start=nc1cor), thisroutine )
    else
-      call check( nf90_put_var(ncid, ncv, &
-                               real(time_val-time_add_offset_val,sp), &
+      call check( nf90_put_var(ncid, ncv, time_val-time_add_offset_val, &
                                start=nc1cor), thisroutine )
                             ! this makes sure that all times are >=0
                             ! (GrADS doesn't like negative numbers)
       call check( nf90_inq_varid(ncid, 't_add_offset', ncv), thisroutine )
-      call check( nf90_put_var(ncid, ncv, &
-                               real(time_add_offset_val,sp), &
+      call check( nf90_put_var(ncid, ncv, time_add_offset_val, &
                                start=nc1cor), thisroutine )
    end if
 
