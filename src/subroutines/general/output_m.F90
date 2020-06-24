@@ -5748,30 +5748,30 @@ call error(errormsg)
 
 !  ------ Writing of data on NetCDF file
 
-if (.not.flag_compute_flux_vars_only) then
+if (firstcall_output2) then
 
-   if (firstcall_output2) then
+   if (grads_nc_tweaks) then
 
-      if (grads_nc_tweaks) then
+      nc1cor = (/ 1 /)
 
-         nc1cor = (/ 1 /)
+      call check( nf90_inq_varid(ncid, 'x', ncv), thisroutine )
+      call check( nf90_put_var(ncid, ncv, 0.0_sp, &
+                                          start=nc1cor), thisroutine )
 
-         call check( nf90_inq_varid(ncid, 'x', ncv), thisroutine )
-         call check( nf90_put_var(ncid, ncv, 0.0_sp, &
-                                             start=nc1cor), thisroutine )
-
-         call check( nf90_inq_varid(ncid, 'y', ncv), thisroutine )
-         call check( nf90_put_var(ncid, ncv, 0.0_sp, &
-                                             start=nc1cor), thisroutine )
-
-      end if
-
-      call check( nf90_inq_varid(ncid, 'year2sec', ncv), thisroutine )
-      call check( nf90_put_var(ncid, ncv, year2sec), thisroutine )
-
-      call check( nf90_sync(ncid), thisroutine )
+      call check( nf90_inq_varid(ncid, 'y', ncv), thisroutine )
+      call check( nf90_put_var(ncid, ncv, 0.0_sp, &
+                                          start=nc1cor), thisroutine )
 
    end if
+
+   call check( nf90_inq_varid(ncid, 'year2sec', ncv), thisroutine )
+   call check( nf90_put_var(ncid, ncv, year2sec), thisroutine )
+
+   call check( nf90_sync(ncid), thisroutine )
+
+end if
+
+if (.not.flag_compute_flux_vars_only) then
 
    nc1cor(1) = counter
    ! nc1cnt(1) = 1   ! (not needed, and causes troubles for whatever reason)
