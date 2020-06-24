@@ -10,14 +10,6 @@
 #define SICO_VERSION '5-dev'
 !                      Version number of SICOPOLIS
 
-#define INPATH '/Will/be/inserted/automatically'
-!                      Directory for SICOPOLIS input
-!                      (no '/' at the end!)
-
-#define OUTPATH '/Will/be/inserted/automatically'
-!                      Directory for SICOPOLIS output
-!                      (no '/' at the end!)
-
 !-------- Domain --------
 
 #define ANT
@@ -426,10 +418,6 @@
 #define ANFDATNAME 'none'
 !                             Initial-value file (only for ANF_DAT==3)
 
-#define ANFDATPATH '/Will/be/inserted/automatically/if/needed'
-!                             Directory for initial-value file
-!                             (no '/' at the end!)
-
 !-------- Lithosphere (bedrock) modelling --------
 
 #define REBOUND 2
@@ -519,10 +507,6 @@
 
 #define TARGET_TOPO_DAT_NAME 'none'
 !                             Target-topography file (only for THK_EVOL==2, 3)
-
-#define TARGET_TOPO_DAT_PATH '/Will/be/inserted/automatically/if/needed'
-!                             Directory for target-topography file
-!                             (no '/' at the end; only for THK_EVOL==2, 3)
 
 #define MASK_MAXEXTENT_FILE 'none'
 !                             Maximum ice extent mask file (only for THK_EVOL==4)

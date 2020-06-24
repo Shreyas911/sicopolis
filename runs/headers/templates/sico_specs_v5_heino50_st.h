@@ -7,17 +7,13 @@
 #define RUNNAME 'v5_heino50_st'
 !                      Name of simulation
 
-#define SICO_VERSION '5.1'
+#define SICO_VERSION '5-dev'
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define INPATH '/Will/be/inserted/automatically'
-!                      Directory for SICOPOLIS input
-!                      (no '/' at the end!)
-
-#define OUTPATH '/Will/be/inserted/automatically'
-!                      Directory for SICOPOLIS output
-!                      (no '/' at the end!)
+#define SICO_REVISION 1590
+!                      Revision number of SICOPOLIS
+!                      for which this run-specs header is suitable
 
 !-------- Domain --------
 
@@ -420,10 +416,6 @@
 #define ANFDATNAME 'none'
 !                             Initial-value file (only for ANF_DAT==3,
 !                                  or for ANF_DAT==1 and TEMP_INIT==5)
-
-#define ANFDATPATH '/Will/be/inserted/automatically/if/needed'
-!                             Directory for initial-value file
-!                             (no '/' at the end!)
 
 !-------- Lithosphere (bedrock) modelling --------
 
