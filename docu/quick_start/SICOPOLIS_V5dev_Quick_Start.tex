@@ -429,13 +429,19 @@ Directory that contains a copy of the GNU General Public License (version~3).
 
 \item It is recommended to run SICOPOLIS with output in NetCDF format. If you wish to create output in native binary format instead, set NETCDF to 1 (rather than 2) in all specification files sico\_specs\_\emph{run\_name}.h.
 
-\item In order to run simulation v5\_grl20\_ss25ka, use the script sico.sh. The command is
+\item For example, to run simulation v5\_grl20\_ss25ka, use the script sico.sh:
 \\
 \hspace*{10mm}\verb+(./sico.sh -m v5_grl20_ss25ka) >out_001.dat 2>&1 &+
 \\
 (from directory sicopolis/runs, bash required). Accordingly for the other simulations.
 \\
 For further options, try \verb+./sico.sh -h+.
+\\
+\warning{} Do not use out\_\emph{run\_name}.dat for the redirected output of sico.sh. 
+\\
+\phantom{\warning{}} This name is reserved for the runtime output of SICOPOLIS itself.
+\\
+\phantom{\warning{} This} (Both are very useful in case of compilation or runtime errors!)
 
 \item Alternatively, if you prefer to run all simulations consecutively, execute the script multi\_sico\_1.sh:
 \\
