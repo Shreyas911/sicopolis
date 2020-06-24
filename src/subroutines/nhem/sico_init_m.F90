@@ -562,14 +562,14 @@ time_output0(20) = TIME_OUT0_20
 !-------- Write log file --------
 
 shell_command = 'if [ ! -d'
-shell_command = trim(shell_command)//' '//OUTPATH
+shell_command = trim(shell_command)//' '//OUT_PATH
 shell_command = trim(shell_command)//' '//'] ; then mkdir'
-shell_command = trim(shell_command)//' '//OUTPATH
+shell_command = trim(shell_command)//' '//OUT_PATH
 shell_command = trim(shell_command)//' '//'; fi'
 call system(trim(shell_command))
-     ! Check whether directory OUTPATH exists. If not, it is created.
+     ! Check whether directory OUT_PATH exists. If not, it is created.
 
-filename_with_path = trim(OUTPATH)//'/'//trim(runname)//'.log'
+filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'.log'
 
 open(10, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -630,7 +630,7 @@ write(10, fmt=trim(fmt2)) 'TEMP_INIT =', TEMP_INIT
 #endif
 #if (ANF_DAT==3 || (ANF_DAT==1 && TEMP_INIT==5))
 write(10, fmt=trim(fmt1)) 'Initial-value file = '//ANFDATNAME
-write(10, fmt=trim(fmt1)) 'Path to initial-value file = '//ANFDATPATH
+write(10, fmt=trim(fmt1)) 'Path to initial-value file = '//ANF_DAT_PATH
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
@@ -1064,7 +1064,7 @@ n_slide_region = 1
 
 #else
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(SLIDE_REGIONS_FILE)
 
 open(24, iostat=ios, file=trim(filename_with_path), recl=rcl2, status='old')
@@ -1088,7 +1088,7 @@ close(24, status='keep')
 
 #if (GRID==0 || GRID==1)
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(PRECIP_MM_PRESENT_FILE)
 
 open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
@@ -1128,7 +1128,7 @@ precip_present = precip_present *(1.0e-03_dp/year2sec)*(RHO_W/RHO)
 
 #if (GRID==0 || GRID==1)
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(PRECIP_MM_ANOM_FILE)
 
 open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
@@ -1183,7 +1183,7 @@ mean_accum = MEAN_ACCUM*(1.0e-03_dp/year2sec)*(RHO_W/RHO)
 
 #if (GRID==0 || GRID==1)
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(MASK_PRESENT_FILE)
 
 open(24, iostat=ios, file=trim(filename_with_path), recl=rcl2, status='old')
@@ -1213,7 +1213,7 @@ close(24, status='keep')
 
 #if (GRID==0 || GRID==1)
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(TEMP_MM_PRESENT_FILE)
 
 open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
@@ -1248,7 +1248,7 @@ close(21, status='keep')
 
 #if (GRID==0 || GRID==1)
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(TEMP_MM_ANOM_FILE)
 
 open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
@@ -1280,7 +1280,7 @@ temp_mm_lgm_anom = temp_mm_lgm_anom * TEMP_MM_ANOM_FACT
 
 #if (GRID==0 || GRID==1)
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZS_PRESENT_FILE)
 
 open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
@@ -1319,7 +1319,7 @@ end do
 
 #if (TSURFACE==4)
 
-filename_with_path = trim(INPATH)//'/general/'//trim(GRIP_TEMP_FILE)
+filename_with_path = trim(IN_PATH)//'/general/'//trim(GRIP_TEMP_FILE)
 
 open(21, iostat=ios, file=trim(filename_with_path), status='old')
 
@@ -1353,7 +1353,7 @@ close(21, status='keep')
 
 #if (TSURFACE==5)
 
-filename_with_path = trim(INPATH)//'/general/'//trim(GLAC_IND_FILE)
+filename_with_path = trim(IN_PATH)//'/general/'//trim(GLAC_IND_FILE)
 
 open(21, iostat=ios, file=trim(filename_with_path), status='old')
 
@@ -1387,7 +1387,7 @@ close(21, status='keep')
 
 #if (SEA_LEVEL==3)
 
-filename_with_path = trim(INPATH)//'/general/'//trim(SEA_LEVEL_FILE)
+filename_with_path = trim(IN_PATH)//'/general/'//trim(SEA_LEVEL_FILE)
 
 open(21, iostat=ios, file=trim(filename_with_path), status='old')
 
@@ -1435,7 +1435,7 @@ end do
 
 !  ------ Read data from file
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(Q_GEO_FILE)
 
 open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
@@ -1484,7 +1484,7 @@ time_lag_asth = TIME_LAG*year2sec   ! a -> s
 
 #elif (TIME_LAG_MOD==2)
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(TIME_LAG_FILE)
 
 open(29, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
@@ -1522,7 +1522,7 @@ flex_rig_lith = FLEX_RIG
 
 #elif (FLEX_RIG_MOD==2)
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(FLEX_RIG_FILE)
 
 open(29, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
@@ -1757,7 +1757,7 @@ call error(errormsg)
 
 !  ------ Time-series file for the ice sheet on the whole
 
-filename_with_path = trim(OUTPATH)//'/'//trim(runname)//'.ser'
+filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'.ser'
 
 open(12, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -1802,7 +1802,7 @@ end if
 
 n_core = 0   ! No boreholes defined
 
-filename_with_path = trim(OUTPATH)//'/'//trim(runname)//'.core'
+filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'.core'
 
 open(14, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -1946,7 +1946,7 @@ write(fmt4,    fmt='(a)')  '('//trim(adjustl(ch_imax))//'(i1),i1)'
 
 !-------- Read topography --------
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZL0_FILE)
 
 open(23, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
@@ -1964,7 +1964,7 @@ end do
 
 close(23, status='keep')
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(MASK_PRESENT_FILE)
 
 open(24, iostat=ios, file=trim(filename_with_path), recl=rcl2, status='old')
@@ -2114,7 +2114,7 @@ call read_erg_nc(z_sl, anfdatname)
 
 !-------- Read topography of the relaxed bedrock --------
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZL0_FILE)
 
 open(23, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')

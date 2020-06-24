@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2020-01-15
+!! 2020-04-01
 !!
 !! @section Copyright
 !!
@@ -466,7 +466,7 @@ end if
 
 !-------- Opening of file --------
 
-filename_with_path = trim(OUTPATH)//'/'//trim(filename)
+filename_with_path = trim(OUT_PATH)//'/'//trim(filename)
 
 ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
 
@@ -1014,7 +1014,7 @@ end if
 
 write(6,'(a)') ' Now creating new NetCDF file '//trim(filename)//' ...'
 
-filename_with_path = trim(OUTPATH)//'/'//trim(filename)
+filename_with_path = trim(OUT_PATH)//'/'//trim(filename)
 
 ios = nf90_create(trim(filename_with_path), NF90_NOCLOBBER, ncid)
 

@@ -8,7 +8,7 @@
 !!
 !! @section Date
 !!
-!! 2020-01-06
+!! 2020-04-01
 !!
 !! @section Copyright
 !!
@@ -2220,7 +2220,7 @@ end if
 write(6,'(1x,a)') ' '
 write(6,'(1x,a,a)') 'Expected file name: ', trim(filename)
 
-filename_with_path = trim(OUTPATH)//'/'//trim(filename)
+filename_with_path = trim(OUT_PATH)//'/'//trim(filename)
 
 open(10, iostat=ios, file=trim(filename_with_path), status='old', &
          form='unformatted')
@@ -2356,7 +2356,7 @@ end if
 write(6,'(1x,a)') ' '
 write(6,'(1x,a,a)') 'Expected file name: ', trim(filename)
 
-filename_with_path = trim(OUTPATH)//'/'//trim(filename)
+filename_with_path = trim(OUT_PATH)//'/'//trim(filename)
 
 ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
 
@@ -3069,7 +3069,7 @@ write(6,'(1x,a,a)') 'Name of time-series file: ', trim(runname)//'.ser'
 
 !-------- Reading of data from time-series file --------
 
-filename_with_path = OUTPATH//'/'//trim(runname)//'.ser'
+filename_with_path = OUT_PATH//'/'//trim(runname)//'.ser'
 
 open(10, file=trim(filename_with_path), status='old')
 
@@ -3160,7 +3160,7 @@ write(6,'(1x,a,a)') 'Name of time-series file: ', trim(runname)//'.sed'
 
 !-------- Reading of data from time-series file --------
 
-filename_with_path = OUTPATH//'/'//trim(runname)//'.sed'
+filename_with_path = OUT_PATH//'/'//trim(runname)//'.sed'
 
 open(10, file=trim(filename_with_path), status='old')
 
@@ -3216,7 +3216,7 @@ write(6,'(1x,a,a)') 'Name of time-series file: ', trim(runname)//'.core'
 
 !-------- Reading of data from time-series file --------
 
-filename_with_path = OUTPATH//'/'//trim(runname)//'.core'
+filename_with_path = OUT_PATH//'/'//trim(runname)//'.core'
 
 open(10, file=trim(filename_with_path), status='old')
 
@@ -3359,25 +3359,25 @@ character :: ch_dummy
       || defined(SMARS) \
       || defined(TIBET) )
 
-filename_with_path = INPATH//'/'//trim(domain)//'/'//ZS_PRESENT_FILE
+filename_with_path = IN_PATH//'/'//trim(domain)//'/'//ZS_PRESENT_FILE
 open(21, iostat=ios, file=trim(filename_with_path), status='old')
 if (ios.ne.0) stop ' >>> read_data: Error when opening the zs file!'
 
 #if (defined(ANT))
-filename_with_path = INPATH//'/'//trim(domain)//'/'//ZB_PRESENT_FILE
+filename_with_path = IN_PATH//'/'//trim(domain)//'/'//ZB_PRESENT_FILE
 open(25, iostat=ios, file=trim(filename_with_path), status='old')
 if (ios.ne.0) stop ' >>> read_data: Error when opening the zb file!'
 #endif
 
-filename_with_path = INPATH//'/'//trim(domain)//'/'//ZL_PRESENT_FILE
+filename_with_path = IN_PATH//'/'//trim(domain)//'/'//ZL_PRESENT_FILE
 open(22, iostat=ios, file=trim(filename_with_path), status='old')
 if (ios.ne.0) stop ' >>> read_data: Error when opening the zl file!'
 
-filename_with_path = INPATH//'/'//trim(domain)//'/'//ZL0_FILE
+filename_with_path = IN_PATH//'/'//trim(domain)//'/'//ZL0_FILE
 open(23, iostat=ios, file=trim(filename_with_path), status='old')
 if (ios.ne.0) stop ' >>> read_data: Error when opening the zl0 file!'
 
-filename_with_path = INPATH//'/'//trim(domain)//'/'//MASK_PRESENT_FILE
+filename_with_path = IN_PATH//'/'//trim(domain)//'/'//MASK_PRESENT_FILE
 open(24, iostat=ios, file=trim(filename_with_path), status='old')
 if (ios.ne.0) stop ' >>> read_data: Error when opening the mask file!'
 
@@ -3535,12 +3535,12 @@ precip_gr = 0.0   ! dummy values
 if (menue == 15) then
 
 #if ( defined(ANT) || defined(GRL) )
-   filename_with_path = INPATH//'/'//trim(domain)//'/'//PRECIP_PRESENT_FILE
+   filename_with_path = IN_PATH//'/'//trim(domain)//'/'//PRECIP_PRESENT_FILE
 #elif ( defined(NHEM) || defined(SCAND) || defined(TIBET) )
    write(6,'(1x,a)') ' '
    write(6,'(1x,a)',advance='no') ' Month: (1) Jan, (2) Feb, ... , (12) Dec > '
    read (5,*) n_month
-   filename_with_path = INPATH//'/'//trim(domain)//'/'//PRECIP_MM_PRESENT_FILE
+   filename_with_path = IN_PATH//'/'//trim(domain)//'/'//PRECIP_MM_PRESENT_FILE
 #endif
 
    open(21, iostat=ios, file=trim(filename_with_path), status='old')
@@ -3581,12 +3581,12 @@ precip_lgm_anom_gr = 0.0   ! dummy values
 if (menue == 16) then
 
 #if ( defined(ANT) || defined(GRL) )
-   filename_with_path = INPATH//'/'//trim(domain)//'/'//PRECIP_ANOM_FILE
+   filename_with_path = IN_PATH//'/'//trim(domain)//'/'//PRECIP_ANOM_FILE
 #elif ( defined(NHEM) || defined(SCAND) || defined(TIBET) )
    write(6,'(1x,a)') ' '
    write(6,'(1x,a)',advance='no') ' Month: (1) Jan, (2) Feb, ... , (12) Dec > '
    read (5,*) n_month
-   filename_with_path = INPATH//'/'//trim(domain)//'/'//PRECIP_MM_ANOM_FILE
+   filename_with_path = IN_PATH//'/'//trim(domain)//'/'//PRECIP_MM_ANOM_FILE
 #endif
 
    open(21, iostat=ios, file=trim(filename_with_path), status='old')
@@ -3667,7 +3667,7 @@ if (menue == 17) then
    write(6,'(1x,a)') ' '
    write(6,'(1x,a)',advance='no') ' Month: (1) Jan, (2) Feb, ... , (12) Dec > '
    read (5,*) n_month
-   filename_with_path = INPATH//'/'//trim(domain)//'/'//TEMP_MM_PRESENT_FILE
+   filename_with_path = IN_PATH//'/'//trim(domain)//'/'//TEMP_MM_PRESENT_FILE
 
 #endif
 
@@ -3713,24 +3713,24 @@ if (menue == 18) then
    write(6,'(1x,a)',advance='no') ' (1) mean annual, (2) mean January > '
    read (5,*) n_month
    if (n_month == 1) then
-      filename_with_path = INPATH//'/'//trim(domain)//'/'//TEMP_MA_ANOM_FILE
+      filename_with_path = IN_PATH//'/'//trim(domain)//'/'//TEMP_MA_ANOM_FILE
    else if (n_month == 2) then
-      filename_with_path = INPATH//'/'//trim(domain)//'/'//TEMP_MJ_ANOM_FILE
+      filename_with_path = IN_PATH//'/'//trim(domain)//'/'//TEMP_MJ_ANOM_FILE
    end if
 #elif (defined(GRL))
    write(6,'(1x,a)') ' '
    write(6,'(1x,a)',advance='no') ' (1) mean annual, (2) mean July > '
    read (5,*) n_month
    if (n_month == 1) then
-      filename_with_path = INPATH//'/'//trim(domain)//'/'//TEMP_MA_ANOM_FILE
+      filename_with_path = IN_PATH//'/'//trim(domain)//'/'//TEMP_MA_ANOM_FILE
    else if (n_month == 2) then
-      filename_with_path = INPATH//'/'//trim(domain)//'/'//TEMP_MJ_ANOM_FILE
+      filename_with_path = IN_PATH//'/'//trim(domain)//'/'//TEMP_MJ_ANOM_FILE
    end if
 #elif ( defined(NHEM) || defined(SCAND) || defined(TIBET) )
    write(6,'(1x,a)') ' '
    write(6,'(1x,a)',advance='no') ' Month: (1) Jan, (2) Feb, ... , (12) Dec > '
    read (5,*) n_month
-   filename_with_path = INPATH//'/'//trim(domain)//'/'//TEMP_MM_ANOM_FILE
+   filename_with_path = IN_PATH//'/'//trim(domain)//'/'//TEMP_MM_ANOM_FILE
 #endif
 
    open(21, iostat=ios, file=trim(filename_with_path), status='old')
@@ -3776,7 +3776,7 @@ qgeo_gr = 0.0   ! dummy values
 
 if (menue == 19) then
 
-   filename_with_path = INPATH//'/'//trim(domain)//'/'//Q_GEO_FILE
+   filename_with_path = IN_PATH//'/'//trim(domain)//'/'//Q_GEO_FILE
 
    open(21, iostat=ios, file=trim(filename_with_path), status='old')
    if (ios /= 0) stop ' >>> read_data: Error when opening the qgeo file!'

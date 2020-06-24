@@ -193,7 +193,7 @@ errormsg = ' >>> calc_gia: Routine make_zl0 successfully completed,' &
          //         end_of_line &
          //'        topography written on file' &
          //         end_of_line &
-         //'        (in directory specified by OUTPATH).' &
+         //'        (in directory specified by OUT_PATH).' &
          //         end_of_line &
          //'        Execution of SICOPOLIS stopped.'
 call error(errormsg)   ! actually not an error,
@@ -498,7 +498,7 @@ ch_model = 'elastic_lithosphere'
 
 filename           = trim(ch_domain_short)//'_'//trim(ch_resolution)
 filename           = trim(filename)//'_zl0_'//trim(ch_model)//'.dat'
-filename_with_path = trim(OUTPATH)//'/'//trim(filename)
+filename_with_path = trim(OUT_PATH)//'/'//trim(filename)
 
 open(23, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='replace')
 

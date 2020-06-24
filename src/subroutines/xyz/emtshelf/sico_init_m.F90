@@ -562,14 +562,14 @@ time_output0(20) = TIME_OUT0_20
 !-------- Write log file --------
 
 shell_command = 'if [ ! -d'
-shell_command = trim(shell_command)//' '//OUTPATH
+shell_command = trim(shell_command)//' '//OUT_PATH
 shell_command = trim(shell_command)//' '//'] ; then mkdir'
-shell_command = trim(shell_command)//' '//OUTPATH
+shell_command = trim(shell_command)//' '//OUT_PATH
 shell_command = trim(shell_command)//' '//'; fi'
 call system(trim(shell_command))
-     ! Check whether directory OUTPATH exists. If not, it is created.
+     ! Check whether directory OUT_PATH exists. If not, it is created.
 
-filename_with_path = trim(OUTPATH)//'/'//trim(runname)//'.log'
+filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'.log'
 
 open(10, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -625,7 +625,7 @@ write(10, fmt=trim(fmt2)) 'TEMP_INIT =', TEMP_INIT
 #endif
 #if (ANF_DAT==3 || (ANF_DAT==1 && TEMP_INIT==5))
 write(10, fmt=trim(fmt1)) 'Initial-value file = '//ANFDATNAME
-write(10, fmt=trim(fmt1)) 'Path to initial-value file = '//ANFDATPATH
+write(10, fmt=trim(fmt1)) 'Path to initial-value file = '//ANF_DAT_PATH
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
@@ -1034,7 +1034,7 @@ n_slide_region = 1
 
 #else
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(SLIDE_REGIONS_FILE)
 
 open(24, iostat=ios, file=trim(filename_with_path), recl=rcl2, status='old')
@@ -1063,7 +1063,7 @@ mean_accum = MEAN_ACCUM*(1.0e-03_dp/year2sec)*(RHO_W/RHO)
 
 #if (TSURFACE==4)
 
-filename_with_path = trim(INPATH)//'/general/'//trim(GRIP_TEMP_FILE)
+filename_with_path = trim(IN_PATH)//'/general/'//trim(GRIP_TEMP_FILE)
 
 open(21, iostat=ios, file=trim(filename_with_path), status='old')
 
@@ -1097,7 +1097,7 @@ close(21, status='keep')
 
 #if (SEA_LEVEL==3)
 
-filename_with_path = trim(INPATH)//'/general/'//trim(SEA_LEVEL_FILE)
+filename_with_path = trim(IN_PATH)//'/general/'//trim(SEA_LEVEL_FILE)
 
 open(21, iostat=ios, file=trim(filename_with_path), status='old')
 
@@ -1160,7 +1160,7 @@ time_lag_asth = TIME_LAG*year2sec   ! a -> s
 
 #elif (TIME_LAG_MOD==2)
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(TIME_LAG_FILE)
 
 open(29, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
@@ -1198,7 +1198,7 @@ flex_rig_lith = FLEX_RIG
 
 #elif (FLEX_RIG_MOD==2)
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(FLEX_RIG_FILE)
 
 open(29, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
@@ -1432,7 +1432,7 @@ call error(errormsg)
 
 !  ------ Time-series file for the ice sheet on the whole
 
-filename_with_path = trim(OUTPATH)//'/'//trim(runname)//'.ser'
+filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'.ser'
 
 open(12, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -1475,7 +1475,7 @@ x_core(2)      =  750.0_dp *1.0e+03_dp    ! Position halfway to the coast
 y_core(2)      = 1125.0_dp *1.0e+03_dp    ! (750 km, 1125 km),
                                           ! conversion km -> m
 
-filename_with_path = trim(OUTPATH)//'/'//trim(runname)//'.core'
+filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'.core'
 
 open(14, iostat=ios, file=trim(filename_with_path), status='new')
 

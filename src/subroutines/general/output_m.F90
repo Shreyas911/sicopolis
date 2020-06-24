@@ -348,7 +348,7 @@ else
    filename = trim(runname)//'_2d_'//ch_ndat//trim(filename_extension)
 end if
 
-filename_with_path = trim(OUTPATH)//'/'//trim(filename)
+filename_with_path = trim(OUT_PATH)//'/'//trim(filename)
 
 end if   ! (.not.flag_compute_flux_vars_only)
 
@@ -4844,7 +4844,7 @@ if (firstcall_output2) then
 !  ------ Open NetCDF file
 
    filename           = trim(RUNNAME)//'_ser.nc'
-   filename_with_path = trim(OUTPATH)//'/'//trim(filename)
+   filename_with_path = trim(OUT_PATH)//'/'//trim(filename)
 
    ios = nf90_create(trim(filename_with_path), NF90_NOCLOBBER, ncid)
 
@@ -6181,7 +6181,7 @@ if (n_core >= 1) then
 !  ------ Open NetCDF file
 
       filename           = trim(RUNNAME)//'_core.nc'
-      filename_with_path = trim(OUTPATH)//'/'//trim(filename)
+      filename_with_path = trim(OUT_PATH)//'/'//trim(filename)
 
       ios = nf90_create(trim(filename_with_path), NF90_NOCLOBBER, ncid)
 

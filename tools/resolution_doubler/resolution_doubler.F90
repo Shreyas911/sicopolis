@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2020-01-15
+!! 2020-04-01
 !!
 !! @section Copyright
 !!
@@ -294,7 +294,7 @@ filename = trim(runname)//trim(ergnum)//'.nc'
 
 !-------- Reading of data from time-slice file --------
 
-filename_with_path = trim(OUTPATH)//'/'//trim(filename)
+filename_with_path = trim(OUT_PATH)//'/'//trim(filename)
 
 write (6,'(/a)') ' Now reading '//trim(filename_with_path)//' ...'
 
@@ -1794,7 +1794,7 @@ coord_id(3) = 'zeta_c'; coord_id(4) = 'zeta_t'; coord_id(5) = 'zeta_r'
 
 write (6,'(/a)') ' Now opening new NetCDF file ...'
 
-filename_with_path = trim(OUTPATH)//'/'//trim(runname)//'_dbl_'// &
+filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'_dbl_'// &
                      trim(ergnum)//'.nc'
 
 ios = nf90_create(trim(filename_with_path), NF90_NOCLOBBER, ncid)

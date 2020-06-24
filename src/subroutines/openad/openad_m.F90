@@ -265,9 +265,9 @@ contains
   !-------- deleting directories
   
     shell_command = 'if [ -d'
-    shell_command = trim(shell_command)//' '//OUTPATH
+    shell_command = trim(shell_command)//' '//OUT_PATH
     shell_command = trim(shell_command)//' '//'] ; then rm -rf'
-    shell_command = trim(shell_command)//' '//OUTPATH
+    shell_command = trim(shell_command)//' '//OUT_PATH
     shell_command = trim(shell_command)//' '//'; fi'
     
     call system(trim(shell_command))

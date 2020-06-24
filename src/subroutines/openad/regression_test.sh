@@ -10,10 +10,11 @@
 # SICOPOLIS code; and (b) by the adjoint code, which is compiled and executed herein. 
 
 # For a detailed explanation of the adjoint code structure (e.g., file placement, 
-# choice of control variables and cost function) please refer to the Sicopolis-AD
+# choice of control variables and cost function) please refer to the SICOPOLIS-AD
 # Quickstart and User manual (https://www.overleaf.com/read/xtybnbhxmbcc).
 
 # Last modified: Liz Logan, 4/5/2018
+#                Ralf Greve, 2020-03-31
 #__________________________________________________________________________________
 
 #__________________________________________________________________________________
@@ -55,17 +56,17 @@ VALUES="$1"            # COSTS, GRADIENTS
 HEADER_LOCAL="$2"      # this comes from the HEADER_FILE options in the main loop below 
 CTRL_FLOW="$3"         # forward, adjoint
 MODE="$4"              # (adjoint only, modes plain, tape, adjoint): -p, -t, -a
-OUT_PATH_LOCAL="$5"    # output path 
+OUT_PATH_AD_LOCAL="$5" # output path 
 
 # comparing the costs:
 if [ $VALUES == "COSTS" ]; then
 
 # Grab the gradient check cost files:
-  FILE_GRDCHK=$OUT_PATH_LOCAL"/CostVals_"$HEADER_LOCAL"_GRDCHK.dat"
+  FILE_GRDCHK=$OUT_PATH_AD_LOCAL"/CostVals_"$HEADER_LOCAL"_GRDCHK.dat"
   COST_GRDCHK=$(head -n 1 $FILE_GRDCHK)  
 
 # Grab the adjoint-modes cost files:
-  FILE_OAD=$OUT_PATH_LOCAL"/AD_COST_"$HEADER_LOCAL"_OAD"$MODE".dat"
+  FILE_OAD=$OUT_PATH_AD_LOCAL"/AD_COST_"$HEADER_LOCAL"_OAD"$MODE".dat"
   COST_OAD=$(head -n 1 $FILE_OAD)
 
 # Calculate the ratio 100*[Cost(gradient check) - Cost(adjoint)] / Cost(gradient check)
@@ -84,8 +85,8 @@ echo "          FINITE-DIFFERENCES:                    ADJOINT VALUES:"         
 echo " "                                                                         >> regression_log.txt
 
 # Grab the gradient values from grdchk and adjoint sensitivity values from adjoint: 
-  FILE_GRDCHK=$OUT_PATH_LOCAL"/GradientVals_"$HEADER_LOCAL"_GRDCHK.dat"
-  FILE_AD=$OUT_PATH_LOCAL"/AD_grdchk_"$HEADER_LOCAL".dat"
+  FILE_GRDCHK=$OUT_PATH_AD_LOCAL"/GradientVals_"$HEADER_LOCAL"_GRDCHK.dat"
+  FILE_AD=$OUT_PATH_AD_LOCAL"/AD_grdchk_"$HEADER_LOCAL".dat"
 
 # Preparing to compare the two columns of values and check if they're different:
   DIFF=$(diff -w -y -W 80 <(head ${FILE_GRDCHK}) <(tail -n +2 ${FILE_AD}))
@@ -130,7 +131,7 @@ fi
 #__________________________________________________________________________________
 
 SRC_PATH=$PWD
-OUT_PATH=$SRC_PATH/../sico_out/OAD
+OUT_PATH_AD=$SRC_PATH/../sico_out/OAD
 
 # Default header file options to be tested (if you wish to test a custom one, 
 # modify the header string here): 
@@ -146,15 +147,15 @@ declare -a HEADER_FILE=("new_ref_output_20km")
 declare -a MODES=("-p" "-t" "-a")
 
 # Remove all old adjoint outputs: 
-if [ -e          $OUT_PATH ]; then
-   if [ "$(ls -A $OUT_PATH)" ]; then
-      rm $OUT_PATH/*
-      echo "SicoAD outputs removed."
+if [ -e          $OUT_PATH_AD ]; then
+   if [ "$(ls -A $OUT_PATH_AD)" ]; then
+      rm $OUT_PATH_AD/*
+      echo "SICOPOLIS-AD outputs removed."
    fi
 else 
-   mkdir $OUT_PATH
-   echo "SicoAD created output dir OAD in: " 
-   echo $OUT_PATH
+   mkdir $OUT_PATH_AD
+   echo "SICOPOLIS-AD created output dir OAD in: " 
+   echo $OUT_PATH_AD
 fi
 
 # move around the maths modules: 
@@ -212,8 +213,8 @@ do
    time ./$EXECUTABLE 
 
 #  move its output to adjoint output directory:
-   mv GradientVals_$HEADER.dat   $OUT_PATH
-   mv CostVals_$HEADER.dat       $OUT_PATH
+   mv GradientVals_$HEADER.dat   $OUT_PATH_AD
+   mv CostVals_$HEADER.dat       $OUT_PATH_AD
 
 #  prettify 
    page_break $HEADER
@@ -247,8 +248,8 @@ do
    do
 
 #  remove forward (gradient-checked) mode outputs:
-      if [ -d  $OUT_PATH/../$HEADER ]; then
-         rm -r $OUT_PATH/../$HEADER
+      if [ -d  $OUT_PATH_AD/../$HEADER ]; then
+         rm -r $OUT_PATH_AD/../$HEADER
       fi
 
 #  file name for screen output:
@@ -258,14 +259,14 @@ do
       time ./$EXECUTABLE $mode > $OUT_FNAME 
 
 #  move the output files (and re-write names):
-      mv AD_COST    $OUT_PATH/"AD_COST_"$HEADER$mode".dat"
-      mv $OUT_FNAME $OUT_PATH
+      mv AD_COST    $OUT_PATH_AD/"AD_COST_"$HEADER$mode".dat"
+      mv $OUT_FNAME $OUT_PATH_AD
 
 #_____________________
 #
 # 3 - Compare and report: 
-#   a - gradient check COSTS     vs. SicoAD 
-#   b - gradient check GRADIENTS vs. SicoAD 
+#   a - gradient check COSTS     vs. SICOPOLIS-AD
+#   b - gradient check GRADIENTS vs. SICOPOLIS-AD
 #_____________________
 #   a - COSTS: 
       if [ $mode == "-p" ]; then 
@@ -274,12 +275,12 @@ do
           echo " Cost comparison for:  "$HEADER >> regression_log.txt
           echo " ______________________________________________________________" >> regression_log.txt
       fi
-      compare_outputs "COSTS" $test "adjoint" $mode $OUT_PATH
+      compare_outputs "COSTS" $test "adjoint" $mode $OUT_PATH_AD
 
 #   b - GRADIENTS: 
       if [ $mode == "-a" ]; then 
-         mv AD_Vals_for_grdchk.dat    $OUT_PATH/"AD_grdchk_"$test".dat"
-         compare_outputs "GRADIENTS" $test "adjoint" $mode $OUT_PATH
+         mv AD_Vals_for_grdchk.dat    $OUT_PATH_AD/"AD_grdchk_"$test".dat"
+         compare_outputs "GRADIENTS" $test "adjoint" $mode $OUT_PATH_AD
       fi
  
 # prettify 

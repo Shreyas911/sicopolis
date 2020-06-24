@@ -88,6 +88,7 @@ contains
   integer(i4b)       :: i, j, kc, kt, kr, n
   integer(i4b)       :: ios
   real(dp)           :: year2sec_inv
+  character(len=256) :: anfdat_path
   character(len=256) :: filename_with_path
   logical            :: flag_temp_age_only
 
@@ -180,7 +181,15 @@ call error(errormsg)
      flag_temp_age_only = .false.
   end if
 
-  filename_with_path = trim(ANFDATPATH)//'/'//trim(filename)
+#if (defined(ANF_DAT_PATH))
+  anfdat_path = trim(ANF_DAT_PATH)
+#else
+  anfdat_path = 'dummy'
+  errormsg = ' >>> read_erg_nc: ANF_DAT_PATH must be defined!'
+  call error(errormsg)
+#endif
+
+  filename_with_path = trim(anfdat_path)//'/'//trim(filename)
 
 #if (NETCDF==1)   /* time-slice file in native binary format */
 
@@ -1023,11 +1032,11 @@ call error(errormsg)
 
 #if (NETCDF==2)
 
-#if (defined(TARGET_TOPO_DAT_PATH))
-  target_topo_dat_path = trim(TARGET_TOPO_DAT_PATH)
+#if (defined(TARGET_TOPO_PATH))
+  target_topo_dat_path = trim(TARGET_TOPO_PATH)
 #else
   target_topo_dat_path = 'dummy'
-  errormsg = ' >>> read_target_topo_nc: TARGET_TOPO_DAT_PATH must be defined!'
+  errormsg = ' >>> read_target_topo_nc: TARGET_TOPO_PATH must be defined!'
   call error(errormsg)
 #endif
 
@@ -1116,7 +1125,7 @@ call error(errormsg)
 
 !-------- Reading of tabulated values --------
 
-  filename_with_path = trim(INPATH)//'/general/kei.dat'
+  filename_with_path = trim(IN_PATH)//'/general/kei.dat'
 
 #if !defined(ALLOW_OPENAD) /* Normal */
   open(unit=11, iostat=ios, file=trim(filename_with_path), status='old')
@@ -1173,7 +1182,7 @@ call error(errormsg)
 
   n_cnt_phys_para = 0
 
-  filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+  filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                        trim(PHYS_PARA_FILE)
 
 #if !defined(ALLOW_OPENAD) /* Normal */

@@ -10,7 +10,7 @@ LANG=C
 #
 #  Authors: Malte Thoma, Thomas Goelles, Ralf Greve, Fuyuki Saito
 #
-#  Date: 2019-12-08
+#  Date: 2020-04-01
 #
 #    Execute script 
 #       ./tools.sh -p <program> -m <run_name> [further options...]
@@ -147,7 +147,12 @@ function compile()
    $RM -f $RUN_SPECS_HEADER
    $CP $DATAPATH/$RUN_SPECS_HEADER .
 
-   FCFLAGS="${FCFLAGS} -DRUN_SPECS_HEADER=\"${RUN_SPECS_HEADER}\" -o ${EXE_FILE}"
+   FCFLAGS="${FCFLAGS} -DRUN_SPECS_HEADER=\"${RUN_SPECS_HEADER}\""
+
+   FCFLAGS="${FCFLAGS} -DOUT_PATH=\"${DATAPATH}\""
+
+   FCFLAGS="${FCFLAGS} -o ${EXE_FILE}"
+
    ${FC} ./${PROGNAME}.F90 ${FCFLAGS}
 }
 
