@@ -207,6 +207,7 @@ real(sp) :: H_R_conv
 
 real(sp), dimension(0:IMAX,0:JMAX) :: lambda_conv, phi_conv, &
             lond_conv, latd_conv, &
+            area_conv, &
             temp_maat_conv, temp_s_conv, accum_conv, &
             snowfall_conv, rainfall_conv, pdd_conv, &
             as_perp_conv, as_perp_apl_conv, smb_corr_conv, &
@@ -793,6 +794,26 @@ buffer = 'latitude'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
             thisroutine )
 buffer = 'Geographical latitude'
+call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
+            thisroutine )
+call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
+            thisroutine )
+
+!    ---- cell_area
+
+call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
+            thisroutine )
+call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
+            thisroutine )
+call check( nf90_def_var(ncid, 'cell_area', NF90_FLOAT, nc2d, ncv), &
+            thisroutine )
+buffer = 'm2'
+call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
+            thisroutine )
+buffer = 'area'
+call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
+            thisroutine )
+buffer = 'Area of grid cell'
 call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
             thisroutine )
 call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
@@ -3407,6 +3428,7 @@ do j=0, JMAX
    if (latd_conv(i,j) >  90.0_sp) latd_conv(i,j) =  90.0_sp
    if (latd_conv(i,j) < -90.0_sp) latd_conv(i,j) = -90.0_sp
                                  ! constraining to interval [-90 deg, +90 deg]
+   area_conv(i,j)        = real(area(j,i),sp)
    temp_maat_conv(i,j)   = real(temp_maat(j,i),sp)
    temp_s_conv(i,j)      = real(temp_s(j,i),sp)
    accum_conv(i,j)       = real(accum_flx(j,i)*year2sec,sp)
@@ -3616,6 +3638,7 @@ write(unit=11) lond_conv
 write(unit=11) latd_conv
 write(unit=11) lambda_conv
 write(unit=11) phi_conv
+write(unit=11) area_conv
 write(unit=11) temp_maat_conv
 write(unit=11) temp_s_conv
 write(unit=11) accum_conv
@@ -3801,6 +3824,11 @@ call check( nf90_put_var(ncid, ncv, lambda_conv, &
 
 call check( nf90_inq_varid(ncid, 'phi', ncv), thisroutine )
 call check( nf90_put_var(ncid, ncv, phi_conv, &
+                         start=nc2cor_ij, count=nc2cnt_ij), &
+            thisroutine )
+
+call check( nf90_inq_varid(ncid, 'cell_area', ncv), thisroutine )
+call check( nf90_put_var(ncid, ncv, area_conv, &
                          start=nc2cor_ij, count=nc2cnt_ij), &
             thisroutine )
 
