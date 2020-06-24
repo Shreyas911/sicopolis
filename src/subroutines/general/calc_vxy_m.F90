@@ -270,7 +270,7 @@ real(dp) :: year_sec_inv, time_in_years
 real(dp) :: ramp_up_factor
 logical, dimension(0:JMAX,0:IMAX) :: sub_melt_flag
 
-year_sec_inv  = 1.0_dp/YEAR_SEC
+year_sec_inv  = 1.0_dp/year2sec
 time_in_years = time*year_sec_inv
 
 !-------- Sliding-law coefficients --------
@@ -587,7 +587,7 @@ end do
 !-------- Limitation of computed vx_b, vy_b, vx_b_g, vy_b_g to the interval
 !         [-VH_MAX, VH_MAX] --------
 
-vh_max     = max(VH_MAX, eps_dp)/YEAR_SEC
+vh_max     = max(VH_MAX, eps_dp)/year2sec
 vh_max_inv = 1.0_dp/vh_max
 
 #if !defined(ALLOW_OPENAD) /* Normal */
@@ -1003,7 +1003,7 @@ end do
 !-------- Limitation of computed vx_c/t, vy_c/t, vx_s_g, vy_s_g
 !         to the interval [-VH_MAX, VH_MAX] --------
 
-vh_max     = max(VH_MAX, eps_dp)/YEAR_SEC
+vh_max     = max(VH_MAX, eps_dp)/year2sec
 vh_max_inv = 1.0_dp/vh_max
 
 #if !defined (ALLOW_OPENAD) /* Normal */
@@ -1340,7 +1340,7 @@ logical, dimension(0:JMAX,0:IMAX) :: flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y
   visc_init = 1.0e+15_dp   ! Pa s
 #endif
 
-vh_max     = max(VH_MAX, eps_dp)/YEAR_SEC
+vh_max     = max(VH_MAX, eps_dp)/year2sec
 vh_max_inv = 1.0_dp/vh_max
 
 write(6,'(10x,a)') 'calc_vxy_ssa:'

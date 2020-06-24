@@ -216,8 +216,8 @@ s_t       = S_T       *1.0e-09_dp            ! K/km3 -> K/m3
 x_hat     = X_HAT     *1.0e+03_dp            ! km -> m
 y_hat     = Y_HAT     *1.0e+03_dp            ! km -> m
 rad       = RAD       *1.0e+03_dp            ! km -> m
-b_min     = B_MIN     /YEAR_SEC              ! m/a -> m/s
-b_max     = B_MAX     /YEAR_SEC              ! m/a -> m/s
+b_min     = B_MIN     /year2sec              ! m/a -> m/s
+b_max     = B_MAX     /year2sec              ! m/a -> m/s
 
 !  ------ Some auxiliary quantities required for the enthalpy method
 
@@ -928,18 +928,18 @@ close(10, status='keep')
 
 !-------- Conversion of time quantities --------
 
-year_zero  = year_zero*YEAR_SEC     ! a --> s
-time_init  = time_init0*YEAR_SEC    ! a --> s
-time_end   = time_end0*YEAR_SEC     ! a --> s
-dtime      = dtime0*YEAR_SEC        ! a --> s
-dtime_temp = dtime_temp0*YEAR_SEC   ! a --> s
-dtime_ser  = dtime_ser0*YEAR_SEC    ! a --> s
+year_zero  = year_zero*year2sec     ! a --> s
+time_init  = time_init0*year2sec    ! a --> s
+time_end   = time_end0*year2sec     ! a --> s
+dtime      = dtime0*year2sec        ! a --> s
+dtime_temp = dtime_temp0*year2sec   ! a --> s
+dtime_ser  = dtime_ser0*year2sec    ! a --> s
 #if (OUTPUT==1 || OUTPUT==3)
-dtime_out  = dtime_out0*YEAR_SEC    ! a --> s
+dtime_out  = dtime_out0*year2sec    ! a --> s
 #endif
 #if (OUTPUT==2 || OUTPUT==3)
 do n=1, n_output
-   time_output(n) = time_output0(n)*YEAR_SEC  ! a --> s
+   time_output(n) = time_output0(n)*year2sec  ! a --> s
 end do
 #endif
 
@@ -964,7 +964,7 @@ time = time_init
 
 !-------- Mean accumulation --------
 
-mean_accum = MEAN_ACCUM*(1.0e-03_dp/YEAR_SEC)*(RHO_W/RHO)
+mean_accum = MEAN_ACCUM*(1.0e-03_dp/year2sec)*(RHO_W/RHO)
 !                      ! mm/a water equiv. --> m/s ice equiv.
 
 !-------- Read file defining the regions for the sliding laws --------
@@ -1092,7 +1092,7 @@ call error(errormsg)
 
 #if (TIME_LAG_MOD==1)
 
-time_lag_asth = TIME_LAG*YEAR_SEC   ! a -> s
+time_lag_asth = TIME_LAG*year2sec   ! a -> s
 
 #elif (TIME_LAG_MOD==2)
 
@@ -1114,7 +1114,7 @@ end do
 
 close(29, status='keep')
 
-time_lag_asth = time_lag_asth*YEAR_SEC   ! a -> s
+time_lag_asth = time_lag_asth*year2sec   ! a -> s
 
 #endif
 

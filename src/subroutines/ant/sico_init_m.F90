@@ -1344,21 +1344,21 @@ call error(errormsg)
 
 !-------- Conversion of time quantities --------
 
-year_zero  = year_zero*YEAR_SEC     ! a --> s
-time_init  = time_init0*YEAR_SEC    ! a --> s
-time_end   = time_end0*YEAR_SEC     ! a --> s
-dtime      = dtime0*YEAR_SEC        ! a --> s
-dtime_temp = dtime_temp0*YEAR_SEC   ! a --> s
+year_zero  = year_zero*year2sec     ! a --> s
+time_init  = time_init0*year2sec    ! a --> s
+time_end   = time_end0*year2sec     ! a --> s
+dtime      = dtime0*year2sec        ! a --> s
+dtime_temp = dtime_temp0*year2sec   ! a --> s
 #if (REBOUND==2)
-dtime_wss  = dtime_wss0*YEAR_SEC    ! a --> s
+dtime_wss  = dtime_wss0*year2sec    ! a --> s
 #endif
-dtime_ser  = dtime_ser0*YEAR_SEC    ! a --> s
+dtime_ser  = dtime_ser0*year2sec    ! a --> s
 #if (OUTPUT==1 || OUTPUT==3)
-dtime_out  = dtime_out0*YEAR_SEC    ! a --> s
+dtime_out  = dtime_out0*year2sec    ! a --> s
 #endif
 #if (OUTPUT==2 || OUTPUT==3)
 do n=1, n_output
-   time_output(n) = time_output0(n)*YEAR_SEC  ! a --> s
+   time_output(n) = time_output0(n)*year2sec  ! a --> s
 end do
 #endif
 
@@ -1397,17 +1397,17 @@ print *, '                of each other.'
 #endif /* Normal vs. OpenAD */
 
 #if (THK_EVOL==2)
-time_target_topo_init  = TIME_TARGET_TOPO_INIT0 *YEAR_SEC   ! a --> s
-time_target_topo_final = TIME_TARGET_TOPO_FINAL0*YEAR_SEC   ! a --> s
-target_topo_tau_0 = TARGET_TOPO_TAU0 *YEAR_SEC   ! a --> s
+time_target_topo_init  = TIME_TARGET_TOPO_INIT0 *year2sec   ! a --> s
+time_target_topo_final = TIME_TARGET_TOPO_FINAL0*year2sec   ! a --> s
+target_topo_tau_0 = TARGET_TOPO_TAU0 *year2sec   ! a --> s
 #endif
 
 #if (THK_EVOL==3)
-target_topo_tau_0 = TARGET_TOPO_TAU0 *YEAR_SEC   ! a --> s
+target_topo_tau_0 = TARGET_TOPO_TAU0 *year2sec   ! a --> s
 #endif
 
 #if (ACCSURFACE==7 && ABLSURFACE==7)
-target_topo_tau_0 = TARGET_TOPO_TAU0 *YEAR_SEC   ! a --> s
+target_topo_tau_0 = TARGET_TOPO_TAU0 *year2sec   ! a --> s
 #endif
 
 time = time_init
@@ -1443,7 +1443,7 @@ end do
 
 close(21, status='keep')
 
-precip_ma_present = precip_ma_present *(1.0e-03_dp/YEAR_SEC)*(RHO_W/RHO)
+precip_ma_present = precip_ma_present *(1.0e-03_dp/year2sec)*(RHO_W/RHO)
                                        ! mm/a water equiv. -> m/s ice equiv.
 
 !  ------ Present monthly precipitation rates
@@ -1578,7 +1578,7 @@ end do
 
 !-------- Mean accumulation --------
 
-mean_accum = MEAN_ACCUM*(1.0e-03_dp/YEAR_SEC)*(RHO_W/RHO)
+mean_accum = MEAN_ACCUM*(1.0e-03_dp/year2sec)*(RHO_W/RHO)
                        ! mm/a water equiv. -> m/s ice equiv.
 
 !-------- Read file defining the regions for the sliding laws --------
@@ -1959,7 +1959,7 @@ do j=0, JMAX
       smb_climatol(j,i) = smb_climatol_conv(i,j) /RHO
                                        ! kg/(m2*s) -> m/s ice equiv.
    else if (trim(adjustl(ch_smb_unit))=='m a-1') then
-      smb_climatol(j,i) = smb_climatol_conv(i,j) /YEAR_SEC
+      smb_climatol(j,i) = smb_climatol_conv(i,j) /year2sec
                                        ! m/a ice equiv. -> m/s ice equiv.
    else
       errormsg = ' >>> sico_init: Unit of SMB_clim could not be determined!'
@@ -2018,7 +2018,7 @@ if (trim(adjustl(SMB_CORR_FILE)) /= 'none') then
 
       do i=0, IMAX
       do j=0, JMAX
-         smb_corr_in(j,i) = smb_corr_in_conv(i,j) /YEAR_SEC
+         smb_corr_in(j,i) = smb_corr_in_conv(i,j) /year2sec
                                      ! m/a ice equiv. -> m/s ice equiv.
       end do
       end do
@@ -2047,7 +2047,7 @@ if (trim(adjustl(SMB_CORR_FILE)) /= 'none') then
 
       close(21, status='keep')
 
-      smb_corr_in = smb_corr_in /YEAR_SEC
+      smb_corr_in = smb_corr_in /year2sec
                                 ! m/a ice equiv. -> m/s ice equiv.
 
    end if
@@ -2083,7 +2083,7 @@ if ( trim(adjustl(INITMIP_SMB_ANOM_FILE)) /= 'none' ) then
 
    do i=0, IMAX
    do j=0, JMAX
-      smb_anom_initmip(j,i) = smb_anom_initmip_conv(i,j) /YEAR_SEC
+      smb_anom_initmip(j,i) = smb_anom_initmip_conv(i,j) /year2sec
                                    ! m/a ice equiv. -> m/s ice equiv.
    end do
    end do
@@ -2119,7 +2119,7 @@ if ( trim(adjustl(INITMIP_BMB_ANOM_FILE)) /= 'none' ) then
 
    do i=0, IMAX
    do j=0, JMAX
-      ab_anom_initmip(j,i) = ab_anom_initmip_conv(i,j) /YEAR_SEC
+      ab_anom_initmip(j,i) = ab_anom_initmip_conv(i,j) /year2sec
                                    ! m/a ice equiv. -> m/s ice equiv.
    end do
    end do
@@ -2160,7 +2160,7 @@ if ( trim(adjustl(LARMIP_REGIONS_FILE)) /= 'none' ) then
    end do
 
    ab_anom_larmip      = 0.0_dp
-   ab_anom_larmip(1:5) = LARMIP_QBM_ANOM / YEAR_SEC
+   ab_anom_larmip(1:5) = LARMIP_QBM_ANOM / year2sec
                                    ! m/a ice equiv. -> m/s ice equiv.
 
 else
@@ -2267,7 +2267,7 @@ call read_kei()
 
 #if (TIME_LAG_MOD==1)
 
-time_lag_asth = TIME_LAG*YEAR_SEC   ! a -> s
+time_lag_asth = TIME_LAG*year2sec   ! a -> s
 
 #elif (TIME_LAG_MOD==2)
 
@@ -2289,7 +2289,7 @@ end do
 
 close(29, status='keep')
 
-time_lag_asth = time_lag_asth*YEAR_SEC   ! a -> s
+time_lag_asth = time_lag_asth*year2sec   ! a -> s
 
 #endif
 

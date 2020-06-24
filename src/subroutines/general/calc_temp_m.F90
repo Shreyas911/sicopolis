@@ -794,7 +794,7 @@ end if
 
 !-------- Numerical time lag for evolution of H_t_neu --------
 
-time_lag_cts = TAU_CTS*YEAR_SEC   ! yr --> s
+time_lag_cts = TAU_CTS*year2sec   ! yr --> s
 
 do i=0, IMAX   ! extended to domain margins (22.1.02 -> V1.1)
 do j=0, JMAX   ! extended to domain margins (22.1.02 -> V1.1)
@@ -1366,8 +1366,8 @@ omega_c_neu = 0.0_dp
 Q_tld       = 0.0_dp
 
 #if (defined(AGE_CONST))
-   age_c_neu   = AGE_CONST *YEAR_SEC   ! a --> s
-   age_t_neu   = AGE_CONST *YEAR_SEC   ! a --> s
+   age_c_neu   = AGE_CONST *year2sec   ! a --> s
+   age_t_neu   = AGE_CONST *year2sec   ! a --> s
 #else
    age_c_neu   = 0.0_dp   ! default value 0
    age_t_neu   = 0.0_dp   ! default value 0
@@ -1906,10 +1906,10 @@ do kc=0, KCMAX
 
    age_c_neu(kc,j,i) = lgs_x(kc)
 
-   if (age_c_neu(kc,j,i) < (AGE_MIN*YEAR_SEC)) &
+   if (age_c_neu(kc,j,i) < (AGE_MIN*year2sec)) &
                            age_c_neu(kc,j,i) = 0.0_dp
-   if (age_c_neu(kc,j,i) > (AGE_MAX*YEAR_SEC)) &
-                           age_c_neu(kc,j,i) = AGE_MAX*YEAR_SEC
+   if (age_c_neu(kc,j,i) > (AGE_MAX*year2sec)) &
+                           age_c_neu(kc,j,i) = AGE_MAX*year2sec
 
 end do
 
@@ -2428,10 +2428,10 @@ do kc=0, KCMAX
 
    age_c_neu(kc,j,i) = lgs_x(kc)
 
-   if (age_c_neu(kc,j,i) < (AGE_MIN*YEAR_SEC)) &
+   if (age_c_neu(kc,j,i) < (AGE_MIN*year2sec)) &
                            age_c_neu(kc,j,i) = 0.0_dp
-   if (age_c_neu(kc,j,i) > (AGE_MAX*YEAR_SEC)) &
-                           age_c_neu(kc,j,i) = AGE_MAX*YEAR_SEC
+   if (age_c_neu(kc,j,i) > (AGE_MAX*year2sec)) &
+                           age_c_neu(kc,j,i) = AGE_MAX*year2sec
 
 end do
 
@@ -3450,10 +3450,10 @@ do kt=0, KTMAX
 
    age_t_neu(kt,j,i) = lgs_x(kt)
 
-   if (age_t_neu(kt,j,i) < (AGE_MIN*YEAR_SEC)) &
+   if (age_t_neu(kt,j,i) < (AGE_MIN*year2sec)) &
                            age_t_neu(kt,j,i) = 0.0_dp
-   if (age_t_neu(kt,j,i) > (AGE_MAX*YEAR_SEC)) &
-                           age_t_neu(kt,j,i) = AGE_MAX*YEAR_SEC
+   if (age_t_neu(kt,j,i) > (AGE_MAX*year2sec)) &
+                           age_t_neu(kt,j,i) = AGE_MAX*year2sec
 
 end do
 
@@ -3461,10 +3461,10 @@ do kc=0, KCMAX
 
    age_c_neu(kc,j,i) = lgs_x(KTMAX+kc)
 
-   if (age_c_neu(kc,j,i) < (AGE_MIN*YEAR_SEC)) &
+   if (age_c_neu(kc,j,i) < (AGE_MIN*year2sec)) &
                            age_c_neu(kc,j,i) = 0.0_dp
-   if (age_c_neu(kc,j,i) > (AGE_MAX*YEAR_SEC)) &
-                           age_c_neu(kc,j,i) = AGE_MAX*YEAR_SEC
+   if (age_c_neu(kc,j,i) > (AGE_MAX*year2sec)) &
+                           age_c_neu(kc,j,i) = AGE_MAX*year2sec
 
 end do
 
@@ -4316,10 +4316,10 @@ do kc=0, KCMAX
 
    age_c_neu(kc,j,i) = lgs_x(kc)
 
-   if (age_c_neu(kc,j,i) < (AGE_MIN*YEAR_SEC)) &
+   if (age_c_neu(kc,j,i) < (AGE_MIN*year2sec)) &
                            age_c_neu(kc,j,i) = 0.0_dp
-   if (age_c_neu(kc,j,i) > (AGE_MAX*YEAR_SEC)) &
-                           age_c_neu(kc,j,i) = AGE_MAX*YEAR_SEC
+   if (age_c_neu(kc,j,i) > (AGE_MAX*year2sec)) &
+                           age_c_neu(kc,j,i) = AGE_MAX*year2sec
 
 end do
 

@@ -238,8 +238,8 @@ call error(errormsg)
 
 temp_0    = TEMP_0                           ! deg C
 gamma_t   = GAMMA_T   *1.0e-03_dp            ! K/km -> K/m
-s_0       = S_0       /YEAR_SEC              ! m/a -> m/s
-m_0       = M_0       *1.0e-03_dp/YEAR_SEC   ! m/(a*km) -> 1/s
+s_0       = S_0       /year2sec              ! m/a -> m/s
+m_0       = M_0       *1.0e-03_dp/year2sec   ! m/(a*km) -> 1/s
 ela       = ELA       *1.0e+03_dp            ! km -> m
 #if (defined(DELA_DTS))
   dela_dts = DELA_DTS                        ! m/degC
@@ -251,8 +251,8 @@ ela       = ELA       *1.0e+03_dp            ! km -> m
 
 temp_0    = TEMP_0                           ! deg C
 gamma_t   = GAMMA_T   *1.0e-03_dp            ! K/km -> K/m
-s_0       = S_0       /YEAR_SEC              ! m/a -> m/s
-m_0       = M_0       *1.0e-03_dp/YEAR_SEC   ! m/(a*km) -> 1/s
+s_0       = S_0       /year2sec              ! m/a -> m/s
+m_0       = M_0       *1.0e-03_dp/year2sec   ! m/(a*km) -> 1/s
 ela       = ELA       *1.0e+03_dp            ! km -> m
 ela_amp	  = ELA_AMP			     ! m
 #if (defined(DELA_DTS))
@@ -268,8 +268,8 @@ y_gip	  = Y_GIP			     ! m
 
 temp_0    = TEMP_0                           ! deg C
 gamma_t   = GAMMA_T   *1.0e-03_dp            ! K/km -> K/m
-s_0       = S_0       /YEAR_SEC              ! m/a -> m/s
-m_0       = M_0       *1.0e-03_dp/YEAR_SEC   ! m/(a*km) -> 1/s
+s_0       = S_0       /year2sec              ! m/a -> m/s
+m_0       = M_0       *1.0e-03_dp/year2sec   ! m/(a*km) -> 1/s
 ela       = ELA       *1.0e+03_dp            ! km -> m
 ela_amp	  = ELA_AMP			     ! m
 #if (defined(DELA_DTS))
@@ -280,15 +280,15 @@ ela_amp	  = ELA_AMP			     ! m
 phi_0	  = PHI_0     *deg2rad               ! deg -> rad
 x_gip	  = X_GIP			     ! m
 y_gip	  = Y_GIP			     ! m
-m_1       = M_1       *1.0e-03_dp/YEAR_SEC   ! m/(a*km) -> 1/s
+m_1       = M_1       *1.0e-03_dp/year2sec   ! m/(a*km) -> 1/s
 z_gc      = Z_GC      *1.0e+03_dp            ! km -> m
 
 #elif (SURFACE_FORCING==5)
 
 temp_0    = TEMP_0                           ! deg C
 gamma_t   = GAMMA_T   *1.0e-03_dp            ! K/km -> K/m
-s_0       = S_0       /YEAR_SEC              ! m/a -> m/s
-m_0       = M_0       *1.0e-03_dp/YEAR_SEC   ! m/(a*km) -> 1/s
+s_0       = S_0       /year2sec              ! m/a -> m/s
+m_0       = M_0       *1.0e-03_dp/year2sec   ! m/(a*km) -> 1/s
 ela       = ELA       *1.0e+03_dp            ! km -> m
 ela_amp	  = ELA_AMP			     ! m
 #if (defined(DELA_DTS))
@@ -297,15 +297,15 @@ ela_amp	  = ELA_AMP			     ! m
   dela_dts = 0.0_dp                          ! m/degC
 #endif
 phi_0	  = PHI_0     *deg2rad               ! deg -> rad
-m_1       = M_1       *1.0e-03_dp/YEAR_SEC   ! m/(a*km) -> 1/s
+m_1       = M_1       *1.0e-03_dp/year2sec   ! m/(a*km) -> 1/s
 z_gc      = Z_GC      *1.0e+03_dp            ! km -> m
 
 #elif (SURFACE_FORCING==6)
 
 temp_0    = TEMP_0                           ! deg C
 gamma_t   = GAMMA_T   *1.0e-03_dp            ! K/km -> K/m
-s_0       = S_0       /YEAR_SEC              ! m/a -> m/s
-m_0       = M_0       *1.0e-03_dp/YEAR_SEC   ! m/(a*km) -> 1/s
+s_0       = S_0       /year2sec              ! m/a -> m/s
+m_0       = M_0       *1.0e-03_dp/year2sec   ! m/(a*km) -> 1/s
 ela       = ELA       *1.0e+03_dp            ! km -> m
 ela_amp	  = ELA_AMP			     ! m
 #if (defined(DELA_DTS))
@@ -320,8 +320,8 @@ tgt       = TGT     			     ! deg
 
 temp_0    = TEMP_0                           ! deg C
 gamma_t   = GAMMA_T   *1.0e-03_dp            ! K/km -> K/m
-s_0       = S_0       /YEAR_SEC              ! m/a -> m/s
-m_0       = M_0       *1.0e-03_dp/YEAR_SEC   ! m/(a*km) -> 1/s
+s_0       = S_0       /year2sec              ! m/a -> m/s
+m_0       = M_0       *1.0e-03_dp/year2sec   ! m/(a*km) -> 1/s
 ela       = ELA       *1.0e+03_dp            ! km -> m
 ela_amp	  = ELA_AMP			     ! m
 #if (defined(DELA_DTS))
@@ -335,8 +335,8 @@ phi_0	  = PHI_0     *deg2rad               ! deg -> rad
 
 temp_0    = TEMP_0                           ! deg C
 gamma_t   = GAMMA_T   *1.0e-03_dp            ! K/km -> K/m
-s_0       = S_0       /YEAR_SEC              ! m/a -> m/s
-m_0       = M_0       *1.0e-03_dp/YEAR_SEC   ! m/(a*km) -> 1/s
+s_0       = S_0       /year2sec              ! m/a -> m/s
+m_0       = M_0       *1.0e-03_dp/year2sec   ! m/(a*km) -> 1/s
 ela       = ELA       *1.0e+03_dp            ! km -> m
 ela_amp	  = ELA_AMP			     ! m
 #if (defined(DELA_DTS))
@@ -1136,18 +1136,18 @@ close(10, status='keep')
 
 !-------- Conversion of time quantities --------
 
-year_zero  = year_zero*YEAR_SEC     ! a --> s
-time_init  = time_init0*YEAR_SEC    ! a --> s
-time_end   = time_end0*YEAR_SEC     ! a --> s
-dtime      = dtime0*YEAR_SEC        ! a --> s
-dtime_temp = dtime_temp0*YEAR_SEC   ! a --> s
-dtime_ser  = dtime_ser0*YEAR_SEC    ! a --> s
+year_zero  = year_zero*year2sec     ! a --> s
+time_init  = time_init0*year2sec    ! a --> s
+time_end   = time_end0*year2sec     ! a --> s
+dtime      = dtime0*year2sec        ! a --> s
+dtime_temp = dtime_temp0*year2sec   ! a --> s
+dtime_ser  = dtime_ser0*year2sec    ! a --> s
 #if (OUTPUT==1 || OUTPUT==3)
-dtime_out  = dtime_out0*YEAR_SEC    ! a --> s
+dtime_out  = dtime_out0*year2sec    ! a --> s
 #endif
 #if (OUTPUT==2 || OUTPUT==3)
 do n=1, n_output
-   time_output(n) = time_output0(n)*YEAR_SEC  ! a --> s
+   time_output(n) = time_output0(n)*year2sec  ! a --> s
 end do
 #endif
 
@@ -1169,13 +1169,13 @@ end if
 #endif
 
 #if (THK_EVOL==2)
-time_target_topo_init  = TIME_TARGET_TOPO_INIT0 *YEAR_SEC   ! a --> s
-time_target_topo_final = TIME_TARGET_TOPO_FINAL0*YEAR_SEC   ! a --> s
-target_topo_tau_0 = TARGET_TOPO_TAU0 *YEAR_SEC   ! a --> s
+time_target_topo_init  = TIME_TARGET_TOPO_INIT0 *year2sec   ! a --> s
+time_target_topo_final = TIME_TARGET_TOPO_FINAL0*year2sec   ! a --> s
+target_topo_tau_0 = TARGET_TOPO_TAU0 *year2sec   ! a --> s
 #endif
 
 #if (THK_EVOL==3)
-target_topo_tau_0 = TARGET_TOPO_TAU0 *YEAR_SEC   ! a --> s
+target_topo_tau_0 = TARGET_TOPO_TAU0 *year2sec   ! a --> s
 #endif
 
 time = time_init
@@ -1210,7 +1210,7 @@ close(24, status='keep')
 
 !-------- Mean accumulation --------
 
-mean_accum = MEAN_ACCUM*(1.0e-03_dp/YEAR_SEC)*(RHO_W/RHO)
+mean_accum = MEAN_ACCUM*(1.0e-03_dp/year2sec)*(RHO_W/RHO)
 !                      ! mm/a water equiv. --> m/s ice equiv.
 
 !-------- Reading of the prescribed target topography --------
@@ -1344,7 +1344,7 @@ if (trim(adjustl(SMB_CORR_FILE)) /= 'none') then
 
       do i=0, IMAX
       do j=0, JMAX
-         smb_corr_in(j,i) = smb_corr_in_conv(i,j) /YEAR_SEC
+         smb_corr_in(j,i) = smb_corr_in_conv(i,j) /year2sec
                                      ! m/a ice equiv. -> m/s ice equiv.
       end do
       end do
@@ -1373,7 +1373,7 @@ if (trim(adjustl(SMB_CORR_FILE)) /= 'none') then
 
       close(21, status='keep')
 
-      smb_corr_in = smb_corr_in /YEAR_SEC
+      smb_corr_in = smb_corr_in /year2sec
                                 ! m/a ice equiv. -> m/s ice equiv.
 
    end if
@@ -1445,7 +1445,7 @@ call error(errormsg)
 
 #if (TIME_LAG_MOD==1)
 
-time_lag_asth = TIME_LAG*YEAR_SEC   ! a -> s
+time_lag_asth = TIME_LAG*year2sec   ! a -> s
 
 #elif (TIME_LAG_MOD==2)
 
@@ -1467,7 +1467,7 @@ end do
 
 close(29, status='keep')
 
-time_lag_asth = time_lag_asth*YEAR_SEC   ! a -> s
+time_lag_asth = time_lag_asth*year2sec   ! a -> s
 
 #endif
 

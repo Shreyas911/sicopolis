@@ -42,7 +42,7 @@ module output_m
 
   implicit none
 
-  real(dp), parameter :: sec_to_year = 1.0_dp/YEAR_SEC
+  real(dp), parameter :: sec2year = 1.0_dp/year2sec
 
   private
   public :: output1, output2, output4, borehole
@@ -3334,9 +3334,9 @@ call error(errormsg)
 if (.not.flag_compute_flux_vars_only) then
 
 #if (!defined(OUT_TIMES) || OUT_TIMES==1)
-time_conv = real(time*sec_to_year,sp)
+time_conv = real(time*sec2year,sp)
 #elif (OUT_TIMES==2)
-time_conv = real((time+year_zero)*sec_to_year,sp)
+time_conv = real((time+year_zero)*sec2year,sp)
 #else
 errormsg = ' >>> output1: OUT_TIMES must be either 1 or 2!'
 call error(errormsg)
@@ -3391,24 +3391,24 @@ do j=0, JMAX
                                  ! constraining to interval [-90 deg, +90 deg]
    temp_maat_conv(i,j)   = real(temp_maat(j,i),sp)
    temp_s_conv(i,j)      = real(temp_s(j,i),sp)
-   accum_conv(i,j)       = real(accum_flx(j,i)*YEAR_SEC,sp)
-   snowfall_conv(i,j)    = real(snowfall_flx(j,i)*YEAR_SEC,sp)
-   rainfall_conv(i,j)    = real(rainfall_flx(j,i)*YEAR_SEC,sp)
+   accum_conv(i,j)       = real(accum_flx(j,i)*year2sec,sp)
+   snowfall_conv(i,j)    = real(snowfall_flx(j,i)*year2sec,sp)
+   rainfall_conv(i,j)    = real(rainfall_flx(j,i)*year2sec,sp)
    pdd_conv(i,j)         = real(ET(j,i)*one_year,sp)
-   as_perp_conv(i,j)     = real(as_perp_flx(j,i)*YEAR_SEC,sp)
-   as_perp_apl_conv(i,j) = real(as_perp_apl_flx(j,i)*YEAR_SEC,sp)
-   smb_corr_conv(i,j)    = real(smb_corr_flx(j,i)*YEAR_SEC,sp)
+   as_perp_conv(i,j)     = real(as_perp_flx(j,i)*year2sec,sp)
+   as_perp_apl_conv(i,j) = real(as_perp_apl_flx(j,i)*year2sec,sp)
+   smb_corr_conv(i,j)    = real(smb_corr_flx(j,i)*year2sec,sp)
 
-   mb_source_apl_conv(i,j) = real(mb_source_apl_flx(j,i)*YEAR_SEC,sp)
-   runoff_conv(i,j)        = real(runoff_flx(j,i)*YEAR_SEC,sp)
-   runoff_apl_conv(i,j)    = real(runoff_apl_flx(j,i)*YEAR_SEC,sp)
-   Q_b_tot_conv(i,j)       = real(Q_b_tot_flx(j,i)*YEAR_SEC,sp)
-   Q_b_apl_conv(i,j)       = real(Q_b_apl_flx(j,i)*YEAR_SEC,sp)
-   calving_conv(i,j)       = real(calving_flx(j,i)*YEAR_SEC,sp)
-   calving_apl_conv(i,j)   = real(calving_apl_flx(j,i)*YEAR_SEC,sp)
+   mb_source_apl_conv(i,j) = real(mb_source_apl_flx(j,i)*year2sec,sp)
+   runoff_conv(i,j)        = real(runoff_flx(j,i)*year2sec,sp)
+   runoff_apl_conv(i,j)    = real(runoff_apl_flx(j,i)*year2sec,sp)
+   Q_b_tot_conv(i,j)       = real(Q_b_tot_flx(j,i)*year2sec,sp)
+   Q_b_apl_conv(i,j)       = real(Q_b_apl_flx(j,i)*year2sec,sp)
+   calving_conv(i,j)       = real(calving_flx(j,i)*year2sec,sp)
+   calving_apl_conv(i,j)   = real(calving_apl_flx(j,i)*year2sec,sp)
 
 #if (DISC>0)   /* Ice discharge parameterisation */
-   dis_perp_conv(i,j)  = real(dis_perp_flx(j,i)*YEAR_SEC,sp)
+   dis_perp_conv(i,j)  = real(dis_perp_flx(j,i)*year2sec,sp)
    cst_dist_conv(i,j)  = real(cst_dist(j,i)*0.001_dp,sp)
    cos_grad_tc_conv(i,j) = real(cos_grad_tc(j,i),sp)
    mask_mar_conv(i,j)  = mask_mar(j,i)
@@ -3423,43 +3423,43 @@ do j=0, JMAX
    H_cold_conv(i,j)    = real(H_cold(j,i),sp)
    H_temp_conv(i,j)    = real(H_temp(j,i),sp)
    H_conv(i,j)         = real(H(j,i),sp)
-   Q_bm_conv(i,j)      = real(Q_bm_flx(j,i)*YEAR_SEC,sp)
-   Q_tld_conv(i,j)     = real(Q_tld_flx(j,i)*YEAR_SEC,sp)
-   am_perp_conv(i,j)   = real(am_perp_flx(j,i)*YEAR_SEC,sp)
-   qx_conv(i,j)        = real(qx(j,i)*YEAR_SEC,sp)
-   qy_conv(i,j)        = real(qy(j,i)*YEAR_SEC,sp)
-   vx_m_sia_conv(i,j)  = real(vx_m_sia(j,i)*YEAR_SEC,sp)
-   vy_m_sia_conv(i,j)  = real(vy_m_sia(j,i)*YEAR_SEC,sp)
-   vx_m_ssa_conv(i,j)  = real(vx_m_ssa(j,i)*YEAR_SEC,sp)
-   vy_m_ssa_conv(i,j)  = real(vy_m_ssa(j,i)*YEAR_SEC,sp)
-   dzs_dtau_conv(i,j)  = real(dzs_dtau_flx(j,i)*YEAR_SEC,sp)
-   dzm_dtau_conv(i,j)  = real(dzm_dtau_flx(j,i)*YEAR_SEC,sp)
-   dzb_dtau_conv(i,j)  = real(dzb_dtau_flx(j,i)*YEAR_SEC,sp)
-   dzl_dtau_conv(i,j)  = real(dzl_dtau_flx(j,i)*YEAR_SEC,sp)
-   dH_c_dtau_conv(i,j) = real(dH_c_dtau_flx(j,i)*YEAR_SEC,sp)
-   dH_t_dtau_conv(i,j) = real(dH_t_dtau_flx(j,i)*YEAR_SEC,sp)
-   dH_dtau_conv(i,j)   = real(dH_dtau_flx(j,i)*YEAR_SEC,sp)
-   vx_b_g_conv(i,j)    = real(vx_b_g(j,i)*YEAR_SEC,sp)
-   vy_b_g_conv(i,j)    = real(vy_b_g(j,i)*YEAR_SEC,sp)
-   vz_b_conv(i,j)      = real(vz_b(j,i)*YEAR_SEC,sp)
+   Q_bm_conv(i,j)      = real(Q_bm_flx(j,i)*year2sec,sp)
+   Q_tld_conv(i,j)     = real(Q_tld_flx(j,i)*year2sec,sp)
+   am_perp_conv(i,j)   = real(am_perp_flx(j,i)*year2sec,sp)
+   qx_conv(i,j)        = real(qx(j,i)*year2sec,sp)
+   qy_conv(i,j)        = real(qy(j,i)*year2sec,sp)
+   vx_m_sia_conv(i,j)  = real(vx_m_sia(j,i)*year2sec,sp)
+   vy_m_sia_conv(i,j)  = real(vy_m_sia(j,i)*year2sec,sp)
+   vx_m_ssa_conv(i,j)  = real(vx_m_ssa(j,i)*year2sec,sp)
+   vy_m_ssa_conv(i,j)  = real(vy_m_ssa(j,i)*year2sec,sp)
+   dzs_dtau_conv(i,j)  = real(dzs_dtau_flx(j,i)*year2sec,sp)
+   dzm_dtau_conv(i,j)  = real(dzm_dtau_flx(j,i)*year2sec,sp)
+   dzb_dtau_conv(i,j)  = real(dzb_dtau_flx(j,i)*year2sec,sp)
+   dzl_dtau_conv(i,j)  = real(dzl_dtau_flx(j,i)*year2sec,sp)
+   dH_c_dtau_conv(i,j) = real(dH_c_dtau_flx(j,i)*year2sec,sp)
+   dH_t_dtau_conv(i,j) = real(dH_t_dtau_flx(j,i)*year2sec,sp)
+   dH_dtau_conv(i,j)   = real(dH_dtau_flx(j,i)*year2sec,sp)
+   vx_b_g_conv(i,j)    = real(vx_b_g(j,i)*year2sec,sp)
+   vy_b_g_conv(i,j)    = real(vy_b_g(j,i)*year2sec,sp)
+   vz_b_conv(i,j)      = real(vz_b(j,i)*year2sec,sp)
    vh_b_conv(i,j)      = sqrt( vx_b_g_conv(i,j)**2 + vy_b_g_conv(i,j)**2 )
-   vx_s_g_conv(i,j)    = real(vx_s_g(j,i)*YEAR_SEC,sp)
-   vy_s_g_conv(i,j)    = real(vy_s_g(j,i)*YEAR_SEC,sp)
-   vz_s_conv(i,j)      = real(vz_s(j,i)*YEAR_SEC,sp)
+   vx_s_g_conv(i,j)    = real(vx_s_g(j,i)*year2sec,sp)
+   vy_s_g_conv(i,j)    = real(vy_s_g(j,i)*year2sec,sp)
+   vz_s_conv(i,j)      = real(vz_s(j,i)*year2sec,sp)
    vh_s_conv(i,j)      = sqrt( vx_s_g_conv(i,j)**2 + vy_s_g_conv(i,j)**2 )
-   vx_m_g_conv(i,j)    = real(vx_m_g(j,i)*YEAR_SEC,sp)
-   vy_m_g_conv(i,j)    = real(vy_m_g(j,i)*YEAR_SEC,sp)
+   vx_m_g_conv(i,j)    = real(vx_m_g(j,i)*year2sec,sp)
+   vy_m_g_conv(i,j)    = real(vy_m_g(j,i)*year2sec,sp)
    vh_m_conv(i,j)      = sqrt( vx_m_g_conv(i,j)**2 + vy_m_g_conv(i,j)**2 )
    temp_b_conv(i,j)    = real(temp_b(j,i),sp)
    temph_b_conv(i,j)   = real(temph_b(j,i),sp)
    tau_b_driving_conv(i,j) = real(tau_b_driving(j,i),sp)
    tau_b_drag_conv(i,j)    = real(tau_b_drag(j,i),sp)
    p_b_w_conv(i,j)     = real(p_b_w(j,i),sp)
-   q_w_conv(i,j)       = real(q_w(j,i)*YEAR_SEC,sp)
-   q_w_x_conv(i,j)     = real(q_w_x(j,i)*YEAR_SEC,sp)
-   q_w_y_conv(i,j)     = real(q_w_y(j,i)*YEAR_SEC,sp)
+   q_w_conv(i,j)       = real(q_w(j,i)*year2sec,sp)
+   q_w_x_conv(i,j)     = real(q_w_x(j,i)*year2sec,sp)
+   q_w_y_conv(i,j)     = real(q_w_y(j,i)*year2sec,sp)
    H_w_conv(i,j)       = real(H_w(j,i),sp)
-   q_gl_g_conv(i,j)    = real(q_gl_g_flx(j,i)*YEAR_SEC,sp)
+   q_gl_g_conv(i,j)    = real(q_gl_g_flx(j,i)*year2sec,sp)
    ratio_sl_x_conv(i,j) = real(ratio_sl_x(j,i),sp)
    ratio_sl_y_conv(i,j) = real(ratio_sl_y(j,i),sp)
 
@@ -3543,21 +3543,21 @@ do j=0, JMAX
    end do
 
    do kt=0, KTMAX
-      vx_t_conv(i,j,kt)    = real(vx_t(kt,j,i)*YEAR_SEC,sp)
-      vy_t_conv(i,j,kt)    = real(vy_t(kt,j,i)*YEAR_SEC,sp)
-      vz_t_conv(i,j,kt)    = real(vz_t(kt,j,i)*YEAR_SEC,sp)
+      vx_t_conv(i,j,kt)    = real(vx_t(kt,j,i)*year2sec,sp)
+      vy_t_conv(i,j,kt)    = real(vy_t(kt,j,i)*year2sec,sp)
+      vz_t_conv(i,j,kt)    = real(vz_t(kt,j,i)*year2sec,sp)
       omega_t_conv(i,j,kt) = real(omega_t(kt,j,i),sp)
-      age_t_conv(i,j,kt)   = real(age_t(kt,j,i)*sec_to_year,sp)
+      age_t_conv(i,j,kt)   = real(age_t(kt,j,i)*sec2year,sp)
       enth_t_conv(i,j,kt)  = real(enth_t(kt,j,i),sp)
       enh_t_conv(i,j,kt)   = real(enh_t(kt,j,i),sp)
    end do
 
    do kc=0, KCMAX
-      vx_c_conv(i,j,kc)    = real(vx_c(kc,j,i)*YEAR_SEC,sp)
-      vy_c_conv(i,j,kc)    = real(vy_c(kc,j,i)*YEAR_SEC,sp)
-      vz_c_conv(i,j,kc)    = real(vz_c(kc,j,i)*YEAR_SEC,sp)
+      vx_c_conv(i,j,kc)    = real(vx_c(kc,j,i)*year2sec,sp)
+      vy_c_conv(i,j,kc)    = real(vy_c(kc,j,i)*year2sec,sp)
+      vz_c_conv(i,j,kc)    = real(vz_c(kc,j,i)*year2sec,sp)
       temp_c_conv(i,j,kc)  = real(temp_c(kc,j,i),sp)
-      age_c_conv(i,j,kc)   = real(age_c(kc,j,i)*sec_to_year,sp)
+      age_c_conv(i,j,kc)   = real(age_c(kc,j,i)*sec2year,sp)
       enth_c_conv(i,j,kc)  = real(enth_c(kc,j,i),sp)
       omega_c_conv(i,j,kc) = real(omega_c(kc,j,i),sp)
       enh_c_conv(i,j,kc)   = real(enh_c(kc,j,i),sp)
@@ -4658,9 +4658,9 @@ V_sle  = V_af*(RHO/RHO_W)/A_surf   ! m^3 ice equiv./m^2 -> m water equiv.
 #endif
 
 #if (!defined(OUT_TIMES) || OUT_TIMES==1)
-time_val = time *sec_to_year   ! s -> a
+time_val = time *sec2year   ! s -> a
 #elif (OUT_TIMES==2)
-time_val = (time+year_zero) *sec_to_year   ! s -> a
+time_val = (time+year_zero) *sec2year   ! s -> a
 #else
 errormsg = ' >>> output2: OUT_TIMES must be either 1 or 2!'
 call error(errormsg)
@@ -4669,7 +4669,7 @@ call error(errormsg)
 V_tot = V_grounded + V_floating   ! in m^3
 A_tot = A_grounded + A_floating   ! in m^2
 
-vs_max = vs_max *YEAR_SEC              ! m/s -> m/a
+vs_max = vs_max *year2sec              ! m/s -> m/a
 
 #if (defined(ANT) \
       || defined(GRL) \
@@ -4680,20 +4680,20 @@ vs_max = vs_max *YEAR_SEC              ! m/s -> m/a
       || defined(EMTP2SGE) \
       || defined(XYZ))   /* terrestrial ice sheet */
 
-Q_s    = Q_s    *YEAR_SEC *(RHO/RHO_W)
+Q_s    = Q_s    *year2sec *(RHO/RHO_W)
                 ! m^3/s ice equiv. -> m^3/a water equiv.
-Q_b    = Q_b    *YEAR_SEC *(RHO/RHO_W)
+Q_b    = Q_b    *year2sec *(RHO/RHO_W)
                 ! m^3/s ice equiv. -> m^3/a water equiv.
-Q_temp = Q_temp *YEAR_SEC *(RHO/RHO_W)
+Q_temp = Q_temp *year2sec *(RHO/RHO_W)
                 ! m^3/s ice equiv. -> m^3/a water equiv.
 
 #elif (defined(NMARS) || defined(SMARS))   /* Martian ice sheet */
 
-Q_s    = Q_s    *YEAR_SEC *(RHO_I/RHO_W)*(1.0_dp-FRAC_DUST)
+Q_s    = Q_s    *year2sec *(RHO_I/RHO_W)*(1.0_dp-FRAC_DUST)
                 ! m^3/s (ice+dust) equiv. -> m^3/a water equiv.
-Q_b    = Q_b    *YEAR_SEC *(RHO_I/RHO_W)*(1.0_dp-FRAC_DUST)
+Q_b    = Q_b    *year2sec *(RHO_I/RHO_W)*(1.0_dp-FRAC_DUST)
                 ! m^3/s (ice+dust) equiv. -> m^3/a water equiv.
-Q_temp = Q_temp *YEAR_SEC *(RHO_I/RHO_W)*(1.0_dp-FRAC_DUST)
+Q_temp = Q_temp *year2sec *(RHO_I/RHO_W)*(1.0_dp-FRAC_DUST)
                 ! m^3/s (ice+dust) equiv. -> m^3/a water equiv.
 #endif
 
@@ -5495,9 +5495,9 @@ do j=0, JMAX
 end do
 end do
 
-precip_tot = precip_tot *YEAR_SEC
+precip_tot = precip_tot *year2sec
              ! m^3/s ice equiv. -> m^3/a ice equiv.
-dV_dt      = dV_dt      *YEAR_SEC
+dV_dt      = dV_dt      *year2sec
              ! m^3/s ice equiv. -> m^3/a ice equiv.
 
 ! MB:   total mass balance as computed in subroutine apply_smb
@@ -5568,23 +5568,23 @@ bmb_gr_tot = -GIMB-LQH
 ! shelf ice
 bmb_fl_tot = -SIMB  ! hidden is counted as large scale calving
 
-MB         = MB         * YEAR_SEC
+MB         = MB         * year2sec
                         ! m^3/s ice equiv. -> m^3/a ice equiv.
-MBMIS      = MBMIS      * YEAR_SEC
+MBMIS      = MBMIS      * year2sec
                         ! m^3/s ice equiv. -> m^3/a ice equiv.
-disc_lsc   = disc_lsc   * YEAR_SEC
+disc_lsc   = disc_lsc   * year2sec
                         ! m^3/s ice equiv. -> m^3/a ice equiv.
-disc_ssc   = disc_ssc   * YEAR_SEC
+disc_ssc   = disc_ssc   * year2sec
                         ! m^3/s ice equiv. -> m^3/a ice equiv.
-bmb_tot    = bmb_tot    * YEAR_SEC
+bmb_tot    = bmb_tot    * year2sec
                         ! m^3/s ice equiv. -> m^3/a ice equiv.
-bmb_fl_tot = bmb_fl_tot * YEAR_SEC
+bmb_fl_tot = bmb_fl_tot * year2sec
                         ! m^3/s ice equiv. -> m^3/a ice equiv.
-bmb_gr_tot = bmb_gr_tot * YEAR_SEC
+bmb_gr_tot = bmb_gr_tot * year2sec
                         ! m^3/s ice equiv. -> m^3/a ice equiv.
-runoff_tot = runoff_tot * YEAR_SEC
+runoff_tot = runoff_tot * year2sec
                         ! m^3/s ice equiv. -> m^3/a ice equiv.
-calv_tot   = calv_tot   * YEAR_SEC
+calv_tot   = calv_tot   * year2sec
                         ! m^3/s ice equiv. -> m^3/a ice equiv.
 
 if (precip_tot /= 0.0_dp) then
@@ -6056,18 +6056,18 @@ if (n_core >= 1) then
 !  ------ Conversion
 
 #if (!defined(OUT_TIMES) || OUT_TIMES==1)
-   time_val = time *sec_to_year   ! s -> a
+   time_val = time *sec2year   ! s -> a
 #elif (OUT_TIMES==2)
-   time_val = (time+year_zero) *sec_to_year   ! s -> a
+   time_val = (time+year_zero) *sec2year   ! s -> a
 #else
    errormsg = ' >>> output4: OUT_TIMES must be either 1 or 2!'
    call error(errormsg)
 #endif
 
-   vh_b_core = vh_b_core *YEAR_SEC   ! m/s -> m/a
-   vh_s_core = vh_s_core *YEAR_SEC   ! m/s -> m/a
+   vh_b_core = vh_b_core *year2sec   ! m/s -> m/a
+   vh_s_core = vh_s_core *year2sec   ! m/s -> m/a
 
-   bmb_core  = bmb_core  *YEAR_SEC   ! m ice equiv./s -> m ice equiv./a
+   bmb_core  = bmb_core  *year2sec   ! m ice equiv./s -> m ice equiv./a
 
 !-------- Writing of data on file --------
 
@@ -6648,26 +6648,26 @@ end do
 !  ------ Conversion
 
 #if (!defined(OUT_TIMES) || OUT_TIMES==1)
-time_val = time *sec_to_year   ! s -> a
+time_val = time *sec2year   ! s -> a
 #elif (OUT_TIMES==2)
-time_val = (time+year_zero) *sec_to_year   ! s -> a
+time_val = (time+year_zero) *sec2year   ! s -> a
 #else
 errormsg = ' >>> output5: OUT_TIMES must be either 1 or 2!'
 call error(errormsg)
 #endif
 
 do n=1, n_surf
-   accum_surf(n)    = accum_surf(n)    *YEAR_SEC   ! m/s -> m/a
-   as_perp_surf(n)  = as_perp_surf(n)  *YEAR_SEC   ! m/s -> m/a
-   snowfall_surf(n) = snowfall_surf(n) *YEAR_SEC   ! m/s -> m/a
-   rainfall_surf(n) = rainfall_surf(n) *YEAR_SEC   ! m/s -> m/a
-   runoff_surf(n)   = runoff_surf(n)   *YEAR_SEC   ! m/s -> m/a
-   vx_surf(n)       = vx_surf(n)       *YEAR_SEC   ! m/s -> m/a
-   vy_surf(n)       = vy_surf(n)       *YEAR_SEC   ! m/s -> m/a
-   vz_surf(n)       = vz_surf(n)       *YEAR_SEC   ! m/s -> m/a
-   vx_base(n)       = vx_base(n)       *YEAR_SEC   ! m/s -> m/a
-   vy_base(n)       = vy_base(n)       *YEAR_SEC   ! m/s -> m/a
-   vz_base(n)       = vz_base(n)       *YEAR_SEC   ! m/s -> m/a
+   accum_surf(n)    = accum_surf(n)    *year2sec   ! m/s -> m/a
+   as_perp_surf(n)  = as_perp_surf(n)  *year2sec   ! m/s -> m/a
+   snowfall_surf(n) = snowfall_surf(n) *year2sec   ! m/s -> m/a
+   rainfall_surf(n) = rainfall_surf(n) *year2sec   ! m/s -> m/a
+   runoff_surf(n)   = runoff_surf(n)   *year2sec   ! m/s -> m/a
+   vx_surf(n)       = vx_surf(n)       *year2sec   ! m/s -> m/a
+   vy_surf(n)       = vy_surf(n)       *year2sec   ! m/s -> m/a
+   vz_surf(n)       = vz_surf(n)       *year2sec   ! m/s -> m/a
+   vx_base(n)       = vx_base(n)       *year2sec   ! m/s -> m/a
+   vy_base(n)       = vy_base(n)       *year2sec   ! m/s -> m/a
+   vz_base(n)       = vz_base(n)       *year2sec   ! m/s -> m/a
 end do
 
 !-------- Writing of data on file --------

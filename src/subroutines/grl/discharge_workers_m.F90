@@ -200,7 +200,7 @@ contains
 #endif /* Normal vs. OpenAD */
 
 #if (defined(DTIME_MAR_COA0))
-  dtime_mar_coa = DTIME_MAR_COA0*YEAR_SEC   ! a -> s
+  dtime_mar_coa = DTIME_MAR_COA0*year2sec   ! a -> s
 #else
   errormsg = ' >>> disc_param: DTIME_MAR_COA0 not defined in header file!'
   call error(errormsg)
@@ -304,7 +304,7 @@ contains
   !  end do
   !  end do
   !
-  !  disc_tot = disc_tot*YEAR_SEC         ! m^3/s -> m^3/a
+  !  disc_tot = disc_tot*year2sec         ! m^3/s -> m^3/a
 
   disc_tot = 0.0_dp
 
@@ -318,7 +318,7 @@ contains
   end do
   end do
 
-  disc_tot = disc_tot *YEAR_SEC *(RHO/RHO_W)
+  disc_tot = disc_tot *year2sec *(RHO/RHO_W)
                   ! m^3/s ice equiv. -> m^3/a water equiv.
 
   disc_target = disc_target*1.0e+12_dp/RHO_W   ! Gt/a -> m^3/a water equiv.

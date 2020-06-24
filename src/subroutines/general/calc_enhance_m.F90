@@ -82,7 +82,7 @@ contains
   integer(i4b) :: i, j, kc, kt
   real(dp)     :: age_trans
 
-  age_trans = AGE_TRANS_0*YEAR_SEC
+  age_trans = AGE_TRANS_0*year2sec
 
   do i=0, IMAX
   do j=0, JMAX
@@ -131,9 +131,9 @@ contains
   integer(i4b) :: i, j, kc, kt
   real(dp)     :: date_trans1, date_trans2, date_trans3
 
-  date_trans1 = DATE_TRANS1_0*YEAR_SEC
-  date_trans2 = DATE_TRANS2_0*YEAR_SEC
-  date_trans3 = DATE_TRANS3_0*YEAR_SEC
+  date_trans1 = DATE_TRANS1_0*year2sec
+  date_trans2 = DATE_TRANS2_0*year2sec
+  date_trans3 = DATE_TRANS3_0*year2sec
 
   do i=0, IMAX
   do j=0, JMAX

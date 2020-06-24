@@ -1001,21 +1001,21 @@ close(10, status='keep')
 
 !-------- Conversion of time quantities --------
 
-year_zero  = year_zero*YEAR_SEC     ! a --> s
-time_init  = time_init0*YEAR_SEC    ! a --> s
-time_end   = time_end0*YEAR_SEC     ! a --> s
-dtime      = dtime0*YEAR_SEC        ! a --> s
-dtime_temp = dtime_temp0*YEAR_SEC   ! a --> s
+year_zero  = year_zero*year2sec     ! a --> s
+time_init  = time_init0*year2sec    ! a --> s
+time_end   = time_end0*year2sec     ! a --> s
+dtime      = dtime0*year2sec        ! a --> s
+dtime_temp = dtime_temp0*year2sec   ! a --> s
 #if (REBOUND==2)
-dtime_wss  = dtime_wss0*YEAR_SEC    ! a --> s
+dtime_wss  = dtime_wss0*year2sec    ! a --> s
 #endif
-dtime_ser  = dtime_ser0*YEAR_SEC    ! a --> s
+dtime_ser  = dtime_ser0*year2sec    ! a --> s
 #if (OUTPUT==1 || OUTPUT==3)
-dtime_out  = dtime_out0*YEAR_SEC    ! a --> s
+dtime_out  = dtime_out0*year2sec    ! a --> s
 #endif
 #if (OUTPUT==2 || OUTPUT==3)
 do n=1, n_output
-   time_output(n) = time_output0(n)*YEAR_SEC  ! a --> s
+   time_output(n) = time_output0(n)*year2sec  ! a --> s
 end do
 #endif
 
@@ -1107,7 +1107,7 @@ close(21, status='keep')
 
 !  ------ Conversion mm/a water equivalent --> m/s ice equivalent
 
-precip_present = precip_present *(1.0e-03_dp/YEAR_SEC)*(RHO_W/RHO)
+precip_present = precip_present *(1.0e-03_dp/year2sec)*(RHO_W/RHO)
                                 ! mm/a water equiv. -> m/s ice equiv.
 
 !-------- Reading of LGM monthly-mean precipitation-rate anomalies --------
@@ -1164,7 +1164,7 @@ end do
 
 !-------- Mean accumulation --------
 
-mean_accum = MEAN_ACCUM*(1.0e-03_dp/YEAR_SEC)*(RHO_W/RHO)
+mean_accum = MEAN_ACCUM*(1.0e-03_dp/year2sec)*(RHO_W/RHO)
                        ! mm/a water equiv. -> m/s ice equiv.
 
 !-------- Reading of present topography mask --------
@@ -1460,7 +1460,7 @@ call read_kei()
 
 #if (TIME_LAG_MOD==1)
 
-time_lag_asth = TIME_LAG*YEAR_SEC   ! a -> s
+time_lag_asth = TIME_LAG*year2sec   ! a -> s
 
 #elif (TIME_LAG_MOD==2)
 
@@ -1482,7 +1482,7 @@ end do
 
 close(29, status='keep')
 
-time_lag_asth = time_lag_asth*YEAR_SEC   ! a -> s
+time_lag_asth = time_lag_asth*year2sec   ! a -> s
 
 #endif
 

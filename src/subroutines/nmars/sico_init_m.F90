@@ -975,25 +975,25 @@ close(10, status='keep')
 
 !-------- Conversion of time quantities --------
 
-year_zero  = year_zero*YEAR_SEC     ! a --> s
-time_init  = time_init0*YEAR_SEC    ! a --> s
-time_end   = time_end0*YEAR_SEC     ! a --> s
-dtime      = dtime0*YEAR_SEC        ! a --> s
-dtime_temp = dtime_temp0*YEAR_SEC   ! a --> s
+year_zero  = year_zero*year2sec     ! a --> s
+time_init  = time_init0*year2sec    ! a --> s
+time_end   = time_end0*year2sec     ! a --> s
+dtime      = dtime0*year2sec        ! a --> s
+dtime_temp = dtime_temp0*year2sec   ! a --> s
 #if (REBOUND==2)
-dtime_wss  = dtime_wss0*YEAR_SEC    ! a --> s
+dtime_wss  = dtime_wss0*year2sec    ! a --> s
 #endif
 #if (CHASM==2)
-time_chasm_init = time_chasm_init0 *YEAR_SEC    ! a --> s
-time_chasm_end  = time_chasm_end0  *YEAR_SEC    ! a --> s
+time_chasm_init = time_chasm_init0 *year2sec    ! a --> s
+time_chasm_end  = time_chasm_end0  *year2sec    ! a --> s
 #endif
-dtime_ser  = dtime_ser0*YEAR_SEC    ! a --> s
+dtime_ser  = dtime_ser0*year2sec    ! a --> s
 #if (OUTPUT==1 || OUTPUT==3)
-dtime_out  = dtime_out0*YEAR_SEC    ! a --> s
+dtime_out  = dtime_out0*year2sec    ! a --> s
 #endif
 #if (OUTPUT==2 || OUTPUT==3)
 do n=1, n_output
-   time_output(n) = time_output0(n)*YEAR_SEC  ! a --> s
+   time_output(n) = time_output0(n)*year2sec  ! a --> s
 end do
 #endif
 
@@ -1072,12 +1072,12 @@ do j=0, JMAX
 #if (ACC_UNIT==1)
 
    accum_present(j,i) = accum_present(j,i) &
-                           *(1.0e-03_dp/YEAR_SEC)*(RHO_W/RHO_I) &
+                           *(1.0e-03_dp/year2sec)*(RHO_W/RHO_I) &
                            *(1.0_dp/(1.0_dp-FRAC_DUST))
 
 #elif (ACC_UNIT==2)
 
-   accum_present(j,i) = accum_present(j,i)*(1.0e-03_dp/YEAR_SEC)
+   accum_present(j,i) = accum_present(j,i)*(1.0e-03_dp/year2sec)
 
 #endif
 
@@ -1088,13 +1088,13 @@ end do
 
 #if (ACC_UNIT==1)
 
-mean_accum = MEAN_ACCUM*(1.0e-03_dp/YEAR_SEC)*(RHO_W/RHO_I) &
+mean_accum = MEAN_ACCUM*(1.0e-03_dp/year2sec)*(RHO_W/RHO_I) &
                        *(1.0_dp/(1.0_dp-FRAC_DUST))
 !                      ! mm/a water equiv. --> m/s (ice+dust) equiv.
 
 #elif (ACC_UNIT==2)
 
-mean_accum = MEAN_ACCUM*(1.0e-03_dp/YEAR_SEC)
+mean_accum = MEAN_ACCUM*(1.0e-03_dp/year2sec)
 !                      ! mm/a (ice+dust) equiv. --> m/s (ice+dust) equiv.
 
 #endif
@@ -1240,7 +1240,7 @@ call read_kei()
 
 #if (TIME_LAG_MOD==1)
 
-time_lag_asth = TIME_LAG*YEAR_SEC   ! a -> s
+time_lag_asth = TIME_LAG*year2sec   ! a -> s
 
 #elif (TIME_LAG_MOD==2)
 
@@ -1262,7 +1262,7 @@ end do
 
 close(29, status='keep')
 
-time_lag_asth = time_lag_asth*YEAR_SEC   ! a -> s
+time_lag_asth = time_lag_asth*year2sec   ! a -> s
 
 #endif
 

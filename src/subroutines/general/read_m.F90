@@ -87,6 +87,7 @@ contains
 
   integer(i4b)       :: i, j, kc, kt, kr, n
   integer(i4b)       :: ios
+  real(dp)           :: year2sec_inv
   character(len=256) :: filename_with_path
   logical            :: flag_temp_age_only
 
@@ -701,6 +702,8 @@ call error(errormsg)
 
 !-------- Convert data to real*8 and years to seconds --------
 
+  year2sec_inv = 1.0_dp/year2sec
+
   if (.not.flag_temp_age_only) then
 
      z_sl = real(z_sl_conv,dp)
@@ -733,33 +736,33 @@ call error(errormsg)
         H_c(j,i)     = real(H_conv(i,j),dp)
         H_t(j,i)     = 0.0_dp
 #endif
-        Q_bm(j,i)    = real(Q_bm_conv(i,j),dp)/YEAR_SEC
-        Q_tld(j,i)   = real(Q_tld_conv(i,j),dp)/YEAR_SEC
-        am_perp(j,i) = real(am_perp_conv(i,j),dp)/YEAR_SEC
-        qx(j,i)      = real(qx_conv(i,j),dp)/YEAR_SEC
-        qy(j,i)      = real(qy_conv(i,j),dp)/YEAR_SEC
-        vx_m_sia(j,i) = real(vx_m_sia_conv(i,j),dp)/YEAR_SEC
-        vy_m_sia(j,i) = real(vy_m_sia_conv(i,j),dp)/YEAR_SEC
-        vx_m_ssa(j,i) = real(vx_m_ssa_conv(i,j),dp)/YEAR_SEC
-        vy_m_ssa(j,i) = real(vy_m_ssa_conv(i,j),dp)/YEAR_SEC
-        dzs_dtau(j,i)  = real(dzs_dtau_conv(i,j),dp)/YEAR_SEC
-        dzm_dtau(j,i)  = real(dzm_dtau_conv(i,j),dp)/YEAR_SEC
-        dzb_dtau(j,i)  = real(dzb_dtau_conv(i,j),dp)/YEAR_SEC
-        dzl_dtau(j,i)  = real(dzl_dtau_conv(i,j),dp)/YEAR_SEC
-        dH_c_dtau(j,i) = real(dH_c_dtau_conv(i,j),dp)/YEAR_SEC
-        dH_t_dtau(j,i) = real(dH_t_dtau_conv(i,j),dp)/YEAR_SEC
-        vx_b_g(j,i)  = real(vx_b_g_conv(i,j),dp)/YEAR_SEC
-        vy_b_g(j,i)  = real(vy_b_g_conv(i,j),dp)/YEAR_SEC
-        vz_b(j,i)    = real(vz_b_conv(i,j),dp)/YEAR_SEC
-        vx_s_g(j,i)  = real(vx_s_g_conv(i,j),dp)/YEAR_SEC
-        vy_s_g(j,i)  = real(vy_s_g_conv(i,j),dp)/YEAR_SEC
-        vz_s(j,i)    = real(vz_s_conv(i,j),dp)/YEAR_SEC
+        Q_bm(j,i)    = real(Q_bm_conv(i,j),dp)*year2sec_inv
+        Q_tld(j,i)   = real(Q_tld_conv(i,j),dp)*year2sec_inv
+        am_perp(j,i) = real(am_perp_conv(i,j),dp)*year2sec_inv
+        qx(j,i)      = real(qx_conv(i,j),dp)*year2sec_inv
+        qy(j,i)      = real(qy_conv(i,j),dp)*year2sec_inv
+        vx_m_sia(j,i) = real(vx_m_sia_conv(i,j),dp)*year2sec_inv
+        vy_m_sia(j,i) = real(vy_m_sia_conv(i,j),dp)*year2sec_inv
+        vx_m_ssa(j,i) = real(vx_m_ssa_conv(i,j),dp)*year2sec_inv
+        vy_m_ssa(j,i) = real(vy_m_ssa_conv(i,j),dp)*year2sec_inv
+        dzs_dtau(j,i)  = real(dzs_dtau_conv(i,j),dp)*year2sec_inv
+        dzm_dtau(j,i)  = real(dzm_dtau_conv(i,j),dp)*year2sec_inv
+        dzb_dtau(j,i)  = real(dzb_dtau_conv(i,j),dp)*year2sec_inv
+        dzl_dtau(j,i)  = real(dzl_dtau_conv(i,j),dp)*year2sec_inv
+        dH_c_dtau(j,i) = real(dH_c_dtau_conv(i,j),dp)*year2sec_inv
+        dH_t_dtau(j,i) = real(dH_t_dtau_conv(i,j),dp)*year2sec_inv
+        vx_b_g(j,i)  = real(vx_b_g_conv(i,j),dp)*year2sec_inv
+        vy_b_g(j,i)  = real(vy_b_g_conv(i,j),dp)*year2sec_inv
+        vz_b(j,i)    = real(vz_b_conv(i,j),dp)*year2sec_inv
+        vx_s_g(j,i)  = real(vx_s_g_conv(i,j),dp)*year2sec_inv
+        vy_s_g(j,i)  = real(vy_s_g_conv(i,j),dp)*year2sec_inv
+        vz_s(j,i)    = real(vz_s_conv(i,j),dp)*year2sec_inv
         temp_b(j,i)  = real(temp_b_conv(i,j),dp)
         temph_b(j,i) = real(temph_b_conv(i,j),dp)
         p_b_w(j,i)   = real(p_b_w_conv(i,j),dp)
-        q_w(j,i)     = real(q_w_conv(i,j),dp)/YEAR_SEC
-        q_w_x(j,i)   = real(q_w_x_conv(i,j),dp)/YEAR_SEC
-        q_w_y(j,i)   = real(q_w_y_conv(i,j),dp)/YEAR_SEC
+        q_w(j,i)     = real(q_w_conv(i,j),dp)*year2sec_inv
+        q_w_x(j,i)   = real(q_w_x_conv(i,j),dp)*year2sec_inv
+        q_w_y(j,i)   = real(q_w_y_conv(i,j),dp)*year2sec_inv
         H_w(j,i)     = real(H_w_conv(i,j),dp)
         ratio_sl_x(j,i) = real(ratio_sl_x_conv(i,j),dp)
         ratio_sl_y(j,i) = real(ratio_sl_y_conv(i,j),dp)
@@ -838,21 +841,21 @@ call error(errormsg)
         end do
 
         do kt=0, KTMAX
-           vx_t(kt,j,i)    = real(vx_t_conv(i,j,kt),dp)/YEAR_SEC
-           vy_t(kt,j,i)    = real(vy_t_conv(i,j,kt),dp)/YEAR_SEC
-           vz_t(kt,j,i)    = real(vz_t_conv(i,j,kt),dp)/YEAR_SEC
+           vx_t(kt,j,i)    = real(vx_t_conv(i,j,kt),dp)*year2sec_inv
+           vy_t(kt,j,i)    = real(vy_t_conv(i,j,kt),dp)*year2sec_inv
+           vz_t(kt,j,i)    = real(vz_t_conv(i,j,kt),dp)*year2sec_inv
            omega_t(kt,j,i) = real(omega_t_conv(i,j,kt),dp)
-           age_t(kt,j,i)   = real(age_t_conv(i,j,kt),dp)*YEAR_SEC
+           age_t(kt,j,i)   = real(age_t_conv(i,j,kt),dp)*year2sec
            enth_t(kt,j,i)  = real(enth_t_conv(i,j,kt),dp)
            enh_t(kt,j,i)   = real(enh_t_conv(i,j,kt),dp)
         end do
 
         do kc=0, KCMAX
-           vx_c(kc,j,i)    = real(vx_c_conv(i,j,kc),dp)/YEAR_SEC
-           vy_c(kc,j,i)    = real(vy_c_conv(i,j,kc),dp)/YEAR_SEC
-           vz_c(kc,j,i)    = real(vz_c_conv(i,j,kc),dp)/YEAR_SEC
+           vx_c(kc,j,i)    = real(vx_c_conv(i,j,kc),dp)*year2sec_inv
+           vy_c(kc,j,i)    = real(vy_c_conv(i,j,kc),dp)*year2sec_inv
+           vz_c(kc,j,i)    = real(vz_c_conv(i,j,kc),dp)*year2sec_inv
            temp_c(kc,j,i)  = real(temp_c_conv(i,j,kc),dp)
-           age_c(kc,j,i)   = real(age_c_conv(i,j,kc),dp)*YEAR_SEC
+           age_c(kc,j,i)   = real(age_c_conv(i,j,kc),dp)*year2sec
            enth_c(kc,j,i)  = real(enth_c_conv(i,j,kc),dp)
            omega_c(kc,j,i) = real(omega_c_conv(i,j,kc),dp)
            enh_c(kc,j,i)   = real(enh_c_conv(i,j,kc),dp)
@@ -932,12 +935,12 @@ call error(errormsg)
 
            do kt=0, KTMAX
               opt_omega_t(kt,j,i) = real(omega_t_conv(i,j,kt),dp)
-              opt_age_t(kt,j,i)   = real(age_t_conv(i,j,kt),dp)*YEAR_SEC
+              opt_age_t(kt,j,i)   = real(age_t_conv(i,j,kt),dp)*year2sec
            end do
 
            do kc=0, KCMAX
               opt_temp_c(kc,j,i)  = real(temp_c_conv(i,j,kc),dp)
-              opt_age_c(kc,j,i)   = real(age_c_conv(i,j,kc),dp)*YEAR_SEC
+              opt_age_c(kc,j,i)   = real(age_c_conv(i,j,kc),dp)*year2sec
               opt_omega_c(kc,j,i) = real(omega_c_conv(i,j,kc),dp)
            end do
 
@@ -1393,8 +1396,8 @@ file='subroutines/openad/gridded_age_unc.dat', status='old')
     do k=0,KDATA
        do j=0,JMAX
           do i=0,IMAX
-                age_data(k,j,i) = age_data(k,j,i) * YEAR_SEC
-                age_unc(k,j,i)  = age_unc(k,j,i)  * YEAR_SEC
+                age_data(k,j,i) = age_data(k,j,i) * year2sec
+                age_unc(k,j,i)  = age_unc(k,j,i)  * year2sec
             if (debug) then ! cheat the FDS by making initial ages = to data
                 age_c    (k,j,i) = age_data(k,j,i)
                 age_c_neu(k,j,i) = age_data(k,j,i)

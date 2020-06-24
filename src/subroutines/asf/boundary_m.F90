@@ -119,21 +119,21 @@ delta_ts = DELTA_TS0
 !                           ! air-temperature deviation
 #elif TSURFACE==3
 delta_ts = SINE_AMPLIT &
-           *cos(2.0_dp*pi*time/(SINE_PERIOD*YEAR_SEC)) &
+           *cos(2.0_dp*pi*time/(SINE_PERIOD*year2sec)) &
            -SINE_AMPLIT
 !                           ! Sinusoidal air-temperature forcing
 #elif TSURFACE==4
 
 !  ------ delta_ts from ice-core record
 
-if (time/YEAR_SEC.lt.real(grip_time_min,dp)) then
+if (time/year2sec.lt.real(grip_time_min,dp)) then
    delta_ts = griptemp(0)
-else if (time/YEAR_SEC.lt.real(grip_time_max,dp)) then
+else if (time/year2sec.lt.real(grip_time_max,dp)) then
 
-   i_kl = floor(((time/YEAR_SEC)-real(grip_time_min,dp))/real(grip_time_stp,dp))
+   i_kl = floor(((time/year2sec)-real(grip_time_min,dp))/real(grip_time_stp,dp))
    i_kl = max(i_kl, 0)
 
-   i_gr = ceiling(((time/YEAR_SEC)-real(grip_time_min,dp))/real(grip_time_stp,dp))
+   i_gr = ceiling(((time/year2sec)-real(grip_time_min,dp))/real(grip_time_stp,dp))
    i_gr = min(i_gr, ndata_grip)
 
    if (i_kl.eq.i_gr) then
@@ -142,8 +142,8 @@ else if (time/YEAR_SEC.lt.real(grip_time_max,dp)) then
 
    else
 
-      time_kl = (grip_time_min + i_kl*grip_time_stp) *YEAR_SEC
-      time_gr = (grip_time_min + i_gr*grip_time_stp) *YEAR_SEC
+      time_kl = (grip_time_min + i_kl*grip_time_stp) *year2sec
+      time_gr = (grip_time_min + i_gr*grip_time_stp) *year2sec
 
       delta_ts = griptemp(i_kl) &
                 +(griptemp(i_gr)-griptemp(i_kl)) &
@@ -163,14 +163,14 @@ delta_ts = delta_ts * GRIP_TEMP_FACT
 
 #elif TSURFACE==5
 
-if (time/YEAR_SEC < real(gi_time_min,dp)) then
+if (time/year2sec < real(gi_time_min,dp)) then
    glac_index = glacial_index(0)
-else if (time/YEAR_SEC < real(gi_time_max,dp)) then
+else if (time/year2sec < real(gi_time_max,dp)) then
 
-   i_kl = floor(((time/YEAR_SEC)-real(gi_time_min,dp))/real(gi_time_stp,dp))
+   i_kl = floor(((time/year2sec)-real(gi_time_min,dp))/real(gi_time_stp,dp))
    i_kl = max(i_kl, 0)
 
-   i_gr = ceiling(((time/YEAR_SEC)-real(gi_time_min,dp))/real(gi_time_stp,dp))
+   i_gr = ceiling(((time/year2sec)-real(gi_time_min,dp))/real(gi_time_stp,dp))
    i_gr = min(i_gr, ndata_gi)
 
    if (i_kl == i_gr) then
@@ -179,8 +179,8 @@ else if (time/YEAR_SEC < real(gi_time_max,dp)) then
 
    else
 
-      time_kl = (gi_time_min + i_kl*gi_time_stp) *YEAR_SEC
-      time_gr = (gi_time_min + i_gr*gi_time_stp) *YEAR_SEC
+      time_kl = (gi_time_min + i_kl*gi_time_stp) *year2sec
+      time_gr = (gi_time_min + i_gr*gi_time_stp) *year2sec
 
       glac_index = glacial_index(i_kl) &
                 +(glacial_index(i_gr)-glacial_index(i_kl)) &
@@ -206,12 +206,12 @@ z_sl = Z_SL0
 
 z_sl_min = -130.0_dp
 
-t1 = -250000.0_dp *YEAR_SEC
-t2 = -140000.0_dp *YEAR_SEC
-t3 = -125000.0_dp *YEAR_SEC
-t4 =  -21000.0_dp *YEAR_SEC
-t5 =   -8000.0_dp *YEAR_SEC
-t6 =       0.0_dp *YEAR_SEC
+t1 = -250000.0_dp *year2sec
+t2 = -140000.0_dp *year2sec
+t3 = -125000.0_dp *year2sec
+t4 =  -21000.0_dp *year2sec
+t5 =   -8000.0_dp *year2sec
+t6 =       0.0_dp *year2sec
 
 if (time.lt.t1) then
    z_sl = 0.0_dp
@@ -233,14 +233,14 @@ end if
 
 !  ------ z_sl from the SPECMAP record
 
-if (time/YEAR_SEC.lt.real(specmap_time_min,dp)) then
+if (time/year2sec.lt.real(specmap_time_min,dp)) then
    z_sl = specmap_zsl(0)
-else if (time/YEAR_SEC.lt.real(specmap_time_max,dp)) then
+else if (time/year2sec.lt.real(specmap_time_max,dp)) then
 
-   i_kl = floor(((time/YEAR_SEC)-real(specmap_time_min,dp))/real(specmap_time_stp,dp))
+   i_kl = floor(((time/year2sec)-real(specmap_time_min,dp))/real(specmap_time_stp,dp))
    i_kl = max(i_kl, 0)
 
-   i_gr = ceiling(((time/YEAR_SEC)-real(specmap_time_min,dp))/real(specmap_time_stp,dp))
+   i_gr = ceiling(((time/year2sec)-real(specmap_time_min,dp))/real(specmap_time_stp,dp))
    i_gr = min(i_gr, ndata_specmap)
 
    if (i_kl.eq.i_gr) then
@@ -249,8 +249,8 @@ else if (time/YEAR_SEC.lt.real(specmap_time_max,dp)) then
 
    else
 
-      time_kl = (specmap_time_min + i_kl*specmap_time_stp) *YEAR_SEC
-      time_gr = (specmap_time_min + i_gr*specmap_time_stp) *YEAR_SEC
+      time_kl = (specmap_time_min + i_kl*specmap_time_stp) *year2sec
+      time_gr = (specmap_time_min + i_gr*specmap_time_stp) *year2sec
 
       z_sl = specmap_zsl(i_kl) &
                 +(specmap_zsl(i_gr)-specmap_zsl(i_kl)) &
@@ -442,7 +442,7 @@ mu     = MU_0     *(1000.0_dp*86400.0_dp)*(RHO/RHO_W)
 
 #elif (ABLSURFACE==3)
 
-lambda_lti = LAMBDA_LTI  *(0.001_dp/YEAR_SEC)*(RHO_W/RHO)
+lambda_lti = LAMBDA_LTI  *(0.001_dp/year2sec)*(RHO_W/RHO)
                          ! (mm WE)/(a*deg C) --> (m IE)/(s*deg C)
 temp_lti   = TEMP_LTI
 mu         = 0.0_dp       ! no superimposed ice considered
