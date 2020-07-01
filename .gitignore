@@ -1,1 +1,13 @@
+*.[oa]
+*~
+
 logmsg.*
+
+/runs/*.sh
+/runs/headers/*.h
+/tools/*.sh
+
+/src/subroutines/xyz/*
+!/src/subroutines/xyz/*/
+
+/sico_out/*/
