@@ -1,0 +1,93 @@
+#!/bin/bash
+# (Selection of shell)
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#   Downloading the input files for SICOPOLIS,
+#   copying them to the corresponding directories.
+#   
+#    - Ralf Greve, 2020-07-01.
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+#-------- Settings (to be customized) --------
+
+ANT_FLAG=1     # Antarctica:
+               #    1 - get files, 0 - don't get files
+GRL_FLAG=1     # Greenland:
+               #    1 - get files, 0 - don't get files
+ASF_FLAG=1     # Austfonna:
+               #    1 - get files, 0 - don't get files
+NHEM_FLAG=1    # Northern hemisphere:
+               #    1 - get files, 0 - don't get files
+SCAND_FLAG=1   # Scandinavia:
+               #    1 - get files, 0 - don't get files
+TIBET_FLAG=1   # Tibet:
+               #    1 - get files, 0 - don't get files
+NMARS_FLAG=1   # North polar cap of Mars:
+               #    1 - get files, 0 - don't get files
+SMARS_FLAG=1   # South polar cap of Mars:
+               #    1 - get files, 0 - don't get files
+
+#-------- Initialization --------
+
+REPO_URL=http://wwwice.lowtem.hokudai.ac.jp/repo/sicopolis/sico_in
+
+SICOPOLIS_HOME=$PWD
+
+domains=
+
+if [ $ANT_FLAG == 1 ]; then
+   domains="`echo $domains` ant"; fi
+if [ $GRL_FLAG == 1 ]; then
+   domains="`echo $domains` grl"; fi
+if [ $ASF_FLAG == 1 ]; then
+   domains="`echo $domains` asf"; fi
+if [ $NHEM_FLAG == 1 ]; then
+   domains="`echo $domains` nhem"; fi
+if [ $SCAND_FLAG == 1 ]; then
+   domains="`echo $domains` scand"; fi
+if [ $TIBET_FLAG == 1 ]; then
+   domains="`echo $domains` tibet"; fi
+if [ $NMARS_FLAG == 1 ]; then
+   domains="`echo $domains` nmars"; fi
+if [ $SMARS_FLAG == 1 ]; then
+   domains="`echo $domains` smars"; fi
+
+TMP_DIR="tmp_`date --iso-8601='seconds'`"
+mkdir $TMP_DIR
+
+#-------- Downloading and unpacking files --------
+
+cd $TMP_DIR
+
+echo; echo "Downloading and unpacking files:"
+
+for domain in ${domains}; do
+   echo; echo "  ${domain} ..."
+   wget ${REPO_URL}/${domain}.tgz
+   tar -x -v -z -f ${domain}.tgz
+done
+
+#-------- Copying files --------
+
+MV=/bin/mv
+
+SICOPOLIS_INPUT=sico_in
+
+echo; echo "Copying files:"
+
+for domain in ${domains}; do
+   echo; echo "  ${domain} ..."
+   $MV -f ${domain}/* ${SICOPOLIS_HOME}/${SICOPOLIS_INPUT}/${domain}/
+done
+
+#-------- Clean-up --------
+
+RM=/bin/rm
+
+cd $OLDPWD
+
+$RM -rf $TMP_DIR
+
+echo; echo "... done!"; echo
+
+#--------
