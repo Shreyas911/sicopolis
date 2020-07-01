@@ -3,11 +3,35 @@
 
 logmsg.*
 
-/runs/*.sh
+/runs/*
+!/runs/*/
 /runs/headers/*.h
-/tools/*.sh
+
+/tools/*
+!/tools/*/
+
+/src/*.h
+/src/*.mod
+/src/*.x
 
 /src/subroutines/xyz/*
 !/src/subroutines/xyz/*/
+
+/sico_in/ant/*
+!/sico_in/ant/phys_para*
+/sico_in/grl/*
+!/sico_in/grl/phys_para*
+/sico_in/asf/*
+!/sico_in/asf/phys_para*
+/sico_in/nhem/*
+!/sico_in/nhem/phys_para*
+/sico_in/scand/*
+!/sico_in/scand/phys_para*
+/sico_in/tibet/*
+!/sico_in/tibet/phys_para*
+/sico_in/nmars/*
+!/sico_in/nmars/phys_para*
+/sico_in/smars/*
+!/sico_in/smars/phys_para*
 
 /sico_out/*/
