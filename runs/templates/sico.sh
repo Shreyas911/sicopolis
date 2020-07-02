@@ -10,7 +10,7 @@ LANG=C
 #
 #  Authors: Malte Thoma, Thomas Goelles, Ralf Greve, Fuyuki Saito
 #
-#  Date: 2020-04-01
+#  Date: 2020-07-02
 #
 #    Execute script 
 #       ./sico.sh -m <run_name> [further options...]
@@ -221,16 +221,30 @@ function compile()
    
    $MV $RUN_SPECS_HEADER $RESDIR
    
-   # Writing a log file with some information about Subversion
-   SVNINFOFILE=$RESDIR/svninfo.log
-   echo "Subversion infos:" > $SVNINFOFILE
-   echo "-----------------" >> $SVNINFOFILE
-   echo -n "Revision no. of src directory: " >> $SVNINFOFILE
-   svnversion >> $SVNINFOFILE
-   svn info ${PROGNAME}.F90 | grep "Repository Root" >> $SVNINFOFILE
-   
+   # Writing a revision identifier from Git
+
+   git status >/dev/null 2>&1
+   if [[ `echo $?` -eq 0 ]]; then
+
+      REPO_REVISION_=`git rev-list HEAD --count`
+      BUILD_BRANCH=`git rev-parse --abbrev-ref HEAD`
+      BUILD_REV_ID=`git rev-parse HEAD`
+      BUILD_REV_ID_SHORT=`git describe --long --tags --dirty --always`
+      if [ ${BUILD_BRANCH} == "master" ]; then
+         REPO_REVISION=${REPO_REVISION_}_g${BUILD_REV_ID_SHORT}
+      else
+         REPO_REVISION=${BUILD_BRANCH}_${REPO_REVISION_}_r${BUILD_REV_ID_SHORT}
+      fi
+      ### Source: https://stackoverflow.com/a/29922075
+
+      REV_FILE=$RESDIR/rev_id.log
+      echo -n "Git revision identifier: " >> $REV_FILE
+      echo ${REPO_REVISION} >> $REV_FILE
+
+   fi
+
    # Writing a log file with some information about the host
-   HOSTINFOFILE=$RESDIR/hostinfo.log
+   HOSTINFOFILE=$RESDIR/host_info.log
    echo "Host infos:" > $HOSTINFOFILE
    echo "-----------" >> $HOSTINFOFILE
    echo -n "Host name: " >> $HOSTINFOFILE
