@@ -10,7 +10,7 @@ LANG=C
 #
 #  Authors: Malte Thoma, Thomas Goelles, Ralf Greve, Fuyuki Saito
 #
-#  Date: 2019-12-08
+#  Date: 2020-07-02
 #
 #    Execute script 
 #       ./sico.sh -m <run_name> [further options...]
@@ -221,13 +221,13 @@ function compile()
    
    $MV $RUN_SPECS_HEADER $RESDIR
    
-   # Writing a log file with some information about Subversion
-   SVNINFOFILE=$RESDIR/svninfo.log
-   echo "Subversion infos:" > $SVNINFOFILE
-   echo "-----------------" >> $SVNINFOFILE
-   echo -n "Revision no. of src directory: " >> $SVNINFOFILE
-   svnversion >> $SVNINFOFILE
-   svn info ${PROGNAME}.F90 | grep "Repository Root" >> $SVNINFOFILE
+   ### # Writing a log file with some information about Subversion
+   ### SVNINFOFILE=$RESDIR/svninfo.log
+   ### echo "Subversion infos:" > $SVNINFOFILE
+   ### echo "-----------------" >> $SVNINFOFILE
+   ### echo -n "Revision no. of src directory: " >> $SVNINFOFILE
+   ### svnversion >> $SVNINFOFILE
+   ### svn info ${PROGNAME}.F90 | grep "Repository Root" >> $SVNINFOFILE
    
    # Writing a log file with some information about the host
    HOSTINFOFILE=$RESDIR/hostinfo.log
