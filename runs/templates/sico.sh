@@ -10,7 +10,7 @@ LANG=C
 #
 #  Authors: Malte Thoma, Thomas Goelles, Ralf Greve, Fuyuki Saito
 #
-#  Date: 2020-07-03
+#  Date: 2020-07-08
 #
 #    Execute script 
 #       ./sico.sh -m <run_name> [further options...]
@@ -153,7 +153,7 @@ function check_args()
    TARGET_TOPO_DAT_NAME=$(sed -n 's%#define TARGET_TOPO_DAT_NAME % %p' $HEADER | 
    sed -e "s%'%%g" | sed -e 's,^ *,,')
    SED_FOR_T="FALSE"
-   if [[ ($THK_EVOL -eq 2 || $THK_EVOL -eq 3) || (ACCSURFACE -eq 7 && ABLSURFACE -eq 7) ]]; then
+   if [[ ($THK_EVOL -eq 2 || $THK_EVOL -eq 3) || ($ACCSURFACE -eq 7 && $ABLSURFACE -eq 7) ]]; then
       if [ ! "$TARGET_TOPO_PATH" ]; then 
          error "TARGET_TOPO_PATH not set. Use -t <TARGET_TOPO_PATH>."; fi
       lastch=`echo $TARGET_TOPO_PATH | sed -e 's/\(^.*\)\(.$\)/\2/'`
