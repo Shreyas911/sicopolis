@@ -1,10 +1,10 @@
 #-------------------------------------------------------------------------------
-# Configuration file for manual configuration of SICOPOLIS
+# Configuration file for SICOPOLIS
 #-------------------------------------------------------------------------------
 
 #-------- Compiler --------
 
-### export FC=gfortran
+export FC=gfortran
 ###    Can be set here if needed.
 ###    So far, gfortran and ifort are supported.
 
@@ -110,7 +110,8 @@ if [ "$FC" = "ifort" ] ; then
    if [ "$OPENMP_FLAG" = "true" ] ; then
       case $PROGNAME in
            "sicopolis")
-              FCFLAGS=${FCFLAGS}' -openmp'
+              FCFLAGS=${FCFLAGS}' -qopenmp'
+              # Change to ' -openmp' for older versions of the compiler
               ;;
            *) ;;
       esac            
