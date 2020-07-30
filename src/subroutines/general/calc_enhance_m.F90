@@ -41,7 +41,11 @@ module calc_enhance_m
 
   implicit none
 
+  real(dp) :: enh_stream
+  logical  :: flag_enh_stream
+
   private
+  public :: enh_stream, flag_enh_stream
   public :: calc_enhance_1, calc_enhance_2, calc_enhance_3
   public :: calc_enhance_4, calc_enhance_5
 
@@ -58,6 +62,8 @@ contains
 
   enh_t = ENH_FACT
   enh_c = ENH_FACT
+
+  call calc_enhance_stream_const()   ! ice streams
 
 #if (MARGIN==3)   /* floating ice */
   call calc_enhance_floating_const()
@@ -105,6 +111,8 @@ contains
 
   end do
   end do
+
+  call calc_enhance_stream_const()   ! ice streams
 
 #if (MARGIN==3)   /* floating ice */
   call calc_enhance_floating_const()
@@ -169,6 +177,8 @@ contains
   end do
   end do
 
+  call calc_enhance_stream_const()   ! ice streams
+
 #if (MARGIN==3)   /* floating ice */
   call calc_enhance_floating_const()
 #endif
@@ -191,6 +201,8 @@ contains
 
   call calc_enhance_aniso()
 
+  call calc_enhance_stream_const()   ! ice streams
+
 #if (MARGIN==3)   /* floating ice */
   call calc_enhance_floating_const()
 #endif
@@ -211,6 +223,8 @@ contains
   implicit none
 
   call calc_enhance_aniso()
+
+  call calc_enhance_stream_const()   ! ice streams
 
 #if (defined(NMARS) || defined(SMARS))   /* Martian polar caps */
   call mod_enhance_dust()
@@ -260,6 +274,24 @@ contains
   end do
 
   end subroutine calc_enhance_aniso
+
+!-------------------------------------------------------------------------------
+!> Constant, prescribed flow enhancement factor for ice streams
+!! (fast-flowing ice).
+!<------------------------------------------------------------------------------
+  subroutine calc_enhance_stream_const()
+
+  implicit none
+
+#if (DYNAMICS==2 && defined(ENH_STREAM))
+  flag_enh_stream = .true.
+  enh_stream      = ENH_STREAM
+#else
+  flag_enh_stream = .false.
+  enh_stream      = no_value_pos_1   ! dummy value
+#endif
+
+  end subroutine calc_enhance_stream_const
 
 !-------------------------------------------------------------------------------
 !> Constant, prescribed flow enhancement factor for floating ice.
