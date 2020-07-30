@@ -205,6 +205,8 @@
 #endif
 #endif
 
+#include "subroutines/general/calc_enhance_m.F90"
+
 #include "subroutines/general/calc_vxy_m.F90"
 #include "subroutines/general/calc_vz_m.F90"
 #include "subroutines/general/calc_dxyz_m.F90"
@@ -220,8 +222,6 @@
 #elif (CALCMOD==2 || CALCMOD==3)
 #include "subroutines/general/calc_temp_enth_m.F90"
 #endif
-
-#include "subroutines/general/calc_enhance_m.F90"
 
 #if (BASAL_HYDROLOGY==1)
 #include "subroutines/general/hydro_m.F90"

@@ -1694,7 +1694,7 @@ end subroutine calc_vxy_ssa
 
 !-------------------------------------------------------------------------------
 !> Solution of the system of linear equations for the horizontal velocities
-!! vx_m_ssa, vy_m_ssa in the shallow shelf approximation.
+!! vx_m_ssa, vy_m_ssa in the SSA/SStA.
 !<------------------------------------------------------------------------------
 subroutine calc_vxy_ssa_matrix(z_sl, dxi, deta, &
                                flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y)
@@ -2984,11 +2984,11 @@ call error(errormsg)
 end subroutine calc_vxy_ssa_matrix
 
 !-------------------------------------------------------------------------------
-!> Computation of the depth-integrated viscosity vis_int_g in the
-!! shallow shelf approximation.
+!> Computation of the depth-integrated viscosity vis_int_g in the SSA/SStA.
 !<------------------------------------------------------------------------------
 subroutine calc_vis_ssa(dxi, deta, dzeta_c, dzeta_t)
 
+use calc_enhance_m,            only : enh_stream, flag_enh_stream
 use ice_material_properties_m, only : viscosity
 
 implicit none
@@ -3000,6 +3000,7 @@ integer(i4b) :: m_smooth, m_smooth_abs
 real(dp) :: visc_min, visc_max, visc_init
 real(dp) :: dxi_inv, deta_inv
 real(dp) :: dvx_dxi, dvx_deta, dvy_dxi, dvy_deta
+real(dp) :: enh_val
 real(dp) :: diff_vis
 real(dp) :: aqxy1(0:KCMAX)
 real(dp) :: cvis0(0:KTMAX), cvis1(0:KCMAX)
@@ -3100,10 +3101,13 @@ do j=0, JMAX
 #endif
 
          do kc=0, KCMAX
+
+            enh_val = enh_c(kc,j,i)
+
             cvis1(kc) = aqxy1(kc)*H_c(j,i) &
                            *viscosity(de_ssa(j,i), &
                               temp_c(kc,j,i), temp_c_m(kc,j,i), &
-                              0.0_dp, enh_c(kc,j,i), 0_i1b)
+                              0.0_dp, enh_val, 0_i1b)
          end do
          ! Ice shelves (floating ice) are assumed to consist of cold ice only
 
@@ -3113,35 +3117,63 @@ do j=0, JMAX
 #if (CALCMOD==-1 || CALCMOD==0)
 
          do kc=0, KCMAX
+
+            if (flag_enh_stream) then
+               enh_val = enh_stream
+            else
+               enh_val = enh_c(kc,j,i)
+            end if
+
             cvis1(kc) = aqxy1(kc)*H_c(j,i) &
                            *viscosity(de_ssa(j,i), &
                               temp_c(kc,j,i), temp_c_m(kc,j,i), &
-                              0.0_dp, enh_c(kc,j,i), 0_i1b)
+                              0.0_dp, enh_val, 0_i1b)
          end do
 
 #elif (CALCMOD==1)
 
          do kt=0, KTMAX
+
+            if (flag_enh_stream) then
+               enh_val = enh_stream
+            else
+               enh_val = enh_t(kt,j,i)
+            end if
+
             cvis0(kt) = dzeta_t*H_t(j,i) &
                            *viscosity(de_ssa(j,i), &
                               temp_t_m(kt,j,i), temp_t_m(kt,j,i), &
-                              omega_t(kt,j,i), enh_t(kt,j,i), 1_i1b)
+                              omega_t(kt,j,i), enh_val, 1_i1b)
          end do
 
          do kc=0, KCMAX
+
+            if (flag_enh_stream) then
+               enh_val = enh_stream
+            else
+               enh_val = enh_c(kc,j,i)
+            end if
+
             cvis1(kc) = aqxy1(kc)*H_c(j,i) &
                            *viscosity(de_ssa(j,i), &
                               temp_c(kc,j,i), temp_c_m(kc,j,i), &
-                              0.0_dp, enh_c(kc,j,i), 0_i1b)
+                              0.0_dp, enh_val, 0_i1b)
          end do
 
 #elif (CALCMOD==2 || CALCMOD==3)
 
          do kc=0, KCMAX
+
+            if (flag_enh_stream) then
+               enh_val = enh_stream
+            else
+               enh_val = enh_c(kc,j,i)
+            end if
+
             cvis1(kc) = aqxy1(kc)*H_c(j,i) &
                          *viscosity(de_ssa(j,i), &
                            temp_c(kc,j,i), temp_c_m(kc,j,i), &
-                           omega_c(kc,j,i), enh_c(kc,j,i), 2_i1b)
+                           omega_c(kc,j,i), enh_val, 2_i1b)
          end do
 
 #else
@@ -3151,7 +3183,7 @@ do j=0, JMAX
 
       end if
 
-#endif
+#endif   /* DYNAMICS==2 */
 
 !  ------ Depth-integrated viscosity
 
