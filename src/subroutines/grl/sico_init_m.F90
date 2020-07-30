@@ -875,6 +875,10 @@ write(10, fmt=trim(fmt3)) 'date_trans3 =', DATE_TRANS3_0
 write(10, fmt=trim(fmt3)) 'enh_compr =', ENH_COMPR
 write(10, fmt=trim(fmt3)) 'enh_shear =', ENH_SHEAR
 #endif
+#if (DYNAMICS==2 && defined(ENH_STREAM))
+if (ENH_STREAM >= 0.0_dp) &
+   write(10, fmt=trim(fmt3)) 'enh_stream =', ENH_STREAM
+#endif
 #if ((ENHMOD==1 || ENHMOD==2 || ENHMOD==3 || ENHMOD==4) && MARGIN==3)
 write(10, fmt=trim(fmt3)) 'enh_shelf =', ENH_SHELF
 #endif

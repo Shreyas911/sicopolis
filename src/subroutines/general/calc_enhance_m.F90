@@ -283,12 +283,13 @@ contains
 
   implicit none
 
-#if (DYNAMICS==2 && defined(ENH_STREAM))
-  flag_enh_stream = .true.
-  enh_stream      = ENH_STREAM
-#else
   flag_enh_stream = .false.
-  enh_stream      = no_value_pos_1   ! dummy value
+
+#if (DYNAMICS==2 && defined(ENH_STREAM))
+  enh_stream = ENH_STREAM
+  if (enh_stream >= 0.0_dp) flag_enh_stream = .true.
+#else
+  enh_stream = no_value_neg_1   ! negative dummy value
 #endif
 
   end subroutine calc_enhance_stream_const
