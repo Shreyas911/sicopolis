@@ -152,7 +152,7 @@ call error(errormsg)
               tau_b_driving_conv, tau_b_drag_conv, &
               p_b_w_conv, q_w_conv, q_w_x_conv, q_w_y_conv, H_w_conv, &
               q_gl_g_conv, &
-              ratio_sl_x_conv, ratio_sl_y_conv, &
+              ratio_sl_x_conv, ratio_sl_y_conv, ratio_sl_conv, &
               vis_ave_g_conv, vis_int_g_conv
   real(sp), dimension(0:IMAX,0:JMAX,0:KCMAX) :: vx_c_conv, vy_c_conv, vz_c_conv, &
                                                 temp_c_conv, age_c_conv, &
@@ -171,7 +171,7 @@ call error(errormsg)
 #endif
 
   real(dp) :: visc_min, visc_max, visc_init
-  logical :: flag_vis_ave_g
+  logical :: flag_ratio_sl, flag_vis_ave_g
 
 !-------- Read data from time-slice file of previous simulation --------
 
@@ -303,6 +303,8 @@ call error(errormsg)
   read(unit=11) q_gl_g_conv
   read(unit=11) ratio_sl_x_conv
   read(unit=11) ratio_sl_y_conv
+  read(unit=11) ratio_sl_conv; flag_ratio_sl = .true.
+                ! if not present in file, error message will occur
   read(unit=11) flag_shelfy_stream_x_conv
   read(unit=11) flag_shelfy_stream_y_conv
   read(unit=11) flag_shelfy_stream_conv
@@ -630,6 +632,16 @@ call error(errormsg)
   call check( nf90_inq_varid(ncid, 'ratio_sl_y', ncv) )
   call check( nf90_get_var(ncid, ncv, ratio_sl_y_conv) )
 
+  if ( nf90_inq_varid(ncid, 'ratio_sl', ncv) == nf90_noerr ) then
+     call check( nf90_get_var(ncid, ncv, ratio_sl_conv) )
+     flag_ratio_sl = .true.
+  else
+     write(6,'(/1x,a)') '>>> read_erg_nc: Variable ratio_sl'
+     write(6, '(1x,a)') '                 not available in read file *.nc.'
+     ratio_sl_conv = 0.0_sp
+     flag_ratio_sl = .false.
+  end if
+
   call check( nf90_inq_varid(ncid, 'flag_shelfy_stream_x', ncv) )
   call check( nf90_get_var(ncid, ncv, flag_shelfy_stream_x_conv) )
 
@@ -794,6 +806,7 @@ call error(errormsg)
         H_w(j,i)     = real(H_w_conv(i,j),dp)
         ratio_sl_x(j,i) = real(ratio_sl_x_conv(i,j),dp)
         ratio_sl_y(j,i) = real(ratio_sl_y_conv(i,j),dp)
+        ratio_sl(j,i)   = real(ratio_sl_conv(i,j),dp)
 
         if (flag_shelfy_stream_x_conv(i,j) == 1_i1b) then
            flag_shelfy_stream_x(j,i) = .true.
@@ -891,6 +904,22 @@ call error(errormsg)
 
      end do
      end do
+
+     if (.not.flag_ratio_sl) then   ! reconstruct ratio_sl from ratio_sl_x/y
+
+        ratio_sl = 0.0_dp
+
+        do i=1, IMAX-1
+        do j=1, JMAX-1
+
+           if (maske(j,i) == 0_i1b) &   ! grounded ice
+              ratio_sl(j,i) = 0.25_dp &
+                                * (   ratio_sl_x(j,i-1) + ratio_sl_x(j,i) &
+                                    + ratio_sl_y(j-1,i) + ratio_sl_y(j,i) )
+        end do
+        end do
+
+     end if
 
      if (.not.flag_vis_ave_g) then   ! reconstruct vis_ave_g from vis_int_g
 

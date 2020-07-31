@@ -345,7 +345,7 @@ contains
       c_slide,d_help_b,c_drag,p_b_w,&
       vx_b,vy_b,&
       vx_m,vy_m,vx_m_sia,vy_m_sia,vx_m_ssa,vy_m_ssa,&
-      ratio_sl_x,ratio_sl_y,&
+      ratio_sl_x,ratio_sl_y,ratio_sl,&
       vx_b_g,vy_b_g,vz_b,vz_m,vx_s_g,vy_s_g,vz_s,&
       flui_ave_sia,h_diff,qx,qy,q_gl_g,q_geo,temp_b,temph_b,Q_bm,Q_b_apl,&
       Q_tld,Q_b_tot,H_w,&
@@ -570,7 +570,7 @@ contains
          a_c_slide,a_d_help_b,a_c_drag,a_p_b_w,&
          a_vx_b,a_vy_b,&
          a_vx_m,a_vy_m,a_vx_m_sia,a_vy_m_sia,a_vx_m_ssa,a_vy_m_ssa,&
-         a_ratio_sl_x,a_ratio_sl_y,&
+         a_ratio_sl_x,a_ratio_sl_y,a_ratio_sl,&
          a_vx_b_g,a_vy_b_g,a_vz_b,a_vz_m,a_vx_s_g,a_vy_s_g,a_vz_s,&
          a_flui_ave_sia,a_h_diff,a_qx,a_qy,a_q_gl_g,a_q_geo,a_temp_b,a_temph_b,a_Q_bm,a_Q_b_apl,&
          a_Q_tld,a_Q_b_tot,a_H_w,&
@@ -883,6 +883,7 @@ contains
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_rainfall
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_ratio_sl_x
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_ratio_sl_y
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_ratio_sl
     real(dp), dimension(-190:10)                       :: a_RF
     real(dp), dimension(-256:255)                      :: a_RF_IMQ
     real(dp)                                           :: a_RHO
@@ -1333,9 +1334,11 @@ contains
 #if (DYNAMICS==2 || MARGIN==3)
     ratio_sl_x%v = a_ratio_sl_x
     ratio_sl_y%v = a_ratio_sl_y
+    ratio_sl%v   = a_ratio_sl
 #else
     ratio_sl_x = a_ratio_sl_x
     ratio_sl_y = a_ratio_sl_y
+    ratio_sl   = a_ratio_sl
 #endif
     RF = a_RF
     RF_IMQ = a_RF_IMQ !just called RF in numcore

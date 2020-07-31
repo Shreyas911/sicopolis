@@ -1143,6 +1143,18 @@ do j=0, JMAX-1
 end do
 end do
 
+ratio_sl = 0.0_dp
+
+do i=1, IMAX-1
+do j=1, JMAX-1
+
+   if (maske(j,i) == 0_i1b) &   ! grounded ice
+      ratio_sl(j,i) = 0.25_dp &
+                        * (   ratio_sl_x(j,i-1) + ratio_sl_x(j,i) &
+                            + ratio_sl_y(j-1,i) + ratio_sl_y(j,i) )
+end do
+end do
+
 !-------- Detection of shelfy stream points --------
 
 flag_shelfy_stream_x = .false.
@@ -1176,15 +1188,13 @@ end do
 do i=1, IMAX-1
 do j=1, JMAX-1
 
-   if ( (maske(j,i) == 0_i1b) &   ! grounded ice
-        .and. &
-        (     flag_shelfy_stream_x(j,i-1)   &   ! at least
-          .or.flag_shelfy_stream_x(j,i)     &   ! one neighbour
-          .or.flag_shelfy_stream_y(j-1,i)   &   ! on the staggered grid
-          .or.flag_shelfy_stream_y(j,i)   ) &   ! is a shelfy stream point
-      ) then
+   if (maske(j,i) == 0_i1b) then   ! grounded ice
 
-      flag_shelfy_stream(j,i) = .true.
+      if (     flag_shelfy_stream_x(j,i-1)   &   ! at least
+           .or.flag_shelfy_stream_x(j,i)     &   ! one neighbour
+           .or.flag_shelfy_stream_y(j-1,i)   &   ! on the staggered grid
+           .or.flag_shelfy_stream_y(j,i)   ) &   ! is a shelfy stream point
+               flag_shelfy_stream(j,i) = .true.
 
    end if
 
@@ -1295,6 +1305,10 @@ end subroutine calc_vxy_static
 !<------------------------------------------------------------------------------
 subroutine calc_vxy_ssa(z_sl, dxi, deta, dzeta_c, dzeta_t)
 
+#if (DYNAMICS==2)
+  use calc_enhance_m, only : calc_enhance_hybrid_weighted
+#endif
+
 implicit none
 
 real(dp), intent(in) :: z_sl, dxi, deta, dzeta_c, dzeta_t
@@ -1309,6 +1323,7 @@ real(dp) :: visc_init
 real(dp) :: vh_max, vh_max_inv
 real(dp) :: ratio_sl_threshold, ratio_help
 real(dp), dimension(0:JMAX,0:IMAX) :: weigh_ssta_sia_x, weigh_ssta_sia_y
+real(dp), dimension(0:JMAX,0:IMAX) :: weigh_ssta_sia
 real(dp) :: qx_gl_g, qy_gl_g
 logical, dimension(0:JMAX,0:IMAX) :: flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y
 
@@ -1626,6 +1641,54 @@ do j=0, JMAX-1
 
 end do
 end do
+
+!-------- Weighted flow enhancement factor --------
+
+weigh_ssta_sia = 0.0_dp
+
+#if (DYNAMICS==2)
+
+do i=0, IMAX
+do j=0, JMAX
+
+   if (flag_shelfy_stream(j,i)) then   ! shelfy stream
+
+      weigh_ssta_sia(j,i) = (ratio_sl(j,i)-ratio_sl_threshold)*ratio_help
+
+      weigh_ssta_sia(j,i) = max(min(weigh_ssta_sia(j,i), 1.0_dp), 0.0_dp)
+                              ! constrain to interval [0,1]
+
+#if (SSTA_SIA_WEIGH_FCT==0)
+
+      ! stick to the linear function set above
+
+#elif (SSTA_SIA_WEIGH_FCT==1)
+
+      weigh_ssta_sia(j,i) = weigh_ssta_sia(j,i)*weigh_ssta_sia(j,i) &
+                                 *(3.0_dp-2.0_dp*weigh_ssta_sia(j,i))
+                            ! make transition smooth (cubic function)
+
+#elif (SSTA_SIA_WEIGH_FCT==2)
+
+      weigh_ssta_sia(j,i) = weigh_ssta_sia(j,i)*weigh_ssta_sia(j,i) &
+                                               *weigh_ssta_sia(j,i) &
+                                 *(10.0_dp + weigh_ssta_sia(j,i) &
+                                     *(-15.0_dp+6.0_dp*weigh_ssta_sia(j,i)))
+                            ! make transition even smoother (quintic function)
+
+#else
+      errormsg = ' >>> calc_vxy_ssa: SSTA_SIA_WEIGH_FCT must be 0, 1 or 2!'
+      call error(errormsg)
+#endif
+
+   end if
+
+end do
+end do
+
+call calc_enhance_hybrid_weighted(weigh_ssta_sia)
+
+#endif   /* (DYNAMICS==2) */
 
 !-------- Surface and basal velocities vx_s_g vy_s_g, vx_b_g vy_b_g
 !                                                (defined at (i,j)) --------
@@ -2988,7 +3051,10 @@ end subroutine calc_vxy_ssa_matrix
 !<------------------------------------------------------------------------------
 subroutine calc_vis_ssa(dxi, deta, dzeta_c, dzeta_t)
 
-use calc_enhance_m,            only : enh_stream, flag_enh_stream
+#if (DYNAMICS==2)
+  use calc_enhance_m, only : enh_stream, flag_enh_stream
+#endif
+
 use ice_material_properties_m, only : viscosity
 
 implicit none

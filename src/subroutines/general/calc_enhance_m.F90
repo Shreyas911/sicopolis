@@ -48,6 +48,7 @@ module calc_enhance_m
   public :: enh_stream, flag_enh_stream
   public :: calc_enhance_1, calc_enhance_2, calc_enhance_3
   public :: calc_enhance_4, calc_enhance_5
+  public :: calc_enhance_hybrid_weighted
 
 contains
 
@@ -201,8 +202,6 @@ contains
 
   call calc_enhance_aniso()
 
-  call calc_enhance_stream_const()   ! ice streams
-
 #if (MARGIN==3)   /* floating ice */
   call calc_enhance_floating_const()
 #endif
@@ -224,13 +223,48 @@ contains
 
   call calc_enhance_aniso()
 
-  call calc_enhance_stream_const()   ! ice streams
-
 #if (defined(NMARS) || defined(SMARS))   /* Martian polar caps */
   call mod_enhance_dust()
 #endif
 
   end subroutine calc_enhance_5
+
+!-------------------------------------------------------------------------------
+!> Weighted enhancement factor for SIA/SStA hybrid dynamics.
+!<------------------------------------------------------------------------------
+  subroutine calc_enhance_hybrid_weighted(weigh_ssta_sia)
+
+  implicit none
+
+  real(dp), dimension(0:JMAX,0:IMAX), intent(in) :: weigh_ssta_sia
+
+  integer(i4b) :: i, j, kc, kt
+
+  if (flag_enh_stream) then
+
+     do i=0, IMAX
+     do j=0, JMAX
+
+        if (flag_shelfy_stream(j,i)) then   ! shelfy stream
+
+           do kt=0, KTMAX
+              enh_t(kt,j,i) = weigh_ssta_sia(j,i)*enh_stream &
+                              + (1.0_dp-weigh_ssta_sia(j,i))*enh_t(kt,j,i)
+           end do
+
+           do kc=0, KCMAX
+              enh_c(kc,j,i) = weigh_ssta_sia(j,i)*enh_stream &
+                              + (1.0_dp-weigh_ssta_sia(j,i))*enh_c(kc,j,i)
+           end do
+
+        end if
+
+     end do
+     end do
+
+  end if
+
+  end subroutine calc_enhance_hybrid_weighted
 
 !-------------------------------------------------------------------------------
 !> Minimal anisotropic flow enhancement factor.

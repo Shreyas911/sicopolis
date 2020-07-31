@@ -396,8 +396,9 @@
 
 #define ENH_STREAM -9999.9d0
 !                         Separate flow enhancement factor for ice streams
-!                         (SStA dynamics; only for DYNAMICS==2)
-!                         (ignored if negative)
+!                         (SStA dynamics;
+!                          only for ENHMOD==1, 2, 3 and DYNAMICS==2;
+!                          ignored if negative)
 
 #define ENH_SHELF 1.0d0
 !                         Separate flow enhancement factor for floating ice

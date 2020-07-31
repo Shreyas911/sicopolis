@@ -303,6 +303,9 @@ save
 !> ratio_sl_y(j,i): Ratio of basal to surface velocity (slip ratio)
 !>                  in y-direction, at (i,j+1/2)
    real(dp), dimension(0:JMAX,0:IMAX) :: ratio_sl_y
+!> ratio_sl(j,i): Ratio of basal to surface velocity (slip ratio)
+!>                on the main grid
+   real(dp), dimension(0:JMAX,0:IMAX) :: ratio_sl
 !> (.)_g(j,i): Staggered-grid quantity (.) interpolated to grid point (i,j)
    real(dp), dimension(0:JMAX,0:IMAX) :: vx_b_g
 !> (.)_g(j,i): Staggered-grid quantity (.) interpolated to grid point (i,j)

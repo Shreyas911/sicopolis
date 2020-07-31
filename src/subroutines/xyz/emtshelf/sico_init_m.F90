@@ -1309,6 +1309,25 @@ smb_corr = 0.0_dp
 
 Q_b_tot = Q_bm + Q_tld
 
+#if (ENHMOD==1)
+   call calc_enhance_1()
+#elif (ENHMOD==2)
+   call calc_enhance_2()
+#elif (ENHMOD==3)
+   call calc_enhance_3(time_init)
+#elif (ENHMOD==4)
+   !!! call calc_enhance_4()
+   !!!    (for anisotropic flow enhancement factor,
+   !!!     use values read from output of previous simulation)
+#elif (ENHMOD==5)
+   !!! call calc_enhance_5()
+   !!!    (for anisotropic flow enhancement factor,
+   !!!     use values read from output of previous simulation)
+#else
+   errormsg = ' >>> sico_init: Parameter ENHMOD must be between 1 and 5!'
+   call error(errormsg)
+#endif
+
 #endif
 
 !-------- Inner-point flag --------
