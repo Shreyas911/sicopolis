@@ -40,6 +40,9 @@ LARGE_DATA_FLAG="false"
 
 #-------- NetCDF settings --------
 
+# module load ...
+### A 'module load' command is needed on some systems.
+
 if [ "$NETCDF_FLAG" = "true" ] ; then
 
    export NETCDFHOME=/opt/netcdf
@@ -78,6 +81,9 @@ if [ "$NETCDF_FLAG" = "true" ] ; then
 fi
 
 #-------- Lis settings --------
+
+# module load ...
+### A 'module load' command is needed on some systems.
 
 if [ "$LIS_FLAG" = "true" ] ; then
    LISHOME=/opt/lis
