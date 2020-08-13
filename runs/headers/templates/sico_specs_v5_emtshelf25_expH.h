@@ -11,9 +11,9 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define SICO_REVISION 1590
-!                      Revision number of SICOPOLIS
-!                      for which this run-specs header is suitable
+#define SICO_REVISION 'develop_35_rv5.1-34-g146bbf7'
+!                      Revision identifier of SICOPOLIS
+!                      for which this run-specs header was last changed
 
 !-------- Domain --------
 
