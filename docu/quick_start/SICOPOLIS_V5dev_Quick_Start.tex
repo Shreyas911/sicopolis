@@ -88,7 +88,7 @@
 \begin{small}
 
 \noindent{}Copyright 2009--2020 Ralf Greve\\
-(with contributions by Jorge Bernales, Heinz Blatter, Reinhard Calov, Thorben Dunse, Ben Galton-Fenzi, Thomas G\"olles, Philipp Hancke, Nina Kirchner, Sascha Knell, Alex Robinson, Fuyuki Saito, Tatsuru Sato, Malte Thoma, Roland Warner)
+(with contributions by Jorge Bernales, Sebastian Beyer, Heinz Blatter, Reinhard Calov, Thorben Dunse, Ben Galton-Fenzi, Thomas G\"olles, Philipp Hancke, Nina Kirchner, Thomas Kleiner, Sascha Knell, Anne Le Brocq, Alex Robinson, Fuyuki Saito, Tatsuru Sato, Malte Thoma, Roland Warner)
 
 \vspace*{1.5ex}
 
@@ -134,36 +134,25 @@ So far, the Intel and GNU Fortran compilers are supported. Make sure that the en
 
 \begin{itemize}
 
-\item \textbf{Using Subversion}
+\item \textbf{Using Git}
 
-The Subversion repository of SICOPOLIS is kindly hosted by the FusionForge system AWIForge of the Alfred Wegener Institute for Polar and Marine Research (AWI) in Bremerhaven, Germany (front page: https://swrepo1.awi.de/projects/sicopolis/).
+The Git repository of SICOPOLIS is kindly hosted by the GitLab system of the Alfred Wegener Institute for Polar and Marine Research (AWI) in Bremerhaven, Germany. Front page: https://gitlab.awi.de/sicopolis/sicopolis/\,.
 
-Check out the latest revision (``bleeding edge'') from the Subversion repository:
+Cloning the latest revision (``bleeding edge'') from the Git repository:
 
-\begin{small}
-\hspace*{3.33mm}\verb+svn checkout --username anonsvn --password anonsvn \+
+% \begin{small}
+\hspace*{1.5em}\verb+git clone --branch develop \+
 \\[-1ex]
-\hspace*{6.67mm}\verb+https://swrepo1.awi.de/svn/sicopolis/trunk sicopolis+
-\\
-\hspace*{3.33mm}(or username/password from your own AWIForge account)
-\end{small}
+\hspace*{3.65em}\verb+https://gitlab.awi.de/sicopolis/sicopolis.git+
+% \end{small}
 
-Alternatively, check out any previous revision no.\ REVNUM\\
-(changelog: http://tinyurl.com/commit-logs-sico-trunk/):
+(Cloning with SSH instead of HTTPS is also available. See the above GitLab front page link for details.)
 
-\begin{small}
-\hspace*{3.33mm}\verb+svn checkout --username anonsvn --password anonsvn -r REVNUM \+
-\\[-1ex]
-\hspace*{6.67mm}\verb+https://swrepo1.awi.de/svn/sicopolis/trunk sicopolis+
-\\
-\hspace*{3.33mm}(or username/password from your own AWIForge account)
-\end{small}
-
-Either way, you should then have a new directory ``sicopolis'' that contains the entire program package.
+You should then have a new directory ``sicopolis'' that contains the entire program package.
 
 \end{itemize}
 
-\clearpage
+% \clearpage
 
 % \begin{spacing}{1.2}
 
@@ -171,11 +160,15 @@ Either way, you should then have a new directory ``sicopolis'' that contains the
 
 \begin{enumerate}
 
-\item Go to the new directory ``sicopolis'' and execute the bash script copy\_templates.sh:
+\item Go to the new directory ``sicopolis'' and execute the following bash scripts:
 
-\begin{small}
-\hspace*{3.33mm}\verb+./copy_templates.sh+
-\end{small}
+% \begin{small}
+\hspace*{1.5em}\verb+./copy_templates.sh+
+\\
+\hspace*{1.5em}\verb+./get_input_files.sh+
+% \end{small}
+
+The latter can be configured if you want to download only selected input files (default is downloading everything). To do so, open it with a text editor and change the flag variables before execution.
 
 \item Locate the file sico\_configs.sh in the directory sicopolis/runs, and open it with a text editor.
 
