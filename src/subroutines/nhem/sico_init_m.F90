@@ -370,6 +370,8 @@ dzeta_r = 1.0_dp/real(KRMAX,dp)
 ndat2d = 1
 ndat3d = 1
 
+flag_calc_temp = .true.
+
 !-------- General abbreviations --------
 
 !  ------ kc domain

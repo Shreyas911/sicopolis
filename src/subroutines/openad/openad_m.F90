@@ -329,8 +329,10 @@ contains
       runname)
 
  call var_transfer&
-      (maske,maske_old,maske_neu,n_cts,n_cts_neu,kc_cts,&
-      kc_cts_neu,flag_inner_point,&
+      (maske, maske_old, maske_neu, &
+      n_cts, n_cts_neu, kc_cts, kc_cts_neu, &
+      flag_calc_temp, &
+      flag_inner_point, &
       flag_grounding_line_1,flag_grounding_line_2,flag_calving_front_1,&
       flag_calving_front_2,flag_shelfy_stream_x,flag_shelfy_stream_y,&
       flag_shelfy_stream,xi,eta,zeta_c,zeta_t,zeta_r,aa,flag_aa_nonzero,&
@@ -554,8 +556,10 @@ contains
 !! liz.curry.logan@gmail.com. 
 !<------------------------------------------------------------------------------
   subroutine var_transfer&
-         (a_maske,a_maske_old,a_maske_neu,a_n_cts,a_n_cts_neu,a_kc_cts,&
-         a_kc_cts_neu,a_flag_inner_point,&
+         (a_maske, a_maske_old, a_maske_neu, &
+         a_n_cts, a_n_cts_neu, a_kc_cts, a_kc_cts_neu, &
+         a_flag_calc_temp, &
+         a_flag_inner_point, &
          a_flag_grounding_line_1,a_flag_grounding_line_2,a_flag_calving_front_1,&
          a_flag_calving_front_2,a_flag_shelfy_stream_x,a_flag_shelfy_stream_y,&
          a_flag_shelfy_stream,a_xi,a_eta,a_zeta_c,a_zeta_t,a_zeta_r,a_aa,a_flag_aa_nonzero,&
@@ -748,6 +752,7 @@ contains
     real(dp)                                           :: a_F_INV
     real(dp)                                           :: a_fc
     logical                                            :: a_flag_aa_nonzero
+    logical                                            :: a_flag_calc_temp
     logical, dimension(0:JMAX,0:IMAX)                  :: a_flag_inner_point
     logical, dimension(0:JMAX,0:IMAX)                  :: a_flag_grounding_line_1
     logical, dimension(0:JMAX,0:IMAX)                  :: a_flag_grounding_line_2
@@ -1152,6 +1157,7 @@ contains
     F_INV = a_F_INV
     fc%v = a_fc
     flag_aa_nonzero = a_flag_aa_nonzero
+    flag_calc_temp = a_flag_calc_temp
     flag_calving_front_1 = a_flag_calving_front_1
     flag_calving_front_2 = a_flag_calving_front_2
     flag_grounded_front_a_1 = a_flag_grounded_front_a_1

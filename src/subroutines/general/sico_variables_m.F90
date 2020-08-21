@@ -63,6 +63,11 @@ save
    integer(i4b), dimension(0:JMAX,0:IMAX) :: kc_cts
 !> (.)_neu: New value of quantity (.) computed during an integration step
    integer(i4b), dimension(0:JMAX,0:IMAX) :: kc_cts_neu
+!> flag_calc_temp: Flag for computation of the temperature, water content,
+!>                 age and flow enhancement factor during an integration step.
+!>                  .true.: temperature etc. computed
+!>                 .false.: temperature etc. not computed
+   logical :: flag_calc_temp
 !> flag_inner_point(j,i): Inner-point flag.
 !>                              .true.: inner point,
 !>                             .false.: margin point

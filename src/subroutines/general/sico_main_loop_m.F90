@@ -154,8 +154,14 @@ contains
   !-------- Temperature, water content, age, flow enhancement factor --------
   
   if ( mod(itercount, iter_temp) == 0 ) then
-  
-     write(unit=6, fmt='(10x,a)') 'Computation of T'
+     flag_calc_temp = .true.
+  else
+     flag_calc_temp = .false.
+  end if
+
+  if ( flag_calc_temp ) then
+
+       write(unit=6, fmt='(10x,a)') 'Computation of T'
   
   !  ------ Temperature, water content, age
   
@@ -226,7 +232,7 @@ contains
   
   end if
   !     End of computation of temperature, water content, age and
-  !     enhancement factor
+  !     enhancement factor (only if flag_calc_temp == .true.)
   
   !-------- Velocity --------
 
