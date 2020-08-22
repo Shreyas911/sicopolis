@@ -1,5 +1,7 @@
 *.[oa]
 *~
+*.mod
+*.x
 
 my_*
 
@@ -11,10 +13,9 @@ my_*
 !/tools/*/
 /tools/matlab/*
 /tools/sicograph/*
+/tools/*/*.h
 
 /src/*.h
-/src/*.mod
-/src/*.x
 
 /src/subroutines/xyz/*
 !/src/subroutines/xyz/*/

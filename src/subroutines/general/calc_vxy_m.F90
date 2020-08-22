@@ -1686,7 +1686,7 @@ do j=0, JMAX
 end do
 end do
 
-call calc_enhance_hybrid_weighted(weigh_ssta_sia)
+if (flag_calc_temp) call calc_enhance_hybrid_weighted(weigh_ssta_sia)
 
 #endif   /* (DYNAMICS==2) */
 
