@@ -1741,12 +1741,12 @@ weigh_ssta_sia = 0.0_dp
 
 #if (DYNAMICS==2)
 
+#if ( (!defined(HYB_MODE)) || (HYB_MODE==0) )   /* Ralf's approach */
+
 do i=0, IMAX
 do j=0, JMAX
 
    if (flag_shelfy_stream(j,i)) then   ! shelfy stream
-
-#if ( (!defined(HYB_MODE)) || (HYB_MODE==0) )   /* Ralf's approach */
 
       weigh_ssta_sia(j,i) = (ratio_sl(j,i)-ratio_sl_threshold)*ratio_help
 
@@ -1776,19 +1776,34 @@ do j=0, JMAX
       call error(errormsg)
 #endif
 
+   end if
+
+end do
+end do
+
 #elif (HYB_MODE==1)   /* Jorge's approach */
 
-! Code coming soon ...
+do i=1, IMAX-1
+do j=1, JMAX-1
 
-#else
-      errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0 or 1!'
-      call error(errormsg)
-#endif
+   if (flag_shelfy_stream(j,i)) then   ! shelfy stream
+
+      weigh_ssta_sia(j,i) = 0.25_dp * &
+                            (   weigh_ssta_sia_x(j,i-1) + weigh_ssta_sia_x(j,i) &
+                              + weigh_ssta_sia_y(j-1,i) + weigh_ssta_sia_y(j,i) )
+
+      weigh_ssta_sia(j,i) = max(min(weigh_ssta_sia(j,i), 1.0_dp), 0.0_dp)
+                            ! constrain to interval [0,1] (just in case :shrug: )
 
    end if
 
 end do
 end do
+
+#else
+      errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0 or 1!'
+      call error(errormsg)
+#endif
 
 if (flag_calc_temp) call calc_enhance_hybrid_weighted(weigh_ssta_sia)
 
