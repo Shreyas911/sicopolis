@@ -1499,6 +1499,8 @@ do j=0, JMAX
 
    if (flag_shelfy_stream_x(j,i)) then   ! shelfy stream
 
+#if ( (!defined(HYB_MODE)) || (HYB_MODE==0) )   /* Ralf's approach */
+
       weigh_ssta_sia_x(j,i) = (ratio_sl_x(j,i)-ratio_sl_threshold)*ratio_help
 
       weigh_ssta_sia_x(j,i) = max(min(weigh_ssta_sia_x(j,i), 1.0_dp), 0.0_dp)
@@ -1542,6 +1544,15 @@ do j=0, JMAX
       vx_m(j,i) = weigh_ssta_sia_x(j,i)*vx_m_ssa(j,i) &
                   + (1.0_dp-weigh_ssta_sia_x(j,i))*vx_m_sia(j,i)
 
+#elif (HYB_MODE==1)   /* Jorge's approach */
+
+! Code coming soon ...
+
+#else
+      errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0 or 1!'
+      call error(errormsg)
+#endif
+
       qx(j,i)   = vx_m(j,i) &
                      * 0.5_dp * ( (H_c(j,i)+H_t(j,i))+(H_c(j,i+1)+H_t(j,i+1)) )
 
@@ -1577,6 +1588,8 @@ do i=0, IMAX
 do j=0, JMAX-1
 
    if (flag_shelfy_stream_y(j,i)) then   ! shelfy stream
+
+#if ( (!defined(HYB_MODE)) || (HYB_MODE==0) )   /* Ralf's approach */
 
       weigh_ssta_sia_y(j,i) = (ratio_sl_y(j,i)-ratio_sl_threshold)*ratio_help
 
@@ -1620,6 +1633,15 @@ do j=0, JMAX-1
 
       vy_m(j,i) = weigh_ssta_sia_y(j,i)*vy_m_ssa(j,i) &
                   + (1.0_dp-weigh_ssta_sia_y(j,i))*vy_m_sia(j,i)
+
+#elif (HYB_MODE==1)   /* Jorge's approach */
+
+! Code coming soon ...
+
+#else
+      errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0 or 1!'
+      call error(errormsg)
+#endif
 
       qy(j,i)   = vy_m(j,i) &
                      * 0.5_dp * ( (H_c(j,i)+H_t(j,i))+(H_c(j+1,i)+H_t(j+1,i)) )
