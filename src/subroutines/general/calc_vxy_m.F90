@@ -1746,6 +1746,8 @@ do j=0, JMAX
 
    if (flag_shelfy_stream(j,i)) then   ! shelfy stream
 
+#if ( (!defined(HYB_MODE)) || (HYB_MODE==0) )   /* Ralf's approach */
+
       weigh_ssta_sia(j,i) = (ratio_sl(j,i)-ratio_sl_threshold)*ratio_help
 
       weigh_ssta_sia(j,i) = max(min(weigh_ssta_sia(j,i), 1.0_dp), 0.0_dp)
@@ -1771,6 +1773,15 @@ do j=0, JMAX
 
 #else
       errormsg = ' >>> calc_vxy_ssa: SSTA_SIA_WEIGH_FCT must be 0, 1 or 2!'
+      call error(errormsg)
+#endif
+
+#elif (HYB_MODE==1)   /* Jorge's approach */
+
+! Code coming soon ...
+
+#else
+      errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0 or 1!'
       call error(errormsg)
 #endif
 
