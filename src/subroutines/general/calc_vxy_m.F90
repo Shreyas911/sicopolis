@@ -625,7 +625,7 @@ vx_b_g   = 0.0_dp
 vy_b_g   = 0.0_dp
 
 ! c_slide and c_drag are not reset because they will be used in the
-! computation of the SStA velocity components 
+! computation of the SStA velocity components
 
 #endif
 
