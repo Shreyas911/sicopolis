@@ -1575,7 +1575,24 @@ do j=0, JMAX
 
 #elif (HYB_MODE==1)   /* Jorge's approach */
 
-! Code coming soon ...
+      weigh_ssta_sia_x(j,i) = 2.0_dp*pi_inv*ATAN((abs(vx_m(j,i))**2.0_dp)/(v_ref**2.0_dp))
+
+      do kt=0, KTMAX
+         vx_t(kt,j,i) = vx_m_ssa(j,i) + (1.0_dp-weigh_ssta_sia_x(j,i))*vx_t(kt,j,i)
+      end do
+
+      do kc=0, KCMAX
+         vx_c(kc,j,i) = vx_m_ssa(j,i) + (1.0_dp-weigh_ssta_sia_x(j,i))*vx_c(kc,j,i)
+      end do
+
+      vx_b(j,i) = vx_t(0,j,i)
+
+      vx_m(j,i) = vx_m_ssa(j,i) + (1.0_dp-weigh_ssta_sia_x(j,i))*vx_m_sia(j,i)
+
+      call velocity_limiter_gradual(vx_t, vh_max, vh_max_inv)
+      call velocity_limiter_gradual(vx_c, vh_max, vh_max_inv)
+      call velocity_limiter_gradual(vx_b, vh_max, vh_max_inv)
+      call velocity_limiter_gradual(vx_m, vh_max, vh_max_inv)
 
 #else
       errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0 or 1!'
@@ -1665,7 +1682,24 @@ do j=0, JMAX-1
 
 #elif (HYB_MODE==1)   /* Jorge's approach */
 
-! Code coming soon ...
+      weigh_ssta_sia_y(j,i) = 2.0_dp*pi_inv*ATAN((abs(vy_m(j,i))**2.0_dp)/(v_ref**2.0_dp))
+
+      do kt=0, KTMAX
+         vy_t(kt,j,i) = vy_m_ssa(j,i) + (1.0_dp-weigh_ssta_sia_y(j,i))*vy_t(kt,j,i)
+      end do
+
+      do kc=0, KCMAX
+         vy_c(kc,j,i) = vy_m_ssa(j,i) + (1.0_dp-weigh_ssta_sia_y(j,i))*vy_c(kc,j,i)
+      end do
+
+      vy_b(j,i) = vy_t(0,j,i)
+
+      vy_m(j,i) = vy_m_ssa(j,i) + (1.0_dp-weigh_ssta_sia_y(j,i))*vy_m_sia(j,i)
+
+      call velocity_limiter_gradual(vy_t, vh_max, vh_max_inv)
+      call velocity_limiter_gradual(vy_c, vh_max, vh_max_inv)
+      call velocity_limiter_gradual(vy_b, vh_max, vh_max_inv)
+      call velocity_limiter_gradual(vy_m, vh_max, vh_max_inv)
 
 #else
       errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0 or 1!'
