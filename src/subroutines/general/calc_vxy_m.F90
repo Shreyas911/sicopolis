@@ -1464,6 +1464,7 @@ call calc_vis_ssa(dxi, deta, dzeta_c, dzeta_t)
 
 ratio_sl_threshold = 1.11e+11_dp   ! dummy value
 ratio_help         = 0.0_dp
+v_ref              = 1.11e+11_dp   ! dummy value
 
 #elif (DYNAMICS==2)
 
@@ -1474,6 +1475,12 @@ ratio_sl_threshold = 0.5_dp   ! default value
 #endif
 
 ratio_help = 1.0_dp/(1.0_dp-ratio_sl_threshold)
+
+#if ( defined(HYB_REF_SPEED) )
+v_ref = real(HYB_REF_SPEED,dp)/real(YEAR_SEC,dp)
+#else
+v_ref = 30.0_dp/real(YEAR_SEC,dp)   ! default value
+#endif
 
 #else
 
