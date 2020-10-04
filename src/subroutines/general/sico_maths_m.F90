@@ -335,7 +335,7 @@ LIS_SOLVER                                   :: solver
 real(dp),     dimension(nnz),  intent(in)    :: lgs_a_value
 real(dp),     dimension(nmax),    intent(in) :: lgs_b_value
 #if (!defined(ALLOW_GRDCHK) && !defined(ALLOW_OPENAD))
-real(dp),     dimension(nmax), intent(in)    :: lgs_x_value
+real(dp),     dimension(nmax), intent(inout) :: lgs_x_value
 #else
 real(dp),     dimension(nmax), intent(inout) :: lgs_x_value
 #endif
