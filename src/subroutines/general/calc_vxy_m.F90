@@ -614,6 +614,21 @@ end do
 
 #endif /* Normal vs. OpenAD */
 
+!-------- Discard basal velocities for HYB_MODE==1 --------
+
+#if ( (DYNAMICS==2) && (HYB_MODE==1) )
+
+d_help_b = 0.0_dp
+vx_b     = 0.0_dp
+vy_b     = 0.0_dp
+vx_b_g   = 0.0_dp
+vy_b_g   = 0.0_dp
+
+! c_slide and c_drag are not reset because they will be used in the
+! computation of the SStA velocity components 
+
+#endif
+
 end subroutine calc_vxy_b_sia
 
 !-------------------------------------------------------------------------------
