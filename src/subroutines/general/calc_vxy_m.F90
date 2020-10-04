@@ -1326,6 +1326,7 @@ real(dp), dimension(0:JMAX,0:IMAX) :: weigh_ssta_sia_x, weigh_ssta_sia_y
 real(dp), dimension(0:JMAX,0:IMAX) :: weigh_ssta_sia
 real(dp) :: qx_gl_g, qy_gl_g
 logical, dimension(0:JMAX,0:IMAX) :: flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y
+real(dp) :: v_ref
 
 #if (MARGIN==3 || DYNAMICS==2)
 
