@@ -1580,15 +1580,21 @@ do j=0, JMAX
 
       do kt=0, KTMAX
          vx_t(kt,j,i) = vx_m_ssa(j,i) + (1.0_dp-weigh_ssta_sia_x(j,i))*vx_t(kt,j,i)
+         vx_t(kt,j,i) = max(vx_t(kt,j,i), -vh_max)
+         vx_t(kt,j,i) = min(vx_t(kt,j,i),  vh_max)
       end do
 
       do kc=0, KCMAX
          vx_c(kc,j,i) = vx_m_ssa(j,i) + (1.0_dp-weigh_ssta_sia_x(j,i))*vx_c(kc,j,i)
+         vx_c(kc,j,i) = max(vx_c(kc,j,i), -vh_max)
+         vx_c(kc,j,i) = min(vx_c(kc,j,i),  vh_max)
       end do
 
       vx_b(j,i) = vx_t(0,j,i)
 
       vx_m(j,i) = vx_m_ssa(j,i) + (1.0_dp-weigh_ssta_sia_x(j,i))*vx_m_sia(j,i)
+      vx_m(j,i) = max(vx_m(j,i), -vh_max)
+      vx_m(j,i) = min(vx_m(j,i),  vh_max)
 
 #else
       errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0 or 1!'
@@ -1683,15 +1689,21 @@ do j=0, JMAX-1
 
       do kt=0, KTMAX
          vy_t(kt,j,i) = vy_m_ssa(j,i) + (1.0_dp-weigh_ssta_sia_y(j,i))*vy_t(kt,j,i)
+         vy_t(kt,j,i) = max(vy_t(kt,j,i), -vh_max)
+         vy_t(kt,j,i) = min(vy_t(kt,j,i),  vh_max)
       end do
 
       do kc=0, KCMAX
          vy_c(kc,j,i) = vy_m_ssa(j,i) + (1.0_dp-weigh_ssta_sia_y(j,i))*vy_c(kc,j,i)
+         vy_c(kc,j,i) = max(vy_c(kc,j,i), -vh_max)
+         vy_c(kc,j,i) = min(vy_c(kc,j,i),  vh_max)
       end do
 
       vy_b(j,i) = vy_t(0,j,i)
 
       vy_m(j,i) = vy_m_ssa(j,i) + (1.0_dp-weigh_ssta_sia_y(j,i))*vy_m_sia(j,i)
+      vy_m(j,i) = max(vy_m(j,i), -vh_max)
+      vy_m(j,i) = min(vy_m(j,i),  vh_max)
 
 #else
       errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0 or 1!'
