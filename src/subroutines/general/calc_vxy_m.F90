@@ -1590,11 +1590,6 @@ do j=0, JMAX
 
       vx_m(j,i) = vx_m_ssa(j,i) + (1.0_dp-weigh_ssta_sia_x(j,i))*vx_m_sia(j,i)
 
-      call velocity_limiter_gradual(vx_t, vh_max, vh_max_inv)
-      call velocity_limiter_gradual(vx_c, vh_max, vh_max_inv)
-      call velocity_limiter_gradual(vx_b, vh_max, vh_max_inv)
-      call velocity_limiter_gradual(vx_m, vh_max, vh_max_inv)
-
 #else
       errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0 or 1!'
       call error(errormsg)
@@ -1697,11 +1692,6 @@ do j=0, JMAX-1
       vy_b(j,i) = vy_t(0,j,i)
 
       vy_m(j,i) = vy_m_ssa(j,i) + (1.0_dp-weigh_ssta_sia_y(j,i))*vy_m_sia(j,i)
-
-      call velocity_limiter_gradual(vy_t, vh_max, vh_max_inv)
-      call velocity_limiter_gradual(vy_c, vh_max, vh_max_inv)
-      call velocity_limiter_gradual(vy_b, vh_max, vh_max_inv)
-      call velocity_limiter_gradual(vy_m, vh_max, vh_max_inv)
 
 #else
       errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0 or 1!'
