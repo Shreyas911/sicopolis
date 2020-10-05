@@ -1575,7 +1575,7 @@ do j=0, JMAX
 
 #elif (HYB_MODE==1)   /* Jorge's approach */
 
-      weigh_ssta_sia_x(j,i) = (2.0_dp/pi) * ATAN( (abs(vx_m(j,i))**2.0_dp) &
+      weigh_ssta_sia_x(j,i) = (2.0_dp/pi) * ATAN( (abs(vx_m_ssa(j,i))**2.0_dp) &
                                                     / (v_ref**2.0_dp) )
 
       do kt=0, KTMAX
@@ -1683,7 +1683,7 @@ do j=0, JMAX-1
 
 #elif (HYB_MODE==1)   /* Jorge's approach */
 
-      weigh_ssta_sia_y(j,i) = (2.0_dp/pi) * ATAN( (abs(vy_m(j,i))**2.0_dp) &
+      weigh_ssta_sia_y(j,i) = (2.0_dp/pi) * ATAN( (abs(vy_m_ssa(j,i))**2.0_dp) &
                                                     / (v_ref**2.0_dp) )
 
       do kt=0, KTMAX
