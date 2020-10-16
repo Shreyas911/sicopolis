@@ -44,7 +44,7 @@ module sico_maths_m
 
   public :: sor_sprs, tri_sle, bilinint, my_erfc
 
-#if defined(BUILD_LIS) && (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
+#if (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
   public :: sico_lis_solver
 #endif
 
@@ -56,7 +56,7 @@ module sico_maths_m
      module procedure tri_sle_local
   end interface
 
-#if defined(BUILD_LIS) && (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
+#if (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
   interface sico_lis_solver 
      module procedure sico_lis_solver_local
   end interface
@@ -307,7 +307,7 @@ contains
 !! it is used. This is substituted in for adjoint modes in Antarctica with 
 !! ice shelves.
 !<------------------------------------------------------------------------------
-#if defined(BUILD_LIS) && (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
+#if (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
 #if defined(ALLOW_OPENAD)
 #include "lisf.h"
 subroutine sico_lis_solver_local(nmax, nnz, &
