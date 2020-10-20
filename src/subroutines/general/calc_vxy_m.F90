@@ -614,9 +614,9 @@ end do
 
 #endif /* Normal vs. OpenAD */
 
-!-------- Discard basal velocities for HYB_MODE==1 --------
+!-------- Discard basal velocities for HYB_MODE==[1,2] --------
 
-#if ( (DYNAMICS==2) && (HYB_MODE==1) )
+#if ( (DYNAMICS==2) && (HYB_MODE==1 || HYB_MODE==2) )
 
 d_help_b = 0.0_dp
 vx_b     = 0.0_dp
