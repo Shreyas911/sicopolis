@@ -1192,7 +1192,7 @@ do i=0, IMAX-1
 do j=0, JMAX
 #if ( (!defined(HYB_MODE)) || (HYB_MODE==0) )
    if (ratio_sl_x(j,i) > ratio_sl_threshold) flag_shelfy_stream_x(j,i) = .true.
-#elif (HYB_MODE==1)
+#elif (HYB_MODE==1 || HYB_MODE==2)
    if ( (maske(j,i)==0_i1b).or.(maske(j,i+1)==0_i1b) ) flag_shelfy_stream_x(j,i) = .true.
 #else
    errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0 or 1!'
@@ -1205,7 +1205,7 @@ do i=0, IMAX
 do j=0, JMAX-1
 #if ( (!defined(HYB_MODE)) || (HYB_MODE==0) )
    if (ratio_sl_y(j,i) > ratio_sl_threshold) flag_shelfy_stream_y(j,i) = .true.
-#elif (HYB_MODE==1)
+#elif (HYB_MODE==1 || HYB_MODE==2)
    if ( (maske(j,i)==0_i1b).or.(maske(j+1,i)==0_i1b) ) flag_shelfy_stream_y(j,i) = .true.
 #else
    errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0 or 1!'
