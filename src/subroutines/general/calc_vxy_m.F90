@@ -1832,8 +1832,18 @@ do j=1, JMAX-1
 end do
 end do
 
+#elif (HYB_MODE==2)   /* Pure SSA/SStA approach */
+
+do i=1, IMAX-1
+do j=1, JMAX-1
+
+   if (flag_shelfy_stream(j,i)) weigh_ssta_sia(j,i) = 1.00_dp   ! shelfy stream
+
+end do
+end do
+
 #else
-      errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0 or 1!'
+      errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0, 1 or 2!'
       call error(errormsg)
 #endif
 
