@@ -1596,8 +1596,22 @@ do j=0, JMAX
       vx_m(j,i) = max(vx_m(j,i), -vh_max)
       vx_m(j,i) = min(vx_m(j,i),  vh_max)
 
+#elif (HYB_MODE==2)   /* Pure SSA/SStA approach */
+
+      do kt=0, KTMAX
+         vx_t(kt,j,i) = vx_m_ssa(j,i)
+      end do
+
+      do kc=0, KCMAX
+         vx_c(kc,j,i) = vx_m_ssa(j,i)
+      end do
+
+      vx_b(j,i) = vx_t(0,j,i)
+
+      vx_m(j,i) = vx_m_ssa(j,i)
+
 #else
-      errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0 or 1!'
+      errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0, 1 or 2!'
       call error(errormsg)
 #endif
 
@@ -1705,8 +1719,22 @@ do j=0, JMAX-1
       vy_m(j,i) = max(vy_m(j,i), -vh_max)
       vy_m(j,i) = min(vy_m(j,i),  vh_max)
 
+#elif (HYB_MODE==2)   /* Pure SSA/SStA approach */
+
+      do kt=0, KTMAX
+         vy_t(kt,j,i) = vy_m_ssa(j,i)
+      end do
+
+      do kc=0, KCMAX
+         vy_c(kc,j,i) = vy_m_ssa(j,i)
+      end do
+
+      vy_b(j,i) = vy_t(0,j,i)
+
+      vy_m(j,i) = vy_m_ssa(j,i)
+
 #else
-      errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0 or 1!'
+      errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0, 1 or 2!'
       call error(errormsg)
 #endif
 
