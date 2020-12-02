@@ -5,7 +5,7 @@
 !
 #define       MODEL_SICOPOLIS
 #define       VERSION '5-dev'
-#define       DATE    '2020-08-22'
+#define       DATE    '2020-12-02'
 !
 !> @mainpage
 !!
@@ -29,7 +29,7 @@
 !! method, two versions of the one-layer enthalpy method, the cold-ice
 !! method and the isothermal method (Greve and Blatter 2016).
 !!
-!! The coding is based on a consequent low-tech philosophy. All
+!! The coding is based on an ease-of-use, low-tech philosophy. All
 !! structures are kept as simple as possible, and advanced coding
 !! techniques are only employed where it is deemed appropriate. The use
 !! of external libraries is kept at an absolute minimum. In fact,
