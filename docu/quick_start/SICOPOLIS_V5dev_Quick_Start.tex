@@ -602,39 +602,39 @@ Run & Model time & Time step$^\dagger$
                  & \multicolumn{2}{c}{CPU time$^\ddagger$} \\ \hline
 v5\_emtp2sge25\_expA                 &  $200\;\mathrm{ka}$\hspace*{1.0em}
                                      &   $20\;\mathrm{ a}$\hspace*{1.0em}
-                                     &  7&$2\;\mathrm{min}$ \\
+                                     &  3&$8\;\mathrm{min}$ \\
 v5\_grl20\_ss25ka                    &   $25\;\mathrm{ka}$\hspace*{1.0em}
                                      &    $5\;\mathrm{ a}$\hspace*{1.0em}
-                                     & 11&$1\;\mathrm{min}$ \\
+                                     &  6&$1\;\mathrm{min}$ \\
 v5\_ant40\_ss25ka                    &   $25\;\mathrm{ka}$\hspace*{1.0em}
                                      &   $10\;\mathrm{ a}$\hspace*{1.0em}
-                                     &  9&$7\;\mathrm{min}$ \\ \hline
+                                     &  5&$0\;\mathrm{min}$ \\ \hline
 v5\_grl20\_b2\_paleo21               &  $140\;\mathrm{ka}$\hspace*{1.0em}
                                      &    $5\;\mathrm{ a}$\hspace*{1.0em}
-                                     &  1&$5\;\mathrm{hrs}$ \\
+                                     &  0&$8\;\mathrm{hrs}$ \\
 v5\_grl10\_b2\_paleo21$^\ast$        &    $9\;\mathrm{ka}$\hspace*{1.0em}
                                      &    $1\;\mathrm{ a}$\hspace*{1.0em}
-                                     &  1&$8\;\mathrm{hrs}$ \\
+                                     &  0&$9\;\mathrm{hrs}$ \\
 v5\_grl10\_b2\_future21\_ctrl        &  $100\;\mathrm{ a}$\hspace*{1.47em}
                                      &    $1\;\mathrm{ a}$\hspace*{1.0em}
-                                     &  1&$7\;\mathrm{min}$ \\
+                                     &  0&$9\;\mathrm{min}$ \\
 v5\_grl10\_b2\_future21\_asmb        &  $100\;\mathrm{ a}$\hspace*{1.47em}
                                      &    $1\;\mathrm{ a}$\hspace*{1.0em}
-                                     &  1&$7\;\mathrm{min}$ \\ \hline
+                                     &  0&$9\;\mathrm{min}$ \\ \hline
 v5\_ant64\_b2\_spinup09\_init100a    &  $100\;\mathrm{ a}$\hspace*{1.47em}
                                      & $2\,/\,10\;\mathrm{ a}^{\dagger}$\hspace*{0.6em}
-                                     &  5&$8\;\mathrm{sec}$ \\
+                                     &  3&$7\;\mathrm{sec}$ \\
 v5\_ant64\_b2\_spinup09\_fixtopo     &  $140\;\mathrm{ka}$\hspace*{1.0em}
                                      &  $5\,/\,10\;\mathrm{ a}^{\dagger}$\hspace*{0.6em}
-                                     &  1&$0\;\mathrm{hrs}$ \\
+                                     &  0&$6\;\mathrm{hrs}$ \\
 v5\_ant64\_b2\_spinup09              &  $500\;\mathrm{ a}$\hspace*{1.47em}
                                      & $2\,/\,10\;\mathrm{ a}^{\dagger}$\hspace*{0.6em}
-                                     &  0&$5\;\mathrm{min}$ \\
+                                     &  0&$3\;\mathrm{min}$ \\
 v5\_ant64\_b2\_future09\_ctrl        &  $100\;\mathrm{ a}$\hspace*{1.47em}
                                      & $2\,/\,10\;\mathrm{ a}^{\dagger}$\hspace*{0.6em}
-                                     &  7&$0\;\mathrm{sec}$ \\ \hline
+                                     &  4&$6\;\mathrm{sec}$ \\ \hline
 \end{tabular}
-\caption{Model times, time steps and computing (CPU) times for the EISMINT, Greenland and Antarctica simulations contained in the script multi\_sico\_1.sh, run with SICOPOLIS V5-dev (revision 1392) and the Intel Fortran Compiler 17.0.1 for Linux (optimization options -xHOST -O3 -no-prec-div) on a $2\times{}14$-Core Intel Xeon E5-2690~v4 (2.6~GHz) PC under openSUSE Leap 42.3.
+\caption{Model times, time steps and computing (CPU) times for the EISMINT, Greenland and Antarctica simulations contained in the script multi\_sico\_1.sh, run with SICOPOLIS V5-dev (revision develop\_45\_rv5.1-44-ga6ca7e9) and the Intel Fortran Compiler 19.1 for Linux (optimization options -xHOST -O3 -no-prec-div) on a 12-Core Intel Xeon Gold 6256 (3.6~GHz) PC under openSUSE Leap 15.2.
 \protect\\
 {}$^\dagger$: If one value is given, this is the common dynamic (velocity, ice thickness) and thermodynamic (temperature, water content, age) time step. If two values are given (marked by the dagger ($^\dagger$) symbol), the first one is the dynamic, the second one the thermodynamic time step.
 \protect\\
@@ -651,6 +651,6 @@ v5\_ant64\_b2\_future09\_ctrl        &  $100\;\mathrm{ a}$\hspace*{1.47em}
 % \section*{References}
 
 \bibliographystyle{ralf}
-\bibliography{journals_abbrev_rg,Refs_for_Quick_Start}
+\bibliography{journals_full_rg,Refs_for_Quick_Start}
 
 \end{document}
