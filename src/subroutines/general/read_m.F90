@@ -1137,7 +1137,7 @@ call error(errormsg)
 !-------------------------------------------------------------------------------
 !> Reading of 2D input files in NetCDF or ASCII format.
 !<------------------------------------------------------------------------------
-  subroutine read_2d_input(filename_with_path, ch_var_name, flag_mask, &
+  subroutine read_2d_input(filename_with_path, ch_var_name, n_var_type, &
                            n_ascii_header, field2d_r)
 
   use sico_variables_m
@@ -1152,7 +1152,7 @@ call error(errormsg)
 
   character(len=256), intent(in)                  :: filename_with_path
   character(len=  *), intent(in)                  :: ch_var_name
-  logical, intent(in)                             :: flag_mask
+  integer(i4b), intent(in)                        :: n_var_type
   integer(i4b), intent(in)                        :: n_ascii_header
   real(dp), dimension(0:JMAX,0:IMAX), intent(out) :: field2d_r
 
@@ -1165,6 +1165,7 @@ call error(errormsg)
   logical            :: flag_nc
 
   integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_aux_conv
+  integer(i4b), dimension(0:IMAX,0:JMAX) :: n_aux_conv
   real(dp)    , dimension(0:IMAX,0:JMAX) :: r_aux_conv
 
 #if (NETCDF==2) /* NetCDF libraries included */
@@ -1208,10 +1209,15 @@ call error(errormsg)
 
      call check( nf90_inq_varid(ncid, trim(adjustl(ch_var_name)), ncv) )
 
-     if (flag_mask) then
+     if (n_var_type==1) then
+        call check( nf90_get_var(ncid, ncv, r_aux_conv) )
+     else if (n_var_type==2) then
+        call check( nf90_get_var(ncid, ncv, n_aux_conv) )
+     else if (n_var_type==3) then
         call check( nf90_get_var(ncid, ncv, mask_aux_conv) )
      else
-        call check( nf90_get_var(ncid, ncv, r_aux_conv) )
+        errormsg = ' >>> read_2d_input: n_var_type must be between 1 and 3!'
+        call error(errormsg)
      end if
 
      call check( nf90_close(ncid) )
@@ -1226,10 +1232,13 @@ call error(errormsg)
 
   else   ! ASCII file
 
-     if (flag_mask) then
+     if (n_var_type==1) then
+        open(21, iostat=ios, file=trim(filename_aux), recl=rcl1, status='old')
+     else if ((n_var_type==2).or.(n_var_type==3)) then
         open(21, iostat=ios, file=trim(filename_aux), recl=rcl2, status='old')
      else
-        open(21, iostat=ios, file=trim(filename_aux), recl=rcl1, status='old')
+        errormsg = ' >>> read_2d_input: n_var_type must be between 1 and 3!'
+        call error(errormsg)
      end if
 
      if (ios /= 0) then
@@ -1242,10 +1251,15 @@ call error(errormsg)
 
      do j=JMAX, 0, -1
 
-        if (flag_mask) then
+        if (n_var_type==1) then
+           read(21, fmt=*) (r_aux_conv(i,j), i=0,IMAX)
+        else if (n_var_type==2) then
+           read(21, fmt=*) (n_aux_conv(i,j), i=0,IMAX)
+        else if (n_var_type==3) then
            read(21, fmt=trim(fmt4)) (mask_aux_conv(i,j), i=0,IMAX)
         else
-           read(21, fmt=*) (r_aux_conv(i,j), i=0,IMAX)
+           errormsg = ' >>> read_2d_input: n_var_type must be between 1 and 3!'
+           call error(errormsg)
         end if
 
      end do
@@ -1259,10 +1273,15 @@ call error(errormsg)
   do i=0, IMAX
   do j=0, JMAX
 
-     if (flag_mask) then
+     if (n_var_type==1) then
+        field2d_r(j,i) = r_aux_conv(i,j)
+     else if (n_var_type==2) then
+        field2d_r(j,i) = real(n_aux_conv(i,j),dp)
+     else if (n_var_type==3) then
         field2d_r(j,i) = real(mask_aux_conv(i,j),dp)
      else
-        field2d_r(j,i) = r_aux_conv(i,j)
+        errormsg = ' >>> read_2d_input: n_var_type must be between 1 and 3!'
+        call error(errormsg)
      end if
 
   end do

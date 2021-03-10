@@ -74,7 +74,7 @@ subroutine sico_init(delta_ts, glac_index, &
   use stereo_proj_m
 #endif
 
-  use read_m, only : read_phys_para, read_target_topo_nc, read_kei
+  use read_m, only : read_target_topo_nc, read_2d_input, read_kei, read_phys_para
 
   use boundary_m
   use init_temp_water_age_m
@@ -120,6 +120,8 @@ character(len=256) :: shell_command
 character(len=3)   :: ch_nc_test
 character          :: ch_dummy
 logical            :: flag_init_output, flag_3d_output
+
+real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 
 integer(i4b) :: n_slide_regions
 #if (!defined(N_SLIDE_REGIONS) || N_SLIDE_REGIONS<=1)
@@ -1598,20 +1600,11 @@ n_slide_region = 1
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(SLIDE_REGIONS_FILE)
 
-open(24, iostat=ios, file=trim(filename_with_path), recl=rcl2, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='n_basin', n_var_type=2, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the sliding-regions file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(24, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(24, fmt=*) (n_slide_region(j,i), i=0,IMAX)
-end do
-
-close(24, status='keep')
+n_slide_region = nint(field2d_aux)
 
 #endif
 
@@ -2231,26 +2224,11 @@ end do
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(Q_GEO_FILE)
 
-open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='GHF', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the qgeo file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(21, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(21, fmt=*) (q_geo(j,i), i=0,IMAX)
-end do
-
-close(21, status='keep')
-
-do i=0, IMAX
-do j=0, JMAX
-   q_geo(j,i) = q_geo(j,i) *1.0e-03_dp   ! mW/m2 -> W/m2
-end do
-end do
+q_geo = field2d_aux *1.0e-03_dp   ! mW/m2 -> W/m2
 
 #endif
 
@@ -2971,8 +2949,8 @@ filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZS_PRESENT_FILE)
 
 call read_2d_input(filename_with_path, &
-                   ch_var_name='zs', flag_mask=.false., &
-                   n_ascii_header=6, field2d_r=field2d_aux)
+                   ch_var_name='zs', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
 zs = field2d_aux
 
@@ -2980,8 +2958,8 @@ filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZL_PRESENT_FILE)
 
 call read_2d_input(filename_with_path, &
-                   ch_var_name='zl', flag_mask=.false., &
-                   n_ascii_header=6, field2d_r=field2d_aux)
+                   ch_var_name='zl', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
 zl = field2d_aux
 
@@ -2989,8 +2967,8 @@ filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZL0_FILE)
 
 call read_2d_input(filename_with_path, &
-                   ch_var_name='zl0', flag_mask=.false., &
-                   n_ascii_header=6, field2d_r=field2d_aux)
+                   ch_var_name='zl0', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
 zl0 = field2d_aux
 
@@ -2998,8 +2976,8 @@ filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(MASK_PRESENT_FILE)
 
 call read_2d_input(filename_with_path, &
-                   ch_var_name='mask', flag_mask=.true., &
-                   n_ascii_header=6, field2d_r=field2d_aux)
+                   ch_var_name='mask', n_var_type=3, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
 maske = nint(field2d_aux)
 
@@ -3009,8 +2987,8 @@ filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZB_PRESENT_FILE)
 
 call read_2d_input(filename_with_path, &
-                   ch_var_name='zb', flag_mask=.false., &
-                   n_ascii_header=6, field2d_r=field2d_aux)
+                   ch_var_name='zb', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
 zb = field2d_aux
 
@@ -3186,8 +3164,8 @@ filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZL0_FILE)
 
 call read_2d_input(filename_with_path, &
-                   ch_var_name='zl0', flag_mask=.false., &
-                   n_ascii_header=6, field2d_r=field2d_aux)
+                   ch_var_name='zl0', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
 zl0 = field2d_aux
 
@@ -3195,8 +3173,8 @@ filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(MASK_PRESENT_FILE)
 
 call read_2d_input(filename_with_path, &
-                   ch_var_name='mask', flag_mask=.true., &
-                   n_ascii_header=6, field2d_r=field2d_aux)
+                   ch_var_name='mask', n_var_type=3, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
 maske = nint(field2d_aux)
 
@@ -3337,8 +3315,8 @@ filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZL0_FILE)
 
 call read_2d_input(filename_with_path, &
-                   ch_var_name='zl0', flag_mask=.false., &
-                   n_ascii_header=6, field2d_r=field2d_aux)
+                   ch_var_name='zl0', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
 zl0 = field2d_aux
 
