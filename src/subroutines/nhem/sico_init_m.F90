@@ -1194,14 +1194,6 @@ filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
 
 open(24, iostat=ios, file=trim(filename_with_path), recl=rcl2, status='old')
 
-#elif (GRID==2)
-
-errormsg = ' >>> sico_init: ' &
-              //'GRID==2 not allowed for the northern hemisphere application!'
-call error(errormsg)
-
-#endif
-
 if (ios /= 0) then
    errormsg = ' >>> sico_init: Error when opening the mask file!'
    call error(errormsg)
@@ -1214,6 +1206,14 @@ do j=JMAX, 0, -1
 end do
 
 close(24, status='keep')
+
+#elif (GRID==2)
+
+errormsg = ' >>> sico_init: ' &
+              //'GRID==2 not allowed for the northern hemisphere application!'
+call error(errormsg)
+
+#endif
 
 !-------- Reading of data for present monthly-mean surface temperature --------
 
@@ -1929,7 +1929,6 @@ implicit none
 real(dp), intent(out) :: dxi, deta
 
 ! integer(i4b) :: i, j
-! integer(i4b) :: ios
 ! real(dp)     :: xi0, eta0
 
 dxi=0.0_dp; deta=0.0_dp   ! dummy values
@@ -1946,6 +1945,8 @@ end subroutine topography1
 !<------------------------------------------------------------------------------
 subroutine topography2(dxi, deta)
 
+  use read_m, only : read_2d_input
+
 #if (GRID==0 || GRID==1)
   use stereo_proj_m
 #endif
@@ -1958,54 +1959,31 @@ implicit none
 real(dp), intent(out) :: dxi, deta
 
 integer(i4b) :: i, j, n
-integer(i4b) :: ios
 real(dp)     :: xi0, eta0
-character    :: ch_dummy
 
-character(len=  8) :: ch_imax
-character(len=128) :: fmt4
 character(len=256) :: filename_with_path
 
-write(ch_imax, fmt='(i8)') IMAX
-write(fmt4,    fmt='(a)')  '('//trim(adjustl(ch_imax))//'(i1),i1)'
+real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 
 !-------- Read topography --------
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZL0_FILE)
 
-open(23, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='zl0', flag_mask=.false., &
+                   n_ascii_header=6, field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> topography2: Error when opening the zl0 file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(23, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(23, fmt=*) (zl0(j,i), i=0,IMAX)
-end do
-
-close(23, status='keep')
+zl0 = field2d_aux
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(MASK_PRESENT_FILE)
 
-open(24, iostat=ios, file=trim(filename_with_path), recl=rcl2, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='mask', flag_mask=.true., &
+                   n_ascii_header=6, field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> topography2: Error when opening the mask file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(24, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(24, fmt=trim(fmt4)) (maske(j,i), i=0,IMAX)
-end do
-
-close(24, status='keep')
+maske = nint(field2d_aux)
 
 !-------- Further stuff --------
 
@@ -2113,7 +2091,7 @@ end subroutine topography2
 !<------------------------------------------------------------------------------
 subroutine topography3(dxi, deta, z_sl, anfdatname)
 
-  use read_m, only : read_erg_nc
+  use read_m, only : read_erg_nc, read_2d_input
 
 #if (GRID==0 || GRID==1)
   use stereo_proj_m
@@ -2129,9 +2107,10 @@ character(len=100), intent(in) :: anfdatname
 real(dp),          intent(out) :: dxi, deta, z_sl
 
 integer(i4b) :: i, j, n
-integer(i4b) :: ios
+
 character(len=256) :: filename_with_path
-character :: ch_dummy
+
+real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 
 !-------- Read data from time-slice file of previous simulation --------
 
@@ -2142,20 +2121,11 @@ call read_erg_nc(z_sl, anfdatname)
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZL0_FILE)
 
-open(23, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='zl0', flag_mask=.false., &
+                   n_ascii_header=6, field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> topography3: Error when opening the zl0 file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(23, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(23, fmt=*) (zl0(j,i), i=0,IMAX)
-end do
-
-close(23, status='keep')
+zl0 = field2d_aux
 
 !-------- Further stuff --------
 

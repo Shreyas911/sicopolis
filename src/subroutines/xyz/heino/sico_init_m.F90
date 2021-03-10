@@ -1660,6 +1660,8 @@ end subroutine sico_init
 !<------------------------------------------------------------------------------
 subroutine topography1(dxi, deta)
 
+  use read_m, only : read_2d_input
+
 #if (GRID==0 || GRID==1)
   use stereo_proj_m
 #endif
@@ -1672,19 +1674,13 @@ implicit none
 real(dp), intent(out) :: dxi, deta
 
 integer(i4b) :: i, j, n
-integer(i4b) :: ios, n_dummy
-real(dp)     :: d_dummy
 real(dp)     :: xi0, eta0
-character    :: ch_dummy
 
-real(dp), parameter :: H_init = 1.0e-03_dp   ! initial ice thickness
-
-character(len=  8) :: ch_imax
-character(len=128) :: fmt4
 character(len=256) :: filename_with_path
 
-write(ch_imax, fmt='(i8)') IMAX
-write(fmt4,    fmt='(a)')  '('//trim(adjustl(ch_imax))//'(i1),i1)'
+real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
+
+real(dp), parameter :: H_init = 1.0e-03_dp   ! initial ice thickness
 
 !-------- Set topography --------
 
@@ -1693,20 +1689,11 @@ zl0 = 0.0_dp
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(MASK_PRESENT_FILE)
 
-open(24, iostat=ios, file=trim(filename_with_path), recl=rcl2, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='mask', flag_mask=.true., &
+                   n_ascii_header=6, field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> topography1: Error when opening the mask file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(24, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(24, fmt=trim(fmt4)) (maske(j,i), i=0,IMAX)
-end do
-
-close(24, status='keep')
+maske = nint(field2d_aux)
 
 !-------- Further stuff --------
 
@@ -1815,6 +1802,8 @@ end subroutine topography1
 !<------------------------------------------------------------------------------
 subroutine topography2(dxi, deta)
 
+  use read_m, only : read_2d_input
+
 #if (GRID==0 || GRID==1)
   use stereo_proj_m
 #endif
@@ -1827,16 +1816,11 @@ implicit none
 real(dp), intent(out) :: dxi, deta
 
 integer(i4b) :: i, j, n
-integer(i4b) :: ios
 real(dp)     :: xi0, eta0
-character    :: ch_dummy
 
-character(len=  8) :: ch_imax
-character(len=128) :: fmt4
 character(len=256) :: filename_with_path
 
-write(ch_imax, fmt='(i8)') IMAX
-write(fmt4,    fmt='(a)')  '('//trim(adjustl(ch_imax))//'(i1),i1)'
+real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 
 !-------- Set topography --------
 
@@ -1845,20 +1829,11 @@ zl0 = 0.0_dp
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(MASK_PRESENT_FILE)
 
-open(24, iostat=ios, file=trim(filename_with_path), recl=rcl2, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='mask', flag_mask=.true., &
+                   n_ascii_header=6, field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> topography2: Error when opening the mask file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(24, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(24, fmt=trim(fmt4)) (maske(j,i), i=0,IMAX)
-end do
-
-close(24, status='keep')
+maske = nint(field2d_aux)
 
 !-------- Further stuff --------
 

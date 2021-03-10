@@ -1616,7 +1616,6 @@ implicit none
 real(dp), intent(out) :: dxi, deta
 
 ! integer(i4b) :: i, j
-! integer(i4b) :: ios
 ! real(dp)     :: xi0, eta0
 
 dxi=0.0_dp; deta=0.0_dp   ! dummy values
@@ -1645,7 +1644,6 @@ implicit none
 real(dp), intent(out) :: dxi, deta
 
 integer(i4b) :: i, j, n
-integer(i4b) :: ios
 real(dp)     :: xi0, eta0
 
 integer(i1b), dimension(0:JMAX,0:IMAX) :: maske_aux

@@ -2804,14 +2804,9 @@ integer(i4b) :: i, j, n
 real(dp)     :: xi0, eta0
 real(dp)     :: H_ice, freeboard_ratio
 
-character(len=  8) :: ch_imax
-character(len=128) :: fmt4
 character(len=256) :: filename_with_path
 
 real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
-
-write(ch_imax, fmt='(i8)') IMAX
-write(fmt4,    fmt='(a)')  '('//trim(adjustl(ch_imax))//'(i1),i1)'
 
 !-------- Read topography --------
 
@@ -3011,14 +3006,9 @@ real(dp), intent(out) :: dxi, deta
 integer(i4b) :: i, j, n
 real(dp)     :: xi0, eta0
 
-character(len=  8) :: ch_imax
-character(len=128) :: fmt4
 character(len=256) :: filename_with_path
 
 real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
-
-write(ch_imax, fmt='(i8)') IMAX
-write(fmt4,    fmt='(a)')  '('//trim(adjustl(ch_imax))//'(i1),i1)'
 
 !-------- Read topography --------
 
@@ -3162,6 +3152,7 @@ character(len=100), intent(in) :: anfdatname
 real(dp),          intent(out) :: dxi, deta, z_sl
 
 integer(i4b) :: i, j, n
+
 character(len=256) :: filename_with_path
 
 real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
