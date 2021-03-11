@@ -1241,7 +1241,12 @@ call error(errormsg)
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(MASK_MAXEXTENT_FILE)
 
-open(24, iostat=ios, file=trim(filename_with_path), recl=rcl2, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='mask_maxextent', &
+                   n_var_type=3, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
+
+maske_maxextent = nint(field2d_aux)
 
 #elif (GRID==2)
 
@@ -1249,20 +1254,6 @@ errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
 call error(errormsg)
 
 #endif
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: ' &
-                 //'Error when opening the maximum ice extent mask file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(24, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(24, fmt=trim(fmt4)) (maske_maxextent(j,i), i=0,IMAX)
-end do
-
-close(24, status='keep')
 
 #endif
 

@@ -1497,7 +1497,13 @@ filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
 
 #endif
 
-open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='zs', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
+
+zs_ref = max(field2d_aux, 0.0_dp)
+         ! resetting negative elevations (bathymetry data)
+         ! to the present-day sea surface
 
 #elif (GRID==2)
 
@@ -1505,27 +1511,6 @@ errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
 call error(errormsg)
 
 #endif
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the zs_ref file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(21, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(21, fmt=*) (zs_ref(j,i), i=0,IMAX)
-end do
-
-close(21, status='keep')
-
-do i=0, IMAX
-do j=0, JMAX
-   zs_ref(j,i) = max(zs_ref(j,i), 0.0_dp)
-                 ! resetting negative elevations (bathymetry data) 
-                 ! to the present-day sea surface
-end do
-end do
 
 #endif
 
@@ -1637,7 +1622,12 @@ call error(errormsg)
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(MASK_MAXEXTENT_FILE)
 
-open(24, iostat=ios, file=trim(filename_with_path), recl=rcl2, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='mask_maxextent', &
+                   n_var_type=3, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
+
+maske_maxextent = nint(field2d_aux)
 
 #elif (GRID==2)
 
@@ -1645,20 +1635,6 @@ errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
 call error(errormsg)
 
 #endif
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: ' &
-                 //'Error when opening the maximum ice extent mask file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(24, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(24, fmt=trim(fmt4)) (maske_maxextent(j,i), i=0,IMAX)
-end do
-
-close(24, status='keep')
 
 #endif
 
