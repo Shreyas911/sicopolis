@@ -1162,22 +1162,12 @@ time_lag_asth = TIME_LAG*year2sec   ! a -> s
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(TIME_LAG_FILE)
 
-open(29, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='time_lag_asth', &
+                   n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the time-lag file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(29, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(29, fmt=*) (time_lag_asth(j,i), i=0,IMAX)
-end do
-
-close(29, status='keep')
-
-time_lag_asth = time_lag_asth*year2sec   ! a -> s
+time_lag_asth = field2d_aux *year2sec   ! a -> s
 
 #endif
 
@@ -1200,20 +1190,12 @@ flex_rig_lith = FLEX_RIG
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(FLEX_RIG_FILE)
 
-open(29, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='flex_rig_lith', &
+                   n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the flex-rig file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(29, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(29, fmt=*) (flex_rig_lith(j,i), i=0,IMAX)
-end do
-
-close(29, status='keep')
+flex_rig_lith = field2d_aux
 
 #endif
 
