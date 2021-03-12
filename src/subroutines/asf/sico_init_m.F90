@@ -1248,7 +1248,7 @@ filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(SLIDE_REGIONS_FILE)
 
 call read_2d_input(filename_with_path, &
-                   ch_var_name='n_basin', n_var_type=2, n_ascii_header=6, &
+                   ch_var_name='n_basin', n_var_type=3, n_ascii_header=6, &
                    field2d_r=field2d_aux)
 
 n_slide_region = nint(field2d_aux)
