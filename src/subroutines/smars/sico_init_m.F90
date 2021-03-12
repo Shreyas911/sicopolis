@@ -1153,7 +1153,9 @@ if (ndata_insol > 100000) then
 end if
 
 do n=0, ndata_insol
-   read(21, fmt=*) d_dummy, ecc_data(n), obl_data(n), cp_data(n), ave_data(n), insol_ma_90(n)
+   read(21, fmt=*) d_dummy, &
+                   ecc_data(n), obl_data(n), cp_data(n), &
+                   ave_data(n), insol_ma_90(n)
    obl_data(n) = obl_data(n) *deg2rad
    ave_data(n) = ave_data(n) *deg2rad
 end do

@@ -105,7 +105,6 @@ real(dp)           :: d_dummy
 character(len=100) :: anfdatname, target_topo_dat_name
 character(len=256) :: filename_with_path
 character(len=256) :: shell_command
-character(len=3)   :: ch_nc_test
 character          :: ch_dummy
 logical            :: flag_init_output, flag_3d_output
 
@@ -140,12 +139,6 @@ character(len=64), parameter :: fmt1  = '(a)', &
                                 fmt2  = '(a,i4)', &
                                 fmt2a = '(a,i0)', &
                                 fmt3  = '(a,es12.4)'
-
-character(len=  8) :: ch_imax
-character(len=128) :: fmt4
-
-write(ch_imax, fmt='(i8)') IMAX
-write(fmt4,    fmt='(a)')  '('//trim(adjustl(ch_imax))//'(i1),i1)'
 
 write(unit=6, fmt='(a)') ' '
 write(unit=6, fmt='(a)') ' -------- sico_init --------'
@@ -1302,71 +1295,12 @@ if (trim(adjustl(SMB_CORR_FILE)) /= 'none') then
    filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                         trim(SMB_CORR_FILE)
 
-   n          = len_trim(filename_with_path)
-   ch_nc_test = filename_with_path(n-2:n)
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='DSMB', n_var_type=1, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
 
-   if (ch_nc_test == '.nc') then   ! NetCDF file
-
-#if (NETCDF==1)
-
-      errormsg = ' >>> sico_init: Reading of NetCDF SMB_CORR_FILE' &
-               //         end_of_line &
-               //'        requires NETCDF==2!'
-      call error(errormsg)
-
-#elif (NETCDF==2)
-
-      ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
-
-      if (ios /= nf90_noerr) then
-         errormsg = ' >>> sico_init: Error when opening the file' &
-                  //                 end_of_line &
-                  //'                for the prescribed' &
-                  //                 end_of_line &
-                  //'                surface mass balance correction!'
-         call error(errormsg)
-      end if
-
-      call check( nf90_inq_varid(ncid, 'DSMB', ncv) )
-      call check( nf90_get_var(ncid, ncv, smb_corr_in_conv) )
-
-      call check( nf90_close(ncid) )
-
-      do i=0, IMAX
-      do j=0, JMAX
-         smb_corr_in(j,i) = smb_corr_in_conv(i,j) /year2sec
-                                     ! m/a ice equiv. -> m/s ice equiv.
-      end do
-      end do
-
-#else
-      errormsg = ' >>> sico_init: Parameter NETCDF must be either 1 or 2!'
-      call error(errormsg)
-#endif
-
-   else   ! ASCII file
-
-      open(21, iostat=ios, &
-               file=trim(filename_with_path), recl=rcl1, status='old')
-
-      if (ios /= 0) then
-         errormsg = ' >>> sico_init: ' &
-                       //'Error when opening the SMB correction file!'
-         call error(errormsg)
-      end if
-
-      do n=1, 6; read(21, fmt='(a)') ch_dummy; end do
-
-      do j=JMAX, 0, -1
-         read(21, fmt=*) (smb_corr_in(j,i), i=0,IMAX)
-      end do
-
-      close(21, status='keep')
-
-      smb_corr_in = smb_corr_in /year2sec
-                                ! m/a ice equiv. -> m/s ice equiv.
-
-   end if
+   smb_corr_in = field2d_aux /year2sec
+                             ! m/a ice equiv. -> m/s ice equiv.
 
 end if
 

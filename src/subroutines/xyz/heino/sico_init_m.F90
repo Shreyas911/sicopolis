@@ -123,12 +123,6 @@ character(len=64), parameter :: fmt1  = '(a)', &
                                 fmt2a = '(a,i0)', &
                                 fmt3  = '(a,es12.4)'
 
-character(len=  8) :: ch_imax
-character(len=128) :: fmt4
-
-write(ch_imax, fmt='(i8)') IMAX
-write(fmt4,    fmt='(a)')  '('//trim(adjustl(ch_imax))//'(i1),i1)'
-
 write(unit=6, fmt='(a)') ' '
 write(unit=6, fmt='(a)') ' -------- sico_init --------'
 write(unit=6, fmt='(a)') ' '
