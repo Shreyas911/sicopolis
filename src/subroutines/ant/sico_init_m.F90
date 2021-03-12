@@ -74,7 +74,8 @@ subroutine sico_init(delta_ts, glac_index, &
   use stereo_proj_m
 #endif
 
-  use read_m, only : read_target_topo_nc, read_2d_input, read_kei, read_phys_para
+  use read_m, only : read_target_topo_nc, &
+                     read_2d_input, read_kei, read_phys_para
 
   use boundary_m
   use init_temp_water_age_m
@@ -117,7 +118,6 @@ real(dp)           :: larmip_qbm_anom_aux(5)
 character(len=100) :: anfdatname, target_topo_dat_name
 character(len=256) :: filename_with_path
 character(len=256) :: shell_command
-character(len=3)   :: ch_nc_test
 character          :: ch_dummy
 logical            :: flag_init_output, flag_3d_output
 
@@ -189,12 +189,6 @@ character(len=64), parameter :: thisroutine = 'sico_init'
 character(len=64), parameter :: fmt1 = '(a)', &
                                 fmt2 = '(a,i0)', &
                                 fmt3 = '(a,es12.4)'
-
-character(len=  8) :: ch_imax
-character(len=128) :: fmt4
-
-write(ch_imax, fmt='(i8)') IMAX
-write(fmt4,    fmt='(a)')  '('//trim(adjustl(ch_imax))//'(i1),i1)'
 
 write(unit=6, fmt='(a)') ' '
 write(unit=6, fmt='(a)') ' -------- sico_init --------'
@@ -1429,30 +1423,13 @@ time = time_init
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(PRECIP_PRESENT_FILE)
 
-open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='precip_ma_present', &
+                   n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-#elif (GRID==2)
-
-errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
-call error(errormsg)
-
-#endif
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the precip file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(21, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(21, fmt=*) (precip_ma_present(j,i), i=0,IMAX)
-end do
-
-close(21, status='keep')
-
-precip_ma_present = precip_ma_present *(1.0e-03_dp/year2sec)*(RHO_W/RHO)
-                                       ! mm/a water equiv. -> m/s ice equiv.
+precip_ma_present = field2d_aux *(1.0e-03_dp/year2sec)*(RHO_W/RHO)
+                                 ! mm/a water equiv. -> m/s ice equiv.
 
 !  ------ Present monthly precipitation rates
 !         (assumed to be equal to the mean annual precipitation rate)
@@ -1464,6 +1441,13 @@ do j=0, JMAX
 end do
 end do
 end do
+
+#elif (GRID==2)
+
+errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
+call error(errormsg)
+
+#endif
 
 #endif
 
@@ -1522,24 +1506,16 @@ call error(errormsg)
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(PRECIP_ANOM_FILE)
 
-open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='precip_ma_lgm_anom', &
+                   n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-#endif
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the precip anomaly file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(21, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(21, fmt=*) (precip_ma_lgm_anom(j,i), i=0,IMAX)
-end do
-
-close(21, status='keep')
+precip_ma_lgm_anom = field2d_aux
 
 precip_ma_lgm_anom = precip_ma_lgm_anom * PRECIP_ANOM_FACT
+
+#endif
 
 !  ------ LGM monthly precipitation-rate anomalies (assumed to be
 !             equal to the mean annual precipitation-rate anomaly)
@@ -1607,22 +1583,11 @@ n_bm_region = 1
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(BM_REGIONS_FILE)
 
-open(24, iostat=ios, file=trim(filename_with_path), recl=rcl2, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='n_bm_region', n_var_type=2, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the file' &
-            //                 end_of_line &
-            //'                for the ice-shelf-basal-melting regions!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(24, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(24, fmt=*) (n_bm_region(j,i), i=0,IMAX)
-end do
-
-close(24, status='keep')
+n_bm_region = nint(field2d_aux)
 
 #endif
 
@@ -1760,47 +1725,27 @@ call error(errormsg)
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(TEMP_MA_ANOM_FILE)
 
-open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='temp_ma_lgm_anom', &
+                   n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-#endif
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the temp_ma anomaly file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(21, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(21, fmt=*) (temp_ma_lgm_anom(j,i), i=0,IMAX)
-end do
-
-close(21, status='keep')
-
-#if (GRID==0 || GRID==1)
+temp_ma_lgm_anom = field2d_aux
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(TEMP_MJ_ANOM_FILE)
 
-open(22, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='temp_mj_lgm_anom', &
+                   n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-#endif
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the temp_mj anomaly file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(22, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(22, fmt=*) (temp_mj_lgm_anom(j,i), i=0,IMAX)
-end do
-
-close(22, status='keep')
+temp_mj_lgm_anom = field2d_aux
 
 temp_ma_lgm_anom = temp_ma_lgm_anom * TEMP_MA_ANOM_FACT
 temp_mj_lgm_anom = temp_mj_lgm_anom * TEMP_MJ_ANOM_FACT
+
+#endif
 
 #endif
 
@@ -1956,73 +1901,12 @@ if (trim(adjustl(SMB_CORR_FILE)) /= 'none') then
    filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                         trim(SMB_CORR_FILE)
 
-   filename_with_path = adjustr(filename_with_path)
-   n                  = len(filename_with_path)
-   ch_nc_test         = filename_with_path(n-2:n)
-   filename_with_path = adjustl(filename_with_path)
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='DSMB', n_var_type=1, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
 
-   if (ch_nc_test == '.nc') then   ! NetCDF file
-
-#if (NETCDF==1)
-
-      errormsg = ' >>> sico_init: Reading of NetCDF SMB_CORR_FILE' &
-               //         end_of_line &
-               //'        requires NETCDF==2!'
-      call error(errormsg)
-
-#elif (NETCDF==2)
-
-      ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
-
-      if (ios /= nf90_noerr) then
-         errormsg = ' >>> sico_init: Error when opening the file' &
-                  //                 end_of_line &
-                  //'                for the prescribed' &
-                  //                 end_of_line &
-                  //'                surface mass balance correction!'
-         call error(errormsg)
-      end if
-
-      call check( nf90_inq_varid(ncid, 'DSMB', ncv) )
-      call check( nf90_get_var(ncid, ncv, smb_corr_in_conv) )
-
-      call check( nf90_close(ncid) )
-
-      do i=0, IMAX
-      do j=0, JMAX
-         smb_corr_in(j,i) = smb_corr_in_conv(i,j) /year2sec
-                                     ! m/a ice equiv. -> m/s ice equiv.
-      end do
-      end do
-
-#else
-      errormsg = ' >>> sico_init: Parameter NETCDF must be either 1 or 2!'
-      call error(errormsg)
-#endif
-
-   else   ! ASCII file
-
-      open(21, iostat=ios, &
-               file=trim(filename_with_path), recl=rcl1, status='old')
-
-      if (ios /= 0) then
-         errormsg = ' >>> sico_init: ' &
-                       //'Error when opening the SMB correction file!'
-         call error(errormsg)
-      end if
-
-      do n=1, 6; read(21, fmt='(a)') ch_dummy; end do
-
-      do j=JMAX, 0, -1
-         read(21, fmt=*) (smb_corr_in(j,i), i=0,IMAX)
-      end do
-
-      close(21, status='keep')
-
-      smb_corr_in = smb_corr_in /year2sec
-                                ! m/a ice equiv. -> m/s ice equiv.
-
-   end if
+   smb_corr_in = field2d_aux /year2sec
+                             ! m/a ice equiv. -> m/s ice equiv.
 
 end if
 

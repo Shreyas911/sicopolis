@@ -81,7 +81,8 @@ subroutine sico_init(delta_ts, glac_index, &
   use stereo_proj_m
 #endif
 
-  use read_m, only : read_target_topo_nc, read_2d_input, read_kei, read_phys_para
+  use read_m, only : read_target_topo_nc, &
+                     read_2d_input, read_kei, read_phys_para
 
 #if (defined(ALLOW_GRDCHK) || defined(ALLOW_OPENAD))
   use read_m, only : read_ad_data
@@ -126,7 +127,9 @@ real(dp)           :: d_dummy
 character(len=100) :: anfdatname, target_topo_dat_name
 character(len=256) :: filename_with_path
 character(len=256) :: shell_command
-character(len=3)   :: ch_nc_test
+character(len= 64) :: ch_var_name
+character(len=  3) :: ch_nc_test
+character(len=  3) :: ch_month(12)
 character          :: ch_dummy
 logical            :: flag_precip_monthly_mean
 logical            :: flag_init_output, flag_3d_output
@@ -181,12 +184,6 @@ character(len=64), parameter :: thisroutine = 'sico_init'
 character(len=64), parameter :: fmt1 = '(a)', &
                                 fmt2 = '(a,i0)', &
                                 fmt3 = '(a,es12.4)'
-
-character(len=  8) :: ch_imax
-character(len=128) :: fmt4
-
-write(ch_imax, fmt='(i8)') IMAX
-write(fmt4,    fmt='(a)')  '('//trim(adjustl(ch_imax))//'(i1),i1)'
 
 write(unit=6, fmt='(a)') ' '
 write(unit=6, fmt='(a)') ' -------- sico_init --------'
@@ -1417,23 +1414,50 @@ end if
 
 #endif
 
-open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+filename_with_path = adjustr(filename_with_path)
+n                  = len(filename_with_path)
+ch_nc_test         = filename_with_path(n-2:n)
+filename_with_path = adjustl(filename_with_path)
 
-#elif (GRID==2)
+if (.not.flag_precip_monthly_mean) then
 
-errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
-call error(errormsg)
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='precip_ma_present', &
+                      n_var_type=1, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
 
-#endif
+   precip_ma_present = field2d_aux *(1.0e-03_dp/year2sec)*(RHO_W/RHO)
+                                    ! mm/a water equiv. -> m/s ice equiv.
 
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the precip file!'
-   call error(errormsg)
-end if
+else if (ch_nc_test == '.nc') then
 
-do m=1, 6; read(21, fmt='(a)') ch_dummy; end do
+   ch_month = (/ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
+                 'jul', 'aug', 'sep', 'oct', 'nov', 'dec' /)
 
-if (flag_precip_monthly_mean) then
+   do n=1, 12   ! month counter
+
+      ch_var_name = 'precip_present_' // trim(ch_month(n))
+
+      call read_2d_input(filename_with_path, &
+                         ch_var_name=trim(ch_var_name), &
+                         n_var_type=1, n_ascii_header=6, &
+                         field2d_r=field2d_aux)
+
+      precip_present(:,:,n) = field2d_aux *(1.0e-03_dp/year2sec)*(RHO_W/RHO)
+                                           ! mm/a water equiv. -> m/s ice equiv.
+
+   end do
+
+else
+
+   open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+
+   if (ios /= 0) then
+      errormsg = ' >>> sico_init: Error when opening the precip_present file!'
+      call error(errormsg)
+   end if
+
+   do m=1, 6; read(21, fmt='(a)') ch_dummy; end do
 
    do n=1, 12   ! month counter
       do m=1, 3; read(21, fmt='(a)') ch_dummy; end do
@@ -1442,22 +1466,24 @@ if (flag_precip_monthly_mean) then
       end do
    end do
 
+   close(21, status='keep')
+
    precip_present = precip_present *(1.0e-03_dp/year2sec)*(RHO_W/RHO)
                                     ! mm/a water equiv. -> m/s ice equiv.
-else
 
-   do j=JMAX, 0, -1
-      read(21, fmt=*) (precip_ma_present(j,i), i=0,IMAX)
-   end do
-
-   precip_ma_present = precip_ma_present *(1.0e-03_dp/year2sec)*(RHO_W/RHO)
-                                          ! mm/a water equiv. -> m/s ice equiv.
 end if
 
-close(21, status='keep')
+#elif (GRID==2)
+
+errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
+call error(errormsg)
+
+#endif
 
 !  ------ Computation of the still undefined present-day
 !         mean annual or monthly mean precipitation rate
+
+#if (GRID==0 || GRID==1)
 
 if (flag_precip_monthly_mean) then
 
@@ -1485,6 +1511,8 @@ else
    end do
 
 end if
+
+#endif
 
 !  ------ Reference topography for present-day precipitation rate
 
@@ -1523,24 +1551,16 @@ call error(errormsg)
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(PRECIP_ANOM_FILE)
 
-open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='precip_ma_lgm_anom', &
+                   n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-#endif
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the precip anomaly file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(21, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(21, fmt=*) (precip_ma_lgm_anom(j,i), i=0,IMAX)
-end do
-
-close(21, status='keep')
+precip_ma_lgm_anom = field2d_aux
 
 precip_ma_lgm_anom = precip_ma_lgm_anom * PRECIP_ANOM_FACT
+
+#endif
 
 !-------- LGM monthly precipitation-rate anomalies (assumed to be
 !         equal to the mean annual precipitation-rate anomaly) --------
@@ -1648,47 +1668,27 @@ call error(errormsg)
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(TEMP_MA_ANOM_FILE)
 
-open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='temp_ma_lgm_anom', &
+                   n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-#endif
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the temp_ma anomaly file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(21, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(21, fmt=*) (temp_ma_lgm_anom(j,i), i=0,IMAX)
-end do
-
-close(21, status='keep')
-
-#if (GRID==0 || GRID==1)
+temp_ma_lgm_anom = field2d_aux
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(TEMP_MJ_ANOM_FILE)
 
-open(22, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='temp_mj_lgm_anom', &
+                   n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-#endif
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the temp_mj anomaly file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(22, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(22, fmt=*) (temp_mj_lgm_anom(j,i), i=0,IMAX)
-end do
-
-close(22, status='keep')
+temp_mj_lgm_anom = field2d_aux
 
 temp_ma_lgm_anom = temp_ma_lgm_anom * TEMP_MA_ANOM_FACT
 temp_mj_lgm_anom = temp_mj_lgm_anom * TEMP_MJ_ANOM_FACT
+
+#endif
 
 #endif
 
@@ -1838,73 +1838,12 @@ if (trim(adjustl(SMB_CORR_FILE)) /= 'none') then
    filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                         trim(SMB_CORR_FILE)
 
-   filename_with_path = adjustr(filename_with_path)
-   n                  = len(filename_with_path)
-   ch_nc_test         = filename_with_path(n-2:n)
-   filename_with_path = adjustl(filename_with_path)
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='DSMB', n_var_type=1, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
 
-   if (ch_nc_test == '.nc') then   ! NetCDF file
-
-#if (NETCDF==1)
-
-      errormsg = ' >>> sico_init: Reading of NetCDF SMB_CORR_FILE' &
-               //         end_of_line &
-               //'        requires NETCDF==2!'
-      call error(errormsg)
-
-#elif (NETCDF==2)
-
-      ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
-
-      if (ios /= nf90_noerr) then
-         errormsg = ' >>> sico_init: Error when opening the file' &
-                  //                 end_of_line &
-                  //'                for the prescribed' &
-                  //                 end_of_line &
-                  //'                surface mass balance correction!'
-         call error(errormsg)
-      end if
-
-      call check( nf90_inq_varid(ncid, 'DSMB', ncv) )
-      call check( nf90_get_var(ncid, ncv, smb_corr_in_conv) )
-
-      call check( nf90_close(ncid) )
-
-      do i=0, IMAX
-      do j=0, JMAX
-         smb_corr_in(j,i) = smb_corr_in_conv(i,j) /year2sec
-                                     ! m/a ice equiv. -> m/s ice equiv.
-      end do
-      end do
-
-#else
-      errormsg = ' >>> sico_init: Parameter NETCDF must be either 1 or 2!'
-      call error(errormsg)
-#endif
-
-   else   ! ASCII file
-
-      open(21, iostat=ios, &
-               file=trim(filename_with_path), recl=rcl1, status='old')
-
-      if (ios /= 0) then
-         errormsg = ' >>> sico_init: ' &
-                       //'Error when opening the SMB correction file!'
-         call error(errormsg)
-      end if
-
-      do n=1, 6; read(21, fmt='(a)') ch_dummy; end do
-
-      do j=JMAX, 0, -1
-         read(21, fmt=*) (smb_corr_in(j,i), i=0,IMAX)
-      end do
-
-      close(21, status='keep')
-
-      smb_corr_in = smb_corr_in /year2sec
-                                ! m/a ice equiv. -> m/s ice equiv.
-
-   end if
+   smb_corr_in = field2d_aux /year2sec
+                             ! m/a ice equiv. -> m/s ice equiv.
 
 end if
 
