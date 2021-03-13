@@ -106,7 +106,6 @@ character(len=100) :: anfdatname
 character(len=256) :: filename_with_path
 character(len=256) :: shell_command
 character(len= 64) :: ch_var_name
-character(len=  3) :: ch_nc_test
 character(len=  3) :: ch_month(12)
 character          :: ch_dummy
 logical            :: flag_init_output, flag_3d_output
@@ -1076,54 +1075,22 @@ time = time_init
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(PRECIP_MM_PRESENT_FILE)
 
-filename_with_path = adjustr(filename_with_path)
-n                  = len(filename_with_path)
-ch_nc_test         = filename_with_path(n-2:n)
-filename_with_path = adjustl(filename_with_path)
+ch_month = (/ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
+              'jul', 'aug', 'sep', 'oct', 'nov', 'dec' /)
 
-if (ch_nc_test == '.nc') then
+do n=1, 12   ! month counter
 
-   ch_month = (/ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
-                 'jul', 'aug', 'sep', 'oct', 'nov', 'dec' /)
+   ch_var_name = 'precip_present_' // trim(ch_month(n))
 
-   do n=1, 12   ! month counter
+   call read_2d_input(filename_with_path, &
+                      ch_var_name=trim(ch_var_name), &
+                      n_var_type=1, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
+                      field2d_r=field2d_aux)
 
-      ch_var_name = 'precip_present_' // trim(ch_month(n))
+   precip_present(:,:,n) = field2d_aux *(1.0e-03_dp/year2sec)*(RHO_W/RHO)
+                                        ! mm/a water equiv. -> m/s ice equiv.
 
-      call read_2d_input(filename_with_path, &
-                         ch_var_name=trim(ch_var_name), &
-                         n_var_type=1, n_ascii_header=6, &
-                         field2d_r=field2d_aux)
-
-      precip_present(:,:,n) = field2d_aux *(1.0e-03_dp/year2sec)*(RHO_W/RHO)
-                                           ! mm/a water equiv. -> m/s ice equiv.
-
-   end do
-
-else
-
-   open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
-
-   if (ios /= 0) then
-      errormsg = ' >>> sico_init: Error when opening the precip file!'
-      call error(errormsg)
-   end if
-
-   do n=1, 6; read(21, fmt='(a)') ch_dummy; end do
-
-   do n=1, 12   ! month counter
-      do m=1, 3; read(21, fmt='(a)') ch_dummy; end do
-      do j=JMAX, 0, -1
-         read(21, fmt=*) (precip_present(j,i,n), i=0,IMAX)
-      end do
-   end do
-
-   close(21, status='keep')
-
-   precip_present = precip_present *(1.0e-03_dp/year2sec)*(RHO_W/RHO)
-                                    ! mm/a water equiv. -> m/s ice equiv.
-
-end if
+end do
 
 #elif (GRID==2)
 
@@ -1141,50 +1108,21 @@ call error(errormsg)
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(PRECIP_ANOM_MM_FILE)
 
-filename_with_path = adjustr(filename_with_path)
-n                  = len(filename_with_path)
-ch_nc_test         = filename_with_path(n-2:n)
-filename_with_path = adjustl(filename_with_path)
+ch_month = (/ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
+              'jul', 'aug', 'sep', 'oct', 'nov', 'dec' /)
 
-if (ch_nc_test == '.nc') then
+do n=1, 12   ! month counter
 
-   ch_month = (/ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
-                 'jul', 'aug', 'sep', 'oct', 'nov', 'dec' /)
+   ch_var_name = 'precip_lgm_anom_' // trim(ch_month(n))
 
-   do n=1, 12   ! month counter
+   call read_2d_input(filename_with_path, &
+                      ch_var_name=trim(ch_var_name), &
+                      n_var_type=1, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
+                      field2d_r=field2d_aux)
 
-      ch_var_name = 'precip_lgm_anom_' // trim(ch_month(n))
+   precip_lgm_anom(:,:,n) = field2d_aux
 
-      call read_2d_input(filename_with_path, &
-                         ch_var_name=trim(ch_var_name), &
-                         n_var_type=1, n_ascii_header=6, &
-                         field2d_r=field2d_aux)
-
-      precip_lgm_anom(:,:,n) = field2d_aux
-
-   end do
-
-else
-
-   open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
-
-   if (ios /= 0) then
-      errormsg = ' >>> sico_init: Error when opening the precip anomaly file!'
-      call error(errormsg)
-   end if
-
-   do m=1, 6; read(21, fmt='(a)') ch_dummy; end do
-
-   do n=1, 12   ! month counter
-      do m=1, 3; read(21, fmt='(a)') ch_dummy; end do
-      do j=JMAX, 0, -1
-         read(21, fmt=*) (precip_lgm_anom(j,i,n), i=0,IMAX)
-      end do
-   end do
-
-   close(21, status='keep')
-
-end if
+end do
 
 precip_lgm_anom = precip_lgm_anom * PRECIP_MM_ANOM_FACT
 
@@ -1262,50 +1200,21 @@ n_slide_region = nint(field2d_aux)
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(TEMP_MM_PRESENT_FILE)
 
-filename_with_path = adjustr(filename_with_path)
-n                  = len(filename_with_path)
-ch_nc_test         = filename_with_path(n-2:n)
-filename_with_path = adjustl(filename_with_path)
+ch_month = (/ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
+              'jul', 'aug', 'sep', 'oct', 'nov', 'dec' /)
 
-if (ch_nc_test == '.nc') then
+do n=1, 12   ! month counter
 
-   ch_month = (/ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
-                 'jul', 'aug', 'sep', 'oct', 'nov', 'dec' /)
+   ch_var_name = 'temp_present_' // trim(ch_month(n))
 
-   do n=1, 12   ! month counter
+   call read_2d_input(filename_with_path, &
+                      ch_var_name=trim(ch_var_name), &
+                      n_var_type=1, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
+                      field2d_r=field2d_aux)
 
-      ch_var_name = 'temp_present_' // trim(ch_month(n))
+   temp_mm_present(:,:,n) = field2d_aux
 
-      call read_2d_input(filename_with_path, &
-                         ch_var_name=trim(ch_var_name), &
-                         n_var_type=1, n_ascii_header=6, &
-                         field2d_r=field2d_aux)
-
-      temp_mm_present(:,:,n) = field2d_aux
-
-   end do
-
-else
-
-   open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
-
-   if (ios /= 0) then
-      errormsg = ' >>> sico_init: Error when opening the temperature file!'
-      call error(errormsg)
-   end if
-
-   do m=1, 6; read(21, fmt='(a)') ch_dummy; end do
-
-   do n=1, 12   ! month counter
-      do m=1, 3; read(21, fmt='(a)') ch_dummy; end do
-      do j=JMAX, 0, -1
-         read(21, fmt=*) (temp_mm_present(j,i,n), i=0,IMAX)
-      end do
-   end do
-
-   close(21, status='keep')
-
-end if
+end do
 
 #elif (GRID==2)
 
@@ -1323,50 +1232,21 @@ call error(errormsg)
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(TEMP_MM_ANOM_FILE)
 
-filename_with_path = adjustr(filename_with_path)
-n                  = len(filename_with_path)
-ch_nc_test         = filename_with_path(n-2:n)
-filename_with_path = adjustl(filename_with_path)
+ch_month = (/ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
+              'jul', 'aug', 'sep', 'oct', 'nov', 'dec' /)
 
-if (ch_nc_test == '.nc') then
+do n=1, 12   ! month counter
 
-   ch_month = (/ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
-                 'jul', 'aug', 'sep', 'oct', 'nov', 'dec' /)
+   ch_var_name = 'temp_lgm_anom_' // trim(ch_month(n))
 
-   do n=1, 12   ! month counter
+   call read_2d_input(filename_with_path, &
+                      ch_var_name=trim(ch_var_name), &
+                      n_var_type=1, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
+                      field2d_r=field2d_aux)
 
-      ch_var_name = 'temp_lgm_anom_' // trim(ch_month(n))
+   temp_mm_lgm_anom(:,:,n) = field2d_aux
 
-      call read_2d_input(filename_with_path, &
-                         ch_var_name=trim(ch_var_name), &
-                         n_var_type=1, n_ascii_header=6, &
-                         field2d_r=field2d_aux)
-
-      temp_mm_lgm_anom(:,:,n) = field2d_aux
-
-   end do
-
-else
-
-   open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
-
-   if (ios /= 0) then
-      errormsg = ' >>> sico_init: Error when opening the temperature anomaly file!'
-      call error(errormsg)
-   end if
-
-   do m=1, 6; read(21, fmt='(a)') ch_dummy; end do
-
-   do n=1, 12   ! month counter
-      do m=1, 3; read(21, fmt='(a)') ch_dummy; end do
-      do j=JMAX, 0, -1
-         read(21, fmt=*) (temp_mm_lgm_anom(j,i,n), i=0,IMAX)
-      end do
-   end do
-
-   close(21, status='keep')
-
-end if
+end do
 
 temp_mm_lgm_anom = temp_mm_lgm_anom * TEMP_MM_ANOM_FACT
 
