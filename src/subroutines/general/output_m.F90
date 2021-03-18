@@ -182,6 +182,9 @@ real(dp), dimension(0:JMAX,0:IMAX) :: accum_flx         , &
 integer(i1b), dimension(0:IMAX,0:JMAX) :: maske_conv, maske_old_conv, &
                                           mask_ablation_type_conv, &
                                           n_cts_conv
+#if (defined(ANT))
+integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_region_conv
+#endif
 integer(i4b), dimension(0:IMAX,0:JMAX) :: kc_cts_conv
 integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_mar_conv
 integer(i1b), dimension(0:IMAX,0:JMAX) :: flag_shelfy_stream_x_conv, &
@@ -1316,15 +1319,45 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
 nc5flag = (/ -2, -1, 1, 3, 9 /)
 call check( nf90_put_att(ncid, ncv, 'flag_values', nc5flag), &
             thisroutine )
-buffer = 'hidden (ocean) '// &
-         'hidden (land) '// &
-         'visible (grounded ice) '// &
-         'visible (shelf ice)'// &
-         'visible (misaccounted)'
+buffer = 'hidden_(ocean) '// &
+         'hidden_(land) '// &
+         'visible_(grounded_ice) '// &
+         'visible_(floating_ice) '// &
+         'visible_(misaccounted)'
 call check( nf90_put_att(ncid, ncv, 'flag_meanings', trim(buffer)), &
             thisroutine )
 call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
             thisroutine )
+
+#if (defined(ANT))
+
+!    ---- mask_region
+
+call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
+            thisroutine )
+call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
+            thisroutine )
+call check( nf90_def_var(ncid, 'mask_region', NF90_BYTE, nc2d, ncv), &
+            thisroutine )
+buffer = 'mask_region'
+call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
+            thisroutine )
+buffer = 'Region mask'
+call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
+            thisroutine )
+nc4flag = (/ 0, 1, 2, 3 /)
+call check( nf90_put_att(ncid, ncv, 'flag_values', nc4flag), &
+            thisroutine )
+buffer = 'undefined '// &
+         'EAIS '// &
+         'WAIS '// &
+         'AP'
+call check( nf90_put_att(ncid, ncv, 'flag_meanings', trim(buffer)), &
+            thisroutine )
+call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
+            thisroutine )
+
+#endif
 
 !    ---- n_cts
 
@@ -3436,6 +3469,9 @@ do j=0, JMAX
    maske_conv(i,j)              = maske(j,i)
    maske_old_conv(i,j)          = maske_old(j,i)
    mask_ablation_type_conv(i,j) = mask_ablation_type(j,i)
+#if (defined(ANT))
+   mask_region_conv(i,j)        = mask_region(j,i)
+#endif
    n_cts_conv(i,j)              = n_cts(j,i)
    kc_cts_conv(i,j)             = kc_cts(j,i)
 
@@ -3977,6 +4013,13 @@ call check( nf90_inq_varid(ncid, 'mask_ablation_type', ncv), thisroutine )
 call check( nf90_put_var(ncid, ncv, mask_ablation_type_conv, &
                          start=nc2cor_ij, count=nc2cnt_ij), &
             thisroutine )
+
+#if (defined(ANT))
+call check( nf90_inq_varid(ncid, 'mask_region', ncv), thisroutine )
+call check( nf90_put_var(ncid, ncv, mask_region_conv, &
+                         start=nc2cor_ij, count=nc2cnt_ij), &
+            thisroutine )
+#endif
 
 call check( nf90_inq_varid(ncid, 'n_cts', ncv), thisroutine )
 call check( nf90_put_var(ncid, ncv, n_cts_conv, &

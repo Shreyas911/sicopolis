@@ -915,6 +915,12 @@ write(10, fmt=trim(fmt1)) 'zl_present file = '//ZL_PRESENT_FILE
 #endif
 write(10, fmt=trim(fmt1)) 'zl0 file = '//ZL0_FILE
 write(10, fmt=trim(fmt1)) 'mask_present file = '//MASK_PRESENT_FILE
+#if (defined(MASK_REGION_FILE))
+if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+   write(10, fmt=trim(fmt1)) 'mask_region file = '//MASK_REGION_FILE
+   write(10, fmt=trim(fmt1)) ' '
+end if
+#endif
 #if (ANF_DAT==1 && defined(TEMP_INIT))
 write(10, fmt=trim(fmt2)) 'TEMP_INIT = ', TEMP_INIT
 #endif
@@ -2968,6 +2974,59 @@ do j=0, JMAX
 end do
 end do
 
+!-------- Region mask --------
+
+mask_region = -1_i1b
+
+#if (defined(MASK_REGION_FILE))
+
+if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+                                      ! read mask_region from file
+
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(MASK_REGION_FILE)
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='mask_region', &
+                      n_var_type=3, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
+
+   mask_region = nint(field2d_aux)
+
+end if
+
+#endif
+
+if (mask_region(0,0) == -1_i1b) then   ! set default values for mask_region
+
+   do i=0, IMAX
+   do j=0, JMAX
+
+      if ( (phi(j,i) > -77.5_dp*deg2rad) &
+           .and. &
+           (lambda(j,i) > 277.5_dp*deg2rad) &
+           .and. &
+           (lambda(j,i) < 307.5_dp*deg2rad) ) then
+
+         mask_region(j,i) = 3_i1b   ! AP
+
+      else if ( (lambda(j,i) > 195.0_dp*deg2rad) &
+                .and. &
+                (lambda(j,i) < 315.0_dp*deg2rad) ) then
+
+         mask_region(j,i) = 2_i1b   ! WAIS
+
+      else
+
+         mask_region(j,i) = 1_i1b   ! EAIS
+
+      end if
+
+   end do
+   end do
+
+end if
+
 end subroutine topography1
 
 !-------------------------------------------------------------------------------
@@ -3114,6 +3173,59 @@ do j=0, JMAX
 end do
 end do
 
+!-------- Region mask --------
+
+mask_region = -1_i1b
+
+#if (defined(MASK_REGION_FILE))
+
+if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+                                      ! read mask_region from file
+
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(MASK_REGION_FILE)
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='mask_region', &
+                      n_var_type=3, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
+
+   mask_region = nint(field2d_aux)
+
+end if
+
+#endif
+
+if (mask_region(0,0) == -1_i1b) then   ! set default values for mask_region
+
+   do i=0, IMAX
+   do j=0, JMAX
+
+      if ( (phi(j,i) > -77.5_dp*deg2rad) &
+           .and. &
+           (lambda(j,i) > 277.5_dp*deg2rad) &
+           .and. &
+           (lambda(j,i) < 307.5_dp*deg2rad) ) then
+
+         mask_region(j,i) = 3_i1b   ! AP
+
+      else if ( (lambda(j,i) > 195.0_dp*deg2rad) &
+                .and. &
+                (lambda(j,i) < 315.0_dp*deg2rad) ) then
+
+         mask_region(j,i) = 2_i1b   ! WAIS
+
+      else
+
+         mask_region(j,i) = 1_i1b   ! EAIS
+
+      end if
+
+   end do
+   end do
+
+end if
+
 end subroutine topography2
 
 !-------------------------------------------------------------------------------
@@ -3210,6 +3322,59 @@ do j=0, JMAX
    area(j,i) = sq_g11_g(j,i)*sq_g22_g(j,i)*dxi*deta
 end do
 end do
+
+!-------- Region mask --------
+
+mask_region = -1_i1b
+
+#if (defined(MASK_REGION_FILE))
+
+if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+                                      ! read mask_region from file
+
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(MASK_REGION_FILE)
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='mask_region', &
+                      n_var_type=3, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
+
+   mask_region = nint(field2d_aux)
+
+end if
+
+#endif
+
+if (mask_region(0,0) == -1_i1b) then   ! set default values for mask_region
+
+   do i=0, IMAX
+   do j=0, JMAX
+
+      if ( (phi(j,i) > -77.5_dp*deg2rad) &
+           .and. &
+           (lambda(j,i) > 277.5_dp*deg2rad) &
+           .and. &
+           (lambda(j,i) < 307.5_dp*deg2rad) ) then
+
+         mask_region(j,i) = 3_i1b   ! AP
+
+      else if ( (lambda(j,i) > 195.0_dp*deg2rad) &
+                .and. &
+                (lambda(j,i) < 315.0_dp*deg2rad) ) then
+
+         mask_region(j,i) = 2_i1b   ! WAIS
+
+      else
+
+         mask_region(j,i) = 1_i1b   ! EAIS
+
+      end if
+
+   end do
+   end do
+
+end if
 
 end subroutine topography3
 
