@@ -4496,13 +4496,10 @@ real(dp) :: time_val, &
             H_max, H_t_max, zs_max, vs_max, Tbh_max, &
             dV_dt, Q_s, precip_tot, runoff_tot, &
             Q_b, Q_temp, bmb_tot, bmb_gr_tot, bmb_fl_tot, &
-            calv_tot, mbp, mb_resid, &
-            MB, LMT, GIMB, SIMB, LMH, OMH, PAT, PAH, LQH, MBMIS, &
-            disc_lsc, disc_ssc
+            calv_tot, mbp, mb_resid, mb_mis, disc_lsc, disc_ssc
 real(dp) :: x_pos, y_pos
 real(dp), dimension(0:JMAX,0:IMAX) :: H, H_cold, H_temp
-real(dp) :: V_gr_redu, A_surf, rhosw_rho_ratio
-real(dp) :: vs_help, Tbh_help
+real(dp) :: Tbh_help
 real(dp) :: H_ave_sed, Tbh_ave_sed, Atb_sed
 real(dp) :: sum_area_sed
 logical :: flag_compute_flux_vars_only
@@ -4545,7 +4542,7 @@ real(dp), save :: Q_s_sum         = 0.0_dp, &
 #endif
                   dV_dt_sum       = 0.0_dp, &
                   mb_resid_sum    = 0.0_dp, &
-                  MBMIS_sum       = 0.0_dp, &
+                  mb_mis_sum      = 0.0_dp, &
                   mbp_sum         = 0.0_dp
 
 #endif
@@ -4567,7 +4564,7 @@ real(dp) :: Q_s_flx        , &
 #endif
             dV_dt_flx      , &
             mb_resid_flx   , &
-            MBMIS_flx      , &
+            mb_mis_flx     , &
             mbp_flx
 
 character(len=128), parameter :: &
@@ -4617,208 +4614,132 @@ end do
 
 H_cold = H - H_temp
 
-!-------- Maximum ice elevation and thickness, ice volume,
-!         sea-level equivalent, volume of the temperate ice,
-!         area, area covered by temperate ice,
-!         freshwater production due to melting and calving,
-!         water drainage due to basal melting,
-!         water drainage from the temperate layer,
-!         maximum thickness of the temperate layer,
-!         maximum surface velocity,
-!         maximum basal temperature rel. to pmp --------
+!-------- Computing the scalar output variables --------
 
-#if (defined(ANT) \
-      || defined(GRL) \
-      || defined(SCAND) \
-      || defined(NHEM) \
-      || defined(TIBET) \
-      || defined(ASF) \
-      || defined(EMTP2SGE) \
-      || defined(XYZ))   /* terrestrial ice sheet */
+call scalar_variables(time, z_sl, &
+                      H, H_cold, H_temp, &
+                      time_val, &
+                      V_tot, V_grounded, V_floating, &
+                      A_tot, A_grounded, A_floating, &
+                      V_af, V_sle, V_temp, A_temp, &
+                      H_max, H_t_max, zs_max, vs_max, Tbh_max, &
+                      dV_dt, Q_s, precip_tot, runoff_tot, &
+                      Q_b, Q_temp, bmb_tot, bmb_gr_tot, bmb_fl_tot, &
+                      calv_tot, disc_lsc, disc_ssc, &
+                      mbp, mb_resid, mb_mis)
 
-rhosw_rho_ratio = RHO_SW/RHO
+!-------- Flux variables --------
 
-#elif (defined(NMARS) || defined(SMARS))   /* Martian ice sheet */
+#if (!defined(OUTPUT_FLUX_VARS) || OUTPUT_FLUX_VARS==1)
+       ! snapshots of flux variables
 
-rhosw_rho_ratio = 0.0_dp   ! dummy value
+Q_s_flx         = Q_s
+precip_tot_flx  = precip_tot
+runoff_tot_flx  = runoff_tot
+bmb_tot_flx     = bmb_tot
+#if (MARGIN==3)
+bmb_gr_tot_flx  = bmb_gr_tot
+bmb_fl_tot_flx  = bmb_fl_tot
+#endif
+Q_b_flx         = Q_b
+Q_temp_flx      = Q_temp
+calv_tot_flx    = calv_tot
+#if (DISC>0)
+disc_lsc_flx    = disc_lsc
+disc_ssc_flx    = disc_ssc
+#endif
+dV_dt_flx       = dV_dt
+mb_resid_flx    = mb_resid
+mb_mis_flx      = mb_mis
+mbp_flx         = mbp
+
+#elif (OUTPUT_FLUX_VARS==2)
+       ! averaging of flux variables
+
+if (n_flx_ave_cnt==0) then 
+
+   Q_s_sum         = 0.0_dp
+   precip_tot_sum  = 0.0_dp
+   runoff_tot_sum  = 0.0_dp
+   bmb_tot_sum     = 0.0_dp
+#if (MARGIN==3)
+   bmb_gr_tot_sum  = 0.0_dp
+   bmb_fl_tot_sum  = 0.0_dp
+#endif
+   Q_b_sum         = 0.0_dp
+   Q_temp_sum      = 0.0_dp
+   calv_tot_sum    = 0.0_dp
+#if (DISC>0)
+   disc_lsc_sum    = 0.0_dp
+   disc_ssc_sum    = 0.0_dp
+#endif
+   dV_dt_sum       = 0.0_dp
+   mb_resid_sum    = 0.0_dp
+   mb_mis_sum      = 0.0_dp
+   mbp_sum         = 0.0_dp
+
+end if
+
+n_flx_ave_cnt = n_flx_ave_cnt + 1
+
+Q_s_sum         = Q_s_sum        + Q_s
+precip_tot_sum  = precip_tot_sum + precip_tot
+runoff_tot_sum  = runoff_tot_sum + runoff_tot
+bmb_tot_sum     = bmb_tot_sum    + bmb_tot
+#if (MARGIN==3)
+bmb_gr_tot_sum  = bmb_gr_tot_sum + bmb_gr_tot
+bmb_fl_tot_sum  = bmb_fl_tot_sum + bmb_fl_tot
+#endif
+Q_b_sum         = Q_b_sum        + Q_b
+Q_temp_sum      = Q_temp_sum     + Q_temp
+calv_tot_sum    = calv_tot_sum   + calv_tot
+#if (DISC>0)
+disc_lsc_sum    = disc_lsc_sum   + disc_lsc
+disc_ssc_sum    = disc_ssc_sum   + disc_ssc
+#endif
+dV_dt_sum       = dV_dt_sum      + dV_dt
+mb_resid_sum    = mb_resid_sum   + mb_resid
+mb_mis_sum      = mb_mis_sum     + mb_mis
+mbp_sum         = mbp_sum        + mbp
+   !   \!/ constant time step dtime assumed
+   !       (otherwise, weighting with changing dtime would be required)
+
+if (.not.flag_compute_flux_vars_only) then
+
+   r_n_flx_ave_cnt_inv = 1.0_dp/real(n_flx_ave_cnt,dp)
+
+   Q_s_flx         = Q_s_sum        * r_n_flx_ave_cnt_inv
+   precip_tot_flx  = precip_tot_sum * r_n_flx_ave_cnt_inv
+   runoff_tot_flx  = runoff_tot_sum * r_n_flx_ave_cnt_inv
+   bmb_tot_flx     = bmb_tot_sum    * r_n_flx_ave_cnt_inv
+#if (MARGIN==3)
+   bmb_gr_tot_flx  = bmb_gr_tot_sum * r_n_flx_ave_cnt_inv
+   bmb_fl_tot_flx  = bmb_fl_tot_sum * r_n_flx_ave_cnt_inv
+#endif
+   Q_b_flx         = Q_b_sum        * r_n_flx_ave_cnt_inv
+   Q_temp_flx      = Q_temp_sum     * r_n_flx_ave_cnt_inv
+   calv_tot_flx    = calv_tot_sum   * r_n_flx_ave_cnt_inv
+#if (DISC>0)
+   disc_lsc_flx    = disc_lsc_sum   * r_n_flx_ave_cnt_inv
+   disc_ssc_flx    = disc_ssc_sum   * r_n_flx_ave_cnt_inv
+#endif
+   dV_dt_flx       = dV_dt_sum      * r_n_flx_ave_cnt_inv
+   mb_resid_flx    = mb_resid_sum   * r_n_flx_ave_cnt_inv
+   mb_mis_flx      = mb_mis_sum     * r_n_flx_ave_cnt_inv
+   mbp_flx         = mbp_sum        * r_n_flx_ave_cnt_inv
+
+   n_flx_ave_cnt = 0
+
+end if   ! (.not.flag_compute_flux_vars_only)
 
 #else
-errormsg = ' >>> output2: No valid domain specified!'
+
+errormsg = ' >>> output2: Parameter OUTPUT_FLUX_VARS must be either 1 or 2!'
 call error(errormsg)
-#endif
-
-V_grounded = 0.0_dp
-V_gr_redu  = 0.0_dp
-V_floating = 0.0_dp
-A_grounded = 0.0_dp
-A_floating = 0.0_dp
-V_temp     = 0.0_dp
-A_temp     = 0.0_dp
-Q_s        = 0.0_dp
-Q_b        = 0.0_dp
-Q_temp     = 0.0_dp
-H_max      = 0.0_dp
-H_t_max    = 0.0_dp
-zs_max     = no_value_neg_2
-vs_max     = 0.0_dp
-Tbh_max    = no_value_neg_2
-
-do i=1, IMAX-1
-do j=1, JMAX-1
-
-   if (maske(j,i)==0_i1b) then   ! grounded ice
-
-      if (zs(j,i)       > zs_max)  zs_max  = zs(j,i)
-      if (H(j,i)        > H_max  ) H_max   = H(j,i)
-      if (H_temp(j,i)   > H_t_max) H_t_max = H_temp(j,i)
-
-      V_grounded = V_grounded + H(j,i)     *area(j,i)
-      V_temp     = V_temp     + H_temp(j,i)*area(j,i)
-
-#if (defined(ANT) \
-      || defined(GRL) \
-      || defined(SCAND) \
-      || defined(NHEM) \
-      || defined(TIBET) \
-      || defined(ASF) \
-      || defined(EMTP2SGE) \
-      || defined(XYZ))   /* terrestrial ice sheet */
-
-      V_gr_redu = V_gr_redu &
-                  + rhosw_rho_ratio*max((z_sl-zl(j,i)),0.0_dp)*area(j,i)
 
 #endif
 
-      A_grounded = A_grounded + area(j,i)
-
-      if (n_cts(j,i) /= -1_i1b) A_temp = A_temp + area(j,i)
-
-      vs_help = sqrt(0.25_dp &
-                       * ( (vx_c(KCMAX,j,i)+vx_c(KCMAX,j,i-1))**2 &
-                          +(vy_c(KCMAX,j,i)+vy_c(KCMAX,j-1,i))**2 ) )
-      if (vs_help > vs_max) vs_max = vs_help
-
-      if (n_cts(j,i) >= 0_i1b) then   ! temperate base
-         Tbh_max = 0.0_dp
-      else   ! cold base
-         Tbh_help = min((temp_c(0,j,i)-temp_c_m(0,j,i)), 0.0_dp)
-         if (Tbh_help > Tbh_max) Tbh_max = Tbh_help
-      end if
-
-   else if (maske(j,i)==3_i1b) then   ! floating ice
-                                      ! (basal temperature assumed to be below
-                                      ! the pressure melting point for pure ice)
-
-      if (zs(j,i)    > zs_max) zs_max = zs(j,i)
-      if (H(j,i)     > H_max)  H_max  = H(j,i)
-
-      V_floating = V_floating + H(j,i)*area(j,i)
-      A_floating = A_floating + area(j,i)
-
-      vs_help = sqrt(0.25_dp &
-                       * ( (vx_c(KCMAX,j,i)+vx_c(KCMAX,j,i-1))**2 &
-                          +(vy_c(KCMAX,j,i)+vy_c(KCMAX,j-1,i))**2 ) )
-      if (vs_help > vs_max) vs_max = vs_help
-
-      Tbh_help = min((temp_c(0,j,i)-temp_c_m(0,j,i)), 0.0_dp)
-      if (Tbh_help > Tbh_max) Tbh_max = Tbh_help
-
-   end if
-
-   Q_s = Q_s + as_perp_apl(j,i) * area(j,i)
-
-   if (     (maske(j,i)==0_i1b).or.(maske_old(j,i)==0_i1b) &
-        .or.(maske(j,i)==3_i1b).or.(maske_old(j,i)==3_i1b) &
-      ) &   ! grounded or floating ice before or after the time step
-      Q_b = Q_b + Q_bm(j,i) * area(j,i)   !!% Also *_apl required
-                                          !!% (or delete?)
-
-   if ( (maske(j,i)==0_i1b).or.(maske_old(j,i)==0_i1b) &
-      ) &   ! grounded ice before or after the time step
-      Q_temp = Q_temp + Q_tld(j,i) * area(j,i)   !!% Also *_apl required
-                                                 !!% (or delete?)
-
-end do
-end do
-
-!-------- Conversion --------
-
-#if (defined(ANT) \
-      || defined(GRL) \
-      || defined(SCAND) \
-      || defined(NHEM) \
-      || defined(TIBET) \
-      || defined(ASF) \
-      || defined(EMTP2SGE) \
-      || (defined(XYZ) && !defined(SHMARS)))   /* terrestrial ice sheet */
-
-A_surf = 3.61132e+14_dp   ! global ocean area, in m^2
-
-V_af   = V_grounded - V_gr_redu
-V_sle  = V_af*(RHO/RHO_W)/A_surf   ! m^3 ice equiv./m^2 -> m water equiv.
-
-#elif (defined(NMARS) || defined(SMARS))   /* Martian ice sheet */
-
-A_surf = 1.44371391e+14_dp   ! surface area of Mars, in m^2
-            ! Source: https://solarsystem.nasa.gov/planets/mars/by-the-numbers/
-            !         (accessed on 2019-11-23)
-
-V_af   = V_grounded
-V_sle  = V_af*(RHO_I/RHO_W)*(1.0_dp-FRAC_DUST)/A_surf
-                            ! m^3 (ice+dust) equiv./m^2 -> m water equiv.
-
-#elif (defined(SHMARS))   /* Martian southern-hemisphere ice sheet */
-
-A_surf = 1.44371391e+14_dp   ! surface area of Mars, in m^2
-            ! Source: https://solarsystem.nasa.gov/planets/mars/by-the-numbers/
-            !         (accessed on 2019-11-23)
-
-V_af   = V_grounded
-V_sle  = V_af*(RHO/RHO_W)/A_surf   ! m^3 ice equiv./m^2 -> m water equiv.
-
-#endif
-
-#if (!defined(OUT_TIMES) || OUT_TIMES==1)
-time_val = time *sec2year   ! s -> a
-#elif (OUT_TIMES==2)
-time_val = (time+year_zero) *sec2year   ! s -> a
-#else
-errormsg = ' >>> output2: OUT_TIMES must be either 1 or 2!'
-call error(errormsg)
-#endif
-
-V_tot = V_grounded + V_floating   ! in m^3
-A_tot = A_grounded + A_floating   ! in m^2
-
-vs_max = vs_max *year2sec              ! m/s -> m/a
-
-#if (defined(ANT) \
-      || defined(GRL) \
-      || defined(SCAND) \
-      || defined(NHEM) \
-      || defined(TIBET) \
-      || defined(ASF) \
-      || defined(EMTP2SGE) \
-      || defined(XYZ))   /* terrestrial ice sheet */
-
-Q_s    = Q_s    *year2sec *(RHO/RHO_W)
-                ! m^3/s ice equiv. -> m^3/a water equiv.
-Q_b    = Q_b    *year2sec *(RHO/RHO_W)
-                ! m^3/s ice equiv. -> m^3/a water equiv.
-Q_temp = Q_temp *year2sec *(RHO/RHO_W)
-                ! m^3/s ice equiv. -> m^3/a water equiv.
-
-#elif (defined(NMARS) || defined(SMARS))   /* Martian ice sheet */
-
-Q_s    = Q_s    *year2sec *(RHO_I/RHO_W)*(1.0_dp-FRAC_DUST)
-                ! m^3/s (ice+dust) equiv. -> m^3/a water equiv.
-Q_b    = Q_b    *year2sec *(RHO_I/RHO_W)*(1.0_dp-FRAC_DUST)
-                ! m^3/s (ice+dust) equiv. -> m^3/a water equiv.
-Q_temp = Q_temp *year2sec *(RHO_I/RHO_W)*(1.0_dp-FRAC_DUST)
-                ! m^3/s (ice+dust) equiv. -> m^3/a water equiv.
-#endif
-
-!-------- Writing of data on time-series file --------
+!-------- Writing of data on ASCII time-series file --------
 
 if (.not.flag_compute_flux_vars_only) then
 
@@ -4840,7 +4761,7 @@ if (.not.flag_compute_flux_vars_only) then
 
 end if   ! (.not.flag_compute_flux_vars_only)
 
-!-------- Special output --------
+!-------- Special output (ASCII) --------
 
 !  ------ Time-series data for the sediment region of HEINO
 
@@ -5597,250 +5518,6 @@ if (firstcall_output2) then
 
 end if
 
-!  ------ Computation of further data
-
-! Q_s, Q_b, Q_temp from earlier computations (now in ice equiv.) 
-Q_s    = Q_s    *(RHO_W/RHO)
-         ! m^3/a water equiv. -> m^3/a ice equiv.
-Q_b    = Q_b    *(RHO_W/RHO)
-         ! m^3/a water equiv. -> m^3/a ice equiv.
-Q_temp = Q_temp *(RHO_W/RHO)
-         ! m^3/a water equiv. -> m^3/a ice equiv.
-
-dV_dt      = 0.0_dp
-precip_tot = 0.0_dp
-
-do i=0, IMAX
-do j=0, JMAX
-
-   if (flag_inner_point(j,i)) then   ! inner point
-
-      if (     (maske(j,i)==0_i1b).or.(maske_old(j,i)==0_i1b) &
-           .or.(maske(j,i)==3_i1b).or.(maske_old(j,i)==3_i1b) ) then
-               ! grounded or floating ice before or after the time step
-         dV_dt = dV_dt + (dzs_dtau(j,i)-dzb_dtau(j,i))*area(j,i)
-                 !!% change to more direct, V_tot-based computation?
-      end if
-
-      precip_tot = precip_tot + accum_apl(j,i)*area(j,i)
-
-   end if
-
-end do
-end do
-
-precip_tot = precip_tot *year2sec
-             ! m^3/s ice equiv. -> m^3/a ice equiv.
-dV_dt      = dV_dt      *year2sec
-             ! m^3/s ice equiv. -> m^3/a ice equiv.
-
-! MB:   total mass balance as computed in subroutine apply_smb
-! LMT:  total lost on land at the top of the ice sheet including shelf ice
-! GIMB: total basal lost grounded ice
-! SIMB: total basal lost shelf ice
-! LMH:  total hidden lost through runoff on land
-! OMH:  total hidden lost through flow into the ocean
-! PAT:  total lost through ice discharge/calving parameterizations
-! PAH:  total hidden lost through ice discharge/calving parameterization 
-! LQH:  total hidden lost through melt at the base on land
-! MBMIS: misaccounted
-
-MB    = 0.0_dp
-LMT   = 0.0_dp;
-GIMB  = 0.0_dp;   SIMB = 0.0_dp
-LMH   = 0.0_dp;   LQH  = 0.0_dp
-OMH   = 0.0_dp
-PAT   = 0.0_dp;   PAH  = 0.0_dp
-MBMIS = 0.0_dp;
-
-do i=1, IMAX-1
-do j=1, JMAX-1
-
-   if ( mask_ablation_type(j,i) /= 0_i1b ) then
-                     ! glaciated land and ocean (including hidden melt points)
-
-   ! Quantify what types of melt occurred
-     select case ( mask_ablation_type(j,i) )
-       case( 3_i1b )
-         LMT  = LMT + runoff_apl(j,i)  * area(j,i)
-         PAT  = PAT + calving_apl(j,i) * area(j,i)  ! could cause problems for Greenland
-         SIMB = SIMB + Q_b_apl(j,i)    * area(j,i)
-       case( 1_i1b )
-         LMT  = LMT + runoff_apl(j,i)  * area(j,i)
-         PAT  = PAT + calving_apl(j,i) * area(j,i)  ! ok
-         GIMB = GIMB + Q_b_apl(j,i)    * area(j,i)
-       case( 9_i1b )
-         MBMIS = MBMIS + mb_source_apl(j,i)*area(j,i)
-       case( -1_i1b )
-         LMH = LMH + runoff_apl(j,i)  * area(j,i)
-         PAH = PAH + calving_apl(j,i) * area(j,i)
-         LQH = LQH + Q_b_apl(j,i)     * area(j,i)
-       case( -2_i1b )
-         OMH = OMH + calving_apl(j,i)  * area(j,i)   ! only one contribution
-     end select
-        
-   end if
-      
-   ! Actual ice mass balance (from top melt, bottom melt and calving)
-   MB = MB + mb_source_apl(j,i)*area(j,i)
-
-end do
-end do
-
-! Runoff on land (excluding basal melt)
-runoff_tot = LMT + LMH
-! Ice discharge (excluding basal melt)
-calv_tot   = OMH + PAT + PAH
-! Ice discharge from ice flow, large scale
-disc_lsc   = OMH
-! Ice discharge from parameterization, small scale
-disc_ssc   = PAT + PAH
-! Basal mass balance
-bmb_tot    = -GIMB-SIMB-LQH
-! grounded ice
-bmb_gr_tot = -GIMB-LQH
-! shelf ice
-bmb_fl_tot = -SIMB  ! hidden is counted as large scale calving
-
-MB         = MB         * year2sec
-                        ! m^3/s ice equiv. -> m^3/a ice equiv.
-MBMIS      = MBMIS      * year2sec
-                        ! m^3/s ice equiv. -> m^3/a ice equiv.
-disc_lsc   = disc_lsc   * year2sec
-                        ! m^3/s ice equiv. -> m^3/a ice equiv.
-disc_ssc   = disc_ssc   * year2sec
-                        ! m^3/s ice equiv. -> m^3/a ice equiv.
-bmb_tot    = bmb_tot    * year2sec
-                        ! m^3/s ice equiv. -> m^3/a ice equiv.
-bmb_fl_tot = bmb_fl_tot * year2sec
-                        ! m^3/s ice equiv. -> m^3/a ice equiv.
-bmb_gr_tot = bmb_gr_tot * year2sec
-                        ! m^3/s ice equiv. -> m^3/a ice equiv.
-runoff_tot = runoff_tot * year2sec
-                        ! m^3/s ice equiv. -> m^3/a ice equiv.
-calv_tot   = calv_tot   * year2sec
-                        ! m^3/s ice equiv. -> m^3/a ice equiv.
-
-if (precip_tot /= 0.0_dp) then
-   mbp = calv_tot/precip_tot
-else
-   mbp = 0.0_dp
-end if
-
-mb_resid = Q_s + bmb_tot - calv_tot - dV_dt
-!!% (previously) mb_resid = MB - dV_dt
-
-!  ------ Flux variables
-
-#if (!defined(OUTPUT_FLUX_VARS) || OUTPUT_FLUX_VARS==1)
-       ! snapshots of flux variables
-
-Q_s_flx         = Q_s
-precip_tot_flx  = precip_tot
-runoff_tot_flx  = runoff_tot
-bmb_tot_flx     = bmb_tot
-#if (MARGIN==3)
-bmb_gr_tot_flx  = bmb_gr_tot
-bmb_fl_tot_flx  = bmb_fl_tot
-#endif
-Q_b_flx         = Q_b
-Q_temp_flx      = Q_temp
-calv_tot_flx    = calv_tot
-#if (DISC>0)
-disc_lsc_flx    = disc_lsc
-disc_ssc_flx    = disc_ssc
-#endif
-dV_dt_flx       = dV_dt
-mb_resid_flx    = mb_resid
-MBMIS_flx       = MBMIS
-mbp_flx         = mbp
-
-#elif (OUTPUT_FLUX_VARS==2)
-       ! averaging of flux variables
-
-if (n_flx_ave_cnt==0) then 
-
-   Q_s_sum         = 0.0_dp
-   precip_tot_sum  = 0.0_dp
-   runoff_tot_sum  = 0.0_dp
-   bmb_tot_sum     = 0.0_dp
-#if (MARGIN==3)
-   bmb_gr_tot_sum  = 0.0_dp
-   bmb_fl_tot_sum  = 0.0_dp
-#endif
-   Q_b_sum         = 0.0_dp
-   Q_temp_sum      = 0.0_dp
-   calv_tot_sum    = 0.0_dp
-#if (DISC>0)
-   disc_lsc_sum    = 0.0_dp
-   disc_ssc_sum    = 0.0_dp
-#endif
-   dV_dt_sum       = 0.0_dp
-   mb_resid_sum    = 0.0_dp
-   MBMIS_sum       = 0.0_dp
-   mbp_sum         = 0.0_dp
-
-end if
-
-n_flx_ave_cnt = n_flx_ave_cnt + 1
-
-Q_s_sum         = Q_s_sum        + Q_s
-precip_tot_sum  = precip_tot_sum + precip_tot
-runoff_tot_sum  = runoff_tot_sum + runoff_tot
-bmb_tot_sum     = bmb_tot_sum    + bmb_tot
-#if (MARGIN==3)
-bmb_gr_tot_sum  = bmb_gr_tot_sum + bmb_gr_tot
-bmb_fl_tot_sum  = bmb_fl_tot_sum + bmb_fl_tot
-#endif
-Q_b_sum         = Q_b_sum        + Q_b
-Q_temp_sum      = Q_temp_sum     + Q_temp
-calv_tot_sum    = calv_tot_sum   + calv_tot
-#if (DISC>0)
-disc_lsc_sum    = disc_lsc_sum   + disc_lsc
-disc_ssc_sum    = disc_ssc_sum   + disc_ssc
-#endif
-dV_dt_sum       = dV_dt_sum      + dV_dt
-mb_resid_sum    = mb_resid_sum   + mb_resid
-MBMIS_sum       = MBMIS_sum      + MBMIS
-mbp_sum         = mbp_sum        + mbp
-   !   \!/ constant time step dtime assumed
-   !       (otherwise, weighting with changing dtime would be required)
-
-if (.not.flag_compute_flux_vars_only) then
-
-   r_n_flx_ave_cnt_inv = 1.0_dp/real(n_flx_ave_cnt,dp)
-
-   Q_s_flx         = Q_s_sum        * r_n_flx_ave_cnt_inv
-   precip_tot_flx  = precip_tot_sum * r_n_flx_ave_cnt_inv
-   runoff_tot_flx  = runoff_tot_sum * r_n_flx_ave_cnt_inv
-   bmb_tot_flx     = bmb_tot_sum    * r_n_flx_ave_cnt_inv
-#if (MARGIN==3)
-   bmb_gr_tot_flx  = bmb_gr_tot_sum * r_n_flx_ave_cnt_inv
-   bmb_fl_tot_flx  = bmb_fl_tot_sum * r_n_flx_ave_cnt_inv
-#endif
-   Q_b_flx         = Q_b_sum        * r_n_flx_ave_cnt_inv
-   Q_temp_flx      = Q_temp_sum     * r_n_flx_ave_cnt_inv
-   calv_tot_flx    = calv_tot_sum   * r_n_flx_ave_cnt_inv
-#if (DISC>0)
-   disc_lsc_flx    = disc_lsc_sum   * r_n_flx_ave_cnt_inv
-   disc_ssc_flx    = disc_ssc_sum   * r_n_flx_ave_cnt_inv
-#endif
-   dV_dt_flx       = dV_dt_sum      * r_n_flx_ave_cnt_inv
-   mb_resid_flx    = mb_resid_sum   * r_n_flx_ave_cnt_inv
-   MBMIS_flx       = MBMIS_sum      * r_n_flx_ave_cnt_inv
-   mbp_flx         = mbp_sum        * r_n_flx_ave_cnt_inv
-
-   n_flx_ave_cnt = 0
-
-end if   ! (.not.flag_compute_flux_vars_only)
-
-#else
-
-errormsg = ' >>> output2: Parameter OUTPUT_FLUX_VARS must be either 1 or 2!'
-call error(errormsg)
-
-#endif
-
 !  ------ Writing of data on NetCDF file
 
 if (firstcall_output2) then
@@ -6010,7 +5687,7 @@ if (.not.flag_compute_flux_vars_only) then
                             start=nc1cor), thisroutine )
 
    call check( nf90_inq_varid(ncid, 'mb_mis', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(MBMIS_flx,sp), &
+   call check( nf90_put_var(ncid, ncv, real(mb_mis_flx,sp), &
                             start=nc1cor), thisroutine )
 
    call check( nf90_inq_varid(ncid, 'mbp', ncv), thisroutine )
@@ -6051,6 +5728,377 @@ end if   ! (.not.flag_compute_flux_vars_only)
 if (firstcall_output2) firstcall_output2 = .false.
 
 end subroutine output2
+
+!-------------------------------------------------------------------------------
+!> Computation of the scalar output variables.
+!<------------------------------------------------------------------------------
+subroutine scalar_variables(time, z_sl, &
+                            H, H_cold, H_temp, &
+                            time_val, &
+                            V_tot, V_grounded, V_floating, &
+                            A_tot, A_grounded, A_floating, &
+                            V_af, V_sle, V_temp, A_temp, &
+                            H_max, H_t_max, zs_max, vs_max, Tbh_max, &
+                            dV_dt, Q_s, precip_tot, runoff_tot, &
+                            Q_b, Q_temp, bmb_tot, bmb_gr_tot, bmb_fl_tot, &
+                            calv_tot, disc_lsc, disc_ssc, &
+                            mbp, mb_resid, mb_mis, &
+                            opt_flag_region)
+
+implicit none
+
+real(dp), intent(in) :: time, z_sl
+real(dp), dimension(0:JMAX,0:IMAX), intent(in) :: H, H_cold, H_temp
+logical, dimension(0:JMAX,0:IMAX), optional, intent(in) :: opt_flag_region
+
+real(dp), intent(out) :: time_val, &
+                         V_tot, V_grounded, V_floating, &
+                         A_tot, A_grounded, A_floating, &
+                         V_af, V_sle, V_temp, A_temp, &
+                         H_max, H_t_max, zs_max, vs_max, Tbh_max, &
+                         dV_dt, Q_s, precip_tot, runoff_tot, &
+                         Q_b, Q_temp, bmb_tot, bmb_gr_tot, bmb_fl_tot, &
+                         calv_tot, mbp, mb_resid, &
+                         mb_mis, disc_lsc, disc_ssc
+
+integer(i4b) :: i, j
+
+real(dp) :: V_gr_redu, A_surf, rhosw_rho_ratio
+real(dp) :: vs_help, Tbh_help
+real(dp) :: MB, LMT, GIMB, SIMB, LMH, OMH, PAT, PAH, LQH
+
+logical, dimension(0:JMAX,0:IMAX) :: flag_region
+
+if (present(opt_flag_region)) then
+   flag_region = opt_flag_region
+else
+   flag_region = .true.
+end if
+
+!-------- Computing scalar variables --------
+
+#if (defined(ANT) \
+      || defined(GRL) \
+      || defined(SCAND) \
+      || defined(NHEM) \
+      || defined(TIBET) \
+      || defined(ASF) \
+      || defined(EMTP2SGE) \
+      || defined(XYZ))   /* terrestrial ice sheet */
+
+rhosw_rho_ratio = RHO_SW/RHO
+
+#elif (defined(NMARS) || defined(SMARS))   /* Martian ice sheet */
+
+rhosw_rho_ratio = 0.0_dp   ! dummy value
+
+#else
+errormsg = ' >>> scalar_variables: No valid domain specified!'
+call error(errormsg)
+#endif
+
+V_grounded = 0.0_dp
+V_gr_redu  = 0.0_dp
+V_floating = 0.0_dp
+A_grounded = 0.0_dp
+A_floating = 0.0_dp
+V_temp     = 0.0_dp
+A_temp     = 0.0_dp
+H_max      = 0.0_dp
+H_t_max    = 0.0_dp
+zs_max     = no_value_neg_2
+vs_max     = 0.0_dp
+Tbh_max    = no_value_neg_2
+
+do i=0, IMAX
+do j=0, JMAX
+
+   if (flag_inner_point(j,i).and.flag_region(j,i)) then
+
+      if (maske(j,i)==0_i1b) then   ! grounded ice
+
+         if (zs(j,i)       > zs_max)  zs_max  = zs(j,i)
+         if (H(j,i)        > H_max  ) H_max   = H(j,i)
+         if (H_temp(j,i)   > H_t_max) H_t_max = H_temp(j,i)
+
+         V_grounded = V_grounded + H(j,i)     *area(j,i)
+         V_temp     = V_temp     + H_temp(j,i)*area(j,i)
+
+#if (defined(ANT) \
+      || defined(GRL) \
+      || defined(SCAND) \
+      || defined(NHEM) \
+      || defined(TIBET) \
+      || defined(ASF) \
+      || defined(EMTP2SGE) \
+      || defined(XYZ))   /* terrestrial ice sheet */
+
+         V_gr_redu = V_gr_redu &
+                     + rhosw_rho_ratio*max((z_sl-zl(j,i)),0.0_dp)*area(j,i)
+
+#endif
+
+         A_grounded = A_grounded + area(j,i)
+
+         if (n_cts(j,i) /= -1_i1b) A_temp = A_temp + area(j,i)
+
+         vs_help = sqrt(0.25_dp &
+                          * ( (vx_c(KCMAX,j,i)+vx_c(KCMAX,j,i-1))**2 &
+                             +(vy_c(KCMAX,j,i)+vy_c(KCMAX,j-1,i))**2 ) )
+         if (vs_help > vs_max) vs_max = vs_help
+
+         if (n_cts(j,i) >= 0_i1b) then   ! temperate base
+            Tbh_max = 0.0_dp
+         else   ! cold base
+            Tbh_help = min((temp_c(0,j,i)-temp_c_m(0,j,i)), 0.0_dp)
+            if (Tbh_help > Tbh_max) Tbh_max = Tbh_help
+         end if
+
+      else if (maske(j,i)==3_i1b) then   ! floating ice
+                                    ! (basal temperature assumed to be below
+                                    ! the pressure melting point for pure ice)
+
+         if (zs(j,i)    > zs_max) zs_max = zs(j,i)
+         if (H(j,i)     > H_max)  H_max  = H(j,i)
+
+         V_floating = V_floating + H(j,i)*area(j,i)
+         A_floating = A_floating + area(j,i)
+
+         vs_help = sqrt(0.25_dp &
+                          * ( (vx_c(KCMAX,j,i)+vx_c(KCMAX,j,i-1))**2 &
+                             +(vy_c(KCMAX,j,i)+vy_c(KCMAX,j-1,i))**2 ) )
+         if (vs_help > vs_max) vs_max = vs_help
+
+         Tbh_help = min((temp_c(0,j,i)-temp_c_m(0,j,i)), 0.0_dp)
+         if (Tbh_help > Tbh_max) Tbh_max = Tbh_help
+
+      end if
+
+   end if
+
+end do
+end do
+
+!  ------ Unit conversion
+
+#if (defined(ANT) \
+      || defined(GRL) \
+      || defined(SCAND) \
+      || defined(NHEM) \
+      || defined(TIBET) \
+      || defined(ASF) \
+      || defined(EMTP2SGE) \
+      || (defined(XYZ) && !defined(SHMARS)))   /* terrestrial ice sheet */
+
+A_surf = 3.61132e+14_dp   ! global ocean area, in m2
+
+V_af   = V_grounded - V_gr_redu
+V_sle  = V_af*(RHO/RHO_W)/A_surf   ! m3 ice equiv./m2 -> m water equiv.
+
+#elif (defined(NMARS) || defined(SMARS))   /* Martian ice sheet */
+
+A_surf = 1.44371391e+14_dp   ! surface area of Mars, in m2
+            ! Source: https://solarsystem.nasa.gov/planets/mars/by-the-numbers/
+            !         (accessed on 2019-11-23)
+
+V_af   = V_grounded
+V_sle  = V_af*(RHO_I/RHO_W)*(1.0_dp-FRAC_DUST)/A_surf
+                            ! m3 (ice+dust) equiv./m2 -> m water equiv.
+
+#elif (defined(SHMARS))   /* Martian southern-hemisphere ice sheet */
+
+A_surf = 1.44371391e+14_dp   ! surface area of Mars, in m2
+            ! Source: https://solarsystem.nasa.gov/planets/mars/by-the-numbers/
+            !         (accessed on 2019-11-23)
+
+V_af   = V_grounded
+V_sle  = V_af*(RHO/RHO_W)/A_surf   ! m3 ice equiv./m2 -> m water equiv.
+
+#endif
+
+#if (!defined(OUT_TIMES) || OUT_TIMES==1)
+time_val = time *sec2year   ! s -> a
+#elif (OUT_TIMES==2)
+time_val = (time+year_zero) *sec2year   ! s -> a
+#else
+errormsg = ' >>> scalar_variables: OUT_TIMES must be either 1 or 2!'
+call error(errormsg)
+#endif
+
+V_tot = V_grounded + V_floating   ! in m3
+A_tot = A_grounded + A_floating   ! in m2
+
+vs_max = vs_max *year2sec   ! m/s -> m/a
+
+!-------- Computing further scalar variables (mass balance components) --------
+
+Q_s    = 0.0_dp
+Q_b    = 0.0_dp
+Q_temp = 0.0_dp
+
+do i=0, IMAX
+do j=0, JMAX
+
+   if (flag_inner_point(j,i).and.flag_region(j,i)) then
+
+      Q_s = Q_s + as_perp_apl(j,i) * area(j,i)
+
+      if (     (maske(j,i)==0_i1b).or.(maske_old(j,i)==0_i1b) &
+           .or.(maske(j,i)==3_i1b).or.(maske_old(j,i)==3_i1b) &
+         ) &   ! grounded or floating ice before or after the time step
+         Q_b = Q_b + Q_bm(j,i) * area(j,i)   !!% Also *_apl required
+                                             !!% (or delete?)
+
+      if ( (maske(j,i)==0_i1b).or.(maske_old(j,i)==0_i1b) &
+         ) &   ! grounded ice before or after the time step
+         Q_temp = Q_temp + Q_tld(j,i) * area(j,i)   !!% Also *_apl required
+                                                    !!% (or delete?)
+
+   end if
+
+end do
+end do
+
+Q_s    = Q_s    *year2sec   ! m3/s ice equiv. -> m3/a ice equiv.
+Q_b    = Q_b    *year2sec   ! m3/s ice equiv. -> m3/a ice equiv.
+Q_temp = Q_temp *year2sec   ! m3/s ice equiv. -> m3/a ice equiv.
+
+dV_dt      = 0.0_dp
+precip_tot = 0.0_dp
+
+do i=0, IMAX
+do j=0, JMAX
+
+   if (flag_inner_point(j,i).and.flag_region(j,i)) then
+
+      if (     (maske(j,i)==0_i1b).or.(maske_old(j,i)==0_i1b) &
+           .or.(maske(j,i)==3_i1b).or.(maske_old(j,i)==3_i1b) ) then
+               ! grounded or floating ice before or after the time step
+         dV_dt = dV_dt + (dzs_dtau(j,i)-dzb_dtau(j,i))*area(j,i)
+                 !!% change to more direct, V_tot-based computation?
+      end if
+
+      precip_tot = precip_tot + accum_apl(j,i)*area(j,i)
+
+   end if
+
+end do
+end do
+
+precip_tot = precip_tot *year2sec   ! m3/s ice equiv. -> m3/a ice equiv.
+dV_dt      = dV_dt      *year2sec   ! m3/s ice equiv. -> m3/a ice equiv.
+
+! MB:   total mass balance as computed in subroutine apply_smb
+! LMT:  total lost on land at the top of the ice sheet including ice shelf
+! GIMB: total basal lost grounded ice
+! SIMB: total basal lost ice shelf
+! LMH:  total hidden lost through runoff on land
+! OMH:  total hidden lost through flow into the ocean
+! PAT:  total lost through ice discharge/calving parameterizations
+! PAH:  total hidden lost through ice discharge/calving parameterization
+! LQH:  total hidden lost through melt at the base on land
+! mb_mis: misaccounted
+
+MB     = 0.0_dp
+LMT    = 0.0_dp
+GIMB   = 0.0_dp
+SIMB   = 0.0_dp
+LMH    = 0.0_dp
+LQH    = 0.0_dp
+OMH    = 0.0_dp
+PAT    = 0.0_dp
+PAH    = 0.0_dp
+mb_mis = 0.0_dp
+
+do i=0, IMAX
+do j=0, JMAX
+
+   if (flag_inner_point(j,i).and.flag_region(j,i)) then
+
+      if ( mask_ablation_type(j,i) /= 0_i1b ) then
+                     ! glaciated land and ocean (including hidden melt points)
+
+         ! Quantify what types of melt occurred
+         select case ( mask_ablation_type(j,i) )
+            case( 3_i1b )
+               LMT  = LMT + runoff_apl(j,i)  * area(j,i)
+               PAT  = PAT + calving_apl(j,i) * area(j,i)
+                               ! could cause problems for Greenland
+               SIMB = SIMB + Q_b_apl(j,i)    * area(j,i)
+            case( 1_i1b )
+               LMT  = LMT + runoff_apl(j,i)  * area(j,i)
+               PAT  = PAT + calving_apl(j,i) * area(j,i)  ! ok
+               GIMB = GIMB + Q_b_apl(j,i)    * area(j,i)
+            case( 9_i1b )
+               mb_mis = mb_mis + mb_source_apl(j,i) * area(j,i)
+            case( -1_i1b )
+               LMH = LMH + runoff_apl(j,i)  * area(j,i)
+               PAH = PAH + calving_apl(j,i) * area(j,i)
+               LQH = LQH + Q_b_apl(j,i)     * area(j,i)
+            case( -2_i1b )
+               OMH = OMH + calving_apl(j,i) * area(j,i) ! only one contribution
+         end select
+
+      end if
+
+      ! Actual ice mass balance (from top melt, bottom melt and calving)
+      MB = MB + mb_source_apl(j,i)*area(j,i)
+
+   end if
+
+end do
+end do
+
+! Runoff on land (excluding basal melt)
+runoff_tot = LMT + LMH
+
+! Ice discharge (excluding basal melt)
+calv_tot   = OMH + PAT + PAH
+
+! Ice discharge from ice flow, large scale
+disc_lsc   = OMH
+
+! Ice discharge from parameterization, small scale
+disc_ssc   = PAT + PAH
+
+! Basal mass balance
+bmb_tot    = -GIMB-SIMB-LQH
+
+! Grounded ice
+bmb_gr_tot = -GIMB-LQH
+
+! Ice shelf
+bmb_fl_tot = -SIMB   ! hidden is counted as large scale calving
+
+MB         = MB         * year2sec
+                        ! m3/s ice equiv. -> m3/a ice equiv.
+mb_mis     = mb_mis     * year2sec
+                        ! m3/s ice equiv. -> m3/a ice equiv.
+disc_lsc   = disc_lsc   * year2sec
+                        ! m3/s ice equiv. -> m3/a ice equiv.
+disc_ssc   = disc_ssc   * year2sec
+                        ! m3/s ice equiv. -> m3/a ice equiv.
+bmb_tot    = bmb_tot    * year2sec
+                        ! m3/s ice equiv. -> m3/a ice equiv.
+bmb_fl_tot = bmb_fl_tot * year2sec
+                        ! m3/s ice equiv. -> m3/a ice equiv.
+bmb_gr_tot = bmb_gr_tot * year2sec
+                        ! m3/s ice equiv. -> m3/a ice equiv.
+runoff_tot = runoff_tot * year2sec
+                        ! m3/s ice equiv. -> m3/a ice equiv.
+calv_tot   = calv_tot   * year2sec
+                        ! m3/s ice equiv. -> m3/a ice equiv.
+
+if (precip_tot /= 0.0_dp) then
+   mbp = calv_tot/precip_tot
+else
+   mbp = 0.0_dp
+end if
+
+mb_resid = Q_s + bmb_tot - calv_tot - dV_dt
+!!% (previously) mb_resid = MB - dV_dt
+
+end subroutine scalar_variables
 
 !-------------------------------------------------------------------------------
 !> Writing of time-series data of the deep ice cores on file in ASCII format
