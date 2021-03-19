@@ -397,8 +397,9 @@ contains
       disc_DW,n_discharge_call_DW,iter_mar_coa_DW,c_dis_0_DW,s_dis_DW,&
       c_dis_fac_DW,T_sub_PD_DW,alpha_sub_DW,alpha_o_DW,m_H_DW,&
       m_D_DW,r_mar_eff_DW,T_sea_freeze_DW,c_dis_DW,&
+      mask_region, &
 #elif (defined(ANT))
-      mask_region, n_bm_region, &
+      n_bm_region, &
 #endif
       et,melt,melt_star,rainfall,snowfall,&
 #if (defined(AGE_COST))
@@ -624,8 +625,9 @@ contains
          a_disc_DW,a_n_discharge_call_DW,a_iter_mar_coa_DW,a_c_dis_0_DW,a_s_dis_DW,&
          a_c_dis_fac_DW,a_T_sub_PD_DW,a_alpha_sub_DW,a_alpha_o_DW,a_m_H_DW,&
          a_m_D_DW,a_r_mar_eff_DW,a_T_sea_freeze_DW,a_c_dis_DW,&
+         a_mask_region, &
 #elif (defined(ANT))
-         a_mask_region, a_n_bm_region, &
+         a_n_bm_region, &
 #endif
          a_et,a_melt,a_melt_star,a_rainfall,a_snowfall,&
 #if (defined(AGE_COST))
@@ -837,8 +839,8 @@ contains
     integer(i4b)                                       :: a_n_enth_min
     integer(i4b)                                       :: a_n_enth_max
     integer(i4b)                                       :: a_n_data_kei
-#if (defined(ANT))
     integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_mask_region
+#if (defined(ANT))
     integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_n_bm_region
 #endif
     integer(i4b)                                       :: a_n_temp_min
@@ -1275,8 +1277,8 @@ contains
     n_data_kei = a_n_data_kei !ns
     n_enth_min = a_n_enth_min !ns
     n_enth_max = a_n_enth_max !ns
-#if (defined(ANT))
     mask_region = a_mask_region
+#if (defined(ANT))
     n_bm_region = a_n_bm_region
 #endif
     n_temp_min_IMQ = a_n_temp_min_IMQ !ns

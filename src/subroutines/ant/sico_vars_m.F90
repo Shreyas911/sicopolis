@@ -39,13 +39,6 @@ use sico_types_m
 implicit none
 save
 
-!> mask_region(j,i): Region mask.
-!>             0: undefined,
-!>             1: EAIS,
-!>             2: WAIS,
-!>             3: AP
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: mask_region
-
 #if (TSURFACE==6 && ACCSURFACE==6 && ABLSURFACE==6)
 !> temp_maat_climatol(j,i): Surface-temperature (MAAT) climatology
    real(dp), dimension(0:JMAX,0:IMAX) :: temp_maat_climatol

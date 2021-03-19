@@ -766,6 +766,12 @@ write(10, fmt=trim(fmt1)) 'zl0 file          = '//ZL0_FILE
 #if (defined(MASK_PRESENT_FILE))
 write(10, fmt=trim(fmt1)) 'mask_present file = '//MASK_PRESENT_FILE
 #endif
+#if (defined(MASK_REGION_FILE))
+if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+   write(10, fmt=trim(fmt1)) 'mask_region file = '//MASK_REGION_FILE
+   write(10, fmt=trim(fmt1)) ' '
+end if
+#endif
 #if (ANF_DAT==1 && defined(TEMP_INIT))
 write(10, fmt=trim(fmt2)) 'TEMP_INIT =', TEMP_INIT
 #endif
@@ -2033,6 +2039,31 @@ do j=0, JMAX
 end do
 end do
 
+!-------- Region mask --------
+
+mask_region = -1_i1b
+
+#if (defined(MASK_REGION_FILE))
+
+if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+                                      ! read mask_region from file
+
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(MASK_REGION_FILE)
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='mask_region', &
+                      n_var_type=3, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
+
+   mask_region = nint(field2d_aux)
+
+end if
+
+#endif
+
+if (mask_region(0,0) == -1_i1b) mask_region = 0_i1b   ! regions undefined
+
 end subroutine topography1
 
 !-------------------------------------------------------------------------------
@@ -2173,6 +2204,31 @@ do j=0, JMAX
 end do
 end do
 
+!-------- Region mask --------
+
+mask_region = -1_i1b
+
+#if (defined(MASK_REGION_FILE))
+
+if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+                                      ! read mask_region from file
+
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(MASK_REGION_FILE)
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='mask_region', &
+                      n_var_type=3, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
+
+   mask_region = nint(field2d_aux)
+
+end if
+
+#endif
+
+if (mask_region(0,0) == -1_i1b) mask_region = 0_i1b   ! regions undefined
+
 end subroutine topography2
 
 !-------------------------------------------------------------------------------
@@ -2276,6 +2332,31 @@ do j=0, JMAX
    area(j,i) = sq_g11_g(j,i)*sq_g22_g(j,i)*dxi*deta
 end do
 end do
+
+!-------- Region mask --------
+
+mask_region = -1_i1b
+
+#if (defined(MASK_REGION_FILE))
+
+if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+                                      ! read mask_region from file
+
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(MASK_REGION_FILE)
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='mask_region', &
+                      n_var_type=3, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
+
+   mask_region = nint(field2d_aux)
+
+end if
+
+#endif
+
+if (mask_region(0,0) == -1_i1b) mask_region = 0_i1b   ! regions undefined
 
 end subroutine topography3
 
