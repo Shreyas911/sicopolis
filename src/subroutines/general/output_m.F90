@@ -183,7 +183,7 @@ integer(i1b), dimension(0:IMAX,0:JMAX) :: maske_conv, maske_old_conv, &
                                           mask_ablation_type_conv, &
                                           n_cts_conv
 #if (defined(ANT))
-integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_region_conv
+integer(i4b), dimension(0:IMAX,0:JMAX) :: mask_region_conv
 #endif
 integer(i4b), dimension(0:IMAX,0:JMAX) :: kc_cts_conv
 integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_mar_conv
@@ -1337,7 +1337,7 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
-call check( nf90_def_var(ncid, 'mask_region', NF90_BYTE, nc2d, ncv), &
+call check( nf90_def_var(ncid, 'mask_region', NF90_INT, nc2d, ncv), &
             thisroutine )
 buffer = 'mask_region'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &

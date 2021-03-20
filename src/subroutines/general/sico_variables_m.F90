@@ -68,7 +68,7 @@ save
 !>             1: EAIS,
 !>             2: WAIS,
 !>             3: AP
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: mask_region
+   integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_region
 !> flag_calc_temp: Flag for computation of the temperature, water content,
 !>                 age and flow enhancement factor during an integration step.
 !>                  .true.: temperature etc. computed

@@ -1705,7 +1705,7 @@ end do
 
 !-------- Region mask --------
 
-mask_region = -1_i1b
+mask_region = -1
 
 #if (defined(MASK_REGION_FILE))
 
@@ -1717,7 +1717,7 @@ if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
 
    call read_2d_input(filename_with_path, &
                       ch_var_name='mask_region', &
-                      n_var_type=3, n_ascii_header=6, &
+                      n_var_type=2, n_ascii_header=6, &
                       field2d_r=field2d_aux)
 
    mask_region = nint(field2d_aux)
@@ -1726,7 +1726,7 @@ end if
 
 #endif
 
-if (mask_region(0,0) == -1_i1b) mask_region = 0_i1b   ! regions undefined
+if (mask_region(0,0) == -1) mask_region = 0   ! regions undefined
 
 end subroutine topography2
 
@@ -1825,7 +1825,7 @@ end do
 
 !-------- Region mask --------
 
-mask_region = -1_i1b
+mask_region = -1
 
 #if (defined(MASK_REGION_FILE))
 
@@ -1837,7 +1837,7 @@ if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
 
    call read_2d_input(filename_with_path, &
                       ch_var_name='mask_region', &
-                      n_var_type=3, n_ascii_header=6, &
+                      n_var_type=2, n_ascii_header=6, &
                       field2d_r=field2d_aux)
 
    mask_region = nint(field2d_aux)
@@ -1846,7 +1846,7 @@ end if
 
 #endif
 
-if (mask_region(0,0) == -1_i1b) mask_region = 0_i1b   ! regions undefined
+if (mask_region(0,0) == -1) mask_region = 0   ! regions undefined
 
 end subroutine topography3
 

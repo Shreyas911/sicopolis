@@ -2976,7 +2976,7 @@ end do
 
 !-------- Region mask --------
 
-mask_region = -1_i1b
+mask_region = -1
 
 #if (defined(MASK_REGION_FILE))
 
@@ -2988,7 +2988,7 @@ if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
 
    call read_2d_input(filename_with_path, &
                       ch_var_name='mask_region', &
-                      n_var_type=3, n_ascii_header=6, &
+                      n_var_type=2, n_ascii_header=6, &
                       field2d_r=field2d_aux)
 
    mask_region = nint(field2d_aux)
@@ -2997,7 +2997,7 @@ end if
 
 #endif
 
-if (mask_region(0,0) == -1_i1b) then   ! set default values for mask_region
+if (mask_region(0,0) == -1) then   ! set default values for mask_region
 
    do i=0, IMAX
    do j=0, JMAX
@@ -3008,17 +3008,17 @@ if (mask_region(0,0) == -1_i1b) then   ! set default values for mask_region
            .and. &
            (lambda(j,i) < 307.5_dp*deg2rad) ) then
 
-         mask_region(j,i) = 3_i1b   ! AP
+         mask_region(j,i) = 3   ! AP
 
       else if ( (lambda(j,i) > 195.0_dp*deg2rad) &
                 .and. &
                 (lambda(j,i) < 315.0_dp*deg2rad) ) then
 
-         mask_region(j,i) = 2_i1b   ! WAIS
+         mask_region(j,i) = 2   ! WAIS
 
       else
 
-         mask_region(j,i) = 1_i1b   ! EAIS
+         mask_region(j,i) = 1   ! EAIS
 
       end if
 
@@ -3175,7 +3175,7 @@ end do
 
 !-------- Region mask --------
 
-mask_region = -1_i1b
+mask_region = -1
 
 #if (defined(MASK_REGION_FILE))
 
@@ -3187,7 +3187,7 @@ if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
 
    call read_2d_input(filename_with_path, &
                       ch_var_name='mask_region', &
-                      n_var_type=3, n_ascii_header=6, &
+                      n_var_type=2, n_ascii_header=6, &
                       field2d_r=field2d_aux)
 
    mask_region = nint(field2d_aux)
@@ -3196,7 +3196,7 @@ end if
 
 #endif
 
-if (mask_region(0,0) == -1_i1b) then   ! set default values for mask_region
+if (mask_region(0,0) == -1) then   ! set default values for mask_region
 
    do i=0, IMAX
    do j=0, JMAX
@@ -3207,17 +3207,17 @@ if (mask_region(0,0) == -1_i1b) then   ! set default values for mask_region
            .and. &
            (lambda(j,i) < 307.5_dp*deg2rad) ) then
 
-         mask_region(j,i) = 3_i1b   ! AP
+         mask_region(j,i) = 3   ! AP
 
       else if ( (lambda(j,i) > 195.0_dp*deg2rad) &
                 .and. &
                 (lambda(j,i) < 315.0_dp*deg2rad) ) then
 
-         mask_region(j,i) = 2_i1b   ! WAIS
+         mask_region(j,i) = 2   ! WAIS
 
       else
 
-         mask_region(j,i) = 1_i1b   ! EAIS
+         mask_region(j,i) = 1   ! EAIS
 
       end if
 
@@ -3325,7 +3325,7 @@ end do
 
 !-------- Region mask --------
 
-mask_region = -1_i1b
+mask_region = -1
 
 #if (defined(MASK_REGION_FILE))
 
@@ -3337,7 +3337,7 @@ if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
 
    call read_2d_input(filename_with_path, &
                       ch_var_name='mask_region', &
-                      n_var_type=3, n_ascii_header=6, &
+                      n_var_type=2, n_ascii_header=6, &
                       field2d_r=field2d_aux)
 
    mask_region = nint(field2d_aux)
@@ -3346,7 +3346,7 @@ end if
 
 #endif
 
-if (mask_region(0,0) == -1_i1b) then   ! set default values for mask_region
+if (mask_region(0,0) == -1) then   ! set default values for mask_region
 
    do i=0, IMAX
    do j=0, JMAX
@@ -3357,17 +3357,17 @@ if (mask_region(0,0) == -1_i1b) then   ! set default values for mask_region
            .and. &
            (lambda(j,i) < 307.5_dp*deg2rad) ) then
 
-         mask_region(j,i) = 3_i1b   ! AP
+         mask_region(j,i) = 3   ! AP
 
       else if ( (lambda(j,i) > 195.0_dp*deg2rad) &
                 .and. &
                 (lambda(j,i) < 315.0_dp*deg2rad) ) then
 
-         mask_region(j,i) = 2_i1b   ! WAIS
+         mask_region(j,i) = 2   ! WAIS
 
       else
 
-         mask_region(j,i) = 1_i1b   ! EAIS
+         mask_region(j,i) = 1   ! EAIS
 
       end if
 
