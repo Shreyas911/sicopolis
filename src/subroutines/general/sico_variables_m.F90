@@ -815,8 +815,8 @@ save
 !>                       1: allowed to glaciate.
    integer(i1b), dimension(0:JMAX,0:IMAX) :: maske_maxextent
 
-!> ncid_ser: ID of the NetCDF time-series output file
-   integer(i4b) :: ncid_ser
+!> ncid_ser: IDs of the NetCDF time-series output files
+   integer(i4b), dimension(0:99) :: ncid_ser
 !> ncid_core: ID of the NetCDF time-series output file for the deep ice cores
    integer(i4b) :: ncid_core
 

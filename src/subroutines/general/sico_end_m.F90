@@ -56,6 +56,7 @@ contains
 
   implicit none
 
+  integer(i4b) :: n
   integer(i4b) :: ierr
 
   character(len=64), parameter :: thisroutine = 'sico_end'
@@ -93,9 +94,11 @@ contains
 #endif
 
 #if (NETCDF>1)
-  call check( nf90_sync(ncid_ser),  thisroutine )
-  call check( nf90_close(ncid_ser), thisroutine )
-          ! Closing of NetCDF time-series output file
+  do n=0, maxval(mask_region)
+     call check( nf90_sync(ncid_ser(n)),  thisroutine )
+     call check( nf90_close(ncid_ser(n)), thisroutine )
+          ! Closing of NetCDF time-series output files
+  end do
   if (n_core >= 1) then
      call check( nf90_sync(ncid_core),  thisroutine )
      call check( nf90_close(ncid_core), thisroutine )

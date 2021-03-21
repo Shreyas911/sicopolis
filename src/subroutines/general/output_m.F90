@@ -182,9 +182,7 @@ real(dp), dimension(0:JMAX,0:IMAX) :: accum_flx         , &
 integer(i1b), dimension(0:IMAX,0:JMAX) :: maske_conv, maske_old_conv, &
                                           mask_ablation_type_conv, &
                                           n_cts_conv
-#if (defined(ANT))
 integer(i4b), dimension(0:IMAX,0:JMAX) :: mask_region_conv
-#endif
 integer(i4b), dimension(0:IMAX,0:JMAX) :: kc_cts_conv
 integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_mar_conv
 integer(i1b), dimension(0:IMAX,0:JMAX) :: flag_shelfy_stream_x_conv, &
@@ -1329,35 +1327,35 @@ call check( nf90_put_att(ncid, ncv, 'flag_meanings', trim(buffer)), &
 call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
             thisroutine )
 
-#if (defined(ANT))
-
 !    ---- mask_region
 
-call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
-            thisroutine )
-call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
-            thisroutine )
-call check( nf90_def_var(ncid, 'mask_region', NF90_INT, nc2d, ncv), &
-            thisroutine )
-buffer = 'mask_region'
-call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-            thisroutine )
-buffer = 'Region mask'
-call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-            thisroutine )
-nc4flag = (/ 0, 1, 2, 3 /)
-call check( nf90_put_att(ncid, ncv, 'flag_values', nc4flag), &
-            thisroutine )
-buffer = 'undefined '// &
-         'EAIS '// &
-         'WAIS '// &
-         'AP'
-call check( nf90_put_att(ncid, ncv, 'flag_meanings', trim(buffer)), &
-            thisroutine )
-call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
-            thisroutine )
+if (maxval(mask_region) > 0) then
 
-#endif
+   call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
+               thisroutine )
+   call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
+               thisroutine )
+   call check( nf90_def_var(ncid, 'mask_region', NF90_INT, nc2d, ncv), &
+               thisroutine )
+   buffer = 'mask_region'
+   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
+               thisroutine )
+   buffer = 'Region mask'
+   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
+               thisroutine )
+   buffer = '0, 1, 2, ...'
+   call check( nf90_put_att(ncid, ncv, 'flag_values', trim(buffer)), &
+               thisroutine )
+   buffer = 'undefined '// &
+            'region_1 '// &
+            'region_2 '// &
+            '...'
+   call check( nf90_put_att(ncid, ncv, 'flag_meanings', trim(buffer)), &
+               thisroutine )
+   call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
+               thisroutine )
+
+end if
 
 !    ---- n_cts
 
@@ -3469,9 +3467,7 @@ do j=0, JMAX
    maske_conv(i,j)              = maske(j,i)
    maske_old_conv(i,j)          = maske_old(j,i)
    mask_ablation_type_conv(i,j) = mask_ablation_type(j,i)
-#if (defined(ANT))
    mask_region_conv(i,j)        = mask_region(j,i)
-#endif
    n_cts_conv(i,j)              = n_cts(j,i)
    kc_cts_conv(i,j)             = kc_cts(j,i)
 
@@ -4014,12 +4010,12 @@ call check( nf90_put_var(ncid, ncv, mask_ablation_type_conv, &
                          start=nc2cor_ij, count=nc2cnt_ij), &
             thisroutine )
 
-#if (defined(ANT))
-call check( nf90_inq_varid(ncid, 'mask_region', ncv), thisroutine )
-call check( nf90_put_var(ncid, ncv, mask_region_conv, &
-                         start=nc2cor_ij, count=nc2cnt_ij), &
-            thisroutine )
-#endif
+if (maxval(mask_region) > 0) then
+   call check( nf90_inq_varid(ncid, 'mask_region', ncv), thisroutine )
+   call check( nf90_put_var(ncid, ncv, mask_region_conv, &
+                            start=nc2cor_ij, count=nc2cnt_ij), &
+               thisroutine )
+end if
 
 call check( nf90_inq_varid(ncid, 'n_cts', ncv), thisroutine )
 call check( nf90_put_var(ncid, ncv, n_cts_conv, &
@@ -4486,7 +4482,7 @@ real(dp), intent(in) :: time, dxi, deta, delta_ts, glac_index, z_sl
 
 logical, optional, intent(in) :: opt_flag_compute_flux_vars_only
 
-integer(i4b) :: i, j
+integer(i4b) :: i, j, n
 integer(i4b) :: ios
 integer(i4b) :: n_base, n_tempbase
 real(dp) :: time_val, &
@@ -4503,15 +4499,17 @@ real(dp) :: Tbh_help
 real(dp) :: H_ave_sed, Tbh_ave_sed, Atb_sed
 real(dp) :: sum_area_sed
 logical :: flag_compute_flux_vars_only
+logical, dimension(0:JMAX,0:IMAX) :: flag_region
 
 #if (NETCDF>1)
-integer(i4b), save :: ncid
+integer(i4b), dimension(0:99), save :: ncid
 integer(i4b)       :: ncd, ncv, nc1d
 integer(i4b)       :: nc1cor(1), nc1cnt(1)
 integer(i4b)       :: n_sync
 real(dp), save     :: time_add_offset_val
 character(len= 16) :: ch_date, ch_time, ch_zone
 character(len=256) :: filename, filename_with_path, buffer
+character(len=  2) :: ch2_aux
 logical, save      :: grads_nc_tweaks
 #endif
 
@@ -4522,28 +4520,28 @@ character(len=64), parameter :: thisroutine = 'output2'
 
 #if (OUTPUT_FLUX_VARS==2)   /* averaging of flux variables */
 
-integer(i4b), save :: n_flx_ave_cnt = 0
-real(dp)           :: r_n_flx_ave_cnt_inv
+integer(i4b), dimension(0:99), save :: n_flx_ave_cnt = 0
+real(dp)                            :: r_n_flx_ave_cnt_inv
 
-real(dp), save :: Q_s_sum         = 0.0_dp, &
-                  precip_tot_sum  = 0.0_dp, &
-                  runoff_tot_sum  = 0.0_dp, &
-                  bmb_tot_sum     = 0.0_dp, &
+real(dp), dimension(0:99), save :: Q_s_sum         = 0.0_dp, &
+                                   precip_tot_sum  = 0.0_dp, &
+                                   runoff_tot_sum  = 0.0_dp, &
+                                   bmb_tot_sum     = 0.0_dp, &
 #if (MARGIN==3)
-                  bmb_gr_tot_sum  = 0.0_dp, &
-                  bmb_fl_tot_sum  = 0.0_dp, &
+                                   bmb_gr_tot_sum  = 0.0_dp, &
+                                   bmb_fl_tot_sum  = 0.0_dp, &
 #endif
-                  Q_b_sum         = 0.0_dp, &
-                  Q_temp_sum      = 0.0_dp, &
-                  calv_tot_sum    = 0.0_dp, &
+                                   Q_b_sum         = 0.0_dp, &
+                                   Q_temp_sum      = 0.0_dp, &
+                                   calv_tot_sum    = 0.0_dp, &
 #if (DISC>0)
-                  disc_lsc_sum    = 0.0_dp, &
-                  disc_ssc_sum    = 0.0_dp, &
+                                   disc_lsc_sum    = 0.0_dp, &
+                                   disc_ssc_sum    = 0.0_dp, &
 #endif
-                  dV_dt_sum       = 0.0_dp, &
-                  mb_resid_sum    = 0.0_dp, &
-                  mb_mis_sum      = 0.0_dp, &
-                  mbp_sum         = 0.0_dp
+                                   dV_dt_sum       = 0.0_dp, &
+                                   mb_resid_sum    = 0.0_dp, &
+                                   mb_mis_sum      = 0.0_dp, &
+                                   mbp_sum         = 0.0_dp
 
 #endif
 
@@ -4614,152 +4612,183 @@ end do
 
 H_cold = H - H_temp
 
+!-------- Begin loop over regions --------
+
+if (maxval(mask_region) > 99) then
+   errormsg = ' >>> output2: Not more than 99 regions allowed!'
+   call error(errormsg)
+end if
+
+do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
+
 !-------- Computing the scalar output variables --------
 
-call scalar_variables(time, z_sl, &
-                      H, H_cold, H_temp, &
-                      time_val, &
-                      V_tot, V_grounded, V_floating, &
-                      A_tot, A_grounded, A_floating, &
-                      V_af, V_sle, V_temp, A_temp, &
-                      H_max, H_t_max, zs_max, vs_max, Tbh_max, &
-                      dV_dt, Q_s, precip_tot, runoff_tot, &
-                      Q_b, Q_temp, bmb_tot, bmb_gr_tot, bmb_fl_tot, &
-                      calv_tot, disc_lsc, disc_ssc, &
-                      mbp, mb_resid, mb_mis)
+   if (n==0) then
+
+      call scalar_variables(time, z_sl, &
+                            H, H_cold, H_temp, &
+                            time_val, &
+                            V_tot, V_grounded, V_floating, &
+                            A_tot, A_grounded, A_floating, &
+                            V_af, V_sle, V_temp, A_temp, &
+                            H_max, H_t_max, zs_max, vs_max, Tbh_max, &
+                            dV_dt, Q_s, precip_tot, runoff_tot, &
+                            Q_b, Q_temp, bmb_tot, bmb_gr_tot, bmb_fl_tot, &
+                            calv_tot, disc_lsc, disc_ssc, &
+                            mbp, mb_resid, mb_mis)
+
+   else
+
+      flag_region = .false.
+      flag_region = (mask_region==n)
+
+      call scalar_variables(time, z_sl, &
+                            H, H_cold, H_temp, &
+                            time_val, &
+                            V_tot, V_grounded, V_floating, &
+                            A_tot, A_grounded, A_floating, &
+                            V_af, V_sle, V_temp, A_temp, &
+                            H_max, H_t_max, zs_max, vs_max, Tbh_max, &
+                            dV_dt, Q_s, precip_tot, runoff_tot, &
+                            Q_b, Q_temp, bmb_tot, bmb_gr_tot, bmb_fl_tot, &
+                            calv_tot, disc_lsc, disc_ssc, &
+                            mbp, mb_resid, mb_mis, &
+                            opt_flag_region=flag_region)
+
+   end if
 
 !-------- Flux variables --------
 
 #if (!defined(OUTPUT_FLUX_VARS) || OUTPUT_FLUX_VARS==1)
        ! snapshots of flux variables
 
-Q_s_flx         = Q_s
-precip_tot_flx  = precip_tot
-runoff_tot_flx  = runoff_tot
-bmb_tot_flx     = bmb_tot
+   Q_s_flx         = Q_s
+   precip_tot_flx  = precip_tot
+   runoff_tot_flx  = runoff_tot
+   bmb_tot_flx     = bmb_tot
 #if (MARGIN==3)
-bmb_gr_tot_flx  = bmb_gr_tot
-bmb_fl_tot_flx  = bmb_fl_tot
+   bmb_gr_tot_flx  = bmb_gr_tot
+   bmb_fl_tot_flx  = bmb_fl_tot
 #endif
-Q_b_flx         = Q_b
-Q_temp_flx      = Q_temp
-calv_tot_flx    = calv_tot
+   Q_b_flx         = Q_b
+   Q_temp_flx      = Q_temp
+   calv_tot_flx    = calv_tot
 #if (DISC>0)
-disc_lsc_flx    = disc_lsc
-disc_ssc_flx    = disc_ssc
+   disc_lsc_flx    = disc_lsc
+   disc_ssc_flx    = disc_ssc
 #endif
-dV_dt_flx       = dV_dt
-mb_resid_flx    = mb_resid
-mb_mis_flx      = mb_mis
-mbp_flx         = mbp
+   dV_dt_flx       = dV_dt
+   mb_resid_flx    = mb_resid
+   mb_mis_flx      = mb_mis
+   mbp_flx         = mbp
 
 #elif (OUTPUT_FLUX_VARS==2)
        ! averaging of flux variables
 
-if (n_flx_ave_cnt==0) then 
+   if (n_flx_ave_cnt(n)==0) then
 
-   Q_s_sum         = 0.0_dp
-   precip_tot_sum  = 0.0_dp
-   runoff_tot_sum  = 0.0_dp
-   bmb_tot_sum     = 0.0_dp
+      Q_s_sum(n)         = 0.0_dp
+      precip_tot_sum(n)  = 0.0_dp
+      runoff_tot_sum(n)  = 0.0_dp
+      bmb_tot_sum(n)     = 0.0_dp
 #if (MARGIN==3)
-   bmb_gr_tot_sum  = 0.0_dp
-   bmb_fl_tot_sum  = 0.0_dp
+      bmb_gr_tot_sum(n)  = 0.0_dp
+      bmb_fl_tot_sum(n)  = 0.0_dp
 #endif
-   Q_b_sum         = 0.0_dp
-   Q_temp_sum      = 0.0_dp
-   calv_tot_sum    = 0.0_dp
+      Q_b_sum(n)         = 0.0_dp
+      Q_temp_sum(n)      = 0.0_dp
+      calv_tot_sum(n)    = 0.0_dp
 #if (DISC>0)
-   disc_lsc_sum    = 0.0_dp
-   disc_ssc_sum    = 0.0_dp
+      disc_lsc_sum(n)    = 0.0_dp
+      disc_ssc_sum(n)    = 0.0_dp
 #endif
-   dV_dt_sum       = 0.0_dp
-   mb_resid_sum    = 0.0_dp
-   mb_mis_sum      = 0.0_dp
-   mbp_sum         = 0.0_dp
+      dV_dt_sum(n)       = 0.0_dp
+      mb_resid_sum(n)    = 0.0_dp
+      mb_mis_sum(n)      = 0.0_dp
+      mbp_sum(n)         = 0.0_dp
 
-end if
+   end if
 
-n_flx_ave_cnt = n_flx_ave_cnt + 1
+   n_flx_ave_cnt(n) = n_flx_ave_cnt(n) + 1
 
-Q_s_sum         = Q_s_sum        + Q_s
-precip_tot_sum  = precip_tot_sum + precip_tot
-runoff_tot_sum  = runoff_tot_sum + runoff_tot
-bmb_tot_sum     = bmb_tot_sum    + bmb_tot
+   Q_s_sum(n)         = Q_s_sum(n)        + Q_s
+   precip_tot_sum(n)  = precip_tot_sum(n) + precip_tot
+   runoff_tot_sum(n)  = runoff_tot_sum(n) + runoff_tot
+   bmb_tot_sum(n)     = bmb_tot_sum(n)    + bmb_tot
 #if (MARGIN==3)
-bmb_gr_tot_sum  = bmb_gr_tot_sum + bmb_gr_tot
-bmb_fl_tot_sum  = bmb_fl_tot_sum + bmb_fl_tot
+   bmb_gr_tot_sum(n)  = bmb_gr_tot_sum(n) + bmb_gr_tot
+   bmb_fl_tot_sum(n)  = bmb_fl_tot_sum(n) + bmb_fl_tot
 #endif
-Q_b_sum         = Q_b_sum        + Q_b
-Q_temp_sum      = Q_temp_sum     + Q_temp
-calv_tot_sum    = calv_tot_sum   + calv_tot
+   Q_b_sum(n)         = Q_b_sum(n)        + Q_b
+   Q_temp_sum(n)      = Q_temp_sum(n)     + Q_temp
+   calv_tot_sum(n)    = calv_tot_sum(n)   + calv_tot
 #if (DISC>0)
-disc_lsc_sum    = disc_lsc_sum   + disc_lsc
-disc_ssc_sum    = disc_ssc_sum   + disc_ssc
+   disc_lsc_sum(n)    = disc_lsc_sum(n)   + disc_lsc
+   disc_ssc_sum(n)    = disc_ssc_sum(n)   + disc_ssc
 #endif
-dV_dt_sum       = dV_dt_sum      + dV_dt
-mb_resid_sum    = mb_resid_sum   + mb_resid
-mb_mis_sum      = mb_mis_sum     + mb_mis
-mbp_sum         = mbp_sum        + mbp
-   !   \!/ constant time step dtime assumed
-   !       (otherwise, weighting with changing dtime would be required)
+   dV_dt_sum(n)       = dV_dt_sum(n)      + dV_dt
+   mb_resid_sum(n)    = mb_resid_sum(n)   + mb_resid
+   mb_mis_sum(n)      = mb_mis_sum(n)     + mb_mis
+   mbp_sum(n)         = mbp_sum(n)        + mbp
+      !   \!/ constant time step dtime assumed
+      !       (otherwise, weighting with changing dtime would be required)
 
-if (.not.flag_compute_flux_vars_only) then
+   if (.not.flag_compute_flux_vars_only) then
 
-   r_n_flx_ave_cnt_inv = 1.0_dp/real(n_flx_ave_cnt,dp)
+      r_n_flx_ave_cnt_inv = 1.0_dp/real(n_flx_ave_cnt(n),dp)
 
-   Q_s_flx         = Q_s_sum        * r_n_flx_ave_cnt_inv
-   precip_tot_flx  = precip_tot_sum * r_n_flx_ave_cnt_inv
-   runoff_tot_flx  = runoff_tot_sum * r_n_flx_ave_cnt_inv
-   bmb_tot_flx     = bmb_tot_sum    * r_n_flx_ave_cnt_inv
+      Q_s_flx         = Q_s_sum(n)        * r_n_flx_ave_cnt_inv
+      precip_tot_flx  = precip_tot_sum(n) * r_n_flx_ave_cnt_inv
+      runoff_tot_flx  = runoff_tot_sum(n) * r_n_flx_ave_cnt_inv
+      bmb_tot_flx     = bmb_tot_sum(n)    * r_n_flx_ave_cnt_inv
 #if (MARGIN==3)
-   bmb_gr_tot_flx  = bmb_gr_tot_sum * r_n_flx_ave_cnt_inv
-   bmb_fl_tot_flx  = bmb_fl_tot_sum * r_n_flx_ave_cnt_inv
+      bmb_gr_tot_flx  = bmb_gr_tot_sum(n) * r_n_flx_ave_cnt_inv
+      bmb_fl_tot_flx  = bmb_fl_tot_sum(n) * r_n_flx_ave_cnt_inv
 #endif
-   Q_b_flx         = Q_b_sum        * r_n_flx_ave_cnt_inv
-   Q_temp_flx      = Q_temp_sum     * r_n_flx_ave_cnt_inv
-   calv_tot_flx    = calv_tot_sum   * r_n_flx_ave_cnt_inv
+      Q_b_flx         = Q_b_sum(n)        * r_n_flx_ave_cnt_inv
+      Q_temp_flx      = Q_temp_sum(n)     * r_n_flx_ave_cnt_inv
+      calv_tot_flx    = calv_tot_sum(n)   * r_n_flx_ave_cnt_inv
 #if (DISC>0)
-   disc_lsc_flx    = disc_lsc_sum   * r_n_flx_ave_cnt_inv
-   disc_ssc_flx    = disc_ssc_sum   * r_n_flx_ave_cnt_inv
+      disc_lsc_flx    = disc_lsc_sum(n)   * r_n_flx_ave_cnt_inv
+      disc_ssc_flx    = disc_ssc_sum(n)   * r_n_flx_ave_cnt_inv
 #endif
-   dV_dt_flx       = dV_dt_sum      * r_n_flx_ave_cnt_inv
-   mb_resid_flx    = mb_resid_sum   * r_n_flx_ave_cnt_inv
-   mb_mis_flx      = mb_mis_sum     * r_n_flx_ave_cnt_inv
-   mbp_flx         = mbp_sum        * r_n_flx_ave_cnt_inv
+      dV_dt_flx       = dV_dt_sum(n)      * r_n_flx_ave_cnt_inv
+      mb_resid_flx    = mb_resid_sum(n)   * r_n_flx_ave_cnt_inv
+      mb_mis_flx      = mb_mis_sum(n)     * r_n_flx_ave_cnt_inv
+      mbp_flx         = mbp_sum(n)        * r_n_flx_ave_cnt_inv
 
-   n_flx_ave_cnt = 0
+      n_flx_ave_cnt(n) = 0
 
-end if   ! (.not.flag_compute_flux_vars_only)
+   end if   ! (.not.flag_compute_flux_vars_only)
 
 #else
 
-errormsg = ' >>> output2: Parameter OUTPUT_FLUX_VARS must be either 1 or 2!'
-call error(errormsg)
+   errormsg = ' >>> output2: Parameter OUTPUT_FLUX_VARS must be either 1 or 2!'
+   call error(errormsg)
 
 #endif
 
 !-------- Writing of data on ASCII time-series file --------
 
-if (.not.flag_compute_flux_vars_only) then
+   if ((n==0).and.(.not.flag_compute_flux_vars_only)) then
 
-   if ((forcing_flag == 1).or.(forcing_flag == 3)) then
+      if ((forcing_flag == 1).or.(forcing_flag == 3)) then
 
-      write(unit=12, fmt=trim(fmt1)) time_val, delta_ts, z_sl, &
-         V_tot, V_grounded, V_floating, A_tot, A_grounded, A_floating, &
-         V_sle, V_temp, A_temp, &
-         H_max, H_t_max, zs_max, vs_max, Tbh_max
+         write(unit=12, fmt=trim(fmt1)) time_val, delta_ts, z_sl, &
+            V_tot, V_grounded, V_floating, A_tot, A_grounded, A_floating, &
+            V_sle, V_temp, A_temp, &
+            H_max, H_t_max, zs_max, vs_max, Tbh_max
 
-   else if (forcing_flag == 2) then
+      else if (forcing_flag == 2) then
 
-      write(unit=12, fmt=trim(fmt1)) time_val, glac_index, z_sl, &
-         V_tot, V_grounded, V_floating, A_tot, A_grounded, A_floating, &
-         V_sle, V_temp, A_temp, &
-         H_max, H_t_max, zs_max, vs_max, Tbh_max
+         write(unit=12, fmt=trim(fmt1)) time_val, glac_index, z_sl, &
+            V_tot, V_grounded, V_floating, A_tot, A_grounded, A_floating, &
+            V_sle, V_temp, A_temp, &
+            H_max, H_t_max, zs_max, vs_max, Tbh_max
 
-   end if
+      end if
 
-end if   ! (.not.flag_compute_flux_vars_only)
+   end if   ! ((n==0).and.(.not.flag_compute_flux_vars_only))
 
 !-------- Special output (ASCII) --------
 
@@ -4772,55 +4801,55 @@ end if   ! (.not.flag_compute_flux_vars_only)
 !    ---- Average ice thickness, average basal temperature rel. to pmp,
 !         temperate basal area
 
-if (.not.flag_compute_flux_vars_only) then
+   if ((n==0).and.(.not.flag_compute_flux_vars_only)) then
 
-   H_ave_sed    = 0.0_dp
-   Tbh_ave_sed  = 0.0_dp
-   Atb_sed      = 0.0_dp
-   sum_area_sed = 0.0_dp
+      H_ave_sed    = 0.0_dp
+      Tbh_ave_sed  = 0.0_dp
+      Atb_sed      = 0.0_dp
+      sum_area_sed = 0.0_dp
 
-   do i=1, IMAX-1
-   do j=1, JMAX-1
+      do i=1, IMAX-1
+      do j=1, JMAX-1
 
-      if (n_slide_region(j,i)==3) then   ! sediment region
+         if (n_slide_region(j,i)==3) then   ! sediment region
 
-         sum_area_sed = sum_area_sed + area(j,i)
+            sum_area_sed = sum_area_sed + area(j,i)
 
-         H_ave_sed = H_ave_sed + area(j,i)*H(j,i)
+            H_ave_sed = H_ave_sed + area(j,i)*H(j,i)
 
-         if (n_cts(j,i) /= -1_i1b) then   ! temperate base
-            Tbh_help    = 0.0_dp
-         else   ! cold base
-            Tbh_help    = min((temp_c(0,j,i)-temp_c_m(0,j,i)), 0.0_dp)
+            if (n_cts(j,i) /= -1_i1b) then   ! temperate base
+               Tbh_help    = 0.0_dp
+            else   ! cold base
+               Tbh_help    = min((temp_c(0,j,i)-temp_c_m(0,j,i)), 0.0_dp)
+            end if
+            Tbh_ave_sed = Tbh_ave_sed + area(j,i)*Tbh_help
+
+            if (n_cts(j,i) /= -1_i1b) Atb_sed = Atb_sed + area(j,i)
+
          end if
-         Tbh_ave_sed = Tbh_ave_sed + area(j,i)*Tbh_help
 
-         if (n_cts(j,i) /= -1_i1b) Atb_sed = Atb_sed + area(j,i)
+      end do
+      end do
 
+      if (sum_area_sed > eps) then
+         H_ave_sed   = H_ave_sed   / sum_area_sed
+         Tbh_ave_sed = Tbh_ave_sed / sum_area_sed
+      else
+         errormsg = ' >>> output2: No sediment area found!'
+         call error(errormsg)
       end if
-
-   end do
-   end do
-
-   if (sum_area_sed > eps) then
-      H_ave_sed   = H_ave_sed   / sum_area_sed
-      Tbh_ave_sed = Tbh_ave_sed / sum_area_sed
-   else
-      errormsg = ' >>> output2: No sediment area found!'
-      call error(errormsg)
-   end if
 
 !    ---- Writing of data on time-series file
 
-   if ((forcing_flag == 1).or.(forcing_flag == 3)) then
-      write(unit=15, fmt=trim(fmt2)) time_val, delta_ts, z_sl, &
-                                     H_ave_sed, Tbh_ave_sed, Atb_sed
-   else if (forcing_flag == 2) then
-      write(unit=15, fmt=trim(fmt2)) time_val, glac_index, z_sl, &
-                                     H_ave_sed, Tbh_ave_sed, Atb_sed
-   end if
+      if ((forcing_flag == 1).or.(forcing_flag == 3)) then
+         write(unit=15, fmt=trim(fmt2)) time_val, delta_ts, z_sl, &
+                                        H_ave_sed, Tbh_ave_sed, Atb_sed
+      else if (forcing_flag == 2) then
+         write(unit=15, fmt=trim(fmt2)) time_val, glac_index, z_sl, &
+                                        H_ave_sed, Tbh_ave_sed, Atb_sed
+      end if
 
-end if   ! (.not.flag_compute_flux_vars_only)
+   end if   ! ((n==0).and.(.not.flag_compute_flux_vars_only))
 
 #endif
 
@@ -4830,900 +4859,919 @@ end if   ! (.not.flag_compute_flux_vars_only)
 
 #if (NETCDF>1)
 
-if (firstcall_output2) then
+   if (firstcall_output2) then
 
 !  ------ Open NetCDF file
 
-   filename           = trim(RUNNAME)//'_ser.nc'
-   filename_with_path = trim(OUT_PATH)//'/'//trim(filename)
+      if (n==0) then
+         filename = trim(RUNNAME)//'_ser.nc'
+      else
+         write(ch2_aux, '(i0.2)') n
+         filename = trim(RUNNAME)//'_ser_region'//ch2_aux//'.nc'
+      end if
 
-   ios = nf90_create(trim(filename_with_path), NF90_NOCLOBBER, ncid)
+      filename_with_path = trim(OUT_PATH)//'/'//trim(filename)
 
-   if (ios /= nf90_noerr) then
-      errormsg = ' >>> output2: Error when opening the' &
-               //               end_of_line &
-               //'              NetCDF time-series file!'
-      call error(errormsg)
-   end if
+      ios = nf90_create(trim(filename_with_path), NF90_NOCLOBBER, ncid(n))
 
-   ncid_ser = ncid
+      if (ios /= nf90_noerr) then
+         errormsg = ' >>> output2: Error when opening the' &
+                  //               end_of_line &
+                  //'              NetCDF time-series file!'
+         call error(errormsg)
+      end if
+
+      ncid_ser(n) = ncid(n)
 
 !  ------ Global attributes
 
-   buffer = 'Time-series output of simulation '//trim(RUNNAME)
-   call check( nf90_put_att(ncid, NF90_GLOBAL, 'title', trim(buffer)), &
-               thisroutine )
+      buffer = 'Time-series output of simulation '//trim(RUNNAME)
+      if (n>0) buffer = trim(buffer)//' (region '//ch2_aux//')'
+      call check( nf90_put_att(ncid(n), NF90_GLOBAL, 'title', trim(buffer)), &
+                  thisroutine )
 
-   call set_ch_institution(buffer)
-   call check( nf90_put_att(ncid, NF90_GLOBAL, 'institution', trim(buffer)), &
-               thisroutine )
+      call set_ch_institution(buffer)
+      call check( nf90_put_att(ncid(n), NF90_GLOBAL, 'institution', trim(buffer)), &
+                  thisroutine )
 
-   buffer = 'SICOPOLIS Version '//VERSION
-   call check( nf90_put_att(ncid, NF90_GLOBAL, 'source', trim(buffer)), &
-               thisroutine )
+      buffer = 'SICOPOLIS Version '//VERSION
+      call check( nf90_put_att(ncid(n), NF90_GLOBAL, 'source', trim(buffer)), &
+                  thisroutine )
 
-   call date_and_time(ch_date, ch_time, ch_zone)
-   buffer = ch_date(1:4)//'-'//ch_date(5:6)//'-'//ch_date(7:8)//' '// &
-            ch_time(1:2)//':'//ch_time(3:4)//':'//ch_time(5:6)//' '// &
-            ch_zone(1:3)//':'//ch_zone(4:5)//' - Data produced'
-   call check( nf90_put_att(ncid, NF90_GLOBAL, 'history', trim(buffer)), &
-               thisroutine )
+      call date_and_time(ch_date, ch_time, ch_zone)
+      buffer = ch_date(1:4)//'-'//ch_date(5:6)//'-'//ch_date(7:8)//' '// &
+               ch_time(1:2)//':'//ch_time(3:4)//':'//ch_time(5:6)//' '// &
+               ch_zone(1:3)//':'//ch_zone(4:5)//' - Data produced'
+      call check( nf90_put_att(ncid(n), NF90_GLOBAL, 'history', trim(buffer)), &
+                  thisroutine )
 
-   buffer = 'http://www.sicopolis.net/'
-   call check( nf90_put_att(ncid, NF90_GLOBAL, 'references', trim(buffer)), &
-               thisroutine )
+      buffer = 'http://www.sicopolis.net/'
+      call check( nf90_put_att(ncid(n), NF90_GLOBAL, 'references', trim(buffer)), &
+                  thisroutine )
 
 !  ------ Definition of the dimensions
 
-   call set_grads_nc_tweaks(grads_nc_tweaks)
+      call set_grads_nc_tweaks(grads_nc_tweaks)
 
-   if (grads_nc_tweaks) then
-      call check( nf90_def_dim(ncid, 'x', 1, ncd), thisroutine )
-      call check( nf90_def_dim(ncid, 'y', 1, ncd), thisroutine )
-   end if
+      if (grads_nc_tweaks) then
+         call check( nf90_def_dim(ncid(n), 'x', 1, ncd), thisroutine )
+         call check( nf90_def_dim(ncid(n), 'y', 1, ncd), thisroutine )
+      end if
 
-   call check( nf90_def_dim(ncid, 't', NF90_UNLIMITED, ncd), thisroutine )
+      call check( nf90_def_dim(ncid(n), 't', NF90_UNLIMITED, ncd), thisroutine )
 
 !  ------ Definition of the variables
 
-   if (grads_nc_tweaks) then
+      if (grads_nc_tweaks) then
 
 !    ---- x
 
-      call check( nf90_inq_dimid(ncid, 'x', nc1d), thisroutine )
-      call check( nf90_def_var(ncid, 'x', NF90_FLOAT, nc1d, ncv), &
-                  thisroutine )
-      buffer = 'm'
-      call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-                  thisroutine )
-      buffer = 'x'
-      call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-                  thisroutine )
-      buffer = 'Dummy x-coordinate for one point'
-      call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-                  thisroutine )
-      call check( nf90_put_att(ncid, ncv, 'axis', 'x'), thisroutine )
+         call check( nf90_inq_dimid(ncid(n), 'x', nc1d), thisroutine )
+         call check( nf90_def_var(ncid(n), 'x', NF90_FLOAT, nc1d, ncv), &
+                     thisroutine )
+         buffer = 'm'
+         call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                     thisroutine )
+         buffer = 'x'
+         call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                     thisroutine )
+         buffer = 'Dummy x-coordinate for one point'
+         call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                     thisroutine )
+         call check( nf90_put_att(ncid(n), ncv, 'axis', 'x'), thisroutine )
 
 !    ---- y
 
-      call check( nf90_inq_dimid(ncid, 'y', nc1d), thisroutine )
-      call check( nf90_def_var(ncid, 'y', NF90_FLOAT, nc1d, ncv), &
-                  thisroutine )
-      buffer = 'm'
-      call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-                  thisroutine )
-      buffer = 'y'
-      call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-                  thisroutine )
-      buffer = 'Dummy y-coordinate for one point'
-      call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-                  thisroutine )
-      call check( nf90_put_att(ncid, ncv, 'axis', 'y'), thisroutine )
+         call check( nf90_inq_dimid(ncid(n), 'y', nc1d), thisroutine )
+         call check( nf90_def_var(ncid(n), 'y', NF90_FLOAT, nc1d, ncv), &
+                     thisroutine )
+         buffer = 'm'
+         call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                     thisroutine )
+         buffer = 'y'
+         call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                     thisroutine )
+         buffer = 'Dummy y-coordinate for one point'
+         call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                     thisroutine )
+         call check( nf90_put_att(ncid(n), ncv, 'axis', 'y'), thisroutine )
 
-   end if
+      end if
 
 !    ---- year2sec
 
-   call check( nf90_def_var(ncid, 'year2sec', NF90_DOUBLE, ncv), &
-            thisroutine )
-   buffer = 's a-1'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
+      call check( nf90_def_var(ncid(n), 'year2sec', NF90_DOUBLE, ncv), &
                thisroutine )
-   buffer = 'seconds_per_year'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = '1 year (1 a) in seconds'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      buffer = 's a-1'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'seconds_per_year'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = '1 year (1 a) in seconds'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- Time
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 't', NF90_DOUBLE, nc1d, ncv), &
-               thisroutine )
-   buffer = 'a'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'time'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Time'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
-   call check( nf90_put_att(ncid, ncv, 'axis', 't'), thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 't', NF90_DOUBLE, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'a'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'time'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Time'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
+      call check( nf90_put_att(ncid(n), ncv, 'axis', 't'), thisroutine )
 
-   if (grads_nc_tweaks) then
+      if (grads_nc_tweaks) then
 
 !    ---- Time offset
 
-      call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-      call check( nf90_def_var(ncid, 't_add_offset', NF90_DOUBLE, nc1d, ncv), &
-                  thisroutine )
-      buffer = 'a'
-      call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-                  thisroutine )
-      buffer = 'time_add_offset'
-      call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-                  thisroutine )
-      buffer = 'Time offset'
-      call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-                  thisroutine )
+         call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+         call check( nf90_def_var(ncid(n), 't_add_offset', NF90_DOUBLE, nc1d, ncv), &
+                     thisroutine )
+         buffer = 'a'
+         call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                     thisroutine )
+         buffer = 'time_add_offset'
+         call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                     thisroutine )
+         buffer = 'Time offset'
+         call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                     thisroutine )
 
-      time_add_offset_val = min(time_val, 0.0_dp)
+         time_add_offset_val = min(time_val, 0.0_dp)
 
-   end if
+      end if
 
-   if ((forcing_flag == 1).or.(forcing_flag == 3)) then
+      if ((forcing_flag == 1).or.(forcing_flag == 3)) then
 
 !    ---- delta_ts
 
-      call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-      call check( nf90_def_var(ncid, 'delta_ts', NF90_FLOAT, nc1d, ncv), &
-                  thisroutine )
-      buffer = 'degC'
-      call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-                  thisroutine )
-      buffer = 'surface_temperature_anomaly'
-      call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-                  thisroutine )
-      buffer = 'Surface temperature anomaly'
-      call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-                  thisroutine )
+         call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+         call check( nf90_def_var(ncid(n), 'delta_ts', NF90_FLOAT, nc1d, ncv), &
+                     thisroutine )
+         buffer = 'degC'
+         call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                     thisroutine )
+         buffer = 'surface_temperature_anomaly'
+         call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                     thisroutine )
+         buffer = 'Surface temperature anomaly'
+         call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                     thisroutine )
 
-   else if (forcing_flag == 2) then
+      else if (forcing_flag == 2) then
 
 !    ---- glac_index
 
-      call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-      call check( nf90_def_var(ncid, 'glac_index', NF90_FLOAT, nc1d, ncv), &
-                  thisroutine )
-      buffer = '1'
-      call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-                  thisroutine )
-      buffer = 'glacial_index'
-      call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-                  thisroutine )
-      buffer = 'Glacial index'
-      call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-                  thisroutine )
+         call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+         call check( nf90_def_var(ncid(n), 'glac_index', NF90_FLOAT, nc1d, ncv), &
+                     thisroutine )
+         buffer = '1'
+         call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                     thisroutine )
+         buffer = 'glacial_index'
+         call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                     thisroutine )
+         buffer = 'Glacial index'
+         call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                     thisroutine )
 
-   end if
+      end if
 
 !    ---- z_sl
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'z_sl', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'global_average_sea_level_change'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Sea level'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'z_sl', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'global_average_sea_level_change'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Sea level'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- V_tot
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'V_tot', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm3'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'land_ice_volume'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Ice volume'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'V_tot', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm3'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'land_ice_volume'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Ice volume'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- V_grounded
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'V_grounded', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm3'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'grounded_land_ice_volume'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Volume of grounded ice'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'V_grounded', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm3'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'grounded_land_ice_volume'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Volume of grounded ice'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- V_floating
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'V_floating', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm3'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'floating_ice_shelf_volume'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Volume of floating ice'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'V_floating', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm3'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'floating_ice_shelf_volume'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Volume of floating ice'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- A_tot
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'A_tot', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm2'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'land_ice_area'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Ice area'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'A_tot', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm2'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'land_ice_area'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Ice area'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- A_grounded
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'A_grounded', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm2'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'grounded_land_ice_area'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Area covered by grounded ice'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'A_grounded', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm2'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'grounded_land_ice_area'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Area covered by grounded ice'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- A_floating
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'A_floating', NF90_FLOAT, nc1d, ncv), &
-            thisroutine )
-   buffer = 'm2'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'A_floating', NF90_FLOAT, nc1d, ncv), &
                thisroutine )
-   buffer = 'floating_ice_shelf_area'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Area covered by floating ice'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      buffer = 'm2'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'floating_ice_shelf_area'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Area covered by floating ice'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- V_af
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'V_af', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm3'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'land_ice_volume_not_displacing_sea_water'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Ice volume above flotation'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'V_af', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm3'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'land_ice_volume_not_displacing_sea_water'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Ice volume above flotation'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- V_sle
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'V_sle', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm SLE'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'land_ice_volume_sle'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Ice volume in SLE'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'V_sle', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm SLE'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'land_ice_volume_sle'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Ice volume in SLE'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- V_temp
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'V_temp', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm3'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'temperate_land_ice_volume'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Volume of temperate ice'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'V_temp', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm3'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'temperate_land_ice_volume'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Volume of temperate ice'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- A_temp
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'A_temp', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm2'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'temperate_land_ice_area'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Area covered by temperate ice'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'A_temp', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm2'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'temperate_land_ice_area'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Area covered by temperate ice'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- Q_s
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'Q_s', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm3 ice equiv. a-1'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'tendency_of_land_ice_volume_due_to_surface_mass_balance'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Total surface mass balance'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'Q_s', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm3 ice equiv. a-1'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'tendency_of_land_ice_volume_due_to_surface_mass_balance'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Total surface mass balance'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- precip_tot
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'precip_tot', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm3 ice equiv. a-1'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'precipitation_rate'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Precipitation rate'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'precip_tot', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm3 ice equiv. a-1'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'precipitation_rate'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Precipitation rate'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- runoff_tot
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'runoff_tot', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm3 ice equiv. a-1'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'runoff_rate'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Runoff rate'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'runoff_tot', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm3 ice equiv. a-1'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'runoff_rate'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Runoff rate'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- bmb_tot
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'bmb_tot', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm3 ice equiv. a-1'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'tendency_of_land_ice_volume_due_to_basal_mass_balance'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Total basal mass balance'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'bmb_tot', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm3 ice equiv. a-1'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'tendency_of_land_ice_volume_due_to_basal_mass_balance'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Total basal mass balance'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 #if (MARGIN==3)
 
 !    ---- bmb_gr_tot
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'bmb_gr_tot', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm3 ice equiv. a-1'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'tendency_of_land_ice_volume_due_to_basal_mass_balance_for_grounded_ice'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Total basal mass balance for grounded ice'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'bmb_gr_tot', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm3 ice equiv. a-1'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'tendency_of_land_ice_volume_due_to_basal_mass_balance_for_grounded_ice'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Total basal mass balance for grounded ice'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- bmb_fl_tot
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'bmb_fl_tot', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm3 ice equiv. a-1'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'tendency_of_land_ice_volume_due_to_basal_mass_balance_for_floating_ice'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Total basal mass balance for floating ice'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'bmb_fl_tot', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm3 ice equiv. a-1'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'tendency_of_land_ice_volume_due_to_basal_mass_balance_for_floating_ice'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Total basal mass balance for floating ice'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 #endif
 
 !    ---- Q_b
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'Q_b', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm3 ice equiv. a-1'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'basal_melting_rate'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Basal melting rate'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'Q_b', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm3 ice equiv. a-1'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'basal_melting_rate'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Basal melting rate'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- Q_temp
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'Q_temp', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm3 ice equiv. a-1'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'temperate_layer_drainage_rate'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Drainage rate from the temperate ice layer'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'Q_temp', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm3 ice equiv. a-1'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'temperate_layer_drainage_rate'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Drainage rate from the temperate ice layer'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- calv_tot
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'calv_tot', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm3 ice equiv. a-1'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'tendency_of_land_ice_volume_due_to_calving'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Total calving rate'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'calv_tot', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm3 ice equiv. a-1'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'tendency_of_land_ice_volume_due_to_calving'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Total calving rate'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 #if (DISC>0)
 
 !    ---- disc_lsc
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'disc_lsc', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm3 ice equiv. a-1'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'large_scale_ice_lost_into_the_ocean'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Large scale ice lost into the ocean'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'disc_lsc', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm3 ice equiv. a-1'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'large_scale_ice_lost_into_the_ocean'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Large scale ice lost into the ocean'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- disc_ssc
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'disc_ssc', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm3 ice equiv. a-1'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'small_scale_ice_lost_into_the_ocean'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Small scale ice lost into the ocean'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'disc_ssc', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm3 ice equiv. a-1'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'small_scale_ice_lost_into_the_ocean'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Small scale ice lost into the ocean'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- dT_glann
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'dT_glann', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'degC'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'global_annual_temperature_anomaly'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Global annual temperature anomaly'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'dT_glann', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'degC'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'global_annual_temperature_anomaly'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Global annual temperature anomaly'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- dT_sub
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'dT_sub', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'degC'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'subsurface_ocean_temperature_anomaly'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Subsurface ocean temperature anomaly'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'dT_sub', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'degC'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'subsurface_ocean_temperature_anomaly'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Subsurface ocean temperature anomaly'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 #endif
 
 !    ---- dV_dt
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'dV_dt', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm3 a-1'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'tendency_of_land_ice_volume'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Rate of ice volume change'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'dV_dt', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm3 a-1'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'tendency_of_land_ice_volume'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Rate of ice volume change'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
+
+      if (n==0) then
 
 !    ---- mb_resid
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'mb_resid', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm3 ice equiv. a-1'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'total_mass_balance_residual'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Residual of the total mass balance'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+         call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+         call check( nf90_def_var(ncid(n), 'mb_resid', NF90_FLOAT, nc1d, ncv), &
+                     thisroutine )
+         buffer = 'm3 ice equiv. a-1'
+         call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                     thisroutine )
+         buffer = 'total_mass_balance_residual'
+         call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                     thisroutine )
+         buffer = 'Residual of the total mass balance'
+         call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                     thisroutine )
 
 !    ---- mb_mis
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'mb_mis', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm3 ice equiv. a-1'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'total_mass_balance_misacconted'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Total Mass Malance Misacconted'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+         call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+         call check( nf90_def_var(ncid(n), 'mb_mis', NF90_FLOAT, nc1d, ncv), &
+                     thisroutine )
+         buffer = 'm3 ice equiv. a-1'
+         call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                     thisroutine )
+         buffer = 'total_mass_balance_misacconted'
+         call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                     thisroutine )
+         buffer = 'Total mass balance misacconted'
+         call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                     thisroutine )
+
+      end if
 
 !    ---- mbp
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'mbp', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = '1'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'mass_balance_partition'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Mass balance partition'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'mbp', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = '1'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'mass_balance_partition'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Mass balance partition'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- H_max
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'H_max', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'maximum_ice_thickness'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Maximum ice thickness'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'H_max', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'maximum_ice_thickness'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Maximum ice thickness'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- H_t_max
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'H_t_max', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'maximum_thickness_of_temperate_ice'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Maximum thickness of temperate ice'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'H_t_max', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'maximum_thickness_of_temperate_ice'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Maximum thickness of temperate ice'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- zs_max
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'zs_max', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'maximum_surface_elevation'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Maximum surface elevation'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'zs_max', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'maximum_surface_elevation'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Maximum surface elevation'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- vs_max
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'vs_max', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'm a-1'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'maximum_surface_speed'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Maximum surface speed'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'vs_max', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'm a-1'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'maximum_surface_speed'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Maximum surface speed'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- Tbh_max
 
-   call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-   call check( nf90_def_var(ncid, 'Tbh_max', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
-   buffer = 'degC'
-   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
-               thisroutine )
-   buffer = 'maximum_basal_temperature_relative_to_pmp'
-   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-               thisroutine )
-   buffer = 'Maximum basal temperature relative to pmp'
-   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-               thisroutine )
+      call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+      call check( nf90_def_var(ncid(n), 'Tbh_max', NF90_FLOAT, nc1d, ncv), &
+                  thisroutine )
+      buffer = 'degC'
+      call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
+                  thisroutine )
+      buffer = 'maximum_basal_temperature_relative_to_pmp'
+      call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
+                  thisroutine )
+      buffer = 'Maximum basal temperature relative to pmp'
+      call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
+                  thisroutine )
 
 !    ---- End of the definitions
 
-   call check( nf90_enddef(ncid), thisroutine )
+      call check( nf90_enddef(ncid(n)), thisroutine )
 
-end if
+   end if
 
 !  ------ Writing of data on NetCDF file
 
-if (firstcall_output2) then
+   if (firstcall_output2) then
 
-   if (grads_nc_tweaks) then
+      if (grads_nc_tweaks) then
 
-      nc1cor = (/ 1 /)
+         nc1cor = (/ 1 /)
 
-      call check( nf90_inq_varid(ncid, 'x', ncv), thisroutine )
-      call check( nf90_put_var(ncid, ncv, 0.0_sp, &
-                                          start=nc1cor), thisroutine )
+         call check( nf90_inq_varid(ncid(n), 'x', ncv), thisroutine )
+         call check( nf90_put_var(ncid(n), ncv, 0.0_sp, &
+                                             start=nc1cor), thisroutine )
 
-      call check( nf90_inq_varid(ncid, 'y', ncv), thisroutine )
-      call check( nf90_put_var(ncid, ncv, 0.0_sp, &
-                                          start=nc1cor), thisroutine )
+         call check( nf90_inq_varid(ncid(n), 'y', ncv), thisroutine )
+         call check( nf90_put_var(ncid(n), ncv, 0.0_sp, &
+                                             start=nc1cor), thisroutine )
 
-   end if
+      end if
 
-   call check( nf90_inq_varid(ncid, 'year2sec', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, year2sec), thisroutine )
+      call check( nf90_inq_varid(ncid(n), 'year2sec', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, year2sec), thisroutine )
 
-   call check( nf90_sync(ncid), thisroutine )
-
-end if
-
-if (.not.flag_compute_flux_vars_only) then
-
-   nc1cor(1) = counter
-   ! nc1cnt(1) = 1   ! (not needed, and causes troubles for whatever reason)
-
-   call check( nf90_inq_varid(ncid, 't', ncv), thisroutine )
-
-   if (.not.grads_nc_tweaks) then
-      call check( nf90_put_var(ncid, ncv, time_val, &
-                               start=nc1cor), thisroutine )
-   else
-      call check( nf90_put_var(ncid, ncv, time_val-time_add_offset_val, &
-                               start=nc1cor), thisroutine )
-                            ! this makes sure that all times are >=0
-                            ! (GrADS doesn't like negative numbers)
-      call check( nf90_inq_varid(ncid, 't_add_offset', ncv), thisroutine )
-      call check( nf90_put_var(ncid, ncv, time_add_offset_val, &
-                               start=nc1cor), thisroutine )
-   end if
-
-   if ((forcing_flag == 1).or.(forcing_flag == 3)) then
-
-      call check( nf90_inq_varid(ncid, 'delta_ts', ncv), thisroutine )
-      call check( nf90_put_var(ncid, ncv, real(delta_ts,sp), &
-                               start=nc1cor), thisroutine )
-
-   else if (forcing_flag == 2) then
-
-      call check( nf90_inq_varid(ncid, 'glac_index', ncv), thisroutine )
-      call check( nf90_put_var(ncid, ncv, real(glac_index,sp), &
-                               start=nc1cor), thisroutine )
+      call check( nf90_sync(ncid(n)), thisroutine )
 
    end if
 
-   call check( nf90_inq_varid(ncid, 'z_sl', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(z_sl,sp), &
-                            start=nc1cor), thisroutine )
+   if (.not.flag_compute_flux_vars_only) then
 
-   call check( nf90_inq_varid(ncid, 'V_tot', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(V_tot,sp), &
-                            start=nc1cor), thisroutine )
+      nc1cor(1) = counter
+      ! nc1cnt(1) = 1   ! (not needed, and causes troubles for whatever reason)
 
-   call check( nf90_inq_varid(ncid, 'V_grounded', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(V_grounded,sp), &
-                            start=nc1cor), thisroutine )
+      call check( nf90_inq_varid(ncid(n), 't', ncv), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'V_floating', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(V_floating,sp), &
-                            start=nc1cor), thisroutine )
+      if (.not.grads_nc_tweaks) then
+         call check( nf90_put_var(ncid(n), ncv, time_val, &
+                                  start=nc1cor), thisroutine )
+      else
+         call check( nf90_put_var(ncid(n), ncv, time_val-time_add_offset_val, &
+                                  start=nc1cor), thisroutine )
+                               ! this makes sure that all times are >=0
+                               ! (GrADS doesn't like negative numbers)
+         call check( nf90_inq_varid(ncid(n), 't_add_offset', ncv), thisroutine )
+         call check( nf90_put_var(ncid(n), ncv, time_add_offset_val, &
+                                  start=nc1cor), thisroutine )
+      end if
 
-   call check( nf90_inq_varid(ncid, 'A_tot', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(A_tot,sp), &
-                            start=nc1cor), thisroutine )
+      if ((forcing_flag == 1).or.(forcing_flag == 3)) then
 
-   call check( nf90_inq_varid(ncid, 'A_grounded', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(A_grounded,sp), &
-                            start=nc1cor), thisroutine )
+         call check( nf90_inq_varid(ncid(n), 'delta_ts', ncv), thisroutine )
+         call check( nf90_put_var(ncid(n), ncv, real(delta_ts,sp), &
+                                  start=nc1cor), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'A_floating', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(A_floating,sp), &
-                            start=nc1cor), thisroutine )
+      else if (forcing_flag == 2) then
 
-   call check( nf90_inq_varid(ncid, 'V_af', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(V_af,sp), &
-                            start=nc1cor), thisroutine )
+         call check( nf90_inq_varid(ncid(n), 'glac_index', ncv), thisroutine )
+         call check( nf90_put_var(ncid(n), ncv, real(glac_index,sp), &
+                                  start=nc1cor), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'V_sle', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(V_sle,sp), &
-                            start=nc1cor), thisroutine )
+      end if
 
-   call check( nf90_inq_varid(ncid, 'V_temp', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(V_temp,sp), &
-                            start=nc1cor), thisroutine )
+      call check( nf90_inq_varid(ncid(n), 'z_sl', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(z_sl,sp), &
+                               start=nc1cor), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'A_temp', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(A_temp,sp), &
-                            start=nc1cor), thisroutine )
+      call check( nf90_inq_varid(ncid(n), 'V_tot', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(V_tot,sp), &
+                               start=nc1cor), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'Q_s', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(Q_s_flx,sp), &
-                            start=nc1cor), thisroutine )
+      call check( nf90_inq_varid(ncid(n), 'V_grounded', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(V_grounded,sp), &
+                               start=nc1cor), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'precip_tot', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(precip_tot_flx,sp), &
-                            start=nc1cor), thisroutine )
+      call check( nf90_inq_varid(ncid(n), 'V_floating', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(V_floating,sp), &
+                               start=nc1cor), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'runoff_tot', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(runoff_tot_flx,sp), &
-                            start=nc1cor), thisroutine )
+      call check( nf90_inq_varid(ncid(n), 'A_tot', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(A_tot,sp), &
+                               start=nc1cor), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'bmb_tot', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(bmb_tot_flx,sp), &
-                            start=nc1cor), thisroutine )
+      call check( nf90_inq_varid(ncid(n), 'A_grounded', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(A_grounded,sp), &
+                               start=nc1cor), thisroutine )
+
+      call check( nf90_inq_varid(ncid(n), 'A_floating', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(A_floating,sp), &
+                               start=nc1cor), thisroutine )
+
+      call check( nf90_inq_varid(ncid(n), 'V_af', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(V_af,sp), &
+                               start=nc1cor), thisroutine )
+
+      call check( nf90_inq_varid(ncid(n), 'V_sle', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(V_sle,sp), &
+                               start=nc1cor), thisroutine )
+
+      call check( nf90_inq_varid(ncid(n), 'V_temp', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(V_temp,sp), &
+                               start=nc1cor), thisroutine )
+
+      call check( nf90_inq_varid(ncid(n), 'A_temp', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(A_temp,sp), &
+                               start=nc1cor), thisroutine )
+
+      call check( nf90_inq_varid(ncid(n), 'Q_s', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(Q_s_flx,sp), &
+                               start=nc1cor), thisroutine )
+
+      call check( nf90_inq_varid(ncid(n), 'precip_tot', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(precip_tot_flx,sp), &
+                               start=nc1cor), thisroutine )
+
+      call check( nf90_inq_varid(ncid(n), 'runoff_tot', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(runoff_tot_flx,sp), &
+                               start=nc1cor), thisroutine )
+
+      call check( nf90_inq_varid(ncid(n), 'bmb_tot', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(bmb_tot_flx,sp), &
+                               start=nc1cor), thisroutine )
 
 #if (MARGIN==3)
 
-   call check( nf90_inq_varid(ncid, 'bmb_gr_tot', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(bmb_gr_tot_flx,sp), &
-                            start=nc1cor), thisroutine )
+      call check( nf90_inq_varid(ncid(n), 'bmb_gr_tot', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(bmb_gr_tot_flx,sp), &
+                               start=nc1cor), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'bmb_fl_tot', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(bmb_fl_tot_flx,sp), &
-                            start=nc1cor), thisroutine )
+      call check( nf90_inq_varid(ncid(n), 'bmb_fl_tot', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(bmb_fl_tot_flx,sp), &
+                               start=nc1cor), thisroutine )
 #endif
 
-   call check( nf90_inq_varid(ncid, 'Q_b', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(Q_b_flx,sp), &
-                            start=nc1cor), thisroutine )
+      call check( nf90_inq_varid(ncid(n), 'Q_b', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(Q_b_flx,sp), &
+                               start=nc1cor), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'Q_temp', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(Q_temp_flx,sp), &
-                            start=nc1cor), thisroutine )
+      call check( nf90_inq_varid(ncid(n), 'Q_temp', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(Q_temp_flx,sp), &
+                               start=nc1cor), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'calv_tot', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(calv_tot_flx,sp), &
-                            start=nc1cor), thisroutine )
+      call check( nf90_inq_varid(ncid(n), 'calv_tot', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(calv_tot_flx,sp), &
+                               start=nc1cor), thisroutine )
 
 #if (DISC>0)
-   call check( nf90_inq_varid(ncid, 'disc_lsc', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(disc_lsc_flx,sp), &
-                            start=nc1cor), thisroutine )
+      call check( nf90_inq_varid(ncid(n), 'disc_lsc', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(disc_lsc_flx,sp), &
+                               start=nc1cor), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'disc_ssc', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(disc_ssc_flx,sp), &
-                            start=nc1cor), thisroutine )
+      call check( nf90_inq_varid(ncid(n), 'disc_ssc', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(disc_ssc_flx,sp), &
+                               start=nc1cor), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'dT_glann', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(dT_glann,sp), &
-                            start=nc1cor), thisroutine )
+      call check( nf90_inq_varid(ncid(n), 'dT_glann', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(dT_glann,sp), &
+                               start=nc1cor), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'dT_sub', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(dT_sub,sp), &
-                            start=nc1cor), thisroutine )
+      call check( nf90_inq_varid(ncid(n), 'dT_sub', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(dT_sub,sp), &
+                               start=nc1cor), thisroutine )
 #endif
 
-   call check( nf90_inq_varid(ncid, 'dV_dt', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(dV_dt_flx,sp), &
-                            start=nc1cor), thisroutine )
+      call check( nf90_inq_varid(ncid(n), 'dV_dt', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(dV_dt_flx,sp), &
+                               start=nc1cor), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'mb_resid', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(mb_resid_flx,sp), &
-                            start=nc1cor), thisroutine )
+      if (n==0) then
 
-   call check( nf90_inq_varid(ncid, 'mb_mis', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(mb_mis_flx,sp), &
-                            start=nc1cor), thisroutine )
+         call check( nf90_inq_varid(ncid(n), 'mb_resid', ncv), thisroutine )
+         call check( nf90_put_var(ncid(n), ncv, real(mb_resid_flx,sp), &
+                                  start=nc1cor), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'mbp', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(mbp_flx,sp), &
-                            start=nc1cor), thisroutine )
+         call check( nf90_inq_varid(ncid(n), 'mb_mis', ncv), thisroutine )
+         call check( nf90_put_var(ncid(n), ncv, real(mb_mis_flx,sp), &
+                                  start=nc1cor), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'H_max', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(H_max,sp), &
-                            start=nc1cor), thisroutine )
+      end if
 
-   call check( nf90_inq_varid(ncid, 'H_t_max', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(H_t_max,sp), &
-                            start=nc1cor), thisroutine )
+      call check( nf90_inq_varid(ncid(n), 'mbp', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(mbp_flx,sp), &
+                               start=nc1cor), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'zs_max', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(zs_max,sp), &
-                            start=nc1cor), thisroutine )
+      call check( nf90_inq_varid(ncid(n), 'H_max', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(H_max,sp), &
+                               start=nc1cor), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'vs_max', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(vs_max,sp), &
-                            start=nc1cor), thisroutine )
+      call check( nf90_inq_varid(ncid(n), 'H_t_max', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(H_t_max,sp), &
+                               start=nc1cor), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'Tbh_max', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(Tbh_max,sp), &
-                            start=nc1cor), thisroutine )
+      call check( nf90_inq_varid(ncid(n), 'zs_max', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(zs_max,sp), &
+                               start=nc1cor), thisroutine )
+
+      call check( nf90_inq_varid(ncid(n), 'vs_max', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(vs_max,sp), &
+                               start=nc1cor), thisroutine )
+
+      call check( nf90_inq_varid(ncid(n), 'Tbh_max', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(Tbh_max,sp), &
+                               start=nc1cor), thisroutine )
 
 !  ------ Syncing NetCDF file (every 100th time)
 
-   n_sync = 100
+      n_sync = 100
 
-   if ( mod((counter-1), n_sync) == 0 ) &
-      call check( nf90_sync(ncid),  thisroutine )
+      if ( mod((counter-1), n_sync) == 0 ) &
+         call check( nf90_sync(ncid(n)),  thisroutine )
 
-end if   ! (.not.flag_compute_flux_vars_only)
+   end if   ! (.not.flag_compute_flux_vars_only)
 
 #endif   /* (NETCDF>1) */
+
+!-------- End loop over regions --------
+
+end do   ! n=0, maxval(mask_region)
 
 if (firstcall_output2) firstcall_output2 = .false.
 

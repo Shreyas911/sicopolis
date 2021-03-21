@@ -3008,17 +3008,17 @@ if (mask_region(0,0) == -1) then   ! set default values for mask_region
            .and. &
            (lambda(j,i) < 307.5_dp*deg2rad) ) then
 
-         mask_region(j,i) = 3   ! AP
+         mask_region(j,i) = 3   ! AP (Antarctic Peninsula)
 
       else if ( (lambda(j,i) > 195.0_dp*deg2rad) &
                 .and. &
                 (lambda(j,i) < 315.0_dp*deg2rad) ) then
 
-         mask_region(j,i) = 2   ! WAIS
+         mask_region(j,i) = 2   ! WAIS (West-Antarctic ice sheet)
 
       else
 
-         mask_region(j,i) = 1   ! EAIS
+         mask_region(j,i) = 1   ! EAIS (East-Antarctic ice sheet)
 
       end if
 
@@ -3207,17 +3207,17 @@ if (mask_region(0,0) == -1) then   ! set default values for mask_region
            .and. &
            (lambda(j,i) < 307.5_dp*deg2rad) ) then
 
-         mask_region(j,i) = 3   ! AP
+         mask_region(j,i) = 3   ! AP (Antarctic Peninsula)
 
       else if ( (lambda(j,i) > 195.0_dp*deg2rad) &
                 .and. &
                 (lambda(j,i) < 315.0_dp*deg2rad) ) then
 
-         mask_region(j,i) = 2   ! WAIS
+         mask_region(j,i) = 2   ! WAIS (West-Antarctic ice sheet)
 
       else
 
-         mask_region(j,i) = 1   ! EAIS
+         mask_region(j,i) = 1   ! EAIS (East-Antarctic ice sheet)
 
       end if
 
@@ -3357,17 +3357,17 @@ if (mask_region(0,0) == -1) then   ! set default values for mask_region
            .and. &
            (lambda(j,i) < 307.5_dp*deg2rad) ) then
 
-         mask_region(j,i) = 3   ! AP
+         mask_region(j,i) = 3   ! AP (Antarctic Peninsula)
 
       else if ( (lambda(j,i) > 195.0_dp*deg2rad) &
                 .and. &
                 (lambda(j,i) < 315.0_dp*deg2rad) ) then
 
-         mask_region(j,i) = 2   ! WAIS
+         mask_region(j,i) = 2   ! WAIS (West-Antarctic ice sheet)
 
       else
 
-         mask_region(j,i) = 1   ! EAIS
+         mask_region(j,i) = 1   ! EAIS (East-Antarctic ice sheet)
 
       end if
 
