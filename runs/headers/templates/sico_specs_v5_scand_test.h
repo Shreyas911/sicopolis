@@ -11,7 +11,7 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define SICO_REVISION 'develop_35_rv5.1-34-g146bbf7'
+#define SICO_REVISION 'develop_62_rv5.1-61-g87a4e1b'
 !                      Revision identifier of SICOPOLIS
 !                      for which this run-specs header was last changed
 
@@ -420,6 +420,10 @@
 #define MASK_PRESENT_FILE 'scand_e5_40_mask.dat'
 !                             Name of the file containing the present-day
 !                             ice-land-ocean mask
+
+#define MASK_REGION_FILE 'none'
+!                             Name of the file containing the region mask
+!                             ('none' if no file is to be defined)
 
 #define TEMP_INIT 2
 !                         Initial ice temperature conditions

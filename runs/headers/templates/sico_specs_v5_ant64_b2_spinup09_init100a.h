@@ -11,7 +11,7 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define SICO_REVISION 'develop_57_rv5.1-56-gb589b2a'
+#define SICO_REVISION 'develop_62_rv5.1-61-g87a4e1b'
 !                      Revision identifier of SICOPOLIS
 !                      for which this run-specs header was last changed
 
@@ -431,7 +431,6 @@
 
 #define MASK_REGION_FILE 'none'
 !                             Name of the file containing the region mask
-!                             (EAIS vs. WAIS vs. AP)
 !                             ('none' if no file is to be defined)
 
 #define TEMP_INIT 4

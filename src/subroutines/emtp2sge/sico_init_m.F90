@@ -1584,6 +1584,8 @@ end subroutine topography1
 !<------------------------------------------------------------------------------
 subroutine topography2(dxi, deta)
 
+  use read_m, only : read_2d_input
+
 #if (GRID==0 || GRID==1)
   use stereo_proj_m
 #endif
@@ -1597,6 +1599,10 @@ real(dp), intent(out) :: dxi, deta
 
 integer(i4b) :: i, j
 real(dp)     :: xi0, eta0
+
+character(len=256) :: filename_with_path
+
+real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 
 !-------- Set topography --------
 
@@ -1737,7 +1743,7 @@ end subroutine topography2
 !<------------------------------------------------------------------------------
 subroutine topography3(dxi, deta, z_sl, anfdatname)
 
-  use read_m, only : read_erg_nc
+  use read_m, only : read_erg_nc, read_2d_input
 
 #if (GRID==0 || GRID==1)
   use stereo_proj_m
@@ -1753,6 +1759,10 @@ character(len=100), intent(in) :: anfdatname
 real(dp),          intent(out) :: dxi, deta, z_sl
 
 integer(i4b) :: i, j
+
+character(len=256) :: filename_with_path
+
+real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 
 !-------- Read data from time-slice file of previous simulation --------
 

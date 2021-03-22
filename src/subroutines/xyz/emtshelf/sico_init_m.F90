@@ -1613,6 +1613,8 @@ end subroutine topography1
 !<------------------------------------------------------------------------------
 subroutine topography2(dxi, deta)
 
+  use read_m, only : read_2d_input
+
 #if (GRID==0 || GRID==1)
   use stereo_proj_m
 #endif
@@ -1630,6 +1632,10 @@ real(dp)     :: xi0, eta0
 integer(i1b), dimension(0:JMAX,0:IMAX) :: maske_aux
 real(dp)    , dimension(0:JMAX,0:IMAX) :: zl0_aux
 real(dp)                               :: half_width, zl0_diff
+
+character(len=256) :: filename_with_path
+
+real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 
 real(dp), parameter :: zl0_ocean = -2000.0_dp
 real(dp), parameter :: epss      =     0.01_dp
@@ -1923,7 +1929,7 @@ end subroutine topography2
 !<------------------------------------------------------------------------------
 subroutine topography3(dxi, deta, z_sl, anfdatname)
 
-  use read_m, only : read_erg_nc
+  use read_m, only : read_erg_nc, read_2d_input
 
 #if (GRID==0 || GRID==1)
   use stereo_proj_m
@@ -1942,6 +1948,10 @@ integer(i4b) :: i, j, n
 
 real(dp), dimension(0:JMAX,0:IMAX) :: zl0_aux
 real(dp)                           :: half_width, zl0_diff
+
+character(len=256) :: filename_with_path
+
+real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 
 real(dp), parameter :: zl0_ocean = -2000.0_dp
 real(dp), parameter :: epss      =     0.01_dp
