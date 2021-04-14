@@ -1161,24 +1161,32 @@ p_weert_aux = P_WEERT
 q_weert_aux = Q_WEERT
 
 write(10, fmt=trim(fmt3)) 'c_slide =', c_slide_aux(1)
+#if (N_SLIDE_REGIONS>1)
 do n=2, n_slide_regions
    write(10, fmt=trim(fmt3)) '         ', c_slide_aux(n)
 end do
+#endif
 
 write(10, fmt=trim(fmt3)) 'gamma_slide =', gamma_slide_aux(1)
+#if (N_SLIDE_REGIONS>1)
 do n=2, n_slide_regions
    write(10, fmt=trim(fmt3)) '             ', gamma_slide_aux(n)
 end do
+#endif
 
 write(10, fmt=trim(fmt2)) 'p_weert = ', p_weert_aux(1)
+#if (N_SLIDE_REGIONS>1)
 do n=2, n_slide_regions
    write(10, fmt=trim(fmt2)) '          ', p_weert_aux(n)
 end do
+#endif
 
 write(10, fmt=trim(fmt2)) 'q_weert = ', q_weert_aux(1)
+#if (N_SLIDE_REGIONS>1)
 do n=2, n_slide_regions
    write(10, fmt=trim(fmt2)) '          ', q_weert_aux(n)
 end do
+#endif
 
 #if (defined(TIME_RAMP_UP_SLIDE))
 write(10, fmt=trim(fmt3)) 'time_ramp_up_slide =', TIME_RAMP_UP_SLIDE
