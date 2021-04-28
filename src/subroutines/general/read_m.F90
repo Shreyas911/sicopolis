@@ -1355,6 +1355,11 @@ call error(errormsg)
   use sico_variables_m
   use sico_vars_m
 
+#if (NETCDF==2)   /* NetCDF libraries included */
+  use netcdf
+  use nc_check_m
+#endif
+
   implicit none
 
   integer(i4b), parameter :: n_unit=31
@@ -1362,86 +1367,478 @@ call error(errormsg)
   integer(i4b) :: n
   integer(i4b) :: n_phys_para, n_cnt_phys_para
   character(len=256) :: filename_with_path
+  character(len=256) :: filename_aux
+  character(len=  3) :: ch_nc_test
+  logical            :: flag_nc
+
+#if (NETCDF==2) /* NetCDF libraries included */
+  integer(i4b) :: ncid, ncv
+  !     ncid:      ID of the output file
+  !     ncv:       Variable ID
+#endif
+
+!-------- Determining file type --------
+
+  filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                       trim(PHYS_PARA_FILE)
+
+  filename_aux = adjustr(filename_with_path)
+  n            = len(filename_aux)
+  ch_nc_test   = filename_aux(n-2:n)
+  filename_aux = adjustl(filename_aux)
+
+  if (ch_nc_test == '.nc') then
+     flag_nc = .true.   ! NetCDF file
+  else
+     flag_nc = .false.  ! ASCII file
+  end if
 
 !-------- Reading of parameters from file --------
 
   n_cnt_phys_para = 0
 
-  filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
-                       trim(PHYS_PARA_FILE)
+!  ------ Opening file
+
+  if (flag_nc) then   ! NetCDF file
+
+#if (NETCDF==2) /* NetCDF libraries included */
+
+     ios = nf90_open(trim(filename_aux), NF90_NOWRITE, ncid)
+
+     if (ios /= nf90_noerr) then
+        errormsg = ' >>> read_phys_para: ' &
+                         // 'Error when opening the phys_para NetCDF file!'
+        call error(errormsg)
+     end if
+
+#else
+
+     errormsg = ' >>> read_phys_para: NETCDF=2 required for ' &
+                      // 'reading netCDF files!'
+     call error(errormsg)
+
+#endif
+
+  else   ! ASCII file
 
 #if !defined(ALLOW_OPENAD) /* Normal */
-  open(n_unit, iostat=ios, file=trim(filename_with_path), status='old')
+     open(n_unit, iostat=ios, file=trim(filename_aux), status='old')
 #else /* OpenAD */
-  open(n_unit, iostat=ios, file=trim(filename_with_path))
+     open(n_unit, iostat=ios, file=trim(filename_aux))
 #endif /* Normal vs. OpenAD */
 
-  if (ios /= 0) then
-     errormsg = ' >>> read_phys_para: Error when opening the phys_para file!'
-     call error(errormsg)
+     if (ios /= 0) then
+        errormsg = ' >>> read_phys_para: Error when opening the phys_para file!'
+        call error(errormsg)
+     end if
+
+  end if
+
+!  ------ Reading parameters
+
+#if (!defined(NMARS) && !defined(SMARS))   /* not Martian polar caps */
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'RHO', ncv) )
+     call check( nf90_get_var(ncid, ncv, RHO) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(RHO, n_unit, n_cnt_phys_para)
+  end if
+
+#else   /* Martian polar caps */
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'RHO_I', ncv) )
+     call check( nf90_get_var(ncid, ncv, RHO_I) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(RHO_I, n_unit, n_cnt_phys_para)
+  end if
+
+#endif
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'RHO_W', ncv) )
+     call check( nf90_get_var(ncid, ncv, RHO_W) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(RHO_W, n_unit, n_cnt_phys_para)
+  end if
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'RHO_SW', ncv) )
+     call check( nf90_get_var(ncid, ncv, RHO_SW) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(RHO_SW, n_unit, n_cnt_phys_para)
+  end if
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'L', ncv) )
+     call check( nf90_get_var(ncid, ncv, L) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(L, n_unit, n_cnt_phys_para)
+  end if
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'G', ncv) )
+     call check( nf90_get_var(ncid, ncv, G) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(G, n_unit, n_cnt_phys_para)
+  end if
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'NUE', ncv) )
+     call check( nf90_get_var(ncid, ncv, NUE) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(NUE, n_unit, n_cnt_phys_para)
+  end if
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'BETA', ncv) )
+     call check( nf90_get_var(ncid, ncv, BETA) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(BETA, n_unit, n_cnt_phys_para)
   end if
 
 #if (!defined(NMARS) && !defined(SMARS))   /* not Martian polar caps */
-  call read_phys_para_value(RHO, n_unit, n_cnt_phys_para)
-#else   /* Martian polar caps */
-  call read_phys_para_value(RHO_I, n_unit, n_cnt_phys_para)
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'DELTA_TM_SW', ncv) )
+     call check( nf90_get_var(ncid, ncv, DELTA_TM_SW) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
 #endif
-  call read_phys_para_value(RHO_W, n_unit, n_cnt_phys_para)
-  call read_phys_para_value(RHO_SW, n_unit, n_cnt_phys_para)
-  call read_phys_para_value(L, n_unit, n_cnt_phys_para)
-  call read_phys_para_value(G, n_unit, n_cnt_phys_para)
-  call read_phys_para_value(NUE, n_unit, n_cnt_phys_para)
-  call read_phys_para_value(BETA, n_unit, n_cnt_phys_para)
-#if (!defined(NMARS) && !defined(SMARS))   /* not Martian polar caps */
-  call read_phys_para_value(DELTA_TM_SW, n_unit, n_cnt_phys_para)
+  else
+     call read_phys_para_value(DELTA_TM_SW, n_unit, n_cnt_phys_para)
+  end if
+
 #endif
-  call read_phys_para_value(OMEGA_MAX, n_unit, n_cnt_phys_para)
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'OMEGA_MAX', ncv) )
+     call check( nf90_get_var(ncid, ncv, OMEGA_MAX) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(OMEGA_MAX, n_unit, n_cnt_phys_para)
+  end if
+
 #if (defined(NMARS) || defined(SMARS))   /* Martian polar caps */
-  call read_phys_para_value(RHO_C, n_unit, n_cnt_phys_para)
-  call read_phys_para_value(KAPPA_C, n_unit, n_cnt_phys_para)
-  call read_phys_para_value(C_C, n_unit, n_cnt_phys_para)
-#endif
-  call read_phys_para_value(H_R, n_unit, n_cnt_phys_para)
-  call read_phys_para_value(RHO_C_R, n_unit, n_cnt_phys_para)
-  call read_phys_para_value(KAPPA_R, n_unit, n_cnt_phys_para)
-  call read_phys_para_value(RHO_A, n_unit, n_cnt_phys_para)
-  call read_phys_para_value(R_T, n_unit, n_cnt_phys_para)
 
-  call read_phys_para_value(R, n_unit, n_cnt_phys_para)
-  call read_phys_para_value(A, n_unit, n_cnt_phys_para)
-  call read_phys_para_value(F_INV, n_unit, n_cnt_phys_para)
-  call read_phys_para_value(PHI0, n_unit, n_cnt_phys_para)
-  call read_phys_para_value(LAMBDA0, n_unit, n_cnt_phys_para)
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'RHO_C', ncv) )
+     call check( nf90_get_var(ncid, ncv, RHO_C) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(RHO_C, n_unit, n_cnt_phys_para)
+  end if
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'KAPPA_C', ncv) )
+     call check( nf90_get_var(ncid, ncv, KAPPA_C) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(KAPPA_C, n_unit, n_cnt_phys_para)
+  end if
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'C_C', ncv) )
+     call check( nf90_get_var(ncid, ncv, C_C) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(C_C, n_unit, n_cnt_phys_para)
+  end if
+
+#endif
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'H_R', ncv) )
+     call check( nf90_get_var(ncid, ncv, H_R) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(H_R, n_unit, n_cnt_phys_para)
+  end if
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'RHO_C_R', ncv) )
+     call check( nf90_get_var(ncid, ncv, RHO_C_R) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(RHO_C_R, n_unit, n_cnt_phys_para)
+  end if
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'KAPPA_R', ncv) )
+     call check( nf90_get_var(ncid, ncv, KAPPA_R) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(KAPPA_R, n_unit, n_cnt_phys_para)
+  end if
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'RHO_A', ncv) )
+     call check( nf90_get_var(ncid, ncv, RHO_A) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(RHO_A, n_unit, n_cnt_phys_para)
+  end if
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'R_T', ncv) )
+     call check( nf90_get_var(ncid, ncv, R_T) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(R_T, n_unit, n_cnt_phys_para)
+  end if
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'R', ncv) )
+     call check( nf90_get_var(ncid, ncv, R) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(R, n_unit, n_cnt_phys_para)
+  end if
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'A', ncv) )
+     call check( nf90_get_var(ncid, ncv, A) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(A, n_unit, n_cnt_phys_para)
+  end if
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'F_INV', ncv) )
+     call check( nf90_get_var(ncid, ncv, F_INV) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(F_INV, n_unit, n_cnt_phys_para)
+  end if
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'LATD0', ncv) )
+     call check( nf90_get_var(ncid, ncv, PHI0) )
+     PHI0 = PHI0 *deg2rad   ! deg -> rad
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(PHI0, n_unit, n_cnt_phys_para)
+          ! PHI0 is already in rad, no conversion required
+  end if
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'LOND0', ncv) )
+     call check( nf90_get_var(ncid, ncv, LAMBDA0) )
+     LAMBDA0 = LAMBDA0 *deg2rad   ! deg -> rad
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(LAMBDA0, n_unit, n_cnt_phys_para)
+          ! LAMBDA0 is already in rad, no conversion required
+  end if
 
 #if (!defined(NMARS) && !defined(SMARS))   /* not Martian polar caps */
-  call read_phys_para_value(S_STAT_0, n_unit, n_cnt_phys_para)
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'S_STAT_0', ncv) )
+     call check( nf90_get_var(ncid, ncv, S_STAT_0) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(S_STAT_0, n_unit, n_cnt_phys_para)
+  end if
+
 #if (!defined(GRL))   /* not Greenland */
-  call read_phys_para_value(BETA1_0, n_unit, n_cnt_phys_para)
-  call read_phys_para_value(BETA2_0, n_unit, n_cnt_phys_para)
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'BETA1_0', ncv) )
+     call check( nf90_get_var(ncid, ncv, BETA1_0) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(BETA1_0, n_unit, n_cnt_phys_para)
+  end if
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'BETA2_0', ncv) )
+     call check( nf90_get_var(ncid, ncv, BETA2_0) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(BETA2_0, n_unit, n_cnt_phys_para)
+  end if
+
 #else   /* Greenland */
-  call read_phys_para_value(BETA1_LT_0, n_unit, n_cnt_phys_para)
-  call read_phys_para_value(BETA1_HT_0, n_unit, n_cnt_phys_para)
-  call read_phys_para_value(BETA2_LT_0, n_unit, n_cnt_phys_para)
-  call read_phys_para_value(BETA2_HT_0, n_unit, n_cnt_phys_para)
-  call read_phys_para_value(PHI_SEP_0, n_unit, n_cnt_phys_para)
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'BETA1_LT_0', ncv) )
+     call check( nf90_get_var(ncid, ncv, BETA1_LT_0) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
 #endif
-  call read_phys_para_value(PMAX_0, n_unit, n_cnt_phys_para)
-  call read_phys_para_value(MU_0, n_unit, n_cnt_phys_para)
+  else
+     call read_phys_para_value(BETA1_LT_0, n_unit, n_cnt_phys_para)
+  end if
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'BETA1_HT_0', ncv) )
+     call check( nf90_get_var(ncid, ncv, BETA1_HT_0) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(BETA1_HT_0, n_unit, n_cnt_phys_para)
+  end if
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'BETA2_LT_0', ncv) )
+     call check( nf90_get_var(ncid, ncv, BETA2_LT_0) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(BETA2_LT_0, n_unit, n_cnt_phys_para)
+  end if
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'BETA2_HT_0', ncv) )
+     call check( nf90_get_var(ncid, ncv, BETA2_HT_0) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(BETA2_HT_0, n_unit, n_cnt_phys_para)
+  end if
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'PHI_SEP_0', ncv) )
+     call check( nf90_get_var(ncid, ncv, PHI_SEP_0) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(PHI_SEP_0, n_unit, n_cnt_phys_para)
+  end if
+
 #endif
 
-  do n=10, -190, -1
-     call read_phys_para_value(RF(n), n_unit, n_cnt_phys_para)
-  end do
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'PMAX_0', ncv) )
+     call check( nf90_get_var(ncid, ncv, PMAX_0) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(PMAX_0, n_unit, n_cnt_phys_para)
+  end if
 
-  do n=10, -190, -1
-     call read_phys_para_value(KAPPA(n), n_unit, n_cnt_phys_para)
-  end do
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'MU_0', ncv) )
+     call check( nf90_get_var(ncid, ncv, MU_0) )
+     n_cnt_phys_para = n_cnt_phys_para + 1
+#endif
+  else
+     call read_phys_para_value(MU_0, n_unit, n_cnt_phys_para)
+  end if
 
-  do n=10, -190, -1
-     call read_phys_para_value(C(n), n_unit, n_cnt_phys_para)
-  end do
+#endif
 
-  close(n_unit, status='keep')
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'RF', ncv) )
+     call check( nf90_get_var(ncid, ncv, RF) )
+     n_cnt_phys_para = n_cnt_phys_para + 201
+#endif
+  else
+     do n=10, -190, -1
+        call read_phys_para_value(RF(n), n_unit, n_cnt_phys_para)
+     end do
+  end if
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'KAPPA', ncv) )
+     call check( nf90_get_var(ncid, ncv, KAPPA) )
+     n_cnt_phys_para = n_cnt_phys_para + 201
+#endif
+  else
+     do n=10, -190, -1
+        call read_phys_para_value(KAPPA(n), n_unit, n_cnt_phys_para)
+     end do
+  end if
+
+  if (flag_nc) then
+#if (NETCDF==2)
+     call check( nf90_inq_varid(ncid, 'C', ncv) )
+     call check( nf90_get_var(ncid, ncv, C) )
+     n_cnt_phys_para = n_cnt_phys_para + 201
+#endif
+  else
+     do n=10, -190, -1
+        call read_phys_para_value(C(n), n_unit, n_cnt_phys_para)
+     end do
+  end if
+
+!  ------ Closing file
+
+  if (flag_nc) then   ! NetCDF file
+#if (NETCDF==2)
+     call check( nf90_close(ncid) )
+#endif
+  else
+     close(n_unit, status='keep')
+  end if
 
 !-------- Checking the number of read parameters --------
 
@@ -1471,6 +1868,8 @@ call error(errormsg)
 #elif (defined(EMTSHELF)) /* under XYZ */
   n_phys_para = 14 + 5 + 5 + 3*201
 #elif (defined(MOCHO))    /* under XYZ */
+  n_phys_para = 14 + 5 + 5 + 3*201
+#elif (defined(NPI))   /* under XYZ */
   n_phys_para = 14 + 5 + 5 + 3*201
 #elif (defined(SHMARS))   /* under XYZ */
   n_phys_para = 14 + 5 + 5 + 3*201
