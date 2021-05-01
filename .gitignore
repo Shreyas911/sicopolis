@@ -37,6 +37,9 @@ my_*
 /sico_in/smars/*
 !/sico_in/smars/phys_para*
 
+/sico_in/xyz/[Nn]pi*.*
+/sico_in/xyz/NPI*.*
+
 /sico_out/*
 !/sico_out/.keep
 
