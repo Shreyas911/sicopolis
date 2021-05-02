@@ -318,19 +318,19 @@ if (approx_equal(DX, 0.45_dp, eps_sp_dp)) then
       call error(errormsg)
    end if
 
-! else if (approx_equal(DX, 0.1_dp, eps_sp_dp)) then
-! 
-!    if ((IMAX /= 114).or.(JMAX /= 98)) then
-!       errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
-!       call error(errormsg)
-!    end if
-! 
-!    if ( (.not.(approx_equal(X0,  748.225d0, eps_sp_dp))) &
-!         .or. &
-!         (.not.(approx_equal(Y0, 5570.327d0, eps_sp_dp))) ) then
-!       errormsg = ' >>> sico_init: X0 and/or Y0 wrong!'
-!       call error(errormsg)
-!    end if
+else if (approx_equal(DX, 0.9_dp, eps_sp_dp)) then
+
+   if ((IMAX /=  91).or.(JMAX /= 157)) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+   if ( (.not.(approx_equal(X0,   66.082d0, eps_sp_dp))) &
+        .or. &
+        (.not.(approx_equal(Y0, 4288.950d0, eps_sp_dp))) ) then
+      errormsg = ' >>> sico_init: X0 and/or Y0 wrong!'
+      call error(errormsg)
+   end if
 
 else
 
