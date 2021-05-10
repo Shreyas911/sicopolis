@@ -8,7 +8,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2020 Ralf Greve
+!! Copyright 2009-2021 Ralf Greve
 !!
 !! @section License
 !!
@@ -63,6 +63,12 @@ save
    integer(i4b), dimension(0:JMAX,0:IMAX) :: kc_cts
 !> (.)_neu: New value of quantity (.) computed during an integration step
    integer(i4b), dimension(0:JMAX,0:IMAX) :: kc_cts_neu
+!> mask_region(j,i): Region mask.
+!>             0: undefined,
+!>             1: EAIS,
+!>             2: WAIS,
+!>             3: AP
+   integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_region
 !> flag_calc_temp: Flag for computation of the temperature, water content,
 !>                 age and flow enhancement factor during an integration step.
 !>                  .true.: temperature etc. computed
@@ -809,8 +815,8 @@ save
 !>                       1: allowed to glaciate.
    integer(i1b), dimension(0:JMAX,0:IMAX) :: maske_maxextent
 
-!> ncid_ser: ID of the NetCDF time-series output file
-   integer(i4b) :: ncid_ser
+!> ncid_ser: IDs of the NetCDF time-series output files
+   integer(i4b), dimension(0:99) :: ncid_ser
 !> ncid_core: ID of the NetCDF time-series output file for the deep ice cores
    integer(i4b) :: ncid_core
 

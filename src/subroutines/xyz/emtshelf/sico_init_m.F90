@@ -8,7 +8,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2020 Ralf Greve
+!! Copyright 2009-2021 Ralf Greve
 !!
 !! @section License
 !!
@@ -62,7 +62,7 @@ subroutine sico_init(delta_ts, glac_index, &
   use enth_temp_omega_m, only : calc_c_int_table, calc_c_int_inv_table, &
                                 enth_fct_temp_omega
 
-  use read_m, only : read_phys_para
+  use read_m, only : read_2d_input, read_phys_para
 
   use boundary_m
   use init_temp_water_age_m
@@ -102,6 +102,8 @@ character(len=256) :: filename_with_path
 character(len=256) :: shell_command
 character          :: ch_dummy
 logical            :: flag_init_output, flag_3d_output
+
+real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 
 integer(i4b) :: n_slide_regions
 #if (!defined(N_SLIDE_REGIONS) || N_SLIDE_REGIONS<=1)
@@ -622,6 +624,12 @@ write(10, fmt=trim(fmt3)) 'land_ocean_transition_width =', &
 #if (defined(OCEAN_DIRECTION))
 write(10, fmt=trim(fmt2a)) 'OCEAN_DIRECTION = ', OCEAN_DIRECTION
 #endif
+#if (defined(MASK_REGION_FILE))
+if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+   write(10, fmt=trim(fmt1)) 'mask_region file = '//MASK_REGION_FILE
+   write(10, fmt=trim(fmt1)) ' '
+end if
+#endif
 #if (ANF_DAT==1 && defined(TEMP_INIT))
 write(10, fmt=trim(fmt2)) 'TEMP_INIT =', TEMP_INIT
 #endif
@@ -747,24 +755,32 @@ p_weert_aux = P_WEERT
 q_weert_aux = Q_WEERT
 
 write(10, fmt=trim(fmt3)) 'c_slide =', c_slide_aux(1)
+#if (N_SLIDE_REGIONS>1)
 do n=2, n_slide_regions
    write(10, fmt=trim(fmt3)) '         ', c_slide_aux(n)
 end do
+#endif
 
 write(10, fmt=trim(fmt3)) 'gamma_slide =', gamma_slide_aux(1)
+#if (N_SLIDE_REGIONS>1)
 do n=2, n_slide_regions
    write(10, fmt=trim(fmt3)) '             ', gamma_slide_aux(n)
 end do
+#endif
 
 write(10, fmt=trim(fmt2a)) 'p_weert = ', p_weert_aux(1)
+#if (N_SLIDE_REGIONS>1)
 do n=2, n_slide_regions
    write(10, fmt=trim(fmt2a)) '          ', p_weert_aux(n)
 end do
+#endif
 
 write(10, fmt=trim(fmt2a)) 'q_weert = ', q_weert_aux(1)
+#if (N_SLIDE_REGIONS>1)
 do n=2, n_slide_regions
    write(10, fmt=trim(fmt2a)) '          ', q_weert_aux(n)
 end do
+#endif
 
 #if (defined(TIME_RAMP_UP_SLIDE))
 write(10, fmt=trim(fmt3)) 'time_ramp_up_slide =', TIME_RAMP_UP_SLIDE
@@ -1043,20 +1059,11 @@ n_slide_region = 1
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(SLIDE_REGIONS_FILE)
 
-open(24, iostat=ios, file=trim(filename_with_path), recl=rcl2, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='n_basin', n_var_type=2, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the sliding-regions file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(24, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(24, fmt=trim(fmt4)) (n_slide_region(j,i), i=0,IMAX)
-end do
-
-close(24, status='keep')
+n_slide_region = nint(field2d_aux)
 
 #endif
 
@@ -1169,22 +1176,12 @@ time_lag_asth = TIME_LAG*year2sec   ! a -> s
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(TIME_LAG_FILE)
 
-open(29, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='time_lag_asth', &
+                   n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the time-lag file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(29, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(29, fmt=*) (time_lag_asth(j,i), i=0,IMAX)
-end do
-
-close(29, status='keep')
-
-time_lag_asth = time_lag_asth*year2sec   ! a -> s
+time_lag_asth = field2d_aux *year2sec   ! a -> s
 
 #endif
 
@@ -1207,20 +1204,12 @@ flex_rig_lith = FLEX_RIG
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(FLEX_RIG_FILE)
 
-open(29, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='flex_rig_lith', &
+                   n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the flex-rig file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(29, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(29, fmt=*) (flex_rig_lith(j,i), i=0,IMAX)
-end do
-
-close(29, status='keep')
+flex_rig_lith = field2d_aux
 
 #endif
 
@@ -1616,7 +1605,6 @@ implicit none
 real(dp), intent(out) :: dxi, deta
 
 ! integer(i4b) :: i, j
-! integer(i4b) :: ios
 ! real(dp)     :: xi0, eta0
 
 dxi=0.0_dp; deta=0.0_dp   ! dummy values
@@ -1633,6 +1621,8 @@ end subroutine topography1
 !<------------------------------------------------------------------------------
 subroutine topography2(dxi, deta)
 
+  use read_m, only : read_2d_input
+
 #if (GRID==0 || GRID==1)
   use stereo_proj_m
 #endif
@@ -1645,12 +1635,15 @@ implicit none
 real(dp), intent(out) :: dxi, deta
 
 integer(i4b) :: i, j, n
-integer(i4b) :: ios
 real(dp)     :: xi0, eta0
 
 integer(i1b), dimension(0:JMAX,0:IMAX) :: maske_aux
 real(dp)    , dimension(0:JMAX,0:IMAX) :: zl0_aux
 real(dp)                               :: half_width, zl0_diff
+
+character(len=256) :: filename_with_path
+
+real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 
 real(dp), parameter :: zl0_ocean = -2000.0_dp
 real(dp), parameter :: epss      =     0.01_dp
@@ -1910,6 +1903,31 @@ do j=0, JMAX
 end do
 end do
 
+!-------- Region mask --------
+
+mask_region = -1
+
+#if (defined(MASK_REGION_FILE))
+
+if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+                                      ! read mask_region from file
+
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(MASK_REGION_FILE)
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='mask_region', &
+                      n_var_type=2, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
+
+   mask_region = nint(field2d_aux)
+
+end if
+
+#endif
+
+if (mask_region(0,0) == -1) mask_region = 0   ! regions undefined
+
 end subroutine topography2
 
 !-------------------------------------------------------------------------------
@@ -1919,7 +1937,7 @@ end subroutine topography2
 !<------------------------------------------------------------------------------
 subroutine topography3(dxi, deta, z_sl, anfdatname)
 
-  use read_m, only : read_erg_nc
+  use read_m, only : read_erg_nc, read_2d_input
 
 #if (GRID==0 || GRID==1)
   use stereo_proj_m
@@ -1938,6 +1956,10 @@ integer(i4b) :: i, j, n
 
 real(dp), dimension(0:JMAX,0:IMAX) :: zl0_aux
 real(dp)                           :: half_width, zl0_diff
+
+character(len=256) :: filename_with_path
+
+real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 
 real(dp), parameter :: zl0_ocean = -2000.0_dp
 real(dp), parameter :: epss      =     0.01_dp
@@ -2133,6 +2155,31 @@ do j=0, JMAX
    area(j,i) = sq_g11_g(j,i)*sq_g22_g(j,i)*dxi*deta
 end do
 end do
+
+!-------- Region mask --------
+
+mask_region = -1
+
+#if (defined(MASK_REGION_FILE))
+
+if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+                                      ! read mask_region from file
+
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(MASK_REGION_FILE)
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='mask_region', &
+                      n_var_type=2, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
+
+   mask_region = nint(field2d_aux)
+
+end if
+
+#endif
+
+if (mask_region(0,0) == -1) mask_region = 0   ! regions undefined
 
 end subroutine topography3
 

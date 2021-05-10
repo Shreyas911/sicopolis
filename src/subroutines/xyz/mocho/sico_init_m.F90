@@ -8,7 +8,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2020 Ralf Greve, Eduardo Flandez, Matthias Scheiter
+!! Copyright 2009-2021 Ralf Greve, Eduardo Flandez, Matthias Scheiter
 !!
 !! @section License
 !!
@@ -67,7 +67,7 @@ subroutine sico_init(delta_ts, glac_index, &
   use nc_check_m
 #endif
 
-  use read_m, only : read_phys_para, read_target_topo_nc
+  use read_m, only : read_target_topo_nc, read_2d_input, read_phys_para
 
   use boundary_m
   use init_temp_water_age_m
@@ -105,9 +105,10 @@ real(dp)           :: d_dummy
 character(len=100) :: anfdatname, target_topo_dat_name
 character(len=256) :: filename_with_path
 character(len=256) :: shell_command
-character(len=3)   :: ch_nc_test
 character          :: ch_dummy
 logical            :: flag_init_output, flag_3d_output
+
+real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 
 integer(i4b) :: n_slide_regions
 #if (!defined(N_SLIDE_REGIONS) || N_SLIDE_REGIONS<=1)
@@ -138,12 +139,6 @@ character(len=64), parameter :: fmt1  = '(a)', &
                                 fmt2  = '(a,i4)', &
                                 fmt2a = '(a,i0)', &
                                 fmt3  = '(a,es12.4)'
-
-character(len=  8) :: ch_imax
-character(len=128) :: fmt4
-
-write(ch_imax, fmt='(i8)') IMAX
-write(fmt4,    fmt='(a)')  '('//trim(adjustl(ch_imax))//'(i1),i1)'
 
 write(unit=6, fmt='(a)') ' '
 write(unit=6, fmt='(a)') ' -------- sico_init --------'
@@ -771,6 +766,12 @@ write(10, fmt=trim(fmt1)) 'zl0 file          = '//ZL0_FILE
 #if (defined(MASK_PRESENT_FILE))
 write(10, fmt=trim(fmt1)) 'mask_present file = '//MASK_PRESENT_FILE
 #endif
+#if (defined(MASK_REGION_FILE))
+if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+   write(10, fmt=trim(fmt1)) 'mask_region file = '//MASK_REGION_FILE
+   write(10, fmt=trim(fmt1)) ' '
+end if
+#endif
 #if (ANF_DAT==1 && defined(TEMP_INIT))
 write(10, fmt=trim(fmt2)) 'TEMP_INIT =', TEMP_INIT
 #endif
@@ -915,24 +916,32 @@ p_weert_aux = P_WEERT
 q_weert_aux = Q_WEERT
 
 write(10, fmt=trim(fmt3)) 'c_slide =', c_slide_aux(1)
+#if (N_SLIDE_REGIONS>1)
 do n=2, n_slide_regions
    write(10, fmt=trim(fmt3)) '         ', c_slide_aux(n)
 end do
+#endif
 
 write(10, fmt=trim(fmt3)) 'gamma_slide =', gamma_slide_aux(1)
+#if (N_SLIDE_REGIONS>1)
 do n=2, n_slide_regions
    write(10, fmt=trim(fmt3)) '             ', gamma_slide_aux(n)
 end do
+#endif
 
 write(10, fmt=trim(fmt2a)) 'p_weert = ', p_weert_aux(1)
+#if (N_SLIDE_REGIONS>1)
 do n=2, n_slide_regions
    write(10, fmt=trim(fmt2a)) '          ', p_weert_aux(n)
 end do
+#endif
 
 write(10, fmt=trim(fmt2a)) 'q_weert = ', q_weert_aux(1)
+#if (N_SLIDE_REGIONS>1)
 do n=2, n_slide_regions
    write(10, fmt=trim(fmt2a)) '          ', q_weert_aux(n)
 end do
+#endif
 
 #if (defined(TIME_RAMP_UP_SLIDE))
 write(10, fmt=trim(fmt3)) 'time_ramp_up_slide =', TIME_RAMP_UP_SLIDE
@@ -1197,20 +1206,11 @@ n_slide_region = 1
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(SLIDE_REGIONS_FILE)
 
-open(24, iostat=ios, file=trim(filename_with_path), recl=rcl2, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='n_basin', n_var_type=2, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the sliding-regions file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(24, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(24, fmt=trim(fmt4)) (n_slide_region(j,i), i=0,IMAX)
-end do
-
-close(24, status='keep')
+n_slide_region = nint(field2d_aux)
 
 #endif
 
@@ -1248,7 +1248,12 @@ call error(errormsg)
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(MASK_MAXEXTENT_FILE)
 
-open(24, iostat=ios, file=trim(filename_with_path), recl=rcl2, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='mask_maxextent', &
+                   n_var_type=3, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
+
+maske_maxextent = nint(field2d_aux)
 
 #elif (GRID==2)
 
@@ -1256,20 +1261,6 @@ errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
 call error(errormsg)
 
 #endif
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: ' &
-                 //'Error when opening the maximum ice extent mask file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(24, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(24, fmt=trim(fmt4)) (maske_maxextent(j,i), i=0,IMAX)
-end do
-
-close(24, status='keep')
 
 #endif
 
@@ -1318,71 +1309,12 @@ if (trim(adjustl(SMB_CORR_FILE)) /= 'none') then
    filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                         trim(SMB_CORR_FILE)
 
-   n          = len_trim(filename_with_path)
-   ch_nc_test = filename_with_path(n-2:n)
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='DSMB', n_var_type=1, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
 
-   if (ch_nc_test == '.nc') then   ! NetCDF file
-
-#if (NETCDF==1)
-
-      errormsg = ' >>> sico_init: Reading of NetCDF SMB_CORR_FILE' &
-               //         end_of_line &
-               //'        requires NETCDF==2!'
-      call error(errormsg)
-
-#elif (NETCDF==2)
-
-      ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
-
-      if (ios /= nf90_noerr) then
-         errormsg = ' >>> sico_init: Error when opening the file' &
-                  //                 end_of_line &
-                  //'                for the prescribed' &
-                  //                 end_of_line &
-                  //'                surface mass balance correction!'
-         call error(errormsg)
-      end if
-
-      call check( nf90_inq_varid(ncid, 'DSMB', ncv) )
-      call check( nf90_get_var(ncid, ncv, smb_corr_in_conv) )
-
-      call check( nf90_close(ncid) )
-
-      do i=0, IMAX
-      do j=0, JMAX
-         smb_corr_in(j,i) = smb_corr_in_conv(i,j) /year2sec
-                                     ! m/a ice equiv. -> m/s ice equiv.
-      end do
-      end do
-
-#else
-      errormsg = ' >>> sico_init: Parameter NETCDF must be either 1 or 2!'
-      call error(errormsg)
-#endif
-
-   else   ! ASCII file
-
-      open(21, iostat=ios, &
-               file=trim(filename_with_path), recl=rcl1, status='old')
-
-      if (ios /= 0) then
-         errormsg = ' >>> sico_init: ' &
-                       //'Error when opening the SMB correction file!'
-         call error(errormsg)
-      end if
-
-      do n=1, 6; read(21, fmt='(a)') ch_dummy; end do
-
-      do j=JMAX, 0, -1
-         read(21, fmt=*) (smb_corr_in(j,i), i=0,IMAX)
-      end do
-
-      close(21, status='keep')
-
-      smb_corr_in = smb_corr_in /year2sec
-                                ! m/a ice equiv. -> m/s ice equiv.
-
-   end if
+   smb_corr_in = field2d_aux /year2sec
+                             ! m/a ice equiv. -> m/s ice equiv.
 
 end if
 
@@ -1458,22 +1390,12 @@ time_lag_asth = TIME_LAG*year2sec   ! a -> s
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(TIME_LAG_FILE)
 
-open(29, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='time_lag_asth', &
+                   n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the time-lag file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(29, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(29, fmt=*) (time_lag_asth(j,i), i=0,IMAX)
-end do
-
-close(29, status='keep')
-
-time_lag_asth = time_lag_asth*year2sec   ! a -> s
+time_lag_asth = field2d_aux *year2sec   ! a -> s
 
 #endif
 
@@ -1496,20 +1418,12 @@ flex_rig_lith = FLEX_RIG
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(FLEX_RIG_FILE)
 
-open(29, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='flex_rig_lith', &
+                   n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the flex-rig file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(29, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(29, fmt=*) (flex_rig_lith(j,i), i=0,IMAX)
-end do
-
-close(29, status='keep')
+flex_rig_lith = field2d_aux
 
 #endif
 
@@ -1935,6 +1849,8 @@ end subroutine sico_init
 !<------------------------------------------------------------------------------
 subroutine topography1(dxi, deta)
 
+  use read_m, only : read_2d_input
+
 #if (GRID==0 || GRID==1)
   use stereo_proj_m
 #endif
@@ -1946,11 +1862,12 @@ implicit none
 
 real(dp), intent(out) :: dxi, deta
 
-integer(i4b)       :: i, j, m, n
-integer(i4b)       :: ios
-real(dp)           :: xi0, eta0
+integer(i4b) :: i, j, m, n
+real(dp)     :: xi0, eta0
+
 character(len=256) :: filename_with_path
-character          :: ch_dummy
+
+real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 
 !-------- Set topography --------
 
@@ -1982,24 +1899,11 @@ call error(errormsg)
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZS_PRESENT_FILE)
 
-open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='zs', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> topography1: Error when opening the zs file!'
-   call error(errormsg)
-end if
-
-m = len_trim(filename_with_path)
-
-if (filename_with_path(m-2:m) /= 'txt') then
-   do n=1, 6; read(21, fmt='(a)') ch_dummy; end do
-end if
-
-do j=JMAX, 0, -1
-   read(21, fmt=*) (zs(j,i), i=0,IMAX)
-end do
-
-close(21, status='keep')
+zs = field2d_aux
 
 #else
 
@@ -2013,24 +1917,11 @@ call error(errormsg)
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZL_PRESENT_FILE)
 
-open(22, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='zl', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> topography1: Error when opening the zl file!'
-   call error(errormsg)
-end if
-
-m = len_trim(filename_with_path)
-
-if (filename_with_path(m-2:m) /= 'txt') then
-   do n=1, 6; read(22, fmt='(a)') ch_dummy; end do
-end if
-
-do j=JMAX, 0, -1
-   read(22, fmt=*) (zl(j,i), i=0,IMAX)
-end do
-
-close(22, status='keep')
+zl = field2d_aux
 
 #else
 
@@ -2042,48 +1933,22 @@ call error(errormsg)
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZL0_FILE)
 
-open(23, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='zl0', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> topography1: Error when opening the zl0 file!'
-   call error(errormsg)
-end if
-
-m = len_trim(filename_with_path)
-
-if (filename_with_path(m-2:m) /= 'txt') then
-   do n=1, 6; read(23, fmt='(a)') ch_dummy; end do
-end if
-
-do j=JMAX, 0, -1
-   read(23, fmt=*) (zl0(j,i), i=0,IMAX)
-end do
-
-close(23, status='keep')
+zl0 = field2d_aux
 
 #if (defined(ZB_PRESENT_FILE))
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZB_PRESENT_FILE)
 
-open(25, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='zb', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> topography1: Error when opening the zb file!'
-   call error(errormsg)
-end if
-
-m = len_trim(filename_with_path)
-
-if (filename_with_path(m-2:m) /= 'txt') then
-   do n=1, 6; read(25, fmt='(a)') ch_dummy; end do
-end if
-
-do j=JMAX, 0, -1
-   read(25, fmt=*) (zb(j,i), i=0,IMAX)
-end do
-
-close(25, status='keep')
+zb = field2d_aux
 
 #else
 
@@ -2182,6 +2047,31 @@ do j=0, JMAX
 end do
 end do
 
+!-------- Region mask --------
+
+mask_region = -1
+
+#if (defined(MASK_REGION_FILE))
+
+if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+                                      ! read mask_region from file
+
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(MASK_REGION_FILE)
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='mask_region', &
+                      n_var_type=2, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
+
+   mask_region = nint(field2d_aux)
+
+end if
+
+#endif
+
+if (mask_region(0,0) == -1) mask_region = 0   ! regions undefined
+
 end subroutine topography1
 
 !-------------------------------------------------------------------------------
@@ -2190,6 +2080,8 @@ end subroutine topography1
 !! For ice-free initial topography with relaxed lithosphere.
 !<------------------------------------------------------------------------------
 subroutine topography2(dxi, deta)
+
+  use read_m, only : read_2d_input
 
 #if (GRID==0 || GRID==1)
   use stereo_proj_m
@@ -2202,11 +2094,12 @@ implicit none
 
 real(dp), intent(out) :: dxi, deta
 
-integer(i4b)       :: i, j, m, n
-integer(i4b)       :: ios
-real(dp)           :: xi0, eta0
+integer(i4b) :: i, j, m, n
+real(dp)     :: xi0, eta0
+
 character(len=256) :: filename_with_path
-character          :: ch_dummy
+
+real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 
 !-------- Set topography --------
 
@@ -2236,24 +2129,11 @@ call error(errormsg)
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZL0_FILE)
 
-open(23, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='zl0', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> topography2: Error when opening the zl0 file!'
-   call error(errormsg)
-end if
-
-m = len_trim(filename_with_path)
-
-if (filename_with_path(m-2:m) /= 'txt') then
-   do n=1, 6; read(23, fmt='(a)') ch_dummy; end do
-end if
-
-do j=JMAX, 0, -1
-   read(23, fmt=*) (zl0(j,i), i=0,IMAX)
-end do
-
-close(23, status='keep')
+zl0 = field2d_aux
 
 maske = 1_i1b
 
@@ -2332,6 +2212,31 @@ do j=0, JMAX
 end do
 end do
 
+!-------- Region mask --------
+
+mask_region = -1
+
+#if (defined(MASK_REGION_FILE))
+
+if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+                                      ! read mask_region from file
+
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(MASK_REGION_FILE)
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='mask_region', &
+                      n_var_type=2, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
+
+   mask_region = nint(field2d_aux)
+
+end if
+
+#endif
+
+if (mask_region(0,0) == -1) mask_region = 0   ! regions undefined
+
 end subroutine topography2
 
 !-------------------------------------------------------------------------------
@@ -2341,7 +2246,7 @@ end subroutine topography2
 !<------------------------------------------------------------------------------
 subroutine topography3(dxi, deta, z_sl, anfdatname)
 
-  use read_m, only : read_erg_nc
+  use read_m, only : read_erg_nc, read_2d_input
 
 #if (GRID==0 || GRID==1)
   use stereo_proj_m
@@ -2356,10 +2261,11 @@ character(len=100), intent(in) :: anfdatname
 
 real(dp),          intent(out) :: dxi, deta, z_sl
 
-integer(i4b)       :: i, j, m, n
-integer(i4b)       :: ios
+integer(i4b) :: i, j, m, n
+
 character(len=256) :: filename_with_path
-character          :: ch_dummy
+
+real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 
 !-------- Read data from time-slice file of previous simulation --------
 
@@ -2382,24 +2288,11 @@ call error(errormsg)
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZL0_FILE)
 
-open(23, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='zl0', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> topography3: Error when opening the zl0 file!'
-   call error(errormsg)
-end if
-
-m = len_trim(filename_with_path)
-
-if (filename_with_path(m-2:m) /= 'txt') then
-   do n=1, 6; read(23, fmt='(a)') ch_dummy; end do
-end if
-
-do j=JMAX, 0, -1
-   read(23, fmt=*) (zl0(j,i), i=0,IMAX)
-end do
-
-close(23, status='keep')
+zl0 = field2d_aux
 
 !-------- Geographic coordinates, metric tensor,
 !                                 gradients of the topography --------
@@ -2447,6 +2340,31 @@ do j=0, JMAX
    area(j,i) = sq_g11_g(j,i)*sq_g22_g(j,i)*dxi*deta
 end do
 end do
+
+!-------- Region mask --------
+
+mask_region = -1
+
+#if (defined(MASK_REGION_FILE))
+
+if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+                                      ! read mask_region from file
+
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(MASK_REGION_FILE)
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='mask_region', &
+                      n_var_type=2, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
+
+   mask_region = nint(field2d_aux)
+
+end if
+
+#endif
+
+if (mask_region(0,0) == -1) mask_region = 0   ! regions undefined
 
 end subroutine topography3
 
