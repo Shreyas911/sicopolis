@@ -1063,11 +1063,10 @@
 !                           (ocean temperature minus ice shelf basal
 !                           temperature)
 !                       5 : Sector-wise parameterization as a function of the
-!                           thermal forcing
-!                           (ocean temperature minus ice shelf basal
-!                           temperature); by Ben Galton-Fenzi
+!                           thermal forcing, by
+!                           Greve and Galton-Fenzi (doi: 10.5281/zenodo.4766982)
 !                       6 : Sector-wise parameterization as a function of the
-!                           thermal forcing; by ISMIP6
+!                           thermal forcing, by ISMIP6-Antarctica
 
 #define QBM_FLOAT_1 2.0d0
 !                       Basal melting rate for the continental shelf,
