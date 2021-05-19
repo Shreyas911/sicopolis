@@ -43,9 +43,19 @@ LARGE_DATA_FLAG="false"
 # module load ...
 ### A 'module load' command is needed on some systems.
 
+# module load netcdf/4.4.1_gnu5.4.0
+### needed for GEO-UiO Linux environment (as of Aug 2020)
+
 if [ "$NETCDF_FLAG" = "true" ] ; then
 
    export NETCDFHOME=/opt/netcdf
+
+   # export NETCDFHOME=/usr
+   #        ### often works if NetCDF was installed from a repository
+   #        ### rather than manually
+
+   # export NETCDFHOME=/opt/uio/modules/packages/netcdf/4.4.1_gnu5.4.0
+   #        ### setting for GEO-UiO Linux environment (as of Aug 2020)
 
    if [ -z "${LD_LIBRARY_PATH}" ]; then
       export LD_LIBRARY_PATH=${NETCDFHOME}/lib
