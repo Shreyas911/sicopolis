@@ -56,10 +56,11 @@
 #define DX 25.0d0
 !                       Horizontal grid spacing in km, for GRID==0
 !                       or GRID==1
-!                       ( 5 km requires IMAX=300 and JMAX=300,
-!                        10 km requires IMAX=150 and JMAX=150,
-!                        25 km requires IMAX= 60 and JMAX= 60,
-!                        75 km requires IMAX= 20 and JMAX= 20)
+!                       (  5 km requires IMAX=300 and JMAX=300,
+!                         10 km requires IMAX=150 and JMAX=150,
+!                         25 km requires IMAX= 60 and JMAX= 60,
+!                         75 km requires IMAX= 20 and JMAX= 20,
+!                        250 km requires IMAX=  6 and JMAX=  6)
 
 #define IMAX 60
 !                       IMAX+1: number of grid points in x-direction
