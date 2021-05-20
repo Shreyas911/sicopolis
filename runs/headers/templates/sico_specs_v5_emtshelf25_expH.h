@@ -128,6 +128,13 @@
 !                             SIA/SStA hybrid for ice streams,
 !                             SSA for floating ice (if existing)
 
+#define HYB_MODE 0
+!                         Combination of SIA and SSA velocities based on (only
+!                         for DYNAMICS==2):
+!                         0 : Slip ratio of grounded ice
+!                         1 : Sum of weighted non-sliding SIA and full SSA velocities.
+!                         2 : Pure shallow shelf / shelfy stream dynamics
+
 #define LIS_OPTS '-i bicgsafe -maxiter 1000 -tol 1.0e-03 -p jacobi -initx_zeros false'
 !                         Options string for the Lis solver for the SSA/SStA
 !                         (see the Lis User Guide, www.ssisc.org/lis)
