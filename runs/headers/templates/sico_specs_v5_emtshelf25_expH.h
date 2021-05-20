@@ -192,6 +192,11 @@
 !                         1 : Cubic function (smooth transitions)
 !                         2 : Quintic function (even smoother transitions)
 
+#define HYB_REF_SPEED     3.00d+01
+!                         Scaling reference speed for hybrid approach based on
+!                         Bueler and Brown (2009) (in m/y, only for DYNAMICS==2,
+!                         HYB_MOD==1).
+
 !-------- Ice sheet thermodynamics --------
 
 #define CALCMOD 3
