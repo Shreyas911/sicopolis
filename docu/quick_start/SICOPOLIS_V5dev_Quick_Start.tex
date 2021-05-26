@@ -583,45 +583,85 @@ NetCDF (Network Common Data Form) is a common format for scientific data
 
 For \textbf{GCC}, installation from a package manager is recommended. Under openSUSE Leap 15.2, install netcdf, netcdf-devel, netcdf-devel-static, netcdf-fortran, netcdf-fortran-devel, netcdf-fortran-static, ncview. This requires the repositories ``Software for Scientists and Engineers'' and ``sebschub's Home Project''. Details (especially the required repositories) will differ for other systems.
 
-For the \textbf{Intel compiler}, manual installation is required. The C and Fortran libraries are available for downloaded on the NetCDF website as zip or tar archives. Unzip them into temporary directories. 
+For the \textbf{Intel compiler}, manual installation is required. The C and Fortran libraries are available for download on the NetCDF website as zip or tar archives. Unzip them into temporary source directories. 
 
-Prior to version 4.2, a single archive contained both the C and Fortran libraries. A minimal installation for version 4.1.3 can be done as follows:
+\begin{itemize}
+
+\item Prior to version 4.2, a single archive contained both the C and Fortran libraries. A minimal installation for version 4.1.3 (without NetCDF-4 support) can be done by changing to the source directory, then:
 
 \begin{verbatim}
-./configure --prefix=/opt/netcdf --libdir=/opt/netcdf/lib \
-            --disable-netcdf-4 \
-            CC=icc FC=ifort F77=ifort \
-            CFLAGS="-mcmodel=medium" CPPFLAGS="-mcmodel=medium" \
-            FCFLAGS="-mcmodel=medium" FFLAGS="-mcmodel=medium"
-make install
+  export NCDIR=/opt/netcdf
+  export CC=icc
+  export FC=ifort
+  export CFLAGS="-O2"
+  export CPPFLAGS=
+  export FCFLAGS="-O2"
+  export FFLAGS=${FCFLAGS}
+  ./configure --prefix=${NCDIR} --libdir=${NCDIR}/lib \
+              --disable-netcdf-4
+  make install
 \end{verbatim}
 
-Installation under /opt usually requires admin rights. For a local installation, replace `/opt' (in both -{}-prefix and -{}-libdir) by `/home/$<$my\_user\_name$>$/local'.
+\item Since version 4.2, the C and Fortran libraries must be installed separately. If Net\-CDF-4 support is dispensable, the following installation should work (tested under openSUSE Leap 15.2 and icc/ifort 19.1 with versions netcdf-c-4.8.0 and netcdf-fortran-4.5.3 as of January 25, 2021).
 
-Since version 4.2, the C and Fortran libraries must be installed separately. See the NetCDF website for further instructions.
+Step 1: Change to the source directory of the C library, then:
+
+\begin{verbatim}
+  export NCDIR=/opt/netcdf
+  export CC=icc
+  export FC=ifort
+  export CFLAGS="-O2"
+  export CPPFLAGS=
+  export FCFLAGS="-O2"
+  export FFLAGS=${FCFLAGS}
+  ./configure --prefix=${NCDIR} --libdir=${NCDIR}/lib \
+              --disable-netcdf-4 --enable-logging
+  make install
+\end{verbatim}
+
+Step 2: Change to the source directory of the Fortran library, then:
+
+\begin{verbatim}
+  export NFDIR=/opt/netcdf
+  export LD_LIBRARY_PATH=${NCDIR}/lib:${LD_LIBRARY_PATH}
+  export CPPFLAGS=-I${NCDIR}/include
+  export LDFLAGS=-L${NCDIR}/lib
+  ./configure --prefix=${NFDIR} --libdir=${NFDIR}/lib \
+              --disable-netcdf-4 --enable-logging
+  make install
+\end{verbatim}
+
+\item For a complete build with NetCDF-4 support, additional libraries are required. See the NetCDF website for further instructions.
+
+\end{itemize}
+
+Installation under /opt usually requires admin rights. The same holds for the common alternative /usr/local. For a local installation, replace it by `/home/$<$my\_user\_name$>$/local'.
 
 \section{Installation of Lis}
 \label{sect_install_lis}
 
 Lis (Library of Iterative Solvers for linear systems) is a software library for solving discretized linear equations \citep{nishida_2010}.
 
-Download the latest version of Lis as a zip archive from https://www.ssisc.org/lis/ (as of January 23, 2021: lis-2.0.30.zip). Unzip the archive into a temporary directory. For \textbf{GCC}, install lis by executing:
+Download the latest version of Lis as a zip archive from https://www.ssisc.org/lis/ (as of January 23, 2021: lis-2.0.30.zip). Unzip the archive into a temporary directory.
+
+For \textbf{GCC}, install lis by executing:
 
 \begin{verbatim}
-./configure --prefix=/opt/lis --enable-fortran --enable-f90 \
-            --enable-omp --enable-saamg --enable-fma \
-            CC=gcc FC=gfortran F77=gfortran \
-            CFLAGS="-mcmodel=medium" CPPFLAGS="-mcmodel=medium" \
-            FCFLAGS="-mcmodel=medium" FFLAGS="-mcmodel=medium" \
-            --libdir=/opt/lis/lib
-make install
+  export LISDIR=/opt/lis
+  ./configure --prefix=${LISDIR} --libdir=${LISDIR}/lib \
+              --enable-fortran --enable-f90 \
+              --enable-omp --enable-saamg --enable-fma \
+              CC=gcc FC=gfortran F77=gfortran \
+              CFLAGS="-mcmodel=medium" CPPFLAGS="-mcmodel=medium" \
+              FCFLAGS="-mcmodel=medium" FFLAGS="-mcmodel=medium"
+  make install
 \end{verbatim}
 
 This has been tested under openSUSE Leap 15.2 and Linux Mint 20.1 (some modifications might be needed under different systems).
 
 For the \textbf{Intel compiler}, replace `gcc' and `gfortran' by `icc' and `ifort', respectively.
 
-Installation under /opt usually requires admin rights. For a local installation, replace `/opt' (in both -{}-prefix and -{}-libdir) by `/home/$<$my\_user\_name$>$/local'.
+Installation under /opt usually requires admin rights. The same holds for the common alternative /usr/local. For a local installation, replace it by `/home/$<$my\_user\_name$>$/local'.
 
 \section{Domain XYZ}
 \label{sect_xyz}
