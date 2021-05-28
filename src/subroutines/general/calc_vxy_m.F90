@@ -1190,12 +1190,14 @@ ratio_sl_threshold = 0.5_dp   ! default value
 
 do i=0, IMAX-1
 do j=0, JMAX
-#if ( (!defined(HYB_MODE)) || (HYB_MODE==0) )
-   if (ratio_sl_x(j,i) > ratio_sl_threshold) flag_shelfy_stream_x(j,i) = .true.
+#if (HYB_MODE==0)
+   if (ratio_sl_x(j,i) > ratio_sl_threshold) &
+      flag_shelfy_stream_x(j,i) = .true.
 #elif (HYB_MODE==1 || HYB_MODE==2)
-   if ( (maske(j,i)==0_i1b).or.(maske(j,i+1)==0_i1b) ) flag_shelfy_stream_x(j,i) = .true.
+   if ( (maske(j,i)==0_i1b).or.(maske(j,i+1)==0_i1b) ) &
+      flag_shelfy_stream_x(j,i) = .true.
 #else
-   errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0 or 1!'
+   errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0, 1 or 2!'
    call error(errormsg)
 #endif
 end do
@@ -1203,12 +1205,14 @@ end do
 
 do i=0, IMAX
 do j=0, JMAX-1
-#if ( (!defined(HYB_MODE)) || (HYB_MODE==0) )
-   if (ratio_sl_y(j,i) > ratio_sl_threshold) flag_shelfy_stream_y(j,i) = .true.
+#if (HYB_MODE==0)
+   if (ratio_sl_y(j,i) > ratio_sl_threshold) &
+      flag_shelfy_stream_y(j,i) = .true.
 #elif (HYB_MODE==1 || HYB_MODE==2)
-   if ( (maske(j,i)==0_i1b).or.(maske(j+1,i)==0_i1b) ) flag_shelfy_stream_y(j,i) = .true.
+   if ( (maske(j,i)==0_i1b).or.(maske(j+1,i)==0_i1b) ) &
+      flag_shelfy_stream_y(j,i) = .true.
 #else
-   errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0 or 1!'
+   errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0, 1 or 2!'
    call error(errormsg)
 #endif
 end do
@@ -1356,6 +1360,9 @@ real(dp), dimension(0:JMAX,0:IMAX) :: weigh_ssta_sia
 real(dp) :: qx_gl_g, qy_gl_g
 logical, dimension(0:JMAX,0:IMAX) :: flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y
 real(dp) :: v_ref
+real(dp) :: year_sec_inv
+
+year_sec_inv = 1.0_dp/year2sec
 
 #if (MARGIN==3 || DYNAMICS==2)
 
@@ -1506,9 +1513,9 @@ ratio_sl_threshold = 0.5_dp   ! default value
 ratio_help = 1.0_dp/(1.0_dp-ratio_sl_threshold)
 
 #if ( defined(HYB_REF_SPEED) )
-v_ref = real(HYB_REF_SPEED,dp)/real(YEAR_SEC,dp)
+v_ref = real(HYB_REF_SPEED,dp)*year_sec_inv
 #else
-v_ref = 30.0_dp/real(YEAR_SEC,dp)   ! default value
+v_ref = 30.0_dp*year_sec_inv   ! default value
 #endif
 
 #else
@@ -1528,7 +1535,9 @@ do j=0, JMAX
 
    if (flag_shelfy_stream_x(j,i)) then   ! shelfy stream
 
-#if ( (!defined(HYB_MODE)) || (HYB_MODE==0) )   /* Ralf's approach */
+#if (HYB_MODE==0)
+             ! Sum of weighted sliding SIA and weighted SStA
+             ! (by R. Greve)
 
       weigh_ssta_sia_x(j,i) = (ratio_sl_x(j,i)-ratio_sl_threshold)*ratio_help
 
@@ -1573,7 +1582,9 @@ do j=0, JMAX
       vx_m(j,i) = weigh_ssta_sia_x(j,i)*vx_m_ssa(j,i) &
                   + (1.0_dp-weigh_ssta_sia_x(j,i))*vx_m_sia(j,i)
 
-#elif (HYB_MODE==1)   /* Jorge's approach */
+#elif (HYB_MODE==1)
+               ! Sum of weighted non-sliding SIA and full SStA
+               ! (by J. Bernales)
 
       weigh_ssta_sia_x(j,i) = (2.0_dp/pi) * ATAN( (abs(vx_m_ssa(j,i))**2.0_dp) &
                                                     / (v_ref**2.0_dp) )
@@ -1596,7 +1607,7 @@ do j=0, JMAX
       vx_m(j,i) = max(vx_m(j,i), -vh_max)
       vx_m(j,i) = min(vx_m(j,i),  vh_max)
 
-#elif (HYB_MODE==2)   /* Pure SSA/SStA approach */
+#elif (HYB_MODE==2)   /* Pure SStA (no SIA) */
 
       do kt=0, KTMAX
          vx_t(kt,j,i) = vx_m_ssa(j,i)
@@ -1651,7 +1662,9 @@ do j=0, JMAX-1
 
    if (flag_shelfy_stream_y(j,i)) then   ! shelfy stream
 
-#if ( (!defined(HYB_MODE)) || (HYB_MODE==0) )   /* Ralf's approach */
+#if (HYB_MODE==0)
+             ! Sum of weighted sliding SIA and weighted SStA
+             ! (by R. Greve)
 
       weigh_ssta_sia_y(j,i) = (ratio_sl_y(j,i)-ratio_sl_threshold)*ratio_help
 
@@ -1696,7 +1709,9 @@ do j=0, JMAX-1
       vy_m(j,i) = weigh_ssta_sia_y(j,i)*vy_m_ssa(j,i) &
                   + (1.0_dp-weigh_ssta_sia_y(j,i))*vy_m_sia(j,i)
 
-#elif (HYB_MODE==1)   /* Jorge's approach */
+#elif (HYB_MODE==1)
+               ! Sum of weighted non-sliding SIA and full SStA
+               ! (by J. Bernales)
 
       weigh_ssta_sia_y(j,i) = (2.0_dp/pi) * ATAN( (abs(vy_m_ssa(j,i))**2.0_dp) &
                                                     / (v_ref**2.0_dp) )
@@ -1719,7 +1734,7 @@ do j=0, JMAX-1
       vy_m(j,i) = max(vy_m(j,i), -vh_max)
       vy_m(j,i) = min(vy_m(j,i),  vh_max)
 
-#elif (HYB_MODE==2)   /* Pure SSA/SStA approach */
+#elif (HYB_MODE==2)   /* Pure SStA (no SIA) */
 
       do kt=0, KTMAX
          vy_t(kt,j,i) = vy_m_ssa(j,i)
@@ -1773,7 +1788,9 @@ weigh_ssta_sia = 0.0_dp
 
 #if (DYNAMICS==2)
 
-#if ( (!defined(HYB_MODE)) || (HYB_MODE==0) )   /* Ralf's approach */
+#if (HYB_MODE==0)
+             ! Sum of weighted sliding SIA and weighted SStA
+             ! (by R. Greve)
 
 do i=0, IMAX
 do j=0, JMAX
@@ -1813,7 +1830,9 @@ do j=0, JMAX
 end do
 end do
 
-#elif (HYB_MODE==1)   /* Jorge's approach */
+#elif (HYB_MODE==1)
+               ! Sum of weighted non-sliding SIA and full SStA
+               ! (by J. Bernales)
 
 do i=1, IMAX-1
 do j=1, JMAX-1
@@ -1832,12 +1851,12 @@ do j=1, JMAX-1
 end do
 end do
 
-#elif (HYB_MODE==2)   /* Pure SSA/SStA approach */
+#elif (HYB_MODE==2)   /* Pure SStA (no SIA) */
 
 do i=1, IMAX-1
 do j=1, JMAX-1
 
-   if (flag_shelfy_stream(j,i)) weigh_ssta_sia(j,i) = 1.00_dp   ! shelfy stream
+   if (flag_shelfy_stream(j,i)) weigh_ssta_sia(j,i) = 1.0_dp   ! shelfy stream
 
 end do
 end do
