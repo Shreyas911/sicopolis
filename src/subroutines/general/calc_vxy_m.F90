@@ -1182,10 +1182,14 @@ ratio_sl_threshold = 1.11e+11_dp   ! dummy value
 
 #elif (DYNAMICS==2)
 
-#if ( defined(RATIO_SL_THRESH) )
+#if (HYB_MODE==0)
+#if (defined(RATIO_SL_THRESH))
 ratio_sl_threshold = RATIO_SL_THRESH
 #else
 ratio_sl_threshold = 0.5_dp   ! default value
+#endif
+#else
+ratio_sl_threshold = 1.11e+11_dp   ! dummy value
 #endif
 
 do i=0, IMAX-1
@@ -1197,7 +1201,7 @@ do j=0, JMAX
    if ( (maske(j,i)==0_i1b).or.(maske(j,i+1)==0_i1b) ) &
       flag_shelfy_stream_x(j,i) = .true.
 #else
-   errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0, 1 or 2!'
+   errormsg = ' >>> calc_vxy_sia: HYB_MODE must be 0, 1 or 2!'
    call error(errormsg)
 #endif
 end do
@@ -1212,7 +1216,7 @@ do j=0, JMAX-1
    if ( (maske(j,i)==0_i1b).or.(maske(j+1,i)==0_i1b) ) &
       flag_shelfy_stream_y(j,i) = .true.
 #else
-   errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0, 1 or 2!'
+   errormsg = ' >>> calc_vxy_sia: HYB_MODE must be 0, 1 or 2!'
    call error(errormsg)
 #endif
 end do
@@ -1359,10 +1363,11 @@ real(dp), dimension(0:JMAX,0:IMAX) :: weigh_ssta_sia_x, weigh_ssta_sia_y
 real(dp), dimension(0:JMAX,0:IMAX) :: weigh_ssta_sia
 real(dp) :: qx_gl_g, qy_gl_g
 logical, dimension(0:JMAX,0:IMAX) :: flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y
-real(dp) :: v_ref
-real(dp) :: year_sec_inv
+real(dp) :: v_ref, v_ref_sq_inv
+real(dp) :: year_sec_inv, pi_inv
 
 year_sec_inv = 1.0_dp/year2sec
+pi_inv       = 1.0_dp/pi
 
 #if (MARGIN==3 || DYNAMICS==2)
 
@@ -1499,23 +1504,34 @@ call calc_vis_ssa(dxi, deta, dzeta_c, dzeta_t)
 #if (DYNAMICS==0 || DYNAMICS==1)
 
 ratio_sl_threshold = 1.11e+11_dp   ! dummy value
-ratio_help         = 0.0_dp
+ratio_help         = 1.11e+11_dp   ! dummy value
 v_ref              = 1.11e+11_dp   ! dummy value
+v_ref_sq_inv       = 1.11e+11_dp   ! dummy value
 
 #elif (DYNAMICS==2)
 
-#if ( defined(RATIO_SL_THRESH) )
+#if (HYB_MODE==0)
+#if (defined(RATIO_SL_THRESH))
 ratio_sl_threshold = RATIO_SL_THRESH
 #else
 ratio_sl_threshold = 0.5_dp   ! default value
 #endif
-
 ratio_help = 1.0_dp/(1.0_dp-ratio_sl_threshold)
+#else
+ratio_sl_threshold = 1.11e+11_dp   ! dummy value
+ratio_help         = 1.11e+11_dp   ! dummy value
+#endif
 
-#if ( defined(HYB_REF_SPEED) )
+#if (HYB_MODE==1)
+#if (defined(HYB_REF_SPEED))
 v_ref = real(HYB_REF_SPEED,dp)*year_sec_inv
 #else
 v_ref = 30.0_dp*year_sec_inv   ! default value
+#endif
+v_ref_sq_inv = 1.0_dp/(v_ref*v_ref)
+#else
+v_ref        = 1.11e+11_dp   ! dummy value
+v_ref_sq_inv = 1.11e+11_dp   ! dummy value
 #endif
 
 #else
@@ -1586,24 +1602,28 @@ do j=0, JMAX
                ! Sum of weighted non-sliding SIA and full SStA
                ! (by J. Bernales)
 
-      weigh_ssta_sia_x(j,i) = (2.0_dp/pi) * ATAN( (abs(vx_m_ssa(j,i))**2.0_dp) &
-                                                    / (v_ref**2.0_dp) )
+      weigh_ssta_sia_x(j,i) = (2.0_dp*pi_inv) &
+                                 * atan( (vx_m_ssa(j,i)*vx_m_ssa(j,i)) &
+                                                            *v_ref_sq_inv )
 
       do kt=0, KTMAX
-         vx_t(kt,j,i) = vx_m_ssa(j,i) + (1.0_dp-weigh_ssta_sia_x(j,i))*vx_t(kt,j,i)
+         vx_t(kt,j,i) = vx_m_ssa(j,i) &
+                           + (1.0_dp-weigh_ssta_sia_x(j,i))*vx_t(kt,j,i)
          vx_t(kt,j,i) = max(vx_t(kt,j,i), -vh_max)
          vx_t(kt,j,i) = min(vx_t(kt,j,i),  vh_max)
       end do
 
       do kc=0, KCMAX
-         vx_c(kc,j,i) = vx_m_ssa(j,i) + (1.0_dp-weigh_ssta_sia_x(j,i))*vx_c(kc,j,i)
+         vx_c(kc,j,i) = vx_m_ssa(j,i) &
+                           + (1.0_dp-weigh_ssta_sia_x(j,i))*vx_c(kc,j,i)
          vx_c(kc,j,i) = max(vx_c(kc,j,i), -vh_max)
          vx_c(kc,j,i) = min(vx_c(kc,j,i),  vh_max)
       end do
 
       vx_b(j,i) = vx_t(0,j,i)
 
-      vx_m(j,i) = vx_m_ssa(j,i) + (1.0_dp-weigh_ssta_sia_x(j,i))*vx_m_sia(j,i)
+      vx_m(j,i) = vx_m_ssa(j,i) &
+                     + (1.0_dp-weigh_ssta_sia_x(j,i))*vx_m_sia(j,i)
       vx_m(j,i) = max(vx_m(j,i), -vh_max)
       vx_m(j,i) = min(vx_m(j,i),  vh_max)
 
@@ -1713,24 +1733,28 @@ do j=0, JMAX-1
                ! Sum of weighted non-sliding SIA and full SStA
                ! (by J. Bernales)
 
-      weigh_ssta_sia_y(j,i) = (2.0_dp/pi) * ATAN( (abs(vy_m_ssa(j,i))**2.0_dp) &
-                                                    / (v_ref**2.0_dp) )
+      weigh_ssta_sia_y(j,i) = (2.0_dp*pi_inv) &
+                                 * atan( (vy_m_ssa(j,i)*vy_m_ssa(j,i)) &
+                                                            *v_ref_sq_inv )
 
       do kt=0, KTMAX
-         vy_t(kt,j,i) = vy_m_ssa(j,i) + (1.0_dp-weigh_ssta_sia_y(j,i))*vy_t(kt,j,i)
+         vy_t(kt,j,i) = vy_m_ssa(j,i) &
+                           + (1.0_dp-weigh_ssta_sia_y(j,i))*vy_t(kt,j,i)
          vy_t(kt,j,i) = max(vy_t(kt,j,i), -vh_max)
          vy_t(kt,j,i) = min(vy_t(kt,j,i),  vh_max)
       end do
 
       do kc=0, KCMAX
-         vy_c(kc,j,i) = vy_m_ssa(j,i) + (1.0_dp-weigh_ssta_sia_y(j,i))*vy_c(kc,j,i)
+         vy_c(kc,j,i) = vy_m_ssa(j,i) &
+                           + (1.0_dp-weigh_ssta_sia_y(j,i))*vy_c(kc,j,i)
          vy_c(kc,j,i) = max(vy_c(kc,j,i), -vh_max)
          vy_c(kc,j,i) = min(vy_c(kc,j,i),  vh_max)
       end do
 
       vy_b(j,i) = vy_t(0,j,i)
 
-      vy_m(j,i) = vy_m_ssa(j,i) + (1.0_dp-weigh_ssta_sia_y(j,i))*vy_m_sia(j,i)
+      vy_m(j,i) = vy_m_ssa(j,i) &
+                     + (1.0_dp-weigh_ssta_sia_y(j,i))*vy_m_sia(j,i)
       vy_m(j,i) = max(vy_m(j,i), -vh_max)
       vy_m(j,i) = min(vy_m(j,i),  vh_max)
 
