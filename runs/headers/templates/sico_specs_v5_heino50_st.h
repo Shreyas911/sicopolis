@@ -656,11 +656,15 @@
 
 #define C_SLIDE (/ 11.2d0, 11.2d0, 5.6d-02 /)
 !                       Sliding coefficient, in m/[a*Pa^(p-q)]
-!                       (N_SLIDE_REGIONS separate values)
+!                       (N_SLIDE_REGIONS separate values).
+!                       Set to 0.0d0 for no-slip conditions.
 
 #define GAMMA_SLIDE (/ 0.0d0, 0.0d0, 0.0d0 /)
 !                       Sub-melt sliding coefficient, in K
-!                       (N_SLIDE_REGIONS separate values)
+!                       (N_SLIDE_REGIONS separate values).
+!                       Set to 1.11d+11 (or any other very large value)
+!                       to allow basal sliding everywhere,
+!                       irrespective of the basal temperature.
 
 #define P_WEERT (/ 3, 3, 1 /)
 !                       Weertman exponent p (integer) for the basal shear stress
