@@ -11,9 +11,8 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define SICO_REVISION 'develop_62_rv5.1-61-g87a4e1b'
-!                      Revision identifier of SICOPOLIS
-!                      for which this run-specs header was last changed
+#define RUN_SPECS_HEADER_LAST_CHANGED '2021-06-02'
+!                      Date of last change
 
 !-------- Domain --------
 
@@ -122,9 +121,16 @@
 !                             (static ice)
 !                         1 : SIA for grounded ice,
 !                             SSA for floating ice (if existing)
-!                         2 : SIA for grounded ice,
-!                             SIA/SStA hybrid for ice streams,
+!                         2 : SIA/SStA hybrid for grounded ice,
 !                             SSA for floating ice (if existing)
+
+#define HYB_MODE 0
+!                         SIA/SStA hybrid (only for DYNAMICS==2):
+!                         0 : Sum of weighted sliding SIA and weighted SStA
+!                             (by R. Greve)
+!                         1 : Sum of weighted non-sliding SIA and full SStA
+!                             (by J. Bernales)
+!                         2 : Pure SStA (no SIA)
 
 #define LIS_OPTS '-i bicgsafe -maxiter 1000 -tol 1.0e-03 -p jacobi -initx_zeros false'
 !                         Options string for the Lis solver for the SSA/SStA
@@ -173,15 +179,19 @@
 
 #define RATIO_SL_THRESH 0.5d0
 !                         Threshold value for the slip ratio of grounded ice.
-!                         If the slip ratio is larger, ice stream dynamics
-!                         is employed (for DYNAMICS==2).
+!                         If the slip ratio is larger, hybrid SIA/SStA dynamics
+!                         kicks in (for DYNAMICS==2 and HYB_MOD==0).
 
 #define SSTA_SIA_WEIGH_FCT 1
 !                         SStA-SIA weighing factor as a function of the
-!                         slip ratio (for DYNAMICS==2):
+!                         slip ratio (for DYNAMICS==2 and HYB_MOD==0):
 !                         0 : Linear function (continuous transitions)
 !                         1 : Cubic function (smooth transitions)
 !                         2 : Quintic function (even smoother transitions)
+
+#define HYB_REF_SPEED 30.0d0
+!                         Scaling reference speed for hybrid SIA/SStA dynamics
+!                         (in m/a, for DYNAMICS==2 and HYB_MOD==1).
 
 !-------- Ice sheet thermodynamics --------
 

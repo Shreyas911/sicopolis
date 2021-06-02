@@ -867,6 +867,9 @@ write(10, fmt=trim(fmt1)) ' '
 #endif
 
 write(10, fmt=trim(fmt2a)) 'DYNAMICS = ', DYNAMICS
+#if (DYNAMICS==2 && defined(HYB_MODE))
+write(10, fmt=trim(fmt2)) 'HYB_MODE = ', HYB_MODE
+#endif
 #if ((DYNAMICS==1 && MARGIN==3) || DYNAMICS==2)
 #if (defined(LIS_OPTS))
 write(10, fmt=trim(fmt1)) 'lis_opts = '//LIS_OPTS
@@ -893,11 +896,14 @@ write(10, fmt=trim(fmt3)) 'visc_smooth_diff =', VISC_SMOOTH_DIFF
 write(10, fmt=trim(fmt3)) 'relax_fact_ssa =', RELAX_FACT_SSA
 #endif
 #endif
-#if (DYNAMICS==2 && defined(RATIO_SL_THRESH))
+#if (DYNAMICS==2 && HYB_MODE==0 && defined(RATIO_SL_THRESH))
 write(10, fmt=trim(fmt3)) 'ratio_sl_thresh =', RATIO_SL_THRESH
 #endif
-#if (DYNAMICS==2 && defined(SSTA_SIA_WEIGH_FCT))
+#if (DYNAMICS==2 && HYB_MODE==0 && defined(SSTA_SIA_WEIGH_FCT))
 write(10, fmt=trim(fmt2a)) 'SSTA_SIA_WEIGH_FCT = ', SSTA_SIA_WEIGH_FCT
+#endif
+#if (DYNAMICS==2 && HYB_MODE==1 && defined(HYB_REF_SPEED))
+write(10, fmt=trim(fmt3)) 'hyb_ref_speed =', HYB_REF_SPEED
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
