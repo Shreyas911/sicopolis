@@ -11,7 +11,7 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2021-05-31'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2021-06-02'
 !                      Date of last change
 
 !-------- Domain --------
@@ -190,7 +190,7 @@
 !                         1 : Cubic function (smooth transitions)
 !                         2 : Quintic function (even smoother transitions)
 
-#define HYB_REF_SPEED     30.0d0
+#define HYB_REF_SPEED 30.0d0
 !                         Scaling reference speed for hybrid SIA/SStA dynamics
 !                         (in m/a, for DYNAMICS==2 and HYB_MOD==1).
 
