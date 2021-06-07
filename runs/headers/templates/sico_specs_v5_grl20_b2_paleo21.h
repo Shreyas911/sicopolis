@@ -7,11 +7,11 @@
 #define RUNNAME 'v5_grl20_b2_paleo21'
 !                      Name of simulation
 
-#define SICO_VERSION '5-dev'
+#define SICO_VERSION '5.2'
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2021-06-02'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2021-06-07'
 !                      Date of last change
 
 !-------- Domain --------
