@@ -5,7 +5,7 @@
 #   Downloading the input files for SICOPOLIS,
 #   copying them to the corresponding directories.
 #   
-#    - Ralf Greve, 2020-07-08.
+#    - Ralf Greve, 2021-06-10.
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #-------- Settings (to be customized) --------
@@ -29,7 +29,7 @@ SMARS_FLAG=1   # South polar cap of Mars:
 
 #-------- Initialization --------
 
-REPO_URL=http://wwwice.lowtem.hokudai.ac.jp/repo/sicopolis/sico_in
+REPO_URL=https://zenodo.org/record/4922827/files
 
 SICOPOLIS_HOME=$PWD
 
