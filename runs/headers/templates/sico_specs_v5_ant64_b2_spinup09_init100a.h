@@ -11,7 +11,7 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2021-06-07'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2021-06-11'
 !                      Date of last change
 
 !-------- Domain --------
