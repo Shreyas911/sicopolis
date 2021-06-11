@@ -8,7 +8,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2019 Ralf Greve, Tatsuru Sato, Thomas Goelles, Jorge Bernales
+!! Copyright 2009-2021 Ralf Greve, Tatsuru Sato, Thomas Goelles, Jorge Bernales
 !!
 !! @section License
 !!
@@ -270,7 +270,7 @@ real(dp) :: year_sec_inv, time_in_years
 real(dp) :: ramp_up_factor
 logical, dimension(0:JMAX,0:IMAX) :: sub_melt_flag
 
-year_sec_inv  = 1.0_dp/YEAR_SEC
+year_sec_inv  = 1.0_dp/year2sec
 time_in_years = time*year_sec_inv
 
 !-------- Sliding-law coefficients --------
@@ -587,7 +587,7 @@ end do
 !-------- Limitation of computed vx_b, vy_b, vx_b_g, vy_b_g to the interval
 !         [-VH_MAX, VH_MAX] --------
 
-vh_max     = max(VH_MAX, eps_dp)/YEAR_SEC
+vh_max     = max(VH_MAX, eps_dp)/year2sec
 vh_max_inv = 1.0_dp/vh_max
 
 #if !defined(ALLOW_OPENAD) /* Normal */
@@ -613,6 +613,21 @@ end do
 end do
 
 #endif /* Normal vs. OpenAD */
+
+!-------- Discard basal velocities for HYB_MODE==[1,2] --------
+
+#if ( (DYNAMICS==2) && (HYB_MODE==1 || HYB_MODE==2) )
+
+d_help_b = 0.0_dp
+vx_b     = 0.0_dp
+vy_b     = 0.0_dp
+vx_b_g   = 0.0_dp
+vy_b_g   = 0.0_dp
+
+! c_slide and c_drag are not reset because they will be used in the
+! computation of the SStA velocity components
+
+#endif
 
 end subroutine calc_vxy_b_sia
 
@@ -1003,7 +1018,7 @@ end do
 !-------- Limitation of computed vx_c/t, vy_c/t, vx_s_g, vy_s_g
 !         to the interval [-VH_MAX, VH_MAX] --------
 
-vh_max     = max(VH_MAX, eps_dp)/YEAR_SEC
+vh_max     = max(VH_MAX, eps_dp)/year2sec
 vh_max_inv = 1.0_dp/vh_max
 
 #if !defined (ALLOW_OPENAD) /* Normal */
@@ -1143,6 +1158,18 @@ do j=0, JMAX-1
 end do
 end do
 
+ratio_sl = 0.0_dp
+
+do i=1, IMAX-1
+do j=1, JMAX-1
+
+   if (maske(j,i) == 0_i1b) &   ! grounded ice
+      ratio_sl(j,i) = 0.25_dp &
+                        * (   ratio_sl_x(j,i-1) + ratio_sl_x(j,i) &
+                            + ratio_sl_y(j-1,i) + ratio_sl_y(j,i) )
+end do
+end do
+
 !-------- Detection of shelfy stream points --------
 
 flag_shelfy_stream_x = .false.
@@ -1155,36 +1182,56 @@ ratio_sl_threshold = 1.11e+11_dp   ! dummy value
 
 #elif (DYNAMICS==2)
 
-#if ( defined(RATIO_SL_THRESH) )
+#if (HYB_MODE==0)
+#if (defined(RATIO_SL_THRESH))
 ratio_sl_threshold = RATIO_SL_THRESH
 #else
 ratio_sl_threshold = 0.5_dp   ! default value
 #endif
+#else
+ratio_sl_threshold = 1.11e+11_dp   ! dummy value
+#endif
 
 do i=0, IMAX-1
 do j=0, JMAX
-   if (ratio_sl_x(j,i) > ratio_sl_threshold) flag_shelfy_stream_x(j,i) = .true.
+#if (HYB_MODE==0)
+   if (ratio_sl_x(j,i) > ratio_sl_threshold) &
+      flag_shelfy_stream_x(j,i) = .true.
+#elif (HYB_MODE==1 || HYB_MODE==2)
+   if ( (maske(j,i)==0_i1b).or.(maske(j,i+1)==0_i1b) ) &
+      flag_shelfy_stream_x(j,i) = .true.
+#else
+   errormsg = ' >>> calc_vxy_sia: HYB_MODE must be 0, 1 or 2!'
+   call error(errormsg)
+#endif
 end do
 end do
 
 do i=0, IMAX
 do j=0, JMAX-1
-   if (ratio_sl_y(j,i) > ratio_sl_threshold) flag_shelfy_stream_y(j,i) = .true.
+#if (HYB_MODE==0)
+   if (ratio_sl_y(j,i) > ratio_sl_threshold) &
+      flag_shelfy_stream_y(j,i) = .true.
+#elif (HYB_MODE==1 || HYB_MODE==2)
+   if ( (maske(j,i)==0_i1b).or.(maske(j+1,i)==0_i1b) ) &
+      flag_shelfy_stream_y(j,i) = .true.
+#else
+   errormsg = ' >>> calc_vxy_sia: HYB_MODE must be 0, 1 or 2!'
+   call error(errormsg)
+#endif
 end do
 end do
 
 do i=1, IMAX-1
 do j=1, JMAX-1
 
-   if ( (maske(j,i) == 0_i1b) &   ! grounded ice
-        .and. &
-        (     flag_shelfy_stream_x(j,i-1)   &   ! at least
-          .or.flag_shelfy_stream_x(j,i)     &   ! one neighbour
-          .or.flag_shelfy_stream_y(j-1,i)   &   ! on the staggered grid
-          .or.flag_shelfy_stream_y(j,i)   ) &   ! is a shelfy stream point
-      ) then
+   if (maske(j,i) == 0_i1b) then   ! grounded ice
 
-      flag_shelfy_stream(j,i) = .true.
+      if (     flag_shelfy_stream_x(j,i-1)   &   ! at least
+           .or.flag_shelfy_stream_x(j,i)     &   ! one neighbour
+           .or.flag_shelfy_stream_y(j-1,i)   &   ! on the staggered grid
+           .or.flag_shelfy_stream_y(j,i)   ) &   ! is a shelfy stream point
+               flag_shelfy_stream(j,i) = .true.
 
    end if
 
@@ -1295,6 +1342,10 @@ end subroutine calc_vxy_static
 !<------------------------------------------------------------------------------
 subroutine calc_vxy_ssa(z_sl, dxi, deta, dzeta_c, dzeta_t)
 
+#if (DYNAMICS==2)
+  use calc_enhance_m, only : calc_enhance_hybrid_weighted
+#endif
+
 implicit none
 
 real(dp), intent(in) :: z_sl, dxi, deta, dzeta_c, dzeta_t
@@ -1309,8 +1360,14 @@ real(dp) :: visc_init
 real(dp) :: vh_max, vh_max_inv
 real(dp) :: ratio_sl_threshold, ratio_help
 real(dp), dimension(0:JMAX,0:IMAX) :: weigh_ssta_sia_x, weigh_ssta_sia_y
+real(dp), dimension(0:JMAX,0:IMAX) :: weigh_ssta_sia
 real(dp) :: qx_gl_g, qy_gl_g
 logical, dimension(0:JMAX,0:IMAX) :: flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y
+real(dp) :: v_ref, v_ref_sq_inv
+real(dp) :: year_sec_inv, pi_inv
+
+year_sec_inv = 1.0_dp/year2sec
+pi_inv       = 1.0_dp/pi
 
 #if (MARGIN==3 || DYNAMICS==2)
 
@@ -1340,7 +1397,7 @@ logical, dimension(0:JMAX,0:IMAX) :: flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y
   visc_init = 1.0e+15_dp   ! Pa s
 #endif
 
-vh_max     = max(VH_MAX, eps_dp)/YEAR_SEC
+vh_max     = max(VH_MAX, eps_dp)/year2sec
 vh_max_inv = 1.0_dp/vh_max
 
 write(6,'(10x,a)') 'calc_vxy_ssa:'
@@ -1447,17 +1504,35 @@ call calc_vis_ssa(dxi, deta, dzeta_c, dzeta_t)
 #if (DYNAMICS==0 || DYNAMICS==1)
 
 ratio_sl_threshold = 1.11e+11_dp   ! dummy value
-ratio_help         = 0.0_dp
+ratio_help         = 1.11e+11_dp   ! dummy value
+v_ref              = 1.11e+11_dp   ! dummy value
+v_ref_sq_inv       = 1.11e+11_dp   ! dummy value
 
 #elif (DYNAMICS==2)
 
-#if ( defined(RATIO_SL_THRESH) )
+#if (HYB_MODE==0)
+#if (defined(RATIO_SL_THRESH))
 ratio_sl_threshold = RATIO_SL_THRESH
 #else
 ratio_sl_threshold = 0.5_dp   ! default value
 #endif
-
 ratio_help = 1.0_dp/(1.0_dp-ratio_sl_threshold)
+#else
+ratio_sl_threshold = 1.11e+11_dp   ! dummy value
+ratio_help         = 1.11e+11_dp   ! dummy value
+#endif
+
+#if (HYB_MODE==1)
+#if (defined(HYB_REF_SPEED))
+v_ref = real(HYB_REF_SPEED,dp)*year_sec_inv
+#else
+v_ref = 30.0_dp*year_sec_inv   ! default value
+#endif
+v_ref_sq_inv = 1.0_dp/(v_ref*v_ref)
+#else
+v_ref        = 1.11e+11_dp   ! dummy value
+v_ref_sq_inv = 1.11e+11_dp   ! dummy value
+#endif
 
 #else
 
@@ -1475,6 +1550,10 @@ do i=0, IMAX-1
 do j=0, JMAX
 
    if (flag_shelfy_stream_x(j,i)) then   ! shelfy stream
+
+#if (HYB_MODE==0)
+             ! Sum of weighted sliding SIA and weighted SStA
+             ! (by R. Greve)
 
       weigh_ssta_sia_x(j,i) = (ratio_sl_x(j,i)-ratio_sl_threshold)*ratio_help
 
@@ -1519,6 +1598,54 @@ do j=0, JMAX
       vx_m(j,i) = weigh_ssta_sia_x(j,i)*vx_m_ssa(j,i) &
                   + (1.0_dp-weigh_ssta_sia_x(j,i))*vx_m_sia(j,i)
 
+#elif (HYB_MODE==1)
+               ! Sum of weighted non-sliding SIA and full SStA
+               ! (by J. Bernales)
+
+      weigh_ssta_sia_x(j,i) = (2.0_dp*pi_inv) &
+                                 * atan( (vx_m_ssa(j,i)*vx_m_ssa(j,i)) &
+                                                            *v_ref_sq_inv )
+
+      do kt=0, KTMAX
+         vx_t(kt,j,i) = vx_m_ssa(j,i) &
+                           + (1.0_dp-weigh_ssta_sia_x(j,i))*vx_t(kt,j,i)
+         vx_t(kt,j,i) = max(vx_t(kt,j,i), -vh_max)
+         vx_t(kt,j,i) = min(vx_t(kt,j,i),  vh_max)
+      end do
+
+      do kc=0, KCMAX
+         vx_c(kc,j,i) = vx_m_ssa(j,i) &
+                           + (1.0_dp-weigh_ssta_sia_x(j,i))*vx_c(kc,j,i)
+         vx_c(kc,j,i) = max(vx_c(kc,j,i), -vh_max)
+         vx_c(kc,j,i) = min(vx_c(kc,j,i),  vh_max)
+      end do
+
+      vx_b(j,i) = vx_t(0,j,i)
+
+      vx_m(j,i) = vx_m_ssa(j,i) &
+                     + (1.0_dp-weigh_ssta_sia_x(j,i))*vx_m_sia(j,i)
+      vx_m(j,i) = max(vx_m(j,i), -vh_max)
+      vx_m(j,i) = min(vx_m(j,i),  vh_max)
+
+#elif (HYB_MODE==2)   /* Pure SStA (no SIA) */
+
+      do kt=0, KTMAX
+         vx_t(kt,j,i) = vx_m_ssa(j,i)
+      end do
+
+      do kc=0, KCMAX
+         vx_c(kc,j,i) = vx_m_ssa(j,i)
+      end do
+
+      vx_b(j,i) = vx_t(0,j,i)
+
+      vx_m(j,i) = vx_m_ssa(j,i)
+
+#else
+      errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0, 1 or 2!'
+      call error(errormsg)
+#endif
+
       qx(j,i)   = vx_m(j,i) &
                      * 0.5_dp * ( (H_c(j,i)+H_t(j,i))+(H_c(j,i+1)+H_t(j,i+1)) )
 
@@ -1554,6 +1681,10 @@ do i=0, IMAX
 do j=0, JMAX-1
 
    if (flag_shelfy_stream_y(j,i)) then   ! shelfy stream
+
+#if (HYB_MODE==0)
+             ! Sum of weighted sliding SIA and weighted SStA
+             ! (by R. Greve)
 
       weigh_ssta_sia_y(j,i) = (ratio_sl_y(j,i)-ratio_sl_threshold)*ratio_help
 
@@ -1598,6 +1729,54 @@ do j=0, JMAX-1
       vy_m(j,i) = weigh_ssta_sia_y(j,i)*vy_m_ssa(j,i) &
                   + (1.0_dp-weigh_ssta_sia_y(j,i))*vy_m_sia(j,i)
 
+#elif (HYB_MODE==1)
+               ! Sum of weighted non-sliding SIA and full SStA
+               ! (by J. Bernales)
+
+      weigh_ssta_sia_y(j,i) = (2.0_dp*pi_inv) &
+                                 * atan( (vy_m_ssa(j,i)*vy_m_ssa(j,i)) &
+                                                            *v_ref_sq_inv )
+
+      do kt=0, KTMAX
+         vy_t(kt,j,i) = vy_m_ssa(j,i) &
+                           + (1.0_dp-weigh_ssta_sia_y(j,i))*vy_t(kt,j,i)
+         vy_t(kt,j,i) = max(vy_t(kt,j,i), -vh_max)
+         vy_t(kt,j,i) = min(vy_t(kt,j,i),  vh_max)
+      end do
+
+      do kc=0, KCMAX
+         vy_c(kc,j,i) = vy_m_ssa(j,i) &
+                           + (1.0_dp-weigh_ssta_sia_y(j,i))*vy_c(kc,j,i)
+         vy_c(kc,j,i) = max(vy_c(kc,j,i), -vh_max)
+         vy_c(kc,j,i) = min(vy_c(kc,j,i),  vh_max)
+      end do
+
+      vy_b(j,i) = vy_t(0,j,i)
+
+      vy_m(j,i) = vy_m_ssa(j,i) &
+                     + (1.0_dp-weigh_ssta_sia_y(j,i))*vy_m_sia(j,i)
+      vy_m(j,i) = max(vy_m(j,i), -vh_max)
+      vy_m(j,i) = min(vy_m(j,i),  vh_max)
+
+#elif (HYB_MODE==2)   /* Pure SStA (no SIA) */
+
+      do kt=0, KTMAX
+         vy_t(kt,j,i) = vy_m_ssa(j,i)
+      end do
+
+      do kc=0, KCMAX
+         vy_c(kc,j,i) = vy_m_ssa(j,i)
+      end do
+
+      vy_b(j,i) = vy_t(0,j,i)
+
+      vy_m(j,i) = vy_m_ssa(j,i)
+
+#else
+      errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0, 1 or 2!'
+      call error(errormsg)
+#endif
+
       qy(j,i)   = vy_m(j,i) &
                      * 0.5_dp * ( (H_c(j,i)+H_t(j,i))+(H_c(j+1,i)+H_t(j+1,i)) )
 
@@ -1626,6 +1805,94 @@ do j=0, JMAX-1
 
 end do
 end do
+
+!-------- Weighted flow enhancement factor --------
+
+weigh_ssta_sia = 0.0_dp
+
+#if (DYNAMICS==2)
+
+#if (HYB_MODE==0)
+             ! Sum of weighted sliding SIA and weighted SStA
+             ! (by R. Greve)
+
+do i=0, IMAX
+do j=0, JMAX
+
+   if (flag_shelfy_stream(j,i)) then   ! shelfy stream
+
+      weigh_ssta_sia(j,i) = (ratio_sl(j,i)-ratio_sl_threshold)*ratio_help
+
+      weigh_ssta_sia(j,i) = max(min(weigh_ssta_sia(j,i), 1.0_dp), 0.0_dp)
+                              ! constrain to interval [0,1]
+
+#if (SSTA_SIA_WEIGH_FCT==0)
+
+      ! stick to the linear function set above
+
+#elif (SSTA_SIA_WEIGH_FCT==1)
+
+      weigh_ssta_sia(j,i) = weigh_ssta_sia(j,i)*weigh_ssta_sia(j,i) &
+                                 *(3.0_dp-2.0_dp*weigh_ssta_sia(j,i))
+                            ! make transition smooth (cubic function)
+
+#elif (SSTA_SIA_WEIGH_FCT==2)
+
+      weigh_ssta_sia(j,i) = weigh_ssta_sia(j,i)*weigh_ssta_sia(j,i) &
+                                               *weigh_ssta_sia(j,i) &
+                                 *(10.0_dp + weigh_ssta_sia(j,i) &
+                                     *(-15.0_dp+6.0_dp*weigh_ssta_sia(j,i)))
+                            ! make transition even smoother (quintic function)
+
+#else
+      errormsg = ' >>> calc_vxy_ssa: SSTA_SIA_WEIGH_FCT must be 0, 1 or 2!'
+      call error(errormsg)
+#endif
+
+   end if
+
+end do
+end do
+
+#elif (HYB_MODE==1)
+               ! Sum of weighted non-sliding SIA and full SStA
+               ! (by J. Bernales)
+
+do i=1, IMAX-1
+do j=1, JMAX-1
+
+   if (flag_shelfy_stream(j,i)) then   ! shelfy stream
+
+      weigh_ssta_sia(j,i) = 0.25_dp * &
+                            (   weigh_ssta_sia_x(j,i-1) + weigh_ssta_sia_x(j,i) &
+                              + weigh_ssta_sia_y(j-1,i) + weigh_ssta_sia_y(j,i) )
+
+      weigh_ssta_sia(j,i) = max(min(weigh_ssta_sia(j,i), 1.0_dp), 0.0_dp)
+                            ! constrain to interval [0,1] (just in case :shrug: )
+
+   end if
+
+end do
+end do
+
+#elif (HYB_MODE==2)   /* Pure SStA (no SIA) */
+
+do i=1, IMAX-1
+do j=1, JMAX-1
+
+   if (flag_shelfy_stream(j,i)) weigh_ssta_sia(j,i) = 1.0_dp   ! shelfy stream
+
+end do
+end do
+
+#else
+      errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0, 1 or 2!'
+      call error(errormsg)
+#endif
+
+if (flag_calc_temp) call calc_enhance_hybrid_weighted(weigh_ssta_sia)
+
+#endif   /* (DYNAMICS==2) */
 
 !-------- Surface and basal velocities vx_s_g vy_s_g, vx_b_g vy_b_g
 !                                                (defined at (i,j)) --------
@@ -1694,7 +1961,7 @@ end subroutine calc_vxy_ssa
 
 !-------------------------------------------------------------------------------
 !> Solution of the system of linear equations for the horizontal velocities
-!! vx_m_ssa, vy_m_ssa in the shallow shelf approximation.
+!! vx_m_ssa, vy_m_ssa in the SSA/SStA.
 !<------------------------------------------------------------------------------
 subroutine calc_vxy_ssa_matrix(z_sl, dxi, deta, &
                                flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y)
@@ -2984,10 +3251,13 @@ call error(errormsg)
 end subroutine calc_vxy_ssa_matrix
 
 !-------------------------------------------------------------------------------
-!> Computation of the depth-integrated viscosity vis_int_g in the
-!! shallow shelf approximation.
+!> Computation of the depth-integrated viscosity vis_int_g in the SSA/SStA.
 !<------------------------------------------------------------------------------
 subroutine calc_vis_ssa(dxi, deta, dzeta_c, dzeta_t)
+
+#if (DYNAMICS==2)
+  use calc_enhance_m, only : enh_stream, flag_enh_stream
+#endif
 
 use ice_material_properties_m, only : viscosity
 
@@ -3000,6 +3270,7 @@ integer(i4b) :: m_smooth, m_smooth_abs
 real(dp) :: visc_min, visc_max, visc_init
 real(dp) :: dxi_inv, deta_inv
 real(dp) :: dvx_dxi, dvx_deta, dvy_dxi, dvy_deta
+real(dp) :: enh_val
 real(dp) :: diff_vis
 real(dp) :: aqxy1(0:KCMAX)
 real(dp) :: cvis0(0:KTMAX), cvis1(0:KCMAX)
@@ -3100,10 +3371,13 @@ do j=0, JMAX
 #endif
 
          do kc=0, KCMAX
+
+            enh_val = enh_c(kc,j,i)
+
             cvis1(kc) = aqxy1(kc)*H_c(j,i) &
                            *viscosity(de_ssa(j,i), &
                               temp_c(kc,j,i), temp_c_m(kc,j,i), &
-                              0.0_dp, enh_c(kc,j,i), 0_i1b)
+                              0.0_dp, enh_val, 0_i1b)
          end do
          ! Ice shelves (floating ice) are assumed to consist of cold ice only
 
@@ -3113,35 +3387,63 @@ do j=0, JMAX
 #if (CALCMOD==-1 || CALCMOD==0)
 
          do kc=0, KCMAX
+
+            if (flag_enh_stream) then
+               enh_val = enh_stream
+            else
+               enh_val = enh_c(kc,j,i)
+            end if
+
             cvis1(kc) = aqxy1(kc)*H_c(j,i) &
                            *viscosity(de_ssa(j,i), &
                               temp_c(kc,j,i), temp_c_m(kc,j,i), &
-                              0.0_dp, enh_c(kc,j,i), 0_i1b)
+                              0.0_dp, enh_val, 0_i1b)
          end do
 
 #elif (CALCMOD==1)
 
          do kt=0, KTMAX
+
+            if (flag_enh_stream) then
+               enh_val = enh_stream
+            else
+               enh_val = enh_t(kt,j,i)
+            end if
+
             cvis0(kt) = dzeta_t*H_t(j,i) &
                            *viscosity(de_ssa(j,i), &
                               temp_t_m(kt,j,i), temp_t_m(kt,j,i), &
-                              omega_t(kt,j,i), enh_t(kt,j,i), 1_i1b)
+                              omega_t(kt,j,i), enh_val, 1_i1b)
          end do
 
          do kc=0, KCMAX
+
+            if (flag_enh_stream) then
+               enh_val = enh_stream
+            else
+               enh_val = enh_c(kc,j,i)
+            end if
+
             cvis1(kc) = aqxy1(kc)*H_c(j,i) &
                            *viscosity(de_ssa(j,i), &
                               temp_c(kc,j,i), temp_c_m(kc,j,i), &
-                              0.0_dp, enh_c(kc,j,i), 0_i1b)
+                              0.0_dp, enh_val, 0_i1b)
          end do
 
 #elif (CALCMOD==2 || CALCMOD==3)
 
          do kc=0, KCMAX
+
+            if (flag_enh_stream) then
+               enh_val = enh_stream
+            else
+               enh_val = enh_c(kc,j,i)
+            end if
+
             cvis1(kc) = aqxy1(kc)*H_c(j,i) &
                          *viscosity(de_ssa(j,i), &
                            temp_c(kc,j,i), temp_c_m(kc,j,i), &
-                           omega_c(kc,j,i), enh_c(kc,j,i), 2_i1b)
+                           omega_c(kc,j,i), enh_val, 2_i1b)
          end do
 
 #else
@@ -3151,7 +3453,7 @@ do j=0, JMAX
 
       end if
 
-#endif
+#endif   /* DYNAMICS==2 */
 
 !  ------ Depth-integrated viscosity
 

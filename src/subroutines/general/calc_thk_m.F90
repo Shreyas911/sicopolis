@@ -8,7 +8,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2019 Ralf Greve, Reinhard Calov, Tatsuru Sato
+!! Copyright 2009-2021 Ralf Greve, Reinhard Calov, Tatsuru Sato
 !!
 !! @section License
 !!
@@ -1365,7 +1365,7 @@ end subroutine thk_adjust
   real(dp)                           :: dtime_1year, dtime_1year_inv
 
   dtime_inv       = 1.0_dp/dtime
-  dtime_1year     = YEAR_SEC   ! 1 year (in seconds)
+  dtime_1year     = year2sec   ! 1 year (in seconds)
   dtime_1year_inv = 1.0_dp/dtime_1year
 
 !-------- Saving computed H_neu before any adjustments --------
@@ -1428,7 +1428,7 @@ real(dp)                           :: dtime_inv
 
 !-------- Term abbreviations --------
 
-year_sec_inv = 1.0_dp/YEAR_SEC
+year_sec_inv = 1.0_dp/year2sec
 
 !-------- Saving computed H_neu before any modifications --------
 

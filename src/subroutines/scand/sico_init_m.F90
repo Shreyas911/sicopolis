@@ -8,7 +8,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2019 Ralf Greve
+!! Copyright 2009-2021 Ralf Greve
 !!
 !! @section License
 !!
@@ -62,7 +62,7 @@ subroutine sico_init(delta_ts, glac_index, &
   use enth_temp_omega_m, only : calc_c_int_table, calc_c_int_inv_table, &
                                 enth_fct_temp_omega
 
-  use read_m, only : read_phys_para, read_kei
+  use read_m, only : read_2d_input, read_kei, read_phys_para
 
   use boundary_m
   use init_temp_water_age_m
@@ -101,8 +101,12 @@ real(dp)           :: d_dummy
 character(len=100) :: anfdatname
 character(len=256) :: filename_with_path
 character(len=256) :: shell_command
+character(len= 64) :: ch_var_name
+character(len=  3) :: ch_month(12)
 character          :: ch_dummy
 logical            :: flag_init_output, flag_3d_output
+
+real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 
 integer(i4b) :: n_slide_regions
 #if (!defined(N_SLIDE_REGIONS) || N_SLIDE_REGIONS<=1)
@@ -121,12 +125,6 @@ character(len=64), parameter :: fmt1  = '(a)', &
                                 fmt2  = '(a,i4)', &
                                 fmt2a = '(a,i0)', &
                                 fmt3  = '(a,es12.4)'
-
-character(len=  8) :: ch_imax
-character(len=128) :: fmt4
-
-write(ch_imax, fmt='(i8)') IMAX
-write(fmt4,    fmt='(a)')  '('//trim(adjustl(ch_imax))//'(i1),i1)'
 
 write(unit=6, fmt='(a)') ' '
 write(unit=6, fmt='(a)') ' -------- sico_init --------'
@@ -370,6 +368,8 @@ dzeta_r = 1.0_dp/real(KRMAX,dp)
 ndat2d = 1
 ndat3d = 1
 
+flag_calc_temp = .true.
+
 !-------- General abbreviations --------
 
 !  ------ kc domain
@@ -562,14 +562,14 @@ time_output0(20) = TIME_OUT0_20
 !-------- Write log file --------
 
 shell_command = 'if [ ! -d'
-shell_command = trim(shell_command)//' '//OUTPATH
+shell_command = trim(shell_command)//' '//OUT_PATH
 shell_command = trim(shell_command)//' '//'] ; then mkdir'
-shell_command = trim(shell_command)//' '//OUTPATH
+shell_command = trim(shell_command)//' '//OUT_PATH
 shell_command = trim(shell_command)//' '//'; fi'
 call system(trim(shell_command))
-     ! Check whether directory OUTPATH exists. If not, it is created.
+     ! Check whether directory OUT_PATH exists. If not, it is created.
 
-filename_with_path = trim(OUTPATH)//'/'//trim(runname)//'.log'
+filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'.log'
 
 open(10, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -625,12 +625,18 @@ write(10, fmt=trim(fmt1)) 'zl_present file   = '//ZL_PRESENT_FILE
 #endif
 write(10, fmt=trim(fmt1)) 'zl0 file          = '//ZL0_FILE
 write(10, fmt=trim(fmt1)) 'mask_present file = '//MASK_PRESENT_FILE
+#if (defined(MASK_REGION_FILE))
+if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+   write(10, fmt=trim(fmt1)) 'mask_region file = '//MASK_REGION_FILE
+   write(10, fmt=trim(fmt1)) ' '
+end if
+#endif
 #if (ANF_DAT==1 && defined(TEMP_INIT))
 write(10, fmt=trim(fmt2)) 'TEMP_INIT =', TEMP_INIT
 #endif
 #if (ANF_DAT==3 || (ANF_DAT==1 && TEMP_INIT==5))
 write(10, fmt=trim(fmt1)) 'Initial-value file = '//ANFDATNAME
-write(10, fmt=trim(fmt1)) 'Path to initial-value file = '//ANFDATPATH
+write(10, fmt=trim(fmt1)) 'Path to initial-value file = '//ANF_DAT_PATH
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
@@ -757,24 +763,32 @@ p_weert_aux = P_WEERT
 q_weert_aux = Q_WEERT
 
 write(10, fmt=trim(fmt3)) 'c_slide =', c_slide_aux(1)
+#if (N_SLIDE_REGIONS>1)
 do n=2, n_slide_regions
    write(10, fmt=trim(fmt3)) '         ', c_slide_aux(n)
 end do
+#endif
 
 write(10, fmt=trim(fmt3)) 'gamma_slide =', gamma_slide_aux(1)
+#if (N_SLIDE_REGIONS>1)
 do n=2, n_slide_regions
    write(10, fmt=trim(fmt3)) '             ', gamma_slide_aux(n)
 end do
+#endif
 
 write(10, fmt=trim(fmt2a)) 'p_weert = ', p_weert_aux(1)
+#if (N_SLIDE_REGIONS>1)
 do n=2, n_slide_regions
    write(10, fmt=trim(fmt2a)) '          ', p_weert_aux(n)
 end do
+#endif
 
 write(10, fmt=trim(fmt2a)) 'q_weert = ', q_weert_aux(1)
+#if (N_SLIDE_REGIONS>1)
 do n=2, n_slide_regions
    write(10, fmt=trim(fmt2a)) '          ', q_weert_aux(n)
 end do
+#endif
 
 #if (defined(TIME_RAMP_UP_SLIDE))
 write(10, fmt=trim(fmt3)) 'time_ramp_up_slide =', TIME_RAMP_UP_SLIDE
@@ -880,12 +894,19 @@ write(10, fmt=trim(fmt3)) 'date_trans3 =', DATE_TRANS3_0
 write(10, fmt=trim(fmt3)) 'enh_compr   =', ENH_COMPR
 write(10, fmt=trim(fmt3)) 'enh_shear   =', ENH_SHEAR
 #endif
+#if (DYNAMICS==2 && defined(ENH_STREAM))
+if (ENH_STREAM >= 0.0_dp) &
+   write(10, fmt=trim(fmt3)) 'enh_stream =', ENH_STREAM
+#endif
 #if ((ENHMOD==1 || ENHMOD==2 || ENHMOD==3 || ENHMOD==4) && MARGIN==3)
 write(10, fmt=trim(fmt3)) 'enh_shelf   =', ENH_SHELF
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
 write(10, fmt=trim(fmt2a)) 'DYNAMICS = ', DYNAMICS
+#if (DYNAMICS==2 && defined(HYB_MODE))
+write(10, fmt=trim(fmt2)) 'HYB_MODE = ', HYB_MODE
+#endif
 #if ((DYNAMICS==1 && MARGIN==3) || DYNAMICS==2)
 #if (defined(LIS_OPTS))
 write(10, fmt=trim(fmt1)) 'lis_opts = '//LIS_OPTS
@@ -912,11 +933,14 @@ write(10, fmt=trim(fmt3)) 'visc_smooth_diff =', VISC_SMOOTH_DIFF
 write(10, fmt=trim(fmt3)) 'relax_fact_ssa =', RELAX_FACT_SSA
 #endif
 #endif
-#if (DYNAMICS==2 && defined(RATIO_SL_THRESH))
+#if (DYNAMICS==2 && HYB_MODE==0 && defined(RATIO_SL_THRESH))
 write(10, fmt=trim(fmt3)) 'ratio_sl_thresh =', RATIO_SL_THRESH
 #endif
-#if (DYNAMICS==2 && defined(SSTA_SIA_WEIGH_FCT))
+#if (DYNAMICS==2 && HYB_MODE==0 && defined(SSTA_SIA_WEIGH_FCT))
 write(10, fmt=trim(fmt2a)) 'SSTA_SIA_WEIGH_FCT = ', SSTA_SIA_WEIGH_FCT
+#endif
+#if (DYNAMICS==2 && HYB_MODE==1 && defined(HYB_REF_SPEED))
+write(10, fmt=trim(fmt3)) 'hyb_ref_speed =', HYB_REF_SPEED
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
@@ -1012,21 +1036,21 @@ close(10, status='keep')
 
 !-------- Conversion of time quantities --------
 
-year_zero  = year_zero*YEAR_SEC     ! a --> s
-time_init  = time_init0*YEAR_SEC    ! a --> s
-time_end   = time_end0*YEAR_SEC     ! a --> s
-dtime      = dtime0*YEAR_SEC        ! a --> s
-dtime_temp = dtime_temp0*YEAR_SEC   ! a --> s
+year_zero  = year_zero*year2sec     ! a --> s
+time_init  = time_init0*year2sec    ! a --> s
+time_end   = time_end0*year2sec     ! a --> s
+dtime      = dtime0*year2sec        ! a --> s
+dtime_temp = dtime_temp0*year2sec   ! a --> s
 #if (REBOUND==2)
-dtime_wss  = dtime_wss0*YEAR_SEC    ! a --> s
+dtime_wss  = dtime_wss0*year2sec    ! a --> s
 #endif
-dtime_ser  = dtime_ser0*YEAR_SEC    ! a --> s
+dtime_ser  = dtime_ser0*year2sec    ! a --> s
 #if (OUTPUT==1 || OUTPUT==3)
-dtime_out  = dtime_out0*YEAR_SEC    ! a --> s
+dtime_out  = dtime_out0*year2sec    ! a --> s
 #endif
 #if (OUTPUT==2 || OUTPUT==3)
 do n=1, n_output
-   time_output(n) = time_output0(n)*YEAR_SEC  ! a --> s
+   time_output(n) = time_output0(n)*year2sec  ! a --> s
 end do
 #endif
 
@@ -1064,23 +1088,14 @@ n_slide_region = 1
 
 #else
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(SLIDE_REGIONS_FILE)
 
-open(24, iostat=ios, file=trim(filename_with_path), recl=rcl2, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='n_basin', n_var_type=2, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the sliding-regions file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(24, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(24, fmt=trim(fmt4)) (n_slide_region(j,i), i=0,IMAX)
-end do
-
-close(24, status='keep')
+n_slide_region = nint(field2d_aux)
 
 #endif
 
@@ -1088,10 +1103,25 @@ close(24, status='keep')
 
 #if (GRID==0 || GRID==1)
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(PRECIP_MM_PRESENT_FILE)
 
-open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+ch_month = (/ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
+              'jul', 'aug', 'sep', 'oct', 'nov', 'dec' /)
+
+do n=1, 12   ! month counter
+
+   ch_var_name = 'precip_present_' // trim(ch_month(n))
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name=trim(ch_var_name), &
+                      n_var_type=1, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
+                      field2d_r=field2d_aux)
+
+   precip_present(:,:,n) = field2d_aux *(1.0e-03_dp/year2sec)*(RHO_W/RHO)
+                                        ! mm/a water equiv. -> m/s ice equiv.
+
+end do
 
 #elif (GRID==2)
 
@@ -1101,55 +1131,30 @@ call error(errormsg)
 
 #endif
 
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the precipitation file!'
-   call error(errormsg)
-end if
-
-do m=1, 6; read(21, fmt='(a)') ch_dummy; end do
-
-do n=1, 12   ! month counter
-   do m=1, 3; read(21, fmt='(a)') ch_dummy; end do
-   do j=JMAX, 0, -1
-      read(21, fmt=*) (precip_present(j,i,n), i=0,IMAX)
-   end do
-end do
-
-close(21, status='keep')
-
-!  ------ Conversion mm/a water equivalent --> m/s ice equivalent
-
-precip_present = precip_present *(1.0e-03_dp/YEAR_SEC)*(RHO_W/RHO)
-                                ! mm/a water equiv. -> m/s ice equiv.
-
 !-------- Reading of LGM monthly-mean precipitation-rate anomalies --------
 
 #if (ACCSURFACE==5)
 
 #if (GRID==0 || GRID==1)
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(PRECIP_MM_ANOM_FILE)
 
-open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
-
-#endif
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the precip anomaly file!'
-   call error(errormsg)
-end if
-
-do m=1, 6; read(21, fmt='(a)') ch_dummy; end do
+ch_month = (/ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
+              'jul', 'aug', 'sep', 'oct', 'nov', 'dec' /)
 
 do n=1, 12   ! month counter
-   do m=1, 3; read(21, fmt='(a)') ch_dummy; end do
-   do j=JMAX, 0, -1
-      read(21, fmt=*) (precip_lgm_anom(j,i,n), i=0,IMAX)
-   end do
-end do
 
-close(21, status='keep')
+   ch_var_name = 'precip_lgm_anom_' // trim(ch_month(n))
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name=trim(ch_var_name), &
+                      n_var_type=1, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
+                      field2d_r=field2d_aux)
+
+   precip_lgm_anom(:,:,n) = field2d_aux
+
+end do
 
 precip_lgm_anom = precip_lgm_anom * PRECIP_MM_ANOM_FACT
 
@@ -1174,19 +1179,25 @@ end do
 
 #endif
 
+#endif
+
 !-------- Mean accumulation --------
 
-mean_accum = MEAN_ACCUM*(1.0e-03_dp/YEAR_SEC)*(RHO_W/RHO)
+mean_accum = MEAN_ACCUM*(1.0e-03_dp/year2sec)*(RHO_W/RHO)
                        ! mm/a water equiv. -> m/s ice equiv.
 
 !-------- Reading of present topography mask --------
 
 #if (GRID==0 || GRID==1)
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(MASK_PRESENT_FILE)
 
-open(24, iostat=ios, file=trim(filename_with_path), recl=rcl2, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='mask', n_var_type=3, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
+
+maske_ref = nint(field2d_aux)
 
 #elif (GRID==2)
 
@@ -1195,28 +1206,29 @@ errormsg = ' >>> sico_init: ' &
 call error(errormsg)
 
 #endif
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the mask file!'
-   call error(errormsg)
-end if
-
-do m=1, 6; read(24, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(24, fmt=trim(fmt4)) (maske_ref(j,i), i=0,IMAX)
-end do
-
-close(24, status='keep')
 
 !-------- Reading of data for present monthly-mean surface temperature --------
 
 #if (GRID==0 || GRID==1)
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(TEMP_MM_PRESENT_FILE)
 
-open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+ch_month = (/ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
+              'jul', 'aug', 'sep', 'oct', 'nov', 'dec' /)
+
+do n=1, 12   ! month counter
+
+   ch_var_name = 'temp_present_' // trim(ch_month(n))
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name=trim(ch_var_name), &
+                      n_var_type=1, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
+                      field2d_r=field2d_aux)
+
+   temp_mm_present(:,:,n) = field2d_aux
+
+end do
 
 #elif (GRID==2)
 
@@ -1225,22 +1237,6 @@ errormsg = ' >>> sico_init: ' &
 call error(errormsg)
 
 #endif
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the temperature file!'
-   call error(errormsg)
-end if
-
-do m=1, 6; read(21, fmt='(a)') ch_dummy; end do
-
-do n=1, 12   ! month counter
-   do m=1, 3; read(21, fmt='(a)') ch_dummy; end do
-   do j=JMAX, 0, -1
-      read(21, fmt=*) (temp_mm_present(j,i,n), i=0,IMAX)
-   end do
-end do
-
-close(21, status='keep')
 
 !-------- Reading of LGM monthly-mean surface-temperature anomalies --------
 
@@ -1248,30 +1244,28 @@ close(21, status='keep')
 
 #if (GRID==0 || GRID==1)
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(TEMP_MM_ANOM_FILE)
 
-open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
-
-#endif
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the temperature anomaly file!'
-   call error(errormsg)
-end if
-
-do m=1, 6; read(21, fmt='(a)') ch_dummy; end do
+ch_month = (/ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
+              'jul', 'aug', 'sep', 'oct', 'nov', 'dec' /)
 
 do n=1, 12   ! month counter
-   do m=1, 3; read(21, fmt='(a)') ch_dummy; end do
-   do j=JMAX, 0, -1
-      read(21, fmt=*) (temp_mm_lgm_anom(j,i,n), i=0,IMAX)
-   end do
+
+   ch_var_name = 'temp_lgm_anom_' // trim(ch_month(n))
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name=trim(ch_var_name), &
+                      n_var_type=1, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
+                      field2d_r=field2d_aux)
+
+   temp_mm_lgm_anom(:,:,n) = field2d_aux
+
 end do
 
-close(21, status='keep')
-
 temp_mm_lgm_anom = temp_mm_lgm_anom * TEMP_MM_ANOM_FACT
+
+#endif
 
 #endif
 
@@ -1280,10 +1274,22 @@ temp_mm_lgm_anom = temp_mm_lgm_anom * TEMP_MM_ANOM_FACT
 
 #if (GRID==0 || GRID==1)
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZS_PRESENT_FILE)
 
-open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='zs', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
+
+zs_ref = field2d_aux
+
+do i=0, IMAX
+do j=0, JMAX
+   if (maske_ref(j,i) >= 2_i1b) zs_ref(j,i) = 0.0_dp
+                 ! resetting elevations over the ocean
+                 ! to the present-day sea surface
+end do
+end do
 
 #elif (GRID==2)
 
@@ -1293,33 +1299,11 @@ call error(errormsg)
 
 #endif
 
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the zs file!'
-   call error(errormsg)
-end if
-
-do m=1, 6; read(21, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(21, fmt=*) (zs_ref(j,i), i=0,IMAX)
-end do
-
-close(21, status='keep')
-
-!  ------ Reset bathymetry data (sea floor elevation) to the
-!         sea surface
-
-do i=0, IMAX
-do j=0, JMAX
-   if (maske_ref(j,i) >= 2_i1b) zs_ref(j,i) = 0.0_dp
-end do
-end do
-
 !-------- Read data for delta_ts --------
 
 #if (TSURFACE==4)
 
-filename_with_path = trim(INPATH)//'/general/'//trim(GRIP_TEMP_FILE)
+filename_with_path = trim(IN_PATH)//'/general/'//trim(GRIP_TEMP_FILE)
 
 open(21, iostat=ios, file=trim(filename_with_path), status='old')
 
@@ -1353,7 +1337,7 @@ close(21, status='keep')
 
 #if (TSURFACE==5)
 
-filename_with_path = trim(INPATH)//'/general/'//trim(GLAC_IND_FILE)
+filename_with_path = trim(IN_PATH)//'/general/'//trim(GLAC_IND_FILE)
 
 open(21, iostat=ios, file=trim(filename_with_path), status='old')
 
@@ -1387,7 +1371,7 @@ close(21, status='keep')
 
 #if (SEA_LEVEL==3)
 
-filename_with_path = trim(INPATH)//'/general/'//trim(SEA_LEVEL_FILE)
+filename_with_path = trim(IN_PATH)//'/general/'//trim(SEA_LEVEL_FILE)
 
 open(21, iostat=ios, file=trim(filename_with_path), status='old')
 
@@ -1435,29 +1419,14 @@ end do
 
 !  ------ Read data from file
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(Q_GEO_FILE)
 
-open(21, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='GHF', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the qgeo file!'
-   call error(errormsg)
-end if
-
-do m=1, 6; read(21, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(21, fmt=*) (q_geo(j,i), i=0,IMAX)
-end do
-
-close(21, status='keep')
-
-do i=0, IMAX
-do j=0, JMAX
-   q_geo(j,i) = q_geo(j,i) *1.0e-03_dp   ! mW/m2 -> W/m2
-end do
-end do
+q_geo = field2d_aux *1.0e-03_dp   ! mW/m2 -> W/m2
 
 #endif
 
@@ -1480,29 +1449,19 @@ call read_kei()
 
 #if (TIME_LAG_MOD==1)
 
-time_lag_asth = TIME_LAG*YEAR_SEC   ! a -> s
+time_lag_asth = TIME_LAG*year2sec   ! a -> s
 
 #elif (TIME_LAG_MOD==2)
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(TIME_LAG_FILE)
 
-open(29, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='time_lag_asth', &
+                   n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the time-lag file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(29, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(29, fmt=*) (time_lag_asth(j,i), i=0,IMAX)
-end do
-
-close(29, status='keep')
-
-time_lag_asth = time_lag_asth*YEAR_SEC   ! a -> s
+time_lag_asth = field2d_aux *year2sec   ! a -> s
 
 #endif
 
@@ -1522,23 +1481,15 @@ flex_rig_lith = FLEX_RIG
 
 #elif (FLEX_RIG_MOD==2)
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(FLEX_RIG_FILE)
 
-open(29, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='flex_rig_lith', &
+                   n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the flex-rig file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(29, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(29, fmt=*) (flex_rig_lith(j,i), i=0,IMAX)
-end do
-
-close(29, status='keep')
+flex_rig_lith = field2d_aux
 
 #endif
 
@@ -1628,6 +1579,25 @@ end where
 smb_corr = 0.0_dp
 
 Q_b_tot = Q_bm + Q_tld
+
+#if (ENHMOD==1)
+   call calc_enhance_1()
+#elif (ENHMOD==2)
+   call calc_enhance_2()
+#elif (ENHMOD==3)
+   call calc_enhance_3(time_init)
+#elif (ENHMOD==4)
+   !!! call calc_enhance_4()
+   !!!    (for anisotropic flow enhancement factor,
+   !!!     use values read from output of previous simulation)
+#elif (ENHMOD==5)
+   !!! call calc_enhance_5()
+   !!!    (for anisotropic flow enhancement factor,
+   !!!     use values read from output of previous simulation)
+#else
+   errormsg = ' >>> sico_init: Parameter ENHMOD must be between 1 and 5!'
+   call error(errormsg)
+#endif
 
 #endif
 
@@ -1756,7 +1726,7 @@ call error(errormsg)
 
 !  ------ Time-series file for the ice sheet on the whole
 
-filename_with_path = trim(OUTPATH)//'/'//trim(runname)//'.ser'
+filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'.ser'
 
 open(12, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -1801,7 +1771,7 @@ end if
 
 n_core = 0   ! No boreholes defined
 
-filename_with_path = trim(OUTPATH)//'/'//trim(runname)//'.core'
+filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'.core'
 
 open(14, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -1903,7 +1873,6 @@ implicit none
 real(dp), intent(out) :: dxi, deta
 
 ! integer(i4b) :: i, j
-! integer(i4b) :: ios
 ! real(dp)     :: xi0, eta0
 
 dxi=0.0_dp; deta=0.0_dp   ! dummy values
@@ -1920,6 +1889,8 @@ end subroutine topography1
 !<------------------------------------------------------------------------------
 subroutine topography2(dxi, deta)
 
+  use read_m, only : read_2d_input
+
 #if (GRID==0 || GRID==1)
   use stereo_proj_m
 #endif
@@ -1932,54 +1903,31 @@ implicit none
 real(dp), intent(out) :: dxi, deta
 
 integer(i4b) :: i, j, n
-integer(i4b) :: ios
 real(dp)     :: xi0, eta0
-character    :: ch_dummy
 
-character(len=  8) :: ch_imax
-character(len=128) :: fmt4
 character(len=256) :: filename_with_path
 
-write(ch_imax, fmt='(i8)') IMAX
-write(fmt4,    fmt='(a)')  '('//trim(adjustl(ch_imax))//'(i1),i1)'
+real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 
 !-------- Read topography --------
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZL0_FILE)
 
-open(23, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='zl0', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> topography2: Error when opening the zl0 file!'
-   call error(errormsg)
-end if
+zl0 = field2d_aux
 
-do n=1, 6; read(23, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(23, fmt=*) (zl0(j,i), i=0,IMAX)
-end do
-
-close(23, status='keep')
-
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(MASK_PRESENT_FILE)
 
-open(24, iostat=ios, file=trim(filename_with_path), recl=rcl2, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='mask', n_var_type=3, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> topography2: Error when opening the mask file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(24, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(24, fmt=trim(fmt4)) (maske(j,i), i=0,IMAX)
-end do
-
-close(24, status='keep')
+maske = nint(field2d_aux)
 
 !-------- Further stuff --------
 
@@ -2078,6 +2026,31 @@ do j=0, JMAX
 end do
 end do
 
+!-------- Region mask --------
+
+mask_region = -1
+
+#if (defined(MASK_REGION_FILE))
+
+if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+                                      ! read mask_region from file
+
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(MASK_REGION_FILE)
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='mask_region', &
+                      n_var_type=2, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
+
+   mask_region = nint(field2d_aux)
+
+end if
+
+#endif
+
+if (mask_region(0,0) == -1) mask_region = 0   ! regions undefined
+
 end subroutine topography2
 
 !-------------------------------------------------------------------------------
@@ -2087,7 +2060,7 @@ end subroutine topography2
 !<------------------------------------------------------------------------------
 subroutine topography3(dxi, deta, z_sl, anfdatname)
 
-  use read_m, only : read_erg_nc
+  use read_m, only : read_erg_nc, read_2d_input
 
 #if (GRID==0 || GRID==1)
   use stereo_proj_m
@@ -2103,9 +2076,10 @@ character(len=100), intent(in) :: anfdatname
 real(dp),          intent(out) :: dxi, deta, z_sl
 
 integer(i4b) :: i, j, n
-integer(i4b) :: ios
+
 character(len=256) :: filename_with_path
-character :: ch_dummy
+
+real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 
 !-------- Read data from time-slice file of previous simulation --------
 
@@ -2113,23 +2087,14 @@ call read_erg_nc(z_sl, anfdatname)
 
 !-------- Read topography of the relaxed bedrock --------
 
-filename_with_path = trim(INPATH)//'/'//trim(ch_domain_short)//'/'// &
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZL0_FILE)
 
-open(23, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='old')
+call read_2d_input(filename_with_path, &
+                   ch_var_name='zl0', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-if (ios /= 0) then
-   errormsg = ' >>> topography3: Error when opening the zl0 file!'
-   call error(errormsg)
-end if
-
-do n=1, 6; read(23, fmt='(a)') ch_dummy; end do
-
-do j=JMAX, 0, -1
-   read(23, fmt=*) (zl0(j,i), i=0,IMAX)
-end do
-
-close(23, status='keep')
+zl0 = field2d_aux
 
 !-------- Further stuff --------
 
@@ -2182,6 +2147,31 @@ do j=0, JMAX
    area(j,i) = sq_g11_g(j,i)*sq_g22_g(j,i)*dxi*deta
 end do
 end do
+
+!-------- Region mask --------
+
+mask_region = -1
+
+#if (defined(MASK_REGION_FILE))
+
+if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+                                      ! read mask_region from file
+
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(MASK_REGION_FILE)
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='mask_region', &
+                      n_var_type=2, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
+
+   mask_region = nint(field2d_aux)
+
+end if
+
+#endif
+
+if (mask_region(0,0) == -1) mask_region = 0   ! regions undefined
 
 end subroutine topography3
 

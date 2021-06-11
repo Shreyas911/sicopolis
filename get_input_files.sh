@@ -5,7 +5,7 @@
 #   Downloading the input files for SICOPOLIS,
 #   copying them to the corresponding directories.
 #   
-#    - Ralf Greve, 2020-07-01.
+#    - Ralf Greve, 2021-06-11.
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #-------- Settings (to be customized) --------
@@ -29,27 +29,27 @@ SMARS_FLAG=1   # South polar cap of Mars:
 
 #-------- Initialization --------
 
-REPO_URL=http://wwwice.lowtem.hokudai.ac.jp/repo/sicopolis/sico_in
+REPO_URL=https://zenodo.org/record/4922827/files
 
 SICOPOLIS_HOME=$PWD
 
 domains=
 
-if [ $ANT_FLAG == 1 ]; then
+if [[ $ANT_FLAG -eq 1 ]]; then
    domains="`echo $domains` ant"; fi
-if [ $GRL_FLAG == 1 ]; then
+if [[ $GRL_FLAG -eq 1 ]]; then
    domains="`echo $domains` grl"; fi
-if [ $ASF_FLAG == 1 ]; then
+if [[ $ASF_FLAG -eq 1 ]]; then
    domains="`echo $domains` asf"; fi
-if [ $NHEM_FLAG == 1 ]; then
+if [[ $NHEM_FLAG -eq 1 ]]; then
    domains="`echo $domains` nhem"; fi
-if [ $SCAND_FLAG == 1 ]; then
+if [[ $SCAND_FLAG -eq 1 ]]; then
    domains="`echo $domains` scand"; fi
-if [ $TIBET_FLAG == 1 ]; then
+if [[ $TIBET_FLAG -eq 1 ]]; then
    domains="`echo $domains` tibet"; fi
-if [ $NMARS_FLAG == 1 ]; then
+if [[ $NMARS_FLAG -eq 1 ]]; then
    domains="`echo $domains` nmars"; fi
-if [ $SMARS_FLAG == 1 ]; then
+if [[ $SMARS_FLAG -eq 1 ]]; then
    domains="`echo $domains` smars"; fi
 
 TMP_DIR="tmp_`date --iso-8601='seconds'`"

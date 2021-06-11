@@ -243,12 +243,12 @@ print *, '           AGE_COST simulations'
   !-------- Print to screen just in case something gets
   !         crazy with the file outputting:
   print *, 'Final cost, fc = ', fc
-  print *, trim(OUTPATH)
+  print *, trim(OUT_PATH)
   
   !-------- Write final cost to a file:
   open(unit=97, iostat=ios, &
 #ifndef ALLOW_OPENAD
-       file=trim(OUTPATH)//'/'//trim(runname)//'_COST.dat', &
+       file=trim(OUT_PATH)//'/'//trim(runname)//'_COST.dat', &
 #else
        file='AD_COST', &
 #endif

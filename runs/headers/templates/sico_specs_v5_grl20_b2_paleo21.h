@@ -7,17 +7,12 @@
 #define RUNNAME 'v5_grl20_b2_paleo21'
 !                      Name of simulation
 
-#define SICO_VERSION '5.1'
+#define SICO_VERSION '5.2'
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define INPATH '/Will/be/inserted/automatically'
-!                      Directory for SICOPOLIS input
-!                      (no '/' at the end!)
-
-#define OUTPATH '/Will/be/inserted/automatically'
-!                      Directory for SICOPOLIS output
-!                      (no '/' at the end!)
+#define RUN_SPECS_HEADER_LAST_CHANGED '2021-06-11'
+!                      Date of last change
 
 !-------- Domain --------
 
@@ -140,9 +135,16 @@
 !                             (static ice)
 !                         1 : SIA for grounded ice,
 !                             SSA for floating ice (if existing)
-!                         2 : SIA for grounded ice,
-!                             SIA/SStA hybrid for ice streams,
+!                         2 : SIA/SStA hybrid for grounded ice,
 !                             SSA for floating ice (if existing)
+
+#define HYB_MODE 0
+!                         SIA/SStA hybrid (only for DYNAMICS==2):
+!                         0 : Sum of weighted sliding SIA and weighted SStA
+!                             (by R. Greve)
+!                         1 : Sum of weighted non-sliding SIA and full SStA
+!                             (by J. Bernales)
+!                         2 : Pure SStA (no SIA)
 
 #define LIS_OPTS '-i bicgsafe -maxiter 1000 -tol 1.0e-03 -p jacobi -initx_zeros false'
 !                         Options string for the Lis solver for the SSA/SStA
@@ -191,15 +193,19 @@
 
 #define RATIO_SL_THRESH 0.5d0
 !                         Threshold value for the slip ratio of grounded ice.
-!                         If the slip ratio is larger, ice stream dynamics
-!                         is employed (for DYNAMICS==2).
+!                         If the slip ratio is larger, hybrid SIA/SStA dynamics
+!                         kicks in (for DYNAMICS==2 and HYB_MOD==0).
 
 #define SSTA_SIA_WEIGH_FCT 1
 !                         SStA-SIA weighing factor as a function of the
-!                         slip ratio (for DYNAMICS==2):
+!                         slip ratio (for DYNAMICS==2 and HYB_MOD==0):
 !                         0 : Linear function (continuous transitions)
 !                         1 : Cubic function (smooth transitions)
 !                         2 : Quintic function (even smoother transitions)
+
+#define HYB_REF_SPEED 30.0d0
+!                         Scaling reference speed for hybrid SIA/SStA dynamics
+!                         (in m/a, for DYNAMICS==2 and HYB_MOD==1).
 
 !-------- Ice sheet thermodynamics --------
 
@@ -399,6 +405,12 @@
 !                         Flow enhancement factor for shear
 !                         (only for ENHMOD==4, 5)
 
+#define ENH_STREAM -9999.9d0
+!                         Separate flow enhancement factor for ice streams
+!                         (SStA dynamics;
+!                          only for ENHMOD==1, 2, 3 and DYNAMICS==2;
+!                          ignored if negative)
+
 #define ENH_SHELF 1.0d0
 !                         Separate flow enhancement factor for floating ice
 !                         (only for ENHMOD==1, 2, 3, 4 and MARGIN==3)
@@ -433,6 +445,10 @@
 !                             Name of the file containing the present-day
 !                             ice-land-ocean mask
 
+#define MASK_REGION_FILE 'none'
+!                             Name of the file containing the region mask
+!                             ('none' if no file is to be defined)
+
 #define TEMP_INIT 4
 !                         Initial ice temperature conditions
 !                         (only for ANF_DAT==1):
@@ -449,10 +465,6 @@
 #define ANFDATNAME 'none'
 !                             Initial-value file (only for ANF_DAT==3,
 !                                  or for ANF_DAT==1 and TEMP_INIT==5)
-
-#define ANFDATPATH '/Will/be/inserted/automatically/if/needed'
-!                             Directory for initial-value file
-!                             (no '/' at the end!)
 
 !-------- Lithosphere (bedrock) modelling --------
 
@@ -552,12 +564,6 @@
 #define TARGET_TOPO_DAT_NAME 'none'
 !                             Target-topography file
 !                             (only for THK_EVOL==2, 3,
-!                              or for ACCSURFACE==7 and ABLSURFACE==7)
-
-#define TARGET_TOPO_DAT_PATH '/Will/be/inserted/automatically/if/needed'
-!                             Directory for target-topography file
-!                             (no '/' at the end;
-!                              only for THK_EVOL==2, 3,
 !                              or for ACCSURFACE==7 and ABLSURFACE==7)
 
 #define MASK_MAXEXTENT_FILE 'none'
@@ -1032,11 +1038,15 @@
 
 #define C_SLIDE 6.72d0
 !                       Sliding coefficient, in m/[a*Pa^(p-q)]
-!                       (N_SLIDE_REGIONS separate values)
+!                       (N_SLIDE_REGIONS separate values).
+!                       Set to 0.0d0 for no-slip conditions.
 
 #define GAMMA_SLIDE 1.0d0
 !                       Sub-melt sliding coefficient, in K
-!                       (N_SLIDE_REGIONS separate values)
+!                       (N_SLIDE_REGIONS separate values).
+!                       Set to 1.11d+11 (or any other very large value)
+!                       to allow basal sliding everywhere,
+!                       irrespective of the basal temperature.
 
 #define P_WEERT 3
 !                       Weertman exponent p (integer) for the basal shear stress

@@ -10,7 +10,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2019 Bjoern Grieger, Oliver J. Stenzel, Ralf Greve
+!! Copyright 2009-2021 Bjoern Grieger, Oliver J. Stenzel, Ralf Greve
 !!
 !! @section License
 !!

@@ -8,7 +8,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2013-2019 Ralf Greve, Heinz Blatter
+!! Copyright 2013-2021 Ralf Greve, Heinz Blatter
 !!
 !! @section License
 !!
@@ -814,10 +814,10 @@ do kc=0, KCMAX
 
    age_c_neu(kc,j,i) = lgs_x(kc)
 
-   if (age_c_neu(kc,j,i) < (AGE_MIN*YEAR_SEC)) &
+   if (age_c_neu(kc,j,i) < (AGE_MIN*year2sec)) &
                            age_c_neu(kc,j,i) = 0.0_dp
-   if (age_c_neu(kc,j,i) > (AGE_MAX*YEAR_SEC)) &
-                           age_c_neu(kc,j,i) = AGE_MAX*YEAR_SEC
+   if (age_c_neu(kc,j,i) > (AGE_MAX*year2sec)) &
+                           age_c_neu(kc,j,i) = AGE_MAX*year2sec
 
 end do
 
@@ -1731,10 +1731,10 @@ do kc=0, KCMAX
 
    age_c_neu(kc,j,i) = lgs_x(kc)
 
-   if (age_c_neu(kc,j,i) < (AGE_MIN*YEAR_SEC)) &
+   if (age_c_neu(kc,j,i) < (AGE_MIN*year2sec)) &
                            age_c_neu(kc,j,i) = 0.0_dp
-   if (age_c_neu(kc,j,i) > (AGE_MAX*YEAR_SEC)) &
-                           age_c_neu(kc,j,i) = AGE_MAX*YEAR_SEC
+   if (age_c_neu(kc,j,i) > (AGE_MAX*year2sec)) &
+                           age_c_neu(kc,j,i) = AGE_MAX*year2sec
 
 end do
 
@@ -3033,10 +3033,10 @@ do kc=0, KCMAX
 
    age_c_neu(kc,j,i) = lgs_x(kc)
 
-   if (age_c_neu(kc,j,i) < (AGE_MIN*YEAR_SEC)) &
+   if (age_c_neu(kc,j,i) < (AGE_MIN*year2sec)) &
                            age_c_neu(kc,j,i) = 0.0_dp
-   if (age_c_neu(kc,j,i) > (AGE_MAX*YEAR_SEC)) &
-                           age_c_neu(kc,j,i) = AGE_MAX*YEAR_SEC
+   if (age_c_neu(kc,j,i) > (AGE_MAX*year2sec)) &
+                           age_c_neu(kc,j,i) = AGE_MAX*year2sec
 
 end do
 

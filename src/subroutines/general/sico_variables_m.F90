@@ -8,7 +8,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2019 Ralf Greve
+!! Copyright 2009-2021 Ralf Greve
 !!
 !! @section License
 !!
@@ -63,6 +63,17 @@ save
    integer(i4b), dimension(0:JMAX,0:IMAX) :: kc_cts
 !> (.)_neu: New value of quantity (.) computed during an integration step
    integer(i4b), dimension(0:JMAX,0:IMAX) :: kc_cts_neu
+!> mask_region(j,i): Region mask.
+!>             0: undefined,
+!>             1: EAIS,
+!>             2: WAIS,
+!>             3: AP
+   integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_region
+!> flag_calc_temp: Flag for computation of the temperature, water content,
+!>                 age and flow enhancement factor during an integration step.
+!>                  .true.: temperature etc. computed
+!>                 .false.: temperature etc. not computed
+   logical :: flag_calc_temp
 !> flag_inner_point(j,i): Inner-point flag.
 !>                              .true.: inner point,
 !>                             .false.: margin point
@@ -303,6 +314,9 @@ save
 !> ratio_sl_y(j,i): Ratio of basal to surface velocity (slip ratio)
 !>                  in y-direction, at (i,j+1/2)
    real(dp), dimension(0:JMAX,0:IMAX) :: ratio_sl_y
+!> ratio_sl(j,i): Ratio of basal to surface velocity (slip ratio)
+!>                on the main grid
+   real(dp), dimension(0:JMAX,0:IMAX) :: ratio_sl
 !> (.)_g(j,i): Staggered-grid quantity (.) interpolated to grid point (i,j)
    real(dp), dimension(0:JMAX,0:IMAX) :: vx_b_g
 !> (.)_g(j,i): Staggered-grid quantity (.) interpolated to grid point (i,j)
@@ -709,6 +723,9 @@ save
 
 !-------- Further quantities -------- 
 
+!> year2sec: 1 year (1 a) in seconds
+   real(dp), parameter :: year2sec = YEAR_SEC
+
 !> year_zero: SICOPOLIS year zero in astronomical year numbering
 !>            [ = signed year CE (AD) ]
    real(dp) :: year_zero
@@ -798,8 +815,8 @@ save
 !>                       1: allowed to glaciate.
    integer(i1b), dimension(0:JMAX,0:IMAX) :: maske_maxextent
 
-!> ncid_ser: ID of the NetCDF time-series output file
-   integer(i4b) :: ncid_ser
+!> ncid_ser: IDs of the NetCDF time-series output files
+   integer(i4b), dimension(0:99) :: ncid_ser
 !> ncid_core: ID of the NetCDF time-series output file for the deep ice cores
    integer(i4b) :: ncid_core
 

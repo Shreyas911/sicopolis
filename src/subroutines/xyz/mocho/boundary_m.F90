@@ -9,7 +9,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2019 Ralf Greve, Eduardo Flandez, Matthias Scheiter
+!! Copyright 2009-2021 Ralf Greve, Eduardo Flandez, Matthias Scheiter
 !!
 !! @section License
 !!
@@ -106,22 +106,22 @@ delta_ts = DELTA_TS0
 !                           ! air-temperature deviation
 #elif (TSURFACE==3)
 delta_ts = SINE_AMPLIT &
-           *cos(2.0_dp*pi*time/(SINE_PERIOD*YEAR_SEC)) &
+           *cos(2.0_dp*pi*time/(SINE_PERIOD*year2sec)) &
            -SINE_AMPLIT
 !                           ! Sinusoidal air-temperature forcing
 #elif (TSURFACE==4)
 
 !  ------ delta_ts from the GRIP record
 
-if (time/YEAR_SEC.lt.real(grip_time_min,dp)) then
+if (time/year2sec.lt.real(grip_time_min,dp)) then
    delta_ts = griptemp(0)
-else if (time/YEAR_SEC.lt.real(grip_time_max,dp)) then
+else if (time/year2sec.lt.real(grip_time_max,dp)) then
 
-   i_kl = floor(((time/YEAR_SEC) &
+   i_kl = floor(((time/year2sec) &
           -real(grip_time_min,dp))/real(grip_time_stp,dp))
    i_kl = max(i_kl, 0)
 
-   i_gr = ceiling(((time/YEAR_SEC) &
+   i_gr = ceiling(((time/year2sec) &
           -real(grip_time_min,dp))/real(grip_time_stp,dp))
    i_gr = min(i_gr, ndata_grip)
 
@@ -131,8 +131,8 @@ else if (time/YEAR_SEC.lt.real(grip_time_max,dp)) then
 
    else
 
-      time_kl = (grip_time_min + i_kl*grip_time_stp) *YEAR_SEC
-      time_gr = (grip_time_min + i_gr*grip_time_stp) *YEAR_SEC
+      time_kl = (grip_time_min + i_kl*grip_time_stp) *year2sec
+      time_gr = (grip_time_min + i_gr*grip_time_stp) *year2sec
 
       delta_ts = griptemp(i_kl) &
                 +(griptemp(i_gr)-griptemp(i_kl)) &
@@ -164,12 +164,12 @@ z_sl = Z_SL0
 
 z_sl_min = -130.0_dp
 
-t1 = -250000.0_dp *YEAR_SEC
-t2 = -140000.0_dp *YEAR_SEC
-t3 = -125000.0_dp *YEAR_SEC
-t4 =  -21000.0_dp *YEAR_SEC
-t5 =   -8000.0_dp *YEAR_SEC
-t6 =       0.0_dp *YEAR_SEC
+t1 = -250000.0_dp *year2sec
+t2 = -140000.0_dp *year2sec
+t3 = -125000.0_dp *year2sec
+t4 =  -21000.0_dp *year2sec
+t5 =   -8000.0_dp *year2sec
+t6 =       0.0_dp *year2sec
 
 if (time.lt.t1) then
    z_sl = 0.0_dp
@@ -191,15 +191,15 @@ end if
 
 !  ------ z_sl from the SPECMAP record
 
-if (time/YEAR_SEC.lt.real(specmap_time_min,dp)) then
+if (time/year2sec.lt.real(specmap_time_min,dp)) then
    z_sl = specmap_zsl(0)
-else if (time/YEAR_SEC.lt.real(specmap_time_max,dp)) then
+else if (time/year2sec.lt.real(specmap_time_max,dp)) then
 
-   i_kl = floor(((time/YEAR_SEC) &
+   i_kl = floor(((time/year2sec) &
           -real(specmap_time_min,dp))/real(specmap_time_stp,dp))
    i_kl = max(i_kl, 0)
 
-   i_gr = ceiling(((time/YEAR_SEC) &
+   i_gr = ceiling(((time/year2sec) &
           -real(specmap_time_min,dp))/real(specmap_time_stp,dp))
    i_gr = min(i_gr, ndata_specmap)
 
@@ -209,8 +209,8 @@ else if (time/YEAR_SEC.lt.real(specmap_time_max,dp)) then
 
    else
 
-      time_kl = (specmap_time_min + i_kl*specmap_time_stp) *YEAR_SEC
-      time_gr = (specmap_time_min + i_gr*specmap_time_stp) *YEAR_SEC
+      time_kl = (specmap_time_min + i_kl*specmap_time_stp) *year2sec
+      time_gr = (specmap_time_min + i_gr*specmap_time_stp) *year2sec
 
       z_sl = specmap_zsl(i_kl) &
                 +(specmap_zsl(i_gr)-specmap_zsl(i_kl)) &

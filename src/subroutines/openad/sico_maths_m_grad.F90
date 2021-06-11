@@ -8,7 +8,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2018 Ralf Greve, Tatsuru Sato
+!! Copyright 2009-2021 Ralf Greve, Tatsuru Sato
 !!
 !! @section License
 !!
@@ -38,7 +38,7 @@ use sico_types_m
 
   private:: transpose_csr
   public :: sor_spr_grad, tri_sle_grad
-#ifdef BUILD_LIS
+#if defined(BUILD_LIS) && (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
   public :: sico_lis_solver_grad
 #endif
 
@@ -50,7 +50,7 @@ use sico_types_m
      module procedure tri_sle_grad_local
   end interface
 
-#ifdef BUILD_LIS
+#if defined(BUILD_LIS) && (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
   interface sico_lis_solver_grad
      module procedure sico_lis_solver_grad_local
   end interface
@@ -262,7 +262,7 @@ integer(i4b) :: i
 end subroutine tri_sle_grad_local
 
 !-------------------------------------------------------------------------------
-#ifdef BUILD_LIS
+#if defined(BUILD_LIS) && (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
 subroutine sico_lis_solver_grad_local(nmax, nnz, &
                            lgs_a_ptr, lgs_a_index, &
                            lgs_a_value, lgs_a_value_b, lgs_b_value,& 

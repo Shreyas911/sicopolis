@@ -1,7 +1,9 @@
 *.[oa]
 *~
+*.mod
+*.x
 
-logmsg.*
+my_*
 
 /runs/*
 !/runs/*/
@@ -9,10 +11,11 @@ logmsg.*
 
 /tools/*
 !/tools/*/
+/tools/matlab/*
+/tools/sicograph/*
+/tools/*/*.h
 
 /src/*.h
-/src/*.mod
-/src/*.x
 
 /src/subroutines/xyz/*
 !/src/subroutines/xyz/*/
@@ -34,4 +37,10 @@ logmsg.*
 /sico_in/smars/*
 !/sico_in/smars/phys_para*
 
-/sico_out/*/
+/sico_out/*
+!/sico_out/.keep
+
+/docu/doxygen/html/*
+!/docu/doxygen/html/.keep
+/docu/doxygen/latex/*
+!/docu/doxygen/latex/.keep

@@ -8,7 +8,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2019 Ralf Greve
+!! Copyright 2009-2021 Ralf Greve
 !!
 !! @section License
 !!
@@ -41,9 +41,14 @@ module calc_enhance_m
 
   implicit none
 
+  real(dp) :: enh_stream
+  logical  :: flag_enh_stream
+
   private
+  public :: enh_stream, flag_enh_stream
   public :: calc_enhance_1, calc_enhance_2, calc_enhance_3
   public :: calc_enhance_4, calc_enhance_5
+  public :: calc_enhance_hybrid_weighted
 
 contains
 
@@ -58,6 +63,8 @@ contains
 
   enh_t = ENH_FACT
   enh_c = ENH_FACT
+
+  call calc_enhance_stream_const()   ! ice streams
 
 #if (MARGIN==3)   /* floating ice */
   call calc_enhance_floating_const()
@@ -82,7 +89,7 @@ contains
   integer(i4b) :: i, j, kc, kt
   real(dp)     :: age_trans
 
-  age_trans = AGE_TRANS_0*YEAR_SEC
+  age_trans = AGE_TRANS_0*year2sec
 
   do i=0, IMAX
   do j=0, JMAX
@@ -105,6 +112,8 @@ contains
 
   end do
   end do
+
+  call calc_enhance_stream_const()   ! ice streams
 
 #if (MARGIN==3)   /* floating ice */
   call calc_enhance_floating_const()
@@ -131,9 +140,9 @@ contains
   integer(i4b) :: i, j, kc, kt
   real(dp)     :: date_trans1, date_trans2, date_trans3
 
-  date_trans1 = DATE_TRANS1_0*YEAR_SEC
-  date_trans2 = DATE_TRANS2_0*YEAR_SEC
-  date_trans3 = DATE_TRANS3_0*YEAR_SEC
+  date_trans1 = DATE_TRANS1_0*year2sec
+  date_trans2 = DATE_TRANS2_0*year2sec
+  date_trans3 = DATE_TRANS3_0*year2sec
 
   do i=0, IMAX
   do j=0, JMAX
@@ -168,6 +177,8 @@ contains
 
   end do
   end do
+
+  call calc_enhance_stream_const()   ! ice streams
 
 #if (MARGIN==3)   /* floating ice */
   call calc_enhance_floating_const()
@@ -219,6 +230,43 @@ contains
   end subroutine calc_enhance_5
 
 !-------------------------------------------------------------------------------
+!> Weighted enhancement factor for SIA/SStA hybrid dynamics.
+!<------------------------------------------------------------------------------
+  subroutine calc_enhance_hybrid_weighted(weigh_ssta_sia)
+
+  implicit none
+
+  real(dp), dimension(0:JMAX,0:IMAX), intent(in) :: weigh_ssta_sia
+
+  integer(i4b) :: i, j, kc, kt
+
+  if (flag_enh_stream) then
+
+     do i=0, IMAX
+     do j=0, JMAX
+
+        if (flag_shelfy_stream(j,i)) then   ! shelfy stream
+
+           do kt=0, KTMAX
+              enh_t(kt,j,i) = weigh_ssta_sia(j,i)*enh_stream &
+                              + (1.0_dp-weigh_ssta_sia(j,i))*enh_t(kt,j,i)
+           end do
+
+           do kc=0, KCMAX
+              enh_c(kc,j,i) = weigh_ssta_sia(j,i)*enh_stream &
+                              + (1.0_dp-weigh_ssta_sia(j,i))*enh_c(kc,j,i)
+           end do
+
+        end if
+
+     end do
+     end do
+
+  end if
+
+  end subroutine calc_enhance_hybrid_weighted
+
+!-------------------------------------------------------------------------------
 !> Minimal anisotropic flow enhancement factor.
 !<------------------------------------------------------------------------------
   subroutine calc_enhance_aniso()
@@ -260,6 +308,25 @@ contains
   end do
 
   end subroutine calc_enhance_aniso
+
+!-------------------------------------------------------------------------------
+!> Constant, prescribed flow enhancement factor for ice streams
+!! (fast-flowing ice).
+!<------------------------------------------------------------------------------
+  subroutine calc_enhance_stream_const()
+
+  implicit none
+
+  flag_enh_stream = .false.
+
+#if (DYNAMICS==2 && defined(ENH_STREAM))
+  enh_stream = ENH_STREAM
+  if (enh_stream >= 0.0_dp) flag_enh_stream = .true.
+#else
+  enh_stream = no_value_neg_1   ! negative dummy value
+#endif
+
+  end subroutine calc_enhance_stream_const
 
 !-------------------------------------------------------------------------------
 !> Constant, prescribed flow enhancement factor for floating ice.

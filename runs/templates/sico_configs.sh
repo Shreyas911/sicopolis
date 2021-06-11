@@ -1,10 +1,10 @@
 #-------------------------------------------------------------------------------
-# Configuration file for manual configuration of SICOPOLIS
+# Configuration file for SICOPOLIS
 #-------------------------------------------------------------------------------
 
 #-------- Compiler --------
 
-### export FC=gfortran
+export FC=gfortran
 ###    Can be set here if needed.
 ###    So far, gfortran and ifort are supported.
 
@@ -40,9 +40,22 @@ LARGE_DATA_FLAG="false"
 
 #-------- NetCDF settings --------
 
+# module load ...
+### A 'module load' command is needed on some systems.
+
+# module load netcdf/4.4.1_gnu5.4.0
+### needed for GEO-UiO Linux environment (as of Aug 2020)
+
 if [ "$NETCDF_FLAG" = "true" ] ; then
 
    export NETCDFHOME=/opt/netcdf
+
+   # export NETCDFHOME=/usr
+   #        ### often works if NetCDF was installed from a repository
+   #        ### rather than manually
+
+   # export NETCDFHOME=/opt/uio/modules/packages/netcdf/4.4.1_gnu5.4.0
+   #        ### setting for GEO-UiO Linux environment (as of Aug 2020)
 
    if [ -z "${LD_LIBRARY_PATH}" ]; then
       export LD_LIBRARY_PATH=${NETCDFHOME}/lib
@@ -79,6 +92,9 @@ fi
 
 #-------- Lis settings --------
 
+# module load ...
+### A 'module load' command is needed on some systems.
+
 if [ "$LIS_FLAG" = "true" ] ; then
    LISHOME=/opt/lis
    LISINCLUDE=${LISHOME}'/include'
@@ -110,7 +126,8 @@ if [ "$FC" = "ifort" ] ; then
    if [ "$OPENMP_FLAG" = "true" ] ; then
       case $PROGNAME in
            "sicopolis")
-              FCFLAGS=${FCFLAGS}' -openmp'
+              FCFLAGS=${FCFLAGS}' -qopenmp'
+              # Change to ' -openmp' for older versions of the compiler
               ;;
            *) ;;
       esac            

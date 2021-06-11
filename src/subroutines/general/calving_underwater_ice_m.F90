@@ -8,7 +8,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2019 Ralf Greve, Thorben Dunse
+!! Copyright 2009-2021 Ralf Greve, Thorben Dunse
 !!
 !! @section License
 !!
@@ -64,7 +64,7 @@ contains
 
 !-------- Term abbreviations --------
 
-  year_sec_inv = 1.0_dp/YEAR_SEC
+  year_sec_inv = 1.0_dp/year2sec
 
   rhosw_rho_ratio = RHO_SW/RHO
 

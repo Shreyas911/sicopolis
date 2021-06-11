@@ -8,7 +8,8 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2017-2019 Liz Curry-Logan, Sri Hari Krishna Narayanan
+!! Copyright 2017-2021 Liz Curry-Logan, Sri Hari Krishna Narayanan,
+!!                     Patrick Heimbach, Ralf Greve
 !!
 !! @section License
 !!
@@ -264,9 +265,9 @@ contains
   !-------- deleting directories
   
     shell_command = 'if [ -d'
-    shell_command = trim(shell_command)//' '//OUTPATH
+    shell_command = trim(shell_command)//' '//OUT_PATH
     shell_command = trim(shell_command)//' '//'] ; then rm -rf'
-    shell_command = trim(shell_command)//' '//OUTPATH
+    shell_command = trim(shell_command)//' '//OUT_PATH
     shell_command = trim(shell_command)//' '//'; fi'
     
     call system(trim(shell_command))
@@ -328,8 +329,10 @@ contains
       runname)
 
  call var_transfer&
-      (maske,maske_old,maske_neu,n_cts,n_cts_neu,kc_cts,&
-      kc_cts_neu,flag_inner_point,&
+      (maske, maske_old, maske_neu, &
+      n_cts, n_cts_neu, kc_cts, kc_cts_neu, &
+      flag_calc_temp, &
+      flag_inner_point, &
       flag_grounding_line_1,flag_grounding_line_2,flag_calving_front_1,&
       flag_calving_front_2,flag_shelfy_stream_x,flag_shelfy_stream_y,&
       flag_shelfy_stream,xi,eta,zeta_c,zeta_t,zeta_r,aa,flag_aa_nonzero,&
@@ -341,8 +344,11 @@ contains
       dzm_dxi_g,dzb_dxi_g,dH_c_dxi_g,dH_t_dxi_g,dzs_deta_g,dzm_deta_g,&
       dzb_deta_g,dH_c_deta_g,dH_t_deta_g,dzs_dtau,dzm_dtau,dzb_dtau,&
       dzl_dtau,dH_c_dtau,dH_t_dtau,p_weert,q_weert,p_weert_inv,&
-      c_slide,d_help_b,c_drag,p_b_w,vx_b,vy_b,vx_m,vy_m,ratio_sl_x,&
-      ratio_sl_y,vx_b_g,vy_b_g,vz_b,vz_m,vx_s_g,vy_s_g,vz_s,&
+      c_slide,d_help_b,c_drag,p_b_w,&
+      vx_b,vy_b,&
+      vx_m,vy_m,vx_m_sia,vy_m_sia,vx_m_ssa,vy_m_ssa,&
+      ratio_sl_x,ratio_sl_y,ratio_sl,&
+      vx_b_g,vy_b_g,vz_b,vz_m,vx_s_g,vy_s_g,vz_s,&
       flui_ave_sia,h_diff,qx,qy,q_gl_g,q_geo,temp_b,temph_b,Q_bm,Q_b_apl,&
       Q_tld,Q_b_tot,H_w,&
       accum,runoff,runoff_apl,as_perp,temp_maat,temp_s,am_perp,&
@@ -358,7 +364,9 @@ contains
       enth_t_neu,dxx_c,dyy_c,dxy_c,dxz_c,dyz_c,de_c,lambda_shear_c,&
       dxx_t,dyy_t,dxy_t,dxz_t,dyz_t,de_t,lambda_shear_t,RHO,RHO_W,&
       RHO_SW,L,G,NUE,BETA,DELTA_TM_SW,OMEGA_MAX,H_R,RHO_C_R,KAPPA,KAPPA_R,&
-      RHO_A,R_T,R_T_IMQ,R,A,B,LAMBDA0,PHI0,S_STAT_0,BETA1_0,BETA1_LT_0,&
+      RHO_A,R_T,R_T_IMQ,&
+      R,A,B,F_INV,LAMBDA0,PHI0,&
+      S_STAT_0,BETA1_0,BETA1_LT_0,&
       BETA1_HT_0,BETA2_0,BETA2_LT_0,BETA2_HT_0,PHI_SEP_0,PMAX_0,MU_0,&
       RF,RF_IMQ,KAPPA_IMQ,C_IMQ,year_zero,&
       forcing_flag,n_core,lambda_core,phi_core,x_core,&
@@ -389,8 +397,9 @@ contains
       disc_DW,n_discharge_call_DW,iter_mar_coa_DW,c_dis_0_DW,s_dis_DW,&
       c_dis_fac_DW,T_sub_PD_DW,alpha_sub_DW,alpha_o_DW,m_H_DW,&
       m_D_DW,r_mar_eff_DW,T_sea_freeze_DW,c_dis_DW,&
+      mask_region, &
 #elif (defined(ANT))
-      n_bm_region,&
+      n_bm_region, &
 #endif
       et,melt,melt_star,rainfall,snowfall,&
 #if (defined(AGE_COST))
@@ -548,8 +557,10 @@ contains
 !! liz.curry.logan@gmail.com. 
 !<------------------------------------------------------------------------------
   subroutine var_transfer&
-         (a_maske,a_maske_old,a_maske_neu,a_n_cts,a_n_cts_neu,a_kc_cts,&
-         a_kc_cts_neu,a_flag_inner_point,&
+         (a_maske, a_maske_old, a_maske_neu, &
+         a_n_cts, a_n_cts_neu, a_kc_cts, a_kc_cts_neu, &
+         a_flag_calc_temp, &
+         a_flag_inner_point, &
          a_flag_grounding_line_1,a_flag_grounding_line_2,a_flag_calving_front_1,&
          a_flag_calving_front_2,a_flag_shelfy_stream_x,a_flag_shelfy_stream_y,&
          a_flag_shelfy_stream,a_xi,a_eta,a_zeta_c,a_zeta_t,a_zeta_r,a_aa,a_flag_aa_nonzero,&
@@ -561,8 +572,11 @@ contains
          a_dzm_dxi_g,a_dzb_dxi_g,a_dH_c_dxi_g,a_dH_t_dxi_g,a_dzs_deta_g,a_dzm_deta_g,&
          a_dzb_deta_g,a_dH_c_deta_g,a_dH_t_deta_g,a_dzs_dtau,a_dzm_dtau,a_dzb_dtau,&
          a_dzl_dtau,a_dH_c_dtau,a_dH_t_dtau,a_p_weert,a_q_weert,a_p_weert_inv,&
-         a_c_slide,a_d_help_b,a_c_drag,a_p_b_w,a_vx_b,a_vy_b,a_vx_m,a_vy_m,a_ratio_sl_x,&
-         a_ratio_sl_y,a_vx_b_g,a_vy_b_g,a_vz_b,a_vz_m,a_vx_s_g,a_vy_s_g,a_vz_s,&
+         a_c_slide,a_d_help_b,a_c_drag,a_p_b_w,&
+         a_vx_b,a_vy_b,&
+         a_vx_m,a_vy_m,a_vx_m_sia,a_vy_m_sia,a_vx_m_ssa,a_vy_m_ssa,&
+         a_ratio_sl_x,a_ratio_sl_y,a_ratio_sl,&
+         a_vx_b_g,a_vy_b_g,a_vz_b,a_vz_m,a_vx_s_g,a_vy_s_g,a_vz_s,&
          a_flui_ave_sia,a_h_diff,a_qx,a_qy,a_q_gl_g,a_q_geo,a_temp_b,a_temph_b,a_Q_bm,a_Q_b_apl,&
          a_Q_tld,a_Q_b_tot,a_H_w,&
          a_accum,a_runoff,a_runoff_apl,a_as_perp,a_temp_maat,a_temp_s,a_am_perp,&
@@ -578,7 +592,9 @@ contains
          a_enth_t_neu,a_dxx_c,a_dyy_c,a_dxy_c,a_dxz_c,a_dyz_c,a_de_c,a_lambda_shear_c,&
          a_dxx_t,a_dyy_t,a_dxy_t,a_dxz_t,a_dyz_t,a_de_t,a_lambda_shear_t,a_RHO,a_RHO_W,&
          a_RHO_SW,a_L,a_G,a_NUE,a_BETA,a_DELTA_TM_SW,a_OMEGA_MAX,a_H_R,a_RHO_C_R,a_KAPPA,a_KAPPA_R,&
-         a_RHO_A,a_R_T,a_R_T_IMQ,a_R,a_A,a_B,a_LAMBDA0,a_PHI0,a_S_STAT_0,a_BETA1_0,a_BETA1_LT_0,&
+         a_RHO_A,a_R_T,a_R_T_IMQ,&
+         a_R,a_A,a_B,a_F_INV,a_LAMBDA0,a_PHI0,&
+         a_S_STAT_0,a_BETA1_0,a_BETA1_LT_0,&
          a_BETA1_HT_0,a_BETA2_0,a_BETA2_LT_0,a_BETA2_HT_0,a_PHI_SEP_0,a_PMAX_0,a_MU_0,&
          a_RF,a_RF_IMQ,a_KAPPA_IMQ,a_C_IMQ,a_year_zero,&
          a_forcing_flag,a_n_core,a_lambda_core,a_phi_core,a_x_core,&
@@ -609,8 +625,9 @@ contains
          a_disc_DW,a_n_discharge_call_DW,a_iter_mar_coa_DW,a_c_dis_0_DW,a_s_dis_DW,&
          a_c_dis_fac_DW,a_T_sub_PD_DW,a_alpha_sub_DW,a_alpha_o_DW,a_m_H_DW,&
          a_m_D_DW,a_r_mar_eff_DW,a_T_sea_freeze_DW,a_c_dis_DW,&
+         a_mask_region, &
 #elif (defined(ANT))
-         a_n_bm_region,&
+         a_n_bm_region, &
 #endif
          a_et,a_melt,a_melt_star,a_rainfall,a_snowfall,&
 #if (defined(AGE_COST))
@@ -686,7 +703,6 @@ contains
     real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_de_t
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_de_ssa
     real(dp)                                           :: a_DELTA_TM_SW
-    real(dp)                                           :: a_H_R
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_dH_c_deta
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_dH_c_deta_g
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_dH_c_dtau
@@ -735,8 +751,10 @@ contains
     real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_enth_t_neu
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_et
     real(dp), dimension(0:JMAX)                        :: a_eta
+    real(dp)                                           :: a_F_INV
     real(dp)                                           :: a_fc
     logical                                            :: a_flag_aa_nonzero
+    logical                                            :: a_flag_calc_temp
     logical, dimension(0:JMAX,0:IMAX)                  :: a_flag_inner_point
     logical, dimension(0:JMAX,0:IMAX)                  :: a_flag_grounding_line_1
     logical, dimension(0:JMAX,0:IMAX)                  :: a_flag_grounding_line_2
@@ -773,6 +791,7 @@ contains
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_h_diff
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_H_c
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_H_c_neu
+    real(dp)                                           :: a_H_R
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_H_t
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_H_target
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_H_t_neu
@@ -820,6 +839,7 @@ contains
     integer(i4b)                                       :: a_n_enth_min
     integer(i4b)                                       :: a_n_enth_max
     integer(i4b)                                       :: a_n_data_kei
+    integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_mask_region
 #if (defined(ANT))
     integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_n_bm_region
 #endif
@@ -871,6 +891,7 @@ contains
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_rainfall
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_ratio_sl_x
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_ratio_sl_y
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_ratio_sl
     real(dp), dimension(-190:10)                       :: a_RF
     real(dp), dimension(-256:255)                      :: a_RF_IMQ
     real(dp)                                           :: a_RHO
@@ -933,6 +954,8 @@ contains
     real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_vx_c
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_vx_g
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_vx_m
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_vx_m_sia
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_vx_m_ssa
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_vx_s_g
     real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_vx_t
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_vy_b
@@ -940,6 +963,8 @@ contains
     real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_vy_c
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_vy_g
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_vy_m
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_vy_m_sia
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_vy_m_ssa
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_vy_s_g
     real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_vy_t
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_vz_b
@@ -1132,8 +1157,10 @@ contains
     enth_t_neu = a_enth_t_neu
     et%v = a_et
     eta = a_eta
+    F_INV = a_F_INV
     fc%v = a_fc
     flag_aa_nonzero = a_flag_aa_nonzero
+    flag_calc_temp = a_flag_calc_temp
     flag_calving_front_1 = a_flag_calving_front_1
     flag_calving_front_2 = a_flag_calving_front_2
     flag_grounded_front_a_1 = a_flag_grounded_front_a_1
@@ -1250,7 +1277,8 @@ contains
     n_data_kei = a_n_data_kei !ns
     n_enth_min = a_n_enth_min !ns
     n_enth_max = a_n_enth_max !ns
-#ifdef ANT
+    mask_region = a_mask_region
+#if (defined(ANT))
     n_bm_region = a_n_bm_region
 #endif
     n_temp_min_IMQ = a_n_temp_min_IMQ !ns
@@ -1316,9 +1344,11 @@ contains
 #if (DYNAMICS==2 || MARGIN==3)
     ratio_sl_x%v = a_ratio_sl_x
     ratio_sl_y%v = a_ratio_sl_y
+    ratio_sl%v   = a_ratio_sl
 #else
     ratio_sl_x = a_ratio_sl_x
     ratio_sl_y = a_ratio_sl_y
+    ratio_sl   = a_ratio_sl
 #endif
     RF = a_RF
     RF_IMQ = a_RF_IMQ !just called RF in numcore
@@ -1413,9 +1443,17 @@ contains
 #if (defined(ANT))
     vx_m%v = a_vx_m
     vy_m%v = a_vy_m
+    vx_m_sia%v = a_vx_m_sia
+    vy_m_sia%v = a_vy_m_sia
+    vx_m_ssa%v = a_vx_m_ssa
+    vy_m_ssa%v = a_vy_m_ssa
 #else
     vx_m = a_vx_m
     vy_m = a_vy_m
+    vx_m_sia = a_vx_m_sia
+    vy_m_sia = a_vy_m_sia
+    vx_m_ssa = a_vx_m_ssa
+    vy_m_ssa = a_vy_m_ssa
 #endif
 #if (DYNAMICS==2 || MARGIN==3)
     vx_s_g%v = a_vx_s_g
@@ -1635,15 +1673,15 @@ contains
       else
         write(unit=84,fmt='(t1,en18.6e4)',advance='no') dzs_deta_g(j,i)%d
       end if
-  
-#ifdef GRL
+
+#if (defined(GRL))
       if ( isnan(calving(j,i)%d) ) then
         write(unit=83,fmt='(t1,en18.6e4)',advance='no') -66.6
       else
         write(unit=83,fmt='(t1,en18.6e4)',advance='no') calving(j,i)%d
       end if
 #endif
-  
+
       if ( isnan(sigma_c(KCMAX,j,i)%d) ) then
         write(unit=82,fmt='(t1,en18.6e4)',advance='no') -66
       else

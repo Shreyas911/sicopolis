@@ -8,7 +8,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2019 Ralf Greve, Thorben Dunse
+!! Copyright 2009-2021 Ralf Greve, Thorben Dunse
 !!
 !! @section License
 !!
@@ -456,18 +456,18 @@ contains
 
 #if (defined(ASF))   /* Austfonna */
 
-  age_c =  3500.0_dp*YEAR_SEC
-  age_t =  3500.0_dp*YEAR_SEC
+  age_c =  3500.0_dp*year2sec
+  age_t =  3500.0_dp*year2sec
 
 #elif (defined(NMARS) || defined(SMARS))   /* Polar caps of Mars */
 
-  age_c =  1.0e+06_dp*YEAR_SEC
-  age_t =  1.0e+06_dp*YEAR_SEC
+  age_c =  1.0e+06_dp*year2sec
+  age_t =  1.0e+06_dp*year2sec
 
 #else   /* all other domains */
 
-  age_c = 15000.0_dp*YEAR_SEC
-  age_t = 15000.0_dp*YEAR_SEC
+  age_c = 15000.0_dp*year2sec
+  age_t = 15000.0_dp*year2sec
 
 #endif
 

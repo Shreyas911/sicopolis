@@ -4,6 +4,8 @@ How to create the Doxygen documentation locally:
    cp doxygen1.8.1-config-template.txt my_doxygen1.8.1-config.txt
 
 2. Edit my_doxygen1.8.1-config.txt:
+   Search for "Revision xxxx", and replace xxxx with the current
+   revision number.
    Search for "/home/username/Documents/sicopolis/src", and replace
    this by the actual path of the src directory. 
 

@@ -8,7 +8,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2019 Ralf Greve, Ben Galton-Fenzi, Tatsuru Sato
+!! Copyright 2009-2021 Ralf Greve, Ben Galton-Fenzi, Tatsuru Sato
 !!
 !! @section License
 !!
@@ -62,7 +62,7 @@ real(dp), intent(in) :: dzeta_c, dzeta_r
 integer(i4b) :: i, j
 integer(i4b) :: n_year_CE
 integer(i4b) :: n_ocean, n_float
-real(dp) :: sec_to_year, time_in_years
+real(dp) :: sec2year, time_in_years
 real(dp) :: rhow_rho_ratio
 real(dp) :: aqbm1, aqbm2, aqbm3a, aqbm3b, aqbm4
 real(dp) :: z_abyssal
@@ -73,8 +73,8 @@ real(dp) :: H_w_now, Q_bm_scaling_factor
 
 !-------- Term abbreviations --------
 
-sec_to_year   = 1.0_dp/YEAR_SEC
-time_in_years = time*sec_to_year
+sec2year      = 1.0_dp/year2sec
+time_in_years = time*sec2year
 n_year_CE     = floor((time_in_years+YEAR_ZERO)+eps_sp_dp)
 
 rhow_rho_ratio = RHO_W/RHO
@@ -178,7 +178,7 @@ do j=1, JMAX-1
            ) &
          ) then
 
-         Q_bm(j,i) = QBM_MARINE *sec_to_year*rhow_rho_ratio
+         Q_bm(j,i) = QBM_MARINE *sec2year*rhow_rho_ratio
                                 ! m/a water equiv. -> m/s ice equiv.
 
       end if
@@ -203,7 +203,7 @@ do j=1, JMAX-1
          if ( n_ocean > 0 ) then
 
             Q_bm_grounded = Q_bm(j,i)
-            Q_bm_marine   = QBM_MARINE *sec_to_year*rhow_rho_ratio
+            Q_bm_marine   = QBM_MARINE *sec2year*rhow_rho_ratio
                                        ! m/a water equiv. -> m/s ice equiv.
 
             Q_bm(j,i) = (1.0_dp-0.25_dp*real(n_ocean,dp)) * Q_bm_grounded &
@@ -245,7 +245,7 @@ do j=1, JMAX-1
 
 #elif (MARINE_ICE_BASAL_MELTING==2)
 
-         Q_bm(j,i) = QBM_MARINE *sec_to_year*rhow_rho_ratio
+         Q_bm(j,i) = QBM_MARINE *sec2year*rhow_rho_ratio
                                 ! m/a water equiv. -> m/s ice equiv.
 
 #elif (MARINE_ICE_BASAL_MELTING==3)
@@ -259,7 +259,7 @@ do j=1, JMAX-1
          if ( n_ocean > 0 ) then
 
             Q_bm_grounded = Q_bm(j,i)
-            Q_bm_marine   = QBM_MARINE *sec_to_year*rhow_rho_ratio
+            Q_bm_marine   = QBM_MARINE *sec2year*rhow_rho_ratio
                                        ! m/a water equiv. -> m/s ice equiv.
 
             Q_bm(j,i) = (1.0_dp-0.25_dp*real(n_ocean,dp)) * Q_bm_grounded &
@@ -287,12 +287,12 @@ do j=1, JMAX-1
 
       if ( zl(j,i) > z_abyssal ) then   ! floating ice over continental shelf
 
-         Q_bm(j,i) = QBM_FLOAT_1 *sec_to_year*rhow_rho_ratio
+         Q_bm(j,i) = QBM_FLOAT_1 *sec2year*rhow_rho_ratio
                                  ! m/a water equiv. -> m/s ice equiv.
 
       else   ! ( zl(j,i) <= z_abyssal ), floating ice over abyssal ocean
 
-         Q_bm(j,i) = QBM_FLOAT_3 *sec_to_year*rhow_rho_ratio
+         Q_bm(j,i) = QBM_FLOAT_3 *sec2year*rhow_rho_ratio
                                  ! m/a water equiv. -> m/s ice equiv.
 
       end if
@@ -301,12 +301,12 @@ do j=1, JMAX-1
 
       if ( zl(j,i) > z_abyssal ) then   ! floating ice over continental shelf
          call sub_ice_shelf_melting_param_1(time, z_sl, &
-                                            sec_to_year, time_in_years, &
+                                            sec2year, time_in_years, &
                                             rhow_rho_ratio, &
                                             i, j, Q_bm_floating)
          Q_bm(j,i) = Q_bm_floating
       else   ! ( zl(j,i) <= z_abyssal ), floating ice over abyssal ocean
-         Q_bm(j,i) = QBM_FLOAT_3 *sec_to_year*rhow_rho_ratio
+         Q_bm(j,i) = QBM_FLOAT_3 *sec2year*rhow_rho_ratio
                                  ! m/a water equiv. -> m/s ice equiv.
       end if
 
@@ -335,7 +335,7 @@ end do
 #if (FLOATING_ICE_BASAL_MELTING==6)
 
 call sub_ice_shelf_melting_param_2(time, z_sl, &
-                                   sec_to_year, time_in_years, &
+                                   sec2year, time_in_years, &
                                    rhow_rho_ratio, z_abyssal, &
                                    n_year_CE)
 
@@ -348,7 +348,7 @@ Q_b_tot = Q_bm + Q_tld
 !-------- Limitation of Q_bm, Q_tld and Q_b_tot --------
 
 #if (defined(QBM_MIN))
-   qbm_min = QBM_MIN *sec_to_year*rhow_rho_ratio
+   qbm_min = QBM_MIN *sec2year*rhow_rho_ratio
                       ! m/a water equiv. -> m/s ice equiv.
 #elif (defined(QB_MIN)) /* obsolete */
    qbm_min = QB_MIN   ! m/s ice equiv.
@@ -358,7 +358,7 @@ Q_b_tot = Q_bm + Q_tld
 #endif
 
 #if (defined(QBM_MAX))
-   qbm_max = QBM_MAX *sec_to_year*rhow_rho_ratio
+   qbm_max = QBM_MAX *sec2year*rhow_rho_ratio
                       ! m/a water equiv. -> m/s ice equiv.
 #elif (defined(QB_MAX)) /* obsolete */
    qbm_max = QB_MAX   ! m/s ice equiv.
@@ -370,7 +370,7 @@ Q_b_tot = Q_bm + Q_tld
 #if ( defined(MARINE_ICE_BASAL_MELTING) \
       && ( MARINE_ICE_BASAL_MELTING==2 || MARINE_ICE_BASAL_MELTING==3 ) )
 
-if (QBM_MARINE*sec_to_year*rhow_rho_ratio > qbm_max) then
+if (QBM_MARINE*sec2year*rhow_rho_ratio > qbm_max) then
    errormsg = ' >>> calc_qbm: QBM_MARINE' &
             //                end_of_line &
             //'               (basal melting rate at the ice front)' &
@@ -415,7 +415,7 @@ end subroutine calc_qbm
 !> Local sub-ice-shelf melting parameterization.
 !<------------------------------------------------------------------------------
 subroutine sub_ice_shelf_melting_param_1(time, z_sl, &
-                                         sec_to_year, time_in_years, &
+                                         sec2year, time_in_years, &
                                          rhow_rho_ratio, &
                                          i, j, Q_bm_floating)
 
@@ -431,7 +431,7 @@ integer(i4b), intent(in)    :: i, j
 integer(i4b), intent(inout) :: i, j
 #endif /* Normal vs. OpenAD */
 real(dp), intent(in) :: time, z_sl
-real(dp), intent(in) :: sec_to_year, time_in_years
+real(dp), intent(in) :: sec2year, time_in_years
 real(dp), intent(in) :: rhow_rho_ratio
 
 real(dp), intent(out) :: Q_bm_floating
@@ -460,7 +460,7 @@ call myfloor(time_in_years, i_time_in_years)
 #if (FLOATING_ICE_BASAL_MELTING==4)
 
 Toc   = TEMP_OCEAN
-Omega = OMEGA_QBM *sec_to_year*rhow_rho_ratio
+Omega = OMEGA_QBM *sec2year*rhow_rho_ratio
                   ! m/[a*degC^alpha] water equiv. -> m/[s*degC^alpha] ice equiv.
 alpha = ALPHA_QBM
 
@@ -669,7 +669,7 @@ end subroutine sub_ice_shelf_melting_param_1
 !> Non-local sub-ice-shelf melting parameterization by ISMIP6.
 !<------------------------------------------------------------------------------
 subroutine sub_ice_shelf_melting_param_2(time, z_sl, &
-                                         sec_to_year, time_in_years, &
+                                         sec2year, time_in_years, &
                                          rhow_rho_ratio, z_abyssal, &
                                          n_year_CE)
 
@@ -689,7 +689,7 @@ subroutine sub_ice_shelf_melting_param_2(time, z_sl, &
 implicit none
 
 real(dp)    , intent(in) :: time, z_sl
-real(dp)    , intent(in) :: sec_to_year, time_in_years
+real(dp)    , intent(in) :: sec2year, time_in_years
 real(dp)    , intent(in) :: rhow_rho_ratio, z_abyssal
 integer(i4b), intent(in) :: n_year_CE
 
@@ -871,7 +871,7 @@ n_bm_regions = N_BM_REGIONS
 
 #if (defined(GAMMA0_BM))
   gamma0_bm_aux = GAMMA0_BM
-  gamma0_bm_aux = gamma0_bm_aux *sec_to_year*(rhofw_bm/rhoi_bm)
+  gamma0_bm_aux = gamma0_bm_aux *sec2year*(rhofw_bm/rhoi_bm)
                                 ! m/a water equiv. -> m/s ice equiv.
 #else
   errormsg = ' >>> sub_ice_shelf_melting_param_2: GAMMA0_BM must be defined!'
@@ -1047,7 +1047,7 @@ do j=0, JMAX
 
       else   ! ( zl(j,i) <= z_abyssal )
 
-         Q_bm(j,i) = QBM_FLOAT_3 *sec_to_year*rhow_rho_ratio
+         Q_bm(j,i) = QBM_FLOAT_3 *sec2year*rhow_rho_ratio
                                  ! m/a water equiv. -> m/s ice equiv.
 
       end if

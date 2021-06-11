@@ -9,7 +9,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2019 Ralf Greve
+!! Copyright 2009-2021 Ralf Greve
 !!
 !! @section License
 !!
@@ -96,7 +96,7 @@ integer(i4b) :: n_year_CE
 integer(i4b) :: ios
 real(dp) :: z_sl_old
 real(dp) :: z_sl_min, t1, t2, t3, t4, t5, t6
-real(dp) :: sec_to_year, time_in_years
+real(dp) :: sec2year, time_in_years
 real(dp) :: rho_inv
 real(dp) :: time_gr, time_kl
 real(dp) :: z_sle_present, z_sle_help
@@ -170,8 +170,8 @@ integer(i4b) :: i_time_in_years
 real(dp)     :: temp_val
 #endif /* OpenAD */
 
-sec_to_year   = 1.0_dp/YEAR_SEC
-time_in_years = time*sec_to_year
+sec2year      = 1.0_dp/year2sec
+time_in_years = time*sec2year
 n_year_CE     = floor((time_in_years+YEAR_ZERO)+eps_sp_dp)
 
 rho_inv       = 1.0_dp/RHO
@@ -229,8 +229,8 @@ else if (time_in_years < real(grip_time_max,dp)) then
 
    else
 
-      time_kl = (grip_time_min + i_kl*grip_time_stp) *YEAR_SEC
-      time_gr = (grip_time_min + i_gr*grip_time_stp) *YEAR_SEC
+      time_kl = (grip_time_min + i_kl*grip_time_stp) *year2sec
+      time_gr = (grip_time_min + i_gr*grip_time_stp) *year2sec
 
       delta_ts = griptemp(i_kl) &
                 +(griptemp(i_gr)-griptemp(i_kl)) &
@@ -278,8 +278,8 @@ else if (time_in_years < real(gi_time_max,dp)) then
 
    else
 
-      time_kl = (gi_time_min + i_kl*gi_time_stp) *YEAR_SEC
-      time_gr = (gi_time_min + i_gr*gi_time_stp) *YEAR_SEC
+      time_kl = (gi_time_min + i_kl*gi_time_stp) *year2sec
+      time_gr = (gi_time_min + i_gr*gi_time_stp) *year2sec
 
       glac_index = glacial_index(i_kl) &
                 +(glacial_index(i_gr)-glacial_index(i_kl)) &
@@ -504,8 +504,8 @@ else if (time_in_years < real(glann_time_max,dp)) then
 
    else
 
-      time_kl = (glann_time_min + i_kl*glann_time_stp) *YEAR_SEC
-      time_gr = (glann_time_min + i_gr*glann_time_stp) *YEAR_SEC
+      time_kl = (glann_time_min + i_kl*glann_time_stp) *year2sec
+      time_gr = (glann_time_min + i_gr*glann_time_stp) *year2sec
 
       dT_glann = dT_glann_CLIMBER(i_kl) &
                 +(dT_glann_CLIMBER(i_gr)-dT_glann_CLIMBER(i_kl)) &
@@ -531,12 +531,12 @@ z_sl = Z_SL0
 
 z_sl_min = -130.0_dp
 
-t1 = -250000.0_dp *YEAR_SEC
-t2 = -140000.0_dp *YEAR_SEC
-t3 = -125000.0_dp *YEAR_SEC
-t4 =  -21000.0_dp *YEAR_SEC
-t5 =   -8000.0_dp *YEAR_SEC
-t6 =       0.0_dp *YEAR_SEC
+t1 = -250000.0_dp *year2sec
+t2 = -140000.0_dp *year2sec
+t3 = -125000.0_dp *year2sec
+t4 =  -21000.0_dp *year2sec
+t5 =   -8000.0_dp *year2sec
+t6 =       0.0_dp *year2sec
 
 if (time < t1) then
    z_sl = 0.0_dp
@@ -586,8 +586,8 @@ else if (time_in_years < real(specmap_time_max,dp)) then
 
    else
 
-      time_kl = (specmap_time_min + i_kl*specmap_time_stp) *YEAR_SEC
-      time_gr = (specmap_time_min + i_gr*specmap_time_stp) *YEAR_SEC
+      time_kl = (specmap_time_min + i_kl*specmap_time_stp) *year2sec
+      time_gr = (specmap_time_min + i_gr*specmap_time_stp) *year2sec
 
       z_sl = specmap_zsl(i_kl) &
                 +(specmap_zsl(i_gr)-specmap_zsl(i_kl)) &
@@ -909,7 +909,7 @@ mu       = MU_0        *(1000.0_dp*86400.0_dp)*(RHO/RHO_W)
 
 #elif (ABLSURFACE==3)
 
-lambda_lti = LAMBDA_LTI  *(0.001_dp*sec_to_year)*(RHO_W/RHO)
+lambda_lti = LAMBDA_LTI  *(0.001_dp*sec2year)*(RHO_W/RHO)
                          ! (mm WE)/(a*deg C) --> (m IE)/(s*deg C)
 temp_lti   = TEMP_LTI
 mu         = 0.0_dp      ! no superimposed ice considered
@@ -1181,7 +1181,7 @@ runoff = -min(as_perp, 0.0_dp)
 
 target_topo_tau_inv = 1.0_dp/target_topo_tau_0
 
-smb_no_ice = -1000.0_dp*sec_to_year   ! -1000 m/a -> m/s
+smb_no_ice = -1000.0_dp*sec2year   ! -1000 m/a -> m/s
 
 do i=0, IMAX
 do j=0, JMAX
