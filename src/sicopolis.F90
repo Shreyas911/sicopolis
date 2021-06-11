@@ -22,7 +22,7 @@
 !! The model is based on the shallow ice approximation for grounded ice, the
 !! shallow shelf approximation for floating ice (e.g., Greve and Blatter 2009)
 !! and, optionally, hybrid shallow-ice--shelfy-stream dynamics for ice streams
-!! (Bernales et al. 2017). It is coded in Fortran and uses finite difference
+!! (Bernales et al. 2017a,b). It is coded in Fortran and uses finite difference
 !! discretisation on a staggered (Arakawa C) grid, the velocity
 !! components being taken between grid points. A variety of different
 !! thermodynamics solvers are available, namely the polythermal two-layer
@@ -51,11 +51,15 @@
 !! @li Isostatic displacement and temperature of the lithosphere.
 !!
 !! References:
-!! @li Bernales, J., I. Rogozhina, R. Greve and M. Thomas. 2017.\n
+!! @li Bernales, J., I. Rogozhina, R. Greve and M. Thomas. 2017a.\n
 !!     Comparison of hybrid schemes for the combination of
 !!     shallow approximations in numerical simulations of the
 !!     Antarctic Ice Sheet.\n
 !!     Cryosphere 11 (1), 247-265.
+!! @li Bernales, J., I. Rogozhina and M. Thomas. 2017b.\n
+!!     Melting and freezing under Antarctic ice shelves from a
+!!     combination of ice-sheet modelling and observations.\n
+!!     Journal of Glaciology 63 (240), 731-744.
 !! @li Greve, R. 1997a.\n
 !!     A continuum-mechanical formulation for shallow polythermal ice sheets.\n
 !!     Phil. Trans. R. Soc. A 355 (1726), 921-974.
@@ -77,10 +81,11 @@
 !! @section Copyright
 !!
 !! Copyright 2009-2021 Ralf Greve\n
-!! (with contributions by Jorge Bernales, Heinz Blatter, Reinhard Calov,
-!! Thorben Dunse, Ben Galton-Fenzi, Thomas Goelles, Philipp Hancke,
-!! Nina Kirchner, Sascha Knell, Alex Robinson, Tatsuru Sato, Malte Thoma,
-!! Roland Warner)
+!! (with contributions by Jorge Bernales, Sebastian Beyer, Heinz Blatter,
+!! Reinhard Calov, Thorben Dunse, Ben Galton-Fenzi, Thomas Goelles,
+!! Philipp Hancke, Patrick Heimbach, Nina Kirchner, Thomas Kleiner,
+!! Sascha Knell, Anne Le Brocq, Liz Curry Logan, Sri Hari Krishna Narayanan,
+!! Alex Robinson, Fuyuki Saito, Tatsuru Sato, Malte Thoma, Roland Warner)
 !!
 !! @section License
 !!
