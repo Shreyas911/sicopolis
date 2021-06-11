@@ -76,7 +76,8 @@
 !!     SICOPOLIS.\n
 !!     Polar Sci. 10 (1), 11-23.
 !! @li SICOPOLIS website: <http://www.sicopolis.net/>
-!! @li Changelog: <http://tinyurl.com/commit-logs-sico-trunk/>
+!! @li Changelog:
+!!     <https://gitlab.awi.de/sicopolis/sicopolis/> -> Repository -> Commits
 !!
 !! @section Copyright
 !!
