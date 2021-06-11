@@ -72,7 +72,9 @@
 
 \vfill
 
-\begin{large}\today\end{large}
+% \begin{large}\today\end{large}
+
+\begin{large}June 11, 2021\end{large}
 
 \end{center}
 
@@ -137,7 +139,7 @@ So far, the GNU GCC (gfortran) and Intel Fortran (ifort) compilers are supported
 
 Download the gzipped tar archive sicopolis\_v52.tgz from Zenodo
 \\
-(https://doi.org/10.5281/zenodo.3687337 !!! Should be changed !!!).
+(https://doi.org/10.5281/zenodo.4925444).
 
 Unpack the archive: \verb+tar -x -v -z -f sicopolis_v52.tgz+
 
@@ -208,7 +210,20 @@ Subdirectory \textbf{headers}: specification files sico\_specs\_\emph{run\_name}
 \begin{itemize}
 
 \item
-File included for run v5\_emtp2sge25\_expA
+Run v5\_vialov3d25
+\\
+$\longrightarrow$ 3-d version of the 2-d ``Vialov profile'' \citep{vialov_1958},
+\\
+\phantom{$\longrightarrow$} resolution 25~km, $t=0\ldots{}100\,\mathrm{ka}$.
+\\
+\phantom{$\longrightarrow$} Similar to the EISMINT Phase~1 fixed-margin experiment
+\\
+\phantom{$\longrightarrow$} \citep{huybrechts_etal_1996}, but without thermodynamics. Instead,
+\\
+\phantom{$\longrightarrow$} isothermal conditions with $T=-10\degC$ everywhere are assumed.
+
+\item
+Run v5\_emtp2sge25\_expA
 \\
 $\longrightarrow$ EISMINT Phase~2 Simplified Geometry Experiment A,
 \\
@@ -221,7 +236,7 @@ $\longrightarrow$ EISMINT Phase~2 Simplified Geometry Experiment A,
 \phantom{$\longrightarrow$} polythermal two-layer scheme (POLY) \citep{greve_blatter_2016}.
 
 \item
-File included for run v5\_grl20\_ss25ka
+Run v5\_grl20\_ss25ka
 \\
 $\longrightarrow$ Greenland ice sheet, resolution 20~km,
 \\
@@ -230,7 +245,7 @@ $\longrightarrow$ Greenland ice sheet, resolution 20~km,
 \phantom{$\longrightarrow$} (unpublished).
 
 \item
-File included for run v5\_ant40\_ss25ka
+Run v5\_ant40\_ss25ka
 \\
 $\longrightarrow$ Antarctic ice sheet without ice shelves, resolution 40~km,
 \\
@@ -239,7 +254,7 @@ $\longrightarrow$ Antarctic ice sheet without ice shelves, resolution 40~km,
 \phantom{$\longrightarrow$} (unpublished).
 
 \item
-File included for run v5\_grl20\_b2\_paleo21
+Run v5\_grl20\_b2\_paleo21
 \\
 $\longrightarrow$ Greenland ice sheet, resolution 20~km,
 \\
@@ -250,9 +265,9 @@ $\longrightarrow$ Greenland ice sheet, resolution 20~km,
 \phantom{$\longrightarrow$} \citet{greve_etal_2017a}].
 
 \item
-Files included for runs v5\_grl10\_b2\_paleo21 and
+Runs v5\_grl10\_b2\_paleo21 and
 \\{}
-\hspace*{10.15em}v5\_grl10\_b2\_future21\_ctrl/...\_asmb
+\phantom{Runs} v5\_grl10\_b2\_future21\_ctrl/...\_asmb
 \\
 $\longrightarrow$ Greenland ice sheet, resolution 10~km,
 \\
@@ -263,11 +278,11 @@ $\longrightarrow$ Greenland ice sheet, resolution 10~km,
 \phantom{$\longrightarrow$} ISMIP6 InitMIP; \citet{greve_etal_2017a}].
 
 \item
-Files included for runs v5\_ant64\_b2\_spinup09\_init100a,
+Runs v5\_ant64\_b2\_spinup09\_init100a,
 \\
-\hspace*{6.40em}v5\_ant64\_b2\_spinup09\_fixtopo, v5\_ant64\_b2\_spinup09 and
+\phantom{Runs} v5\_ant64\_b2\_spinup09\_fixtopo, v5\_ant64\_b2\_spinup09 and
 \\
-\hspace*{6.40em}v5\_ant64\_b2\_future09\_ctrl
+\phantom{Runs} v5\_ant64\_b2\_future09\_ctrl
 \\
 $\longrightarrow$ Antarctic ice sheet with hybrid shallow-ice--shelfy-stream dynamics
 \\
@@ -290,7 +305,7 @@ $\longrightarrow$ Antarctic ice sheet with hybrid shallow-ice--shelfy-stream dyn
 \phantom{$\longrightarrow$} ISMIP6 InitMIP; Greve and Galton-Fenzi (pers.\ comm.\ 2017)].
 
 \item
-Files included for runs v5\_asf2\_steady and v5\_asf2\_surge
+Runs v5\_asf2\_steady and v5\_asf2\_surge
 \\
 $\longrightarrow$ Austfonna, resolution 2~km, $t=0\ldots{}10\,\mathrm{ka}$
 \\
@@ -299,21 +314,21 @@ $\longrightarrow$ Austfonna, resolution 2~km, $t=0\ldots{}10\,\mathrm{ka}$
 \phantom{$\longrightarrow$} Exp.~5 (surging-type flow), respectively].
 
 \item
-Files included for runs v5\_nmars10\_steady and v5\_smars10\_steady
+Runs v5\_nmars10\_steady and v5\_smars10\_steady
 \\
 $\longrightarrow$ North-/south-polar cap of Mars, resolution 10~km, $t=-10\,\mathrm{Ma}\ldots{}0$
 \\
 \phantom{$\longrightarrow$} [steady-state runs by \citet{greve_2007b}].
 
 \item
-File included for run v5\_nhem80\_nt012\_new
+Run v5\_nhem80\_nt012\_new
 \\
 $\longrightarrow$ northern hemisphere, resolution 80~km, $t=-250\ldots{}0\,\mathrm{ka}$
 \\
 \phantom{$\longrightarrow$} [similar to run nt012 by \citet{greve_etal_1999a}].
 
 \item
-File included for run v5\_heino50\_st
+Run v5\_heino50\_st
 \\
 $\longrightarrow$ ISMIP HEINO standard run ST,
 \\
@@ -688,6 +703,9 @@ The subroutines for ISMIP HEINO are available in sicopolis/src/subroutines/xyz/h
 \begin{tabular}{lrrr@{.}l} \hline
 Run & Model time & Time step$^\dagger$ 
                  & \multicolumn{2}{c}{CPU time$^\ddagger$} \\ \hline
+v5\_vialov3d25                       &  $100\;\mathrm{ka}$\hspace*{1.0em}
+                                     &   $20\;\mathrm{ a}$\hspace*{1.0em}
+                                     &  1&$0\;\mathrm{min}$ \\
 v5\_emtp2sge25\_expA                 &  $200\;\mathrm{ka}$\hspace*{1.0em}
                                      &   $20\;\mathrm{ a}$\hspace*{1.0em}
                                      &  3&$8\;\mathrm{min}$ \\
