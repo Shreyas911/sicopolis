@@ -7,7 +7,7 @@
 #define RUNNAME 'v5_ant64_b2_spinup09'
 !                      Name of simulation
 
-#define SICO_VERSION '5.2'
+#define SICO_VERSION '5-dev'
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 

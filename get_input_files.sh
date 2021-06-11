@@ -29,7 +29,7 @@ SMARS_FLAG=1   # South polar cap of Mars:
 
 #-------- Initialization --------
 
-REPO_URL=https://zenodo.org/record/4922827/files
+REPO_URL=http://wwwice.lowtem.hokudai.ac.jp/repo/sicopolis/sico_in
 
 SICOPOLIS_HOME=$PWD
 

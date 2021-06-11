@@ -7,7 +7,7 @@
 #define RUNNAME 'v5_grl10_b2_future21_asmb'
 !                      Name of simulation
 
-#define SICO_VERSION '5.2'
+#define SICO_VERSION '5-dev'
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
