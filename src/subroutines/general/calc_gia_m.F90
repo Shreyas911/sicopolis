@@ -80,14 +80,14 @@ rhosw_rhoa_ratio = RHO_SW/RHO_A
 
 dtime_inv = 1.0_dp/dtime
 
-!-------- Computation of zl_neu and its time derivative --------
+!-------- Computation of zl_new and its time derivative --------
 
 #if (REBOUND==0)
 
 do i=0, IMAX
 do j=0, JMAX
-   zl_neu(j,i)   = zl(j,i)
-   dzl_dtau(j,i) = (zl_neu(j,i)-zl(j,i))*dtime_inv
+   zl_new(j,i)   = zl(j,i)
+   dzl_dtau(j,i) = (zl_new(j,i)-zl(j,i))*dtime_inv
 end do
 end do
 
@@ -96,15 +96,15 @@ end do
 do i=0, IMAX
 do j=0, JMAX
 
-   if (maske(j,i) <= 1_i1b) then   ! grounded ice or ice-free land
+   if (mask(j,i) <= 1_i1b) then   ! grounded ice or ice-free land
 
-      zl_neu(j,i) = tldt_inv(j,i)*( time_lag_asth(j,i)*zl(j,i) &
+      zl_new(j,i) = tldt_inv(j,i)*( time_lag_asth(j,i)*zl(j,i) &
                     + dtime*(zl0(j,i) &
                              -FRAC_LLRA*rho_rhoa_ratio*(H_c(j,i)+H_t(j,i))) )
 
-   else   ! (maske(j,i) >= 2_i1b)
+   else   ! (mask(j,i) >= 2_i1b)
 
-      zl_neu(j,i) = tldt_inv(j,i)*( time_lag_asth(j,i)*zl(j,i) &
+      zl_new(j,i) = tldt_inv(j,i)*( time_lag_asth(j,i)*zl(j,i) &
                     + dtime*(zl0(j,i) &
                              -FRAC_LLRA*rhosw_rhoa_ratio*z_sl) )
 
@@ -113,7 +113,7 @@ do j=0, JMAX
 
    end if
 
-   dzl_dtau(j,i) = (zl_neu(j,i)-zl(j,i))*dtime_inv
+   dzl_dtau(j,i) = (zl_new(j,i)-zl(j,i))*dtime_inv
 
 end do
 end do
@@ -128,9 +128,9 @@ end if
 
 do i=0, IMAX
 do j=0, JMAX
-   zl_neu(j,i) = tldt_inv(j,i) &
+   zl_new(j,i) = tldt_inv(j,i) &
                  * ( time_lag_asth(j,i)*zl(j,i) + dtime*(zl0(j,i)-wss(j,i)) )
-   dzl_dtau(j,i) = (zl_neu(j,i)-zl(j,i))*dtime_inv
+   dzl_dtau(j,i) = (zl_new(j,i)-zl(j,i))*dtime_inv
 end do
 end do
 
@@ -142,7 +142,7 @@ end do
 
 if (time >= time_target_topo_final) then
 
-   zl_neu   = zl_target
+   zl_new   = zl_target
    dzl_dtau = 0.0_dp
 
 else if (time > time_target_topo_init) then
@@ -162,10 +162,10 @@ else if (time > time_target_topo_init) then
 
    target_topo_tau = target_topo_tau_0 * target_topo_tau_factor
 
-   zl_neu =   ( target_topo_tau*zl_neu + dtime*zl_target ) &
+   zl_new =   ( target_topo_tau*zl_new + dtime*zl_target ) &
             / ( target_topo_tau        + dtime )
 
-   dzl_dtau = (zl_neu-zl)*dtime_inv
+   dzl_dtau = (zl_new-zl)*dtime_inv
 
 end if
 
@@ -173,10 +173,10 @@ end if
 
 target_topo_tau = target_topo_tau_0
 
-zl_neu =   ( target_topo_tau*zl_neu + dtime*zl_target ) &
+zl_new =   ( target_topo_tau*zl_new + dtime*zl_target ) &
          / ( target_topo_tau        + dtime )
 
-dzl_dtau = (zl_neu-zl)*dtime_inv
+dzl_dtau = (zl_new-zl)*dtime_inv
 
 #endif
 
@@ -300,11 +300,11 @@ do jl=jl_begin, jl_end
    i = min(max(il, 0), IMAX)
    j = min(max(jl, 0), JMAX)
 
-   if (maske(j,i)==0_i1b) then
+   if (mask(j,i)==0_i1b) then
       f_0(jl,il) = rho_g * area(j,i) * (H_c(j,i) + H_t(j,i))
-   else if (maske(j,i)==1_i1b) then
+   else if (mask(j,i)==1_i1b) then
       f_0(jl,il) = 0.0_dp
-   else   ! (maske(j,i)>=2_i1b)
+   else   ! (mask(j,i)>=2_i1b)
       f_0(jl,il) = rho_sw_g * area(j,i) * z_sl
                    ! Water load relative to the present sea-level stand (0 m)
                    ! -> can be positive or negative
@@ -403,7 +403,7 @@ zl0_raw = zl   ! rigid lithosphere
 do i=0, IMAX
 do j=0, JMAX
 
-   if (maske(j,i) == 0_i1b) then
+   if (mask(j,i) == 0_i1b) then
       zl0_raw(j,i) = zl(j,i) + rho_ratio*(H_c(j,i)+H_t(j,i))
    else
       zl0_raw(j,i) = zl(j,i)

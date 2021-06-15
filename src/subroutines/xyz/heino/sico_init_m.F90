@@ -1168,10 +1168,10 @@ z_sl = -1.11e+11_dp   ! dummy value for initial call of subroutine boundary
 call boundary(time_init, dtime, dxi, deta, &
               delta_ts, glac_index, z_sl, dzsl_dtau, z_mar)
 
-where ((maske==0_i1b).or.(maske==3_i1b))
+where ((mask==0_i1b).or.(mask==3_i1b))
                  ! grounded or floating ice
    as_perp_apl = as_perp
-elsewhere        ! maske==1_i1b or 2_i1b, ice-free land or sea
+elsewhere        ! mask==1_i1b or 2_i1b, ice-free land or sea
    as_perp_apl = 0.0_dp
 end where
 
@@ -1288,10 +1288,10 @@ call topography3(dxi, deta, z_sl, anfdatname)
 call boundary(time_init, dtime, dxi, deta, &
               delta_ts, glac_index, z_sl, dzsl_dtau, z_mar)
 
-where ((maske==0_i1b).or.(maske==3_i1b))
+where ((mask==0_i1b).or.(mask==3_i1b))
                  ! grounded or floating ice
    as_perp_apl = as_perp
-elsewhere        ! maske==1_i1b or 2_i1b, ice-free land or sea
+elsewhere        ! mask==1_i1b or 2_i1b, ice-free land or sea
    as_perp_apl = 0.0_dp
 end where
 
@@ -1405,7 +1405,7 @@ do j=0, JMAX
       enth_c(kc,j,i) = enth_fct_temp_omega(temp_c(kc,j,i), 0.0_dp)
    end do
 
-   if ( (maske(j,i) == 0_i1b).and.(n_cts(j,i) == 1_i1b) ) then
+   if ( (mask(j,i) == 0_i1b).and.(n_cts(j,i) == 1_i1b) ) then
       do kt=0, KTMAX
          enth_t(kt,j,i) = enth_fct_temp_omega(temp_t_m(kt,j,i), omega_t(kt,j,i))
       end do
@@ -1682,7 +1682,7 @@ call read_2d_input(filename_with_path, &
                    ch_var_name='mask', n_var_type=3, n_ascii_header=6, &
                    field2d_r=field2d_aux)
 
-maske = nint(field2d_aux)
+mask = nint(field2d_aux)
 
 !-------- Further stuff --------
 
@@ -1708,8 +1708,8 @@ do j=0, JMAX
    zb(j,i) = zl0(j,i)
    zl(j,i) = zl0(j,i)
 
-   if (maske(j,i) <= 1_i1b) then
-      maske(j,i) = 0_i1b
+   if (mask(j,i) <= 1_i1b) then
+      mask(j,i) = 0_i1b
       zs(j,i) = zs(j,i) + H_init
    end if
 
@@ -1733,7 +1733,7 @@ do j=0, JMAX
 end do
 end do
 
-maske_old = maske
+mask_old = mask
 
 !-------- Geographic coordinates, metric tensor,
 !                                 gradients of the topography --------
@@ -1847,7 +1847,7 @@ call read_2d_input(filename_with_path, &
                    ch_var_name='mask', n_var_type=3, n_ascii_header=6, &
                    field2d_r=field2d_aux)
 
-maske = nint(field2d_aux)
+mask = nint(field2d_aux)
 
 !-------- Further stuff --------
 
@@ -1893,7 +1893,7 @@ do j=0, JMAX
 end do
 end do
 
-maske_old = maske
+mask_old = mask
 
 !-------- Geographic coordinates, metric tensor,
 !                                 gradients of the topography --------
@@ -1976,7 +1976,7 @@ end subroutine topography2
 !<------------------------------------------------------------------------------
 subroutine topography3(dxi, deta, z_sl, anfdatname)
 
-  use read_m, only : read_erg_nc, read_2d_input
+  use read_m, only : read_tms_nc, read_2d_input
 
 #if (GRID==0 || GRID==1)
   use stereo_proj_m
@@ -1999,7 +1999,7 @@ real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 
 !-------- Read data from time-slice file of previous simulation --------
 
-call read_erg_nc(z_sl, anfdatname)
+call read_tms_nc(z_sl, anfdatname)
 
 !-------- Set topography of the relaxed bedrock --------
 

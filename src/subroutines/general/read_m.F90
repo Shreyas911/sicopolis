@@ -40,7 +40,7 @@ module read_m
   implicit none
 
   private
-  public :: read_erg_nc, read_target_topo_nc, &
+  public :: read_tms_nc, read_target_topo_nc, &
             read_2d_input, read_phys_para, read_kei
 
 #if (defined(ALLOW_GRDCHK) || defined(ALLOW_OPENAD))
@@ -52,8 +52,8 @@ contains
 !-------------------------------------------------------------------------------
 !> Reading of time-slice files in native binary or NetCDF format.
 !<------------------------------------------------------------------------------
-  subroutine read_erg_nc(z_sl, filename, &
-                         opt_maske, opt_n_cts, opt_kc_cts, &
+  subroutine read_tms_nc(z_sl, filename, &
+                         opt_mask, opt_n_cts, opt_kc_cts, &
                          opt_H_cold, opt_H_temp, opt_H, &
                          opt_temp_r, opt_omega_t, opt_age_t, &
                          opt_temp_c, opt_age_c, opt_omega_c, &
@@ -74,7 +74,7 @@ contains
 
   logical, optional,  intent(in)    :: opt_flag_temp_age_only
   integer(i1b), optional, dimension(0:JMAX,0:IMAX), &
-                      intent(inout) :: opt_maske, opt_n_cts
+                      intent(inout) :: opt_mask, opt_n_cts
   integer(i4b), optional, dimension(0:JMAX,0:IMAX), &
                       intent(inout) :: opt_kc_cts
   real(dp), optional, dimension(0:JMAX,0:IMAX), &
@@ -105,11 +105,11 @@ contains
   !     ncv:       Variable ID
 
 #else
-errormsg = ' >>> read_erg_nc: Parameter NETCDF must be either 1 or 2!'
+errormsg = ' >>> read_tms_nc: Parameter NETCDF must be either 1 or 2!'
 call error(errormsg)
 #endif
 
-  integer(i1b), dimension(0:IMAX,0:JMAX) :: maske_conv, maske_old_conv, &
+  integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_conv, mask_old_conv, &
                                             n_cts_conv, &
                                             flag_shelfy_stream_x_conv, &
                                             flag_shelfy_stream_y_conv, &
@@ -186,7 +186,7 @@ call error(errormsg)
   anfdat_path = trim(ANF_DAT_PATH)
 #else
   anfdat_path = 'dummy'
-  errormsg = ' >>> read_erg_nc: ANF_DAT_PATH must be defined!'
+  errormsg = ' >>> read_tms_nc: ANF_DAT_PATH must be defined!'
   call error(errormsg)
 #endif
 
@@ -202,7 +202,7 @@ call error(errormsg)
 #endif /* Normal vs. OpenAD */
 
   if (ios /= 0) then
-     errormsg = ' >>> read_erg_nc: Error when opening the time-slice file!'
+     errormsg = ' >>> read_tms_nc: Error when opening the time-slice file!'
      call error(errormsg)
   end if
 
@@ -252,8 +252,8 @@ call error(errormsg)
 #endif
 
   read(unit=11) q_geo_conv
-  read(unit=11) maske_conv
-  read(unit=11) maske_old_conv
+  read(unit=11) mask_conv
+  read(unit=11) mask_old_conv
   read(unit=11) n_cts_conv
   read(unit=11) kc_cts_conv
   read(unit=11) zs_conv
@@ -345,7 +345,7 @@ call error(errormsg)
   ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
 
   if (ios /= nf90_noerr) then
-     errormsg = ' >>> read_erg_nc: Error when opening the' &
+     errormsg = ' >>> read_tms_nc: Error when opening the' &
               //                   end_of_line &
               //'                  time-slice file in NetCDF format!'
      call error(errormsg)
@@ -401,7 +401,7 @@ call error(errormsg)
   if ( nf90_inq_varid(ncid, 'cell_area', ncv) == nf90_noerr ) then
      call check( nf90_get_var(ncid, ncv, area_conv) )
   else
-     write(6,'(/1x,a)') '>>> read_erg_nc: Variable cell_area'
+     write(6,'(/1x,a)') '>>> read_tms_nc: Variable cell_area'
      write(6, '(1x,a)') '                 not available in read file *.nc.'
      area_conv = 0.0_sp
   end if
@@ -409,7 +409,7 @@ call error(errormsg)
   if ( nf90_inq_varid(ncid, 'temp_maat', ncv) == nf90_noerr ) then
      call check( nf90_get_var(ncid, ncv, temp_maat_conv) )
   else
-     write(6,'(/1x,a)') '>>> read_erg_nc: Variable temp_maat'
+     write(6,'(/1x,a)') '>>> read_tms_nc: Variable temp_maat'
      write(6, '(1x,a)') '                 not available in read file *.nc.'
      temp_maat_conv = 0.0_sp
   end if
@@ -457,11 +457,11 @@ call error(errormsg)
   call check( nf90_inq_varid(ncid, 'q_geo', ncv) )
   call check( nf90_get_var(ncid, ncv, q_geo_conv) )
 
-  call check( nf90_inq_varid(ncid, 'maske', ncv) )
-  call check( nf90_get_var(ncid, ncv, maske_conv) )
+  call check( nf90_inq_varid(ncid, 'mask', ncv) )
+  call check( nf90_get_var(ncid, ncv, mask_conv) )
 
-  call check( nf90_inq_varid(ncid, 'maske_old', ncv) )
-  call check( nf90_get_var(ncid, ncv, maske_old_conv) )
+  call check( nf90_inq_varid(ncid, 'mask_old', ncv) )
+  call check( nf90_get_var(ncid, ncv, mask_old_conv) )
 
   call check( nf90_inq_varid(ncid, 'n_cts', ncv) )
   call check( nf90_get_var(ncid, ncv, n_cts_conv) )
@@ -514,7 +514,7 @@ call error(errormsg)
   if ( nf90_inq_varid(ncid, 'vx_m_sia', ncv) == nf90_noerr ) then
      call check( nf90_get_var(ncid, ncv, vx_m_sia_conv) )
   else
-     write(6,'(/1x,a)') '>>> read_erg_nc: Variable vx_m_sia'
+     write(6,'(/1x,a)') '>>> read_tms_nc: Variable vx_m_sia'
      write(6, '(1x,a)') '                 not available in read file *.nc.'
      vx_m_sia_conv = 0.0_sp
   end if
@@ -522,7 +522,7 @@ call error(errormsg)
   if ( nf90_inq_varid(ncid, 'vy_m_sia', ncv) == nf90_noerr ) then
      call check( nf90_get_var(ncid, ncv, vy_m_sia_conv) )
   else
-     write(6,'(/1x,a)') '>>> read_erg_nc: Variable vy_m_sia'
+     write(6,'(/1x,a)') '>>> read_tms_nc: Variable vy_m_sia'
      write(6, '(1x,a)') '                 not available in read file *.nc.'
      vy_m_sia_conv = 0.0_sp
   end if
@@ -530,7 +530,7 @@ call error(errormsg)
   if ( nf90_inq_varid(ncid, 'vx_m_ssa', ncv) == nf90_noerr ) then
      call check( nf90_get_var(ncid, ncv, vx_m_ssa_conv) )
   else
-     write(6,'(/1x,a)') '>>> read_erg_nc: Variable vx_m_ssa'
+     write(6,'(/1x,a)') '>>> read_tms_nc: Variable vx_m_ssa'
      write(6, '(1x,a)') '                 not available in read file *.nc.'
      vx_m_ssa_conv = 0.0_sp
   end if
@@ -538,7 +538,7 @@ call error(errormsg)
   if ( nf90_inq_varid(ncid, 'vy_m_ssa', ncv) == nf90_noerr ) then
      call check( nf90_get_var(ncid, ncv, vy_m_ssa_conv) )
   else
-     write(6,'(/1x,a)') '>>> read_erg_nc: Variable vy_m_ssa'
+     write(6,'(/1x,a)') '>>> read_tms_nc: Variable vy_m_ssa'
      write(6, '(1x,a)') '                 not available in read file *.nc.'
      vy_m_ssa_conv = 0.0_sp
   end if
@@ -637,7 +637,7 @@ call error(errormsg)
      call check( nf90_get_var(ncid, ncv, ratio_sl_conv) )
      flag_ratio_sl = .true.
   else
-     write(6,'(/1x,a)') '>>> read_erg_nc: Variable ratio_sl'
+     write(6,'(/1x,a)') '>>> read_tms_nc: Variable ratio_sl'
      write(6, '(1x,a)') '                 not available in read file *.nc.'
      ratio_sl_conv = 0.0_sp
      flag_ratio_sl = .false.
@@ -680,7 +680,7 @@ call error(errormsg)
      call check( nf90_get_var(ncid, ncv, vis_ave_g_conv) )
      flag_vis_ave_g = .true.
   else
-     write(6,'(/1x,a)') '>>> read_erg_nc: Variable vis_ave_g'
+     write(6,'(/1x,a)') '>>> read_tms_nc: Variable vis_ave_g'
      write(6, '(1x,a)') '                 not available in read file *.nc.'
      vis_ave_g_conv = 0.0_sp
      flag_vis_ave_g = .false.
@@ -762,8 +762,8 @@ call error(errormsg)
      do i=0, IMAX
      do j=0, JMAX
 
-        maske(j,i)     = maske_conv(i,j)
-        maske_old(j,i) = maske_old_conv(i,j)
+        mask(j,i)     = mask_conv(i,j)
+        mask_old(j,i) = mask_old_conv(i,j)
         n_cts(j,i)   = n_cts_conv(i,j)
         kc_cts(j,i)  = kc_cts_conv(i,j)
         zs(j,i)      = real(zs_conv(i,j),dp)
@@ -913,7 +913,7 @@ call error(errormsg)
         do i=1, IMAX-1
         do j=1, JMAX-1
 
-           if (maske(j,i) == 0_i1b) &   ! grounded ice
+           if (mask(j,i) == 0_i1b) &   ! grounded ice
               ratio_sl(j,i) = 0.25_dp &
                                 * (   ratio_sl_x(j,i-1) + ratio_sl_x(j,i) &
                                     + ratio_sl_y(j-1,i) + ratio_sl_y(j,i) )
@@ -941,14 +941,14 @@ call error(errormsg)
         do i=0, IMAX
         do j=0, JMAX
 
-           if ((maske(j,i)==0_i1b).or.(maske(j,i)==3_i1b)) then
+           if ((mask(j,i)==0_i1b).or.(mask(j,i)==3_i1b)) then
                   ! grounded or floating ice
 
               vis_ave_g(j,i) = vis_int_g(j,i)/max((H_c(j,i)+H_t(j,i)), eps_dp)
 
               vis_ave_g(j,i) = max(min(vis_ave_g(j,i), visc_max), visc_min)
 
-           else   ! (maske(j,i)==1_i1b).or.(maske(j,i)==2_i1b),
+           else   ! (mask(j,i)==1_i1b).or.(mask(j,i)==2_i1b),
                   ! ice-free land or ocean
 
               vis_ave_g(j,i) = visc_init   ! dummy value
@@ -962,7 +962,7 @@ call error(errormsg)
 
   else   ! flag_temp_age_only == .true.
 
-     if ( present(opt_maske) &
+     if ( present(opt_mask) &
           .and.present(opt_n_cts) &
           .and.present(opt_kc_cts) &
           .and.present(opt_H_cold) &
@@ -979,7 +979,7 @@ call error(errormsg)
         do i=0, IMAX
         do j=0, JMAX
 
-           opt_maske(j,i)  = maske_conv(i,j)
+           opt_mask(j,i)  = mask_conv(i,j)
            opt_n_cts(j,i)  = n_cts_conv(i,j)
            opt_kc_cts(j,i) = kc_cts_conv(i,j)
 
@@ -1007,21 +1007,21 @@ call error(errormsg)
 
      else
 
-        errormsg = ' >>> read_erg_nc: optional argument(s) missing!'
+        errormsg = ' >>> read_tms_nc: optional argument(s) missing!'
         call error(errormsg)
 
      end if
 
   end if   ! flag_temp_age_only == .false./.true.
 
-  end subroutine read_erg_nc
+  end subroutine read_tms_nc
 
 !-------------------------------------------------------------------------------
 !> Reading of the target-topography file (in NetCDF format).
 !<------------------------------------------------------------------------------
   subroutine read_target_topo_nc(target_topo_dat_name)
 
-  use sico_variables_m, only : maske_target, &
+  use sico_variables_m, only : mask_target, &
                                zs_target, zb_target, zl_target, &
                                H_target, errormsg, end_of_line
 
@@ -1037,10 +1037,10 @@ call error(errormsg)
 ! Return variables
 ! (defined as global variables in module sico_variables_m):
 !
-!    maske_target, zs_target, zb_target, zl_target, H_target
+!    mask_target, zs_target, zb_target, zl_target, H_target
 
   integer(i4b)                           :: ios
-  integer(i1b), dimension(0:IMAX,0:JMAX) :: maske_conv
+  integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_conv
   real(sp), dimension(0:IMAX,0:JMAX)     :: zs_conv, zb_conv, zl_conv, H_conv
   character(len=256)                     :: target_topo_dat_path
   character(len=256)                     :: filename_with_path
@@ -1082,8 +1082,8 @@ call error(errormsg)
      call error(errormsg)
   end if
 
-  call check( nf90_inq_varid(ncid, 'maske', ncv),  thisroutine )
-  call check( nf90_get_var(ncid, ncv, maske_conv), thisroutine )
+  call check( nf90_inq_varid(ncid, 'mask', ncv),  thisroutine )
+  call check( nf90_get_var(ncid, ncv, mask_conv), thisroutine )
 
   call check( nf90_inq_varid(ncid, 'zs', ncv),  thisroutine )
   call check( nf90_get_var(ncid, ncv, zs_conv), thisroutine )
@@ -1101,7 +1101,7 @@ call error(errormsg)
 
 #else   /* NETCDF != 2, not allowed */
 
-  maske_conv = 0_i1b    ! dummy values
+  mask_conv = 0_i1b    ! dummy values
   zs_conv    = 0.0_sp   ! dummy values
   zb_conv    = 0.0_sp   ! dummy values
   zl_conv    = 0.0_sp   ! dummy values
@@ -1115,7 +1115,7 @@ call error(errormsg)
 !-------- Convert data to double precision --------
 
 #if !defined(ALLOW_OPENAD) /* Normal */
-  maske_target = transpose(maske_conv)
+  mask_target = transpose(mask_conv)
   zs_target    = real(transpose(zs_conv),dp)
   zb_target    = real(transpose(zb_conv),dp)
   zl_target    = real(transpose(zl_conv),dp)
@@ -1123,7 +1123,7 @@ call error(errormsg)
 #else /* OpenAD */
   do i=0, IMAX
   do j=0, JMAX
-     maske_target(j,i) = maske_conv(i,j)
+     mask_target(j,i) = mask_conv(i,j)
      zs_target(j,i)    = real(zs_conv(i,j),dp)
      zb_target(j,i)    = real(zb_conv(i,j),dp)
      zl_target(j,i)    = real(zl_conv(i,j),dp)
@@ -2012,7 +2012,7 @@ file='subroutines/openad/gridded_age_unc.dat', status='old')
                 age_unc(k,j,i)  = age_unc(k,j,i)  * year2sec
             if (debug) then ! cheat the FDS by making initial ages = to data
                 age_c    (k,j,i) = age_data(k,j,i)
-                age_c_neu(k,j,i) = age_data(k,j,i)
+                age_c_new(k,j,i) = age_data(k,j,i)
             end if
           end do
        end do

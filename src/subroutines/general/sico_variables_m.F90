@@ -41,28 +41,28 @@ save
 
 !-------- Field quantities --------
 
-!> maske(j,i): Ice-land-ocean mask.
+!> mask(j,i): Ice-land-ocean mask.
 !>             0: grounded ice,
 !>             1: ice-free land,
 !>             2: ocean,
 !>             3: floating ice
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: maske
-!> maske_old(j,i): Old value of maske (at the previous time step)
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: maske_old
-!> maske_neu(j,i): New value of maske computed during an integration step
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: maske_neu
+   integer(i1b), dimension(0:JMAX,0:IMAX) :: mask
+!> mask_old(j,i): Old value of mask (at the previous time step)
+   integer(i1b), dimension(0:JMAX,0:IMAX) :: mask_old
+!> mask_new(j,i): New value of mask computed during an integration step
+   integer(i1b), dimension(0:JMAX,0:IMAX) :: mask_new
 !> n_cts(j,i): Mask for thermal conditions.
 !>             -1: cold ice base,
 !>              0: temperate ice base with cold ice above,
 !>              1: temperate ice base with temperate ice layer above
 !>                 (only for POLY)
    integer(i1b), dimension(0:JMAX,0:IMAX) :: n_cts
-!> (.)_neu: New value of quantity (.) computed during an integration step
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: n_cts_neu
+!> (.)_new: New value of quantity (.) computed during an integration step
+   integer(i1b), dimension(0:JMAX,0:IMAX) :: n_cts_new
 !> kc_cts(j,i): Position kc of the CTS (for COLD, ENTC, ENTM)
    integer(i4b), dimension(0:JMAX,0:IMAX) :: kc_cts
-!> (.)_neu: New value of quantity (.) computed during an integration step
-   integer(i4b), dimension(0:JMAX,0:IMAX) :: kc_cts_neu
+!> (.)_new: New value of quantity (.) computed during an integration step
+   integer(i4b), dimension(0:JMAX,0:IMAX) :: kc_cts_new
 !> mask_region(j,i): Region mask.
 !>             0: undefined,
 !>             1: EAIS,
@@ -415,18 +415,18 @@ save
 !> am_perp_st(j,i): Steady-state part of am_perp
 !>                  (without contribution of dzm_dtau)
    real(dp), dimension(0:JMAX,0:IMAX) :: am_perp_st
-!> (.)_neu: New value of quantity (.) computed during an integration step
-   real(dp), dimension(0:JMAX,0:IMAX) :: zs_neu
-!> (.)_neu: New value of quantity (.) computed during an integration step
-   real(dp), dimension(0:JMAX,0:IMAX) :: zm_neu
-!> (.)_neu: New value of quantity (.) computed during an integration step
-   real(dp), dimension(0:JMAX,0:IMAX) :: zb_neu
-!> (.)_neu: New value of quantity (.) computed during an integration step
-   real(dp), dimension(0:JMAX,0:IMAX) :: zl_neu
-!> (.)_neu: New value of quantity (.) computed during an integration step
-   real(dp), dimension(0:JMAX,0:IMAX) :: H_c_neu
-!> (.)_neu: New value of quantity (.) computed during an integration step
-   real(dp), dimension(0:JMAX,0:IMAX) :: H_t_neu
+!> (.)_new: New value of quantity (.) computed during an integration step
+   real(dp), dimension(0:JMAX,0:IMAX) :: zs_new
+!> (.)_new: New value of quantity (.) computed during an integration step
+   real(dp), dimension(0:JMAX,0:IMAX) :: zm_new
+!> (.)_new: New value of quantity (.) computed during an integration step
+   real(dp), dimension(0:JMAX,0:IMAX) :: zb_new
+!> (.)_new: New value of quantity (.) computed during an integration step
+   real(dp), dimension(0:JMAX,0:IMAX) :: zl_new
+!> (.)_new: New value of quantity (.) computed during an integration step
+   real(dp), dimension(0:JMAX,0:IMAX) :: H_c_new
+!> (.)_new: New value of quantity (.) computed during an integration step
+   real(dp), dimension(0:JMAX,0:IMAX) :: H_t_new
 
 !> zs_ref(j,i): Reference elevation for the present-day climatology
    real(dp), dimension(0:JMAX,0:IMAX) :: zs_ref
@@ -485,14 +485,14 @@ save
    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: vz_c
 !> temp_c(kc,j,i): Temperature in the upper (kc) ice domain
    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: temp_c
-!> (.)_neu: New value of quantity (.) computed during an integration step
-   real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: temp_c_neu
+!> (.)_new: New value of quantity (.) computed during an integration step
+   real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: temp_c_new
 !> temp_c_m(kc,j,i): Melting temperature in the upper (kc) ice domain
    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: temp_c_m
 !> age_c(kc,j,i): Age in the upper (kc) ice domain
    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: age_c
-!> (.)_neu: New value of quantity (.) computed during an integration step
-   real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: age_c_neu
+!> (.)_new: New value of quantity (.) computed during an integration step
+   real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: age_c_new
 !> txz_c(kc,j,i): Shear stress txz in the upper (kc) ice domain
 !>                (at (i+1/2,j,kc))
    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: txz_c
@@ -528,14 +528,14 @@ save
    real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX) :: vz_t
 !> omega_t(kt,j,i): Water content in the lower (kt) ice domain
    real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX) :: omega_t
-!> (.)_neu: New value of quantity (.) computed during an integration step
-   real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX) :: omega_t_neu
+!> (.)_new: New value of quantity (.) computed during an integration step
+   real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX) :: omega_t_new
 !> temp_t_m(kt,j,i): Melting temperature in the lower (kt) ice domain
    real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX) :: temp_t_m
 !> age_t(kt,j,i): Age in the lower (kt) ice domain
    real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX) :: age_t
-!> (.)_neu: New value of quantity (.) computed during an integration step
-   real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX) :: age_t_neu
+!> (.)_new: New value of quantity (.) computed during an integration step
+   real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX) :: age_t_new
 !> txz_t(kt,j,i): Shear stress txz in the lower (kt) ice domain
 !>                (at (i+1/2,j,kt))
    real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX) :: txz_t
@@ -549,22 +549,22 @@ save
 
 !> temp_r(kr,j,i): Temperature in the bedrock
    real(dp), dimension(0:KRMAX,0:JMAX,0:IMAX) :: temp_r
-!> (.)_neu: New value of quantity (.) computed during an integration step
-   real(dp), dimension(0:KRMAX,0:JMAX,0:IMAX) :: temp_r_neu
+!> (.)_new: New value of quantity (.) computed during an integration step
+   real(dp), dimension(0:KRMAX,0:JMAX,0:IMAX) :: temp_r_new
 
 !> enth_c(kc,j,i): Enthalpy in the upper (kc) ice domain
    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: enth_c
-!> (.)_neu: New value of quantity (.) computed during an integration step
-   real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: enth_c_neu
+!> (.)_new: New value of quantity (.) computed during an integration step
+   real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: enth_c_new
 !> omega_c(kc,j,i): Water content in the upper (kc) ice domain
    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: omega_c
-!> (.)_neu: New value of quantity (.) computed during an integration step
-   real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: omega_c_neu
+!> (.)_new: New value of quantity (.) computed during an integration step
+   real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: omega_c_new
 
 !> enth_t(kt,j,i): Enthalpy in the lower (kt) ice domain
    real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX) :: enth_t
-!> (.)_neu: New value of quantity (.) computed during an integration step
-   real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX) :: enth_t_neu
+!> (.)_new: New value of quantity (.) computed during an integration step
+   real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX) :: enth_t_new
 
 !> dxx_c(kc,j,i): Strain rate dxx in the upper (kc) ice domain
    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: dxx_c
@@ -799,8 +799,8 @@ save
    real(dp) :: time_target_topo_final
 !> target_topo_tau_0: Relaxation time for target-topography adjustment
    real(dp) :: target_topo_tau_0
-!> maske_target(j,i): Target topography (ice-land-ocean mask)
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: maske_target
+!> mask_target(j,i): Target topography (ice-land-ocean mask)
+   integer(i1b), dimension(0:JMAX,0:IMAX) :: mask_target
 !> zs_target(j,i): Target topography (ice surface)
    real(dp), dimension(0:JMAX,0:IMAX) :: zs_target
 !> zb_target(j,i): Target topography (ice base)
@@ -810,10 +810,10 @@ save
 !> H_target(j,i): Target topography (ice thickness)
    real(dp), dimension(0:JMAX,0:IMAX) :: H_target
 
-!> maske_maxextent(j,i): Maximum ice extent mask.
+!> mask_maxextent(j,i): Maximum ice extent mask.
 !>                       0: not allowed to glaciate,
 !>                       1: allowed to glaciate.
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: maske_maxextent
+   integer(i1b), dimension(0:JMAX,0:IMAX) :: mask_maxextent
 
 !> ncid_ser: IDs of the NetCDF time-series output files
    integer(i4b), dimension(0:99) :: ncid_ser

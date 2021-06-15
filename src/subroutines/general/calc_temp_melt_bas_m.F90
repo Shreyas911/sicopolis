@@ -91,7 +91,7 @@ contains
   do i=0, IMAX
   do j=0, JMAX
 
-     if ( (maske(j,i) == 0_i1b).or.(maske(j,i) == 3_i1b) ) then
+     if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
                                    ! glaciated land or floating ice
 
         if (n_cts(j,i) == -1_i1b) then   ! cold ice base
@@ -108,7 +108,7 @@ contains
 
         end if
 
-     else   ! maske(j,i) == 1_i1b or 2_i1b, ice-free land or sea
+     else   ! mask(j,i) == 1_i1b or 2_i1b, ice-free land or sea
 
         temp_b(j,i)  = temp_c(0,j,i)
         temph_b(j,i) = temp_c(0,j,i) - temp_c_m(0,j,i)

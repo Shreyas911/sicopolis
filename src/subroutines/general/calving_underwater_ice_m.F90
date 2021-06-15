@@ -100,7 +100,7 @@ contains
 
 #if !defined(ALLOW_OPENAD) /* Normal */
 
-  where ( (maske == 0_i1b).and.(H < rhosw_rho_ratio*H_sea) )
+  where ( (mask == 0_i1b).and.(H < rhosw_rho_ratio*H_sea) )
      calv_uw_ice = calv_uw_coeff * H**r1_calv_uw * H_sea**r2_calv_uw
   elsewhere
      calv_uw_ice = 0.0_dp
@@ -110,7 +110,7 @@ contains
 
   do i=0, IMAX
   do j=0, JMAX
-     if ( (maske(j,i) == 0_i1b) .and. (H(j,i) < rhosw_rho_ratio*H_sea(j,i)) ) then
+     if ( (mask(j,i) == 0_i1b) .and. (H(j,i) < rhosw_rho_ratio*H_sea(j,i)) ) then
         calv_uw_ice(j,i) = calv_uw_coeff * H(j,i)**r1_calv_uw * H_sea(j,i)**r2_calv_uw
      else
         calv_uw_ice(j,i) = 0.0_dp

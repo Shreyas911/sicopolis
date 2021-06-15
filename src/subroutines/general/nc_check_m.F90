@@ -59,7 +59,7 @@ character, parameter :: ch_end_of_line = char(10)
 if ( present(ch_calling_routine) ) then
    ch_clrt = trim(ch_calling_routine)
 else
-   ch_clrt = 'read_erg_nc'   ! default calling routine
+   ch_clrt = 'read_tms_nc'   ! default calling routine
 end if
 
 if (status /= nf90_noerr) then 

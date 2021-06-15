@@ -329,8 +329,8 @@ contains
       runname)
 
  call var_transfer&
-      (maske, maske_old, maske_neu, &
-      n_cts, n_cts_neu, kc_cts, kc_cts_neu, &
+      (mask, mask_old, mask_new, &
+      n_cts, n_cts_new, kc_cts, kc_cts_new, &
       flag_calc_temp, &
       flag_inner_point, &
       flag_grounding_line_1,flag_grounding_line_2,flag_calving_front_1,&
@@ -352,16 +352,16 @@ contains
       flui_ave_sia,h_diff,qx,qy,q_gl_g,q_geo,temp_b,temph_b,Q_bm,Q_b_apl,&
       Q_tld,Q_b_tot,H_w,&
       accum,runoff,runoff_apl,as_perp,temp_maat,temp_s,am_perp,&
-      am_perp_st,zs_neu,zm_neu,zb_neu,zl_neu,H_c_neu,H_t_neu,zs_ref,&
+      am_perp_st,zs_new,zm_new,zb_new,zl_new,H_c_new,H_t_new,zs_ref,&
       accum_present,precip_ma_present,precip_ma_lgm_anom,&
       temp_ma_present,temp_mj_present,temp_ma_lgm_anom,temp_mj_lgm_anom,&
       dist_dxdy,acc_fact,precip_present,precip_lgm_anom,gamma_precip_lgm_anom,&
       temp_mm_present,temp_mm_lgm_anom,d_help_c,vx_c,vy_c,vz_c,temp_c,&
-      temp_c_neu,temp_c_m,age_c,age_c_neu,txz_c,tyz_c,sigma_c,enh_c,&
+      temp_c_new,temp_c_m,age_c,age_c_new,txz_c,tyz_c,sigma_c,enh_c,&
       de_ssa,vis_int_g,vx_g,vy_g,d_help_t,vx_t,vy_t,vz_t,omega_t,&
-      omega_t_neu,temp_t_m,age_t,age_t_neu,txz_t,tyz_t,sigma_t,enh_t,&
-      temp_r,temp_r_neu,enth_c,enth_c_neu,omega_c,omega_c_neu,enth_t,&
-      enth_t_neu,dxx_c,dyy_c,dxy_c,dxz_c,dyz_c,de_c,lambda_shear_c,&
+      omega_t_new,temp_t_m,age_t,age_t_new,txz_t,tyz_t,sigma_t,enh_t,&
+      temp_r,temp_r_new,enth_c,enth_c_new,omega_c,omega_c_new,enth_t,&
+      enth_t_new,dxx_c,dyy_c,dxy_c,dxz_c,dyz_c,de_c,lambda_shear_c,&
       dxx_t,dyy_t,dxy_t,dxz_t,dyz_t,de_t,lambda_shear_t,RHO,RHO_W,&
       RHO_SW,L,G,NUE,BETA,DELTA_TM_SW,OMEGA_MAX,H_R,RHO_C_R,KAPPA,KAPPA_R,&
       RHO_A,R_T,R_T_IMQ,&
@@ -374,8 +374,8 @@ contains
       griptemp,gi_time_min,gi_time_stp,gi_time_max,ndata_gi,&
       glacial_index,specmap_time_min,specmap_time_stp,specmap_time_max,&
       ndata_specmap,specmap_zsl,time_target_topo_init,&
-      time_target_topo_final,maske_target,zs_target,zb_target,&
-      zl_target,H_target,maske_maxextent,mask_ablation_type,ncid_temp_precip,&
+      time_target_topo_final,mask_target,zs_target,zb_target,&
+      zl_target,H_target,mask_maxextent,mask_ablation_type,ncid_temp_precip,&
       ndata_temp_precip,temp_precip_time_min,temp_precip_time_stp,&
       temp_precip_time_max,temp_precip_time,kei,kei_r_max,&
       kei_r_incr,fc,objf_test,&
@@ -557,8 +557,8 @@ contains
 !! liz.curry.logan@gmail.com. 
 !<------------------------------------------------------------------------------
   subroutine var_transfer&
-         (a_maske, a_maske_old, a_maske_neu, &
-         a_n_cts, a_n_cts_neu, a_kc_cts, a_kc_cts_neu, &
+         (a_mask, a_mask_old, a_mask_new, &
+         a_n_cts, a_n_cts_new, a_kc_cts, a_kc_cts_new, &
          a_flag_calc_temp, &
          a_flag_inner_point, &
          a_flag_grounding_line_1,a_flag_grounding_line_2,a_flag_calving_front_1,&
@@ -580,16 +580,16 @@ contains
          a_flui_ave_sia,a_h_diff,a_qx,a_qy,a_q_gl_g,a_q_geo,a_temp_b,a_temph_b,a_Q_bm,a_Q_b_apl,&
          a_Q_tld,a_Q_b_tot,a_H_w,&
          a_accum,a_runoff,a_runoff_apl,a_as_perp,a_temp_maat,a_temp_s,a_am_perp,&
-         a_am_perp_st,a_zs_neu,a_zm_neu,a_zb_neu,a_zl_neu,a_H_c_neu,a_H_t_neu,a_zs_ref,&
+         a_am_perp_st,a_zs_new,a_zm_new,a_zb_new,a_zl_new,a_H_c_new,a_H_t_new,a_zs_ref,&
          a_accum_present,a_precip_ma_present,a_precip_ma_lgm_anom,&
          a_temp_ma_present,a_temp_mj_present,a_temp_ma_lgm_anom,a_temp_mj_lgm_anom,&
          a_dist_dxdy,a_acc_fact,a_precip_present,a_precip_lgm_anom,a_gamma_precip_lgm_anom,&
          a_temp_mm_present,a_temp_mm_lgm_anom,a_d_help_c,a_vx_c,a_vy_c,a_vz_c,a_temp_c,&
-         a_temp_c_neu,a_temp_c_m,a_age_c,a_age_c_neu,a_txz_c,a_tyz_c,a_sigma_c,a_enh_c,&
+         a_temp_c_new,a_temp_c_m,a_age_c,a_age_c_new,a_txz_c,a_tyz_c,a_sigma_c,a_enh_c,&
          a_de_ssa,a_vis_int_g,a_vx_g,a_vy_g,a_d_help_t,a_vx_t,a_vy_t,a_vz_t,a_omega_t,&
-         a_omega_t_neu,a_temp_t_m,a_age_t,a_age_t_neu,a_txz_t,a_tyz_t,a_sigma_t,a_enh_t,&
-         a_temp_r,a_temp_r_neu,a_enth_c,a_enth_c_neu,a_omega_c,a_omega_c_neu,a_enth_t,&
-         a_enth_t_neu,a_dxx_c,a_dyy_c,a_dxy_c,a_dxz_c,a_dyz_c,a_de_c,a_lambda_shear_c,&
+         a_omega_t_new,a_temp_t_m,a_age_t,a_age_t_new,a_txz_t,a_tyz_t,a_sigma_t,a_enh_t,&
+         a_temp_r,a_temp_r_new,a_enth_c,a_enth_c_new,a_omega_c,a_omega_c_new,a_enth_t,&
+         a_enth_t_new,a_dxx_c,a_dyy_c,a_dxy_c,a_dxz_c,a_dyz_c,a_de_c,a_lambda_shear_c,&
          a_dxx_t,a_dyy_t,a_dxy_t,a_dxz_t,a_dyz_t,a_de_t,a_lambda_shear_t,a_RHO,a_RHO_W,&
          a_RHO_SW,a_L,a_G,a_NUE,a_BETA,a_DELTA_TM_SW,a_OMEGA_MAX,a_H_R,a_RHO_C_R,a_KAPPA,a_KAPPA_R,&
          a_RHO_A,a_R_T,a_R_T_IMQ,&
@@ -602,8 +602,8 @@ contains
          a_griptemp,a_gi_time_min,a_gi_time_stp,a_gi_time_max,a_ndata_gi,&
          a_glacial_index,a_specmap_time_min,a_specmap_time_stp,a_specmap_time_max,&
          a_ndata_specmap,a_specmap_zsl,a_time_target_topo_init,&
-         a_time_target_topo_final,a_maske_target,a_zs_target,a_zb_target,&
-         a_zl_target,a_H_target,a_maske_maxextent,a_mask_ablation_type,a_ncid_temp_precip,&
+         a_time_target_topo_final,a_mask_target,a_zs_target,a_zb_target,&
+         a_zl_target,a_H_target,a_mask_maxextent,a_mask_ablation_type,a_ncid_temp_precip,&
          a_ndata_temp_precip,a_temp_precip_time_min,a_temp_precip_time_stp,&
          a_temp_precip_time_max,a_temp_precip_time,a_kei,a_kei_r_max,&
          a_kei_r_incr,a_fc,a_objf_test,&
@@ -662,7 +662,7 @@ contains
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_as_anom_initmip
 #endif
     real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_age_c
-    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_age_c_neu
+    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_age_c_new
 #if (defined(AGE_COST))
 #if (CALCMOD==1)
     real(dp), dimension(0:KTMAX+KCMAX+1,0:JMAX,0:IMAX) :: a_age_data
@@ -673,7 +673,7 @@ contains
 #endif
 #endif /* No age cost used */
     real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_age_t
-    real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_age_t_neu
+    real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_age_t_new
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_area
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_am_perp
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_am_perp_st
@@ -746,9 +746,9 @@ contains
     real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_enh_c
     real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_enh_t
     real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_enth_c
-    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_enth_c_neu
+    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_enth_c_new
     real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_enth_t
-    real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_enth_t_neu
+    real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_enth_t_new
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_et
     real(dp), dimension(0:JMAX)                        :: a_eta
     real(dp)                                           :: a_F_INV
@@ -790,11 +790,11 @@ contains
     real(dp), dimension(0:a_ndata_grip)                :: a_griptemp
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_h_diff
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_H_c
-    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_H_c_neu
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_H_c_new
     real(dp)                                           :: a_H_R
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_H_t
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_H_target
-    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_H_t_neu
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_H_t_new
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_H_w
     integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_ij2n
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_insq_g11_g
@@ -806,7 +806,7 @@ contains
     real(dp), dimension(-256:255)                      :: a_KAPPA_IMQ
     real(dp)                                           :: a_KAPPA_R
     integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_kc_cts
-    integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_kc_cts_neu
+    integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_kc_cts_new
     real(dp), dimension(-10000:10000)                  :: a_kei
     real(dp)                                           :: a_kei_r_max
     real(dp)                                           :: a_kei_r_incr
@@ -818,13 +818,13 @@ contains
     real(dp), dimension(a_n_core)                      :: a_lambda_core
     real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_lambda_shear_c
     real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_lambda_shear_t
-    integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_maske
+    integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_mask
     integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_mask_ablation_type
-    integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_maske_maxextent
-    integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_maske_neu
-    integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_maske_old
+    integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_mask_maxextent
+    integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_mask_new
+    integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_mask_old
     integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_n_slide_region
-    integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_maske_target
+    integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_mask_target
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_melt
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_melt_star
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_mb_source_apl
@@ -835,7 +835,7 @@ contains
     integer(i4b), dimension((IMAX+1)*(JMAX+1))         :: a_n2j
     integer(i4b)                                       :: a_n_core
     integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_n_cts
-    integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_n_cts_neu
+    integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_n_cts_new
     integer(i4b)                                       :: a_n_enth_min
     integer(i4b)                                       :: a_n_enth_max
     integer(i4b)                                       :: a_n_data_kei
@@ -856,10 +856,10 @@ contains
     real(dp)                                           :: a_NUE
     real(dp)                                           :: a_objf_test
     real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_omega_c
-    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_omega_c_neu
+    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_omega_c_new
     real(dp)                                           :: a_OMEGA_MAX
     real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_omega_t
-    real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_omega_t_neu
+    real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_omega_t_new
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_p_b_w
     integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_p_weert
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_p_weert_inv
@@ -922,7 +922,7 @@ contains
     real(dp)                                           :: a_target_topo_tau_0
     real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_temp_c
     real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_temp_c_m
-    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_temp_c_neu
+    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_temp_c_new
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_temp_b
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_temp_maat
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_temp_s
@@ -938,7 +938,7 @@ contains
     real(dp)                                           :: a_temp_precip_time_min
     real(dp)                                           :: a_temp_precip_time_stp
     real(dp), dimension(0:KRMAX,0:JMAX,0:IMAX)         :: a_temp_r
-    real(dp), dimension(0:KRMAX,0:JMAX,0:IMAX)         :: a_temp_r_neu
+    real(dp), dimension(0:KRMAX,0:JMAX,0:IMAX)         :: a_temp_r_new
     real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_temp_t_m
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_time_lag_asth
     real(dp)                                           :: a_time_target_topo_final
@@ -978,19 +978,19 @@ contains
     real(dp), dimension(a_n_core)                      :: a_y_core
     real(dp)                                           :: a_year_zero
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_zb
-    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_zb_neu
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_zb_new
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_zb_target
     real(dp), dimension(0:KCMAX)                       :: a_zeta_c
     real(dp), dimension(0:KTMAX)                       :: a_zeta_t
     real(dp), dimension(0:KRMAX)                       :: a_zeta_r
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_zl
-    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_zl_neu
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_zl_new
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_zl_target
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_zl0
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_zm
-    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_zm_neu
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_zm_new
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_zs
-    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_zs_neu
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_zs_new
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_zs_ref
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_zs_target
 
@@ -1020,17 +1020,17 @@ contains
     accum_present = a_accum_present
     acc_fact = a_acc_fact
     age_c%v = a_age_c
-    age_c_neu%v = a_age_c_neu
+    age_c_new%v = a_age_c_new
 #if (defined(AGE_COST))
     age_data = a_age_data
     age_unc = a_age_unc
 #endif 
 #if (defined(AGE_COST) && CALCMOD==1) 
     age_t%v = a_age_t
-    age_t_neu%v = a_age_t_neu
+    age_t_new%v = a_age_t_new
 #else
     age_t = a_age_t
-    age_t_neu = a_age_t_neu
+    age_t_new = a_age_t_new
 #endif
 #if (defined(GRL) && DISC>0)
     alpha_o_DW = a_alpha_o_DW     !ns
@@ -1148,13 +1148,13 @@ contains
 #endif
 #if (CALCMOD >= 2)
     enth_c%v = a_enth_c
-    enth_c_neu%v = a_enth_c_neu
+    enth_c_new%v = a_enth_c_new
 #else
     enth_c = a_enth_c
-    enth_c_neu = a_enth_c_neu
+    enth_c_new = a_enth_c_new
 #endif
     enth_t = a_enth_t
-    enth_t_neu = a_enth_t_neu
+    enth_t_new = a_enth_t_new
     et%v = a_et
     eta = a_eta
     F_INV = a_F_INV
@@ -1201,12 +1201,12 @@ contains
     dT_glann_CLIMBER = a_dT_glann_CLIMBER
 #endif
     H_c%v = a_H_c
-    H_c_neu%v = a_H_c_neu
+    H_c_new%v = a_H_c_new
     h_diff%v = a_h_diff
     H_R = a_H_R
     H_t%v = a_H_t
     H_target = a_H_target
-    H_t_neu%v = a_H_t_neu
+    H_t_new%v = a_H_t_new
     H_w = a_H_w
     ij2n = a_ij2n
     insq_g11_g = a_insq_g11_g
@@ -1221,7 +1221,7 @@ contains
     KAPPA_C_IMQ = a_KAPPA_C_IMQ
     KAPPA_IMQ = a_KAPPA_IMQ !ns? called KAPPA, no _IMQ
     kc_cts = a_kc_cts
-    kc_cts_neu = a_kc_cts_neu
+    kc_cts_new = a_kc_cts_new
     kei = a_kei
     kei_r_incr = a_kei_r_incr
     kei_r_max = a_kei_r_max
@@ -1241,11 +1241,11 @@ contains
     lambda_shear_c = a_lambda_shear_c
     lambda_shear_t = a_lambda_shear_t
 #endif
-    maske = a_maske
-    maske_maxextent = a_maske_maxextent
-    maske_neu = a_maske_neu
-    maske_old = a_maske_old
-    maske_target = a_maske_target
+    mask = a_mask
+    mask_maxextent = a_mask_maxextent
+    mask_new = a_mask_new
+    mask_old = a_mask_old
+    mask_target = a_mask_target
     mask_ablation_type = a_mask_ablation_type
     n_slide_region = a_n_slide_region
     mb_source_apl = a_mb_source_apl
@@ -1270,7 +1270,7 @@ contains
     NUE = a_NUE
     n_core = a_n_core
     n_cts = a_n_cts
-    n_cts_neu = a_n_cts_neu
+    n_cts_new = a_n_cts_new
 #if (defined(GRL) && DISC>0)
     n_discharge_call_DW = a_n_discharge_call_DW !ns
 #endif
@@ -1286,18 +1286,18 @@ contains
     objf_test%v = a_objf_test
 #if (CALCMOD >= 2)
     omega_c%v = a_omega_c
-    omega_c_neu%v = a_omega_c_neu
+    omega_c_new%v = a_omega_c_new
 #elif (CALCMOD == 0 || CALCMOD == 1)
     omega_c = a_omega_c
-    omega_c_neu = a_omega_c_neu
+    omega_c_new = a_omega_c_new
 #endif
     OMEGA_MAX = a_OMEGA_MAX
 #if (CALCMOD >= 1) 
     omega_t%v = a_omega_t
-    omega_t_neu%v = a_omega_t_neu
+    omega_t_new%v = a_omega_t_new
 #else
     omega_t = a_omega_t
-    omega_t_neu = a_omega_t_neu
+    omega_t_new = a_omega_t_new
 #endif
     phi = a_phi
     PHI0 = a_PHI0
@@ -1394,7 +1394,7 @@ contains
     temp_b = a_temp_b
     temp_c%v = a_temp_c
     temp_c_m%v = a_temp_c_m
-    temp_c_neu%v = a_temp_c_neu
+    temp_c_new%v = a_temp_c_new
     temp_ma_lgm_anom = a_temp_ma_lgm_anom
     temp_ma_present%v = a_temp_ma_present
     temp_mj_lgm_anom = a_temp_mj_lgm_anom
@@ -1409,7 +1409,7 @@ contains
     temp_precip_time_min = a_temp_precip_time_min
     temp_precip_time_stp = a_temp_precip_time_stp
     temp_r%v = a_temp_r
-    temp_r_neu%v = a_temp_r_neu
+    temp_r_new%v = a_temp_r_new
     temp_maat = a_temp_maat
     temp_s%v = a_temp_s
     temp_t_m%v = a_temp_t_m
@@ -1499,24 +1499,24 @@ contains
 #endif
     year_zero = a_year_zero
     zb%v = a_zb
-    zb_neu%v = a_zb_neu
+    zb_new%v = a_zb_new
     zb_target = a_zb_target
     zeta_c = a_zeta_c
     zeta_r = a_zeta_r
     zeta_t = a_zeta_t
 #if (REBOUND >= 1) 
     zl%v = a_zl
-    zl_neu%v = a_zl_neu
+    zl_new%v = a_zl_new
 #else
     zl = a_zl
-    zl_neu = a_zl_neu
+    zl_new = a_zl_new
 #endif
     zl0 = a_zl0
     zl_target = a_zl_target
     zm%v = a_zm
-    zm_neu%v = a_zm_neu
+    zm_new%v = a_zm_new
     zs%v = a_zs
-    zs_neu%v = a_zs_neu
+    zs_new%v = a_zs_new
     zs_ref = a_zs_ref
     zs_target = a_zs_target
 

@@ -76,7 +76,7 @@ end do
 do i=1, IMAX-1
 do j=1, JMAX-1
 
-   if (maske(j,i)==0_i1b) then   ! grounded ice
+   if (mask(j,i)==0_i1b) then   ! grounded ice
 
 !-------- Abbreviations --------
 
@@ -229,7 +229,7 @@ do j=1, JMAX-1
       vz_s(j,i) = vz_c(kc-1,j,i) &
                   +0.5_dp*(-cvz3(kc)+cvz4(kc)+cvz5(kc))
 
-   else   ! maske(j,i) /= 0_i1b (not grounded ice)
+   else   ! mask(j,i) /= 0_i1b (not grounded ice)
 
       vz_b(j,i) = 0.0_dp
 
@@ -292,7 +292,7 @@ end do
 do i=1, IMAX-1
 do j=1, JMAX-1
 
-   if (maske(j,i)==3_i1b) then   ! floating ice
+   if (mask(j,i)==3_i1b) then   ! floating ice
 
 !  ------ Derivatives of the horizontal velocity
 
@@ -379,7 +379,7 @@ integer(i4b) :: i, j, kc, kt
 do i=0, IMAX
 do j=0, JMAX
 
-   if ((maske(j,i)==0_i1b).or.(maske(j,i)==3_i1b)) then
+   if ((mask(j,i)==0_i1b).or.(mask(j,i)==3_i1b)) then
                               ! grounded or floating ice
 
       vz_b(j,i) = dzb_dtau(j,i)-Q_b_tot(j,i)
@@ -397,7 +397,7 @@ do j=0, JMAX
 
       vz_s(j,i) = vz_b(j,i)
 
-   else   ! maske(j,i) == (1_i1b or 2_i1b)
+   else   ! mask(j,i) == (1_i1b or 2_i1b)
 
       vz_b(j,i) = 0.0_dp
 

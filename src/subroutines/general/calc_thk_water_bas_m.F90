@@ -75,7 +75,7 @@ contains
                                         hydro_bwat
 
 #if defined(ALLOW_OPENAD) /* OpenAD */
-  integer(i1b), dimension(0:IMAX,0:JMAX) :: t_maske
+  integer(i1b), dimension(0:IMAX,0:JMAX) :: t_mask
   real(dp)    , dimension(0:IMAX,0:JMAX) :: t_H_c, t_H_t, t_Q_b_tot
 #endif /* OpenAD */
 
@@ -107,7 +107,7 @@ contains
   hydro_topg       = transpose(zl)-z_sl
   hydro_temppabase = transpose(temph_b)
 
-  where (transpose(maske)==0_i1b)   ! grounded ice
+  where (transpose(mask)==0_i1b)   ! grounded ice
      hydro_icemask = 1
      hydro_thk     = transpose(H_c+H_t)
      hydro_supply  = rho_rho_w_ratio*transpose(Q_b_tot)
@@ -136,7 +136,7 @@ contains
 
 #else
 
-  where (maske==0_i1b)   ! grounded ice
+  where (mask==0_i1b)   ! grounded ice
      q_w   = 0.0_dp
      q_w_x = 0.0_dp
      q_w_y = 0.0_dp
@@ -145,17 +145,17 @@ contains
 
 #endif
 
-  where (maske==2_i1b)   ! ocean
+  where (mask==2_i1b)   ! ocean
      q_w   = 0.0_dp
      q_w_x = 0.0_dp
      q_w_y = 0.0_dp
      H_w   = z_sl-zl
-  elsewhere (maske==3_i1b)   ! floating ice
+  elsewhere (mask==3_i1b)   ! floating ice
      q_w   = 0.0_dp
      q_w_x = 0.0_dp
      q_w_y = 0.0_dp
      H_w   = zb-zl
-  elsewhere (maske==1_i1b)   ! ice-free land
+  elsewhere (mask==1_i1b)   ! ice-free land
      q_w   = 0.0_dp
      q_w_x = 0.0_dp
      q_w_y = 0.0_dp
@@ -189,7 +189,7 @@ contains
      hydro_topg(i,j) = zl(j,i) - z_sl
      hydro_temppabase(i,j) = temph_b(j,i)
      ! transpose these arrays for easy searching below
-     t_maske(i,j) = maske(j,i)
+     t_mask(i,j) = mask(j,i)
      t_H_c(i,j) = H_c(j,i)
      t_H_t(i,j) = H_t(j,i)
      t_Q_b_tot(i,j) = Q_b_tot(j,i)
@@ -198,7 +198,7 @@ contains
 
   do j=0,JMAX
   do i=0,IMAX
-     if (t_maske(i,j)==0_i1b) then
+     if (t_mask(i,j)==0_i1b) then
         hydro_icemask(i,j) = 1
         hydro_thk(i,j)     = t_H_c(i,j) + t_H_t(i,j)
         hydro_supply(i,j)  = rho_rho_w_ratio*t_Q_b_tot(i,j)
@@ -235,7 +235,7 @@ contains
 
   do i=0,IMAX
   do j=0,JMAX
-     if ( maske(j,i)==0_i1b ) then   ! grounded ice
+     if ( mask(j,i)==0_i1b ) then   ! grounded ice
         q_w(j,i)   = 0.0_dp
         q_w_x(j,i) = 0.0_dp
         q_w_y(j,i) = 0.0_dp
@@ -249,17 +249,17 @@ contains
   do i=0,IMAX
   do j=0,JMAX
 
-     if ( maske(j,i)==2_i1b ) then
+     if ( mask(j,i)==2_i1b ) then
         q_w(j,i)   = 0.0_dp
         q_w_x(j,i) = 0.0_dp
         q_w_y(j,i) = 0.0_dp
         H_w(j,i)   = z_sl-zl(j,i)
-     else if ( maske(j,i)==3_i1b ) then
+     else if ( mask(j,i)==3_i1b ) then
         q_w(j,i)   = 0.0_dp
         q_w_x(j,i) = 0.0_dp
         q_w_y(j,i) = 0.0_dp
         H_w(j,i)   = zb(j,i)-zl(j,i)
-     else if ( maske(j,i)==1_i1b ) then
+     else if ( mask(j,i)==1_i1b ) then
         q_w(j,i)   = 0.0_dp
         q_w_x(j,i) = 0.0_dp
         q_w_y(j,i) = 0.0_dp

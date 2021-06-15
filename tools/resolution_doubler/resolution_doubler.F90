@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2021-01-05
+!! 2021-06-15
 !!
 !! @section Copyright
 !!
@@ -66,7 +66,7 @@ module resolution_doubler_vars
 use resolution_doubler_types
 
 integer(i1b) :: mapping_erg
-integer(i1b), dimension(0:IMAX,0:JMAX) :: maske_erg, maske_old_erg, &
+integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_erg, mask_old_erg, &
                                           n_cts_erg, &
                                           flag_shelfy_stream_x_erg, &
                                           flag_shelfy_stream_y_erg, &
@@ -137,7 +137,7 @@ real(sp),     dimension(0:IMAX,0:JMAX) :: dis_perp_erg, &
 #endif
 
 integer(i1b) :: mapping_dbl
-integer(i1b), dimension(0:2*IMAX,0:2*JMAX) :: maske_dbl, maske_old_dbl, &
+integer(i1b), dimension(0:2*IMAX,0:2*JMAX) :: mask_dbl, mask_old_dbl, &
                                               n_cts_dbl, &
                                               flag_shelfy_stream_x_dbl, &
                                               flag_shelfy_stream_y_dbl, &
@@ -463,11 +463,11 @@ call check( nf90_get_var(ncid, ncv, mask_mar_erg) )
 call check( nf90_inq_varid(ncid, 'q_geo', ncv) )
 call check( nf90_get_var(ncid, ncv, q_geo_erg) )
 
-call check( nf90_inq_varid(ncid, 'maske', ncv) )
-call check( nf90_get_var(ncid, ncv, maske_erg) )
+call check( nf90_inq_varid(ncid, 'mask', ncv) )
+call check( nf90_get_var(ncid, ncv, mask_erg) )
 
-call check( nf90_inq_varid(ncid, 'maske_old', ncv) )
-call check( nf90_get_var(ncid, ncv, maske_old_erg) )
+call check( nf90_inq_varid(ncid, 'mask_old', ncv) )
+call check( nf90_get_var(ncid, ncv, mask_old_erg) )
 
 call check( nf90_inq_varid(ncid, 'n_cts', ncv) )
 call check( nf90_get_var(ncid, ncv, n_cts_erg) )
@@ -1481,8 +1481,8 @@ do jj = 0, 2*JMAX
       i  = ii/2
       j  = jj/2
 
-      maske_dbl(ii,jj)     = maske_erg(i,j)
-      maske_old_dbl(ii,jj) = maske_old_erg(i,j)
+      mask_dbl(ii,jj)     = mask_erg(i,j)
+      mask_old_dbl(ii,jj) = mask_old_erg(i,j)
       n_cts_dbl(ii,jj)     = n_cts_erg(i,j)
 
 #if (DISC>0)   /* Ice discharge parameterisation */
@@ -1496,36 +1496,36 @@ do jj = 0, 2*JMAX
       i2 = (ii+1)/2
       j  = jj/2
 
-      if (    (maske_erg(i1,j)==3_i1b) &
-          .or.(maske_erg(i2,j)==3_i1b) ) &
+      if (    (mask_erg(i1,j)==3_i1b) &
+          .or.(mask_erg(i2,j)==3_i1b) ) &
       then
-         maske_dbl(ii,jj) = 3_i1b
-      else if (    (maske_erg(i1,j)==0_i1b) &
-               .or.(maske_erg(i2,j)==0_i1b) ) &
+         mask_dbl(ii,jj) = 3_i1b
+      else if (    (mask_erg(i1,j)==0_i1b) &
+               .or.(mask_erg(i2,j)==0_i1b) ) &
       then
-         maske_dbl(ii,jj) = 0_i1b
-      else if (    (maske_erg(i1,j)==1_i1b) &
-               .or.(maske_erg(i2,j)==1_i1b) ) &
+         mask_dbl(ii,jj) = 0_i1b
+      else if (    (mask_erg(i1,j)==1_i1b) &
+               .or.(mask_erg(i2,j)==1_i1b) ) &
       then
-         maske_dbl(ii,jj) = 1_i1b
+         mask_dbl(ii,jj) = 1_i1b
       else
-         maske_dbl(ii,jj) = 2_i1b
+         mask_dbl(ii,jj) = 2_i1b
       end if
 
-      if (    (maske_old_erg(i1,j)==3_i1b) &
-          .or.(maske_old_erg(i2,j)==3_i1b) ) &
+      if (    (mask_old_erg(i1,j)==3_i1b) &
+          .or.(mask_old_erg(i2,j)==3_i1b) ) &
       then
-         maske_old_dbl(ii,jj) = 3_i1b
-      else if (    (maske_old_erg(i1,j)==0_i1b) &
-               .or.(maske_old_erg(i2,j)==0_i1b) ) &
+         mask_old_dbl(ii,jj) = 3_i1b
+      else if (    (mask_old_erg(i1,j)==0_i1b) &
+               .or.(mask_old_erg(i2,j)==0_i1b) ) &
       then
-         maske_old_dbl(ii,jj) = 0_i1b
-      else if (    (maske_old_erg(i1,j)==1_i1b) &
-               .or.(maske_old_erg(i2,j)==1_i1b) ) &
+         mask_old_dbl(ii,jj) = 0_i1b
+      else if (    (mask_old_erg(i1,j)==1_i1b) &
+               .or.(mask_old_erg(i2,j)==1_i1b) ) &
       then
-         maske_old_dbl(ii,jj) = 1_i1b
+         mask_old_dbl(ii,jj) = 1_i1b
       else
-         maske_old_dbl(ii,jj) = 2_i1b
+         mask_old_dbl(ii,jj) = 2_i1b
       end if
 
       if (    (n_cts_erg(i1,j)==1_i1b) &
@@ -1557,36 +1557,36 @@ do jj = 0, 2*JMAX
       j1 = (jj-1)/2
       j2 = (jj+1)/2
 
-      if (    (maske_erg(i,j1)==3_i1b) &
-          .or.(maske_erg(i,j2)==3_i1b) ) &
+      if (    (mask_erg(i,j1)==3_i1b) &
+          .or.(mask_erg(i,j2)==3_i1b) ) &
       then
-         maske_dbl(ii,jj) = 3_i1b
-      else if (    (maske_erg(i,j1)==0_i1b) &
-               .or.(maske_erg(i,j2)==0_i1b) ) &
+         mask_dbl(ii,jj) = 3_i1b
+      else if (    (mask_erg(i,j1)==0_i1b) &
+               .or.(mask_erg(i,j2)==0_i1b) ) &
       then
-         maske_dbl(ii,jj) = 0_i1b
-      else if (    (maske_erg(i,j1)==1_i1b) &
-               .or.(maske_erg(i,j2)==1_i1b) ) &
+         mask_dbl(ii,jj) = 0_i1b
+      else if (    (mask_erg(i,j1)==1_i1b) &
+               .or.(mask_erg(i,j2)==1_i1b) ) &
       then
-         maske_dbl(ii,jj) = 1_i1b
+         mask_dbl(ii,jj) = 1_i1b
       else
-         maske_dbl(ii,jj) = 2_i1b
+         mask_dbl(ii,jj) = 2_i1b
       end if
 
-      if (    (maske_old_erg(i,j1)==3_i1b) &
-          .or.(maske_old_erg(i,j2)==3_i1b) ) &
+      if (    (mask_old_erg(i,j1)==3_i1b) &
+          .or.(mask_old_erg(i,j2)==3_i1b) ) &
       then
-         maske_old_dbl(ii,jj) = 3_i1b
-      else if (    (maske_old_erg(i,j1)==0_i1b) &
-               .or.(maske_old_erg(i,j2)==0_i1b) ) &
+         mask_old_dbl(ii,jj) = 3_i1b
+      else if (    (mask_old_erg(i,j1)==0_i1b) &
+               .or.(mask_old_erg(i,j2)==0_i1b) ) &
       then
-         maske_old_dbl(ii,jj) = 0_i1b
-      else if (    (maske_old_erg(i,j1)==1_i1b) &
-               .or.(maske_old_erg(i,j2)==1_i1b) ) &
+         mask_old_dbl(ii,jj) = 0_i1b
+      else if (    (mask_old_erg(i,j1)==1_i1b) &
+               .or.(mask_old_erg(i,j2)==1_i1b) ) &
       then
-         maske_old_dbl(ii,jj) = 1_i1b
+         mask_old_dbl(ii,jj) = 1_i1b
       else
-         maske_old_dbl(ii,jj) = 2_i1b
+         mask_old_dbl(ii,jj) = 2_i1b
       end if
 
       if (    (n_cts_erg(i,j1)==1_i1b) &
@@ -1619,48 +1619,48 @@ do jj = 0, 2*JMAX
       j1 = (jj-1)/2
       j2 = (jj+1)/2
 
-      if (    (maske_erg(i1,j1)==3_i1b) &
-          .or.(maske_erg(i2,j1)==3_i1b) &
-          .or.(maske_erg(i1,j2)==3_i1b) &
-          .or.(maske_erg(i2,j2)==3_i1b) ) &
+      if (    (mask_erg(i1,j1)==3_i1b) &
+          .or.(mask_erg(i2,j1)==3_i1b) &
+          .or.(mask_erg(i1,j2)==3_i1b) &
+          .or.(mask_erg(i2,j2)==3_i1b) ) &
       then
-         maske_dbl(ii,jj) = 3_i1b
-      else if (    (maske_erg(i1,j1)==0_i1b) &
-               .or.(maske_erg(i2,j1)==0_i1b) &
-               .or.(maske_erg(i1,j2)==0_i1b) &
-               .or.(maske_erg(i2,j2)==0_i1b) ) &
+         mask_dbl(ii,jj) = 3_i1b
+      else if (    (mask_erg(i1,j1)==0_i1b) &
+               .or.(mask_erg(i2,j1)==0_i1b) &
+               .or.(mask_erg(i1,j2)==0_i1b) &
+               .or.(mask_erg(i2,j2)==0_i1b) ) &
       then
-         maske_dbl(ii,jj) = 0_i1b
-      else if (    (maske_erg(i1,j1)==1_i1b) &
-               .or.(maske_erg(i2,j1)==1_i1b) &
-               .or.(maske_erg(i1,j2)==1_i1b) &
-               .or.(maske_erg(i2,j2)==1_i1b) ) &
+         mask_dbl(ii,jj) = 0_i1b
+      else if (    (mask_erg(i1,j1)==1_i1b) &
+               .or.(mask_erg(i2,j1)==1_i1b) &
+               .or.(mask_erg(i1,j2)==1_i1b) &
+               .or.(mask_erg(i2,j2)==1_i1b) ) &
       then
-         maske_dbl(ii,jj) = 1_i1b
+         mask_dbl(ii,jj) = 1_i1b
       else
-         maske_dbl(ii,jj) = 2_i1b
+         mask_dbl(ii,jj) = 2_i1b
       end if
 
-      if (    (maske_old_erg(i1,j1)==3_i1b) &
-          .or.(maske_old_erg(i2,j1)==3_i1b) &
-          .or.(maske_old_erg(i1,j2)==3_i1b) &
-          .or.(maske_old_erg(i2,j2)==3_i1b) ) &
+      if (    (mask_old_erg(i1,j1)==3_i1b) &
+          .or.(mask_old_erg(i2,j1)==3_i1b) &
+          .or.(mask_old_erg(i1,j2)==3_i1b) &
+          .or.(mask_old_erg(i2,j2)==3_i1b) ) &
       then
-         maske_old_dbl(ii,jj) = 3_i1b
-      else if (    (maske_old_erg(i1,j1)==0_i1b) &
-               .or.(maske_old_erg(i2,j1)==0_i1b) &
-               .or.(maske_old_erg(i1,j2)==0_i1b) &
-               .or.(maske_old_erg(i2,j2)==0_i1b) ) &
+         mask_old_dbl(ii,jj) = 3_i1b
+      else if (    (mask_old_erg(i1,j1)==0_i1b) &
+               .or.(mask_old_erg(i2,j1)==0_i1b) &
+               .or.(mask_old_erg(i1,j2)==0_i1b) &
+               .or.(mask_old_erg(i2,j2)==0_i1b) ) &
       then
-         maske_old_dbl(ii,jj) = 0_i1b
-      else if (    (maske_old_erg(i1,j1)==1_i1b) &
-               .or.(maske_old_erg(i2,j1)==1_i1b) &
-               .or.(maske_old_erg(i1,j2)==1_i1b) &
-               .or.(maske_old_erg(i2,j2)==1_i1b) ) &
+         mask_old_dbl(ii,jj) = 0_i1b
+      else if (    (mask_old_erg(i1,j1)==1_i1b) &
+               .or.(mask_old_erg(i2,j1)==1_i1b) &
+               .or.(mask_old_erg(i1,j2)==1_i1b) &
+               .or.(mask_old_erg(i2,j2)==1_i1b) ) &
       then
-         maske_old_dbl(ii,jj) = 1_i1b
+         mask_old_dbl(ii,jj) = 1_i1b
       else
-         maske_old_dbl(ii,jj) = 2_i1b
+         mask_old_dbl(ii,jj) = 2_i1b
       end if
 
       if (    (n_cts_erg(i1,j1)==1_i1b) &
@@ -2248,11 +2248,11 @@ buffer = 'Geothermal heat flux'
 call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 
-!    ---- maske
+!    ---- mask
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)) )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)) )
-call check( nf90_def_var(ncid, 'maske', NF90_BYTE, nc2d, ncv) )
+call check( nf90_def_var(ncid, 'mask', NF90_BYTE, nc2d, ncv) )
 buffer = 'ice_land_sea_mask'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)) )
 buffer = 'Ice-land-sea mask'
@@ -2266,11 +2266,11 @@ buffer = 'glaciated_land '// &
 call check( nf90_put_att(ncid, ncv, 'flag_meanings', trim(buffer)) )
 call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 
-!    ---- maske_old
+!    ---- mask_old
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)) )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)) )
-call check( nf90_def_var(ncid, 'maske_old', NF90_BYTE, nc2d, ncv) )
+call check( nf90_def_var(ncid, 'mask_old', NF90_BYTE, nc2d, ncv) )
 buffer = 'ice_land_sea_mask_old'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)) )
 buffer = 'Ice-land-sea mask (old)'
@@ -3501,12 +3501,12 @@ call check( nf90_inq_varid(ncid, 'q_geo', ncv) )
 call check( nf90_put_var(ncid, ncv, q_geo_dbl, &
                          start=nc2cor_ij, count=nc2cnt_ij) )
 
-call check( nf90_inq_varid(ncid, 'maske', ncv) )
-call check( nf90_put_var(ncid, ncv, maske_dbl, &
+call check( nf90_inq_varid(ncid, 'mask', ncv) )
+call check( nf90_put_var(ncid, ncv, mask_dbl, &
                          start=nc2cor_ij, count=nc2cnt_ij) )
 
-call check( nf90_inq_varid(ncid, 'maske_old', ncv) )
-call check( nf90_put_var(ncid, ncv, maske_old_dbl, &
+call check( nf90_inq_varid(ncid, 'mask_old', ncv) )
+call check( nf90_put_var(ncid, ncv, mask_old_dbl, &
                          start=nc2cor_ij, count=nc2cnt_ij) )
 
 call check( nf90_inq_varid(ncid, 'n_cts', ncv) )

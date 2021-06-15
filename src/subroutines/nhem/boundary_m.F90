@@ -309,7 +309,7 @@ end do
 
 do i=1, IMAX-1
 do j=1, JMAX-1
-   if (maske(j,i) >= 2_i1b) then
+   if (mask(j,i) >= 2_i1b) then
       check_point(j  ,i  ) = .true.
       check_point(j  ,i+1) = .true.
       check_point(j  ,i-1) = .true.
@@ -322,7 +322,7 @@ end do
 do i=1, IMAX-1
 do j=1, JMAX-1
    if (check_point(j,i)) then
-      maske_neu(j,i) = mask_update_sea_level(z_sl, i, j)
+      mask_new(j,i) = mask_update_sea_level(z_sl, i, j)
    end if
 end do
 end do
@@ -332,7 +332,7 @@ end do
 do i=1, IMAX-1
 do j=1, JMAX-1
    if (check_point(j,i)) then
-      maske(j,i) = maske_neu(j,i)
+      mask(j,i) = mask_new(j,i)
    end if
 end do
 end do

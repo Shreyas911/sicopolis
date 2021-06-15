@@ -41,8 +41,8 @@ module calc_thk_m
 
   implicit none
 
-  real(dp), dimension(0:JMAX,0:IMAX), save :: H, H_neu
-  real(dp), dimension(0:JMAX,0:IMAX), save :: H_neu_flow
+  real(dp), dimension(0:JMAX,0:IMAX), save :: H, H_new
+  real(dp), dimension(0:JMAX,0:IMAX), save :: H_new_flow
   real(dp), dimension(0:JMAX,0:IMAX), save :: mb_source
   logical,                            save :: flag_solver_explicit
 
@@ -85,18 +85,18 @@ integer(i4b) :: i, j
 
 #if (MARGIN==1 || MARGIN==2)   /* only grounded ice */
 
-zb_neu   = zl_neu
+zb_new   = zl_new
 dzb_dtau = dzl_dtau
 
 #elif (MARGIN==3)   /* grounded and floating ice */
 
 #if !defined(ALLOW_OPENAD) /* Normal */
 
-where (maske <= 1_i1b)   ! grounded ice or ice-free land
-   zb_neu   = zl_neu
+where (mask <= 1_i1b)   ! grounded ice or ice-free land
+   zb_new   = zl_new
    dzb_dtau = dzl_dtau
-elsewhere   ! (maske >= 2_i1b; ocean or floating ice)
-   zb_neu   = zb       ! initialisation,
+elsewhere   ! (mask >= 2_i1b; ocean or floating ice)
+   zb_new   = zb       ! initialisation,
    dzb_dtau = 0.0_dp   ! will be overwritten later
 end where
 
@@ -104,11 +104,11 @@ end where
 
 do i=0, IMAX
 do j=0, JMAX
-   if (maske(j,i) <= 1_i1b) then    ! grounded ice or ice-free land
-      zb_neu(j,i)   = zl_neu(j,i)
+   if (mask(j,i) <= 1_i1b) then    ! grounded ice or ice-free land
+      zb_new(j,i)   = zl_new(j,i)
       dzb_dtau(j,i) = dzl_dtau(j,i)
    else
-      zb_neu(j,i)   = zb(j,i)       ! initialisation,
+      zb_new(j,i)   = zb(j,i)       ! initialisation,
       dzb_dtau(j,i) = 0.0_dp        ! will be overwritten later
    endif
 end do
@@ -128,8 +128,8 @@ call error(errormsg)
 
 H = H_c + H_t
 
-zs_neu = zs   ! initialisation,
-H_neu  = H    ! will be overwritten later
+zs_new = zs   ! initialisation,
+H_new  = H    ! will be overwritten later
 
 !-------- Solver type --------
 
@@ -198,7 +198,7 @@ do j=0, JMAX
 
    if (flag_inner_point(j,i)) then   ! inner point
 
-      zs_neu(j,i) = zs(j,i) &
+      zs_new(j,i) = zs(j,i) &
                     + dtime*(mb_source(j,i)+dzb_dtau(j,i)) &
                     + ( ( czs2(j,i)  *(zs(j,i+1)-zs(j,i)  ) &
                          -czs2(j,i-1)*(zs(j,i)  -zs(j,i-1)) ) &
@@ -207,7 +207,7 @@ do j=0, JMAX
                       *(insq_g11_g(j,i)*insq_g22_g(j,i))
 
    else
-      zs_neu(j,i) = zb_neu(j,i)   ! zero-thickness boundary condition
+      zs_new(j,i) = zb_new(j,i)   ! zero-thickness boundary condition
    end if
 
 end do
@@ -215,7 +215,7 @@ end do
 
 !-------- Ice thickness --------
 
-H_neu = zs_neu - zb_neu
+H_new = zs_new - zb_new
 
 !-------- Applying the source term --------
 
@@ -422,7 +422,7 @@ do nr=1, nmax   ! loop over rows
       lgs_a_value(k)       = 1.0_dp   ! diagonal element only
       lgs_a_diag_index(nr) = k
       lgs_a_index(k)       = nr
-      lgs_b_value(nr)      = zb_neu(j,i)
+      lgs_b_value(nr)      = zb_new(j,i)
 
    end if
 
@@ -479,7 +479,7 @@ call sor_sprs(lgs_a_value_trim, &
 do nr=1, nmax
    i = n2i(nr)
    j = n2j(nr)
-   zs_neu(j,i) = lgs_x_value(nr)
+   zs_new(j,i) = lgs_x_value(nr)
 end do
 
 #if !defined(ALLOW_OPENAD) /* Normal */
@@ -542,7 +542,7 @@ deallocate(lgs_a_diag_index, lgs_b_value, lgs_x_value)
   do nr=1, nmax
     i = n2i(nr)
     j = n2j(nr)
-    zs_neu(j,i) = lgs_x_value(nr)
+    zs_new(j,i) = lgs_x_value(nr)
   end do
   
   deallocate(lgs_a_value, lgs_a_index, lgs_a_ptr)
@@ -562,7 +562,7 @@ deallocate(lgs_a_diag_index, lgs_b_value, lgs_x_value)
   do nr=1, nmax
      i = n2i(nr)
      j = n2j(nr)
-     zs_neu(j,i) = lgs_x_value(nr)
+     zs_new(j,i) = lgs_x_value(nr)
   end do
 
 #endif /* Normal vs. OpenAD */
@@ -571,7 +571,7 @@ deallocate(lgs_a_diag_index, lgs_b_value, lgs_x_value)
 
 !-------- Ice thickness --------
 
-H_neu = zs_neu - zb_neu
+H_new = zs_new - zb_new
 
 !-------- Applying the source term --------
 
@@ -675,7 +675,7 @@ end do
 
 where (flag_inner_point)   ! inner point
 
-   H_neu = H + dtime*mb_source &
+   H_new = H + dtime*mb_source &
              - dt_darea &
                * (  ( vx_m_2*upH_x_2*sq_g22_x_2*deta   &
                      -vx_m_1*upH_x_1*sq_g22_x_1*deta ) &
@@ -683,7 +683,7 @@ where (flag_inner_point)   ! inner point
                      -vy_m_1*upH_y_1*sq_g11_y_1*dxi  ) )
 
 elsewhere
-   H_neu = 0.0_dp   ! zero-thickness boundary condition
+   H_new = 0.0_dp   ! zero-thickness boundary condition
 end where
 
 #else /* OpenAD */
@@ -693,7 +693,7 @@ do j=0, JMAX
 
    if (flag_inner_point(j,i)) then   ! inner point
 
-      H_neu(j,i) = H(j,i) + dtime*mb_source(j,i) &
+      H_new(j,i) = H(j,i) + dtime*mb_source(j,i) &
                 - dt_darea(j,i) &
                   * (  ( vx_m_2(j,i)*upH_x_2(j,i)*sq_g22_x_2(j,i)*deta   &
                         -vx_m_1(j,i)*upH_x_1(j,i)*sq_g22_x_1(j,i)*deta ) &
@@ -701,7 +701,7 @@ do j=0, JMAX
                         -vy_m_1(j,i)*upH_y_1(j,i)*sq_g11_y_1(j,i)*dxi  ) )
 
    else
-      H_neu(j,i) = 0.0_dp   ! zero-thickness boundary condition
+      H_new(j,i) = 0.0_dp   ! zero-thickness boundary condition
    end if
 
 end do
@@ -1023,7 +1023,7 @@ call sor_sprs(lgs_a_value_trim, &
 do nr=1, nmax
    i = n2i(nr)
    j = n2j(nr)
-   H_neu(j,i) = lgs_x_value(nr)
+   H_new(j,i) = lgs_x_value(nr)
 end do
 
 #if !defined(ALLOW_OPENAD) /* Normal */
@@ -1086,7 +1086,7 @@ call lis_solver_destroy(solver, ierr)
 do nr=1, nmax
    i = n2i(nr)
    j = n2j(nr)
-   H_neu(j,i) = lgs_x_value(nr)
+   H_new(j,i) = lgs_x_value(nr)
 end do
 
 deallocate(lgs_a_value, lgs_a_index, lgs_a_ptr)
@@ -1108,7 +1108,7 @@ call sico_lis_solver(nmax, nnz, &
 do nr=1, nmax
    i = n2i(nr)
    j = n2j(nr)
-   H_neu(j,i) = lgs_x_value(nr)
+   H_new(j,i) = lgs_x_value(nr)
 end do
 
 #endif /* Normal vs. OpenAD */
@@ -1142,15 +1142,15 @@ subroutine apply_mb_source(dtime, z_mar)
 
   integer(i4b) :: i, j
 
-!-------- Compute new ice thickness H_neu_flow due to glacial flow only
+!-------- Compute new ice thickness H_new_flow due to glacial flow only
 !         (no source term considered) --------
 
-  H_neu_flow = 0.0_dp
+  H_new_flow = 0.0_dp
 
   do i=0, IMAX
   do j=0, JMAX
      if (flag_inner_point(j,i)) then
-        H_neu_flow(j,i) = H_neu(j,i) - dtime*mb_source(j,i)
+        H_new_flow(j,i) = H_new(j,i) - dtime*mb_source(j,i)
                           ! new ice thickness due to glacial flow only
      end if
   end do
@@ -1158,14 +1158,14 @@ subroutine apply_mb_source(dtime, z_mar)
 
 !-------- Apply source term --------
 
-  H_neu = 0.0_dp
+  H_new = 0.0_dp
 
 #if (MB_ACCOUNT==0)
 
   do i=0, IMAX
   do j=0, JMAX
      if (flag_inner_point(j,i)) then
-        H_neu(j,i) = max(H_neu_flow(j,i) + dtime*mb_source(j,i), 0.0_dp)
+        H_new(j,i) = max(H_new_flow(j,i) + dtime*mb_source(j,i), 0.0_dp)
      end if
   end do
   end do
@@ -1174,7 +1174,7 @@ subroutine apply_mb_source(dtime, z_mar)
 
   do i=2, IMAX-2   ! outermost two grid points excepted,
   do j=2, JMAX-2   ! required for accurate mass balance accounting
-     H_neu(j,i) = max(H_neu_flow(j,i) + dtime*mb_source(j,i), 0.0_dp)
+     H_new(j,i) = max(H_new_flow(j,i) + dtime*mb_source(j,i), 0.0_dp)
   end do
   end do
 
@@ -1191,8 +1191,8 @@ subroutine apply_mb_source(dtime, z_mar)
 
   do i=0, IMAX
   do j=0, JMAX
-     if (maske(j,i) >= 2_i1b .and. H_neu(j,i) > eps_H) then
-        H_neu(j,i) = 0.0_dp
+     if (mask(j,i) >= 2_i1b .and. H_new(j,i) > eps_H) then
+        H_new(j,i) = 0.0_dp
      end if
   end do
   end do
@@ -1202,7 +1202,7 @@ subroutine apply_mb_source(dtime, z_mar)
   do i=0, IMAX
   do j=0, JMAX
      if (zl(j,i) <= Z_ABYSS) then
-        H_neu(j,i) = 0.0_dp
+        H_new(j,i) = 0.0_dp
      end if
   end do
   end do
@@ -1220,7 +1220,7 @@ end subroutine apply_mb_source
 
   real(dp), intent(in) :: time, dtime
 
-  real(dp), dimension(0:JMAX,0:IMAX) :: H_neu_tmp
+  real(dp), dimension(0:JMAX,0:IMAX) :: H_new_tmp
   real(dp)                           :: time_dimless
   real(dp)                           :: target_topo_tau_factor, target_topo_tau
   real(dp)                           :: dtime_inv
@@ -1229,22 +1229,22 @@ end subroutine apply_mb_source
   integer(i4b) :: i, j
 #endif /* OpenAD */
 
-!-------- Saving computed H_neu before any adjustments --------
+!-------- Saving computed H_new before any adjustments --------
 
-  H_neu_tmp = H_neu
+  H_new_tmp = H_new
 
 !-------- Correct negative thickness values --------
 
 #if !defined(ALLOW_OPENAD) /* Normal */
 
-  where (H_neu < 0.0_dp) H_neu = 0.0_dp
+  where (H_new < 0.0_dp) H_new = 0.0_dp
 
 #else /* OpenAD */
 
   do i=0, IMAX  
   do j=0, JMAX 
-     if ( H_neu(j,i) < 0.0_dp ) then
-        H_neu(j,i) = 0.0_dp
+     if ( H_new(j,i) < 0.0_dp ) then
+        H_new(j,i) = 0.0_dp
      end if
   end do
   end do
@@ -1257,7 +1257,7 @@ end subroutine apply_mb_source
 
 !  ------ No evolution of the ice thickness
 
-  H_neu = H   ! newly computed ice thickness is discarded
+  H_new = H   ! newly computed ice thickness is discarded
 
 #elif (THK_EVOL==1)
 
@@ -1272,7 +1272,7 @@ end subroutine apply_mb_source
 
   if (time >= time_target_topo_final) then
 
-     H_neu = H_target
+     H_new = H_target
 
   else if (time > time_target_topo_init) then
 
@@ -1291,7 +1291,7 @@ end subroutine apply_mb_source
 
      target_topo_tau = target_topo_tau_0 * target_topo_tau_factor
 
-     H_neu =   ( target_topo_tau*H_neu + dtime*H_target ) &
+     H_new =   ( target_topo_tau*H_new + dtime*H_target ) &
              / ( target_topo_tau       + dtime )
 
   end if
@@ -1303,7 +1303,7 @@ end subroutine apply_mb_source
 
   target_topo_tau = target_topo_tau_0
 
-  H_neu =   ( target_topo_tau*H_neu + dtime*H_target ) &
+  H_new =   ( target_topo_tau*H_new + dtime*H_target ) &
           / ( target_topo_tau       + dtime )
 
 #elif (THK_EVOL==4)
@@ -1312,15 +1312,15 @@ end subroutine apply_mb_source
 
 #if !defined(ALLOW_OPENAD) /* Normal */
 
-  where (maske_maxextent == 0_i1b) &   ! not allowed to glaciate
-     H_neu = 0.0_dp
+  where (mask_maxextent == 0_i1b) &   ! not allowed to glaciate
+     H_new = 0.0_dp
 
 #else /* OpenAD */
 
   do i=0, IMAX
   do j=0, JMAX
-    if ( maske_maxextent(j,i) == 0_i1b ) then
-      H_neu(j,i) = 0.0_dp
+    if ( mask_maxextent(j,i) == 0_i1b ) then
+      H_new(j,i) = 0.0_dp
     end if
   end do
   end do
@@ -1338,7 +1338,7 @@ end subroutine apply_mb_source
 
   dtime_inv = 1.0_dp/dtime
 
-  smb_corr = (H_neu-H_neu_tmp)*dtime_inv
+  smb_corr = (H_new-H_new_tmp)*dtime_inv
 
   as_perp = as_perp + smb_corr
   accum   = accum   + max(smb_corr, 0.0_dp)
@@ -1360,7 +1360,7 @@ end subroutine thk_adjust
   real(dp), intent(in) :: time, dtime
 
   integer(i4b) :: i, j
-  real(dp), dimension(0:JMAX,0:IMAX) :: H_neu_tmp, dHdt_retreat
+  real(dp), dimension(0:JMAX,0:IMAX) :: H_new_tmp, dHdt_retreat
   real(dp)                           :: dtime_inv
   real(dp)                           :: dtime_1year, dtime_1year_inv
 
@@ -1368,9 +1368,9 @@ end subroutine thk_adjust
   dtime_1year     = year2sec   ! 1 year (in seconds)
   dtime_1year_inv = 1.0_dp/dtime_1year
 
-!-------- Saving computed H_neu before any adjustments --------
+!-------- Saving computed H_new before any adjustments --------
 
-  H_neu_tmp = H_neu
+  H_new_tmp = H_new
 
 !-------- Adjustment due to the retreat mask --------
 
@@ -1380,15 +1380,15 @@ end subroutine thk_adjust
   do j=0, JMAX
 
 #if (RETREAT_MASK==1)
-     if (H_neu(j,i) > 0.0_dp) then
+     if (H_new(j,i) > 0.0_dp) then
 #elif (ICE_SHELF_COLLAPSE_MASK==1)
-     if ((H_neu(j,i) > 0.0_dp).and.(maske(j,i)==3_i1b)) then
+     if ((H_new(j,i) > 0.0_dp).and.(mask(j,i)==3_i1b)) then
 #endif
 
         dHdt_retreat(j,i) = -(1.0_dp-r_mask_retreat(j,i))*H_ref_retreat(j,i) &
                                                          *dtime_1year_inv
 
-        H_neu(j,i) = max((H_neu(j,i) + dHdt_retreat(j,i)*dtime), 0.0_dp)
+        H_new(j,i) = max((H_new(j,i) + dHdt_retreat(j,i)*dtime), 0.0_dp)
 
      end if
 
@@ -1397,7 +1397,7 @@ end subroutine thk_adjust
 
 !-------- Computation of the mass balance adjustment --------
 
-  smb_corr_retreat_mask = (H_neu-H_neu_tmp)*dtime_inv
+  smb_corr_retreat_mask = (H_new-H_new_tmp)*dtime_inv
 
   calving = calving - smb_corr_retreat_mask
                     ! calving is counted as positive for mass loss
@@ -1423,16 +1423,16 @@ integer(i1b), intent(in) :: n_calc_thk_mask_update_aux
 
 integer(i4b)                       :: i, j
 real(dp)                           :: year_sec_inv
-real(dp), dimension(0:JMAX,0:IMAX) :: H_neu_tmp
+real(dp), dimension(0:JMAX,0:IMAX) :: H_new_tmp
 real(dp)                           :: dtime_inv
 
 !-------- Term abbreviations --------
 
 year_sec_inv = 1.0_dp/year2sec
 
-!-------- Saving computed H_neu before any modifications --------
+!-------- Saving computed H_new before any modifications --------
 
-H_neu_tmp = H_neu
+H_new_tmp = H_new
 
 !-------- Update of the mask --------
 
@@ -1457,8 +1457,8 @@ call ocean_connect()
 
 !-------- Time derivatives --------
 
-dzs_dtau  = (zs_neu-zs)*dtime_inv
-dzb_dtau  = (zb_neu-zb)*dtime_inv
+dzs_dtau  = (zs_new-zs)*dtime_inv
+dzb_dtau  = (zb_new-zb)*dtime_inv
 dzm_dtau  = dH_t_dtau+dzb_dtau
 dH_c_dtau = dzs_dtau-dzm_dtau
 
@@ -1487,7 +1487,7 @@ call topograd_2(dxi, deta, 2)
 do i=1, IMAX-1
 do j=1, JMAX-1
 
-   if ( ((maske(j,i) == 0_i1b).or.(maske(j,i) == 3_i1b)) &
+   if ( ((mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b)) &
         .and.(n_cts(j,i) == 1_i1b)) then
 
       am_perp_st(j,i) = &
@@ -1522,7 +1522,7 @@ integer(i4b) :: i, j, kc, kt
 real(dp)     :: rhosw_rho_ratio, rho_rhosw_ratio
 real(dp)     :: H_inv
 
-real(dp), dimension(0:JMAX,0:IMAX) :: H_sea_neu, H_balance
+real(dp), dimension(0:JMAX,0:IMAX) :: H_sea_new, H_balance
 
 !-------- Term abbreviations --------
 
@@ -1531,52 +1531,52 @@ rho_rhosw_ratio = RHO/RHO_SW
 
 !-------- Update of the mask --------
 
-zs_neu    = zb_neu + H_neu   ! ice surface topography
-H_sea_neu = z_sl - zl_neu    ! sea depth
-H_balance = H_sea_neu*rhosw_rho_ratio
+zs_new    = zb_new + H_new   ! ice surface topography
+H_sea_new = z_sl - zl_new    ! sea depth
+H_balance = H_sea_new*rhosw_rho_ratio
 
 #if (THK_EVOL>=1)
 
 do i=0, IMAX
 do j=0, JMAX
 
-   if (maske(j,i) <= 1_i1b) then   ! grounded ice or ice-free land
+   if (mask(j,i) <= 1_i1b) then   ! grounded ice or ice-free land
 
-      if (H_neu(j,i) >= eps_H) then
-         maske(j,i) = 0_i1b   ! grounded ice
+      if (H_new(j,i) >= eps_H) then
+         mask(j,i) = 0_i1b   ! grounded ice
       else
-         maske(j,i) = 1_i1b   ! ice-free land
+         mask(j,i) = 1_i1b   ! ice-free land
       end if
 
 #if (MARGIN==2)
 
-   else   ! (maske(j,i) == 2_i1b); sea
+   else   ! (mask(j,i) == 2_i1b); sea
 
-      if (H_neu(j,i) >= eps_H) then
+      if (H_new(j,i) >= eps_H) then
 
-         if ( H_neu(j,i) < (rhosw_rho_ratio*H_sea_neu(j,i)) ) then
+         if ( H_new(j,i) < (rhosw_rho_ratio*H_sea_new(j,i)) ) then
 
 #if (MARINE_ICE_FORMATION==1)
-            maske(j,i) = 2_i1b   ! floating ice cut off -> sea
+            mask(j,i) = 2_i1b   ! floating ice cut off -> sea
 #elif (MARINE_ICE_FORMATION==2)
-            maske(j,i) = 0_i1b   ! "underwater ice"
+            mask(j,i) = 0_i1b   ! "underwater ice"
 #endif
          else
-            maske(j,i) = 0_i1b   ! grounded ice
+            mask(j,i) = 0_i1b   ! grounded ice
          end if
 
 #if (MARINE_ICE_CALVING==2 \
       || MARINE_ICE_CALVING==4 \
       || MARINE_ICE_CALVING==6)
-         if (zl0(j,i) < z_mar) maske(j,i) = 2_i1b   ! sea
+         if (zl0(j,i) < z_mar) mask(j,i) = 2_i1b   ! sea
 #elif (MARINE_ICE_CALVING==3 \
         || MARINE_ICE_CALVING==5 \
         || MARINE_ICE_CALVING==7)
-         if (zl_neu(j,i) < z_mar) maske(j,i) = 2_i1b   ! sea
+         if (zl_new(j,i) < z_mar) mask(j,i) = 2_i1b   ! sea
 #endif
 
       else
-         maske(j,i) = 2_i1b   ! sea
+         mask(j,i) = 2_i1b   ! sea
       end if
 
 #endif
@@ -1591,29 +1591,29 @@ end do
 !  ------ Adjustment due to prescribed target topography
 
 #if (THK_EVOL==2)
-if (time >= time_target_topo_final) maske = maske_target
+if (time >= time_target_topo_final) mask = mask_target
 #endif
 
-!-------- Correction of zs_neu and zb_neu for ice-free land and sea --------
+!-------- Correction of zs_new and zb_new for ice-free land and sea --------
 
 do i=0, IMAX
 do j=0, JMAX
 
-   if (maske(j,i) == 1_i1b) then   ! ice-free land
+   if (mask(j,i) == 1_i1b) then   ! ice-free land
 
-      zs_neu(j,i) = zb_neu(j,i)   ! this prevents zs_neu(j,i)
-      H_neu(j,i)  = 0.0_dp        ! from being below zb_neu(j,i)
+      zs_new(j,i) = zb_new(j,i)   ! this prevents zs_new(j,i)
+      H_new(j,i)  = 0.0_dp        ! from being below zb_new(j,i)
 
-   else if (maske(j,i) == 2_i1b) then   ! sea
+   else if (mask(j,i) == 2_i1b) then   ! sea
 
-      zs_neu(j,i) = zb_neu(j,i)   ! this prevents zs_neu(j,i)
-      H_neu(j,i)  = 0.0_dp        ! from being below zb_neu(j,i)
+      zs_new(j,i) = zb_new(j,i)   ! this prevents zs_new(j,i)
+      H_new(j,i)  = 0.0_dp        ! from being below zb_new(j,i)
 
-   else if (maske(j,i) == 3_i1b) then   ! floating ice
+   else if (mask(j,i) == 3_i1b) then   ! floating ice
 
       errormsg = ' >>> calc_thk_mask_update_aux1:' &
                //           end_of_line &
-               //'          maske(j,i)==3 not allowed for' &
+               //'          mask(j,i)==3 not allowed for' &
                //           end_of_line &
                //'          SIA-only dynamics!'
       call error(errormsg)
@@ -1632,31 +1632,31 @@ call limit_thickness_isolated_ice(z_sl)
 do i=0, IMAX
 do j=0, JMAX
 
-   if (maske(j,i) == 0_i1b) then   ! grounded ice
+   if (mask(j,i) == 0_i1b) then   ! grounded ice
 
       if (n_cts(j,i) == 1_i1b) then
          if (H(j,i) > 0.0_dp) then
             H_inv        = 1.0_dp/H(j,i)
-            H_c_neu(j,i) = H_c(j,i) * H_neu(j,i)*H_inv
-            H_t_neu(j,i) = H_t(j,i) * H_neu(j,i)*H_inv
+            H_c_new(j,i) = H_c(j,i) * H_new(j,i)*H_inv
+            H_t_new(j,i) = H_t(j,i) * H_new(j,i)*H_inv
          else
-            H_c_neu(j,i) = 0.99_dp * H_neu(j,i)   ! this case should not occur,
-            H_t_neu(j,i) = 0.01_dp * H_neu(j,i)   ! just for safety
+            H_c_new(j,i) = 0.99_dp * H_new(j,i)   ! this case should not occur,
+            H_t_new(j,i) = 0.01_dp * H_new(j,i)   ! just for safety
          end if
-         zm_neu(j,i) = zb_neu(j,i)+H_t_neu(j,i)
+         zm_new(j,i) = zb_new(j,i)+H_t_new(j,i)
       else
-         H_c_neu(j,i) = H_neu(j,i)
-         H_t_neu(j,i) = 0.0_dp
-         zm_neu(j,i)  = zb_neu(j,i)
+         H_c_new(j,i) = H_new(j,i)
+         H_t_new(j,i) = 0.0_dp
+         zm_new(j,i)  = zb_new(j,i)
       end if
 
-   else   ! maske(j,i) == 1_i1b or 2_i1b, ice-free land or sea
+   else   ! mask(j,i) == 1_i1b or 2_i1b, ice-free land or sea
 
-      H_c_neu(j,i) = 0.0_dp
-      H_t_neu(j,i) = 0.0_dp
-      H_neu(j,i)   = 0.0_dp
-      zs_neu(j,i)  = zb_neu(j,i)
-      zm_neu(j,i)  = zb_neu(j,i)
+      H_c_new(j,i) = 0.0_dp
+      H_t_new(j,i) = 0.0_dp
+      H_new(j,i)   = 0.0_dp
+      zs_new(j,i)  = zb_new(j,i)
+      zm_new(j,i)  = zb_new(j,i)
 
    end if
 
@@ -1679,7 +1679,7 @@ integer(i4b) :: i, j, kc, kt
 real(dp)     :: rhosw_rho_ratio, rho_rhosw_ratio
 real(dp)     :: H_inv
 
-real(dp), dimension(0:JMAX,0:IMAX) :: H_sea_neu, H_balance
+real(dp), dimension(0:JMAX,0:IMAX) :: H_sea_new, H_balance
 
 !-------- Term abbreviations --------
 
@@ -1688,52 +1688,52 @@ rho_rhosw_ratio = RHO/RHO_SW
 
 !-------- Update of the mask --------
 
-zs_neu    = zb_neu + H_neu   ! ice surface topography
-H_sea_neu = z_sl - zl_neu    ! sea depth
-H_balance = H_sea_neu*rhosw_rho_ratio
+zs_new    = zb_new + H_new   ! ice surface topography
+H_sea_new = z_sl - zl_new    ! sea depth
+H_balance = H_sea_new*rhosw_rho_ratio
 
 #if (THK_EVOL>=1)
 
 do i=0, IMAX
 do j=0, JMAX
 
-   if (maske(j,i) <= 1_i1b) then   ! grounded ice or ice-free land
+   if (mask(j,i) <= 1_i1b) then   ! grounded ice or ice-free land
 
-      if (H_neu(j,i) >= eps_H) then
-         maske(j,i) = 0_i1b   ! grounded ice
+      if (H_new(j,i) >= eps_H) then
+         mask(j,i) = 0_i1b   ! grounded ice
       else
-         maske(j,i) = 1_i1b   ! ice-free land
+         mask(j,i) = 1_i1b   ! ice-free land
       end if
 
 #if (MARGIN==2)
 
-   else   ! (maske(j,i) == 2_i1b); sea
+   else   ! (mask(j,i) == 2_i1b); sea
 
-      if (H_neu(j,i) >= eps_H) then
+      if (H_new(j,i) >= eps_H) then
 
-         if ( H_neu(j,i) < (rhosw_rho_ratio*H_sea_neu(j,i)) ) then
+         if ( H_new(j,i) < (rhosw_rho_ratio*H_sea_new(j,i)) ) then
 
 #if (MARINE_ICE_FORMATION==1)
-            maske(j,i) = 2_i1b   ! floating ice cut off -> sea
+            mask(j,i) = 2_i1b   ! floating ice cut off -> sea
 #elif (MARINE_ICE_FORMATION==2)
-            maske(j,i) = 0_i1b   ! "underwater ice"
+            mask(j,i) = 0_i1b   ! "underwater ice"
 #endif
          else
-            maske(j,i) = 0_i1b   ! grounded ice
+            mask(j,i) = 0_i1b   ! grounded ice
          end if
 
 #if (MARINE_ICE_CALVING==2 \
       || MARINE_ICE_CALVING==4 \
       || MARINE_ICE_CALVING==6)
-         if (zl0(j,i) < z_mar) maske(j,i) = 2_i1b   ! sea
+         if (zl0(j,i) < z_mar) mask(j,i) = 2_i1b   ! sea
 #elif (MARINE_ICE_CALVING==3 \
         || MARINE_ICE_CALVING==5 \
         || MARINE_ICE_CALVING==7)
-         if (zl_neu(j,i) < z_mar) maske(j,i) = 2_i1b   ! sea
+         if (zl_new(j,i) < z_mar) mask(j,i) = 2_i1b   ! sea
 #endif
 
       else
-         maske(j,i) = 2_i1b   ! sea
+         mask(j,i) = 2_i1b   ! sea
       end if
 
 #endif
@@ -1748,29 +1748,29 @@ end do
 !  ------ Adjustment due to prescribed target topography
 
 #if (THK_EVOL==2)
-if (time >= time_target_topo_final) maske = maske_target
+if (time >= time_target_topo_final) mask = mask_target
 #endif
 
-!-------- Correction of zs_neu and zb_neu for ice-free land and sea --------
+!-------- Correction of zs_new and zb_new for ice-free land and sea --------
 
 do i=0, IMAX
 do j=0, JMAX
 
-   if (maske(j,i) == 1_i1b) then   ! ice-free land
+   if (mask(j,i) == 1_i1b) then   ! ice-free land
 
-      zs_neu(j,i) = zb_neu(j,i)   ! this prevents zs_neu(j,i)
-      H_neu(j,i)  = 0.0_dp        ! from being below zb_neu(j,i)
+      zs_new(j,i) = zb_new(j,i)   ! this prevents zs_new(j,i)
+      H_new(j,i)  = 0.0_dp        ! from being below zb_new(j,i)
 
-   else if (maske(j,i) == 2_i1b) then   ! sea
+   else if (mask(j,i) == 2_i1b) then   ! sea
 
-      zs_neu(j,i) = zb_neu(j,i)   ! this prevents zs_neu(j,i)
-      H_neu(j,i)  = 0.0_dp        ! from being below zb_neu(j,i)
+      zs_new(j,i) = zb_new(j,i)   ! this prevents zs_new(j,i)
+      H_new(j,i)  = 0.0_dp        ! from being below zb_new(j,i)
 
-   else if (maske(j,i) == 3_i1b) then   ! floating ice
+   else if (mask(j,i) == 3_i1b) then   ! floating ice
 
       errormsg = ' >>> calc_thk_mask_update_aux2:' &
                //           end_of_line &
-               //'          maske(j,i)==3 not allowed for' &
+               //'          mask(j,i)==3 not allowed for' &
                //           end_of_line &
                //'          hybrid SIA/SStA dynamics of ice sheets' &
                //           end_of_line &
@@ -1791,31 +1791,31 @@ call limit_thickness_isolated_ice(z_sl)
 do i=0, IMAX
 do j=0, JMAX
 
-   if (maske(j,i) == 0_i1b) then   ! grounded ice
+   if (mask(j,i) == 0_i1b) then   ! grounded ice
 
       if (n_cts(j,i) == 1_i1b) then
          if (H(j,i) > 0.0_dp) then
             H_inv        = 1.0_dp/H(j,i)
-            H_c_neu(j,i) = H_c(j,i) * H_neu(j,i)*H_inv
-            H_t_neu(j,i) = H_t(j,i) * H_neu(j,i)*H_inv
+            H_c_new(j,i) = H_c(j,i) * H_new(j,i)*H_inv
+            H_t_new(j,i) = H_t(j,i) * H_new(j,i)*H_inv
          else
-            H_c_neu(j,i) = 0.99_dp * H_neu(j,i)   ! this case should not occur,
-            H_t_neu(j,i) = 0.01_dp * H_neu(j,i)   ! just for safety
+            H_c_new(j,i) = 0.99_dp * H_new(j,i)   ! this case should not occur,
+            H_t_new(j,i) = 0.01_dp * H_new(j,i)   ! just for safety
          end if
-         zm_neu(j,i) = zb_neu(j,i)+H_t_neu(j,i)
+         zm_new(j,i) = zb_new(j,i)+H_t_new(j,i)
       else
-         H_c_neu(j,i) = H_neu(j,i)
-         H_t_neu(j,i) = 0.0_dp
-         zm_neu(j,i)  = zb_neu(j,i)
+         H_c_new(j,i) = H_new(j,i)
+         H_t_new(j,i) = 0.0_dp
+         zm_new(j,i)  = zb_new(j,i)
       end if
 
-   else   ! maske(j,i) == 1_i1b or 2_i1b, ice-free land or sea
+   else   ! mask(j,i) == 1_i1b or 2_i1b, ice-free land or sea
 
-      H_c_neu(j,i) = 0.0_dp
-      H_t_neu(j,i) = 0.0_dp
-      H_neu(j,i)   = 0.0_dp
-      zs_neu(j,i)  = zb_neu(j,i)
-      zm_neu(j,i)  = zb_neu(j,i)
+      H_c_new(j,i) = 0.0_dp
+      H_t_new(j,i) = 0.0_dp
+      H_new(j,i)   = 0.0_dp
+      zs_new(j,i)  = zb_new(j,i)
+      zm_new(j,i)  = zb_new(j,i)
 
    end if
 
@@ -1839,7 +1839,7 @@ real(dp)     :: rhosw_rho_ratio, rho_rhosw_ratio
 real(dp)     :: H_inv
 logical      :: flag_calving_event
 
-real(dp), dimension(0:JMAX,0:IMAX) :: H_sea_neu, H_balance
+real(dp), dimension(0:JMAX,0:IMAX) :: H_sea_new, H_balance
 
 !-------- Term abbreviations --------
 
@@ -1848,9 +1848,9 @@ rho_rhosw_ratio = RHO/RHO_SW
 
 !-------- Update of the mask --------
 
-zs_neu = zb_neu + H_neu   ! ice surface topography
-H_sea_neu = z_sl - zl_neu    ! sea depth
-H_balance = H_sea_neu*rhosw_rho_ratio
+zs_new = zb_new + H_new   ! ice surface topography
+H_sea_new = z_sl - zl_new    ! sea depth
+H_balance = H_sea_new*rhosw_rho_ratio
 
 #if (THK_EVOL>=1)
 
@@ -1859,86 +1859,86 @@ do j=1, JMAX-1
 
    ! grounding_line migration check
 
-   if ( ( maske(j,i) <= 1_i1b &
-         .and.    (maske(j,i+1)>1_i1b.or.maske(j,i-1)>1_i1b &
-               .or.maske(j+1,i)>1_i1b.or.maske(j-1,i)>1_i1b) ) &
+   if ( ( mask(j,i) <= 1_i1b &
+         .and.    (mask(j,i+1)>1_i1b.or.mask(j,i-1)>1_i1b &
+               .or.mask(j+1,i)>1_i1b.or.mask(j-1,i)>1_i1b) ) &
         .or. &
-        ( maske(j,i)>=2_i1b &
-         .and.    (maske(j,i+1)==0_i1b.or.maske(j,i-1)==0_i1b  &
-               .or.maske(j+1,i)==0_i1b.or.maske(j-1,i)==0_i1b) ) ) then
+        ( mask(j,i)>=2_i1b &
+         .and.    (mask(j,i+1)==0_i1b.or.mask(j,i-1)==0_i1b  &
+               .or.mask(j+1,i)==0_i1b.or.mask(j-1,i)==0_i1b) ) ) then
 
-      if (H_neu(j,i) >= eps_H) then
+      if (H_new(j,i) >= eps_H) then
 
-         if (H_neu(j,i)<H_balance(j,i).and.zl_neu(j,i)<z_sl) then
-            maske(j,i)    = 3_i1b
-            zb_neu(j,i)   = z_sl-rho_rhosw_ratio*H_neu(j,i)
-            dzb_dtau(j,i) = dtime_inv*(zb_neu(j,i)-zb(j,i))
-            zs_neu(j,i)   = zb_neu(j,i)+H_neu(j,i)
+         if (H_new(j,i)<H_balance(j,i).and.zl_new(j,i)<z_sl) then
+            mask(j,i)    = 3_i1b
+            zb_new(j,i)   = z_sl-rho_rhosw_ratio*H_new(j,i)
+            dzb_dtau(j,i) = dtime_inv*(zb_new(j,i)-zb(j,i))
+            zs_new(j,i)   = zb_new(j,i)+H_new(j,i)
          else
-            maske(j,i)    = 0_i1b
-            zb_neu(j,i)   = zl_neu(j,i)
+            mask(j,i)    = 0_i1b
+            zb_new(j,i)   = zl_new(j,i)
             dzb_dtau(j,i) = dzl_dtau(j,i)
-            zs_neu(j,i)   = zb_neu(j,i)+H_neu(j,i)
+            zs_new(j,i)   = zb_new(j,i)+H_new(j,i)
          end if
 
-      else   ! if (H_neu(j,i) <= eps_H) then
+      else   ! if (H_new(j,i) <= eps_H) then
 
-         if (zl_neu(j,i)>z_sl) then
-            maske(j,i)    = 1_i1b
-            zb_neu(j,i)   = zl_neu(j,i)
-            dzb_dtau(j,i) = dtime_inv*(zb_neu(j,i)-zb(j,i))
-            zs_neu(j,i)   = zb_neu(j,i)
+         if (zl_new(j,i)>z_sl) then
+            mask(j,i)    = 1_i1b
+            zb_new(j,i)   = zl_new(j,i)
+            dzb_dtau(j,i) = dtime_inv*(zb_new(j,i)-zb(j,i))
+            zs_new(j,i)   = zb_new(j,i)
          else
-            maske(j,i)    = 2_i1b
-            zb_neu(j,i)   = z_sl
+            mask(j,i)    = 2_i1b
+            zb_new(j,i)   = z_sl
             dzb_dtau(j,i) = 0.0_dp
-            zs_neu(j,i)   = z_sl
+            zs_new(j,i)   = z_sl
          end if
 
       end if
 
-   else if (maske(j,i) <= 1_i1b) then   ! grounded ice or ice-free land
+   else if (mask(j,i) <= 1_i1b) then   ! grounded ice or ice-free land
 
-      if (H_neu(j,i) >= eps_H) then   ! can change maske 0 or 1
-         maske(j,i)    = 0_i1b
-         zb_neu(j,i)   = zl_neu(j,i)
+      if (H_new(j,i) >= eps_H) then   ! can change mask 0 or 1
+         mask(j,i)    = 0_i1b
+         zb_new(j,i)   = zl_new(j,i)
          dzb_dtau(j,i) = dzl_dtau(j,i)
-         zs_neu(j,i)   = zb_neu(j,i)+H_neu(j,i)
+         zs_new(j,i)   = zb_new(j,i)+H_new(j,i)
       else
-         maske(j,i)    = 1_i1b
-         zb_neu(j,i)   = zl_neu(j,i)
+         mask(j,i)    = 1_i1b
+         zb_new(j,i)   = zl_new(j,i)
          dzb_dtau(j,i) = dzl_dtau(j,i)
-         zs_neu(j,i)   = zl_neu(j,i)
+         zs_new(j,i)   = zl_new(j,i)
       end if
 
-   else   ! if (maske(j,i)==2_i1b.or.maske(j,i)==3_i1b) then
+   else   ! if (mask(j,i)==2_i1b.or.mask(j,i)==3_i1b) then
 
-      if (H_neu(j,i) > eps_H) then
+      if (H_new(j,i) > eps_H) then
 
-         if (H_neu(j,i)<H_balance(j,i).and.zl_neu(j,i)<z_sl) then
-            maske(j,i)    = 3_i1b
-            zb_neu(j,i)   = z_sl-rho_rhosw_ratio*H_neu(j,i)
-            dzb_dtau(j,i) = dtime_inv*(zb_neu(j,i)-zb(j,i))
-            zs_neu(j,i)   = zb_neu(j,i)+H_neu(j,i)
+         if (H_new(j,i)<H_balance(j,i).and.zl_new(j,i)<z_sl) then
+            mask(j,i)    = 3_i1b
+            zb_new(j,i)   = z_sl-rho_rhosw_ratio*H_new(j,i)
+            dzb_dtau(j,i) = dtime_inv*(zb_new(j,i)-zb(j,i))
+            zs_new(j,i)   = zb_new(j,i)+H_new(j,i)
          else
-            maske(j,i)    = 0_i1b
-            zb_neu(j,i)   = zl_neu(j,i)
+            mask(j,i)    = 0_i1b
+            zb_new(j,i)   = zl_new(j,i)
             dzb_dtau(j,i) = dzl_dtau(j,i)
-            zs_neu(j,i)   = zb_neu(j,i)+H_neu(j,i)
+            zs_new(j,i)   = zb_new(j,i)+H_new(j,i)
          end if
 
-      else   ! if (H_neu(j,i) <= eps_H) then
+      else   ! if (H_new(j,i) <= eps_H) then
 
-         if (zl_neu(j,i)>z_sl) then
-            maske(j,i)    = 1_i1b
-            zb_neu(j,i)   = zl_neu(j,i)
-            dzb_dtau(j,i) = dtime_inv*(zb_neu(j,i)-zb(j,i))
-            zs_neu(j,i)   = zb_neu(j,i)
+         if (zl_new(j,i)>z_sl) then
+            mask(j,i)    = 1_i1b
+            zb_new(j,i)   = zl_new(j,i)
+            dzb_dtau(j,i) = dtime_inv*(zb_new(j,i)-zb(j,i))
+            zs_new(j,i)   = zb_new(j,i)
          else
-            maske(j,i)    = 2_i1b
-            zb_neu(j,i)   = z_sl
+            mask(j,i)    = 2_i1b
+            zb_new(j,i)   = z_sl
             dzb_dtau(j,i) = 0.0_dp
-            zs_neu(j,i)   = z_sl
+            zs_new(j,i)   = z_sl
          end if
 
       end if
@@ -1960,19 +1960,19 @@ do
    do i=1, IMAX-1
    do j=1, JMAX-1
 
-      if ( (maske(j,i)==3_i1b) &   ! floating ice
+      if ( (mask(j,i)==3_i1b) &   ! floating ice
            .and. &
-             (    (maske(j,i+1)==2_i1b)   &   ! with
-              .or.(maske(j,i-1)==2_i1b)   &   ! one
-              .or.(maske(j+1,i)==2_i1b)   &   ! neighbouring
-              .or.(maske(j-1,i)==2_i1b) ) &   ! sea point
+             (    (mask(j,i+1)==2_i1b)   &   ! with
+              .or.(mask(j,i-1)==2_i1b)   &   ! one
+              .or.(mask(j+1,i)==2_i1b)   &   ! neighbouring
+              .or.(mask(j-1,i)==2_i1b) ) &   ! sea point
          ) &
          flag_calving_front_1(j,i) = .true.   ! preliminary detection
                                               ! of the calving front
 
-      if ( flag_calving_front_1(j,i).and.(H_neu(j,i) < H_CALV) ) then
+      if ( flag_calving_front_1(j,i).and.(H_new(j,i) < H_CALV) ) then
          flag_calving_event = .true.  ! calving event,
-         maske(j,i)         = 2_i1b   ! floating ice point changes to sea point
+         mask(j,i)         = 2_i1b   ! floating ice point changes to sea point
       end if
 
    end do
@@ -1994,19 +1994,19 @@ do while (flag_calving_event)
    do i=1, IMAX-1
    do j=1, JMAX-1
 
-      if ( (maske(j,i)==3_i1b) &   ! floating ice
+      if ( (mask(j,i)==3_i1b) &   ! floating ice
            .and. &
-             (    (maske(j,i+1)==2_i1b)   &   ! with
-              .or.(maske(j,i-1)==2_i1b)   &   ! one
-              .or.(maske(j+1,i)==2_i1b)   &   ! neighbouring
-              .or.(maske(j-1,i)==2_i1b) ) &   ! sea point
+             (    (mask(j,i+1)==2_i1b)   &   ! with
+              .or.(mask(j,i-1)==2_i1b)   &   ! one
+              .or.(mask(j+1,i)==2_i1b)   &   ! neighbouring
+              .or.(mask(j-1,i)==2_i1b) ) &   ! sea point
          ) &
          flag_calving_front_1(j,i) = .true.       ! preliminary detection
                                                   ! of the calving front
 
-      if ( (flag_calving_front_1(j,i)).and.(H_neu(j,i) < H_CALV) ) then
+      if ( (flag_calving_front_1(j,i)).and.(H_new(j,i) < H_CALV) ) then
          flag_calving_event = .true.  ! calving event,
-         maske(j,i)         = 2_i1b   ! floating ice point changes to sea point
+         mask(j,i)         = 2_i1b   ! floating ice point changes to sea point
       end if
 
    end do
@@ -2021,7 +2021,7 @@ end do
 do i=0, IMAX
 do j=0, JMAX
 
-   if (maske(j,i)==3_i1b) maske(j,i) = 2_i1b
+   if (mask(j,i)==3_i1b) mask(j,i) = 2_i1b
       ! float-kill: all floating ice points changed to sea points
 
 end do
@@ -2034,8 +2034,8 @@ end do
 do i=0, IMAX
 do j=0, JMAX
 
-   if ((maske(j,i)==3_i1b).and.(xi(i) > Lx)) then
-      maske(j,i) = 2_i1b   ! floating ice point changes to sea point
+   if ((mask(j,i)==3_i1b).and.(xi(i) > Lx)) then
+      mask(j,i) = 2_i1b   ! floating ice point changes to sea point
    end if
 
 end do
@@ -2059,32 +2059,32 @@ call error(errormsg)
 !  ------ Adjustment due to prescribed target topography
 
 #if (THK_EVOL==2)
-if (time >= time_target_topo_final) maske = maske_target
+if (time >= time_target_topo_final) mask = mask_target
 #endif
 
-!-------- Correction of zs_neu and zb_neu
+!-------- Correction of zs_new and zb_new
 !         for ice-free land, sea and floating ice --------
 
 do i=0, IMAX
 do j=0, JMAX
 
-   if (maske(j,i) == 1_i1b) then   ! ice-free land
+   if (mask(j,i) == 1_i1b) then   ! ice-free land
 
-      zs_neu(j,i) = zb_neu(j,i)   ! this prevents zs_neu(j,i)
-      H_neu(j,i)  = 0.0_dp        ! from being below zb_neu(j,i)
+      zs_new(j,i) = zb_new(j,i)   ! this prevents zs_new(j,i)
+      H_new(j,i)  = 0.0_dp        ! from being below zb_new(j,i)
 
-   else if (maske(j,i) == 2_i1b) then   ! sea
+   else if (mask(j,i) == 2_i1b) then   ! sea
 
-      zs_neu(j,i) = z_sl          ! both zs_neu(j,i) and zb_neu(j,i)
-      zb_neu(j,i) = z_sl          ! set to the current sea level stand
-      H_neu(j,i)  = 0.0_dp
+      zs_new(j,i) = z_sl          ! both zs_new(j,i) and zb_new(j,i)
+      zb_new(j,i) = z_sl          ! set to the current sea level stand
+      H_new(j,i)  = 0.0_dp
 
-   else if (maske(j,i) == 3_i1b) then   ! floating ice
+   else if (mask(j,i) == 3_i1b) then   ! floating ice
 
-      H_neu(j,i) = zs_neu(j,i)-zb_neu(j,i)   ! ice thickness
+      H_new(j,i) = zs_new(j,i)-zb_new(j,i)   ! ice thickness
 
-      zb_neu(j,i) = z_sl - rho_rhosw_ratio*H_neu(j,i)   ! floating condition
-      zs_neu(j,i) = zb_neu(j,i) + H_neu(j,i)
+      zb_new(j,i) = z_sl - rho_rhosw_ratio*H_new(j,i)   ! floating condition
+      zs_new(j,i) = zb_new(j,i) + H_new(j,i)
 
    end if
 
@@ -2100,32 +2100,32 @@ call limit_thickness_isolated_ice(z_sl)
 do i=0, IMAX
 do j=0, JMAX
 
-   if ( (maske(j,i) == 0_i1b).or.(maske(j,i) == 3_i1b) ) then
+   if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
                                         ! grounded or floating ice
 
       if (n_cts(j,i) == 1_i1b) then
          if (H(j,i) > 0.0_dp) then
             H_inv        = 1.0_dp/H(j,i)
-            H_c_neu(j,i) = H_c(j,i) * H_neu(j,i)*H_inv
-            H_t_neu(j,i) = H_t(j,i) * H_neu(j,i)*H_inv
+            H_c_new(j,i) = H_c(j,i) * H_new(j,i)*H_inv
+            H_t_new(j,i) = H_t(j,i) * H_new(j,i)*H_inv
          else
-            H_c_neu(j,i) = 0.99_dp * H_neu(j,i)   ! this case should not occur,
-            H_t_neu(j,i) = 0.01_dp * H_neu(j,i)   ! just for safety
+            H_c_new(j,i) = 0.99_dp * H_new(j,i)   ! this case should not occur,
+            H_t_new(j,i) = 0.01_dp * H_new(j,i)   ! just for safety
          end if
-         zm_neu(j,i) = zb_neu(j,i)+H_t_neu(j,i)
+         zm_new(j,i) = zb_new(j,i)+H_t_new(j,i)
       else
-         H_c_neu(j,i) = H_neu(j,i)
-         H_t_neu(j,i) = 0.0_dp
-         zm_neu(j,i)  = zb_neu(j,i)
+         H_c_new(j,i) = H_new(j,i)
+         H_t_new(j,i) = 0.0_dp
+         zm_new(j,i)  = zb_new(j,i)
       end if
 
-   else   ! maske(j,i) == 1_i1b or 2_i1b, ice-free land or sea
+   else   ! mask(j,i) == 1_i1b or 2_i1b, ice-free land or sea
 
-      H_c_neu(j,i) = 0.0_dp
-      H_t_neu(j,i) = 0.0_dp
-      H_neu(j,i)   = 0.0_dp
-      zs_neu(j,i)  = zb_neu(j,i)
-      zm_neu(j,i)  = zb_neu(j,i)
+      H_c_new(j,i) = 0.0_dp
+      H_t_new(j,i) = 0.0_dp
+      H_new(j,i)   = 0.0_dp
+      zs_new(j,i)  = zb_new(j,i)
+      zm_new(j,i)  = zb_new(j,i)
 
    end if
 
@@ -2166,41 +2166,41 @@ end if
 do i=1, IMAX-1
 do j=1, JMAX-1
 
-   if (maske(j,i) == 0_i1b) then   ! grounded ice
+   if (mask(j,i) == 0_i1b) then   ! grounded ice
 
-      if ( ((maske(j,i+1) == 1_i1b).or.(maske(j,i+1) == 2_i1b)) &
-           .and. ((maske(j,i-1) == 1_i1b).or.(maske(j,i-1) == 2_i1b)) &
-           .and. ((maske(j+1,i) == 1_i1b).or.(maske(j+1,i) == 2_i1b)) &
-           .and. ((maske(j-1,i) == 1_i1b).or.(maske(j-1,i) == 2_i1b)) &
+      if ( ((mask(j,i+1) == 1_i1b).or.(mask(j,i+1) == 2_i1b)) &
+           .and. ((mask(j,i-1) == 1_i1b).or.(mask(j,i-1) == 2_i1b)) &
+           .and. ((mask(j+1,i) == 1_i1b).or.(mask(j+1,i) == 2_i1b)) &
+           .and. ((mask(j-1,i) == 1_i1b).or.(mask(j-1,i) == 2_i1b)) &
          ) then   ! all nearest neighbours ice-free
 
-         H_neu(j,i)  = min(H_neu(j,i), H_isol_max)
-         zs_neu(j,i) = zb_neu(j,i)+H_neu(j,i)
+         H_new(j,i)  = min(H_new(j,i), H_isol_max)
+         zs_new(j,i) = zb_new(j,i)+H_new(j,i)
 
          if (flag_kill_isolated_ice) then
-            if (zb_neu(j,i) >= z_sl) then
-               maske(j,i) = 1_i1b
+            if (zb_new(j,i) >= z_sl) then
+               mask(j,i) = 1_i1b
             else
-               maske(j,i) = 2_i1b
+               mask(j,i) = 2_i1b
             end if
          end if
 
       end if
 
-   else if (maske(j,i) == 3_i1b) then   ! floating ice
+   else if (mask(j,i) == 3_i1b) then   ! floating ice
 
-      if ( ((maske(j,i+1) == 1_i1b).or.(maske(j,i+1) == 2_i1b)) &
-           .and. ((maske(j,i-1) == 1_i1b).or.(maske(j,i-1) == 2_i1b)) &
-           .and. ((maske(j+1,i) == 1_i1b).or.(maske(j+1,i) == 2_i1b)) &
-           .and. ((maske(j-1,i) == 1_i1b).or.(maske(j-1,i) == 2_i1b)) &
+      if ( ((mask(j,i+1) == 1_i1b).or.(mask(j,i+1) == 2_i1b)) &
+           .and. ((mask(j,i-1) == 1_i1b).or.(mask(j,i-1) == 2_i1b)) &
+           .and. ((mask(j+1,i) == 1_i1b).or.(mask(j+1,i) == 2_i1b)) &
+           .and. ((mask(j-1,i) == 1_i1b).or.(mask(j-1,i) == 2_i1b)) &
          ) then   ! all nearest neighbours ice-free
 
-         H_neu(j,i)  = min(H_neu(j,i), H_isol_max)
-         zb_neu(j,i) = z_sl-rho_rhosw_ratio*H_neu(j,i)
-         zs_neu(j,i) = zb_neu(j,i)+H_neu(j,i)
+         H_new(j,i)  = min(H_new(j,i), H_isol_max)
+         zb_new(j,i) = z_sl-rho_rhosw_ratio*H_new(j,i)
+         zs_new(j,i) = zb_new(j,i)+H_new(j,i)
 
          if (flag_kill_isolated_ice) then
-            maske(j,i) = 2_i1b
+            mask(j,i) = 2_i1b
          end if
 
       end if
@@ -2243,14 +2243,14 @@ do while (flag_change)
    do j=1, JMAX-1
 
       if (mask_connect_save(j,i) == 1_i1b) then
-         if (maske(j  ,i+1) >= 2_i1b) mask_connect(j  ,i+1) = 1_i1b
-         if (maske(j  ,i-1) >= 2_i1b) mask_connect(j  ,i-1) = 1_i1b
-         if (maske(j+1,i  ) >= 2_i1b) mask_connect(j+1,i  ) = 1_i1b
-         if (maske(j-1,i  ) >= 2_i1b) mask_connect(j-1,i  ) = 1_i1b
-         if (maske(j+1,i+1) >= 2_i1b) mask_connect(j+1,i+1) = 1_i1b
-         if (maske(j+1,i-1) >= 2_i1b) mask_connect(j+1,i-1) = 1_i1b
-         if (maske(j-1,i+1) >= 2_i1b) mask_connect(j-1,i+1) = 1_i1b
-         if (maske(j-1,i-1) >= 2_i1b) mask_connect(j-1,i-1) = 1_i1b
+         if (mask(j  ,i+1) >= 2_i1b) mask_connect(j  ,i+1) = 1_i1b
+         if (mask(j  ,i-1) >= 2_i1b) mask_connect(j  ,i-1) = 1_i1b
+         if (mask(j+1,i  ) >= 2_i1b) mask_connect(j+1,i  ) = 1_i1b
+         if (mask(j-1,i  ) >= 2_i1b) mask_connect(j-1,i  ) = 1_i1b
+         if (mask(j+1,i+1) >= 2_i1b) mask_connect(j+1,i+1) = 1_i1b
+         if (mask(j+1,i-1) >= 2_i1b) mask_connect(j+1,i-1) = 1_i1b
+         if (mask(j-1,i+1) >= 2_i1b) mask_connect(j-1,i+1) = 1_i1b
+         if (mask(j-1,i-1) >= 2_i1b) mask_connect(j-1,i-1) = 1_i1b
       end if
 
    end do
@@ -2285,14 +2285,14 @@ end do
 
 #if !defined(ALLOW_OPENAD) /* Normal */
 
-where ((maske == 2_i1b).and.(mask_connect == 0_i1b)) maske = 1_i1b
+where ((mask == 2_i1b).and.(mask_connect == 0_i1b)) mask = 1_i1b
 
 #else /* OpenAD */
 
 do i=0, IMAX
 do j=0, JMAX
-   if ((maske(j,i) == 2_i1b).and.(mask_connect(j,i) == 0_i1b)) &
-      maske(j,i) = 1_i1b
+   if ((mask(j,i) == 2_i1b).and.(mask_connect(j,i) == 0_i1b)) &
+      mask(j,i) = 1_i1b
 end do
 end do
 
@@ -2331,9 +2331,9 @@ subroutine account_mb_source(dtime, z_mar)
 
      if (flag_inner_point(j,i)) then   ! inner point
 
-        if (H_neu(j,i) >= eps_H) then   ! glaciated point
+        if (H_new(j,i) >= eps_H) then   ! glaciated point
 
-           mb_source_apl(j,i) = (H_neu(j,i)-H_neu_flow(j,i))*dtime_inv
+           mb_source_apl(j,i) = (H_new(j,i)-H_new_flow(j,i))*dtime_inv
                                 ! applied MB, based on ice thickness change
 
            ! Store melt quantities here for later accounting
@@ -2345,23 +2345,23 @@ subroutine account_mb_source(dtime, z_mar)
 
            ! Store melting mask value. This became an ice point,
            ! should be either grounded or floating ice.
-           if (maske(j,i)==0_i1b) then
+           if (mask(j,i)==0_i1b) then
               mask_ablation_type(j,i) = 1_i1b ! grounded ice
-           else if (maske(j,i)==3_i1b) then
+           else if (mask(j,i)==3_i1b) then
               mask_ablation_type(j,i) = 3_i1b ! floating ice
            else
               mask_ablation_type(j,i) = 9_i1b ! misaccounted (if appears)
            end if
 
-        else if (H_neu(j,i) < eps_H .and. H_neu_flow(j,i) >= eps_H) then
+        else if (H_new(j,i) < eps_H .and. H_new_flow(j,i) >= eps_H) then
                                            ! ice disappeared
 
-           mb_source_apl(j,i) = (H_neu(j,i)-H_neu_flow(j,i))*dtime_inv
+           mb_source_apl(j,i) = (H_new(j,i)-H_new_flow(j,i))*dtime_inv
                                 ! applied MB, based on ice thickness change
 
            accum_apl(j,i) = accum(j,i)
 
-           if (maske(j,i)==2_i1b) then
+           if (mask(j,i)==2_i1b) then
               ! all mass that flows into the ocean counted as
               ! (large-scale) calving
               calving_apl(j,i) = -(mb_source_apl(j,i)-accum_apl(j,i))
@@ -2392,9 +2392,9 @@ subroutine account_mb_source(dtime, z_mar)
 
            ! Store melting mask value.
            ! This grid point is ice free now, therefore it
-           ! can be either ocean or land (using actual maske value).
+           ! can be either ocean or land (using actual mask value).
 
-           if (maske(j,i) == 2_i1b) then   ! ocean point (hidden melt)
+           if (mask(j,i) == 2_i1b) then   ! ocean point (hidden melt)
               mask_ablation_type(j,i) = -2_i1b
            else                            ! land (hidden melt)
               mask_ablation_type(j,i) = -1_i1b
