@@ -11,7 +11,7 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2021-06-15'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2021-06-16'
 !                      Date of last change
 
 !-------- Domain --------
@@ -971,12 +971,6 @@
 !                             (exception:
 !                              time-slice output with all 3-d fields for
 !                              OUTPUT==3, in which case snapshots are written)
-
-#define NETCDF 2
-!                         1 : Time-slice files unformatted ('.erg')
-!                         2 : Time-slice files in netCDF format ('.nc'),
-!                             and writing of an extended time-series file
-!                             '_ser.nc' in netCDF format
 
 #define DTIME_OUT0 0.0d0
 !                             Time step (in a) for writing of

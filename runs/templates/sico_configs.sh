@@ -18,10 +18,6 @@ fi
 
 #-------- Flags --------
 
-NETCDF_FLAG="true"
-#   "true"  -> linking of SICOPOLIS with NetCDF library
-#   "false" -> linking of SICOPOLIS without NetCDF library
-
 LIS_FLAG="false"
 #   "true"  -> linking of SICOPOLIS with Lis library
 #              (requires also OPENMP_FLAG="true")
@@ -46,48 +42,44 @@ LARGE_DATA_FLAG="false"
 # module load netcdf/4.4.1_gnu5.4.0
 ### needed for GEO-UiO Linux environment (as of Aug 2020)
 
-if [ "$NETCDF_FLAG" = "true" ] ; then
+export NETCDFHOME=/opt/netcdf
 
-   export NETCDFHOME=/opt/netcdf
+# export NETCDFHOME=/usr
+#        ### often works if NetCDF was installed from a repository
+#        ### rather than manually
 
-   # export NETCDFHOME=/usr
-   #        ### often works if NetCDF was installed from a repository
-   #        ### rather than manually
+# export NETCDFHOME=/opt/uio/modules/packages/netcdf/4.4.1_gnu5.4.0
+#        ### setting for GEO-UiO Linux environment (as of Aug 2020)
 
-   # export NETCDFHOME=/opt/uio/modules/packages/netcdf/4.4.1_gnu5.4.0
-   #        ### setting for GEO-UiO Linux environment (as of Aug 2020)
+if [ -z "${LD_LIBRARY_PATH}" ]; then
+   export LD_LIBRARY_PATH=${NETCDFHOME}/lib
+else
+   export LD_LIBRARY_PATH=${NETCDFHOME}/lib\:${LD_LIBRARY_PATH}
+fi
+   ### !!! On some systems, lib may have to be changed to lib64 !!!
 
-   if [ -z "${LD_LIBRARY_PATH}" ]; then
-      export LD_LIBRARY_PATH=${NETCDFHOME}/lib
+if [ -f $NETCDFHOME/bin/nf-config ] ; then
+   # Automatic settings with nf-config
+   if [ "$($NETCDFHOME/bin/nf-config --has-f90)" = "yes" ] || [ "$($NETCDFHOME/bin/nf-config --has-f03)" = "yes" ]; then
+      NETCDF_FLAGS="$($NETCDFHOME/bin/nf-config --fflags)"
+      NETCDF_LIBS="$($NETCDFHOME/bin/nf-config --flibs)"
    else
-      export LD_LIBRARY_PATH=${NETCDFHOME}/lib\:${LD_LIBRARY_PATH}
+      echo "NetCDF error: compiled without either f90 or f03 interface."
+      exit 1
    fi
-      ### !!! On some systems, lib may have to be changed to lib64 !!!
-
-   if [ -f $NETCDFHOME/bin/nf-config ] ; then
-      # Automatic settings with nf-config
-      if [ "$($NETCDFHOME/bin/nf-config --has-f90)" = "yes" ] || [ "$($NETCDFHOME/bin/nf-config --has-f03)" = "yes" ]; then
-         NETCDF_FLAGS="$($NETCDFHOME/bin/nf-config --fflags)"
-         NETCDF_LIBS="$($NETCDFHOME/bin/nf-config --flibs)"
-      else
-         echo "NetCDF error: compiled without either f90 or f03 interface."
-         exit 1
-      fi
-   elif [ -f $NETCDFHOME/bin/nc-config ] ; then
-      # Automatic settings with nc-config
-      if [ "$($NETCDFHOME/bin/nc-config --has-f90)" = "yes" ] ; then
-         NETCDF_FLAGS="$($NETCDFHOME/bin/nc-config --cflags)"
-         NETCDF_LIBS="$($NETCDFHOME/bin/nc-config --flibs)"
-      else
-         echo "NetCDF error: compiled without f90 interface."
-         exit 1
-      fi
+elif [ -f $NETCDFHOME/bin/nc-config ] ; then
+   # Automatic settings with nc-config
+   if [ "$($NETCDFHOME/bin/nc-config --has-f90)" = "yes" ] ; then
+      NETCDF_FLAGS="$($NETCDFHOME/bin/nc-config --cflags)"
+      NETCDF_LIBS="$($NETCDFHOME/bin/nc-config --flibs)"
    else
-      # Manual settings
-      NETCDFINCLUDE=${NETCDFHOME}'/include'
-      NETCDFLIB=${NETCDFHOME}'/lib'
+      echo "NetCDF error: compiled without f90 interface."
+      exit 1
    fi
-
+else
+   # Manual settings
+   NETCDFINCLUDE=${NETCDFHOME}'/include'
+   NETCDFLIB=${NETCDFHOME}'/lib'
 fi
 
 #-------- Lis settings --------
@@ -176,17 +168,15 @@ if [ "$LIS_FLAG" = "true" ] ; then
    esac            
 fi
 
-if [ "$NETCDF_FLAG" = "true" ] ; then
-   if [ -f $NETCDFHOME/bin/nf-config ] ; then
-      # Automatic settings with nf-config
-      FCFLAGS=${FCFLAGS}' '${NETCDF_FLAGS}' '${NETCDF_LIBS}
-   elif [ -f $NETCDFHOME/bin/nc-config ] ; then
-      # Automatic settings with nc-config
-      FCFLAGS=${FCFLAGS}' '${NETCDF_FLAGS}' '${NETCDF_LIBS}
-   else
-      # Manual settings
-      FCFLAGS=${FCFLAGS}' -I'${NETCDFINCLUDE}' -L'${NETCDFLIB}' -lnetcdf'
-   fi
+if [ -f $NETCDFHOME/bin/nf-config ] ; then
+   # Automatic settings with nf-config
+   FCFLAGS=${FCFLAGS}' '${NETCDF_FLAGS}' '${NETCDF_LIBS}
+elif [ -f $NETCDFHOME/bin/nc-config ] ; then
+   # Automatic settings with nc-config
+   FCFLAGS=${FCFLAGS}' '${NETCDF_FLAGS}' '${NETCDF_LIBS}
+else
+   # Manual settings
+   FCFLAGS=${FCFLAGS}' -I'${NETCDFINCLUDE}' -L'${NETCDFLIB}' -lnetcdf'
 fi
 
 echo "Flags: $FCFLAGS"
