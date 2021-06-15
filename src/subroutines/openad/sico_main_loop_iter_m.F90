@@ -109,7 +109,7 @@ contains
   
   !-------- Save old mask --------
   
-  maske_old = maske
+  mask_old = mask
   
   !-------- Boundary conditions --------
   
@@ -147,25 +147,25 @@ contains
   
      dtime_temp_inv = 1.0_dp/dtime_temp
   
-     dH_t_dtau      = (H_t_neu - H_t)*dtime_temp_inv
+     dH_t_dtau      = (H_t_new - H_t)*dtime_temp_inv
   
   !  ------ New values --> old values
   
-     n_cts   = n_cts_neu
-     kc_cts  = kc_cts_neu
-     zm      = zm_neu
-     H_c     = H_c_neu
-     H_t     = H_t_neu
-     temp_c  = temp_c_neu
-     age_c   = age_c_neu
-     omega_t = omega_t_neu
-     age_t   = age_t_neu
-     temp_r  = temp_r_neu
+     n_cts   = n_cts_new
+     kc_cts  = kc_cts_new
+     zm      = zm_new
+     H_c     = H_c_new
+     H_t     = H_t_new
+     temp_c  = temp_c_new
+     age_c   = age_c_new
+     omega_t = omega_t_new
+     age_t   = age_t_new
+     temp_r  = temp_r_new
   
 #if (CALCMOD==2 || CALCMOD==3)
-     enth_c  = enth_c_neu
-     enth_t  = enth_t_neu
-     omega_c = omega_c_neu
+     enth_c  = enth_c_new
+     enth_t  = enth_t_new
+     omega_c = omega_c_new
 #endif
   
   !  ------ Flow enhancement factor
@@ -259,12 +259,12 @@ contains
 
   call flag_update_gf_gl_cf()
   
-  zs = zs_neu
-  zm = zm_neu
-  zb = zb_neu
-  zl = zl_neu
-  H_c= H_c_neu
-  H_t= H_t_neu
+  zs = zs_new
+  zm = zm_new
+  zb = zb_new
+  zl = zl_new
+  H_c= H_c_new
+  H_t= H_t_new
   
   !-------- Melting temperature --------
   

@@ -444,7 +444,7 @@ delta_ts_sum = 0.0_dp
 do i=0, IMAX
 do j=0, JMAX
 
-   if (maske(j,i) /= 2) then   ! no ocean points
+   if (mask(j,i) /= 2) then   ! no ocean points
       n_cnt        = n_cnt + 1
       delta_ts_sum = delta_ts_sum + temp_maat_anom(j,i)
    end if
@@ -642,7 +642,7 @@ end do
 
 do i=1, IMAX-1
 do j=1, JMAX-1
-   if (maske(j,i) >= 2_i1b) then
+   if (mask(j,i) >= 2_i1b) then
       check_point(j  ,i  ) = .true.
       check_point(j  ,i+1) = .true.
       check_point(j  ,i-1) = .true.
@@ -655,7 +655,7 @@ end do
 do i=1, IMAX-1
 do j=1, JMAX-1
    if (check_point(j,i)) then
-      maske_neu(j,i) = mask_update_sea_level(z_sl, i, j)
+      mask_new(j,i) = mask_update_sea_level(z_sl, i, j)
    end if
 end do
 end do
@@ -665,7 +665,7 @@ end do
 do i=1, IMAX-1
 do j=1, JMAX-1
    if (check_point(j,i)) then
-      maske(j,i) = maske_neu(j,i)
+      mask(j,i) = mask_new(j,i)
    end if
 end do
 end do
@@ -1186,7 +1186,7 @@ smb_no_ice = -1000.0_dp*sec2year   ! -1000 m/a -> m/s
 do i=0, IMAX
 do j=0, JMAX
 
-   if ((maske_target(j,i)==0_i1b).or.(maske_target(j,i)==3_i1b)) then
+   if ((mask_target(j,i)==0_i1b).or.(mask_target(j,i)==3_i1b)) then
       as_perp(j,i) = (zs_target(j,i)-zs(j,i))*target_topo_tau_inv
    else
       as_perp(j,i) = smb_no_ice

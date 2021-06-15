@@ -4,14 +4,14 @@
 
 !-------- Basic settings --------
 
-#define RUNNAME 'vialov3d25'
+#define RUNNAME 'v5_vialov3d25'
 !                      Name of simulation
 
 #define SICO_VERSION '5-dev'
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2021-06-02'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2021-06-15'
 !                      Date of last change
 
 !-------- Domain --------

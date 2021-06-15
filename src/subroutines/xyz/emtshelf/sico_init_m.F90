@@ -1295,10 +1295,10 @@ call topography3(dxi, deta, z_sl, anfdatname)
 call boundary(time_init, dtime, dxi, deta, &
               delta_ts, glac_index, z_sl, dzsl_dtau, z_mar)
 
-where ((maske==0_i1b).or.(maske==3_i1b))
+where ((mask==0_i1b).or.(mask==3_i1b))
                  ! grounded or floating ice
    as_perp_apl = as_perp
-elsewhere        ! maske==1_i1b or 2_i1b, ice-free land or sea
+elsewhere        ! mask==1_i1b or 2_i1b, ice-free land or sea
    as_perp_apl = 0.0_dp
 end where
 
@@ -1412,7 +1412,7 @@ do j=0, JMAX
       enth_c(kc,j,i) = enth_fct_temp_omega(temp_c(kc,j,i), 0.0_dp)
    end do
 
-   if ( (maske(j,i) == 0_i1b).and.(n_cts(j,i) == 1_i1b) ) then
+   if ( (mask(j,i) == 0_i1b).and.(n_cts(j,i) == 1_i1b) ) then
       do kt=0, KTMAX
          enth_t(kt,j,i) = enth_fct_temp_omega(temp_t_m(kt,j,i), omega_t(kt,j,i))
       end do
@@ -1643,7 +1643,7 @@ real(dp), intent(out) :: dxi, deta
 integer(i4b) :: i, j, n
 real(dp)     :: xi0, eta0
 
-integer(i1b), dimension(0:JMAX,0:IMAX) :: maske_aux
+integer(i1b), dimension(0:JMAX,0:IMAX) :: mask_aux
 real(dp)    , dimension(0:JMAX,0:IMAX) :: zl0_aux
 real(dp)                               :: half_width, zl0_diff
 
@@ -1678,13 +1678,13 @@ zl0(JMAX,:) = zl0_ocean
 zl0(:,0)    = zl0_ocean
 zl0(:,IMAX) = zl0_ocean
 
-maske = 1_i1b
+mask = 1_i1b
 
-maske(0,:)    = 2_i1b
-maske(JMAX,:) = 2_i1b
+mask(0,:)    = 2_i1b
+mask(JMAX,:) = 2_i1b
 
-maske(:,0)    = 2_i1b
-maske(:,IMAX) = 2_i1b
+mask(:,0)    = 2_i1b
+mask(:,IMAX) = 2_i1b
 
 !-------- Further stuff --------
 
@@ -1718,7 +1718,7 @@ do j=1, JMAX-1
         .and.(eta(j) >= (625.0e+03_dp+half_width-epss)) &
         .and.(eta(j) <= (875.0e+03_dp-half_width+epss)) ) then
 
-      maske(j,i) = 2_i1b
+      mask(j,i) = 2_i1b
       zl0(j,i)   = zl0_ocean
 
    end if
@@ -1745,7 +1745,7 @@ if (half_width > epss) then
                 .and.(eta(j) >= (625.0e+03_dp-half_width-epss)) &
                 .and.(eta(j) <= (875.0e+03_dp+half_width+epss)) ) ) then
 
-            maske(j,i) = 2_i1b
+            mask(j,i) = 2_i1b
 
             zl0_aux(j,i) = (1.0_dp-4.0_dp*zl0_diff)*zl0(j,i) &
                            + zl0_diff * ( (zl0(j,i+1)+zl0(j,i-1)) &
@@ -1784,36 +1784,36 @@ write(6, fmt='(a)') ' '
 
 do i=0, IMAX
 do j=0, JMAX
-   maske_aux(j,i) = maske(j,IMAX-i)
+   mask_aux(j,i) = mask(j,IMAX-i)
    zl0_aux(j,i)   = zl0(j,IMAX-i)
 end do
 end do
 
-maske = maske_aux
+mask = mask_aux
 zl0   = zl0_aux
 
 #elif (OCEAN_DIRECTION==3)
 
 !     ---- Northward (+y direction)
 
-maske = transpose(maske)
+mask = transpose(mask)
 zl0   = transpose(zl0)
 
 #elif (OCEAN_DIRECTION==4)
 
 !     ---- Southward (-y direction)
 
-maske = transpose(maske)
+mask = transpose(mask)
 zl0   = transpose(zl0)
 
 do i=0, IMAX
 do j=0, JMAX
-   maske_aux(j,i) = maske(JMAX-j,i)
+   mask_aux(j,i) = mask(JMAX-j,i)
    zl0_aux(j,i)   = zl0(JMAX-j,i)
 end do
 end do
 
-maske = maske_aux
+mask = mask_aux
 zl0   = zl0_aux
 
 #else
@@ -1826,13 +1826,13 @@ call error(errormsg)
 do i=0, IMAX
 do j=0, JMAX
 
-   if (maske(j,i) <= 1_i1b) then
-      maske(j,i) = 1_i1b
+   if (mask(j,i) <= 1_i1b) then
+      mask(j,i) = 1_i1b
       zs(j,i) = zl0(j,i)
       zb(j,i) = zl0(j,i)
       zl(j,i) = zl0(j,i)
-   else   ! (maske(j,i) >= 2_i1b)
-      maske(j,i) = 2_i1b
+   else   ! (mask(j,i) >= 2_i1b)
+      mask(j,i) = 2_i1b
 #if (MARGIN==1 || MARGIN==2)
       zs(j,i) = zl0(j,i)
       zb(j,i) = zl0(j,i)
@@ -1860,7 +1860,7 @@ do j=0, JMAX
 end do
 end do
 
-maske_old = maske
+mask_old = mask
 
 !-------- Geographic coordinates, metric tensor,
 !                                 gradients of the topography --------
@@ -1943,7 +1943,7 @@ end subroutine topography2
 !<------------------------------------------------------------------------------
 subroutine topography3(dxi, deta, z_sl, anfdatname)
 
-  use read_m, only : read_erg_nc, read_2d_input
+  use read_m, only : read_tms_nc, read_2d_input
 
 #if (GRID==0 || GRID==1)
   use stereo_proj_m
@@ -1972,7 +1972,7 @@ real(dp), parameter :: epss      =     0.01_dp
 
 !-------- Read data from time-slice file of previous simulation --------
 
-call read_erg_nc(z_sl, anfdatname)
+call read_tms_nc(z_sl, anfdatname)
 
 !-------- Set topography of the relaxed bedrock --------
 

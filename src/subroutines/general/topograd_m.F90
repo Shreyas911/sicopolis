@@ -74,9 +74,9 @@ contains
      zm_aux = zm
      zb_aux = zb
   else if (n_switch == 2) then
-     zs_aux = zs_neu
-     zm_aux = zm_neu
-     zb_aux = zb_neu
+     zs_aux = zs_new
+     zm_aux = zm_new
+     zb_aux = zb_new
   else
      errormsg = ' >>> topograd_1: Wrong value for n_switch!'
      call error(errormsg)
@@ -223,9 +223,9 @@ contains
      zm_aux = zm
      zb_aux = zb
   else if (n_switch == 2) then
-     zs_aux = zs_neu
-     zm_aux = zm_neu
-     zb_aux = zb_neu
+     zs_aux = zs_new
+     zm_aux = zm_new
+     zb_aux = zb_new
   else
      errormsg = ' >>> topograd_2: Wrong value for n_switch!'
      call error(errormsg)

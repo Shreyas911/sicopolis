@@ -478,7 +478,7 @@
 !                             relaxation time TARGET_TOPO_TAU0.
 !                         4 : Evolution of the ice thickness,
 !                             but maximum ice extent is constrained by the
-!                             prescribed mask maske_maxextent(j,i).
+!                             prescribed mask mask_maxextent(j,i).
 
 #define TIME_TARGET_TOPO_INIT0 0.0d0
 !                             Initial time for target-topography adjustment

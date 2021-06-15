@@ -193,16 +193,16 @@ end do
 do i=1, IMAX-1   ! skipping domain margins
 do j=1, JMAX-1   ! skipping domain margins
 
-   if (maske(j,i)==0_i1b) then   ! glaciated land
+   if (mask(j,i)==0_i1b) then   ! glaciated land
 
 !  ------ Old vertical column cold
 
       if (n_cts(j,i) == -1_i1b) then
 
-         n_cts_neu(j,i) = n_cts(j,i)
-         zm_neu(j,i)  = zb(j,i)
-         H_c_neu(j,i) = H_c(j,i)
-         H_t_neu(j,i) = H_t(j,i)
+         n_cts_new(j,i) = n_cts(j,i)
+         zm_new(j,i)  = zb(j,i)
+         H_c_new(j,i) = H_c(j,i)
+         H_t_new(j,i) = H_t(j,i)
 
          call calc_temp1(at1, at2_1, at2_2, at3_1, at3_2, &
            at4_1, at4_2, at5, at6, at7, atr1, acb1, acb2, &
@@ -211,9 +211,9 @@ do j=1, JMAX-1   ! skipping domain margins
 
 !    ---- Check whether base has become temperate
 
-         if (temp_c_neu(0,j,i) > temp_c_m(0,j,i)) then
+         if (temp_c_new(0,j,i) > temp_c_m(0,j,i)) then
 
-            n_cts_neu(j,i) = 0_i1b
+            n_cts_new(j,i) = 0_i1b
 
             call calc_temp2(at1, at2_1, at2_2, at3_1, at3_2, &
                  at4_1, at4_2, at5, at6, at7, atr1, alb1, &
@@ -225,15 +225,15 @@ do j=1, JMAX-1   ! skipping domain margins
 !    ---- Check whether even temperate layer has formed
 
          if ( &
-              ( n_cts_neu(j,i) == 0_i1b ).and. &
-              ( (temp_c_neu(1,j,i)-temp_c_neu(0,j,i)) &
-                 > (am1*H_c_neu(j,i)) ) &
+              ( n_cts_new(j,i) == 0_i1b ).and. &
+              ( (temp_c_new(1,j,i)-temp_c_new(0,j,i)) &
+                 > (am1*H_c_new(j,i)) ) &
             ) then
 
-            n_cts_neu(j,i) = 1_i1b
-            zm_neu(j,i)  = zb(j,i)+0.001_dp
-            H_c_neu(j,i) = H_c(j,i)-0.001_dp
-            H_t_neu(j,i) = H_t(j,i)+0.001_dp
+            n_cts_new(j,i) = 1_i1b
+            zm_new(j,i)  = zb(j,i)+0.001_dp
+            H_c_new(j,i) = H_c(j,i)-0.001_dp
+            H_t_new(j,i) = H_t(j,i)+0.001_dp
 !                 ! CTS preliminarily positioned 1 mm above ice base --------
 
             call calc_temp3(at1, at2_1, at2_2, at3_1, at3_2, &
@@ -256,10 +256,10 @@ do j=1, JMAX-1   ! skipping domain margins
 
       else if (n_cts(j,i) == 0_i1b) then
 
-         n_cts_neu(j,i) = n_cts(j,i)
-         zm_neu(j,i)  = zb(j,i)
-         H_c_neu(j,i) = H_c(j,i)
-         H_t_neu(j,i) = H_t(j,i)
+         n_cts_new(j,i) = n_cts(j,i)
+         zm_new(j,i)  = zb(j,i)
+         H_c_new(j,i) = H_c(j,i)
+         H_t_new(j,i) = H_t(j,i)
 
          call calc_temp2(at1, at2_1, at2_2, at3_1, at3_2, &
               at4_1, at4_2, at5, at6, at7, atr1, alb1, &
@@ -268,18 +268,18 @@ do j=1, JMAX-1   ! skipping domain margins
 
 !    ---- Check whether temperate base becomes cold
 
-         if ( (temp_c_neu(1,j,i)-temp_c_neu(0,j,i)) <  (am1*H_c(j,i)) ) then
+         if ( (temp_c_new(1,j,i)-temp_c_new(0,j,i)) <  (am1*H_c(j,i)) ) then
 
-            n_cts_neu(j,i) = -1_i1b
+            n_cts_new(j,i) = -1_i1b
 
             call calc_temp1(at1, at2_1, at2_2, at3_1, at3_2, &
                  at4_1, at4_2, at5, at6, at7, atr1, acb1, acb2, &
                  acb3, acb4, alb1, ai1, ai2, &
                  dtime_temp, dtt_2dxi, dtt_2deta, i, j)
 
-            if (temp_c_neu(0,j,i) >= temp_c_m(0,j,i)) then
+            if (temp_c_new(0,j,i) >= temp_c_m(0,j,i)) then
 
-               n_cts_neu(j,i) = 0_i1b
+               n_cts_new(j,i) = 0_i1b
 
                call calc_temp2(at1, at2_1, at2_2, at3_1, at3_2, &
                     at4_1, at4_2, at5, at6, at7, atr1, alb1, &
@@ -293,15 +293,15 @@ do j=1, JMAX-1   ! skipping domain margins
 !    ---- Check whether temperate layer has formed
 
          if ( &
-              ( n_cts_neu(j,i) == 0_i1b ).and. &
-              ( (temp_c_neu(1,j,i)-temp_c_neu(0,j,i)) &
-                 > (am1*H_c_neu(j,i)) ) &
+              ( n_cts_new(j,i) == 0_i1b ).and. &
+              ( (temp_c_new(1,j,i)-temp_c_new(0,j,i)) &
+                 > (am1*H_c_new(j,i)) ) &
             ) then
 
-            n_cts_neu(j,i) = 1_i1b
-            zm_neu(j,i)  = zb(j,i)+0.001_dp
-            H_c_neu(j,i) = H_c(j,i)-0.001_dp
-            H_t_neu(j,i) = H_t(j,i)+0.001_dp
+            n_cts_new(j,i) = 1_i1b
+            zm_new(j,i)  = zb(j,i)+0.001_dp
+            H_c_new(j,i) = H_c(j,i)-0.001_dp
+            H_t_new(j,i) = H_t(j,i)+0.001_dp
 !                 ! CTS preliminarily positioned 1 mm above ice base --------
 
             call calc_temp3(at1, at2_1, at2_2, at3_1, at3_2, &
@@ -324,10 +324,10 @@ do j=1, JMAX-1   ! skipping domain margins
 
       else   ! n_cts(j,i) == 1_i1b
 
-         n_cts_neu(j,i) = n_cts(j,i)
-         zm_neu(j,i)  = zm(j,i)
-         H_c_neu(j,i) = H_c(j,i)
-         H_t_neu(j,i) = H_t(j,i)
+         n_cts_new(j,i) = n_cts(j,i)
+         zm_new(j,i)  = zm(j,i)
+         H_c_new(j,i) = H_c(j,i)
+         H_t_new(j,i) = H_t(j,i)
 
          call calc_temp3(at1, at2_1, at2_2, at3_1, at3_2, &
                  at4_1, at4_2, at5, at6, at7, atr1, &
@@ -336,7 +336,7 @@ do j=1, JMAX-1   ! skipping domain margins
                  ai1, ai2, ai3, dzeta_t, &
                  dtime_temp, dtt_2dxi, dtt_2deta, i, j)
 
-         if ( (temp_c_neu(0,j,i)-(-BETA*H_c_neu(j,i))) > 0.0_dp ) &
+         if ( (temp_c_new(0,j,i)-(-BETA*H_c_new(j,i))) > 0.0_dp ) &
          then
             call shift_cts_upward(at1, at2_1, at2_2, at3_1, at3_2, &
               at4_1, at4_2, at5, at6, at7, atr1, am1, am2, alb1, &
@@ -357,12 +357,12 @@ do j=1, JMAX-1   ! skipping domain margins
 
 #if (MARGIN==3)
 
-   else if (maske(j,i)==3_i1b) then   ! floating ice
+   else if (mask(j,i)==3_i1b) then   ! floating ice
 
-      n_cts_neu(j,i) = -1_i1b
-      zm_neu(j,i)  = zb(j,i)
-      H_c_neu(j,i) = H_c(j,i) + H_t(j,i)
-      H_t_neu(j,i) = 0.0_dp
+      n_cts_new(j,i) = -1_i1b
+      zm_new(j,i)  = zb(j,i)
+      H_c_new(j,i) = H_c(j,i) + H_t(j,i)
+      H_t_new(j,i) = 0.0_dp
 
       call calc_temp_ssa(at1, at2_1, at2_2, at3_1, at3_2, &
            at4_1, at4_2, at5, at6, at7, atr1, alb1, &
@@ -373,18 +373,18 @@ do j=1, JMAX-1   ! skipping domain margins
 !         (should not occur, but just in case)
 
       do kc=0, KCMAX
-         if (temp_c_neu(kc,j,i) > temp_c_m(kc,j,i)) &
-                    temp_c_neu(kc,j,i) = temp_c_m(kc,j,i)
+         if (temp_c_new(kc,j,i) > temp_c_m(kc,j,i)) &
+                    temp_c_new(kc,j,i) = temp_c_m(kc,j,i)
       end do
 
 #endif
 
-   else   ! maske(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+   else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
 
-      n_cts_neu(j,i) = -1_i1b
-      zm_neu(j,i)  = zb(j,i)
-      H_c_neu(j,i) = H_c(j,i)
-      H_t_neu(j,i) = H_t(j,i)
+      n_cts_new(j,i) = -1_i1b
+      zm_new(j,i)  = zb(j,i)
+      H_c_new(j,i) = H_c(j,i)
+      H_t_new(j,i) = H_t(j,i)
 
       call calc_temp_r(atr1, alb1, i, j)
 
@@ -400,36 +400,36 @@ end do   ! End of computation loop
 i=0
 j=0
 
-if ( (maske(j,i) == 0_i1b).or.(maske(j,i) == 3_i1b) ) then
+if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
                               ! glaciated land or floating ice
    ii=i+1
    jj=j+1
 
    do kc=0,KCMAX
-      temp_c_neu(kc,j,i) = temp_c_neu(kc,jj,ii)   ! set cold-ice temperature
-      age_c_neu(kc,j,i)  = age_c_neu(kc,jj,ii)    ! set cold-ice age
+      temp_c_new(kc,j,i) = temp_c_new(kc,jj,ii)   ! set cold-ice temperature
+      age_c_new(kc,j,i)  = age_c_new(kc,jj,ii)    ! set cold-ice age
    end do
 
    do kt=0,KTMAX
-      omega_t_neu(kt,j,i) = omega_t_neu(kt,jj,ii) ! set temp.-ice water content
-      age_t_neu(kt,j,i)   = age_t_neu(kt,jj,ii)   ! set temp.-ice age
+      omega_t_new(kt,j,i) = omega_t_new(kt,jj,ii) ! set temp.-ice water content
+      age_t_new(kt,j,i)   = age_t_new(kt,jj,ii)   ! set temp.-ice age
    end do
 
    do kr=0,KRMAX
-      temp_r_neu(kr,j,i) = temp_r_neu(kr,jj,ii)   ! set bedrock temperature
+      temp_r_new(kr,j,i) = temp_r_new(kr,jj,ii)   ! set bedrock temperature
    end do
 
-   n_cts_neu(j,i) = min(n_cts_neu(jj,ii),0_i1b)   ! temperate layer excluded
-   H_c_neu(j,i)   = H_c(j,i)
-   H_t_neu(j,i)   = H_t(j,i)
-   zm_neu(j,i)  = zb(j,i)
+   n_cts_new(j,i) = min(n_cts_new(jj,ii),0_i1b)   ! temperate layer excluded
+   H_c_new(j,i)   = H_c(j,i)
+   H_t_new(j,i)   = H_t(j,i)
+   zm_new(j,i)  = zb(j,i)
 
-else   ! maske(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
 
-   n_cts_neu(j,i) = -1_i1b
-   zm_neu(j,i)    = zb(j,i)
-   H_c_neu(j,i)   = H_c(j,i)
-   H_t_neu(j,i)   = H_t(j,i)
+   n_cts_new(j,i) = -1_i1b
+   zm_new(j,i)    = zb(j,i)
+   H_c_new(j,i)   = H_c(j,i)
+   H_t_new(j,i)   = H_t(j,i)
 
    call calc_temp_r(atr1, alb1, i, j)
 
@@ -440,36 +440,36 @@ end if
 i=IMAX
 j=0
 
-if ( (maske(j,i) == 0_i1b).or.(maske(j,i) == 3_i1b) ) then
+if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
                               ! glaciated land or floating ice
    ii=i-1
    jj=j+1
 
    do kc=0,KCMAX
-      temp_c_neu(kc,j,i) = temp_c_neu(kc,jj,ii)   ! set cold-ice temperature
-      age_c_neu(kc,j,i)  = age_c_neu(kc,jj,ii)    ! set cold-ice age
+      temp_c_new(kc,j,i) = temp_c_new(kc,jj,ii)   ! set cold-ice temperature
+      age_c_new(kc,j,i)  = age_c_new(kc,jj,ii)    ! set cold-ice age
    end do
 
    do kt=0,KTMAX
-      omega_t_neu(kt,j,i) = omega_t_neu(kt,jj,ii) ! set temp.-ice water content
-      age_t_neu(kt,j,i)   = age_t_neu(kt,jj,ii)   ! set temp.-ice age
+      omega_t_new(kt,j,i) = omega_t_new(kt,jj,ii) ! set temp.-ice water content
+      age_t_new(kt,j,i)   = age_t_new(kt,jj,ii)   ! set temp.-ice age
    end do
 
    do kr=0,KRMAX
-      temp_r_neu(kr,j,i) = temp_r_neu(kr,jj,ii)   ! set bedrock temperature
+      temp_r_new(kr,j,i) = temp_r_new(kr,jj,ii)   ! set bedrock temperature
    end do
 
-   n_cts_neu(j,i) = min(n_cts_neu(jj,ii),0_i1b)   ! temperate layer excluded
-   H_c_neu(j,i)   = H_c(j,i)
-   H_t_neu(j,i)   = H_t(j,i)
-   zm_neu(j,i)  = zb(j,i)
+   n_cts_new(j,i) = min(n_cts_new(jj,ii),0_i1b)   ! temperate layer excluded
+   H_c_new(j,i)   = H_c(j,i)
+   H_t_new(j,i)   = H_t(j,i)
+   zm_new(j,i)  = zb(j,i)
 
-else   ! maske(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
 
-   n_cts_neu(j,i) = -1_i1b
-   zm_neu(j,i)    = zb(j,i)
-   H_c_neu(j,i)   = H_c(j,i)
-   H_t_neu(j,i)   = H_t(j,i)
+   n_cts_new(j,i) = -1_i1b
+   zm_new(j,i)    = zb(j,i)
+   H_c_new(j,i)   = H_c(j,i)
+   H_t_new(j,i)   = H_t(j,i)
 
    call calc_temp_r(atr1, alb1, i, j)
 
@@ -480,36 +480,36 @@ end if
 i=0
 j=JMAX
 
-if ( (maske(j,i) == 0_i1b).or.(maske(j,i) == 3_i1b) ) then
+if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
                               ! glaciated land or floating ice
    ii=i+1
    jj=j-1
 
    do kc=0,KCMAX
-      temp_c_neu(kc,j,i) = temp_c_neu(kc,jj,ii)   ! set cold-ice temperature
-      age_c_neu(kc,j,i)  = age_c_neu(kc,jj,ii)    ! set cold-ice age
+      temp_c_new(kc,j,i) = temp_c_new(kc,jj,ii)   ! set cold-ice temperature
+      age_c_new(kc,j,i)  = age_c_new(kc,jj,ii)    ! set cold-ice age
    end do
 
    do kt=0,KTMAX
-      omega_t_neu(kt,j,i) = omega_t_neu(kt,jj,ii) ! set temp.-ice water content
-      age_t_neu(kt,j,i)   = age_t_neu(kt,jj,ii)   ! set temp.-ice age
+      omega_t_new(kt,j,i) = omega_t_new(kt,jj,ii) ! set temp.-ice water content
+      age_t_new(kt,j,i)   = age_t_new(kt,jj,ii)   ! set temp.-ice age
    end do
 
    do kr=0,KRMAX
-      temp_r_neu(kr,j,i) = temp_r_neu(kr,jj,ii)   ! set bedrock temperature
+      temp_r_new(kr,j,i) = temp_r_new(kr,jj,ii)   ! set bedrock temperature
    end do
 
-   n_cts_neu(j,i) = min(n_cts_neu(jj,ii),0_i1b)   ! temperate layer excluded
-   H_c_neu(j,i)   = H_c(j,i)
-   H_t_neu(j,i)   = H_t(j,i)
-   zm_neu(j,i)  = zb(j,i)
+   n_cts_new(j,i) = min(n_cts_new(jj,ii),0_i1b)   ! temperate layer excluded
+   H_c_new(j,i)   = H_c(j,i)
+   H_t_new(j,i)   = H_t(j,i)
+   zm_new(j,i)  = zb(j,i)
 
-else   ! maske(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
 
-   n_cts_neu(j,i) = -1_i1b
-   zm_neu(j,i)    = zb(j,i)
-   H_c_neu(j,i)   = H_c(j,i)
-   H_t_neu(j,i)   = H_t(j,i)
+   n_cts_new(j,i) = -1_i1b
+   zm_new(j,i)    = zb(j,i)
+   H_c_new(j,i)   = H_c(j,i)
+   H_t_new(j,i)   = H_t(j,i)
 
    call calc_temp_r(atr1, alb1, i, j)
 
@@ -520,36 +520,36 @@ end if
 i=IMAX
 j=JMAX
 
-if ( (maske(j,i) == 0_i1b).or.(maske(j,i) == 3_i1b) ) then
+if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
                               ! glaciated land or floating ice
    ii=i-1
    jj=j-1
 
    do kc=0,KCMAX
-      temp_c_neu(kc,j,i) = temp_c_neu(kc,jj,ii)   ! set cold-ice temperature
-      age_c_neu(kc,j,i)  = age_c_neu(kc,jj,ii)    ! set cold-ice age
+      temp_c_new(kc,j,i) = temp_c_new(kc,jj,ii)   ! set cold-ice temperature
+      age_c_new(kc,j,i)  = age_c_new(kc,jj,ii)    ! set cold-ice age
    end do
 
    do kt=0,KTMAX
-      omega_t_neu(kt,j,i) = omega_t_neu(kt,jj,ii) ! set temp.-ice water content
-      age_t_neu(kt,j,i)   = age_t_neu(kt,jj,ii)   ! set temp.-ice age
+      omega_t_new(kt,j,i) = omega_t_new(kt,jj,ii) ! set temp.-ice water content
+      age_t_new(kt,j,i)   = age_t_new(kt,jj,ii)   ! set temp.-ice age
    end do
 
    do kr=0,KRMAX
-      temp_r_neu(kr,j,i) = temp_r_neu(kr,jj,ii)   ! set bedrock temperature
+      temp_r_new(kr,j,i) = temp_r_new(kr,jj,ii)   ! set bedrock temperature
    end do
 
-   n_cts_neu(j,i) = min(n_cts_neu(jj,ii),0_i1b)   ! temperate layer excluded
-   H_c_neu(j,i)   = H_c(j,i)
-   H_t_neu(j,i)   = H_t(j,i)
-   zm_neu(j,i)  = zb(j,i)
+   n_cts_new(j,i) = min(n_cts_new(jj,ii),0_i1b)   ! temperate layer excluded
+   H_c_new(j,i)   = H_c(j,i)
+   H_t_new(j,i)   = H_t(j,i)
+   zm_new(j,i)  = zb(j,i)
 
-else   ! maske(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
 
-   n_cts_neu(j,i) = -1_i1b
-   zm_neu(j,i)    = zb(j,i)
-   H_c_neu(j,i)   = H_c(j,i)
-   H_t_neu(j,i)   = H_t(j,i)
+   n_cts_new(j,i) = -1_i1b
+   zm_new(j,i)    = zb(j,i)
+   H_c_new(j,i)   = H_c(j,i)
+   H_t_new(j,i)   = H_t(j,i)
 
    call calc_temp_r(atr1, alb1, i, j)
 
@@ -563,36 +563,36 @@ do i=1, IMAX-1
 
    j=0
 
-   if ( (maske(j,i) == 0_i1b).or.(maske(j,i) == 3_i1b) ) then
+   if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
                                  ! glaciated land or floating ice
       ii=i
       jj=j+1
 
       do kc=0,KCMAX
-         temp_c_neu(kc,j,i) = temp_c_neu(kc,jj,ii)   ! set cold-ice temperature
-         age_c_neu(kc,j,i)  = age_c_neu(kc,jj,ii)    ! set cold-ice age
+         temp_c_new(kc,j,i) = temp_c_new(kc,jj,ii)   ! set cold-ice temperature
+         age_c_new(kc,j,i)  = age_c_new(kc,jj,ii)    ! set cold-ice age
       end do
 
       do kt=0,KTMAX
-         omega_t_neu(kt,j,i) = omega_t_neu(kt,jj,ii) ! set temp.-ice water content
-         age_t_neu(kt,j,i)   = age_t_neu(kt,jj,ii)   ! set temp.-ice age
+         omega_t_new(kt,j,i) = omega_t_new(kt,jj,ii) ! set temp.-ice water content
+         age_t_new(kt,j,i)   = age_t_new(kt,jj,ii)   ! set temp.-ice age
       end do
 
       do kr=0,KRMAX
-         temp_r_neu(kr,j,i) = temp_r_neu(kr,jj,ii)   ! set bedrock temperature
+         temp_r_new(kr,j,i) = temp_r_new(kr,jj,ii)   ! set bedrock temperature
       end do
 
-      n_cts_neu(j,i) = min(n_cts_neu(jj,ii),0_i1b)   ! temperate layer excluded
-      H_c_neu(j,i)   = H_c(j,i)
-      H_t_neu(j,i)   = H_t(j,i)
-      zm_neu(j,i)  = zb(j,i)
+      n_cts_new(j,i) = min(n_cts_new(jj,ii),0_i1b)   ! temperate layer excluded
+      H_c_new(j,i)   = H_c(j,i)
+      H_t_new(j,i)   = H_t(j,i)
+      zm_new(j,i)  = zb(j,i)
 
-   else   ! maske(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+   else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
 
-      n_cts_neu(j,i) = -1_i1b
-      zm_neu(j,i)    = zb(j,i)
-      H_c_neu(j,i)   = H_c(j,i)
-      H_t_neu(j,i)   = H_t(j,i)
+      n_cts_new(j,i) = -1_i1b
+      zm_new(j,i)    = zb(j,i)
+      H_c_new(j,i)   = H_c(j,i)
+      H_t_new(j,i)   = H_t(j,i)
 
       call calc_temp_r(atr1, alb1, i, j)
 
@@ -602,36 +602,36 @@ do i=1, IMAX-1
 
    j=JMAX
 
-   if ( (maske(j,i) == 0_i1b).or.(maske(j,i) == 3_i1b) ) then
+   if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
                                  ! glaciated land or floating ice
       ii=i
       jj=j-1
 
       do kc=0,KCMAX
-         temp_c_neu(kc,j,i) = temp_c_neu(kc,jj,ii)   ! set cold-ice temperature
-         age_c_neu(kc,j,i)  = age_c_neu(kc,jj,ii)    ! set cold-ice age
+         temp_c_new(kc,j,i) = temp_c_new(kc,jj,ii)   ! set cold-ice temperature
+         age_c_new(kc,j,i)  = age_c_new(kc,jj,ii)    ! set cold-ice age
       end do
 
       do kt=0,KTMAX
-         omega_t_neu(kt,j,i) = omega_t_neu(kt,jj,ii) ! set temp.-ice water content
-         age_t_neu(kt,j,i)   = age_t_neu(kt,jj,ii)   ! set temp.-ice age
+         omega_t_new(kt,j,i) = omega_t_new(kt,jj,ii) ! set temp.-ice water content
+         age_t_new(kt,j,i)   = age_t_new(kt,jj,ii)   ! set temp.-ice age
       end do
 
       do kr=0,KRMAX
-         temp_r_neu(kr,j,i) = temp_r_neu(kr,jj,ii)   ! set bedrock temperature
+         temp_r_new(kr,j,i) = temp_r_new(kr,jj,ii)   ! set bedrock temperature
       end do
 
-      n_cts_neu(j,i) = min(n_cts_neu(jj,ii),0_i1b)   ! temperate layer excluded
-      H_c_neu(j,i)   = H_c(j,i)
-      H_t_neu(j,i)   = H_t(j,i)
-      zm_neu(j,i)  = zb(j,i)
+      n_cts_new(j,i) = min(n_cts_new(jj,ii),0_i1b)   ! temperate layer excluded
+      H_c_new(j,i)   = H_c(j,i)
+      H_t_new(j,i)   = H_t(j,i)
+      zm_new(j,i)  = zb(j,i)
 
-   else   ! maske(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+   else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
 
-      n_cts_neu(j,i) = -1_i1b
-      zm_neu(j,i)    = zb(j,i)
-      H_c_neu(j,i)   = H_c(j,i)
-      H_t_neu(j,i)   = H_t(j,i)
+      n_cts_new(j,i) = -1_i1b
+      zm_new(j,i)    = zb(j,i)
+      H_c_new(j,i)   = H_c(j,i)
+      H_t_new(j,i)   = H_t(j,i)
 
       call calc_temp_r(atr1, alb1, i, j)
 
@@ -647,36 +647,36 @@ do j=1, JMAX-1
 
    i=0
 
-   if ( (maske(j,i) == 0_i1b).or.(maske(j,i) == 3_i1b) ) then
+   if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
                                  ! glaciated land or floating ice
       ii=i+1
       jj=j
 
       do kc=0,KCMAX
-         temp_c_neu(kc,j,i) = temp_c_neu(kc,jj,ii)   ! set cold-ice temperature
-         age_c_neu(kc,j,i)  = age_c_neu(kc,jj,ii)    ! set cold-ice age
+         temp_c_new(kc,j,i) = temp_c_new(kc,jj,ii)   ! set cold-ice temperature
+         age_c_new(kc,j,i)  = age_c_new(kc,jj,ii)    ! set cold-ice age
       end do
 
       do kt=0,KTMAX
-         omega_t_neu(kt,j,i) = omega_t_neu(kt,jj,ii) ! set temp.-ice water content
-         age_t_neu(kt,j,i)   = age_t_neu(kt,jj,ii)   ! set temp.-ice age
+         omega_t_new(kt,j,i) = omega_t_new(kt,jj,ii) ! set temp.-ice water content
+         age_t_new(kt,j,i)   = age_t_new(kt,jj,ii)   ! set temp.-ice age
       end do
 
       do kr=0,KRMAX
-         temp_r_neu(kr,j,i) = temp_r_neu(kr,jj,ii)   ! set bedrock temperature
+         temp_r_new(kr,j,i) = temp_r_new(kr,jj,ii)   ! set bedrock temperature
       end do
 
-      n_cts_neu(j,i) = min(n_cts_neu(jj,ii),0_i1b)   ! temperate layer excluded
-      H_c_neu(j,i)   = H_c(j,i)
-      H_t_neu(j,i)   = H_t(j,i)
-      zm_neu(j,i)  = zb(j,i)
+      n_cts_new(j,i) = min(n_cts_new(jj,ii),0_i1b)   ! temperate layer excluded
+      H_c_new(j,i)   = H_c(j,i)
+      H_t_new(j,i)   = H_t(j,i)
+      zm_new(j,i)  = zb(j,i)
 
-   else   ! maske(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+   else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
 
-      n_cts_neu(j,i) = -1_i1b
-      zm_neu(j,i)    = zb(j,i)
-      H_c_neu(j,i)   = H_c(j,i)
-      H_t_neu(j,i)   = H_t(j,i)
+      n_cts_new(j,i) = -1_i1b
+      zm_new(j,i)    = zb(j,i)
+      H_c_new(j,i)   = H_c(j,i)
+      H_t_new(j,i)   = H_t(j,i)
 
       call calc_temp_r(atr1, alb1, i, j)
 
@@ -686,36 +686,36 @@ do j=1, JMAX-1
 
    i=IMAX
 
-   if ( (maske(j,i) == 0_i1b).or.(maske(j,i) == 3_i1b) ) then
+   if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
                                  ! glaciated land or floating ice
       ii=i-1
       jj=j
 
       do kc=0,KCMAX
-         temp_c_neu(kc,j,i) = temp_c_neu(kc,jj,ii)   ! set cold-ice temperature
-         age_c_neu(kc,j,i)  = age_c_neu(kc,jj,ii)    ! set cold-ice age
+         temp_c_new(kc,j,i) = temp_c_new(kc,jj,ii)   ! set cold-ice temperature
+         age_c_new(kc,j,i)  = age_c_new(kc,jj,ii)    ! set cold-ice age
       end do
 
       do kt=0,KTMAX
-         omega_t_neu(kt,j,i) = omega_t_neu(kt,jj,ii) ! set temp.-ice water content
-         age_t_neu(kt,j,i)   = age_t_neu(kt,jj,ii)   ! set temp.-ice age
+         omega_t_new(kt,j,i) = omega_t_new(kt,jj,ii) ! set temp.-ice water content
+         age_t_new(kt,j,i)   = age_t_new(kt,jj,ii)   ! set temp.-ice age
       end do
 
       do kr=0,KRMAX
-         temp_r_neu(kr,j,i) = temp_r_neu(kr,jj,ii)   ! set bedrock temperature
+         temp_r_new(kr,j,i) = temp_r_new(kr,jj,ii)   ! set bedrock temperature
       end do
 
-      n_cts_neu(j,i) = min(n_cts_neu(jj,ii),0_i1b)   ! temperate layer excluded
-      H_c_neu(j,i)   = H_c(j,i)
-      H_t_neu(j,i)   = H_t(j,i)
-      zm_neu(j,i)  = zb(j,i)
+      n_cts_new(j,i) = min(n_cts_new(jj,ii),0_i1b)   ! temperate layer excluded
+      H_c_new(j,i)   = H_c(j,i)
+      H_t_new(j,i)   = H_t(j,i)
+      zm_new(j,i)  = zb(j,i)
 
-   else   ! maske(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+   else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
 
-      n_cts_neu(j,i) = -1_i1b
-      zm_neu(j,i)    = zb(j,i)
-      H_c_neu(j,i)   = H_c(j,i)
-      H_t_neu(j,i)   = H_t(j,i)
+      n_cts_new(j,i) = -1_i1b
+      zm_new(j,i)    = zb(j,i)
+      H_c_new(j,i)   = H_c(j,i)
+      H_t_new(j,i)   = H_t(j,i)
 
       call calc_temp_r(atr1, alb1, i, j)
 
@@ -723,20 +723,20 @@ do j=1, JMAX-1
 
 end do
 
-!-------- Dummy values for omega_c_neu and kc_cts_neu --------
+!-------- Dummy values for omega_c_new and kc_cts_new --------
 
-omega_c_neu = 0.0_dp   ! not needed for
-kc_cts_neu  = 0        ! the polythermal mode
+omega_c_new = 0.0_dp   ! not needed for
+kc_cts_new  = 0        ! the polythermal mode
 
-!-------- Smoothing of H_t_neu with numerical diffusion --------
+!-------- Smoothing of H_t_new with numerical diffusion --------
 
 !  ------ Volume of temperate ice without smoothing
 
 Vol_t = 0.0_dp
 do i=0, IMAX   ! extended to domain margins (22.1.02 -> V1.1)
 do j=0, JMAX   ! extended to domain margins (22.1.02 -> V1.1)
-   if (n_cts_neu(j,i) == 1_i1b) then
-      Vol_t = Vol_t + H_t_neu(j,i)*area(j,i)
+   if (n_cts_new(j,i) == 1_i1b) then
+      Vol_t = Vol_t + H_t_new(j,i)*area(j,i)
    end if
 end do
 end do
@@ -745,12 +745,12 @@ end do
 
 do i=1, IMAX-1
 do j=1, JMAX-1
-   if (n_cts_neu(j,i) /= -1_i1b) then
+   if (n_cts_new(j,i) /= -1_i1b) then
 
-      dH_t_smooth(j,i) = NUMDIFF_H_T* ( -4.0_dp*H_t_neu(j,i) &
-                             +(H_t_neu(j,i+1)+H_t_neu(j,i-1)) &
-                             +(H_t_neu(j+1,i)+H_t_neu(j-1,i)) )
-      if (dH_t_smooth(j,i) > 0.001_dp) n_cts_neu(j,i) = 1_i1b
+      dH_t_smooth(j,i) = NUMDIFF_H_T* ( -4.0_dp*H_t_new(j,i) &
+                             +(H_t_new(j,i+1)+H_t_new(j,i-1)) &
+                             +(H_t_new(j+1,i)+H_t_new(j-1,i)) )
+      if (dH_t_smooth(j,i) > 0.001_dp) n_cts_new(j,i) = 1_i1b
 
    end if
 end do
@@ -758,8 +758,8 @@ end do
 
 do i=1, IMAX-1
 do j=1, JMAX-1
-   if (n_cts_neu(j,i) == 1_i1b) then
-      H_t_neu(j,i) = H_t_neu(j,i) + dH_t_smooth(j,i)
+   if (n_cts_new(j,i) == 1_i1b) then
+      H_t_new(j,i) = H_t_new(j,i) + dH_t_smooth(j,i)
    end if
 end do
 end do
@@ -769,8 +769,8 @@ end do
 Vol_t_smooth = 0.0_dp
 do i=0, IMAX   ! extended to domain margins (22.1.02 -> V1.1)
 do j=0, JMAX   ! extended to domain margins (22.1.02 -> V1.1)
-   if (n_cts_neu(j,i) == 1_i1b) then
-      Vol_t_smooth = Vol_t_smooth + H_t_neu(j,i)*area(j,i)
+   if (n_cts_new(j,i) == 1_i1b) then
+      Vol_t_smooth = Vol_t_smooth + H_t_new(j,i)*area(j,i)
    end if
 end do
 end do
@@ -782,31 +782,31 @@ if (Vol_t_smooth > 0.0_dp) then
    korrfakt_t = Vol_t/Vol_t_smooth
    do i=0, IMAX   ! extended to domain margins (22.1.02 -> V1.1)
    do j=0, JMAX   ! extended to domain margins (22.1.02 -> V1.1)
-      if (n_cts_neu(j,i) == 1_i1b) then
-         H_t_neu(j,i) = H_t_neu(j,i)*korrfakt_t
-!               zm_neu(j,i)  = zb(j,i) + H_t_neu(j,i)
-!               H_c_neu(j,i) = zs(j,i) - zm_neu(j,i)
+      if (n_cts_new(j,i) == 1_i1b) then
+         H_t_new(j,i) = H_t_new(j,i)*korrfakt_t
+!               zm_new(j,i)  = zb(j,i) + H_t_new(j,i)
+!               H_c_new(j,i) = zs(j,i) - zm_new(j,i)
       end if
    end do
    end do
 
 end if
 
-!-------- Numerical time lag for evolution of H_t_neu --------
+!-------- Numerical time lag for evolution of H_t_new --------
 
 time_lag_cts = TAU_CTS*year2sec   ! yr --> s
 
 do i=0, IMAX   ! extended to domain margins (22.1.02 -> V1.1)
 do j=0, JMAX   ! extended to domain margins (22.1.02 -> V1.1)
 
-   if (n_cts_neu(j,i) == 1_i1b) then
+   if (n_cts_new(j,i) == 1_i1b) then
 
-      H_t_neu(j,i) = ( time_lag_cts*H_t(j,i) &
-                       + dtime_temp*H_t_neu(j,i) ) &
+      H_t_new(j,i) = ( time_lag_cts*H_t(j,i) &
+                       + dtime_temp*H_t_new(j,i) ) &
                      /(time_lag_cts+dtime_temp)
 
-      zm_neu(j,i)  = zb(j,i) + H_t_neu(j,i)
-      H_c_neu(j,i) = zs(j,i) - zm_neu(j,i)
+      zm_new(j,i)  = zb(j,i) + H_t_new(j,i)
+      H_c_new(j,i) = zs(j,i) - zm_new(j,i)
 
    end if
 
@@ -955,12 +955,12 @@ end do
 do i=1, IMAX-1   ! skipping domain margins
 do j=1, JMAX-1   ! skipping domain margins
 
-   if (maske(j,i)==0_i1b) then   ! glaciated land
+   if (mask(j,i)==0_i1b) then   ! glaciated land
 
-      n_cts_neu(j,i) = -1_i1b
-      zm_neu(j,i)  = zb(j,i)
-      H_c_neu(j,i) = H_c(j,i)
-      H_t_neu(j,i) = H_t(j,i)
+      n_cts_new(j,i) = -1_i1b
+      zm_new(j,i)  = zb(j,i)
+      H_c_new(j,i) = H_c(j,i)
+      H_t_new(j,i) = H_t(j,i)
 
       call calc_temp1(at1, at2_1, at2_2, at3_1, at3_2, &
            at4_1, at4_2, at5, at6, at7, atr1, acb1, acb2, &
@@ -970,31 +970,31 @@ do j=1, JMAX-1   ! skipping domain margins
 !  ------ Reset temperatures above melting to the melting point,
 !         look for the CTS
 
-      kc_cts_neu(j,i) = 0
+      kc_cts_new(j,i) = 0
 
-      if (temp_c_neu(0,j,i) > temp_c_m(0,j,i)) then
-         n_cts_neu(j,i)        = 0_i1b
-         kc_cts_neu(j,i)       = 0
-         temp_c_neu(0,j,i)     = temp_c_m(0,j,i)
-         temp_r_neu(KRMAX,j,i) = temp_c_m(0,j,i)
+      if (temp_c_new(0,j,i) > temp_c_m(0,j,i)) then
+         n_cts_new(j,i)        = 0_i1b
+         kc_cts_new(j,i)       = 0
+         temp_c_new(0,j,i)     = temp_c_m(0,j,i)
+         temp_r_new(KRMAX,j,i) = temp_c_m(0,j,i)
       end if
 
       do kc=1, KCMAX
-         if (temp_c_neu(kc,j,i) > temp_c_m(kc,j,i)) then
-            kc_cts_neu(j,i)    = kc
-            temp_c_neu(kc,j,i) = temp_c_m(kc,j,i)
+         if (temp_c_new(kc,j,i) > temp_c_m(kc,j,i)) then
+            kc_cts_new(j,i)    = kc
+            temp_c_new(kc,j,i) = temp_c_m(kc,j,i)
          end if
       end do
 
 #if (MARGIN==3)
 
-   else if (maske(j,i)==3_i1b) then   ! floating ice
+   else if (mask(j,i)==3_i1b) then   ! floating ice
 
-      n_cts_neu(j,i)  = -1_i1b
-      kc_cts_neu(j,i) =  0
-      zm_neu(j,i)     = zb(j,i)
-      H_c_neu(j,i)    = H_c(j,i)
-      H_t_neu(j,i)    = 0.0_dp
+      n_cts_new(j,i)  = -1_i1b
+      kc_cts_new(j,i) =  0
+      zm_new(j,i)     = zb(j,i)
+      H_c_new(j,i)    = H_c(j,i)
+      H_t_new(j,i)    = 0.0_dp
 
       call calc_temp_ssa(at1, at2_1, at2_2, at3_1, at3_2, &
            at4_1, at4_2, at5, at6, at7, atr1, alb1, &
@@ -1005,19 +1005,19 @@ do j=1, JMAX-1   ! skipping domain margins
 !         (should not occur, but just in case)
 
       do kc=0, KCMAX
-         if (temp_c_neu(kc,j,i) > temp_c_m(kc,j,i)) &
-                    temp_c_neu(kc,j,i) = temp_c_m(kc,j,i)
+         if (temp_c_new(kc,j,i) > temp_c_m(kc,j,i)) &
+                    temp_c_new(kc,j,i) = temp_c_m(kc,j,i)
       end do
 
 #endif
 
-   else   ! maske(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+   else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
 
-      n_cts_neu(j,i)  = -1_i1b
-      kc_cts_neu(j,i) =  0
-      zm_neu(j,i)     = zb(j,i)
-      H_c_neu(j,i)    = H_c(j,i)
-      H_t_neu(j,i)    = H_t(j,i)
+      n_cts_new(j,i)  = -1_i1b
+      kc_cts_new(j,i) =  0
+      zm_new(j,i)     = zb(j,i)
+      H_c_new(j,i)    = H_c(j,i)
+      H_t_new(j,i)    = H_t(j,i)
 
       call calc_temp_r(atr1, alb1, i, j)
 
@@ -1033,33 +1033,33 @@ end do
 i=0
 j=0
 
-if ( (maske(j,i) == 0_i1b).or.(maske(j,i) == 3_i1b) ) then
+if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
                               ! glaciated land or floating ice
    ii=i+1
    jj=j+1
 
    do kc=0,KCMAX
-      temp_c_neu(kc,j,i) = temp_c_neu(kc,jj,ii)   ! set cold-ice temperature
-      age_c_neu(kc,j,i)  = age_c_neu(kc,jj,ii)    ! set cold-ice age
+      temp_c_new(kc,j,i) = temp_c_new(kc,jj,ii)   ! set cold-ice temperature
+      age_c_new(kc,j,i)  = age_c_new(kc,jj,ii)    ! set cold-ice age
    end do
 
    do kr=0,KRMAX
-      temp_r_neu(kr,j,i) = temp_r_neu(kr,jj,ii)   ! set bedrock temperature
+      temp_r_new(kr,j,i) = temp_r_new(kr,jj,ii)   ! set bedrock temperature
    end do
 
-   n_cts_neu(j,i)  = n_cts_neu(jj,ii)
-   kc_cts_neu(j,i) = kc_cts_neu(jj,ii)
-   zm_neu(j,i)     = zb(j,i)
-   H_c_neu(j,i)    = H_c(j,i)
-   H_t_neu(j,i)    = H_t(j,i)
+   n_cts_new(j,i)  = n_cts_new(jj,ii)
+   kc_cts_new(j,i) = kc_cts_new(jj,ii)
+   zm_new(j,i)     = zb(j,i)
+   H_c_new(j,i)    = H_c(j,i)
+   H_t_new(j,i)    = H_t(j,i)
 
-else   ! maske(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
 
-   n_cts_neu(j,i)  = -1_i1b
-   kc_cts_neu(j,i) =  0
-   zm_neu(j,i)     = zb(j,i)
-   H_c_neu(j,i)    = H_c(j,i)
-   H_t_neu(j,i)    = H_t(j,i)
+   n_cts_new(j,i)  = -1_i1b
+   kc_cts_new(j,i) =  0
+   zm_new(j,i)     = zb(j,i)
+   H_c_new(j,i)    = H_c(j,i)
+   H_t_new(j,i)    = H_t(j,i)
 
    call calc_temp_r(atr1, alb1, i, j)
 
@@ -1070,33 +1070,33 @@ end if
 i=IMAX
 j=0
 
-if ( (maske(j,i) == 0_i1b).or.(maske(j,i) == 3_i1b) ) then
+if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
                               ! glaciated land or floating ice
    ii=i-1
    jj=j+1
 
    do kc=0,KCMAX
-      temp_c_neu(kc,j,i) = temp_c_neu(kc,jj,ii)   ! set cold-ice temperature
-      age_c_neu(kc,j,i)  = age_c_neu(kc,jj,ii)    ! set cold-ice age
+      temp_c_new(kc,j,i) = temp_c_new(kc,jj,ii)   ! set cold-ice temperature
+      age_c_new(kc,j,i)  = age_c_new(kc,jj,ii)    ! set cold-ice age
    end do
 
    do kr=0,KRMAX
-      temp_r_neu(kr,j,i) = temp_r_neu(kr,jj,ii)   ! set bedrock temperature
+      temp_r_new(kr,j,i) = temp_r_new(kr,jj,ii)   ! set bedrock temperature
    end do
 
-   n_cts_neu(j,i)  = n_cts_neu(jj,ii)
-   kc_cts_neu(j,i) = kc_cts_neu(jj,ii)
-   zm_neu(j,i)     = zb(j,i)
-   H_c_neu(j,i)    = H_c(j,i)
-   H_t_neu(j,i)    = H_t(j,i)
+   n_cts_new(j,i)  = n_cts_new(jj,ii)
+   kc_cts_new(j,i) = kc_cts_new(jj,ii)
+   zm_new(j,i)     = zb(j,i)
+   H_c_new(j,i)    = H_c(j,i)
+   H_t_new(j,i)    = H_t(j,i)
 
-else   ! maske(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
 
-   n_cts_neu(j,i)  = -1_i1b
-   kc_cts_neu(j,i) =  0
-   zm_neu(j,i)     = zb(j,i)
-   H_c_neu(j,i)    = H_c(j,i)
-   H_t_neu(j,i)    = H_t(j,i)
+   n_cts_new(j,i)  = -1_i1b
+   kc_cts_new(j,i) =  0
+   zm_new(j,i)     = zb(j,i)
+   H_c_new(j,i)    = H_c(j,i)
+   H_t_new(j,i)    = H_t(j,i)
 
    call calc_temp_r(atr1, alb1, i, j)
 
@@ -1107,33 +1107,33 @@ end if
 i=0
 j=JMAX
 
-if ( (maske(j,i) == 0_i1b).or.(maske(j,i) == 3_i1b) ) then
+if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
                               ! glaciated land or floating ice
    ii=i+1
    jj=j-1
 
    do kc=0,KCMAX
-      temp_c_neu(kc,j,i) = temp_c_neu(kc,jj,ii)   ! set cold-ice temperature
-      age_c_neu(kc,j,i)  = age_c_neu(kc,jj,ii)    ! set cold-ice age
+      temp_c_new(kc,j,i) = temp_c_new(kc,jj,ii)   ! set cold-ice temperature
+      age_c_new(kc,j,i)  = age_c_new(kc,jj,ii)    ! set cold-ice age
    end do
 
    do kr=0,KRMAX
-      temp_r_neu(kr,j,i) = temp_r_neu(kr,jj,ii)   ! set bedrock temperature
+      temp_r_new(kr,j,i) = temp_r_new(kr,jj,ii)   ! set bedrock temperature
    end do
 
-   n_cts_neu(j,i)  = n_cts_neu(jj,ii)
-   kc_cts_neu(j,i) = kc_cts_neu(jj,ii)
-   zm_neu(j,i)     = zb(j,i)
-   H_c_neu(j,i)    = H_c(j,i)
-   H_t_neu(j,i)    = H_t(j,i)
+   n_cts_new(j,i)  = n_cts_new(jj,ii)
+   kc_cts_new(j,i) = kc_cts_new(jj,ii)
+   zm_new(j,i)     = zb(j,i)
+   H_c_new(j,i)    = H_c(j,i)
+   H_t_new(j,i)    = H_t(j,i)
 
-else   ! maske(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
 
-   n_cts_neu(j,i)  = -1_i1b
-   kc_cts_neu(j,i) =  0
-   zm_neu(j,i)     = zb(j,i)
-   H_c_neu(j,i)    = H_c(j,i)
-   H_t_neu(j,i)    = H_t(j,i)
+   n_cts_new(j,i)  = -1_i1b
+   kc_cts_new(j,i) =  0
+   zm_new(j,i)     = zb(j,i)
+   H_c_new(j,i)    = H_c(j,i)
+   H_t_new(j,i)    = H_t(j,i)
 
    call calc_temp_r(atr1, alb1, i, j)
 
@@ -1144,33 +1144,33 @@ end if
 i=IMAX
 j=JMAX
 
-if ( (maske(j,i) == 0_i1b).or.(maske(j,i) == 3_i1b) ) then
+if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
                               ! glaciated land or floating ice
    ii=i-1
    jj=j-1
 
    do kc=0,KCMAX
-      temp_c_neu(kc,j,i) = temp_c_neu(kc,jj,ii)   ! set cold-ice temperature
-      age_c_neu(kc,j,i)  = age_c_neu(kc,jj,ii)    ! set cold-ice age
+      temp_c_new(kc,j,i) = temp_c_new(kc,jj,ii)   ! set cold-ice temperature
+      age_c_new(kc,j,i)  = age_c_new(kc,jj,ii)    ! set cold-ice age
    end do
 
    do kr=0,KRMAX
-      temp_r_neu(kr,j,i) = temp_r_neu(kr,jj,ii)   ! set bedrock temperature
+      temp_r_new(kr,j,i) = temp_r_new(kr,jj,ii)   ! set bedrock temperature
    end do
 
-   n_cts_neu(j,i)  = n_cts_neu(jj,ii)
-   kc_cts_neu(j,i) = kc_cts_neu(jj,ii)
-   zm_neu(j,i)     = zb(j,i)
-   H_c_neu(j,i)    = H_c(j,i)
-   H_t_neu(j,i)    = H_t(j,i)
+   n_cts_new(j,i)  = n_cts_new(jj,ii)
+   kc_cts_new(j,i) = kc_cts_new(jj,ii)
+   zm_new(j,i)     = zb(j,i)
+   H_c_new(j,i)    = H_c(j,i)
+   H_t_new(j,i)    = H_t(j,i)
 
-else   ! maske(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
 
-   n_cts_neu(j,i)  = -1_i1b
-   kc_cts_neu(j,i) =  0
-   zm_neu(j,i)     = zb(j,i)
-   H_c_neu(j,i)    = H_c(j,i)
-   H_t_neu(j,i)    = H_t(j,i)
+   n_cts_new(j,i)  = -1_i1b
+   kc_cts_new(j,i) =  0
+   zm_new(j,i)     = zb(j,i)
+   H_c_new(j,i)    = H_c(j,i)
+   H_t_new(j,i)    = H_t(j,i)
 
    call calc_temp_r(atr1, alb1, i, j)
 
@@ -1184,33 +1184,33 @@ do i=1, IMAX-1
 
    j=0
 
-   if ( (maske(j,i) == 0_i1b).or.(maske(j,i) == 3_i1b) ) then
+   if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
                                  ! glaciated land or floating ice
       ii=i
       jj=j+1
 
       do kc=0,KCMAX
-         temp_c_neu(kc,j,i) = temp_c_neu(kc,jj,ii)   ! set cold-ice temperature
-         age_c_neu(kc,j,i)  = age_c_neu(kc,jj,ii)    ! set cold-ice age
+         temp_c_new(kc,j,i) = temp_c_new(kc,jj,ii)   ! set cold-ice temperature
+         age_c_new(kc,j,i)  = age_c_new(kc,jj,ii)    ! set cold-ice age
       end do
 
       do kr=0,KRMAX
-         temp_r_neu(kr,j,i) = temp_r_neu(kr,jj,ii)   ! set bedrock temperature
+         temp_r_new(kr,j,i) = temp_r_new(kr,jj,ii)   ! set bedrock temperature
       end do
 
-      n_cts_neu(j,i)  = n_cts_neu(jj,ii)
-      kc_cts_neu(j,i) = kc_cts_neu(jj,ii)
-      zm_neu(j,i)     = zb(j,i)
-      H_c_neu(j,i)    = H_c(j,i)
-      H_t_neu(j,i)    = H_t(j,i)
+      n_cts_new(j,i)  = n_cts_new(jj,ii)
+      kc_cts_new(j,i) = kc_cts_new(jj,ii)
+      zm_new(j,i)     = zb(j,i)
+      H_c_new(j,i)    = H_c(j,i)
+      H_t_new(j,i)    = H_t(j,i)
 
-   else   ! maske(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+   else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
 
-      n_cts_neu(j,i)  = -1_i1b
-      kc_cts_neu(j,i) =  0
-      zm_neu(j,i)     = zb(j,i)
-      H_c_neu(j,i)    = H_c(j,i)
-      H_t_neu(j,i)    = H_t(j,i)
+      n_cts_new(j,i)  = -1_i1b
+      kc_cts_new(j,i) =  0
+      zm_new(j,i)     = zb(j,i)
+      H_c_new(j,i)    = H_c(j,i)
+      H_t_new(j,i)    = H_t(j,i)
 
       call calc_temp_r(atr1, alb1, i, j)
 
@@ -1220,33 +1220,33 @@ do i=1, IMAX-1
 
    j=JMAX
 
-   if ( (maske(j,i) == 0_i1b).or.(maske(j,i) == 3_i1b) ) then
+   if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
                                  ! glaciated land or floating ice
       ii=i
       jj=j-1
 
       do kc=0,KCMAX
-         temp_c_neu(kc,j,i) = temp_c_neu(kc,jj,ii)   ! set cold-ice temperature
-         age_c_neu(kc,j,i)  = age_c_neu(kc,jj,ii)    ! set cold-ice age
+         temp_c_new(kc,j,i) = temp_c_new(kc,jj,ii)   ! set cold-ice temperature
+         age_c_new(kc,j,i)  = age_c_new(kc,jj,ii)    ! set cold-ice age
       end do
 
       do kr=0,KRMAX
-         temp_r_neu(kr,j,i) = temp_r_neu(kr,jj,ii)   ! set bedrock temperature
+         temp_r_new(kr,j,i) = temp_r_new(kr,jj,ii)   ! set bedrock temperature
       end do
 
-      n_cts_neu(j,i)  = n_cts_neu(jj,ii)
-      kc_cts_neu(j,i) = kc_cts_neu(jj,ii)
-      zm_neu(j,i)     = zb(j,i)
-      H_c_neu(j,i)    = H_c(j,i)
-      H_t_neu(j,i)    = H_t(j,i)
+      n_cts_new(j,i)  = n_cts_new(jj,ii)
+      kc_cts_new(j,i) = kc_cts_new(jj,ii)
+      zm_new(j,i)     = zb(j,i)
+      H_c_new(j,i)    = H_c(j,i)
+      H_t_new(j,i)    = H_t(j,i)
 
-   else   ! maske(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+   else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
 
-      n_cts_neu(j,i)  = -1_i1b
-      kc_cts_neu(j,i) =  0
-      zm_neu(j,i)     = zb(j,i)
-      H_c_neu(j,i)    = H_c(j,i)
-      H_t_neu(j,i)    = H_t(j,i)
+      n_cts_new(j,i)  = -1_i1b
+      kc_cts_new(j,i) =  0
+      zm_new(j,i)     = zb(j,i)
+      H_c_new(j,i)    = H_c(j,i)
+      H_t_new(j,i)    = H_t(j,i)
 
       call calc_temp_r(atr1, alb1, i, j)
 
@@ -1262,33 +1262,33 @@ do j=1, JMAX-1
 
    i=0
 
-   if ( (maske(j,i) == 0_i1b).or.(maske(j,i) == 3_i1b) ) then
+   if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
                                  ! glaciated land or floating ice
       ii=i+1
       jj=j
 
       do kc=0,KCMAX
-         temp_c_neu(kc,j,i) = temp_c_neu(kc,jj,ii)   ! set cold-ice temperature
-         age_c_neu(kc,j,i)  = age_c_neu(kc,jj,ii)    ! set cold-ice age
+         temp_c_new(kc,j,i) = temp_c_new(kc,jj,ii)   ! set cold-ice temperature
+         age_c_new(kc,j,i)  = age_c_new(kc,jj,ii)    ! set cold-ice age
       end do
 
       do kr=0,KRMAX
-         temp_r_neu(kr,j,i) = temp_r_neu(kr,jj,ii)   ! set bedrock temperature
+         temp_r_new(kr,j,i) = temp_r_new(kr,jj,ii)   ! set bedrock temperature
       end do
 
-      n_cts_neu(j,i)  = n_cts_neu(jj,ii)
-      kc_cts_neu(j,i) = kc_cts_neu(jj,ii)
-      zm_neu(j,i)     = zb(j,i)
-      H_c_neu(j,i)    = H_c(j,i)
-      H_t_neu(j,i)    = H_t(j,i)
+      n_cts_new(j,i)  = n_cts_new(jj,ii)
+      kc_cts_new(j,i) = kc_cts_new(jj,ii)
+      zm_new(j,i)     = zb(j,i)
+      H_c_new(j,i)    = H_c(j,i)
+      H_t_new(j,i)    = H_t(j,i)
 
-   else   ! maske(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+   else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
 
-      n_cts_neu(j,i)  = -1_i1b
-      kc_cts_neu(j,i) =  0
-      zm_neu(j,i)     = zb(j,i)
-      H_c_neu(j,i)    = H_c(j,i)
-      H_t_neu(j,i)    = H_t(j,i)
+      n_cts_new(j,i)  = -1_i1b
+      kc_cts_new(j,i) =  0
+      zm_new(j,i)     = zb(j,i)
+      H_c_new(j,i)    = H_c(j,i)
+      H_t_new(j,i)    = H_t(j,i)
 
       call calc_temp_r(atr1, alb1, i, j)
 
@@ -1298,33 +1298,33 @@ do j=1, JMAX-1
 
    i=IMAX
 
-   if ( (maske(j,i) == 0_i1b).or.(maske(j,i) == 3_i1b) ) then
+   if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
                                  ! glaciated land or floating ice
       ii=i-1
       jj=j
 
       do kc=0,KCMAX
-         temp_c_neu(kc,j,i) = temp_c_neu(kc,jj,ii)   ! set cold-ice temperature
-         age_c_neu(kc,j,i)  = age_c_neu(kc,jj,ii)    ! set cold-ice age
+         temp_c_new(kc,j,i) = temp_c_new(kc,jj,ii)   ! set cold-ice temperature
+         age_c_new(kc,j,i)  = age_c_new(kc,jj,ii)    ! set cold-ice age
       end do
 
       do kr=0,KRMAX
-         temp_r_neu(kr,j,i) = temp_r_neu(kr,jj,ii)   ! set bedrock temperature
+         temp_r_new(kr,j,i) = temp_r_new(kr,jj,ii)   ! set bedrock temperature
       end do
 
-      n_cts_neu(j,i)  = n_cts_neu(jj,ii)
-      kc_cts_neu(j,i) = kc_cts_neu(jj,ii)
-      zm_neu(j,i)     = zb(j,i)
-      H_c_neu(j,i)    = H_c(j,i)
-      H_t_neu(j,i)    = H_t(j,i)
+      n_cts_new(j,i)  = n_cts_new(jj,ii)
+      kc_cts_new(j,i) = kc_cts_new(jj,ii)
+      zm_new(j,i)     = zb(j,i)
+      H_c_new(j,i)    = H_c(j,i)
+      H_t_new(j,i)    = H_t(j,i)
 
-   else   ! maske(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+   else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
 
-      n_cts_neu(j,i)  = -1_i1b
-      kc_cts_neu(j,i) =  0
-      zm_neu(j,i)     = zb(j,i)
-      H_c_neu(j,i)    = H_c(j,i)
-      H_t_neu(j,i)    = H_t(j,i)
+      n_cts_new(j,i)  = -1_i1b
+      kc_cts_new(j,i) =  0
+      zm_new(j,i)     = zb(j,i)
+      H_c_new(j,i)    = H_c(j,i)
+      H_t_new(j,i)    = H_t(j,i)
 
       call calc_temp_r(atr1, alb1, i, j)
 
@@ -1332,9 +1332,9 @@ do j=1, JMAX-1
 
 end do
 
-!-------- Dummy values for omega_c_neu --------
+!-------- Dummy values for omega_c_new --------
 
-omega_c_neu = 0.0_dp   ! not computed in the cold-ice mode
+omega_c_new = 0.0_dp   ! not computed in the cold-ice mode
 
 end subroutine calc_temp_cold
 
@@ -1350,34 +1350,34 @@ implicit none
       errormsg = ' >>> calc_temp_const: TEMP_CONST must be negative!'
       call error(errormsg)
    end if
-   temp_c_neu  = TEMP_CONST
-   temp_r_neu  = TEMP_CONST
+   temp_c_new  = TEMP_CONST
+   temp_r_new  = TEMP_CONST
 #else
-   temp_c_neu  = -10.0_dp   ! default value -10 C
-   temp_r_neu  = -10.0_dp   ! default value -10 C
+   temp_c_new  = -10.0_dp   ! default value -10 C
+   temp_r_new  = -10.0_dp   ! default value -10 C
 #endif
 
-temp_c_neu = min(temp_c_neu, temp_c_m-eps)
+temp_c_new = min(temp_c_new, temp_c_m-eps)
              ! keep temperatures below the pressure melting point
 
-omega_t_neu = 0.0_dp
-omega_c_neu = 0.0_dp
+omega_t_new = 0.0_dp
+omega_c_new = 0.0_dp
 
 Q_tld       = 0.0_dp
 
 #if (defined(AGE_CONST))
-   age_c_neu   = AGE_CONST *year2sec   ! a --> s
-   age_t_neu   = AGE_CONST *year2sec   ! a --> s
+   age_c_new   = AGE_CONST *year2sec   ! a --> s
+   age_t_new   = AGE_CONST *year2sec   ! a --> s
 #else
-   age_c_neu   = 0.0_dp   ! default value 0
-   age_t_neu   = 0.0_dp   ! default value 0
+   age_c_new   = 0.0_dp   ! default value 0
+   age_t_new   = 0.0_dp   ! default value 0
 #endif
 
-n_cts_neu   = -1_i1b
-kc_cts_neu  =  0
-zm_neu      = zb
-H_c_neu     = H_c
-H_t_neu     = 0.0_dp
+n_cts_new   = -1_i1b
+kc_cts_new  =  0
+zm_new      = zb
+H_c_new     = H_c
+H_t_new     = 0.0_dp
 
 end subroutine calc_temp_const
 
@@ -1705,18 +1705,18 @@ call tri_sle(lgs_a0, lgs_a1, lgs_a2, lgs_x, lgs_b, KCMAX+KRMAX)
 !-------- Assign the result --------
 
 do kr=0, KRMAX
-   temp_r_neu(kr,j,i) = lgs_x(kr)
+   temp_r_new(kr,j,i) = lgs_x(kr)
 end do
 
 do kc=0, KCMAX
-   temp_c_neu(kc,j,i) = lgs_x(KRMAX+kc)
+   temp_c_new(kc,j,i) = lgs_x(KRMAX+kc)
 end do
 
 !-------- Set water content in the non-existing temperate layer
 !         to zero --------
 
 do kt=0, KTMAX
-   omega_t_neu(kt,j,i) = 0.0_dp
+   omega_t_new(kt,j,i) = 0.0_dp
 end do
 
 !-------- Water drainage from the non-existing temperate layer --------
@@ -1904,19 +1904,19 @@ call tri_sle(lgs_a0, lgs_a1, lgs_a2, lgs_x, lgs_b, KCMAX)
 
 do kc=0, KCMAX
 
-   age_c_neu(kc,j,i) = lgs_x(kc)
+   age_c_new(kc,j,i) = lgs_x(kc)
 
-   if (age_c_neu(kc,j,i) < (AGE_MIN*year2sec)) &
-                           age_c_neu(kc,j,i) = 0.0_dp
-   if (age_c_neu(kc,j,i) > (AGE_MAX*year2sec)) &
-                           age_c_neu(kc,j,i) = AGE_MAX*year2sec
+   if (age_c_new(kc,j,i) < (AGE_MIN*year2sec)) &
+                           age_c_new(kc,j,i) = 0.0_dp
+   if (age_c_new(kc,j,i) > (AGE_MAX*year2sec)) &
+                           age_c_new(kc,j,i) = AGE_MAX*year2sec
 
 end do
 
 !-------- Age of the ice in the non-existing temperate layer --------
 
 do kt=0, KTMAX
-   age_t_neu(kt,j,i) = age_c_neu(0,j,i)
+   age_t_new(kt,j,i) = age_c_new(0,j,i)
 end do
 
 end subroutine calc_temp1
@@ -2125,7 +2125,7 @@ call tri_sle(lgs_a0, lgs_a1, lgs_a2, lgs_x, lgs_b, KRMAX)
 !-------- Assign the result --------
 
 do kr=0, KRMAX
-   temp_r_neu(kr,j,i) = lgs_x(kr)
+   temp_r_new(kr,j,i) = lgs_x(kr)
 end do
 
 !-------- Set up the equations for the ice temperature --------
@@ -2231,14 +2231,14 @@ call tri_sle(lgs_a0, lgs_a1, lgs_a2, lgs_x, lgs_b, KCMAX)
 !-------- Assign the result --------
 
 do kc=0, KCMAX
-   temp_c_neu(kc,j,i) = lgs_x(kc)
+   temp_c_new(kc,j,i) = lgs_x(kc)
 end do
 
 !-------- Set water content in the non-existing temperate layer
 !         to zero --------
 
 do kt=0, KTMAX
-   omega_t_neu(kt,j,i) = 0.0_dp
+   omega_t_new(kt,j,i) = 0.0_dp
 end do
 
 !-------- Water drainage from the non-existing temperate layer --------
@@ -2426,19 +2426,19 @@ call tri_sle(lgs_a0, lgs_a1, lgs_a2, lgs_x, lgs_b, KCMAX)
 
 do kc=0, KCMAX
 
-   age_c_neu(kc,j,i) = lgs_x(kc)
+   age_c_new(kc,j,i) = lgs_x(kc)
 
-   if (age_c_neu(kc,j,i) < (AGE_MIN*year2sec)) &
-                           age_c_neu(kc,j,i) = 0.0_dp
-   if (age_c_neu(kc,j,i) > (AGE_MAX*year2sec)) &
-                           age_c_neu(kc,j,i) = AGE_MAX*year2sec
+   if (age_c_new(kc,j,i) < (AGE_MIN*year2sec)) &
+                           age_c_new(kc,j,i) = 0.0_dp
+   if (age_c_new(kc,j,i) > (AGE_MAX*year2sec)) &
+                           age_c_new(kc,j,i) = AGE_MAX*year2sec
 
 end do
 
 !-------- Age of the ice in the non-existing temperate layer --------
 
 do kt=0, KTMAX
-   age_t_neu(kt,j,i) = age_c_neu(0,j,i)
+   age_t_new(kt,j,i) = age_c_new(0,j,i)
 end do
 
 end subroutine calc_temp2
@@ -2509,26 +2509,26 @@ end if
 !-------- Abbreviations --------
 
 ctr1 = atr1
-cm1  = am1*H_c_neu(j,i)
+cm1  = am1*H_c_new(j,i)
 clb1 = alb1*q_geo(j,i)
 
 #if (ADV_VERT==1)
 
 do kc=1, KCMAX-1
-   ct1(kc) = at1(kc)/H_c_neu(j,i)*0.5_dp*(vz_c(kc,j,i)+vz_c(kc-1,j,i))
+   ct1(kc) = at1(kc)/H_c_new(j,i)*0.5_dp*(vz_c(kc,j,i)+vz_c(kc-1,j,i))
 end do
 
 kc=0
-ct1_sg(kc) = 0.5_dp*(at1(kc)+at1(kc+1))/H_c_neu(j,i)*vz_c(kc,j,i)
+ct1_sg(kc) = 0.5_dp*(at1(kc)+at1(kc+1))/H_c_new(j,i)*vz_c(kc,j,i)
              ! only needed for kc=0 ...
 kc=KCMAX-1
-ct1_sg(kc) = 0.5_dp*(at1(kc)+at1(kc+1))/H_c_neu(j,i)*vz_c(kc,j,i)
+ct1_sg(kc) = 0.5_dp*(at1(kc)+at1(kc+1))/H_c_new(j,i)*vz_c(kc,j,i)
              ! ... and kc=KCMAX-1
 
 #elif (ADV_VERT==2 || ADV_VERT==3)
 
 do kc=0, KCMAX-1
-   ct1_sg(kc) = 0.5_dp*(at1(kc)+at1(kc+1))/H_c_neu(j,i)*vz_c(kc,j,i)
+   ct1_sg(kc) = 0.5_dp*(at1(kc)+at1(kc+1))/H_c_new(j,i)*vz_c(kc,j,i)
 end do
 
 #endif
@@ -2536,19 +2536,19 @@ end do
 do kc=0, KCMAX
 
    ct2(kc) = ( at2_1(kc)*dzm_dtau(j,i) &
-           +at2_2(kc)*dH_c_dtau(j,i) )/H_c_neu(j,i)
+           +at2_2(kc)*dH_c_dtau(j,i) )/H_c_new(j,i)
    ct3(kc) = ( at3_1(kc)*dzm_dxi_g(j,i) &
-           +at3_2(kc)*dH_c_dxi_g(j,i) )/H_c_neu(j,i) &
+           +at3_2(kc)*dH_c_dxi_g(j,i) )/H_c_new(j,i) &
           *0.5_dp*(vx_c(kc,j,i)+vx_c(kc,j,i-1)) *insq_g11_g(j,i)
    ct4(kc) = ( at4_1(kc)*dzm_deta_g(j,i) &
-            +at4_2(kc)*dH_c_deta_g(j,i) )/H_c_neu(j,i) &
+            +at4_2(kc)*dH_c_deta_g(j,i) )/H_c_new(j,i) &
           *0.5_dp*(vy_c(kc,j,i)+vy_c(kc,j-1,i)) *insq_g22_g(j,i)
    ct5(kc) = at5(kc) &
              /c_val(temp_c(kc,j,i)) &
-             /H_c_neu(j,i)
+             /H_c_new(j,i)
 
    sigma_c_help(kc) &
-           = RHO*G*H_c_neu(j,i)*(1.0_dp-eaz_c_quotient(kc)) &
+           = RHO*G*H_c_new(j,i)*(1.0_dp-eaz_c_quotient(kc)) &
              *(dzs_dxi_g(j,i)**2+dzs_deta_g(j,i)**2)**0.5_dp
 
 #if (DYNAMICS==2)
@@ -2575,7 +2575,7 @@ do kc=0, KCMAX
    end if
 #endif
 
-   ci1(kc) = ai1(kc)/H_c_neu(j,i)
+   ci1(kc) = ai1(kc)/H_c_new(j,i)
 
 end do
 
@@ -2610,34 +2610,34 @@ do kc=0, KCMAX-1
    temp_c_help(kc) = 0.5_dp*(temp_c(kc,j,i)+temp_c(kc+1,j,i))
    ct6(kc) = at6(kc) &
     *kappa_val(temp_c_help(kc)) &
-    /H_c_neu(j,i)
-   ci2(kc) = ai2(kc)/H_c_neu(j,i)
+    /H_c_new(j,i)
+   ci2(kc) = ai2(kc)/H_c_new(j,i)
 end do
 
-cw5 = aw5/(H_t_neu(j,i)**2)
+cw5 = aw5/(H_t_new(j,i)**2)
 cw8 = aw8
-ci3 = ai3/(H_t_neu(j,i)**2)
+ci3 = ai3/(H_t_new(j,i)**2)
 
 #if (ADV_VERT==1)
 
 do kt=1, KTMAX-1
-   cw1(kt) = aw1/H_t_neu(j,i)*0.5_dp*(vz_t(kt,j,i)+vz_t(kt-1,j,i))
+   cw1(kt) = aw1/H_t_new(j,i)*0.5_dp*(vz_t(kt,j,i)+vz_t(kt-1,j,i))
 end do
 
 kt=KTMAX
-cw1(kt) = aw1/H_t_neu(j,i)*0.5_dp*(vz_t(kt-1,j,i)+vz_c(0,j,i))
+cw1(kt) = aw1/H_t_new(j,i)*0.5_dp*(vz_t(kt-1,j,i)+vz_c(0,j,i))
 
 kt=0
-cw1_sg(kt) = aw1/H_t_neu(j,i)*vz_t(kt,j,i)
+cw1_sg(kt) = aw1/H_t_new(j,i)*vz_t(kt,j,i)
              ! only needed for kt=0 ...
 kt=KTMAX-1
-cw1_sg(kt) = aw1/H_t_neu(j,i)*vz_t(kt,j,i)
+cw1_sg(kt) = aw1/H_t_new(j,i)*vz_t(kt,j,i)
              ! ... and kt=KTMAX-1
 
 #elif (ADV_VERT==2 || ADV_VERT==3)
 
 do kt=0, KTMAX-1
-   cw1_sg(kt) = aw1/H_t_neu(j,i)*vz_t(kt,j,i)
+   cw1_sg(kt) = aw1/H_t_new(j,i)*vz_t(kt,j,i)
 end do
 
 #endif
@@ -2654,16 +2654,16 @@ end do
 do kt=0, KTMAX
 
    cw2(kt) = aw2*(dzb_dtau(j,i)+zeta_t(kt)*dH_t_dtau(j,i)) &
-             /H_t_neu(j,i)
+             /H_t_new(j,i)
    cw3(kt) = aw3*(dzb_dxi_g(j,i)+zeta_t(kt)*dH_t_dxi_g(j,i)) &
-             /H_t_neu(j,i) &
+             /H_t_new(j,i) &
              *0.5_dp*(vx_t(kt,j,i)+vx_t(kt,j,i-1)) *insq_g11_g(j,i)
    cw4(kt) = aw4*(dzb_deta_g(j,i)+zeta_t(kt)*dH_t_deta_g(j,i)) &
-             /H_t_neu(j,i) &
+             /H_t_new(j,i) &
              *0.5_dp*(vy_t(kt,j,i)+vy_t(kt,j-1,i)) *insq_g22_g(j,i)
    sigma_t_help(kt) &
            = sigma_c_help(0) &
-             + RHO*G*H_t_neu(j,i)*(1.0_dp-zeta_t(kt)) &
+             + RHO*G*H_t_new(j,i)*(1.0_dp-zeta_t(kt)) &
                *(dzs_dxi_g(j,i)**2+dzs_deta_g(j,i)**2)**0.5_dp
 
 #if (DYNAMICS==2)
@@ -2764,7 +2764,7 @@ call tri_sle(lgs_a0, lgs_a1, lgs_a2, lgs_x, lgs_b, KRMAX)
 !-------- Assign the result --------
 
 do kr=0, KRMAX
-   temp_r_neu(kr,j,i) = lgs_x(kr)
+   temp_r_new(kr,j,i) = lgs_x(kr)
 end do
 
 !-------- Set up the equations for the water content in
@@ -2895,13 +2895,13 @@ Q_tld(j,i) = 0.0_dp
 do kt=0, KTMAX
 
    if (lgs_x(kt) < zero) then
-      omega_t_neu(kt,j,i) = 0.0_dp   ! (as a precaution)
+      omega_t_new(kt,j,i) = 0.0_dp   ! (as a precaution)
    else if (lgs_x(kt) < OMEGA_MAX) then
-      omega_t_neu(kt,j,i) = lgs_x(kt)
+      omega_t_new(kt,j,i) = lgs_x(kt)
    else
-      omega_t_neu(kt,j,i) = OMEGA_MAX
+      omega_t_new(kt,j,i) = OMEGA_MAX
       Q_tld(j,i) = Q_tld(j,i) &
-                     +aqtld*H_t_neu(j,i)*(lgs_x(kt)-OMEGA_MAX)
+                     +aqtld*H_t_new(j,i)*(lgs_x(kt)-OMEGA_MAX)
    end if
 
 end do
@@ -2916,7 +2916,7 @@ end do
 if (am_perp(j,i) >= zero) then   ! melting condition
    cm2 = 0.0_dp
 else   ! am_perp(j,i) < 0.0, freezing condition
-   cm2  = am2*H_c_neu(j,i)*omega_t_neu(KTMAX,j,i)*am_perp(j,i) &
+   cm2  = am2*H_c_new(j,i)*omega_t_new(KTMAX,j,i)*am_perp(j,i) &
           /kappa_val(temp_c(0,j,i))
 end if
 
@@ -3032,7 +3032,7 @@ call tri_sle(lgs_a0, lgs_a1, lgs_a2, lgs_x, lgs_b, KCMAX)
 !-------- Assign the result --------
 
 do kc=0, KCMAX
-   temp_c_neu(kc,j,i) = lgs_x(kc)
+   temp_c_new(kc,j,i) = lgs_x(kc)
 end do
 
 !-------- Set up the equations for the age (cold and temperate ice
@@ -3448,23 +3448,23 @@ call tri_sle(lgs_a0, lgs_a1, lgs_a2, lgs_x, lgs_b, KCMAX+KTMAX)
 
 do kt=0, KTMAX
 
-   age_t_neu(kt,j,i) = lgs_x(kt)
+   age_t_new(kt,j,i) = lgs_x(kt)
 
-   if (age_t_neu(kt,j,i) < (AGE_MIN*year2sec)) &
-                           age_t_neu(kt,j,i) = 0.0_dp
-   if (age_t_neu(kt,j,i) > (AGE_MAX*year2sec)) &
-                           age_t_neu(kt,j,i) = AGE_MAX*year2sec
+   if (age_t_new(kt,j,i) < (AGE_MIN*year2sec)) &
+                           age_t_new(kt,j,i) = 0.0_dp
+   if (age_t_new(kt,j,i) > (AGE_MAX*year2sec)) &
+                           age_t_new(kt,j,i) = AGE_MAX*year2sec
 
 end do
 
 do kc=0, KCMAX
 
-   age_c_neu(kc,j,i) = lgs_x(KTMAX+kc)
+   age_c_new(kc,j,i) = lgs_x(KTMAX+kc)
 
-   if (age_c_neu(kc,j,i) < (AGE_MIN*year2sec)) &
-                           age_c_neu(kc,j,i) = 0.0_dp
-   if (age_c_neu(kc,j,i) > (AGE_MAX*year2sec)) &
-                           age_c_neu(kc,j,i) = AGE_MAX*year2sec
+   if (age_c_new(kc,j,i) < (AGE_MIN*year2sec)) &
+                           age_c_new(kc,j,i) = 0.0_dp
+   if (age_c_new(kc,j,i) > (AGE_MAX*year2sec)) &
+                           age_c_new(kc,j,i) = AGE_MAX*year2sec
 
 end do
 
@@ -3547,23 +3547,23 @@ call tri_sle(lgs_a0, lgs_a1, lgs_a2, lgs_x, lgs_b, KRMAX)
 !-------- Assign the result --------
 
 do kr=0, KRMAX
-   temp_r_neu(kr,j,i) = lgs_x(kr)
+   temp_r_new(kr,j,i) = lgs_x(kr)
 end do
 
 !-------- Water content and age
 !                       in the non-existing lower (kt) ice layer --------
 
 do kt=0, KTMAX
-   omega_t_neu(kt,j,i) = 0.0_dp
-   age_t_neu(kt,j,i)   = 0.0_dp
+   omega_t_new(kt,j,i) = 0.0_dp
+   age_t_new(kt,j,i)   = 0.0_dp
 end do
 
 !-------- Temperature and age
 !                     in the non-existing upper (kc) ice layer --------
 
 do kc=0, KCMAX
-   temp_c_neu(kc,j,i)  = temp_s(j,i)
-   age_c_neu(kc,j,i)   = 0.0_dp
+   temp_c_new(kc,j,i)  = temp_s(j,i)
+   age_c_new(kc,j,i)   = 0.0_dp
 end do
 
 end subroutine calc_temp_r
@@ -3602,22 +3602,22 @@ zm_shift = 1.0_dp   ! CTS shift in intervals of 1 m
 !-------- Temperature discrepancy from the computation of the main
 !         program --------
 
-difftemp_a = temp_c_neu(0,j,i)-(-BETA*H_c_neu(j,i))
+difftemp_a = temp_c_new(0,j,i)-(-BETA*H_c_new(j,i))
 if (difftemp_a <= 0.0_dp) return
 
 !-------- Shift CTS upward until it is too high --------
 
 do while (difftemp_a > 0.0_dp)
 
-   zm_neu(j,i)  = zm_neu(j,i)  + zm_shift
-   if (zm_neu(j,i) >= zs(j,i)) then
-      zm_neu(j,i)  = zm_neu(j,i) - zm_shift
+   zm_new(j,i)  = zm_new(j,i)  + zm_shift
+   if (zm_new(j,i) >= zs(j,i)) then
+      zm_new(j,i)  = zm_new(j,i) - zm_shift
       return
    end if
-   H_c_neu(j,i) = H_c_neu(j,i) - zm_shift
-   H_t_neu(j,i) = H_t_neu(j,i) + zm_shift
+   H_c_new(j,i) = H_c_new(j,i) - zm_shift
+   H_t_new(j,i) = H_t_new(j,i) + zm_shift
 
-   dH_t_dtau(j,i) = (zm_neu(j,i)-zm(j,i))*dtime_temp_inv
+   dH_t_dtau(j,i) = (zm_new(j,i)-zm(j,i))*dtime_temp_inv
    dzm_dtau(j,i)  = dzb_dtau(j,i)+dH_t_dtau(j,i)
    dH_c_dtau(j,i) = dzs_dtau(j,i)-dzm_dtau(j,i)
 
@@ -3631,7 +3631,7 @@ do while (difftemp_a > 0.0_dp)
                  dtime_temp, dtt_2dxi, dtt_2deta, i, j)
 
    difftemp_b = difftemp_a
-   difftemp_a = temp_c_neu(0,j,i)-(-BETA*H_c_neu(j,i))
+   difftemp_a = temp_c_new(0,j,i)-(-BETA*H_c_new(j,i))
 
 end do
 
@@ -3641,11 +3641,11 @@ end do
 
 interpol = difftemp_a/(difftemp_b-difftemp_a)*zm_shift
 
-zm_neu(j,i)  = zm_neu(j,i)  + interpol
-H_c_neu(j,i) = H_c_neu(j,i) - interpol
-H_t_neu(j,i) = H_t_neu(j,i) + interpol
+zm_new(j,i)  = zm_new(j,i)  + interpol
+H_c_new(j,i) = H_c_new(j,i) - interpol
+H_t_new(j,i) = H_t_new(j,i) + interpol
 
-dH_t_dtau(j,i) = (zm_neu(j,i)-zm(j,i))*dtime_temp_inv
+dH_t_dtau(j,i) = (zm_new(j,i)-zm(j,i))*dtime_temp_inv
 dzm_dtau(j,i)  = dzb_dtau(j,i)+dH_t_dtau(j,i)
 dH_c_dtau(j,i) = dzs_dtau(j,i)-dzm_dtau(j,i)
 
@@ -3694,26 +3694,26 @@ zm_shift = 1.0_dp   ! CTS shift in intervals of 1 m
 !-------- Temperature discrepancy from the computation of the main
 !         program --------
 
-difftemp_a = temp_c_neu(0,j,i)-(-BETA*H_c_neu(j,i))
+difftemp_a = temp_c_new(0,j,i)-(-BETA*H_c_new(j,i))
 if (difftemp_a >= 0.0_dp) return
 
 !-------- Shift CTS downward until it is too low --------
 
 do while (difftemp_a < 0.0_dp)
 
-   zm_neu(j,i)  = zm_neu(j,i) - zm_shift
+   zm_new(j,i)  = zm_new(j,i) - zm_shift
 
 !  ------ Special case: CTS too close to the base
 
-   if (zm_neu(j,i) <= zb(j,i)) then
+   if (zm_new(j,i) <= zb(j,i)) then
 
-      zm_shift = (zm_neu(j,i)+zm_shift)-(zb(j,i)+0.001_dp)
-      zm_neu(j,i)  = zb(j,i)+0.001_dp
-      H_c_neu(j,i) = H_c_neu(j,i)+H_t_neu(j,i)-0.001_dp
-      H_t_neu(j,i) = 0.001_dp
+      zm_shift = (zm_new(j,i)+zm_shift)-(zb(j,i)+0.001_dp)
+      zm_new(j,i)  = zb(j,i)+0.001_dp
+      H_c_new(j,i) = H_c_new(j,i)+H_t_new(j,i)-0.001_dp
+      H_t_new(j,i) = 0.001_dp
 !                   ! CTS positioned 1 mm above ice base --------
 
-      dH_t_dtau(j,i) = (zm_neu(j,i)-zm(j,i))*dtime_temp_inv
+      dH_t_dtau(j,i) = (zm_new(j,i)-zm(j,i))*dtime_temp_inv
       dzm_dtau(j,i)  = dzb_dtau(j,i)+dH_t_dtau(j,i)
       dH_c_dtau(j,i) = dzs_dtau(j,i)-dzm_dtau(j,i)
 
@@ -3727,7 +3727,7 @@ do while (difftemp_a < 0.0_dp)
                  dtime_temp, dtt_2dxi, dtt_2deta, i, j)
 
       difftemp_b = difftemp_a
-      difftemp_a = temp_c_neu(0,j,i)-(-BETA*H_c_neu(j,i))
+      difftemp_a = temp_c_new(0,j,i)-(-BETA*H_c_new(j,i))
 
       if (difftemp_a >= 0.0_dp) then ! CTS remains above the base
 
@@ -3737,11 +3737,11 @@ do while (difftemp_a < 0.0_dp)
 
          interpol = difftemp_a/(difftemp_a-difftemp_b)*zm_shift
 
-         zm_neu(j,i)  = zm_neu(j,i)  + interpol
-         H_c_neu(j,i) = H_c_neu(j,i) - interpol
-         H_t_neu(j,i) = H_t_neu(j,i) + interpol
+         zm_new(j,i)  = zm_new(j,i)  + interpol
+         H_c_new(j,i) = H_c_new(j,i) - interpol
+         H_t_new(j,i) = H_t_new(j,i) + interpol
 
-         dH_t_dtau(j,i) = (zm_neu(j,i)-zm(j,i))*dtime_temp_inv
+         dH_t_dtau(j,i) = (zm_new(j,i)-zm(j,i))*dtime_temp_inv
          dzm_dtau(j,i)  = dzb_dtau(j,i)+dH_t_dtau(j,i)
          dH_c_dtau(j,i) = dzs_dtau(j,i)-dzm_dtau(j,i)
 
@@ -3756,12 +3756,12 @@ do while (difftemp_a < 0.0_dp)
 
       else   ! CTS disappears
 
-         n_cts_neu(j,i) = 0_i1b
-         zm_neu(j,i) = zb(j,i)
-         H_c_neu(j,i) = H_c_neu(j,i)+H_t_neu(j,i)
-         H_t_neu(j,i) = 0.0_dp
+         n_cts_new(j,i) = 0_i1b
+         zm_new(j,i) = zb(j,i)
+         H_c_new(j,i) = H_c_new(j,i)+H_t_new(j,i)
+         H_t_new(j,i) = 0.0_dp
 
-         dH_t_dtau(j,i) = (zm_neu(j,i)-zm(j,i))*dtime_temp_inv
+         dH_t_dtau(j,i) = (zm_new(j,i)-zm(j,i))*dtime_temp_inv
          dzm_dtau(j,i)  = dzb_dtau(j,i)+dH_t_dtau(j,i)
          dH_c_dtau(j,i) = dzs_dtau(j,i)-dzm_dtau(j,i)
 
@@ -3779,10 +3779,10 @@ do while (difftemp_a < 0.0_dp)
 
 !  ------ End of treatment of special case
 
-   H_c_neu(j,i) = H_c_neu(j,i) + zm_shift
-   H_t_neu(j,i) = H_t_neu(j,i) - zm_shift
+   H_c_new(j,i) = H_c_new(j,i) + zm_shift
+   H_t_new(j,i) = H_t_new(j,i) - zm_shift
 
-   dH_t_dtau(j,i) = (zm_neu(j,i)-zm(j,i))*dtime_temp_inv
+   dH_t_dtau(j,i) = (zm_new(j,i)-zm(j,i))*dtime_temp_inv
    dzm_dtau(j,i)  = dzb_dtau(j,i)+dH_t_dtau(j,i)
    dH_c_dtau(j,i) = dzs_dtau(j,i)-dzm_dtau(j,i)
 
@@ -3796,7 +3796,7 @@ do while (difftemp_a < 0.0_dp)
                  dtime_temp, dtt_2dxi, dtt_2deta, i, j)
 
    difftemp_b = difftemp_a
-   difftemp_a = temp_c_neu(0,j,i)-(-BETA*H_c_neu(j,i))
+   difftemp_a = temp_c_new(0,j,i)-(-BETA*H_c_new(j,i))
 
 end do
 
@@ -3806,11 +3806,11 @@ end do
 
 interpol = difftemp_a/(difftemp_a-difftemp_b)*zm_shift
 
-zm_neu(j,i)  = zm_neu(j,i)  + interpol
-H_c_neu(j,i) = H_c_neu(j,i) - interpol
-H_t_neu(j,i) = H_t_neu(j,i) + interpol
+zm_new(j,i)  = zm_new(j,i)  + interpol
+H_c_new(j,i) = H_c_new(j,i) - interpol
+H_t_new(j,i) = H_t_new(j,i) + interpol
 
-dH_t_dtau(j,i) = (zm_neu(j,i)-zm(j,i))*dtime_temp_inv
+dH_t_dtau(j,i) = (zm_new(j,i)-zm(j,i))*dtime_temp_inv
 dzm_dtau(j,i)  = dzb_dtau(j,i)+dH_t_dtau(j,i)
 dH_c_dtau(j,i) = dzs_dtau(j,i)-dzm_dtau(j,i)
 
@@ -4013,7 +4013,7 @@ call tri_sle(lgs_a0, lgs_a1, lgs_a2, lgs_x, lgs_b, KRMAX)
 !-------- Assign the result --------
 
 do kr=0, KRMAX
-   temp_r_neu(kr,j,i) = lgs_x(kr)
+   temp_r_new(kr,j,i) = lgs_x(kr)
 end do
 
 !-------- Set up the equations for the ice temperature --------
@@ -4119,14 +4119,14 @@ call tri_sle(lgs_a0, lgs_a1, lgs_a2, lgs_x, lgs_b, KCMAX)
 !-------- Assign the result --------
 
 do kc=0, KCMAX
-   temp_c_neu(kc,j,i) = lgs_x(kc)
+   temp_c_new(kc,j,i) = lgs_x(kc)
 end do
 
 !-------- Set water content in the non-existing temperate layer
 !         to zero --------
 
 do kt=0, KTMAX
-   omega_t_neu(kt,j,i) = 0.0_dp
+   omega_t_new(kt,j,i) = 0.0_dp
 end do
 
 !-------- Water drainage from the non-existing temperate layer --------
@@ -4314,19 +4314,19 @@ call tri_sle(lgs_a0, lgs_a1, lgs_a2, lgs_x, lgs_b, KCMAX)
 
 do kc=0, KCMAX
 
-   age_c_neu(kc,j,i) = lgs_x(kc)
+   age_c_new(kc,j,i) = lgs_x(kc)
 
-   if (age_c_neu(kc,j,i) < (AGE_MIN*year2sec)) &
-                           age_c_neu(kc,j,i) = 0.0_dp
-   if (age_c_neu(kc,j,i) > (AGE_MAX*year2sec)) &
-                           age_c_neu(kc,j,i) = AGE_MAX*year2sec
+   if (age_c_new(kc,j,i) < (AGE_MIN*year2sec)) &
+                           age_c_new(kc,j,i) = 0.0_dp
+   if (age_c_new(kc,j,i) > (AGE_MAX*year2sec)) &
+                           age_c_new(kc,j,i) = AGE_MAX*year2sec
 
 end do
 
 !-------- Age of the ice in the non-existing temperate layer --------
 
 do kt=0, KTMAX
-   age_t_neu(kt,j,i) = age_c_neu(0,j,i)
+   age_t_new(kt,j,i) = age_c_new(0,j,i)
 end do
 
 end subroutine calc_temp_ssa

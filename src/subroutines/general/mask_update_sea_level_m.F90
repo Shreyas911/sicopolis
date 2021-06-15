@@ -67,7 +67,7 @@ contains
 
 !-------- Previously ice-free land point or sea point --------
 
-  if ( (maske(j,i) == 1_i1b).or.(maske(j,i) == 2_i1b) ) then
+  if ( (mask(j,i) == 1_i1b).or.(mask(j,i) == 2_i1b) ) then
 
      if (zl(j,i) > z_sl) then
         mask_update_sea_level = 1_i1b   ! now ice-free land
@@ -79,7 +79,7 @@ contains
 
 !-------- Previously grounded-ice or floating-ice point --------
 
-  else   ! (maske(j,i) == 0_i1b, 3_i1b)
+  else   ! (mask(j,i) == 0_i1b, 3_i1b)
 
      if (zl(j,i) > z_sl) then
 

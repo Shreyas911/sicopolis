@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2021-01-05
+!! 2021-06-15
 !!
 !! @section Copyright
 !!
@@ -395,7 +395,7 @@ integer(i4b)       :: i, j
 real(dp)           :: year_to_year_or_sec
 character(len=256) :: filename, filename_with_path
 
-integer(i1b), dimension(0:IMAX,0:JMAX) :: maske_erg
+integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_erg
 real(dp) :: time_erg=0.0_dp, &
             V_tot_erg=0.0_dp, V_af_erg=0.0_dp, &
             A_grounded_erg=0.0_dp, A_floating_erg=0.0_dp, &
@@ -646,8 +646,8 @@ call check( nf90_get_var(ncid, ncv, tau_b_drag_erg) )
 call check( nf90_inq_varid(ncid, 'q_gl_g', ncv) )
 call check( nf90_get_var(ncid, ncv, q_gl_g_erg) )
 
-call check( nf90_inq_varid(ncid, 'maske', ncv) )
-call check( nf90_get_var(ncid, ncv, maske_erg) )
+call check( nf90_inq_varid(ncid, 'mask', ncv) )
+call check( nf90_get_var(ncid, ncv, mask_erg) )
 
 else if (n_variable_dim == 2) then
 
@@ -789,7 +789,7 @@ do j=0, JMAX
                                        ! m/a -> kg/(m2*a) | kg/(m2*s),
                                        ! sign changed to negative for loss
 
-   if (maske_erg(i,j)==0_i1b) then
+   if (mask_erg(i,j)==0_i1b) then
       libmassbfgr_r(i,j) = Q_b_apl_erg(i,j) * (-rho/year_to_year_or_sec)
                                             ! m/a -> kg/(m2*a) | kg/(m2*s),
                                             ! sign changed to negative for loss
@@ -797,7 +797,7 @@ do j=0, JMAX
       libmassbfgr_r(i,j) = no_value_large_dp
    end if
 
-   if (maske_erg(i,j)==3_i1b) then
+   if (mask_erg(i,j)==3_i1b) then
       libmassbffl_r(i,j) = Q_b_apl_erg(i,j) * (-rho/year_to_year_or_sec)
                                             ! m/a -> kg/(m2*a) | kg/(m2*s),
                                             ! sign changed to negative for loss
@@ -823,13 +823,13 @@ do j=0, JMAX
    litemptop_r(i,j)  = temp_s_erg(i,j) + T0     ! C -> K
    litempbot_r(i,j)  = temp_b_erg(i,j) + T0     ! C -> K
 
-   if (maske_erg(i,j)==0_i1b) then
+   if (mask_erg(i,j)==0_i1b) then
       litempbotgr_r(i,j) = temp_b_erg(i,j) + T0     ! C -> K
    else
       litempbotgr_r(i,j) = no_value_large_dp
    end if
 
-   if (maske_erg(i,j)==3_i1b) then
+   if (mask_erg(i,j)==3_i1b) then
       litempbotfl_r(i,j) = temp_b_erg(i,j) + T0     ! C -> K
    else
       litempbotfl_r(i,j) = no_value_large_dp
@@ -856,13 +856,13 @@ do j=0, JMAX
                        !!! q_gl_g_erg(i,j) * rho/year_to_year_or_sec
                                                 ! m/a -> kg/(m2*a) | kg/(m2*s)
 
-   if ((maske_erg(i,j)==0_i1b).or.(maske_erg(i,j)==3_i1b)) &
+   if ((mask_erg(i,j)==0_i1b).or.(mask_erg(i,j)==3_i1b)) &
       sftgif_r(i,j)  = 1.0_dp   ! grounded or floating ice
 
-   if (maske_erg(i,j)==0_i1b) &
+   if (mask_erg(i,j)==0_i1b) &
       sftgrf_r(i,j)  = 1.0_dp   ! grounded ice
 
-   if (maske_erg(i,j)==3_i1b) &
+   if (mask_erg(i,j)==3_i1b) &
       sftflf_r(i,j)  = 1.0_dp   ! floating ice
 
 end do

@@ -61,11 +61,11 @@ save
 !>               ( where Laskar's longitude of perihelion from moving equinox
 !>                       = Ls of perihelion - 180 deg )
    real(dp), dimension(0:100000) :: cp_data
-!> maske_chasm(j,i): Chasma mask.
+!> mask_chasm(j,i): Chasma mask.
 !>                   0: grounded ice,
 !>                   1: ice-free land (normal area),
 !>                   7: chasma area
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: maske_chasm
+   integer(i1b), dimension(0:JMAX,0:IMAX) :: mask_chasm
 !> time_chasm_init: Initial time for active chasma area
    real(dp) :: time_chasm_init
 !> time_chasm_end: Final time for active chasma area

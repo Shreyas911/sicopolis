@@ -114,7 +114,7 @@ contains
   do i=1, IMAX-1
   do j=1, JMAX-1
 
-     if ((maske(j,i) == 0_i1b).or.(maske(j,i) == 3_i1b)) then
+     if ((mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b)) then
                                                  ! grounded or floating ice
 
         H_c_inv = 1.0_dp/(abs(H_c(j,i))+eps_dp)
@@ -363,7 +363,7 @@ contains
 
 !  ------ Modification of the shear fraction for floating ice (ice shelves)
 
-        if (maske(j,i) == 3_i1b) then   ! floating ice
+        if (mask(j,i) == 3_i1b) then   ! floating ice
 
            abs_v_ssa_inv = 1.0_dp / &
                            sqrt( ( 0.25_dp*(vx_m(j,i)+vx_m(j,i-1))**2 &
@@ -402,7 +402,7 @@ contains
         lambda_shear_c(:,j,i) = min(max(lambda_shear_c(:,j,i), 0.0_dp), 1.0_dp)
         lambda_shear_t(:,j,i) = min(max(lambda_shear_t(:,j,i), 0.0_dp), 1.0_dp)
 
-     else   ! maske(j,i) == 1_i1b or 2_i1b; ice-free land or ocean
+     else   ! mask(j,i) == 1_i1b or 2_i1b; ice-free land or ocean
 
         dxx_c(:,j,i)          = 0.0_dp
         dyy_c(:,j,i)          = 0.0_dp

@@ -91,7 +91,7 @@ character(len=100), intent(out) :: runname
 integer(i4b)       :: i, j, kc, kt, kr, m, n, ir, jr
 integer(i4b)       :: ios
 integer(i4b)       :: ierr
-integer(i1b), dimension(0:JMAX,0:IMAX) :: maske_ref
+integer(i1b), dimension(0:JMAX,0:IMAX) :: mask_ref
 real(dp)           :: dtime0, dtime_temp0, dtime_wss0, dtime_out0, dtime_ser0
 real(dp)           :: time_init0, time_end0
 #if (OUTPUT==2 || OUTPUT==3)
@@ -1197,7 +1197,7 @@ call read_2d_input(filename_with_path, &
                    ch_var_name='mask', n_var_type=3, n_ascii_header=6, &
                    field2d_r=field2d_aux)
 
-maske_ref = nint(field2d_aux)
+mask_ref = nint(field2d_aux)
 
 #elif (GRID==2)
 
@@ -1285,7 +1285,7 @@ zs_ref = field2d_aux
 
 do i=0, IMAX
 do j=0, JMAX
-   if (maske_ref(j,i) >= 2_i1b) zs_ref(j,i) = 0.0_dp
+   if (mask_ref(j,i) >= 2_i1b) zs_ref(j,i) = 0.0_dp
                  ! resetting elevations over the ocean
                  ! to the present-day sea surface
 end do
@@ -1569,10 +1569,10 @@ call topography3(dxi, deta, z_sl, anfdatname)
 call boundary(time_init, dtime, dxi, deta, &
               delta_ts, glac_index, z_sl, dzsl_dtau, z_mar)
 
-where ((maske==0_i1b).or.(maske==3_i1b))
+where ((mask==0_i1b).or.(mask==3_i1b))
                  ! grounded or floating ice
    as_perp_apl = as_perp
-elsewhere        ! maske==1_i1b or 2_i1b, ice-free land or sea
+elsewhere        ! mask==1_i1b or 2_i1b, ice-free land or sea
    as_perp_apl = 0.0_dp
 end where
 
@@ -1686,7 +1686,7 @@ do j=0, JMAX
       enth_c(kc,j,i) = enth_fct_temp_omega(temp_c(kc,j,i), 0.0_dp)
    end do
 
-   if ( (maske(j,i) == 0_i1b).and.(n_cts(j,i) == 1_i1b) ) then
+   if ( (mask(j,i) == 0_i1b).and.(n_cts(j,i) == 1_i1b) ) then
       do kt=0, KTMAX
          enth_t(kt,j,i) = enth_fct_temp_omega(temp_t_m(kt,j,i), omega_t(kt,j,i))
       end do
@@ -1927,7 +1927,7 @@ call read_2d_input(filename_with_path, &
                    ch_var_name='mask', n_var_type=3, n_ascii_header=6, &
                    field2d_r=field2d_aux)
 
-maske = nint(field2d_aux)
+mask = nint(field2d_aux)
 
 !-------- Further stuff --------
 
@@ -1940,13 +1940,13 @@ eta0 = Y0 *1000.0_dp   ! km -> m
 do i=0, IMAX
 do j=0, JMAX
 
-   if (maske(j,i) <= 1_i1b) then
-      maske(j,i) = 1_i1b
+   if (mask(j,i) <= 1_i1b) then
+      mask(j,i) = 1_i1b
       zs(j,i) = zl0(j,i)
       zb(j,i) = zl0(j,i)
       zl(j,i) = zl0(j,i)
-   else   ! (maske(j,i) >= 2_i1b)
-      maske(j,i) = 2_i1b
+   else   ! (mask(j,i) >= 2_i1b)
+      mask(j,i) = 2_i1b
 #if (MARGIN==1 || MARGIN==2)
       zs(j,i) = zl0(j,i)
       zb(j,i) = zl0(j,i)
@@ -1977,7 +1977,7 @@ do j=0, JMAX
 end do
 end do
 
-maske_old = maske
+mask_old = mask
 
 !-------- Geographic coordinates, metric tensor,
 !                                 gradients of the topography --------
@@ -2060,7 +2060,7 @@ end subroutine topography2
 !<------------------------------------------------------------------------------
 subroutine topography3(dxi, deta, z_sl, anfdatname)
 
-  use read_m, only : read_erg_nc, read_2d_input
+  use read_m, only : read_tms_nc, read_2d_input
 
 #if (GRID==0 || GRID==1)
   use stereo_proj_m
@@ -2083,7 +2083,7 @@ real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 
 !-------- Read data from time-slice file of previous simulation --------
 
-call read_erg_nc(z_sl, anfdatname)
+call read_tms_nc(z_sl, anfdatname)
 
 !-------- Read topography of the relaxed bedrock --------
 

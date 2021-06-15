@@ -104,14 +104,17 @@ function check_args()
 
 function run()
 {
-   (./sico.sh ${MULTI_OPTIONS_1} -m v5_emtp2sge25_expA) \
+   (./sico.sh ${MULTI_OPTIONS_1} -m v5_vialov3d25) \
               >out_multi_101.dat 2>&1
 
-   (./sico.sh ${MULTI_OPTIONS_1} -m v5_grl20_ss25ka) \
+   (./sico.sh ${MULTI_OPTIONS_1} -m v5_emtp2sge25_expA) \
               >out_multi_102.dat 2>&1
 
-   (./sico.sh ${MULTI_OPTIONS_1} -m v5_ant40_ss25ka) \
+   (./sico.sh ${MULTI_OPTIONS_1} -m v5_grl20_ss25ka) \
               >out_multi_103.dat 2>&1
+
+   (./sico.sh ${MULTI_OPTIONS_1} -m v5_ant40_ss25ka) \
+              >out_multi_104.dat 2>&1
 
    #--------
 

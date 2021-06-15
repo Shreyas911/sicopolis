@@ -179,7 +179,7 @@ real(dp), dimension(0:JMAX,0:IMAX) :: accum_flx         , &
                                               zs_flx
 #endif
 
-integer(i1b), dimension(0:IMAX,0:JMAX) :: maske_conv, maske_old_conv, &
+integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_conv, mask_old_conv, &
                                           mask_ablation_type_conv, &
                                           n_cts_conv
 integer(i4b), dimension(0:IMAX,0:JMAX) :: mask_region_conv
@@ -365,7 +365,7 @@ open(unit=11, iostat=ios, file=trim(filename_with_path), status='new', &
               form='unformatted')
 
 if (ios /= 0) then 
-   errormsg = ' >>> output1: Error when opening an erg file!'
+   errormsg = ' >>> output1: Error when opening an erg (time-slice) file!'
    call error(errormsg)
 end if
 
@@ -1248,13 +1248,13 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
 call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
             thisroutine )
 
-!    ---- maske
+!    ---- mask
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
-call check( nf90_def_var(ncid, 'maske', NF90_BYTE, nc2d, ncv), &
+call check( nf90_def_var(ncid, 'mask', NF90_BYTE, nc2d, ncv), &
             thisroutine )
 buffer = 'ice_land_sea_mask'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
@@ -1274,13 +1274,13 @@ call check( nf90_put_att(ncid, ncv, 'flag_meanings', trim(buffer)), &
 call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
             thisroutine )
 
-!    ---- maske_old
+!    ---- mask_old
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
-call check( nf90_def_var(ncid, 'maske_old', NF90_BYTE, nc2d, ncv), &
+call check( nf90_def_var(ncid, 'mask_old', NF90_BYTE, nc2d, ncv), &
             thisroutine )
 buffer = 'ice_land_sea_mask_old'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
@@ -3078,7 +3078,7 @@ do j=0, JMAX
       enth_c(kc,j,i) = enth_fct_temp_omega(temp_c(kc,j,i), 0.0_dp)
    end do
 
-   if ( (maske(j,i)==0_i1b).and.(n_cts(j,i)==1_i1b) ) then
+   if ( (mask(j,i)==0_i1b).and.(n_cts(j,i)==1_i1b) ) then
       do kt=0, KTMAX
          enth_t(kt,j,i) = enth_fct_temp_omega(temp_t_m(kt,j,i), omega_t(kt,j,i))
       end do
@@ -3121,7 +3121,7 @@ vy_m_g = 0.0_dp
 do i=1, IMAX-1
 do j=1, JMAX-1
 
-   if ( (maske(j,i)==0_i1b).or.(maske(j,i)==3_i1b) ) then
+   if ( (mask(j,i)==0_i1b).or.(mask(j,i)==3_i1b) ) then
       vx_m_g(j,i) = 0.5_dp*(vx_m(j,i)+vx_m(j,i-1))
       vy_m_g(j,i) = 0.5_dp*(vy_m(j,i)+vy_m(j-1,i))
    end if
@@ -3141,7 +3141,7 @@ tau_b_drag    = 0.0_dp
 do i=0, IMAX
 do j=0, JMAX
 
-   if (maske(j,i)==0_i1b) then   ! grounded ice
+   if (mask(j,i)==0_i1b) then   ! grounded ice
 
       tau_b_driving(j,i) = RHO*G*H(j,i) &
                            * sqrt( dzs_dxi_g(j,i)**2 + dzs_deta_g(j,i)**2 )
@@ -3152,7 +3152,7 @@ do j=0, JMAX
          tau_b_drag(j,i) = no_value_neg_2   ! dummy value
       end if
 
-   else if (maske(j,i)==3_i1b) then   ! floating ice
+   else if (mask(j,i)==3_i1b) then   ! floating ice
 
       tau_b_driving(j,i) = RHO*G*H(j,i) &
                            * sqrt( dzs_dxi_g(j,i)**2 + dzs_deta_g(j,i)**2 )
@@ -3181,14 +3181,14 @@ A_floating = 0.0_dp
 do i=0, IMAX
 do j=0, JMAX
 
-   if (maske(j,i)==0_i1b) then   ! grounded ice
+   if (mask(j,i)==0_i1b) then   ! grounded ice
 
       V_grounded = V_grounded + H(j,i)*area(j,i)
       A_grounded = A_grounded + area(j,i)
       V_gr_redu  = V_gr_redu &
                    + rhosw_rho_ratio*max((z_sl-zl(j,i)),0.0_dp)*area(j,i)
 
-   else if (maske(j,i)==3_i1b) then   ! floating ice
+   else if (mask(j,i)==3_i1b) then   ! floating ice
 
       V_floating = V_floating + H(j,i)*area(j,i)
       A_floating = A_floating + area(j,i)
@@ -3464,8 +3464,8 @@ H_R_conv = real(H_R,sp)
 do i=0, IMAX
 do j=0, JMAX
 
-   maske_conv(i,j)              = maske(j,i)
-   maske_old_conv(i,j)          = maske_old(j,i)
+   mask_conv(i,j)              = mask(j,i)
+   mask_old_conv(i,j)          = mask_old(j,i)
    mask_ablation_type_conv(i,j) = mask_ablation_type(j,i)
    mask_region_conv(i,j)        = mask_region(j,i)
    n_cts_conv(i,j)              = n_cts(j,i)
@@ -3712,8 +3712,8 @@ write(unit=11) mask_mar_conv
 #endif
 
 write(unit=11) q_geo_conv
-write(unit=11) maske_conv
-write(unit=11) maske_old_conv
+write(unit=11) mask_conv
+write(unit=11) mask_old_conv
 write(unit=11) n_cts_conv
 write(unit=11) kc_cts_conv
 write(unit=11) zs_conv
@@ -3995,13 +3995,13 @@ call check( nf90_put_var(ncid, ncv, q_geo_conv, &
                          start=nc2cor_ij, count=nc2cnt_ij), &
             thisroutine )
 
-call check( nf90_inq_varid(ncid, 'maske', ncv), thisroutine )
-call check( nf90_put_var(ncid, ncv, maske_conv, &
+call check( nf90_inq_varid(ncid, 'mask', ncv), thisroutine )
+call check( nf90_put_var(ncid, ncv, mask_conv, &
                          start=nc2cor_ij, count=nc2cnt_ij), &
             thisroutine )
 
-call check( nf90_inq_varid(ncid, 'maske_old', ncv), thisroutine )
-call check( nf90_put_var(ncid, ncv, maske_old_conv, &
+call check( nf90_inq_varid(ncid, 'mask_old', ncv), thisroutine )
+call check( nf90_put_var(ncid, ncv, mask_old_conv, &
                          start=nc2cor_ij, count=nc2cnt_ij), &
             thisroutine )
 
@@ -5863,7 +5863,7 @@ do j=0, JMAX
 
    if (flag_inner_point(j,i).and.flag_region(j,i)) then
 
-      if (maske(j,i)==0_i1b) then   ! grounded ice
+      if (mask(j,i)==0_i1b) then   ! grounded ice
 
          if (zs(j,i)       > zs_max)  zs_max  = zs(j,i)
          if (H(j,i)        > H_max  ) H_max   = H(j,i)
@@ -5902,7 +5902,7 @@ do j=0, JMAX
             if (Tbh_help > Tbh_max) Tbh_max = Tbh_help
          end if
 
-      else if (maske(j,i)==3_i1b) then   ! floating ice
+      else if (mask(j,i)==3_i1b) then   ! floating ice
                                     ! (basal temperature assumed to be below
                                     ! the pressure melting point for pure ice)
 
@@ -5991,13 +5991,13 @@ do j=0, JMAX
 
       Q_s = Q_s + as_perp_apl(j,i) * area(j,i)
 
-      if (     (maske(j,i)==0_i1b).or.(maske_old(j,i)==0_i1b) &
-           .or.(maske(j,i)==3_i1b).or.(maske_old(j,i)==3_i1b) &
+      if (     (mask(j,i)==0_i1b).or.(mask_old(j,i)==0_i1b) &
+           .or.(mask(j,i)==3_i1b).or.(mask_old(j,i)==3_i1b) &
          ) &   ! grounded or floating ice before or after the time step
          Q_b = Q_b + Q_bm(j,i) * area(j,i)   !!% Also *_apl required
                                              !!% (or delete?)
 
-      if ( (maske(j,i)==0_i1b).or.(maske_old(j,i)==0_i1b) &
+      if ( (mask(j,i)==0_i1b).or.(mask_old(j,i)==0_i1b) &
          ) &   ! grounded ice before or after the time step
          Q_temp = Q_temp + Q_tld(j,i) * area(j,i)   !!% Also *_apl required
                                                     !!% (or delete?)
@@ -6019,8 +6019,8 @@ do j=0, JMAX
 
    if (flag_inner_point(j,i).and.flag_region(j,i)) then
 
-      if (     (maske(j,i)==0_i1b).or.(maske_old(j,i)==0_i1b) &
-           .or.(maske(j,i)==3_i1b).or.(maske_old(j,i)==3_i1b) ) then
+      if (     (mask(j,i)==0_i1b).or.(mask_old(j,i)==0_i1b) &
+           .or.(mask(j,i)==3_i1b).or.(mask_old(j,i)==3_i1b) ) then
                ! grounded or floating ice before or after the time step
          dV_dt = dV_dt + (dzs_dtau(j,i)-dzb_dtau(j,i))*area(j,i)
                  !!% change to more direct, V_tot-based computation?
