@@ -169,11 +169,13 @@ The latter can be configured if you want to download only selected input files (
 
 \item Locate the file sico\_configs.sh in the directory sicopolis/runs, and open it with a text editor.
 
-\item Set the flags NETCDF\_FLAG, LIS\_FLAG, OPENMP\_FLAG and LARGE\_DATA\_\-FLAG according to your needs.
+\item Set the flags
 \\
-Pre-selected is NETCDF\_FLAG=``true'' (with NetCDF) and the rest ``false''.
+NETCDF\_FLAG, LIS\_FLAG, OPENMP\_FLAG and LARGE\_DATA\_\-FLAG 
+\\
+according to your needs (default is ``true''/``true''/``true''/``false'').
 
-If you wish to create output in native binary format rather than in NetCDF format, set NETCDF\_FLAG to ``false''. For simulations with shallow-shelf dynamics (for floating ice) or hybrid shallow-ice--shelfy-stream dynamics (for grounded ice), LIS\_FLAG and OPENMP\_FLAG must both be set to ``true''. For high-resolution simulations (e.g., Greenland/5\,km or Antarctica/10\,km), LARGE\_DATA\_FLAG must be set to ``true''.
+If you wish to create output in native binary format rather than in NetCDF format, set NETCDF\_FLAG to ``false''. For simulations with shallow-shelf dynamics (for floating ice) or hybrid shallow-ice--shelfy-stream dynamics (for grounded ice), LIS\_FLAG and OPENMP\_FLAG must both be set to ``true''. For high-resolution simulations (e.g., Greenland/5\,km or Antarctica/8\,km), LARGE\_DATA\_FLAG must be set to ``true''.
 
 \item If NETCDF\_FLAG=``true'', set NETCDFHOME to the correct path of your NetCDF installation.
 
