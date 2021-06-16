@@ -5,7 +5,7 @@
 !
 #define       MODEL_SICOPOLIS
 #define       VERSION '5-dev'
-#define       DATE    '2021-06-15'
+#define       DATE    '2021-06-16'
 !
 !> @mainpage
 !!
@@ -189,9 +189,7 @@
 #include "subroutines/general/compare_float_m.F90"
 #endif /* Normal */
 
-#if (NETCDF==2)
 #include "subroutines/general/nc_check_m.F90"
-#endif
 
 #include "subroutines/general/read_m.F90"
 

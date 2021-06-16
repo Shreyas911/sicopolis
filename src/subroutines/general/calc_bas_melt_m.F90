@@ -673,10 +673,8 @@ subroutine sub_ice_shelf_melting_param_2(time, z_sl, &
                                          rhow_rho_ratio, z_abyssal, &
                                          n_year_CE)
 
-#if (NETCDF > 1)
   use netcdf
   use nc_check_m
-#endif
 
 #if !defined(ALLOW_OPENAD) /* Normal */
   use compare_float_m
@@ -706,12 +704,10 @@ real(dp), dimension(0:IMAX,0:JMAX,0:NZ_TF_BM) :: tf_bm_aux
 
 character(len=64), parameter :: thisroutine = 'sub_ice_shelf_melting_param_2'
 
-#if (NETCDF > 1)
 integer(i4b) :: ncid
 !     ncid:      File ID
 integer(i4b) :: ncv
 !     ncv:       Variable ID
-#endif
 
 integer(i4b) :: ninf, nsup, n_bm_regions
 real(dp)     :: dz_inv, tf_bm_no_value_neg

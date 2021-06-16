@@ -1022,7 +1022,6 @@ write(10, fmt=trim(fmt2a)) 'ERGDAT      = ', ERGDAT
 #if (defined(OUTPUT_FLUX_VARS))
 write(10, fmt=trim(fmt2a)) 'OUTPUT_FLUX_VARS = ', OUTPUT_FLUX_VARS
 #endif
-write(10, fmt=trim(fmt2a)) 'NETCDF      = ', NETCDF
 #if (OUTPUT==2 || OUTPUT==3)
 write(10, fmt=trim(fmt2a)) 'n_output    = ', n_output
 do n=1, n_output

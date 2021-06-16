@@ -62,10 +62,8 @@ subroutine sico_init(delta_ts, glac_index, &
   use enth_temp_omega_m, only : calc_c_int_table, calc_c_int_inv_table, &
                                 enth_fct_temp_omega
 
-#if (NETCDF > 1)
   use netcdf
   use nc_check_m
-#endif
 
   use read_m, only : read_target_topo_nc, read_2d_input, read_phys_para
 
@@ -127,11 +125,9 @@ real(dp) :: gamma_slide_aux(N_SLIDE_REGIONS)
 real(sp), dimension(0:IMAX,0:JMAX) :: smb_corr_in_conv
 #endif
 
-#if (NETCDF > 1)
 integer(i4b) :: ncid, ncv
 !    ncid:       File ID
 !     ncv:       Variable ID
-#endif
 
 character(len=64), parameter :: thisroutine = 'sico_init'
 
@@ -1138,7 +1134,6 @@ write(10, fmt=trim(fmt2a)) 'ERGDAT      = ', ERGDAT
 #if (defined(OUTPUT_FLUX_VARS))
 write(10, fmt=trim(fmt2a)) 'OUTPUT_FLUX_VARS = ', OUTPUT_FLUX_VARS
 #endif
-write(10, fmt=trim(fmt2a)) 'NETCDF      = ', NETCDF
 #if (OUTPUT==2 || OUTPUT==3)
 write(10, fmt=trim(fmt2a)) 'n_output    = ', n_output
 do n=1, n_output
@@ -1231,17 +1226,7 @@ mean_accum = MEAN_ACCUM*(1.0e-03_dp/year2sec)*(RHO_W/RHO)
 
 target_topo_dat_name = trim(TARGET_TOPO_DAT_NAME)
 
-#if (NETCDF==1)
-errormsg = ' >>> sico_init: Reading of target topography' &
-         //         end_of_line &
-         //'        only implemented for NetCDF files (NETCDF==2)!'
-call error(errormsg)
-#elif (NETCDF==2)
 call read_target_topo_nc(target_topo_dat_name)
-#else
-errormsg = ' >>> sico_init: Parameter NETCDF must be either 1 or 2!'
-call error(errormsg)
-#endif
 
 #endif
 
