@@ -22,14 +22,14 @@ NETCDF_FLAG="true"
 #   "true"  -> linking of SICOPOLIS with NetCDF library
 #   "false" -> linking of SICOPOLIS without NetCDF library
 
-LIS_FLAG="false"
+LIS_FLAG="true"
 #   "true"  -> linking of SICOPOLIS with Lis library
 #              (requires also OPENMP_FLAG="true")
 #   "false" -> linking of SICOPOLIS without Lis library
 
-OPENMP_FLAG="false"
+OPENMP_FLAG="true"
 #   "true"  -> OpenMP will be used
-#              (so far only required if LIS_FLAG="true")
+#              (required if LIS_FLAG="true")
 #   "false" -> OpenMP will not be used
 
 LARGE_DATA_FLAG="false"
