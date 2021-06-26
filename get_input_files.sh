@@ -5,7 +5,7 @@
 #   Downloading the input files for SICOPOLIS,
 #   copying them to the corresponding directories.
 #   
-#    - Ralf Greve, 2021-06-11.
+#    - Ralf Greve, 2021-06-26.
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #-------- Settings (to be customized) --------
@@ -26,6 +26,10 @@ NMARS_FLAG=1   # North polar cap of Mars:
                #    1 - get files, 0 - don't get files
 SMARS_FLAG=1   # South polar cap of Mars:
                #    1 - get files, 0 - don't get files
+HEINO_FLAG=1   # ISMIP HEINO:
+               #    1 - get files, 0 - don't get files
+MOCHO_FLAG=1   # Mocho-Choshuenco ice cap:
+               #    1 - get files, 0 - don't get files
 
 #-------- Initialization --------
 
@@ -34,6 +38,7 @@ REPO_URL=http://wwwice.lowtem.hokudai.ac.jp/repo/sicopolis/sico_in
 SICOPOLIS_HOME=$PWD
 
 domains=
+domains_xyz=
 
 if [[ $ANT_FLAG -eq 1 ]]; then
    domains="`echo $domains` ant"; fi
@@ -51,6 +56,10 @@ if [[ $NMARS_FLAG -eq 1 ]]; then
    domains="`echo $domains` nmars"; fi
 if [[ $SMARS_FLAG -eq 1 ]]; then
    domains="`echo $domains` smars"; fi
+if [[ $HEINO_FLAG -eq 1 ]]; then
+   domains_xyz="`echo $domains_xyz` heino"; fi
+if [[ $MOCHO_FLAG -eq 1 ]]; then
+   domains_xyz="`echo $domains_xyz` mocho"; fi
 
 TMP_DIR="tmp_`date --iso-8601='seconds'`"
 mkdir $TMP_DIR
@@ -67,6 +76,12 @@ for domain in ${domains}; do
    tar -x -v -z -f ${domain}.tgz
 done
 
+for domain in ${domains_xyz}; do
+   echo; echo "  ${domain} ..."
+   wget ${REPO_URL}/${domain}.tgz
+   tar -x -v -z -f ${domain}.tgz
+done
+
 #-------- Copying files --------
 
 MV=/bin/mv
@@ -78,6 +93,11 @@ echo; echo "Copying files:"
 for domain in ${domains}; do
    echo; echo "  ${domain} ..."
    $MV -f ${domain}/* ${SICOPOLIS_HOME}/${SICOPOLIS_INPUT}/${domain}/
+done
+
+for domain in ${domains_xyz}; do
+   echo; echo "  ${domain} ..."
+   $MV -f ${domain}/* ${SICOPOLIS_HOME}/${SICOPOLIS_INPUT}/xyz/
 done
 
 #-------- Clean-up --------
