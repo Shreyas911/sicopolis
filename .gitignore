@@ -36,6 +36,8 @@ my_*
 !/sico_in/nmars/phys_para*
 /sico_in/smars/*
 !/sico_in/smars/phys_para*
+/sico_in/xyz/*
+!/sico_in/xyz/phys_para*
 
 /sico_in/xyz/[Nn]pi*.*
 /sico_in/xyz/NPI*.*
