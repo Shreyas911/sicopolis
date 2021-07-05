@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2021-07-04
+!! 2021-07-05
 !!
 !! @section Copyright
 !!
@@ -637,11 +637,25 @@ call check( nf90_get_var(ncid, ncv, H_w_erg) )
 call check( nf90_inq_varid(ncid, 'p_b_w', ncv) )
 call check( nf90_get_var(ncid, ncv, p_b_w_erg) )
 
-call check( nf90_inq_varid(ncid, 'tau_dr', ncv) )
-call check( nf90_get_var(ncid, ncv, tau_dr_erg) )
+ierr1 = nf90_inq_varid(ncid, 'tau_dr', ncv)
+if (ierr1 == nf90_noerr) then
+   call check( nf90_get_var(ncid, ncv, tau_dr_erg, start=nc1cor) )
+else
+   ierr2 = nf90_inq_varid(ncid, 'tau_b_driving', ncv)   ! obsolete name
+   if (ierr2 == nf90_noerr) then
+      call check( nf90_get_var(ncid, ncv, tau_dr_erg, start=nc1cor) )
+   end if
+end if
 
-call check( nf90_inq_varid(ncid, 'tau_b', ncv) )
-call check( nf90_get_var(ncid, ncv, tau_b_erg) )
+ierr1 = nf90_inq_varid(ncid, 'tau_b', ncv)
+if (ierr1 == nf90_noerr) then
+   call check( nf90_get_var(ncid, ncv, tau_b_erg, start=nc1cor) )
+else
+   ierr2 = nf90_inq_varid(ncid, 'tau_b_drag', ncv)   ! obsolete name
+   if (ierr2 == nf90_noerr) then
+      call check( nf90_get_var(ncid, ncv, tau_b_erg, start=nc1cor) )
+   end if
+end if
 
 call check( nf90_inq_varid(ncid, 'q_gl_g', ncv) )
 call check( nf90_get_var(ncid, ncv, q_gl_g_erg) )
@@ -678,7 +692,7 @@ ierr1 = nf90_inq_varid(ncid, 'bmb_fl_tot', ncv)
 if (ierr1 == nf90_noerr) then
    call check( nf90_get_var(ncid, ncv, bmb_fl_tot_erg, start=nc1cor) )
 else
-   ierr2 = nf90_inq_varid(ncid, 'bmb_si_tot', ncv)
+   ierr2 = nf90_inq_varid(ncid, 'bmb_si_tot', ncv)   ! obsolete name
    if (ierr2 == nf90_noerr) then
       call check( nf90_get_var(ncid, ncv, bmb_fl_tot_erg, start=nc1cor) )
    end if

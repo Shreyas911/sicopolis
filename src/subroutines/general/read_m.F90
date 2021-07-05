@@ -603,11 +603,21 @@ call error(errormsg)
   call check( nf90_inq_varid(ncid, 'temph_b', ncv) )
   call check( nf90_get_var(ncid, ncv, temph_b_conv) )
 
-  call check( nf90_inq_varid(ncid, 'tau_dr', ncv) )
-  call check( nf90_get_var(ncid, ncv, tau_dr_conv) )
+  if ( nf90_inq_varid(ncid, 'tau_dr', ncv) == nf90_noerr ) then
+     call check( nf90_get_var(ncid, ncv, tau_dr_conv) )
+  else
+     write(6,'(/1x,a)') '>>> read_tms_nc: Variable tau_dr'
+     write(6, '(1x,a)') '                 not available in read file *.nc.'
+     tau_dr_conv = 0.0_sp
+  end if
 
-  call check( nf90_inq_varid(ncid, 'tau_b', ncv) )
-  call check( nf90_get_var(ncid, ncv, tau_b_conv) )
+  if ( nf90_inq_varid(ncid, 'tau_b', ncv) == nf90_noerr ) then
+     call check( nf90_get_var(ncid, ncv, tau_b_conv) )
+  else
+     write(6,'(/1x,a)') '>>> read_tms_nc: Variable tau_b'
+     write(6, '(1x,a)') '                 not available in read file *.nc.'
+     tau_b_conv = 0.0_sp
+  end if
 
   call check( nf90_inq_varid(ncid, 'p_b_w', ncv) )
   call check( nf90_get_var(ncid, ncv, p_b_w_conv) )

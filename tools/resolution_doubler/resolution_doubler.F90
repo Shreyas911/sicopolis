@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2021-07-04
+!! 2021-07-05
 !!
 !! @section Copyright
 !!
@@ -619,11 +619,21 @@ call check( nf90_get_var(ncid, ncv, temp_b_erg) )
 call check( nf90_inq_varid(ncid, 'temph_b', ncv) )
 call check( nf90_get_var(ncid, ncv, temph_b_erg) )
 
-call check( nf90_inq_varid(ncid, 'tau_dr', ncv) )
-call check( nf90_get_var(ncid, ncv, tau_dr_erg) )
+if ( nf90_inq_varid(ncid, 'tau_dr', ncv) == nf90_noerr ) then
+   call check( nf90_get_var(ncid, ncv, tau_dr_erg) )
+else
+   write(6,'(/a)') ' >>> read_nc: Variable tau_dr'
+   write(6, '(a)') '              not available in read file *.nc.'
+   tau_dr_erg = 0.0_sp
+end if
 
-call check( nf90_inq_varid(ncid, 'tau_b', ncv) )
-call check( nf90_get_var(ncid, ncv, tau_b_erg) )
+if ( nf90_inq_varid(ncid, 'tau_b', ncv) == nf90_noerr ) then
+   call check( nf90_get_var(ncid, ncv, tau_b_erg) )
+else
+   write(6,'(/a)') ' >>> read_nc: Variable tau_b'
+   write(6, '(a)') '              not available in read file *.nc.'
+   tau_b_erg = 0.0_sp
+end if
 
 call check( nf90_inq_varid(ncid, 'p_b_w', ncv) )
 call check( nf90_get_var(ncid, ncv, p_b_w_erg) )
