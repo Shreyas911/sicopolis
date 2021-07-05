@@ -344,7 +344,8 @@ contains
       dzm_dxi_g,dzb_dxi_g,dH_c_dxi_g,dH_t_dxi_g,dzs_deta_g,dzm_deta_g,&
       dzb_deta_g,dH_c_deta_g,dH_t_deta_g,dzs_dtau,dzm_dtau,dzb_dtau,&
       dzl_dtau,dH_c_dtau,dH_t_dtau,p_weert,q_weert,p_weert_inv,&
-      c_slide,d_help_b,c_drag,p_b_w,&
+      c_slide,d_help_b,c_drag, &
+      p_b, p_b_w, p_b_red, tau_dr, tau_b, &
       vx_b,vy_b,&
       vx_m,vy_m,vx_m_sia,vy_m_sia,vx_m_ssa,vy_m_ssa,&
       ratio_sl_x,ratio_sl_y,ratio_sl,&
@@ -572,7 +573,8 @@ contains
          a_dzm_dxi_g,a_dzb_dxi_g,a_dH_c_dxi_g,a_dH_t_dxi_g,a_dzs_deta_g,a_dzm_deta_g,&
          a_dzb_deta_g,a_dH_c_deta_g,a_dH_t_deta_g,a_dzs_dtau,a_dzm_dtau,a_dzb_dtau,&
          a_dzl_dtau,a_dH_c_dtau,a_dH_t_dtau,a_p_weert,a_q_weert,a_p_weert_inv,&
-         a_c_slide,a_d_help_b,a_c_drag,a_p_b_w,&
+         a_c_slide,a_d_help_b,a_c_drag, &
+         a_p_b, a_p_b_w, a_p_b_red, a_tau_dr, a_tau_b, &
          a_vx_b,a_vy_b,&
          a_vx_m,a_vy_m,a_vx_m_sia,a_vy_m_sia,a_vx_m_ssa,a_vy_m_ssa,&
          a_ratio_sl_x,a_ratio_sl_y,a_ratio_sl,&
@@ -860,7 +862,11 @@ contains
     real(dp)                                           :: a_OMEGA_MAX
     real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_omega_t
     real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_omega_t_new
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_p_b
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_p_b_w
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_p_b_red
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_tau_dr
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_tau_b
     integer(i4b), dimension(0:JMAX,0:IMAX)             :: a_p_weert
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_p_weert_inv
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_phi
@@ -1311,11 +1317,15 @@ contains
     precip_ma_lgm_anom = a_precip_ma_lgm_anom
     precip_ma_present = a_precip_ma_present
     precip_present%v = a_precip_present
+    p_b = a_p_b
 #if (defined(ANT) && SLIDE_LAW==2)
     p_b_w%v = a_p_b_w
 #elif (SLIDE_LAW==1)
     p_b_w = a_p_b_w
 #endif
+    p_b_red = a_p_b_red
+    tau_dr = a_tau_dr
+    tau_b = a_tau_b
     p_weert = a_p_weert
     p_weert_inv = a_p_weert_inv
 #if (defined(ANT))

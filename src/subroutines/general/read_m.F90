@@ -150,7 +150,7 @@ call error(errormsg)
               vx_s_g_conv, vy_s_g_conv, vz_s_conv, vh_s_conv, &
               vx_m_g_conv, vy_m_g_conv,            vh_m_conv, &
               temp_b_conv, temph_b_conv, &
-              tau_b_driving_conv, tau_b_drag_conv, &
+              tau_dr_conv, tau_b_conv, &
               p_b_w_conv, q_w_conv, q_w_x_conv, q_w_y_conv, H_w_conv, &
               q_gl_g_conv, &
               ratio_sl_x_conv, ratio_sl_y_conv, ratio_sl_conv, &
@@ -294,8 +294,8 @@ call error(errormsg)
   read(unit=11) vh_m_conv
   read(unit=11) temp_b_conv
   read(unit=11) temph_b_conv
-  read(unit=11) tau_b_driving_conv
-  read(unit=11) tau_b_drag_conv
+  read(unit=11) tau_dr_conv
+  read(unit=11) tau_b_conv
   read(unit=11) p_b_w_conv
   read(unit=11) q_w_conv
   read(unit=11) q_w_x_conv
@@ -603,11 +603,11 @@ call error(errormsg)
   call check( nf90_inq_varid(ncid, 'temph_b', ncv) )
   call check( nf90_get_var(ncid, ncv, temph_b_conv) )
 
-  call check( nf90_inq_varid(ncid, 'tau_b_driving', ncv) )
-  call check( nf90_get_var(ncid, ncv, tau_b_driving_conv) )
+  call check( nf90_inq_varid(ncid, 'tau_dr', ncv) )
+  call check( nf90_get_var(ncid, ncv, tau_dr_conv) )
 
-  call check( nf90_inq_varid(ncid, 'tau_b_drag', ncv) )
-  call check( nf90_get_var(ncid, ncv, tau_b_drag_conv) )
+  call check( nf90_inq_varid(ncid, 'tau_b', ncv) )
+  call check( nf90_get_var(ncid, ncv, tau_b_conv) )
 
   call check( nf90_inq_varid(ncid, 'p_b_w', ncv) )
   call check( nf90_get_var(ncid, ncv, p_b_w_conv) )
