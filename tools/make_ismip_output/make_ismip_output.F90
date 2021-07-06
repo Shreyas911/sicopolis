@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2021-06-15
+!! 2021-07-05
 !!
 !! @section Copyright
 !!
@@ -415,7 +415,7 @@ real(dp), dimension(0:IMAX,0:JMAX) :: lon_erg, lat_erg, &
             vx_m_g_erg, vy_m_g_erg,           vh_m_erg, &
             temp_s_erg, temp_b_erg, temph_b_erg, &
             H_w_erg, p_b_w_erg, &
-            tau_b_driving_erg, tau_b_drag_erg, &
+            tau_dr_erg, tau_b_erg, &
             q_gl_g_erg
 
 integer(i4b) :: ios
@@ -637,11 +637,25 @@ call check( nf90_get_var(ncid, ncv, H_w_erg) )
 call check( nf90_inq_varid(ncid, 'p_b_w', ncv) )
 call check( nf90_get_var(ncid, ncv, p_b_w_erg) )
 
-call check( nf90_inq_varid(ncid, 'tau_b_driving', ncv) )
-call check( nf90_get_var(ncid, ncv, tau_b_driving_erg) )
+ierr1 = nf90_inq_varid(ncid, 'tau_dr', ncv)
+if (ierr1 == nf90_noerr) then
+   call check( nf90_get_var(ncid, ncv, tau_dr_erg, start=nc1cor) )
+else
+   ierr2 = nf90_inq_varid(ncid, 'tau_b_driving', ncv)   ! obsolete name
+   if (ierr2 == nf90_noerr) then
+      call check( nf90_get_var(ncid, ncv, tau_dr_erg, start=nc1cor) )
+   end if
+end if
 
-call check( nf90_inq_varid(ncid, 'tau_b_drag', ncv) )
-call check( nf90_get_var(ncid, ncv, tau_b_drag_erg) )
+ierr1 = nf90_inq_varid(ncid, 'tau_b', ncv)
+if (ierr1 == nf90_noerr) then
+   call check( nf90_get_var(ncid, ncv, tau_b_erg, start=nc1cor) )
+else
+   ierr2 = nf90_inq_varid(ncid, 'tau_b_drag', ncv)   ! obsolete name
+   if (ierr2 == nf90_noerr) then
+      call check( nf90_get_var(ncid, ncv, tau_b_erg, start=nc1cor) )
+   end if
+end if
 
 call check( nf90_inq_varid(ncid, 'q_gl_g', ncv) )
 call check( nf90_get_var(ncid, ncv, q_gl_g_erg) )
@@ -678,7 +692,7 @@ ierr1 = nf90_inq_varid(ncid, 'bmb_fl_tot', ncv)
 if (ierr1 == nf90_noerr) then
    call check( nf90_get_var(ncid, ncv, bmb_fl_tot_erg, start=nc1cor) )
 else
-   ierr2 = nf90_inq_varid(ncid, 'bmb_si_tot', ncv)
+   ierr2 = nf90_inq_varid(ncid, 'bmb_si_tot', ncv)   ! obsolete name
    if (ierr2 == nf90_noerr) then
       call check( nf90_get_var(ncid, ncv, bmb_fl_tot_erg, start=nc1cor) )
    end if
@@ -775,12 +789,12 @@ sftflf_r = 0.0_dp
 do i=0, IMAX
 do j=0, JMAX
 
-   lon_r(i,j)   = lon_erg(i,j)             ! deg E
-   lat_r(i,j)   = lat_erg(i,j)             ! deg N
-   lithk_r(i,j) = H_erg(i,j)               ! m
-   orog_r(i,j)  = zs_erg(i,j)              ! m
-   base_r(i,j)  = zb_erg(i,j)              ! m
-   topg_r(i,j)  = zl_erg(i,j)              ! m
+   lon_r(i,j)   = lon_erg(i,j)   ! deg E
+   lat_r(i,j)   = lat_erg(i,j)   ! deg N
+   lithk_r(i,j) = H_erg(i,j)     ! m
+   orog_r(i,j)  = zs_erg(i,j)    ! m
+   base_r(i,j)  = zb_erg(i,j)    ! m
+   topg_r(i,j)  = zl_erg(i,j)    ! m
 
    acabf_r(i,j) = as_perp_apl_erg(i,j) * rho/year_to_year_or_sec
                                        ! m/a -> kg/(m2*a) | kg/(m2*s)
@@ -820,26 +834,23 @@ do j=0, JMAX
    yvelmean_r(i,j)   = vy_m_g_erg(i,j)  / year_to_year_or_sec   ! m/a | m/s
    horvelmean_r(i,j) = vh_m_erg(i,j)    / year_to_year_or_sec   ! m/a | m/s
 
-   litemptop_r(i,j)  = temp_s_erg(i,j) + T0     ! C -> K
-   litempbot_r(i,j)  = temp_b_erg(i,j) + T0     ! C -> K
+   litemptop_r(i,j)  = temp_s_erg(i,j) + T0   ! C -> K
+   litempbot_r(i,j)  = temp_b_erg(i,j) + T0   ! C -> K
 
    if (mask_erg(i,j)==0_i1b) then
-      litempbotgr_r(i,j) = temp_b_erg(i,j) + T0     ! C -> K
+      litempbotgr_r(i,j) = temp_b_erg(i,j) + T0   ! C -> K
    else
       litempbotgr_r(i,j) = no_value_large_dp
    end if
 
    if (mask_erg(i,j)==3_i1b) then
-      litempbotfl_r(i,j) = temp_b_erg(i,j) + T0     ! C -> K
+      litempbotfl_r(i,j) = temp_b_erg(i,j) + T0   ! C -> K
    else
       litempbotfl_r(i,j) = no_value_large_dp
    end if
 
-#if (DYNAMICS==1 && MARGIN!=3)
-   strbasemag_r(i,j) = tau_b_drag_erg(i,j)      ! Pa (SIA only)
-#else
-   strbasemag_r(i,j) = no_value_large_dp
-#endif
+   strbasemag_r(i,j) = tau_b_erg(i,j)   ! Pa
+
    if (abs(calving_apl_erg(i,j)) < 0.999_dp*no_value_large_dp) then
       licalvf_r(i,j)   = calving_apl_erg(i,j) * (-rho/year_to_year_or_sec)
                                           ! m/a -> kg/(m2*a) | kg/(m2*s),
@@ -870,10 +881,10 @@ end do
 
 else if (n_variable_dim == 2) then
 
-lim_r             = V_tot_erg * rho       ! m3 -> kg
-limnsw_r          = V_af_erg  * rho       ! m3 -> kg
-iareagr_r         = A_grounded_erg        ! m2
-iareafl_r         = A_floating_erg        ! m2
+lim_r             = V_tot_erg * rho   ! m3 -> kg
+limnsw_r          = V_af_erg  * rho   ! m3 -> kg
+iareagr_r         = A_grounded_erg    ! m2
+iareafl_r         = A_floating_erg    ! m2
 tendacabf_r       = Q_s_erg * rho/year_to_year_or_sec
                                 ! m3/a -> kg/a | kg/s
 tendlibmassbf_r   = bmb_tot_erg * rho/year_to_year_or_sec

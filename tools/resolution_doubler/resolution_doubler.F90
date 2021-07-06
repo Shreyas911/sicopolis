@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2021-06-15
+!! 2021-07-05
 !!
 !! @section Copyright
 !!
@@ -113,7 +113,7 @@ real(sp), dimension(0:IMAX,0:JMAX) :: lambda_erg, phi_erg, &
             vx_s_g_erg, vy_s_g_erg, vz_s_erg, vh_s_erg, &
             vx_m_g_erg, vy_m_g_erg,           vh_m_erg, &
             temp_b_erg, temph_b_erg, &
-            tau_b_driving_erg, tau_b_drag_erg, &
+            tau_dr_erg, tau_b_erg, &
             p_b_w_erg, q_w_erg, q_w_x_erg, q_w_y_erg, H_w_erg, &
             q_gl_g_erg, &
             ratio_sl_x_erg, ratio_sl_y_erg, &
@@ -184,7 +184,7 @@ real(sp), dimension(0:2*IMAX,0:2*JMAX) :: lambda_dbl, phi_dbl, &
             vx_s_g_dbl, vy_s_g_dbl, vz_s_dbl, vh_s_dbl, &
             vx_m_g_dbl, vy_m_g_dbl,           vh_m_dbl, &
             temp_b_dbl, temph_b_dbl, &
-            tau_b_driving_dbl, tau_b_drag_dbl, &
+            tau_dr_dbl, tau_b_dbl, &
             p_b_w_dbl, q_w_dbl, q_w_x_dbl, q_w_y_dbl, H_w_dbl, &
             q_gl_g_dbl, &
             ratio_sl_x_dbl, ratio_sl_y_dbl, &
@@ -619,11 +619,21 @@ call check( nf90_get_var(ncid, ncv, temp_b_erg) )
 call check( nf90_inq_varid(ncid, 'temph_b', ncv) )
 call check( nf90_get_var(ncid, ncv, temph_b_erg) )
 
-call check( nf90_inq_varid(ncid, 'tau_b_driving', ncv) )
-call check( nf90_get_var(ncid, ncv, tau_b_driving_erg) )
+if ( nf90_inq_varid(ncid, 'tau_dr', ncv) == nf90_noerr ) then
+   call check( nf90_get_var(ncid, ncv, tau_dr_erg) )
+else
+   write(6,'(/a)') ' >>> read_nc: Variable tau_dr'
+   write(6, '(a)') '              not available in read file *.nc.'
+   tau_dr_erg = 0.0_sp
+end if
 
-call check( nf90_inq_varid(ncid, 'tau_b_drag', ncv) )
-call check( nf90_get_var(ncid, ncv, tau_b_drag_erg) )
+if ( nf90_inq_varid(ncid, 'tau_b', ncv) == nf90_noerr ) then
+   call check( nf90_get_var(ncid, ncv, tau_b_erg) )
+else
+   write(6,'(/a)') ' >>> read_nc: Variable tau_b'
+   write(6, '(a)') '              not available in read file *.nc.'
+   tau_b_erg = 0.0_sp
+end if
 
 call check( nf90_inq_varid(ncid, 'p_b_w', ncv) )
 call check( nf90_get_var(ncid, ncv, p_b_w_erg) )
@@ -889,8 +899,8 @@ do jj = 0, 2*JMAX, 2
    dH_c_dtau_dbl(ii,jj) = dH_c_dtau_erg(i,j)
    dH_t_dtau_dbl(ii,jj) = dH_t_dtau_erg(i,j)
    dH_dtau_dbl(ii,jj)   = dH_dtau_erg(i,j)
-   tau_b_driving_dbl(ii,jj) = tau_b_driving_erg(i,j)
-   tau_b_drag_dbl(ii,jj)    = tau_b_drag_erg(i,j)
+   tau_dr_dbl(ii,jj)    = tau_dr_erg(i,j)
+   tau_b_dbl(ii,jj)     = tau_b_erg(i,j)
    p_b_w_dbl(ii,jj)     = p_b_w_erg(i,j)
    q_w_dbl(ii,jj)       = q_w_erg(i,j)
    q_w_x_dbl(ii,jj)     = q_w_x_erg(i,j)
@@ -973,10 +983,8 @@ do jj = 0, 2*JMAX, 2
    dH_c_dtau_dbl(ii,jj) = 0.5*(dH_c_dtau_erg(i1,j)+dH_c_dtau_erg(i2,j))
    dH_t_dtau_dbl(ii,jj) = 0.5*(dH_t_dtau_erg(i1,j)+dH_t_dtau_erg(i2,j))
    dH_dtau_dbl(ii,jj)   = 0.5*(dH_dtau_erg(i1,j)+dH_dtau_erg(i2,j))
-   tau_b_driving_dbl(ii,jj) = 0.5*( tau_b_driving_erg(i1,j) &
-                                   +tau_b_driving_erg(i2,j) )
-   tau_b_drag_dbl(ii,jj)    = 0.5*( tau_b_drag_erg(i1,j) &
-                                   +tau_b_drag_erg(i2,j) )
+   tau_dr_dbl(ii,jj)    = 0.5*(tau_dr_erg(i1,j)+tau_dr_erg(i2,j))
+   tau_b_dbl(ii,jj)     = 0.5*(tau_b_erg(i1,j)+tau_b_erg(i2,j))
    p_b_w_dbl(ii,jj)     = 0.5*(p_b_w_erg(i1,j)+p_b_w_erg(i2,j))
    q_w_dbl(ii,jj)       = 0.5*(q_w_erg(i1,j)+q_w_erg(i2,j))
    q_w_x_dbl(ii,jj)     = 0.5*(q_w_x_erg(i1,j)+q_w_x_erg(i2,j))
@@ -1058,10 +1066,8 @@ do jj = 1, 2*JMAX-1, 2
    dH_c_dtau_dbl(ii,jj) = 0.5*(dH_c_dtau_erg(i,j1)+dH_c_dtau_erg(i,j2))
    dH_t_dtau_dbl(ii,jj) = 0.5*(dH_t_dtau_erg(i,j1)+dH_t_dtau_erg(i,j2))
    dH_dtau_dbl(ii,jj)   = 0.5*(dH_dtau_erg(i,j1)+dH_dtau_erg(i,j2))
-   tau_b_driving_dbl(ii,jj) = 0.5*( tau_b_driving_erg(i,j1) &
-                                   +tau_b_driving_erg(i,j2) )
-   tau_b_drag_dbl(ii,jj)    = 0.5*( tau_b_drag_erg(i,j1) &
-                                   +tau_b_drag_erg(i,j2) )
+   tau_dr_dbl(ii,jj)    = 0.5*(tau_dr_erg(i,j1)+tau_dr_erg(i,j2))
+   tau_b_dbl(ii,jj)     = 0.5*(tau_b_erg(i,j1)+tau_b_erg(i,j2))
    p_b_w_dbl(ii,jj)     = 0.5*(p_b_w_erg(i,j1)+p_b_w_erg(i,j2))
    q_w_dbl(ii,jj)       = 0.5*(q_w_erg(i,j1)+q_w_erg(i,j2))
    q_w_x_dbl(ii,jj)     = 0.5*(q_w_x_erg(i,j1)+q_w_x_erg(i,j2))
@@ -1213,14 +1219,10 @@ do jj = 1, 2*JMAX-1, 2
                                 +dH_t_dtau_erg(i1,j2)+dH_t_dtau_erg(i2,j2) )
    dH_dtau_dbl(ii,jj)   = 0.25*( dH_dtau_erg(i1,j1)+dH_dtau_erg(i2,j1) &
                                 +dH_dtau_erg(i1,j2)+dH_dtau_erg(i2,j2) )
-   tau_b_driving_dbl(ii,jj) = 0.25*( tau_b_driving_erg(i1,j1) &
-                                    +tau_b_driving_erg(i2,j1) &
-                                    +tau_b_driving_erg(i1,j2) &
-                                    +tau_b_driving_erg(i2,j2) )
-   tau_b_drag_dbl(ii,jj)    = 0.25*( tau_b_drag_erg(i1,j1) &
-                                    +tau_b_drag_erg(i2,j1) &
-                                    +tau_b_drag_erg(i1,j2) &
-                                    +tau_b_drag_erg(i2,j2) )
+   tau_dr_dbl(ii,jj)    = 0.25*( tau_dr_erg(i1,j1)+tau_dr_erg(i2,j1) &
+                                +tau_dr_erg(i1,j2)+tau_dr_erg(i2,j2) )
+   tau_b_dbl(ii,jj)     = 0.25*( tau_b_erg(i1,j1)+tau_b_erg(i2,j1) &
+                                +tau_b_erg(i1,j2)+tau_b_erg(i2,j2) )
    p_b_w_dbl(ii,jj)     = 0.25*( p_b_w_erg(i1,j1)+p_b_w_erg(i2,j1) &
                                 +p_b_w_erg(i1,j2)+p_b_w_erg(i2,j2) )
    q_w_dbl(ii,jj)       = 0.25*( q_w_erg(i1,j1)+q_w_erg(i2,j1) &
@@ -2828,11 +2830,11 @@ buffer = 'Temperature at the ice base relative to the pressure melting point'
 call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 
-!    ---- tau_b_driving
+!    ---- tau_dr
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)) )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)) )
-call check( nf90_def_var(ncid, 'tau_b_driving', NF90_FLOAT, nc2d, ncv) )
+call check( nf90_def_var(ncid, 'tau_dr', NF90_FLOAT, nc2d, ncv) )
 buffer = 'Pa'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'magnitude_of_land_ice_driving_stress'
@@ -2841,11 +2843,11 @@ buffer = 'Driving stress'
 call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 
-!    ---- tau_b_drag
+!    ---- tau_b
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)) )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)) )
-call check( nf90_def_var(ncid, 'tau_b_drag', NF90_FLOAT, nc2d, ncv) )
+call check( nf90_def_var(ncid, 'tau_b', NF90_FLOAT, nc2d, ncv) )
 buffer = 'Pa'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'magnitude_of_land_ice_basal_drag'
@@ -3672,12 +3674,12 @@ call check( nf90_inq_varid(ncid, 'temph_b', ncv) )
 call check( nf90_put_var(ncid, ncv, temph_b_dbl, &
                          start=nc2cor_ij, count=nc2cnt_ij) )
 
-call check( nf90_inq_varid(ncid, 'tau_b_driving', ncv) )
-call check( nf90_put_var(ncid, ncv, tau_b_driving_dbl, &
+call check( nf90_inq_varid(ncid, 'tau_dr', ncv) )
+call check( nf90_put_var(ncid, ncv, tau_dr_dbl, &
                          start=nc2cor_ij, count=nc2cnt_ij) )
 
-call check( nf90_inq_varid(ncid, 'tau_b_drag', ncv) )
-call check( nf90_put_var(ncid, ncv, tau_b_drag_dbl, &
+call check( nf90_inq_varid(ncid, 'tau_b', ncv) )
+call check( nf90_put_var(ncid, ncv, tau_b_dbl, &
                          start=nc2cor_ij, count=nc2cnt_ij) )
 
 call check( nf90_inq_varid(ncid, 'p_b_w', ncv) )
