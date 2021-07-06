@@ -85,7 +85,6 @@ integer(i4b) :: ios
 integer(i4b) :: ndat
 real(dp), dimension(0:JMAX,0:IMAX) :: H, H_cold, H_temp, dH_dtau
 real(dp), dimension(0:JMAX,0:IMAX) :: vx_m_g, vy_m_g
-real(dp), dimension(0:JMAX,0:IMAX) :: tau_b_driving, tau_b_drag
 real(dp) :: V_tot, V_grounded, V_floating, V_gr_redu, V_af
 real(dp) :: A_grounded, A_floating
 real(dp) :: lond0, latd0
@@ -226,7 +225,7 @@ real(sp), dimension(0:IMAX,0:JMAX) :: lambda_conv, phi_conv, &
             vx_s_g_conv, vy_s_g_conv, vz_s_conv, vh_s_conv, &
             vx_m_g_conv, vy_m_g_conv,            vh_m_conv, &
             temp_b_conv, temph_b_conv, &
-            tau_b_driving_conv, tau_b_drag_conv, &
+            tau_dr_conv, tau_b_conv, &
             p_b_w_conv, q_w_conv, q_w_x_conv, q_w_y_conv, H_w_conv, &
             q_gl_g_conv, &
             cst_dist_conv, cos_grad_tc_conv, dis_perp_conv, &
@@ -2117,13 +2116,13 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
 call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
             thisroutine )
 
-!    ---- tau_b_driving
+!    ---- tau_dr
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
-call check( nf90_def_var(ncid, 'tau_b_driving', NF90_FLOAT, nc2d, ncv), &
+call check( nf90_def_var(ncid, 'tau_dr', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
 buffer = 'Pa'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
@@ -2137,13 +2136,13 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
 call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
             thisroutine )
 
-!    ---- tau_b_drag
+!    ---- tau_b
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
-call check( nf90_def_var(ncid, 'tau_b_drag', NF90_FLOAT, nc2d, ncv), &
+call check( nf90_def_var(ncid, 'tau_b', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
 buffer = 'Pa'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
@@ -3075,41 +3074,6 @@ end do
 
 end if   ! (.not.flag_compute_flux_vars_only)
 
-!-------- Driving stress and basal drag --------
-
-if (.not.flag_compute_flux_vars_only) then
-
-tau_b_driving = 0.0_dp
-tau_b_drag    = 0.0_dp
-
-do i=0, IMAX
-do j=0, JMAX
-
-   if (mask(j,i)==0_i1b) then   ! grounded ice
-
-      tau_b_driving(j,i) = RHO*G*H(j,i) &
-                           * sqrt( dzs_dxi_g(j,i)**2 + dzs_deta_g(j,i)**2 )
-
-      if (.not.flag_shelfy_stream(j,i)) then
-         tau_b_drag(j,i) = tau_b_driving(j,i)
-      else
-         tau_b_drag(j,i) = no_value_neg_2   ! dummy value
-      end if
-
-   else if (mask(j,i)==3_i1b) then   ! floating ice
-
-      tau_b_driving(j,i) = RHO*G*H(j,i) &
-                           * sqrt( dzs_dxi_g(j,i)**2 + dzs_deta_g(j,i)**2 )
-
-      tau_b_drag(j,i)    = 0.0_dp
-
-   end if
-
-end do
-end do
-
-end if   ! (.not.flag_compute_flux_vars_only)
-
 !-------- Computation of scalar volumes and areas --------
 
 if (.not.flag_compute_flux_vars_only) then
@@ -3488,8 +3452,8 @@ do j=0, JMAX
    vh_m_conv(i,j)      = sqrt( vx_m_g_conv(i,j)**2 + vy_m_g_conv(i,j)**2 )
    temp_b_conv(i,j)    = real(temp_b(j,i),sp)
    temph_b_conv(i,j)   = real(temph_b(j,i),sp)
-   tau_b_driving_conv(i,j) = real(tau_b_driving(j,i),sp)
-   tau_b_drag_conv(i,j)    = real(tau_b_drag(j,i),sp)
+   tau_dr_conv(i,j)    = real(tau_dr(j,i),sp)
+   tau_b_conv(i,j)     = real(tau_b(j,i),sp)
    p_b_w_conv(i,j)     = real(p_b_w(j,i),sp)
    q_w_conv(i,j)       = real(q_w(j,i)*year2sec,sp)
    q_w_x_conv(i,j)     = real(q_w_x(j,i)*year2sec,sp)
@@ -4024,13 +3988,13 @@ call check( nf90_put_var(ncid, ncv, temph_b_conv, &
                          start=nc2cor_ij, count=nc2cnt_ij), &
             thisroutine )
 
-call check( nf90_inq_varid(ncid, 'tau_b_driving', ncv), thisroutine )
-call check( nf90_put_var(ncid, ncv, tau_b_driving_conv, &
+call check( nf90_inq_varid(ncid, 'tau_dr', ncv), thisroutine )
+call check( nf90_put_var(ncid, ncv, tau_dr_conv, &
                          start=nc2cor_ij, count=nc2cnt_ij), &
             thisroutine )
 
-call check( nf90_inq_varid(ncid, 'tau_b_drag', ncv), thisroutine )
-call check( nf90_put_var(ncid, ncv, tau_b_drag_conv, &
+call check( nf90_inq_varid(ncid, 'tau_b', ncv), thisroutine )
+call check( nf90_put_var(ncid, ncv, tau_b_conv, &
                          start=nc2cor_ij, count=nc2cnt_ij), &
             thisroutine )
 

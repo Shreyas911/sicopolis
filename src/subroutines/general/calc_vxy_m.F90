@@ -261,13 +261,14 @@ real(dp) :: gamma_slide_aux(N_SLIDE_REGIONS)
 real(dp) :: gamma_slide_inv_aux(N_SLIDE_REGIONS)
 #endif
 real(dp), dimension(0:JMAX,0:IMAX) :: gamma_slide_inv
-real(dp), dimension(0:JMAX,0:IMAX) :: p_b, p_b_red, p_b_red_lim, tau_b
+real(dp), dimension(0:JMAX,0:IMAX) :: p_b_red_lim
 real(dp) :: cvxy1, cvxy1a, cvxy1b, ctau1, ctau1a, ctau1b
 real(dp) :: temp_diff
 real(dp) :: c_Hw_slide, Hw0_slide, Hw0_slide_inv, ratio_Hw_slide
 real(dp) :: vh_max, vh_max_inv
 real(dp) :: year_sec_inv, time_in_years
 real(dp) :: ramp_up_factor
+real(dp) :: zs_grad_sq
 logical, dimension(0:JMAX,0:IMAX) :: sub_melt_flag
 
 year_sec_inv  = 1.0_dp/year2sec
@@ -382,17 +383,23 @@ end if
 do i=0, IMAX
 do j=0, JMAX
 
-   if ((mask(j,i) == 0_i1b).or.flag_grounding_line_2(j,i)) then
-                     ! grounded ice, or floating ice at the grounding line
+   if ((mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b)) then
+                     ! grounded or floating ice
 
-      p_b(j,i)         = max(RHO*G*(H_c(j,i)+H_t(j,i)), 0.0_dp)
-      p_b_w(j,i)       = RHO_SW*G*max((z_sl-zb(j,i)), 0.0_dp)
-      p_b_red(j,i)     = max(p_b(j,i)-p_b_w(j,i), 0.0_dp)
+      p_b(j,i)   = max(RHO*G*(H_c(j,i)+H_t(j,i)), 0.0_dp)
+      p_b_w(j,i) = RHO_SW*G*max((z_sl-zb(j,i)), 0.0_dp)
+
+      if (mask(j,i) == 0_i1b) then
+         p_b_red(j,i) = max(p_b(j,i)-p_b_w(j,i), 0.0_dp)
+      else   ! (mask(j,i) == 3_i1b)
+         p_b_red(j,i) = 0.0_dp
+      end if
+
       p_b_red_lim(j,i) = max(p_b_red(j,i), RED_PRES_LIMIT_FACT*p_b(j,i))
                          ! in order to avoid very small values, which may lead
                          ! to huge sliding velocities in the SIA
 
-   else   ! mask(j,i) == 1_i1b, 2_i1b or 3_i1b away from the grounding line
+   else   ! ice-free land or ocean
 
       p_b(j,i)         = 0.0_dp
       p_b_w(j,i)       = 0.0_dp
@@ -404,24 +411,41 @@ do j=0, JMAX
 end do
 end do
 
-!  ------ Absolute value of the basal shear stress, tau_b
+!  ------ Absolute value of the absolute value (magnitude)
+!         of the driving stress (tau_dr) and the basal shear stress (tau_b)
 
 do i=0, IMAX
 do j=0, JMAX
 
+   if ((mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b)) then
+                     ! grounded or floating ice
+
+      zs_grad_sq = dzs_dxi_g(j,i)**2+dzs_deta_g(j,i)**2
+
 #if !defined(ALLOW_OPENAD) /* Normal */
 
-   tau_b(j,i) = p_b(j,i)*sqrt(dzs_dxi_g(j,i)**2+dzs_deta_g(j,i)**2)
+      tau_dr(j,i) = p_b(j,i)*sqrt(zs_grad_sq)
 
 #else /* OpenAD: guarding against non-differentiable sqrt(0) */
 
-   if ((dzs_dxi_g(j,i)**2+dzs_deta_g(j,i)**2) > 0) then
-      tau_b(j,i) = p_b(j,i)*sqrt(dzs_dxi_g(j,i)**2+dzs_deta_g(j,i)**2)
-   else
-      tau_b(j,i) = 0.0_dp
-   end if
+      if (zs_grad_sq > 0) then
+         tau_dr(j,i) = p_b(j,i)*sqrt(zs_grad_sq)
+      else
+         tau_dr(j,i) = 0.0_dp
+      end if
 
 #endif /* Normal vs. OpenAD */
+
+      tau_b(j,i) = tau_dr(j,i)
+                   ! for hybrid dynamics or floating ice,
+                   ! this will be corrected later in calc_vxy_ssa
+
+   else   ! ice-free land or ocean
+
+      tau_dr(j,i) = 0.0_dp
+      tau_b(j,i)  = 0.0_dp
+
+   end if
 
 end do
 end do
@@ -1364,6 +1388,7 @@ real(dp), dimension(0:JMAX,0:IMAX) :: weigh_ssta_sia
 real(dp) :: qx_gl_g, qy_gl_g
 logical, dimension(0:JMAX,0:IMAX) :: flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y
 real(dp) :: v_ref, v_ref_sq_inv
+real(dp) :: v_b_sq
 real(dp) :: year_sec_inv, pi_inv
 
 year_sec_inv = 1.0_dp/year2sec
@@ -1915,6 +1940,39 @@ do j=1, JMAX-1
 
       vy_s_g(j,i) = 0.5_dp*(vy_m(j-1,i)+vy_m(j,i))
       vy_b_g(j,i) = vy_s_g(j,i)
+
+   end if
+
+end do
+end do
+
+!-------- Magnitude of the basal shear stress (drag) --------
+
+do i=1, IMAX-1
+do j=1, JMAX-1
+
+   if (mask(j,i) == 3_i1b) then   ! floating ice
+
+      tau_b(j,i) = 0.0_dp
+
+   else if (flag_shelfy_stream(j,i)) then   ! shelfy stream
+
+      v_b_sq =   (0.5_dp*(vx_b_g(j,i)+vx_b_g(j,i-1)))**2  &
+               + (0.5_dp*(vy_b_g(j,i)+vy_b_g(j-1,i)))**2
+
+#if !defined(ALLOW_OPENAD) /* Normal */
+
+      tau_b(j,i) = c_drag(j,i) * sqrt(v_b_sq)**p_weert_inv(j,i)
+
+#else /* OpenAD: guarding against non-differentiable sqrt(0) */
+
+      if (v_b_sq > 0) then
+         tau_b(j,i) = c_drag(j,i) * sqrt(v_b_sq)**p_weert_inv(j,i)
+      else
+         tau_b(j,i) = 0.0_dp
+      end if
+
+#endif /* Normal vs. OpenAD */
 
    end if
 

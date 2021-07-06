@@ -285,8 +285,16 @@ save
    real(dp), dimension(0:JMAX,0:IMAX) :: d_help_b
 !> c_drag(j,i): Auxiliary quantity for the computation of the basal drag
    real(dp), dimension(0:JMAX,0:IMAX) :: c_drag
+!> p_b(j,i): Basal pressure
+   real(dp), dimension(0:JMAX,0:IMAX) :: p_b
 !> p_b_w(j,i): Basal water pressure
    real(dp), dimension(0:JMAX,0:IMAX) :: p_b_w
+!> p_b_red(j,i): Reduced basal pressure
+   real(dp), dimension(0:JMAX,0:IMAX) :: p_b_red
+!> tau_dr(j,i): Driving stress
+   real(dp), dimension(0:JMAX,0:IMAX) :: tau_dr
+!> tau_b(j,i): Basal shear stress (drag)
+   real(dp), dimension(0:JMAX,0:IMAX) :: tau_b
 !> vx_b(j,i): Velocity in x-direction at the ice base, at (i+1/2,j)
    real(dp), dimension(0:JMAX,0:IMAX) :: vx_b
 !> vy_b(j,i): Velocity in y-direction at the ice base, at (i,j+1/2)
