@@ -237,11 +237,11 @@ real(sp), dimension(0:IMAX,0:JMAX) :: lambda_conv, phi_conv, &
 real(sp), dimension(0:IMAX,0:JMAX,0:KCMAX) :: vx_c_conv, vy_c_conv, vz_c_conv, &
                                               temp_c_conv, age_c_conv, &
                                               enth_c_conv, omega_c_conv, &
-                                              enh_c_conv
+                                              enh_c_conv, strain_heating_c_conv
 real(sp), dimension(0:IMAX,0:JMAX,0:KTMAX) :: vx_t_conv, vy_t_conv, vz_t_conv, &
                                               omega_t_conv, age_t_conv, &
                                               enth_t_conv, &
-                                              enh_t_conv
+                                              enh_t_conv, strain_heating_t_conv
 real(sp), dimension(0:IMAX,0:JMAX,0:KRMAX) :: temp_r_conv
 
 #if (NETCDF==1)   /* time-slice file in native binary format */
@@ -2980,6 +2980,50 @@ if (flag_3d_output) then
    call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
                thisroutine )
 
+!    ---- strain_heating_c
+
+   call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc3d(1)), &
+               thisroutine )
+   call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc3d(2)), &
+               thisroutine )
+   call check( nf90_inq_dimid(ncid, trim(coord_id(3)), nc3d(3)), &
+               thisroutine )
+   call check( nf90_def_var(ncid, 'strain_heating_c', NF90_FLOAT, nc3d, ncv), &
+               thisroutine )
+   buffer = 'W kg-1'
+   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
+               thisroutine )
+   buffer = 'land_ice_kc_layer_strain_heating'
+   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
+               thisroutine )
+   buffer = 'Strain heating in the upper (kc) ice layer'
+   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
+               thisroutine )
+   call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
+               thisroutine )
+
+!    ---- strain_heating_t
+
+   call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc3d(1)), &
+               thisroutine )
+   call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc3d(2)), &
+               thisroutine )
+   call check( nf90_inq_dimid(ncid, trim(coord_id(4)), nc3d(3)), &
+               thisroutine )
+   call check( nf90_def_var(ncid, 'strain_heating_t', NF90_FLOAT, nc3d, ncv), &
+               thisroutine )
+   buffer = 'W kg-1'
+   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
+               thisroutine )
+   buffer = 'land_ice_kt_layer_strain_heating'
+   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
+               thisroutine )
+   buffer = 'Strain heating in the lower (kt) ice layer'
+   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
+               thisroutine )
+   call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
+               thisroutine )
+
 !    ---- age_c
 
    call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc3d(1)), &
@@ -3607,6 +3651,7 @@ do j=0, JMAX
       age_t_conv(i,j,kt)   = real(age_t(kt,j,i)*sec2year,sp)
       enth_t_conv(i,j,kt)  = real(enth_t(kt,j,i),sp)
       enh_t_conv(i,j,kt)   = real(enh_t(kt,j,i),sp)
+      strain_heating_t_conv(i,j,kt) = real(strain_heating_t(kt,j,i),sp)
    end do
 
    do kc=0, KCMAX
@@ -3618,6 +3663,7 @@ do j=0, JMAX
       enth_c_conv(i,j,kc)  = real(enth_c(kc,j,i),sp)
       omega_c_conv(i,j,kc) = real(omega_c(kc,j,i),sp)
       enh_c_conv(i,j,kc)   = real(enh_c(kc,j,i),sp)
+      strain_heating_c_conv(i,j,kc) = real(strain_heating_c(kc,j,i),sp)
    end do
 
 end do
@@ -3758,6 +3804,8 @@ if (flag_3d_output) then
    write(unit=11) omega_c_conv
    write(unit=11) enh_c_conv
    write(unit=11) enh_t_conv
+   write(unit=11) strain_heating_c_conv
+   write(unit=11) strain_heating_t_conv
    write(unit=11) age_c_conv
    write(unit=11) age_t_conv
 end if
@@ -4368,6 +4416,16 @@ if (flag_3d_output) then
 
    call check( nf90_inq_varid(ncid, 'enh_t', ncv), thisroutine )
    call check( nf90_put_var(ncid, ncv, enh_t_conv, &
+                            start=nc3cor_ijkt, count=nc3cnt_ijkt), &
+               thisroutine )
+
+   call check( nf90_inq_varid(ncid, 'strain_heating_c', ncv), thisroutine )
+   call check( nf90_put_var(ncid, ncv, strain_heating_c_conv, &
+                            start=nc3cor_ijkc, count=nc3cnt_ijkc), &
+               thisroutine )
+
+   call check( nf90_inq_varid(ncid, 'strain_heating_t', ncv), thisroutine )
+   call check( nf90_put_var(ncid, ncv, strain_heating_t_conv, &
                             start=nc3cor_ijkt, count=nc3cnt_ijkt), &
                thisroutine )
 
