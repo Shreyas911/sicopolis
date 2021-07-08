@@ -459,11 +459,27 @@ call error(errormsg)
   call check( nf90_inq_varid(ncid, 'q_geo', ncv) )
   call check( nf90_get_var(ncid, ncv, q_geo_conv) )
 
-  call check( nf90_inq_varid(ncid, 'mask', ncv) )
-  call check( nf90_get_var(ncid, ncv, mask_conv) )
+  if ( nf90_inq_varid(ncid, 'mask', ncv) == nf90_noerr ) then
+     call check( nf90_get_var(ncid, ncv, mask_conv) )
+  else if ( nf90_inq_varid(ncid, 'maske', ncv) == nf90_noerr ) then
+     call check( nf90_get_var(ncid, ncv, mask_conv) )
+  else
+     errormsg = ' >>> read_tms_nc: Variable mask' &
+              //                   end_of_line &
+              //'                  not available in read file *.nc!'
+     call error(errormsg)
+  end if
 
-  call check( nf90_inq_varid(ncid, 'mask_old', ncv) )
-  call check( nf90_get_var(ncid, ncv, mask_old_conv) )
+  if ( nf90_inq_varid(ncid, 'mask_old', ncv) == nf90_noerr ) then
+     call check( nf90_get_var(ncid, ncv, mask_old_conv) )
+  else if ( nf90_inq_varid(ncid, 'maske_old', ncv) == nf90_noerr ) then
+     call check( nf90_get_var(ncid, ncv, mask_old_conv) )
+  else
+     errormsg = ' >>> read_tms_nc: Variable mask_old' &
+              //                   end_of_line &
+              //'                  not available in read file *.nc!'
+     call error(errormsg)
+  end if
 
   call check( nf90_inq_varid(ncid, 'n_cts', ncv) )
   call check( nf90_get_var(ncid, ncv, n_cts_conv) )
@@ -1112,8 +1128,16 @@ call error(errormsg)
      call error(errormsg)
   end if
 
-  call check( nf90_inq_varid(ncid, 'mask', ncv),  thisroutine )
-  call check( nf90_get_var(ncid, ncv, mask_conv), thisroutine )
+  if ( nf90_inq_varid(ncid, 'mask', ncv) == nf90_noerr ) then
+     call check( nf90_get_var(ncid, ncv, mask_conv), thisroutine )
+  else if ( nf90_inq_varid(ncid, 'maske', ncv) == nf90_noerr ) then
+     call check( nf90_get_var(ncid, ncv, mask_conv), thisroutine )
+  else
+     errormsg = ' >>> read_target_topo_nc: Variable mask' &
+              //                           end_of_line &
+              //'                 not available in target-topography file!'
+     call error(errormsg)
+  end if
 
   call check( nf90_inq_varid(ncid, 'zs', ncv),  thisroutine )
   call check( nf90_get_var(ncid, ncv, zs_conv), thisroutine )
