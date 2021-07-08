@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2021-07-07
+!! 2021-07-08
 !!
 !! @section Copyright
 !!
@@ -465,11 +465,25 @@ call check( nf90_get_var(ncid, ncv, mask_mar_erg) )
 call check( nf90_inq_varid(ncid, 'q_geo', ncv) )
 call check( nf90_get_var(ncid, ncv, q_geo_erg) )
 
-call check( nf90_inq_varid(ncid, 'mask', ncv) )
-call check( nf90_get_var(ncid, ncv, mask_erg) )
+if ( nf90_inq_varid(ncid, 'mask', ncv) == nf90_noerr ) then
+   call check( nf90_get_var(ncid, ncv, mask_erg) )
+else if ( nf90_inq_varid(ncid, 'maske', ncv) == nf90_noerr ) then
+   call check( nf90_get_var(ncid, ncv, mask_erg) )
+else
+   write(6,'(/a)') ' >>> read_nc: Error: Variable mask'
+   write(6,'(/a)') ' >>>                 not available in time-slice file!'
+   stop
+end if
 
-call check( nf90_inq_varid(ncid, 'mask_old', ncv) )
-call check( nf90_get_var(ncid, ncv, mask_old_erg) )
+if ( nf90_inq_varid(ncid, 'mask_old', ncv) == nf90_noerr ) then
+   call check( nf90_get_var(ncid, ncv, mask_old_erg) )
+else if ( nf90_inq_varid(ncid, 'maske_old', ncv) == nf90_noerr ) then
+   call check( nf90_get_var(ncid, ncv, mask_old_erg) )
+else
+   write(6,'(/a)') ' >>> read_nc: Error: Variable mask_old'
+   write(6,'(/a)') ' >>>                 not available in time-slice file!'
+   stop
+end if
 
 call check( nf90_inq_varid(ncid, 'n_cts', ncv) )
 call check( nf90_get_var(ncid, ncv, n_cts_erg) )

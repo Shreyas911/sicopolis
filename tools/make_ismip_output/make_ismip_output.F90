@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2021-07-05
+!! 2021-07-08
 !!
 !! @section Copyright
 !!
@@ -660,8 +660,15 @@ end if
 call check( nf90_inq_varid(ncid, 'q_gl_g', ncv) )
 call check( nf90_get_var(ncid, ncv, q_gl_g_erg) )
 
-call check( nf90_inq_varid(ncid, 'mask', ncv) )
-call check( nf90_get_var(ncid, ncv, mask_erg) )
+if ( nf90_inq_varid(ncid, 'mask', ncv) == nf90_noerr ) then
+   call check( nf90_get_var(ncid, ncv, mask_erg) )
+else if ( nf90_inq_varid(ncid, 'maske', ncv) == nf90_noerr ) then
+   call check( nf90_get_var(ncid, ncv, mask_erg) )
+else
+   write(6,'(/a)') ' >>> read_nc: Error: Variable mask'
+   write(6,'(/a)') ' >>>                 not available in time-slice file!'
+   stop
+end if
 
 else if (n_variable_dim == 2) then
 
