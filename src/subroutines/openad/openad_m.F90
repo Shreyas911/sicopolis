@@ -359,8 +359,10 @@ contains
       dist_dxdy,acc_fact,precip_present,precip_lgm_anom,gamma_precip_lgm_anom,&
       temp_mm_present,temp_mm_lgm_anom,d_help_c,vx_c,vy_c,vz_c,temp_c,&
       temp_c_new,temp_c_m,age_c,age_c_new,txz_c,tyz_c,sigma_c,enh_c,&
+      strain_heating_c, &
       de_ssa,vis_int_g,vx_g,vy_g,d_help_t,vx_t,vy_t,vz_t,omega_t,&
       omega_t_new,temp_t_m,age_t,age_t_new,txz_t,tyz_t,sigma_t,enh_t,&
+      strain_heating_t, &
       temp_r,temp_r_new,enth_c,enth_c_new,omega_c,omega_c_new,enth_t,&
       enth_t_new,dxx_c,dyy_c,dxy_c,dxz_c,dyz_c,de_c,lambda_shear_c,&
       dxx_t,dyy_t,dxy_t,dxz_t,dyz_t,de_t,lambda_shear_t,RHO,RHO_W,&
@@ -588,8 +590,10 @@ contains
          a_dist_dxdy,a_acc_fact,a_precip_present,a_precip_lgm_anom,a_gamma_precip_lgm_anom,&
          a_temp_mm_present,a_temp_mm_lgm_anom,a_d_help_c,a_vx_c,a_vy_c,a_vz_c,a_temp_c,&
          a_temp_c_new,a_temp_c_m,a_age_c,a_age_c_new,a_txz_c,a_tyz_c,a_sigma_c,a_enh_c,&
+         a_strain_heating_c, &
          a_de_ssa,a_vis_int_g,a_vx_g,a_vy_g,a_d_help_t,a_vx_t,a_vy_t,a_vz_t,a_omega_t,&
          a_omega_t_new,a_temp_t_m,a_age_t,a_age_t_new,a_txz_t,a_tyz_t,a_sigma_t,a_enh_t,&
+         a_strain_heating_t, &
          a_temp_r,a_temp_r_new,a_enth_c,a_enth_c_new,a_omega_c,a_omega_c_new,a_enth_t,&
          a_enth_t_new,a_dxx_c,a_dyy_c,a_dxy_c,a_dxz_c,a_dyz_c,a_de_c,a_lambda_shear_c,&
          a_dxx_t,a_dyy_t,a_dxy_t,a_dxz_t,a_dyz_t,a_de_t,a_lambda_shear_t,a_RHO,a_RHO_W,&
@@ -746,7 +750,9 @@ contains
     real(dp), dimension(0:KCMAX)                       :: a_eaz_c
     real(dp), dimension(0:KCMAX)                       :: a_eaz_c_quotient
     real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_enh_c
+    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_strain_heating_c
     real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_enh_t
+    real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_strain_heating_t
     real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_enth_c
     real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_enth_c_new
     real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_enth_t
@@ -1152,6 +1158,8 @@ contains
     enh_c = a_enh_c
     enh_t = a_enh_t
 #endif
+    strain_heating_c = a_strain_heating_c
+    strain_heating_t = a_strain_heating_t
 #if (CALCMOD >= 2)
     enth_c%v = a_enth_c
     enth_c_new%v = a_enth_c_new

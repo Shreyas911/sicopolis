@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2021-07-05
+!! 2021-07-07
 !!
 !! @section Copyright
 !!
@@ -122,11 +122,11 @@ real(sp), dimension(0:IMAX,0:JMAX) :: r_kc_cts_erg
 real(sp), dimension(0:IMAX,0:JMAX,0:KCMAX) :: vx_c_erg, vy_c_erg, vz_c_erg, &
                                               temp_c_erg, age_c_erg, &
                                               enth_c_erg, omega_c_erg, &
-                                              enh_c_erg
+                                              enh_c_erg, strain_heating_c_erg
 real(sp), dimension(0:IMAX,0:JMAX,0:KTMAX) :: vx_t_erg, vy_t_erg, vz_t_erg, &
                                               omega_t_erg, age_t_erg, &
                                               enth_t_erg, &
-                                              enh_t_erg
+                                              enh_t_erg, strain_heating_t_erg
 real(sp), dimension(0:IMAX,0:JMAX,0:KRMAX) :: temp_r_erg
 character(len=64) :: mapping_grid_mapping_name_erg, mapping_ellipsoid_erg
 
@@ -194,12 +194,14 @@ real(sp), dimension(0:2*IMAX,0:2*JMAX,0:KCMAX) :: vx_c_dbl, vy_c_dbl, &
                                                   vz_c_dbl, &
                                                   temp_c_dbl, age_c_dbl, &
                                                   enth_c_dbl, omega_c_dbl, &
-                                                  enh_c_dbl
+                                                  enh_c_dbl, &
+                                                  strain_heating_c_dbl
 real(sp), dimension(0:2*IMAX,0:2*JMAX,0:KTMAX) :: vx_t_dbl, vy_t_dbl, &
                                                   vz_t_dbl, &
                                                   omega_t_dbl, age_t_dbl, &
                                                   enth_t_dbl, &
-                                                  enh_t_dbl
+                                                  enh_t_dbl, &
+                                                  strain_heating_t_dbl
 real(sp), dimension(0:2*IMAX,0:2*JMAX,0:KRMAX) :: temp_r_dbl
 character(len=64) :: mapping_grid_mapping_name_dbl, mapping_ellipsoid_dbl
 
@@ -747,6 +749,22 @@ call check( nf90_get_var(ncid, ncv, enh_c_erg) )
 call check( nf90_inq_varid(ncid, 'enh_t', ncv) )
 call check( nf90_get_var(ncid, ncv, enh_t_erg) )
 
+if ( nf90_inq_varid(ncid, 'strain_heating_c', ncv) == nf90_noerr ) then
+   call check( nf90_get_var(ncid, ncv, strain_heating_c_erg) )
+else
+   write(6,'(/1x,a)') '>>> read_nc: Variable strain_heating_c'
+   write(6, '(1x,a)') '             not available in read file *.nc.'
+   strain_heating_c_erg = 0.0_sp
+end if
+
+if ( nf90_inq_varid(ncid, 'strain_heating_t', ncv) == nf90_noerr ) then
+   call check( nf90_get_var(ncid, ncv, strain_heating_t_erg) )
+else
+   write(6,'(/1x,a)') '>>> read_nc: Variable strain_heating_t'
+   write(6, '(1x,a)') '             not available in read file *.nc.'
+   strain_heating_t_erg = 0.0_sp
+end if
+
 call check( nf90_inq_varid(ncid, 'age_c', ncv) )
 call check( nf90_get_var(ncid, ncv, age_c_erg) )
 
@@ -875,6 +893,8 @@ do jj = 0, 2*JMAX, 2
    omega_c_dbl(ii,jj,:) = omega_c_erg(i,j,:)
    enh_c_dbl(ii,jj,:)   = enh_c_erg(i,j,:)
    enh_t_dbl(ii,jj,:)   = enh_t_erg(i,j,:)
+   strain_heating_c_dbl(ii,jj,:) = strain_heating_c_erg(i,j,:)
+   strain_heating_t_dbl(ii,jj,:) = strain_heating_t_erg(i,j,:)
    vx_b_g_dbl(ii,jj)    = vx_b_g_erg(i,j)
    vy_b_g_dbl(ii,jj)    = vy_b_g_erg(i,j)
    vz_b_dbl(ii,jj)      = vz_b_erg(i,j)
@@ -959,6 +979,10 @@ do jj = 0, 2*JMAX, 2
    omega_c_dbl(ii,jj,:) = 0.5*(omega_c_erg(i1,j,:)+omega_c_erg(i2,j,:))
    enh_c_dbl(ii,jj,:)   = 0.5*(enh_c_erg(i1,j,:)+enh_c_erg(i2,j,:))
    enh_t_dbl(ii,jj,:)   = 0.5*(enh_t_erg(i1,j,:)+enh_t_erg(i2,j,:))
+   strain_heating_c_dbl(ii,jj,:) = 0.5*( strain_heating_c_erg(i1,j,:) &
+                                        +strain_heating_c_erg(i2,j,:))
+   strain_heating_t_dbl(ii,jj,:) = 0.5*( strain_heating_t_erg(i1,j,:) &
+                                        +strain_heating_t_erg(i2,j,:))
    vx_b_g_dbl(ii,jj)    = 0.5*(vx_b_g_erg(i1,j)+vx_b_g_erg(i2,j))
    vy_b_g_dbl(ii,jj)    = 0.5*(vy_b_g_erg(i1,j)+vy_b_g_erg(i2,j))
    vz_b_dbl(ii,jj)      = 0.5*(vz_b_erg(i1,j)+vz_b_erg(i2,j))
@@ -1042,6 +1066,10 @@ do jj = 1, 2*JMAX-1, 2
    omega_c_dbl(ii,jj,:) = 0.5*(omega_c_erg(i,j1,:)+omega_c_erg(i,j2,:))
    enh_c_dbl(ii,jj,:)   = 0.5*(enh_c_erg(i,j1,:)+enh_c_erg(i,j2,:))
    enh_t_dbl(ii,jj,:)   = 0.5*(enh_t_erg(i,j1,:)+enh_t_erg(i,j2,:))
+   strain_heating_c_dbl(ii,jj,:) = 0.5*( strain_heating_c_erg(i,j1,:) &
+                                        +strain_heating_c_erg(i,j2,:))
+   strain_heating_t_dbl(ii,jj,:) = 0.5*( strain_heating_t_erg(i,j1,:) &
+                                        +strain_heating_t_erg(i,j2,:))
    vx_b_g_dbl(ii,jj)    = 0.5*(vx_b_g_erg(i,j1)+vx_b_g_erg(i,j2))
    vy_b_g_dbl(ii,jj)    = 0.5*(vy_b_g_erg(i,j1)+vy_b_g_erg(i,j2))
    vz_b_dbl(ii,jj)      = 0.5*(vz_b_erg(i,j1)+vz_b_erg(i,j2))
@@ -1171,6 +1199,14 @@ do jj = 1, 2*JMAX-1, 2
                                 +enh_c_erg(i1,j2,:)+enh_c_erg(i2,j2,:) )
    enh_t_dbl(ii,jj,:)   = 0.25*( enh_t_erg(i1,j1,:)+enh_t_erg(i2,j1,:) &
                                 +enh_t_erg(i1,j2,:)+enh_t_erg(i2,j2,:) )
+   strain_heating_c_dbl(ii,jj,:) = 0.25*( strain_heating_c_erg(i1,j1,:) &
+                                         +strain_heating_c_erg(i2,j1,:) &
+                                         +strain_heating_c_erg(i1,j2,:) &
+                                         +strain_heating_c_erg(i2,j2,:) )
+   strain_heating_t_dbl(ii,jj,:) = 0.25*( strain_heating_t_erg(i1,j1,:) &
+                                         +strain_heating_t_erg(i2,j1,:) &
+                                         +strain_heating_t_erg(i1,j2,:) &
+                                         +strain_heating_t_erg(i2,j2,:) )
    vx_b_g_dbl(ii,jj)    = 0.25*( vx_b_g_erg(i1,j1)+vx_b_g_erg(i2,j1) &
                                 +vx_b_g_erg(i1,j2)+vx_b_g_erg(i2,j2) )
    vy_b_g_dbl(ii,jj)    = 0.25*( vy_b_g_erg(i1,j1)+vy_b_g_erg(i2,j1) &
@@ -3339,6 +3375,34 @@ buffer = 'Flow enhancement factor in the lower (kt) ice layer'
 call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 
+!    ---- strain_heating_c
+
+call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc3d(1)) )
+call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc3d(2)) )
+call check( nf90_inq_dimid(ncid, trim(coord_id(3)), nc3d(3)) )
+call check( nf90_def_var(ncid, 'strain_heating_c', NF90_FLOAT, nc3d, ncv) )
+buffer = 'W kg-1'
+call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
+buffer = 'land_ice_kc_layer_strain_heating'
+call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)) )
+buffer = 'Strain heating in the upper (kc) ice layer'
+call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
+call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
+
+!    ---- strain_heating_t
+
+call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc3d(1)) )
+call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc3d(2)) )
+call check( nf90_inq_dimid(ncid, trim(coord_id(4)), nc3d(3)) )
+call check( nf90_def_var(ncid, 'strain_heating_t', NF90_FLOAT, nc3d, ncv) )
+buffer = 'W kg-1'
+call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
+buffer = 'land_ice_kt_layer_strain_heating'
+call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)) )
+buffer = 'Strain heating in the lower (kt) ice layer'
+call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
+call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
+
 !    ---- age_c
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc3d(1)) )
@@ -3820,6 +3884,14 @@ call check( nf90_put_var(ncid, ncv, enh_c_dbl, &
 
 call check( nf90_inq_varid(ncid, 'enh_t', ncv) )
 call check( nf90_put_var(ncid, ncv, enh_t_dbl, &
+                         start=nc3cor_ijkt, count=nc3cnt_ijkt) )
+
+call check( nf90_inq_varid(ncid, 'strain_heating_c', ncv) )
+call check( nf90_put_var(ncid, ncv, strain_heating_c_dbl, &
+                         start=nc3cor_ijkc, count=nc3cnt_ijkc) )
+
+call check( nf90_inq_varid(ncid, 'strain_heating_t', ncv) )
+call check( nf90_put_var(ncid, ncv, strain_heating_t_dbl, &
                          start=nc3cor_ijkt, count=nc3cnt_ijkt) )
 
 call check( nf90_inq_varid(ncid, 'age_c', ncv) )

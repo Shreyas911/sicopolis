@@ -511,6 +511,8 @@ save
    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: sigma_c
 !> enh_c(kc,j,i): Flow enhancement factor in the upper (kc) ice domain
    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: enh_c
+!> strain_heating_c(kc,j,i): Strain heating in the upper (kc) ice domain
+   real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: strain_heating_c
 
 !> de_ssa(j,i): Effective strain rate of the SSA, at (i,j)
    real(dp), dimension(0:JMAX,0:IMAX) :: de_ssa
@@ -554,6 +556,8 @@ save
    real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX) :: sigma_t
 !> enh_t(kt,j,i): Flow enhancement factor in the lower (kt) ice domain
    real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX) :: enh_t
+!> strain_heating_t(kt,j,i): Strain heating in the lower (kt) ice domain
+   real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX) :: strain_heating_t
 
 !> temp_r(kr,j,i): Temperature in the bedrock
    real(dp), dimension(0:KRMAX,0:JMAX,0:IMAX) :: temp_r

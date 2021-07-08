@@ -158,11 +158,11 @@ call error(errormsg)
   real(sp), dimension(0:IMAX,0:JMAX,0:KCMAX) :: vx_c_conv, vy_c_conv, vz_c_conv, &
                                                 temp_c_conv, age_c_conv, &
                                                 enth_c_conv, omega_c_conv, &
-                                                enh_c_conv
+                                                enh_c_conv, strain_heating_c_conv
   real(sp), dimension(0:IMAX,0:JMAX,0:KTMAX) :: vx_t_conv, vy_t_conv, vz_t_conv, &
                                                 omega_t_conv, age_t_conv, &
                                                 enth_t_conv, &
-                                                enh_t_conv
+                                                enh_t_conv, strain_heating_t_conv
   real(sp), dimension(0:IMAX,0:JMAX,0:KRMAX) :: temp_r_conv
 
 #if (DISC>0)   /* Ice discharge parameterisation */
@@ -335,6 +335,8 @@ call error(errormsg)
   read(unit=11) omega_c_conv
   read(unit=11) enh_c_conv
   read(unit=11) enh_t_conv
+  read(unit=11) strain_heating_c_conv
+  read(unit=11) strain_heating_t_conv
   read(unit=11) age_c_conv
   read(unit=11) age_t_conv
 
@@ -741,6 +743,22 @@ call error(errormsg)
   call check( nf90_inq_varid(ncid, 'enh_t', ncv) )
   call check( nf90_get_var(ncid, ncv, enh_t_conv) )
 
+  if ( nf90_inq_varid(ncid, 'strain_heating_c', ncv) == nf90_noerr ) then
+     call check( nf90_get_var(ncid, ncv, strain_heating_c_conv) )
+  else
+     write(6,'(/1x,a)') '>>> read_tms_nc: Variable strain_heating_c'
+     write(6, '(1x,a)') '                 not available in read file *.nc.'
+     strain_heating_c_conv = 0.0_sp
+  end if
+
+  if ( nf90_inq_varid(ncid, 'strain_heating_t', ncv) == nf90_noerr ) then
+     call check( nf90_get_var(ncid, ncv, strain_heating_t_conv) )
+  else
+     write(6,'(/1x,a)') '>>> read_tms_nc: Variable strain_heating_t'
+     write(6, '(1x,a)') '                 not available in read file *.nc.'
+     strain_heating_t_conv = 0.0_sp
+  end if
+
   call check( nf90_inq_varid(ncid, 'age_c', ncv) )
   call check( nf90_get_var(ncid, ncv, age_c_conv) )
 
@@ -900,6 +918,7 @@ call error(errormsg)
            age_t(kt,j,i)   = real(age_t_conv(i,j,kt),dp)*year2sec
            enth_t(kt,j,i)  = real(enth_t_conv(i,j,kt),dp)
            enh_t(kt,j,i)   = real(enh_t_conv(i,j,kt),dp)
+           strain_heating_t(kt,j,i) = real(strain_heating_t_conv(i,j,kt),dp)
         end do
 
         do kc=0, KCMAX
@@ -911,6 +930,7 @@ call error(errormsg)
            enth_c(kc,j,i)  = real(enth_c_conv(i,j,kc),dp)
            omega_c(kc,j,i) = real(omega_c_conv(i,j,kc),dp)
            enh_c(kc,j,i)   = real(enh_c_conv(i,j,kc),dp)
+           strain_heating_c(kc,j,i) = real(strain_heating_c_conv(i,j,kc),dp)
         end do
 
      end do

@@ -188,6 +188,9 @@ do kc=0, KCMAX
 
 end do
 
+strain_heating_c = 0.0_dp   ! initialization,
+strain_heating_t = 0.0_dp   ! purely diagnostic fields
+
 !-------- Computation loop for temperature, water content and age --------
 
 do i=1, IMAX-1   ! skipping domain margins
@@ -207,7 +210,8 @@ do j=1, JMAX-1   ! skipping domain margins
          call calc_temp1(at1, at2_1, at2_2, at3_1, at3_2, &
            at4_1, at4_2, at5, at6, at7, atr1, acb1, acb2, &
            acb3, acb4, alb1, ai1, ai2, &
-           dtime_temp, dtt_2dxi, dtt_2deta, i, j)
+           dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
+           i, j)
 
 !    ---- Check whether base has become temperate
 
@@ -218,7 +222,8 @@ do j=1, JMAX-1   ! skipping domain margins
             call calc_temp2(at1, at2_1, at2_2, at3_1, at3_2, &
                  at4_1, at4_2, at5, at6, at7, atr1, alb1, &
                  ai1, ai2, &
-                 dtime_temp, dtt_2dxi, dtt_2deta, i, j)
+                 dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
+                 i, j)
 
          end if
 
@@ -241,7 +246,8 @@ do j=1, JMAX-1   ! skipping domain margins
                  am1, am2, alb1, &
                  aw1, aw2, aw3, aw4, aw5, aw7, aw8, aw9, aqtld, &
                  ai1, ai2, ai3, dzeta_t, &
-                 dtime_temp, dtt_2dxi, dtt_2deta, i, j)
+                 dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
+                 i, j)
 
             call shift_cts_upward(at1, at2_1, at2_2, at3_1, at3_2, &
               at4_1, at4_2, at5, at6, at7, atr1, am1, am2, alb1, &
@@ -264,7 +270,8 @@ do j=1, JMAX-1   ! skipping domain margins
          call calc_temp2(at1, at2_1, at2_2, at3_1, at3_2, &
               at4_1, at4_2, at5, at6, at7, atr1, alb1, &
               ai1, ai2, &
-              dtime_temp, dtt_2dxi, dtt_2deta, i, j)
+              dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
+              i, j)
 
 !    ---- Check whether temperate base becomes cold
 
@@ -275,7 +282,8 @@ do j=1, JMAX-1   ! skipping domain margins
             call calc_temp1(at1, at2_1, at2_2, at3_1, at3_2, &
                  at4_1, at4_2, at5, at6, at7, atr1, acb1, acb2, &
                  acb3, acb4, alb1, ai1, ai2, &
-                 dtime_temp, dtt_2dxi, dtt_2deta, i, j)
+                 dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
+                 i, j)
 
             if (temp_c_new(0,j,i) >= temp_c_m(0,j,i)) then
 
@@ -284,7 +292,8 @@ do j=1, JMAX-1   ! skipping domain margins
                call calc_temp2(at1, at2_1, at2_2, at3_1, at3_2, &
                     at4_1, at4_2, at5, at6, at7, atr1, alb1, &
                     ai1, ai2, &
-                    dtime_temp, dtt_2dxi, dtt_2deta, i, j)
+                    dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
+                    i, j)
 
             end if
 
@@ -309,7 +318,8 @@ do j=1, JMAX-1   ! skipping domain margins
                  am1, am2, alb1, &
                  aw1, aw2, aw3, aw4, aw5, aw7, aw8, aw9, aqtld, &
                  ai1, ai2, ai3, dzeta_t, &
-                 dtime_temp, dtt_2dxi, dtt_2deta, i, j)
+                 dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
+                 i, j)
 
             call shift_cts_upward(at1, at2_1, at2_2, at3_1, at3_2, &
               at4_1, at4_2, at5, at6, at7, atr1, am1, am2, alb1, &
@@ -334,7 +344,8 @@ do j=1, JMAX-1   ! skipping domain margins
                  am1, am2, alb1, &
                  aw1, aw2, aw3, aw4, aw5, aw7, aw8, aw9, aqtld, &
                  ai1, ai2, ai3, dzeta_t, &
-                 dtime_temp, dtt_2dxi, dtt_2deta, i, j)
+                 dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
+                 i, j)
 
          if ( (temp_c_new(0,j,i)-(-BETA*H_c_new(j,i))) > 0.0_dp ) &
          then
@@ -367,7 +378,8 @@ do j=1, JMAX-1   ! skipping domain margins
       call calc_temp_ssa(at1, at2_1, at2_2, at3_1, at3_2, &
            at4_1, at4_2, at5, at6, at7, atr1, alb1, &
            ai1, ai2, &
-           dtime_temp, dtt_2dxi, dtt_2deta, i, j)
+           dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
+           i, j)
 
 !  ------ Reset temperatures above melting to the melting point
 !         (should not occur, but just in case)
@@ -950,6 +962,9 @@ do kc=0, KCMAX
 
 end do
 
+strain_heating_c = 0.0_dp   ! initialization,
+strain_heating_t = 0.0_dp   ! purely diagnostic fields
+
 !-------- Computation loop for temperature and age --------
 
 do i=1, IMAX-1   ! skipping domain margins
@@ -965,7 +980,8 @@ do j=1, JMAX-1   ! skipping domain margins
       call calc_temp1(at1, at2_1, at2_2, at3_1, at3_2, &
            at4_1, at4_2, at5, at6, at7, atr1, acb1, acb2, &
            acb3, acb4, alb1, ai1, ai2, &
-           dtime_temp, dtt_2dxi, dtt_2deta, i, j)
+           dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
+           i, j)
 
 !  ------ Reset temperatures above melting to the melting point,
 !         look for the CTS
@@ -999,7 +1015,8 @@ do j=1, JMAX-1   ! skipping domain margins
       call calc_temp_ssa(at1, at2_1, at2_2, at3_1, at3_2, &
            at4_1, at4_2, at5, at6, at7, atr1, alb1, &
            ai1, ai2, &
-           dtime_temp, dtt_2dxi, dtt_2deta, i, j)
+           dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
+           i, j)
 
 !  ------ Reset temperatures above melting to the melting point
 !         (should not occur, but just in case)
@@ -1373,6 +1390,9 @@ Q_tld       = 0.0_dp
    age_t_new   = 0.0_dp   ! default value 0
 #endif
 
+strain_heating_c = 0.0_dp   ! purely diagnostic fields,
+strain_heating_t = 0.0_dp   ! not computed in the isothermal mode
+
 n_cts_new   = -1_i1b
 kc_cts_new  =  0
 zm_new      = zb
@@ -1387,7 +1407,8 @@ end subroutine calc_temp_const
 subroutine calc_temp1(at1, at2_1, at2_2, at3_1, at3_2, &
    at4_1, at4_2, at5, at6, at7, atr1, acb1, acb2, &
    acb3, acb4, alb1, ai1, ai2, &
-   dtime_temp, dtt_2dxi, dtt_2deta, i, j)
+   dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
+   i, j)
 
 use ice_material_properties_m, only : ratefac_c, kappa_val, c_val, &
                                       creep, viscosity
@@ -1410,7 +1431,7 @@ real(dp), intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                         at4_2(0:KCMAX), at5(0:KCMAX), at6(0:KCMAX), at7, &
                         ai1(0:KCMAX), ai2(0:KCMAX), &
                         atr1, acb1, acb2, acb3, acb4, alb1
-real(dp), intent(in) :: dtime_temp, dtt_2dxi, dtt_2deta
+real(dp), intent(in) :: dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv
 
 integer(i4b) :: kc, kt, kr
 real(dp) :: ct1(0:KCMAX), ct2(0:KCMAX), ct3(0:KCMAX), ct4(0:KCMAX), &
@@ -1423,6 +1444,7 @@ real(dp) :: temp_c_help(0:KCMAX)
 real(dp) :: vx_c_help, vy_c_help
 real(dp) :: adv_vert_help
 real(dp) :: dtt_dxi, dtt_deta
+real(dp) :: c_val_aux
 real(dp) :: lgs_a0(0:KCMAX+KTMAX+KRMAX+IMAX+JMAX), &
             lgs_a1(0:KCMAX+KTMAX+KRMAX+IMAX+JMAX), &
             lgs_a2(0:KCMAX+KTMAX+KRMAX+IMAX+JMAX), &
@@ -1492,6 +1514,8 @@ end do
 
 do kc=0, KCMAX
 
+   c_val_aux = c_val(temp_c(kc,j,i))
+
    ct2(kc) = ( at2_1(kc)*dzm_dtau(j,i) &
            +at2_2(kc)*dH_c_dtau(j,i) )/H_c(j,i)
    ct3(kc) = ( at3_1(kc)*dzm_dxi_g(j,i) &
@@ -1501,22 +1525,24 @@ do kc=0, KCMAX
             +at4_2(kc)*dH_c_deta_g(j,i) )/H_c(j,i) &
           *0.5_dp*(vy_c(kc,j,i)+vy_c(kc,j-1,i)) *insq_g22_g(j,i)
    ct5(kc) = at5(kc) &
-             /c_val(temp_c(kc,j,i)) &
+             /c_val_aux &
              /H_c(j,i)
 
 #if (DYNAMICS==2)
    if (.not.flag_shelfy_stream(j,i)) then
 #endif
+
       ct7(kc) = at7 &
-                /c_val(temp_c(kc,j,i)) &
+                /c_val_aux &
                 *enh_c(kc,j,i) &
                 *ratefac_c(temp_c(kc,j,i), temp_c_m(kc,j,i)) &
                 *creep(sigma_c(kc,j,i)) &
                 *sigma_c(kc,j,i)*sigma_c(kc,j,i)
+
 #if (DYNAMICS==2)
    else
       ct7(kc) = 2.0_dp*at7 &
-                /c_val(temp_c(kc,j,i)) &
+                /c_val_aux &
                 *viscosity(de_c(kc,j,i), &
                            temp_c(kc,j,i), temp_c_m(kc,j,i), 0.0_dp, &
 #if !defined(ALLOW_OPENAD)
@@ -1527,6 +1553,8 @@ do kc=0, KCMAX
                 *de_c(kc,j,i)**2
    end if
 #endif
+
+   strain_heating_c(kc,j,i) = c_val_aux*ct7(kc)*dtime_temp_inv
 
    ci1(kc) = ai1(kc)/H_c(j,i)
 
@@ -1928,7 +1956,8 @@ end subroutine calc_temp1
 subroutine calc_temp2(at1, at2_1, at2_2, at3_1, at3_2, &
    at4_1, at4_2, at5, at6, at7, atr1, alb1, &
    ai1, ai2, &
-   dtime_temp, dtt_2dxi, dtt_2deta, i, j)
+   dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
+   i, j)
 
 use ice_material_properties_m, only : ratefac_c, kappa_val, c_val, &
                                       creep, viscosity
@@ -1950,7 +1979,7 @@ real(dp), intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                         at4_2(0:KCMAX), at5(0:KCMAX), at6(0:KCMAX), at7, &
                         ai1(0:KCMAX), ai2(0:KCMAX), &
                         atr1, alb1
-real(dp), intent(in) :: dtime_temp, dtt_2dxi, dtt_2deta
+real(dp), intent(in) :: dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv
 
 integer(i4b) :: kc, kt, kr
 real(dp) :: ct1(0:KCMAX), ct2(0:KCMAX), ct3(0:KCMAX), ct4(0:KCMAX), &
@@ -1962,6 +1991,7 @@ real(dp) :: temp_c_help(0:KCMAX)
 real(dp) :: vx_c_help, vy_c_help
 real(dp) :: adv_vert_help
 real(dp) :: dtt_dxi, dtt_deta
+real(dp) :: c_val_aux
 real(dp) :: lgs_a0(0:KCMAX+KTMAX+KRMAX+IMAX+JMAX), &
             lgs_a1(0:KCMAX+KTMAX+KRMAX+IMAX+JMAX), &
             lgs_a2(0:KCMAX+KTMAX+KRMAX+IMAX+JMAX), &
@@ -2004,6 +2034,8 @@ end do
 
 do kc=0, KCMAX
 
+   c_val_aux = c_val(temp_c(kc,j,i))
+
    ct2(kc) = ( at2_1(kc)*dzm_dtau(j,i) &
            +at2_2(kc)*dH_c_dtau(j,i) )/H_c(j,i)
    ct3(kc) = ( at3_1(kc)*dzm_dxi_g(j,i) &
@@ -2013,14 +2045,14 @@ do kc=0, KCMAX
             +at4_2(kc)*dH_c_deta_g(j,i) )/H_c(j,i) &
           *0.5_dp*(vy_c(kc,j,i)+vy_c(kc,j-1,i)) *insq_g22_g(j,i)
    ct5(kc) = at5(kc) &
-             /c_val(temp_c(kc,j,i)) &
+             /c_val_aux &
              /H_c(j,i)
 
 #if (DYNAMICS==2)
    if (.not.flag_shelfy_stream(j,i)) then
 #endif
       ct7(kc) = at7 &
-                /c_val(temp_c(kc,j,i)) &
+                /c_val_aux &
                 *enh_c(kc,j,i) &
                 *ratefac_c(temp_c(kc,j,i), temp_c_m(kc,j,i)) &
                 *creep(sigma_c(kc,j,i)) &
@@ -2028,7 +2060,7 @@ do kc=0, KCMAX
 #if (DYNAMICS==2)
    else
       ct7(kc) = 2.0_dp*at7 &
-                /c_val(temp_c(kc,j,i)) &
+                /c_val_aux &
                 *viscosity(de_c(kc,j,i), &
                            temp_c(kc,j,i), temp_c_m(kc,j,i), 0.0_dp, &
 #if !defined(ALLOW_OPENAD)
@@ -2039,6 +2071,8 @@ do kc=0, KCMAX
                 *de_c(kc,j,i)**2
    end if
 #endif
+
+   strain_heating_c(kc,j,i) = c_val_aux*ct7(kc)*dtime_temp_inv
 
    ci1(kc) = ai1(kc)/H_c(j,i)
 
@@ -2451,7 +2485,8 @@ subroutine calc_temp3(at1, at2_1, at2_2, at3_1, at3_2, &
    at4_1, at4_2, at5, at6, at7, atr1, am1, am2, alb1, &
    aw1, aw2, aw3, aw4, aw5, aw7, aw8, aw9, aqtld, &
    ai1, ai2, ai3, dzeta_t, &
-   dtime_temp, dtt_2dxi, dtt_2deta, i, j)
+   dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
+   i, j)
 
 use ice_material_properties_m, only : ratefac_c, ratefac_t, kappa_val, c_val, &
                                       creep, viscosity
@@ -2474,7 +2509,7 @@ real(dp), intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                         ai1(0:KCMAX), ai2(0:KCMAX), ai3, &
                         atr1, am1, am2, alb1
 real(dp), intent(in) :: aw1, aw2, aw3, aw4, aw5, aw7, aw8, aw9, aqtld
-real(dp), intent(in) :: dzeta_t, dtime_temp, dtt_2dxi, dtt_2deta
+real(dp), intent(in) :: dzeta_t, dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv
 
 integer(i4b) :: kc, kt, kr
 real(dp) :: ct1(0:KCMAX), ct2(0:KCMAX), ct3(0:KCMAX), ct4(0:KCMAX), &
@@ -2492,6 +2527,7 @@ real(dp) :: sigma_c_help(0:KCMAX), sigma_t_help(0:KTMAX), &
 real(dp) :: vx_c_help, vy_c_help, vx_t_help, vy_t_help
 real(dp) :: adv_vert_help, adv_vert_w_help
 real(dp) :: dtt_dxi, dtt_deta
+real(dp) :: c_val_aux
 real(dp) :: lgs_a0(0:KCMAX+KTMAX+KRMAX+IMAX+JMAX), &
             lgs_a1(0:KCMAX+KTMAX+KRMAX+IMAX+JMAX), &
             lgs_a2(0:KCMAX+KTMAX+KRMAX+IMAX+JMAX), &
@@ -2535,6 +2571,8 @@ end do
 
 do kc=0, KCMAX
 
+   c_val_aux = c_val(temp_c(kc,j,i))
+
    ct2(kc) = ( at2_1(kc)*dzm_dtau(j,i) &
            +at2_2(kc)*dH_c_dtau(j,i) )/H_c_new(j,i)
    ct3(kc) = ( at3_1(kc)*dzm_dxi_g(j,i) &
@@ -2544,7 +2582,7 @@ do kc=0, KCMAX
             +at4_2(kc)*dH_c_deta_g(j,i) )/H_c_new(j,i) &
           *0.5_dp*(vy_c(kc,j,i)+vy_c(kc,j-1,i)) *insq_g22_g(j,i)
    ct5(kc) = at5(kc) &
-             /c_val(temp_c(kc,j,i)) &
+             /c_val_aux &
              /H_c_new(j,i)
 
    sigma_c_help(kc) &
@@ -2555,7 +2593,7 @@ do kc=0, KCMAX
    if (.not.flag_shelfy_stream(j,i)) then
 #endif
       ct7(kc) = at7 &
-                /c_val(temp_c(kc,j,i)) &
+                /c_val_aux &
                 *enh_c(kc,j,i) &
                 *ratefac_c(temp_c(kc,j,i), temp_c_m(kc,j,i)) &
                 *creep(sigma_c_help(kc)) &
@@ -2563,7 +2601,7 @@ do kc=0, KCMAX
 #if (DYNAMICS==2)
    else
       ct7(kc) = 2.0_dp*at7 &
-                /c_val(temp_c(kc,j,i)) &
+                /c_val_aux &
                 *viscosity(de_c(kc,j,i), &
                            temp_c(kc,j,i), temp_c_m(kc,j,i), 0.0_dp, &
 #if !defined(ALLOW_OPENAD)
@@ -2574,6 +2612,8 @@ do kc=0, KCMAX
                 *de_c(kc,j,i)**2
    end if
 #endif
+
+   strain_heating_c(kc,j,i) = c_val_aux*ct7(kc)*dtime_temp_inv
 
    ci1(kc) = ai1(kc)/H_c_new(j,i)
 
@@ -2688,6 +2728,8 @@ do kt=0, KTMAX
                 *de_t(kt,j,i)**2
    end if
 #endif
+
+   strain_heating_t(kt,j,i) = L*cw7(kt)*dtime_temp_inv
 
 end do
 
@@ -3628,7 +3670,8 @@ do while (difftemp_a > 0.0_dp)
                  am1, am2, alb1, &
                  aw1, aw2, aw3, aw4, aw5, aw7, aw8, aw9, aqtld, &
                  ai1, ai2, ai3, dzeta_t, &
-                 dtime_temp, dtt_2dxi, dtt_2deta, i, j)
+                 dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
+                 i, j)
 
    difftemp_b = difftemp_a
    difftemp_a = temp_c_new(0,j,i)-(-BETA*H_c_new(j,i))
@@ -3656,7 +3699,8 @@ call calc_temp3(at1, at2_1, at2_2, at3_1, at3_2, &
                 am1, am2, alb1, &
                 aw1, aw2, aw3, aw4, aw5, aw7, aw8, aw9, aqtld, &
                 ai1, ai2, ai3, dzeta_t, &
-                dtime_temp, dtt_2dxi, dtt_2deta, i, j)
+                dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
+                i, j)
 
 end subroutine shift_cts_upward
 
@@ -3724,7 +3768,8 @@ do while (difftemp_a < 0.0_dp)
                  am1, am2, alb1, &
                  aw1, aw2, aw3, aw4, aw5, aw7, aw8, aw9, aqtld, &
                  ai1, ai2, ai3, dzeta_t, &
-                 dtime_temp, dtt_2dxi, dtt_2deta, i, j)
+                 dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
+                 i, j)
 
       difftemp_b = difftemp_a
       difftemp_a = temp_c_new(0,j,i)-(-BETA*H_c_new(j,i))
@@ -3752,7 +3797,8 @@ do while (difftemp_a < 0.0_dp)
                  am1, am2, alb1, &
                  aw1, aw2, aw3, aw4, aw5, aw7, aw8, aw9, aqtld, &
                  ai1, ai2, ai3, dzeta_t, &
-                 dtime_temp, dtt_2dxi, dtt_2deta, i, j)
+                 dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
+                 i, j)
 
       else   ! CTS disappears
 
@@ -3770,7 +3816,8 @@ do while (difftemp_a < 0.0_dp)
          call calc_temp2(at1, at2_1, at2_2, at3_1, at3_2, &
                  at4_1, at4_2, at5, at6, at7, atr1, alb1, &
                  ai1, ai2, &
-                 dtime_temp, dtt_2dxi, dtt_2deta, i, j)
+                 dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
+                 i, j)
 
       end if
 
@@ -3793,7 +3840,8 @@ do while (difftemp_a < 0.0_dp)
                  am1, am2, alb1, &
                  aw1, aw2, aw3, aw4, aw5, aw7, aw8, aw9, aqtld, &
                  ai1, ai2, ai3, dzeta_t, &
-                 dtime_temp, dtt_2dxi, dtt_2deta, i, j)
+                 dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
+                 i, j)
 
    difftemp_b = difftemp_a
    difftemp_a = temp_c_new(0,j,i)-(-BETA*H_c_new(j,i))
@@ -3821,7 +3869,8 @@ call calc_temp3(at1, at2_1, at2_2, at3_1, at3_2, &
                 am1, am2, alb1, &
                 aw1, aw2, aw3, aw4, aw5, aw7, aw8, aw9, aqtld, &
                 ai1, ai2, ai3, dzeta_t, &
-                dtime_temp, dtt_2dxi, dtt_2deta, i, j)
+                dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
+                i, j)
 
 end subroutine shift_cts_downward
 
@@ -3831,7 +3880,8 @@ end subroutine shift_cts_downward
 subroutine calc_temp_ssa(at1, at2_1, at2_2, at3_1, at3_2, &
    at4_1, at4_2, at5, at6, at7, atr1, alb1, &
    ai1, ai2, &
-   dtime_temp, dtt_2dxi, dtt_2deta, i, j)
+   dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
+   i, j)
 
 use ice_material_properties_m, only : kappa_val, c_val, viscosity
 
@@ -3853,7 +3903,7 @@ real(dp), intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                         at4_2(0:KCMAX), at5(0:KCMAX), at6(0:KCMAX), at7, &
                         ai1(0:KCMAX), ai2(0:KCMAX), &
                         atr1, alb1
-real(dp), intent(in) :: dtime_temp, dtt_2dxi, dtt_2deta
+real(dp), intent(in) :: dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv
 
 integer(i4b) :: kc, kt, kr
 real(dp) :: ct1(0:KCMAX), ct2(0:KCMAX), ct3(0:KCMAX), ct4(0:KCMAX), &
@@ -3865,6 +3915,7 @@ real(dp) :: temp_c_help(0:KCMAX)
 real(dp) :: vx_c_help, vy_c_help
 real(dp) :: adv_vert_help
 real(dp) :: dtt_dxi, dtt_deta
+real(dp) :: c_val_aux
 real(dp) :: lgs_a0(0:KCMAX+KTMAX+KRMAX+IMAX+JMAX), &
             lgs_a1(0:KCMAX+KTMAX+KRMAX+IMAX+JMAX), &
             lgs_a2(0:KCMAX+KTMAX+KRMAX+IMAX+JMAX), &
@@ -3907,6 +3958,8 @@ end do
 
 do kc=0, KCMAX
 
+   c_val_aux = c_val(temp_c(kc,j,i))
+
    ct2(kc) = ( at2_1(kc)*dzm_dtau(j,i) &
            +at2_2(kc)*dH_c_dtau(j,i) )/H_c(j,i)
    ct3(kc) = ( at3_1(kc)*dzm_dxi_g(j,i) &
@@ -3916,10 +3969,10 @@ do kc=0, KCMAX
             +at4_2(kc)*dH_c_deta_g(j,i) )/H_c(j,i) &
           *0.5_dp*(vy_c(kc,j,i)+vy_c(kc,j-1,i)) *insq_g22_g(j,i)
    ct5(kc) = at5(kc) &
-             /c_val(temp_c(kc,j,i)) &
+             /c_val_aux &
              /H_c(j,i)
    ct7(kc) = 2.0_dp*at7 &
-             /c_val(temp_c(kc,j,i)) &
+             /c_val_aux &
              *viscosity(de_ssa(j,i), &
                         temp_c(kc,j,i), temp_c_m(kc,j,i), 0.0_dp, &
 #if !defined(ALLOW_OPENAD)
@@ -3928,6 +3981,9 @@ do kc=0, KCMAX
                         enh_c(kc,j,i), 0_i4b) &
 #endif
              *de_ssa(j,i)**2
+
+   strain_heating_c(kc,j,i) = c_val_aux*ct7(kc)*dtime_temp_inv
+
    ci1(kc) = ai1(kc)/H_c(j,i)
 
 end do
