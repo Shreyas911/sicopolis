@@ -85,7 +85,7 @@ integer(i4b),    intent(inout) :: ndat2d, ndat3d
 integer(i4b) :: i, j, kc, kt, kr
 integer(i4b) :: ios
 integer(i4b) :: ndat
-real(dp), dimension(0:JMAX,0:IMAX) :: H, H_cold, H_temp, dH_dtau
+real(dp), dimension(0:JMAX,0:IMAX) :: H_cold, H_temp
 real(dp), dimension(0:JMAX,0:IMAX) :: vx_m_g, vy_m_g
 real(dp) :: V_tot, V_grounded, V_floating, V_gr_redu, V_af
 real(dp) :: A_grounded, A_floating
@@ -3078,11 +3078,6 @@ call check( nf90_enddef(ncid), thisroutine )
 
 end if   ! (.not.flag_compute_flux_vars_only)
 
-!-------- Ice thickness and time derivative --------
-
-H       = H_c       + H_t
-dH_dtau = dH_c_dtau + dH_t_dtau
-
 !-------- Thickness of the cold and temperate layers --------
 
 if (.not.flag_compute_flux_vars_only) then
@@ -4516,7 +4511,7 @@ real(dp) :: time_val, &
             Q_b, Q_temp, bmb_tot, bmb_gr_tot, bmb_fl_tot, &
             calv_tot, mbp, mb_resid, mb_mis, disc_lsc, disc_ssc
 real(dp) :: x_pos, y_pos
-real(dp), dimension(0:JMAX,0:IMAX) :: H, H_cold, H_temp
+real(dp), dimension(0:JMAX,0:IMAX) :: H_cold, H_temp
 real(dp) :: Tbh_help
 real(dp) :: H_ave_sed, Tbh_ave_sed, Atb_sed
 real(dp) :: sum_area_sed
@@ -4609,10 +4604,6 @@ end if
 if (.not.flag_compute_flux_vars_only) &
    counter = counter + 1
 
-!-------- Ice thickness --------
-
-H = H_c + H_t
-
 !-------- Thickness of the cold and temperate layers --------
 
 H_cold = 0.0_dp
@@ -4648,7 +4639,7 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
    if (n==0) then
 
       call scalar_variables(time, z_sl, &
-                            H, H_cold, H_temp, &
+                            H_cold, H_temp, &
                             time_val, &
                             V_tot, V_grounded, V_floating, &
                             A_tot, A_grounded, A_floating, &
@@ -4665,7 +4656,7 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
       flag_region = (mask_region==n)
 
       call scalar_variables(time, z_sl, &
-                            H, H_cold, H_temp, &
+                            H_cold, H_temp, &
                             time_val, &
                             V_tot, V_grounded, V_floating, &
                             A_tot, A_grounded, A_floating, &
@@ -5803,7 +5794,7 @@ end subroutine output2
 !> Computation of the scalar output variables.
 !<------------------------------------------------------------------------------
 subroutine scalar_variables(time, z_sl, &
-                            H, H_cold, H_temp, &
+                            H_cold, H_temp, &
                             time_val, &
                             V_tot, V_grounded, V_floating, &
                             A_tot, A_grounded, A_floating, &
@@ -5818,7 +5809,7 @@ subroutine scalar_variables(time, z_sl, &
 implicit none
 
 real(dp), intent(in) :: time, z_sl
-real(dp), dimension(0:JMAX,0:IMAX), intent(in) :: H, H_cold, H_temp
+real(dp), dimension(0:JMAX,0:IMAX), intent(in) :: H_cold, H_temp
 logical, dimension(0:JMAX,0:IMAX), optional, intent(in) :: opt_flag_region
 
 real(dp), intent(out) :: time_val, &

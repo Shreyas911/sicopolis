@@ -293,14 +293,11 @@ contains
 
   integer(i1b), dimension(0:JMAX,0:IMAX)     :: mask_aux, n_cts_aux
   integer(i4b), dimension(0:JMAX,0:IMAX)     :: kc_cts_aux
-  real(dp), dimension(0:JMAX,0:IMAX)         :: H
   real(dp), dimension(0:JMAX,0:IMAX)         :: H_cold_aux, H_temp_aux, H_aux
   real(dp), dimension(0:KRMAX,0:JMAX,0:IMAX) :: temp_r_aux
   real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX) :: omega_t_aux, age_t_aux
   real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: temp_c_aux, age_c_aux
   real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: omega_c_aux
-
-  H = H_c + H_t
 
   call init_temp_water_age_1_4()
 

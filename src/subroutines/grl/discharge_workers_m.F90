@@ -270,7 +270,9 @@ contains
   ! 350 Gt/yr Calov et al. (2015)   !!! 400 Gt/yr van den Broeke et al (2016)
   disc_target = 350.0_dp ! in Gt/yr  
 
-  H_c=zs-zb; H_t=0.0_dp
+  H   = zs-zb
+  H_c = H
+  H_t = 0.0_dp
 
 #if !defined(ALLOW_OPENAD) /* Normal */
   c_dis_0   =  1.0_dp
@@ -461,7 +463,7 @@ contains
 
   if(disc.ge.1) then !------------------ disc >= 1
     where(mask_mar.eq.1_i1b.and.cos_grad_tc.ge.cos_tc) 
-      dis_perp=c_dis*(H_c+H_t)**m_H/cst_dist**m_D
+      dis_perp=c_dis*H**m_H/cst_dist**m_D
     elsewhere
       dis_perp=0.0_dp
     end where
@@ -482,7 +484,7 @@ contains
    do i=0, IMAX
    do j=0, JMAX
       if (mask_mar(j,i).eq.1_i1b .and. cos_grad_tc(j,i).ge.cos_tc) then
-         dis_perp(j,i) = c_dis_DW(j,i)*( H_c(j,i) + H_t(j,i) )**m_H_DW/cst_dist(j,i)**m_D_DW
+         dis_perp(j,i) = c_dis_DW(j,i)*H(j,i)**m_H_DW/cst_dist(j,i)**m_D_DW
       else
          dis_perp(j,i) = 0.0_dp
       end if

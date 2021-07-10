@@ -41,7 +41,6 @@ module calc_thk_m
 
   implicit none
 
-  real(dp), dimension(0:JMAX,0:IMAX), save :: H, H_new
   real(dp), dimension(0:JMAX,0:IMAX), save :: H_new_flow
   real(dp), dimension(0:JMAX,0:IMAX), save :: mb_source
   logical,                            save :: flag_solver_explicit
@@ -125,8 +124,6 @@ call error(errormsg)
 
 !-------- Initialisation of the ice thickness
 !                               and surface topography --------
-
-H = H_c + H_t
 
 zs_new = zs   ! initialisation,
 H_new  = H    ! will be overwritten later
@@ -1460,6 +1457,7 @@ call ocean_connect()
 dzs_dtau  = (zs_new-zs)*dtime_inv
 dzb_dtau  = (zb_new-zb)*dtime_inv
 dzm_dtau  = dH_t_dtau+dzb_dtau
+dH_dtau   = (H_new-H)*dtime_inv
 dH_c_dtau = dzs_dtau-dzm_dtau
 
 #if (THK_EVOL==2)
@@ -1467,8 +1465,9 @@ if ( abs((time-time_target_topo_final)*year_sec_inv) < eps ) then
    dzs_dtau  = 0.0_dp   ! Introduced
    dzb_dtau  = 0.0_dp   ! by
    dzm_dtau  = 0.0_dp   ! Tatsuru Sato
-   dH_c_dtau = 0.0_dp   ! for
-   dH_t_dtau = 0.0_dp   ! stability reasons
+   dH_dtau   = 0.0_dp   ! for
+   dH_c_dtau = 0.0_dp   ! stability
+   dH_t_dtau = 0.0_dp   ! reasons
 end if
 #endif
 
