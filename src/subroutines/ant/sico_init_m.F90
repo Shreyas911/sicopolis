@@ -2926,13 +2926,15 @@ do j=0, JMAX
    n_cts(j,i) = -1_i1b
    kc_cts(j,i) = 0
 
-   H_c(j,i) = zs(j,i)-zm(j,i)
+   H(j,i)   = zs(j,i)-zm(j,i)
+   H_c(j,i) = H(j,i)
    H_t(j,i) = 0.0_dp
 
    dzs_dtau(j,i)  = 0.0_dp
    dzm_dtau(j,i)  = 0.0_dp
    dzb_dtau(j,i)  = 0.0_dp
    dzl_dtau(j,i)  = 0.0_dp
+   dH_dtau(j,i)   = 0.0_dp
    dH_c_dtau(j,i) = 0.0_dp
    dH_t_dtau(j,i) = 0.0_dp
 
@@ -3125,6 +3127,7 @@ do j=0, JMAX
    n_cts(j,i) = -1_i1b
    kc_cts(j,i) = 0
 
+   H(j,i)   = 0.0_dp
    H_c(j,i) = 0.0_dp
    H_t(j,i) = 0.0_dp
 
@@ -3132,6 +3135,7 @@ do j=0, JMAX
    dzm_dtau(j,i)  = 0.0_dp
    dzb_dtau(j,i)  = 0.0_dp
    dzl_dtau(j,i)  = 0.0_dp
+   dH_dtau(j,i)   = 0.0_dp
    dH_c_dtau(j,i) = 0.0_dp
    dH_t_dtau(j,i) = 0.0_dp
 

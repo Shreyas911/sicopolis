@@ -814,11 +814,12 @@ call error(errormsg)
         zm(j,i)      = real(zm_conv(i,j),dp)
         zb(j,i)      = real(zb_conv(i,j),dp)
         zl(j,i)      = real(zl_conv(i,j),dp)
+        H(j,i)       = real(H_conv(i,j),dp)
 #if (CALCMOD==1)
         H_c(j,i)     = real(H_cold_conv(i,j),dp)
         H_t(j,i)     = real(H_temp_conv(i,j),dp)
 #elif (CALCMOD==0 || CALCMOD==2 || CALCMOD==3 || CALCMOD==-1)
-        H_c(j,i)     = real(H_conv(i,j),dp)
+        H_c(j,i)     = H(j,i)
         H_t(j,i)     = 0.0_dp
 #endif
         Q_bm(j,i)    = real(Q_bm_conv(i,j),dp)*year2sec_inv
@@ -834,6 +835,7 @@ call error(errormsg)
         dzm_dtau(j,i)  = real(dzm_dtau_conv(i,j),dp)*year2sec_inv
         dzb_dtau(j,i)  = real(dzb_dtau_conv(i,j),dp)*year2sec_inv
         dzl_dtau(j,i)  = real(dzl_dtau_conv(i,j),dp)*year2sec_inv
+        dH_dtau(j,i)   = real(dH_dtau_conv(i,j),dp)*year2sec_inv
         dH_c_dtau(j,i) = real(dH_c_dtau_conv(i,j),dp)*year2sec_inv
         dH_t_dtau(j,i) = real(dH_t_dtau_conv(i,j),dp)*year2sec_inv
         vx_b_g(j,i)  = real(vx_b_g_conv(i,j),dp)*year2sec_inv
@@ -990,7 +992,7 @@ call error(errormsg)
            if ((mask(j,i)==0_i1b).or.(mask(j,i)==3_i1b)) then
                   ! grounded or floating ice
 
-              vis_ave_g(j,i) = vis_int_g(j,i)/max((H_c(j,i)+H_t(j,i)), eps_dp)
+              vis_ave_g(j,i) = vis_int_g(j,i)/max(H(j,i), eps_dp)
 
               vis_ave_g(j,i) = max(min(vis_ave_g(j,i), visc_max), visc_min)
 

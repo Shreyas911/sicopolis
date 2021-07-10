@@ -211,6 +211,8 @@ save
    real(dp), dimension(0:JMAX,0:IMAX) :: flex_rig_lith
 !> time_lag_asth(j,i): Time lag of the relaxing asthenosphere
    real(dp), dimension(0:JMAX,0:IMAX) :: time_lag_asth
+!> H(j,i): Ice thickness (= H_c + H_t)
+   real(dp), dimension(0:JMAX,0:IMAX) :: H
 !> H_c(j,i): Thickness of ice in the upper (kc) domain
 !>           (thickness of the cold-ice layer for POLY,
 !>           entire ice thickness for ISOT, COLD, ENTC, ENTM)
@@ -267,6 +269,8 @@ save
    real(dp), dimension(0:JMAX,0:IMAX) :: dzb_dtau
 !> dzl_dtau(j,i): Derivative of zl by tau (time)
    real(dp), dimension(0:JMAX,0:IMAX) :: dzl_dtau
+!> dH_dtau(j,i): Derivative of H by tau (time)
+   real(dp), dimension(0:JMAX,0:IMAX) :: dH_dtau
 !> dH_c_dtau(j,i): Derivative of H_c by tau (time)
    real(dp), dimension(0:JMAX,0:IMAX) :: dH_c_dtau
 !> dH_t_dtau(j,i): Derivative of H_t by tau (time)
@@ -431,6 +435,8 @@ save
    real(dp), dimension(0:JMAX,0:IMAX) :: zb_new
 !> (.)_new: New value of quantity (.) computed during an integration step
    real(dp), dimension(0:JMAX,0:IMAX) :: zl_new
+!> (.)_new: New value of quantity (.) computed during an integration step
+   real(dp), dimension(0:JMAX,0:IMAX) :: H_new
 !> (.)_new: New value of quantity (.) computed during an integration step
    real(dp), dimension(0:JMAX,0:IMAX) :: H_c_new
 !> (.)_new: New value of quantity (.) computed during an integration step

@@ -100,7 +100,7 @@ do j=0, JMAX
 
       zl_new(j,i) = tldt_inv(j,i)*( time_lag_asth(j,i)*zl(j,i) &
                     + dtime*(zl0(j,i) &
-                             -FRAC_LLRA*rho_rhoa_ratio*(H_c(j,i)+H_t(j,i))) )
+                             -FRAC_LLRA*rho_rhoa_ratio*H(j,i)) )
 
    else   ! (mask(j,i) >= 2_i1b)
 
@@ -301,7 +301,7 @@ do jl=jl_begin, jl_end
    j = min(max(jl, 0), JMAX)
 
    if (mask(j,i)==0_i1b) then
-      f_0(jl,il) = rho_g * area(j,i) * (H_c(j,i) + H_t(j,i))
+      f_0(jl,il) = rho_g * area(j,i) * H(j,i)
    else if (mask(j,i)==1_i1b) then
       f_0(jl,il) = 0.0_dp
    else   ! (mask(j,i)>=2_i1b)
@@ -404,7 +404,7 @@ do i=0, IMAX
 do j=0, JMAX
 
    if (mask(j,i) == 0_i1b) then
-      zl0_raw(j,i) = zl(j,i) + rho_ratio*(H_c(j,i)+H_t(j,i))
+      zl0_raw(j,i) = zl(j,i) + rho_ratio*H(j,i)
    else
       zl0_raw(j,i) = zl(j,i)
    end if            ! local lithosphere

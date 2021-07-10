@@ -141,7 +141,7 @@ do j=1, JMAX-1
          if (.not.flag_shelfy_stream(j,i)) then
 #endif
             frictional_heating &
-               = -aqbm3a*(H_c(j,i)+H_t(j,i))*0.5_dp &
+               = -aqbm3a*H(j,i)*0.5_dp &
                  * ( (vx_t(0,j,i)+vx_t(0,j,i-1))*dzs_dxi_g(j,i) &
                     +(vy_t(0,j,i)+vy_t(0,j-1,i))*dzs_deta_g(j,i) )
 #if (DYNAMICS==2)

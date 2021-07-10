@@ -90,7 +90,7 @@ do j=1, JMAX-1
         ! one neighbour is floating ice and the other is grounded ice
         ! (grounding line)
 
-      H_mid  = 0.5_dp*((H_c(j,i)+H_t(j,i))+(H_c(j,i+1)+H_t(j,i+1)))
+      H_mid  = 0.5_dp*(H(j,i)+H(j,i+1))
       zl_mid = 0.5_dp*(zl(j,i)+zl(j,i+1))
       zs_mid = 0.5_dp*(zs(j,i)+zs(j,i+1))
 
@@ -163,7 +163,7 @@ do j=0, JMAX-1
         ! one neighbour is floating ice and the other is grounded ice
         ! (grounding line)
 
-      H_mid  = 0.5_dp*((H_c(j,i)+H_t(j,i))+(H_c(j+1,i)+H_t(j+1,i)))
+      H_mid  = 0.5_dp*(H(j,i)+H(j+1,i))
       zl_mid = 0.5_dp*(zl(j,i)+zl(j+1,i))
       zs_mid = 0.5_dp*(zs(j,i)+zs(j+1,i))
 
@@ -386,7 +386,7 @@ do j=0, JMAX
    if ((mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b)) then
                      ! grounded or floating ice
 
-      p_b(j,i)   = max(RHO*G*(H_c(j,i)+H_t(j,i)), 0.0_dp)
+      p_b(j,i)   = max(RHO*G*H(j,i), 0.0_dp)
       p_b_w(j,i) = RHO_SW*G*max((z_sl-zb(j,i)), 0.0_dp)
 
       if (mask(j,i) == 0_i1b) then
@@ -886,7 +886,7 @@ do j=0, JMAX
          flui_ave_sia(j,i) = flui_ave_sia(j,i)+0.5_dp*(cflui1(kc+1)+cflui1(kc))
       end do
 
-      flui_ave_sia(j,i) = flui_ave_sia(j,i)/max((H_c(j,i)+H_t(j,i)), eps_dp)
+      flui_ave_sia(j,i) = flui_ave_sia(j,i)/max(H(j,i), eps_dp)
 
       flui_ave_sia(j,i) = max(min(flui_ave_sia(j,i), flui_max), flui_min)
 
@@ -1138,9 +1138,7 @@ do j=0, JMAX
    if ( (mask(j,i)==0_i1b).or.(mask(j,i+1)==0_i1b) ) then
                                ! at least one neighbour point is grounded ice
 
-      vx_m(j,i) = qx(j,i) &
-                    / ( 0.5_dp &
-                      * ( (H_c(j,i)+H_t(j,i)) + (H_c(j,i+1)+H_t(j,i+1)) ) )
+      vx_m(j,i) = qx(j,i) / ( 0.5_dp*(H(j,i)+H(j,i+1)) )
 
       call velocity_limiter_gradual(vx_m(j,i), vh_max, vh_max_inv)
 
@@ -1164,9 +1162,7 @@ do j=0, JMAX-1
    if ( (mask(j,i)==0_i1b).or.(mask(j+1,i)==0_i1b) ) then
                                ! at least one neighbour point is grounded ice
 
-      vy_m(j,i) = qy(j,i) &
-                    / ( 0.5_dp &
-                      * ( (H_c(j,i)+H_t(j,i)) + (H_c(j+1,i)+H_t(j+1,i)) ) )
+      vy_m(j,i) = qy(j,i) / ( 0.5_dp*(H(j,i)+H(j+1,i)) )
 
       call velocity_limiter_gradual(vy_m(j,i), vh_max, vh_max_inv)
 
@@ -1453,10 +1449,10 @@ do while ((m < iter_ssa).and.(res_vxy_m_ssa > tol_ssa))
    else   ! (m == 1, first iteration)
 
 #if (!defined(ITER_INIT_SSA) || ITER_INIT_SSA==1)
-      vis_int_g = (H_c+H_t)*visc_init
+      vis_int_g = H*visc_init
                   ! constant viscosity times ice thickness
 #elif (ITER_INIT_SSA==2)
-      vis_int_g = (H_c+H_t)*vis_ave_g
+      vis_int_g = H*vis_ave_g
                   ! previous depth-averaged viscosity times
                   ! ice thickness
 #elif (ITER_INIT_SSA==3)
@@ -1671,8 +1667,7 @@ do j=0, JMAX
       call error(errormsg)
 #endif
 
-      qx(j,i)   = vx_m(j,i) &
-                     * 0.5_dp * ( (H_c(j,i)+H_t(j,i))+(H_c(j,i+1)+H_t(j,i+1)) )
+      qx(j,i) = vx_m(j,i) * 0.5_dp*(H(j,i)+H(j,i+1))
 
    else if (flag_calc_vxy_ssa_x(j,i)) then   ! floating ice
 
@@ -1688,8 +1683,7 @@ do j=0, JMAX
 
       vx_m(j,i) = vx_m_ssa(j,i)
 
-      qx(j,i)   = vx_m(j,i) &
-                     * 0.5_dp * ( (H_c(j,i)+H_t(j,i))+(H_c(j,i+1)+H_t(j,i+1)) )
+      qx(j,i) = vx_m(j,i) * 0.5_dp*(H(j,i)+H(j,i+1))
 
 !  else
 !     In all other cases, the depth-averaged velocities vx_m_ssa(j,i) computed
@@ -1802,8 +1796,7 @@ do j=0, JMAX-1
       call error(errormsg)
 #endif
 
-      qy(j,i)   = vy_m(j,i) &
-                     * 0.5_dp * ( (H_c(j,i)+H_t(j,i))+(H_c(j+1,i)+H_t(j+1,i)) )
+      qy(j,i) = vy_m(j,i) * 0.5_dp*(H(j,i)+H(j+1,i))
 
    else if (flag_calc_vxy_ssa_y(j,i)) then   ! floating ice
 
@@ -1819,8 +1812,7 @@ do j=0, JMAX-1
 
       vy_m(j,i) = vy_m_ssa(j,i)
 
-      qy(j,i)   = vy_m(j,i) &
-                     * 0.5_dp * ( (H_c(j,i)+H_t(j,i))+(H_c(j+1,i)+H_t(j+1,i)) )
+      qy(j,i) = vy_m(j,i) * 0.5_dp*(H(j,i)+H(j+1,i))
 
 !  else
 !     In all other cases, the depth-averaged velocities vy_m_ssa(j,i) computed
@@ -2182,7 +2174,7 @@ do n=1, nmax-1, 2
    if ( (i /= IMAX).and.(j /= 0).and.(j /= JMAX) ) then
       ! inner point on the staggered grid in x-direction
 
-      H_mid  = 0.5_dp*((H_c(j,i)+H_t(j,i))+(H_c(j,i+1)+H_t(j,i+1)))
+      H_mid  = 0.5_dp*(H(j,i)+H(j,i+1))
       zl_mid = 0.5_dp*(zl(j,i)+zl(j,i+1))
 
       if ( &
@@ -2358,7 +2350,7 @@ do n=1, nmax-1, 2
                lgs_a_index(k) = nc
 
                lgs_b_value(nr) = factor_rhs_3a &
-                                    *(H_c(j,i1)+H_t(j,i1))**2 &
+                                    *H(j,i1)**2 &
                                - factor_rhs_3b &
                                     *(max((z_sl-zb(j,i1)), 0.0_dp))**2
 
@@ -2426,7 +2418,7 @@ do n=1, nmax-1, 2
                lgs_a_index(k) = nc
 
                lgs_b_value(nr) = factor_rhs_3a &
-                                    *(H_c(j,i1)+H_t(j,i1))**2
+                                    *H(j,i1)**2
 
                lgs_x_value(nr) = vx_m_ssa(j,i)
 
@@ -2627,7 +2619,7 @@ do n=1, nmax-1, 2
             lgs_a_index(k) = nc
 
             lgs_b_value(nr) = factor_rhs_2 &
-                                 *(H_c(j,i1)+H_t(j,i1))**2
+                                 *H(j,i1)**2
 
             lgs_x_value(nr) = vx_m_ssa(j,i)
 
@@ -2700,7 +2692,7 @@ do n=1, nmax-1, 2
    if ( (j /= JMAX).and.(i /= 0).and.(i /= IMAX) ) then
       ! inner point on the staggered grid in y-direction
 
-      H_mid  = 0.5_dp*((H_c(j,i)+H_t(j,i))+(H_c(j+1,i)+H_t(j+1,i)))
+      H_mid  = 0.5_dp*(H(j,i)+H(j+1,i))
       zl_mid = 0.5_dp*(zl(j,i)+zl(j+1,i))
    
       if ( &
@@ -2876,7 +2868,7 @@ do n=1, nmax-1, 2
                lgs_a_index(k) = nc
 
                lgs_b_value(nr) = factor_rhs_3a &
-                                    *(H_c(j1,i)+H_t(j1,i))**2 &
+                                    *H(j1,i)**2 &
                                - factor_rhs_3b &
                                     *(max((z_sl-zb(j1,i)), 0.0_dp))**2
 
@@ -2944,7 +2936,7 @@ do n=1, nmax-1, 2
                lgs_a_index(k) = nc
 
                lgs_b_value(nr) = factor_rhs_3a &
-                                    *(H_c(j1,i)+H_t(j1,i))**2
+                                    *H(j1,i)**2
 
                lgs_x_value(nr) = vy_m_ssa(j,i)
 
@@ -3145,7 +3137,7 @@ do n=1, nmax-1, 2
             lgs_a_index(k) = nc
 
             lgs_b_value(nr) = factor_rhs_2 &
-                                 *(H_c(j1,i)+H_t(j1,i))**2
+                                 *H(j1,i)**2
 
             lgs_x_value(nr) = vy_m_ssa(j,i)
 
@@ -3374,7 +3366,7 @@ do j=0, JMAX
       de_ssa(j,i) = 0.0_dp   ! dummy value
 
       vis_ave_g(j,i) = 1.0_dp/flui_ave_sia(j,i)
-      vis_int_g(j,i) = (H_c(j,i)+H_t(j,i)) * vis_ave_g(j,i)
+      vis_int_g(j,i) = H(j,i) * vis_ave_g(j,i)
 
    else if ((mask(j,i)==1_i1b).or.(mask(j,i)==2_i1b)) then
                                                    ! ice-free land or ocean
@@ -3529,7 +3521,7 @@ do j=0, JMAX
 
 !  ------ Depth-averaged viscosity
 
-      vis_ave_g(j,i) = vis_int_g(j,i)/max((H_c(j,i)+H_t(j,i)), eps_dp)
+      vis_ave_g(j,i) = vis_int_g(j,i)/max(H(j,i), eps_dp)
 
       vis_ave_g(j,i) = max(min(vis_ave_g(j,i), visc_max), visc_min)
 
@@ -3581,7 +3573,7 @@ end if
 
 !-------- Final depth-integrated viscosity --------
 
-vis_int_g = vis_ave_g*(H_c+H_t)
+vis_int_g = vis_ave_g*H
 
 #else
 

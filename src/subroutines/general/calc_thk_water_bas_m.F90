@@ -76,7 +76,7 @@ contains
 
 #if defined(ALLOW_OPENAD) /* OpenAD */
   integer(i1b), dimension(0:IMAX,0:JMAX) :: t_mask
-  real(dp)    , dimension(0:IMAX,0:JMAX) :: t_H_c, t_H_t, t_Q_b_tot
+  real(dp)    , dimension(0:IMAX,0:JMAX) :: t_H, t_Q_b_tot
 #endif /* OpenAD */
 
   type(hydro_t), save :: hydro
@@ -109,7 +109,7 @@ contains
 
   where (transpose(mask)==0_i1b)   ! grounded ice
      hydro_icemask = 1
-     hydro_thk     = transpose(H_c+H_t)
+     hydro_thk     = transpose(H)
      hydro_supply  = rho_rho_w_ratio*transpose(Q_b_tot)
   elsewhere
      hydro_icemask = 0
@@ -189,9 +189,8 @@ contains
      hydro_topg(i,j) = zl(j,i) - z_sl
      hydro_temppabase(i,j) = temph_b(j,i)
      ! transpose these arrays for easy searching below
-     t_mask(i,j) = mask(j,i)
-     t_H_c(i,j) = H_c(j,i)
-     t_H_t(i,j) = H_t(j,i)
+     t_mask(i,j)    = mask(j,i)
+     t_H(i,j)       = H(j,i)
      t_Q_b_tot(i,j) = Q_b_tot(j,i)
   end do
   end do
@@ -200,7 +199,7 @@ contains
   do i=0,IMAX
      if (t_mask(i,j)==0_i1b) then
         hydro_icemask(i,j) = 1
-        hydro_thk(i,j)     = t_H_c(i,j) + t_H_t(i,j)
+        hydro_thk(i,j)     = t_H(i,j)
         hydro_supply(i,j)  = rho_rho_w_ratio*t_Q_b_tot(i,j)
      else
         hydro_icemask(i,j) = 0

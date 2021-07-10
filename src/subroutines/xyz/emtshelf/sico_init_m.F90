@@ -1847,6 +1847,7 @@ do j=0, JMAX
    n_cts(j,i) = -1_i1b
    kc_cts(j,i) = 0
 
+   H(j,i)   = 0.0_dp
    H_c(j,i) = 0.0_dp
    H_t(j,i) = 0.0_dp
 
@@ -1854,6 +1855,7 @@ do j=0, JMAX
    dzm_dtau(j,i)  = 0.0_dp
    dzb_dtau(j,i)  = 0.0_dp
    dzl_dtau(j,i)  = 0.0_dp
+   dH_dtau(j,i)   = 0.0_dp
    dH_c_dtau(j,i) = 0.0_dp
    dH_t_dtau(j,i) = 0.0_dp
 

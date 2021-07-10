@@ -339,11 +339,22 @@ contains
       ea,eaz_c,eaz_c_quotient,lambda,phi,area,sq_g11_g,sq_g22_g,&
       insq_g11_g,insq_g22_g,sq_g11_sgx,sq_g11_sgy,sq_g22_sgx,sq_g22_sgy,&
       insq_g11_sgx,insq_g22_sgy,zs,zm,zb,zl,zl0,wss,flex_rig_lith,&
-      time_lag_asth,H_c,H_t,dzs_dxi,dzm_dxi,dzb_dxi,dH_c_dxi,dH_t_dxi,&
-      dzs_deta,dzm_deta,dzb_deta,dH_c_deta,dH_t_deta,dzs_dxi_g,&
-      dzm_dxi_g,dzb_dxi_g,dH_c_dxi_g,dH_t_dxi_g,dzs_deta_g,dzm_deta_g,&
-      dzb_deta_g,dH_c_deta_g,dH_t_deta_g,dzs_dtau,dzm_dtau,dzb_dtau,&
-      dzl_dtau,dH_c_dtau,dH_t_dtau,p_weert,q_weert,p_weert_inv,&
+      time_lag_asth, &
+      H, H_c, H_t, &
+      dzs_dxi,dzm_dxi,dzb_dxi, &
+      dH_c_dxi, dH_t_dxi, &
+      dzs_deta,dzm_deta,dzb_deta, &
+      dH_c_deta, dH_t_deta, &
+      dzs_dxi_g,&
+      dzm_dxi_g,dzb_dxi_g, &
+      dH_c_dxi_g, dH_t_dxi_g, &
+      dzs_deta_g,dzm_deta_g,&
+      dzb_deta_g, &
+      dH_c_deta_g, dH_t_deta_g, &
+      dzs_dtau,dzm_dtau,dzb_dtau,&
+      dzl_dtau, &
+      dH_dtau, dH_c_dtau, dH_t_dtau, &
+      p_weert,q_weert,p_weert_inv,&
       c_slide,d_help_b,c_drag, &
       p_b, p_b_w, p_b_red, tau_dr, tau_b, &
       vx_b,vy_b,&
@@ -353,7 +364,9 @@ contains
       flui_ave_sia,h_diff,qx,qy,q_gl_g,q_geo,temp_b,temph_b,Q_bm,Q_b_apl,&
       Q_tld,Q_b_tot,H_w,&
       accum,runoff,runoff_apl,as_perp,temp_maat,temp_s,am_perp,&
-      am_perp_st,zs_new,zm_new,zb_new,zl_new,H_c_new,H_t_new,zs_ref,&
+      am_perp_st,zs_new,zm_new,zb_new,zl_new, &
+      H_new, H_c_new, H_t_new, &
+      zs_ref,&
       accum_present,precip_ma_present,precip_ma_lgm_anom,&
       temp_ma_present,temp_mj_present,temp_ma_lgm_anom,temp_mj_lgm_anom,&
       dist_dxdy,acc_fact,precip_present,precip_lgm_anom,gamma_precip_lgm_anom,&
@@ -570,11 +583,22 @@ contains
          a_ea,a_eaz_c,a_eaz_c_quotient,a_lambda,a_phi,a_area,a_sq_g11_g,a_sq_g22_g,&
          a_insq_g11_g,a_insq_g22_g,a_sq_g11_sgx,a_sq_g11_sgy,a_sq_g22_sgx,a_sq_g22_sgy,&
          a_insq_g11_sgx,a_insq_g22_sgy,a_zs,a_zm,a_zb,a_zl,a_zl0,a_wss,a_flex_rig_lith,&
-         a_time_lag_asth,a_H_c,a_H_t,a_dzs_dxi,a_dzm_dxi,a_dzb_dxi,a_dH_c_dxi,a_dH_t_dxi,&
-         a_dzs_deta,a_dzm_deta,a_dzb_deta,a_dH_c_deta,a_dH_t_deta,a_dzs_dxi_g,&
-         a_dzm_dxi_g,a_dzb_dxi_g,a_dH_c_dxi_g,a_dH_t_dxi_g,a_dzs_deta_g,a_dzm_deta_g,&
-         a_dzb_deta_g,a_dH_c_deta_g,a_dH_t_deta_g,a_dzs_dtau,a_dzm_dtau,a_dzb_dtau,&
-         a_dzl_dtau,a_dH_c_dtau,a_dH_t_dtau,a_p_weert,a_q_weert,a_p_weert_inv,&
+         a_time_lag_asth, &
+         a_H, a_H_c, a_H_t, &
+         a_dzs_dxi,a_dzm_dxi,a_dzb_dxi, &
+         a_dH_c_dxi, a_dH_t_dxi, &
+         a_dzs_deta,a_dzm_deta,a_dzb_deta, &
+         a_dH_c_deta, a_dH_t_deta, &
+         a_dzs_dxi_g,&
+         a_dzm_dxi_g,a_dzb_dxi_g, &
+         a_dH_c_dxi_g, a_dH_t_dxi_g, &
+         a_dzs_deta_g,a_dzm_deta_g,&
+         a_dzb_deta_g, &
+         a_dH_c_deta_g, a_dH_t_deta_g, &
+         a_dzs_dtau,a_dzm_dtau,a_dzb_dtau,&
+         a_dzl_dtau, &
+         a_dH_dtau, a_dH_c_dtau, a_dH_t_dtau, &
+         a_p_weert,a_q_weert,a_p_weert_inv,&
          a_c_slide,a_d_help_b,a_c_drag, &
          a_p_b, a_p_b_w, a_p_b_red, a_tau_dr, a_tau_b, &
          a_vx_b,a_vy_b,&
@@ -584,7 +608,9 @@ contains
          a_flui_ave_sia,a_h_diff,a_qx,a_qy,a_q_gl_g,a_q_geo,a_temp_b,a_temph_b,a_Q_bm,a_Q_b_apl,&
          a_Q_tld,a_Q_b_tot,a_H_w,&
          a_accum,a_runoff,a_runoff_apl,a_as_perp,a_temp_maat,a_temp_s,a_am_perp,&
-         a_am_perp_st,a_zs_new,a_zm_new,a_zb_new,a_zl_new,a_H_c_new,a_H_t_new,a_zs_ref,&
+         a_am_perp_st,a_zs_new,a_zm_new,a_zb_new,a_zl_new, &
+         a_H_new, a_H_c_new, a_H_t_new, &
+         a_zs_ref,&
          a_accum_present,a_precip_ma_present,a_precip_ma_lgm_anom,&
          a_temp_ma_present,a_temp_mj_present,a_temp_ma_lgm_anom,a_temp_mj_lgm_anom,&
          a_dist_dxdy,a_acc_fact,a_precip_present,a_precip_lgm_anom,a_gamma_precip_lgm_anom,&
@@ -711,6 +737,7 @@ contains
     real(dp)                                           :: a_DELTA_TM_SW
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_dH_c_deta
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_dH_c_deta_g
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_dH_dtau
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_dH_c_dtau
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_dH_c_dxi
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_dH_c_dxi_g
@@ -797,6 +824,8 @@ contains
     integer(i4b)                                       :: a_grip_time_stp
     real(dp), dimension(0:a_ndata_grip)                :: a_griptemp
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_h_diff
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_H
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_H_new
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_H_c
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_H_c_new
     real(dp)                                           :: a_H_R
@@ -1095,6 +1124,7 @@ contains
     de_t = a_de_t
     dH_c_deta = a_dH_c_deta
     dH_c_deta_g%v = a_dH_c_deta_g
+    dH_dtau%v = a_dH_dtau
     dH_c_dtau%v = a_dH_c_dtau
     dH_c_dxi = a_dH_c_dxi
     dH_c_dxi_g%v = a_dH_c_dxi_g
@@ -1214,6 +1244,8 @@ contains
     ndata_glann = a_ndata_glann
     dT_glann_CLIMBER = a_dT_glann_CLIMBER
 #endif
+    H%v = a_H
+    H_new%v = a_H_new
     H_c%v = a_H_c
     H_c_new%v = a_H_c_new
     h_diff%v = a_h_diff

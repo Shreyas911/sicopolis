@@ -59,7 +59,7 @@ contains
   real(dp)                           :: year_sec_inv
   real(dp)                           :: rhosw_rho_ratio
   real(dp)                           :: calv_uw_coeff, r1_calv_uw, r2_calv_uw
-  real(dp), dimension(0:JMAX,0:IMAX) :: H, H_sea
+  real(dp), dimension(0:JMAX,0:IMAX) :: H_sea
   integer(i4b)                       :: i, j
 
 !-------- Term abbreviations --------
@@ -91,9 +91,8 @@ contains
   call error(errormsg)
 #endif
 
-!-------- Ice thickness and sea depth --------
+!-------- Sea depth --------
 
-  H     = max(H_c + H_t, 0.0_dp)   ! ice thickness
   H_sea = max(z_sl - zl, 0.0_dp)   ! sea depth
 
 !-------- Calving of "underwater ice" --------

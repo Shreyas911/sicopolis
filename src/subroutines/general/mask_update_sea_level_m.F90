@@ -61,7 +61,7 @@ contains
   real(dp),     intent(in) :: z_sl
 
   integer(i1b) :: mask_update_sea_level
-  real(dp)     :: rhosw_rho_ratio, H_ice, H_sea
+  real(dp)     :: rhosw_rho_ratio, H_sea
 
   rhosw_rho_ratio = RHO_SW/RHO
 
@@ -88,10 +88,9 @@ contains
 
      else
 
-        H_ice = zs(j,i)-zb(j,i)   ! ice thickness
-        H_sea = z_sl   -zl(j,i)   ! sea depth
+        H_sea = z_sl-zl(j,i)   ! sea depth
 
-        if ( H_ice < (rhosw_rho_ratio*H_sea) ) then
+        if ( H(j,i) < (rhosw_rho_ratio*H_sea) ) then
 
 #if (MARGIN==1 || (MARGIN==2 && MARINE_ICE_FORMATION==1))
            mask_update_sea_level = 2_i1b     ! ice becomes floating, therefore
