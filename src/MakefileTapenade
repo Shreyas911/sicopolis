@@ -347,6 +347,9 @@ clean:
               *.o\
               *.mod*\
               driver*\
+              *.o\
+              *.mod*\
+              driver\
               *~\
               oad_template_*.*\
               sico_specs.h\

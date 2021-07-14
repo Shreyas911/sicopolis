@@ -81,56 +81,6 @@ contains
     use calc_bas_melt_m
     use calc_thk_water_bas_m
     use output_m
- 
-  implicit none
-
-#if !defined(ALLOW_TAPENADE) /* Normal */
-  integer(i4b),       intent(in)    :: n_output
-  real(dp),           intent(in)    :: mean_accum
-  real(dp),           intent(in)    :: dtime, dtime_temp, dtime_wss, &
-                                       dtime_out, dtime_ser
-  real(dp),           intent(in)    :: time_init, time_end, time_output(100)
-  real(dp),           intent(in)    :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
-  character(len=100), intent(in)    :: runname
-#else
-  integer(i4b),       intent(inout)    :: n_output
-  real(dp),           intent(inout)    :: mean_accum
-  real(dp),           intent(inout)    :: dtime, dtime_temp, dtime_wss, &
-                                          dtime_out, dtime_ser
-  real(dp),           intent(inout)    :: time_init, time_end, time_output(100)
-  real(dp),           intent(inout)    :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
-  character(len=100), intent(inout)    :: runname
-#endif  
-  integer(i4b),       intent(inout) :: ndat2d, ndat3d
-  real(dp),           intent(inout) :: delta_ts, glac_index
-  real(dp),           intent(inout) :: time
-  real(dp),           intent(inout) :: z_mar
-  
-  integer(i4b) :: i, j, kc, kt, kr, n
-  integer(i4b) :: itercount, itercount_max
-  integer(i4b) :: iter_temp, iter_wss, iter_ser, iter_out, iter_output(100)
-  real(dp)     :: dtime_temp_inv
-  logical      :: flag_3d_output, flag_output1, flag_output2
-  
-  !-------- Begin of main loop (time integration) --------
-  
-  write(unit=6, fmt='(/a/)') ' -------- sico_main_loop --------'
-  
-  itercount_max = nint((time_end-time_init)/dtime)
-  
-  iter_temp = nint(dtime_temp/dtime)
-#if (REBOUND==2)
-  iter_wss = nint(dtime_wss/dtime)
-#endif
-  iter_ser  = nint(dtime_ser/dtime)
-#if (OUTPUT==1 || OUTPUT==3)
-  iter_out  = nint(dtime_out/dtime)
-#endif
-#if (OUTPUT==2 || OUTPUT==3)
-  do n=1, n_output
-     iter_output(n) = nint((time_output(n)-time_init)/dtime)
-  end do
-#endif
 
   !$NO AD BINOMIAL-CKP itercount_max+1 20 1
   main_loop : do itercount=1, itercount_max
