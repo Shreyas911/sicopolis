@@ -46,52 +46,52 @@ module discharge_workers_m
   use sico_vars_m
   use error_m
   
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   use compare_float_m
 #endif /* Normal */
 
   implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   integer(i4b), private :: disc
   integer(i4b), private :: n_discharge_call, iter_mar_coa
   real(dp),     private :: c_dis_0, s_dis, c_dis_fac
   real(dp),     private :: T_sub_PD, alpha_sub, alpha_o, m_H, m_D, r_mar_eff
   real(dp),     private :: T_sea_freeze
-#else /* OpenAD */
+#else /* Tapenade */
   integer(i4b), public :: disc_DW
   integer(i4b), public :: n_discharge_call_DW, iter_mar_coa_DW
   real(dp),     public :: c_dis_0_DW, s_dis_DW, c_dis_fac_DW
   real(dp),     public :: T_sub_PD_DW, alpha_sub_DW, alpha_o_DW, m_H_DW, m_D_DW, r_mar_eff_DW
   real(dp),     public :: T_sea_freeze_DW
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
   real(dp),     public  :: dT_glann, dT_sub
 
   integer(i4b), dimension(0:JMAX,0:IMAX), public  :: mask_mar
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   real(dp),     dimension(0:JMAX,0:IMAX), private :: c_dis
-#else /* OpenAD */
+#else /* Tapenade */
   real(dp),     dimension(0:JMAX,0:IMAX), public :: c_dis_DW
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
   real(dp),     dimension(0:JMAX,0:IMAX), public  :: cst_dist, cos_grad_tc
   real(dp),     dimension(0:JMAX,0:IMAX), public  :: dis_perp
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   private
 #endif /* Normal */
 
-#if !defined(ALLOW_OPENAD_DIFFERENTIATE) /* ALLOW_OPENAD_DIFFERENTIATE unset */
+#if !defined(ALLOW_TAPENADE_DIFFERENTIATE) /* ALLOW_TAPENADE_DIFFERENTIATE unset */
   public :: disc_param, disc_fields, calc_c_dis_0, discharge
-#else  /* ALLOW_OPENAD_DIFFERENTIATE set */
+#else  /* ALLOW_TAPENADE_DIFFERENTIATE set */
   public :: disc_fields, calc_c_dis_0, discharge
-#endif /* Unset vs. set ALLOW_OPENAD_DIFFERENTIATE */
+#endif /* Unset vs. set ALLOW_TAPENADE_DIFFERENTIATE */
 
 contains
 
-#if !defined(ALLOW_OPENAD_DIFFERENTIATE) /* ALLOW_OPENAD_DIFFERENTIATE unset */
+#if !defined(ALLOW_TAPENADE_DIFFERENTIATE) /* ALLOW_TAPENADE_DIFFERENTIATE unset */
 
 !-------------------------------------------------------------------------------
 !> Ice discharge parameters (Greenland).
@@ -111,7 +111,7 @@ contains
 
   real(dp) :: dtime_mar_coa
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
   disc = DISC 
   c_dis_0   = C_DIS_0
@@ -122,7 +122,7 @@ contains
   
   r_mar_eff = R_MAR_EFF *1000.0_dp   ! km -> m
 
-#else /* OpenAD */
+#else /* Tapenade */
 
   disc_DW = DISC
   c_dis_0_DW   = C_DIS_0
@@ -133,9 +133,9 @@ contains
   
   r_mar_eff_DW = R_MAR_EFF *1000.0_dp   ! km -> m
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 #if (defined(S_DIS))
   s_dis = S_DIS
@@ -143,7 +143,7 @@ contains
   s_dis = 1.0_dp   ! default value
 #endif
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 #if (defined(S_DIS))
   s_dis_DW = S_DIS
@@ -151,9 +151,9 @@ contains
   s_dis_DW = 1.0_dp   ! default value
 #endif
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 #if (defined(ALPHA_SUB))
   alpha_sub = ALPHA_SUB
@@ -161,7 +161,7 @@ contains
   alpha_sub = 0.5_dp   ! default value
 #endif
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 #if (defined(ALPHA_SUB))
   alpha_sub_DW = ALPHA_SUB
@@ -169,9 +169,9 @@ contains
   alpha_sub_DW = 0.5_dp   ! default value
 #endif
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 #if (defined(ALPHA_O))
   alpha_o = ALPHA_O
@@ -181,7 +181,7 @@ contains
 
   T_sea_freeze = 0.0_dp - DELTA_TM_SW   ! freezing temperature of sea water
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 #if (defined(ALPHA_O))
   alpha_o_DW = ALPHA_O
@@ -191,13 +191,13 @@ contains
 
   T_sea_freeze_DW = 0.0_dp - DELTA_TM_SW   ! freezing temperature of sea water
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   n_discharge_call = -1
-#else /* OpenAD */
+#else /* Tapenade */
   n_discharge_call_DW = -1
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 #if (defined(DTIME_MAR_COA0))
   dtime_mar_coa = DTIME_MAR_COA0*year2sec   ! a -> s
@@ -206,22 +206,22 @@ contains
   call error(errormsg)
 #endif
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   if (.not.approx_integer_multiple(dtime_mar_coa, dtime, eps_sp_dp)) then
      errormsg = ' >>> disc_param: dtime_mar_coa must be a multiple of dtime!'
      call error(errormsg)
   end if
-#else /* OpenAD */
+#else /* Tapenade */
      print *, ' >>> disc_param: compare_float_m not used in adjoint'
      print *, '                 applications! double check ' 
      print *, '                 dtime_mar_coa and dtime are multiples'
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   iter_mar_coa = nint(dtime_mar_coa/dtime)
-#else /* OpenAD */
+#else /* Tapenade */
   iter_mar_coa_DW = nint(dtime_mar_coa/dtime)
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 #if (GRID > 1)
   errormsg = ' >>> disc_param: GRID==2 not allowed for this application!'
@@ -235,7 +235,7 @@ contains
 
   end subroutine disc_param
 
-#endif /* ALLOW_OPENAD_DIFFERENTIATE unset */
+#endif /* ALLOW_TAPENADE_DIFFERENTIATE unset */
 
 !-------------------------------------------------------------------------------
 !> Constant in ice discharge parameterization (Greenland).
@@ -274,26 +274,26 @@ contains
   H_c = H
   H_t = 0.0_dp
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   c_dis_0   =  1.0_dp
   c_dis_fac =  1.0_dp
   s_dis     =  1.0_dp
-#else /* OpenAD */
+#else /* Tapenade */
   c_dis_0_DW   =  1.0_dp
   c_dis_fac_DW =  1.0_dp
   s_dis_DW     =  1.0_dp
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
   call disc_fields()
 
   ! ensure that we get present-day discharge here (disc=1). 
   dT_glann = 0.0_dp
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   n_discharge_call = -1
-#else /* OpenAD */
+#else /* Tapenade */
   n_discharge_call_DW = -1
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
   call discharge(dxi, deta)
 
@@ -330,17 +330,17 @@ contains
 
   write(6, fmt='(a)') ' '
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   write(6, fmt='(3x,a,es12.4)') 'c_dis_0_init = ', c_dis_0
-#else /* OpenAD */
+#else /* Tapenade */
   write(6, fmt='(3x,a,es12.4)') 'c_dis_0_init = ', c_dis_0_DW
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   c_dis_0 = c_dis_0 * disc_target/disc_tot
-#else /* OpenAD */
+#else /* Tapenade */
   c_dis_0_DW = c_dis_0_DW * disc_target/disc_tot
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
   write(6, fmt='(a)') ' '
   write(6, fmt='(3x,a,es12.4)') 'disc_target  = ', disc_target
@@ -348,11 +348,11 @@ contains
 
   write(6, fmt='(a)') ' '
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   write(6, fmt='(3x,a,es12.4)') '--> c_dis_0  = ', c_dis_0
-#else /* OpenAD */
+#else /* Tapenade */
   write(6, fmt='(3x,a,es12.4)') '--> c_dis_0  = ', c_dis_0_DW
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
   end subroutine calc_c_dis_0
 
@@ -378,27 +378,27 @@ contains
   real(dp)     :: delta_phi=25.0_dp ! approximately the phi
                                     ! spanning the middle of domain
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
   c_dis = c_dis_0*c_dis_fac &
                  *(1.0_dp-(1.0_dp-s_dis)*(phi*rad2deg-60.0_dp)/delta_phi)
 
   c_dis = max(c_dis, 0.0_dp)
 
-#else /* OpenAD */
+#else /* Tapenade */
 
   c_dis_DW = c_dis_0_DW*c_dis_fac_DW &
                  *(1.0_dp-(1.0_dp-s_dis_DW)*(phi*rad2deg-60.0_dp)/delta_phi)
 
   c_dis_DW = max(c_dis_DW, 0.0_dp)
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   T_sub_PD = 3.0_dp ! Can depend on lambda, phi later on
-#else /* OpenAD */
+#else /* Tapenade */
   T_sub_PD_DW = 3.0_dp ! Can depend on lambda, phi later on
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
   end subroutine disc_fields
 
@@ -409,9 +409,9 @@ contains
 !<------------------------------------------------------------------------------
   subroutine discharge(dxi, deta)
 
-#ifdef ALLOW_OPENAD /* OpenAD */
+#ifdef ALLOW_TAPENADE /* Tapenade */
   use ctrl_m, only: myfloor
-#endif /* OpenAD */
+#endif /* Tapenade */
 
   ! Authors: Reinhard Calov, Andrey Ganopolski
   ! Institution: Potsdam Institute for Climate Impact Research  
@@ -424,20 +424,20 @@ contains
   real(dp), parameter :: alpha_tc=60.0_dp ! maximal allowed angle
   real(dp) :: cos_tc
 
-#ifdef ALLOW_OPENAD /* OpenAD */
+#ifdef ALLOW_TAPENADE /* Tapenade */
   integer(i4b) :: i, j, valmodint
   real(dp) :: tmp, valmod
-#endif /* OpenAD */
+#endif /* Tapenade */
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   n_discharge_call = n_discharge_call + 1
-#else /* OpenAD */
+#else /* Tapenade */
   n_discharge_call_DW = n_discharge_call_DW + 1
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
   cos_tc=dcos(alpha_tc*deg2rad)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
   if ((mod(n_discharge_call, iter_mar_coa)==0).or.(n_discharge_call==1)) then
      write(6, fmt='(10x,a)') 'Computation of mask_mar, cst_dist, cos_grad_tc'
@@ -445,7 +445,7 @@ contains
      call coastal_distance(dxi, deta)
   end if
 
-#else /* OpenAD */
+#else /* Tapenade */
 
   ! this is mod broken down algorithmically:
   tmp = real(n_discharge_call_DW)/real(iter_mar_coa_DW)
@@ -457,9 +457,9 @@ contains
      call coastal_distance(dxi, deta)
   end if
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
   if(disc.ge.1) then !------------------ disc >= 1
     where(mask_mar.eq.1.and.cos_grad_tc.ge.cos_tc) 
@@ -478,7 +478,7 @@ contains
     dis_perp=0.0_dp
   end if
 
-#else /* OpenAD */
+#else /* Tapenade */
 
   if(disc_DW.ge.1) then !------------------ disc >= 1
    do i=0, IMAX
@@ -500,7 +500,7 @@ contains
     dis_perp=0.0_dp
   end if
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
   end subroutine discharge
 
@@ -523,9 +523,9 @@ contains
   !                      the square. Smaller side lenght equals the rectangle root of 2 of the
   !                      larger side. 
 
-#ifdef ALLOW_OPENAD /* OpenAD */
+#ifdef ALLOW_TAPENADE /* Tapenade */
   use ctrl_m, only: myceiling
-#endif /* OpenAD */
+#endif /* Tapenade */
 
   implicit none
 
@@ -580,12 +580,12 @@ contains
           leave_loop=.false.
           cst_dist(j_pos,i_pos)=1.d+20
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
           do l=1, max(IMAX,JMAX)
-#else /* OpenAD */
+#else /* Tapenade */
           l = 1
           do while (l<= max(IMAX,JMAX) .and. leave_loop.eqv..false.)
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
             do i=max(i_pos-l,0), min(i_pos+l,IMAX)
               j=max(j_pos-l,0); j=min(j,JMAX)
@@ -624,19 +624,19 @@ contains
               end if
             end do
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
             if(leave_loop) then
               l_e=l
               d_l=ceiling(l_e*sqrt(2.0_dp)+0.001_dp)
               exit   ! leave loop in l
             end if
-#else /* OpenAD */
+#else /* Tapenade */
             if(leave_loop) then
               l_e=l
               call myceiling((l_e*sqrt(2.0_dp)+0.001_dp), d_l)
             end if
           l = l+1
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
           end do
           ! left
@@ -817,11 +817,11 @@ contains
     integer(i4b) :: count_tmp
     real(dp) :: r_p
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
     if(r_mar_eff.le.1.0e6_dp) then
-#else /* OpenAD */
+#else /* Tapenade */
     if(r_mar_eff_DW.le.1.0e6_dp) then
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
       mask_mar=0
       do i_pos=1, IMAX-1
@@ -840,21 +840,21 @@ contains
                    mask(j_pos,i_pos).eq.1.and.mask(j_pos-1,i_pos).eq.0 &
                    .and.mask(j_pos+1,i_pos).eq.3)) then ! outside ice sheet, exclude isolated land stripes
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
           di_eff=int(r_mar_eff/dxi)+1; dj_eff=int(r_mar_eff/deta)+1 ! only for grid=0, 1 yet!
-#else /* OpenAD */
+#else /* Tapenade */
           di_eff=int(r_mar_eff_DW/dxi)+1; dj_eff=int(r_mar_eff_DW/deta)+1 ! only for grid=0, 1 yet!
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
           do i=max(i_pos-di_eff,0), min(i_pos+di_eff,IMAX)
           do j=max(j_pos-dj_eff,0), min(j_pos+dj_eff,JMAX)
             r_p=sqrt((xi(i_pos)-xi(i))**2+(eta(j_pos)-eta(j))**2)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
             if(r_p.le.r_mar_eff.and.(mask(j,i).eq.0.or.mask(j,i).eq.3)) then
-#else /* OpenAD */
+#else /* Tapenade */
             if(r_p.le.r_mar_eff_DW.and.(mask(j,i).eq.0.or.mask(j,i).eq.3)) then
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
               mask_mar(j,i)=1
             end if
@@ -864,11 +864,11 @@ contains
       end do
       end do
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
       where(mask.ge.1)
         mask_mar=1
       end where
-#else /* OpenAD */
+#else /* Tapenade */
       do i=0,IMAX
       do j=0,JMAX
         if (mask(j,i).ge.1) then
@@ -876,7 +876,7 @@ contains
         end if
       end do
       end do
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
     else ! the ring encompassed entire Greenland 
       mask_mar=1
@@ -904,17 +904,17 @@ contains
 
   real(dp) :: T_sub
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   dT_sub=alpha_o*dT_glann                    ! Sub-ocean temperature anomaly
   T_sub=max(T_sea_freeze, T_sub_PD)+dT_sub   ! Actual sub-ocean temperature
   T_sub=max(T_sea_freeze, T_sub)             ! Ocean temperature should stay
                                              ! above freezing point
-#else /* OpenAD */
+#else /* Tapenade */
   dT_sub=alpha_o_DW*dT_glann                    ! Sub-ocean temperature anomaly
   T_sub=max(T_sea_freeze_DW, T_sub_PD)+dT_sub   ! Actual sub-ocean temperature
   T_sub=max(T_sea_freeze_DW, T_sub)             ! Ocean temperature should stay
                                                 ! above freezing point
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
   dT_sub=T_sub-T_sub_PD
 

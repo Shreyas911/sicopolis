@@ -1,0 +1,159 @@
+all: drivergrdchk
+
+ifndef F90C
+F90C=gfortran
+endif
+ifndef CC
+CC=gcc
+endif
+
+ifndef HEADER
+HEADER=v5_grl20_ss25ka
+endif
+
+ifndef LISDIR
+LISDIR=/home/shreyas/lis-1.4.43/installation
+endif
+
+ifdef LISDIR
+LIBLIS=${LISDIR}/lib/liblis.so
+LIBLISFLAG=-L${LISDIR}/lib -llis
+LISFLAG=-DBUILD_LIS -I${LISDIR}/include/
+endif
+
+ifndef NETCDF
+NETCDF_F90_DIR=/opt/ohpc/pub/libs/gnu/openmpi/netcdf-fortran/4.4.4
+endif
+
+ifdef NETCDF_DIR
+LIB_NETCDF_F90=${NETCDF_F90_DIR}/lib/libnetcdff.so
+LIB_NETCDF_F90_FLAG=-L${NETCDF_F90_DIR}/lib -lnetcdff
+NETCDF_F90_FLAG=-I${NETCDF_F90_DIR}/include/
+endif
+
+F90FLAGS= -O3 -g -DRUN_SPECS_HEADER=\"sico_specs.h\" -mcmodel=medium -fno-range-check -ffpe-trap=invalid,zero 
+CFLAGS= -O3 -g
+
+IN_PATH_GRDCHK=../sico_in
+OUT_PATH_GRDCHK=../sico_out/GRDCHK_${HEADER}
+DEFINE_FLAGS_GRDCHK= -DALLOW_GRDCHK -DIN_PATH=\"${IN_PATH_GRDCHK}\" -DOUT_PATH=\"${OUT_PATH_GRDCHK}\" -DNETCDF=1
+
+SRC_SICO_PASSIVE=\
+subroutines/grl/sico_init_m.F90\
+subroutines/ant/sico_init_m.F90\
+subroutines/general/error_m.F90\
+subroutines/general/init_temp_water_age_m.F90\
+subroutines/tapenade/tapenade_m.F90
+
+SRC_SICO_SOLVERS=\
+subroutines/tapenade/sico_maths_m_stub.F90
+
+SRC_SICO=\
+subroutines/general/sico_types_m.F90\
+subroutines/general/sico_variables_m.F90\
+subroutines/grl/sico_vars_m.F90\
+subroutines/general/ice_material_properties_m.F90\
+subroutines/general/stereo_proj_m.F90\
+subroutines/general/metric_m.F90\
+subroutines/general/nc_check_m.F90\
+subroutines/general/read_m.F90\
+subroutines/general/mask_update_sea_level_m.F90\
+subroutines/general/pdd_m.F90\
+subroutines/general/calving_underwater_ice_m.F90\
+subroutines/grl/discharge_workers_m.F90\
+subroutines/general/calc_vxy_m.F90\
+subroutines/general/calc_vz_m.F90\
+subroutines/general/calc_dxyz_m.F90\
+subroutines/general/calc_gia_m.F90\
+subroutines/general/topograd_m.F90\
+subroutines/general/calc_thk_m.F90\
+subroutines/general/enth_temp_omega_m.F90\
+subroutines/general/calc_temp_m.F90\
+subroutines/general/calc_temp_enth_m.F90\
+subroutines/general/calc_enhance_m.F90\
+subroutines/general/calc_temp_melt_bas_m.F90\
+subroutines/general/calc_bas_melt_m.F90\
+subroutines/general/calc_thk_water_bas_m.F90\
+subroutines/grl/boundary_m.F90\
+subroutines/ant/boundary_m.F90\
+subroutines/general/sico_main_loop_m.F90\
+subroutines/tapenade/sico_main_loop_wrapper_m.F90\
+subroutines/tapenade/sico_main_loop_iter_m.F90
+
+SRC_SICO_COST=\
+subroutines/tapenade/ctrl_m.F90
+
+SRC=\
+sicopolis.F90
+
+CPPCMD = cat $< |  cpp -DRUN_SPECS_HEADER=\"sico_specs.h\" -DALLOW_TAPENADE_DIFFERENTIATE=1 -DALLOW_TAPENADE=1 -I../ -I./ -traditional-cpp -P 
+
+numCore.f90: numCore.F90
+	$(CPPCMD) > numcore_temp.F90
+	cat numcore_temp.F90 > $@
+
+numCore.F90: sicopolis.F90 sico_specs.h $(SRC) $(SRC_SICO) $(SRC_SICO_COST) $(SRC_SICO_SOLVERS)
+	python subroutines/tapenade/preprocessor.py sicopolis.F90
+
+RUN=$(HEADER)
+INDIR=../sico_in
+RESDIR=../sico_out/$(HEADER)
+sico_specs.h: ../runs/headers/sico_specs_$(HEADER).h
+	cp $^ sico_specs_temp.h
+	# Reading the header and changing the values
+	sed 's%INPATH .*%INPATH '\'''${INDIR}\''%' sico_specs_temp.h | sed 's%OUTPATH .*%OUTPATH '\'''${RESDIR}\''%' > $@
+
+drivergrdchk: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_COST) $(SRC)
+	${F90C} -I./ ${F90FLAGS} ${DEFINE_FLAGS_GRDCHK} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
+	${F90C} ${F90FLAGS} -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
+
+sicopolis.o: $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_COST) $(SRC)
+	${F90C} -DALLOW_TAPENADE ${LISFLAG} -I./ ${F90FLAGS} -o $@ -c $(SRC)
+
+subroutines/general/sico_maths_m.o : subroutines/general/sico_maths_m.F90
+	${F90C} -DALLOW_TAPENADE ${LISFLAG} -I./ ${F90FLAGS} -o $@ -c $<
+
+subroutines/general/sico_maths_m_grad.o : subroutines/general/sico_maths_m_grad.F90
+	${F90C} -DALLOW_TAPENADE ${LISFLAG} -I./ ${F90FLAGS} -o $@ -c $<
+subroutines/tapenade/tapenade_m.o: subroutines/tapenade/tapenade_m.F90
+	${F90C} -DALLOW_TAPENADE ${LISFLAG} -I./ ${F90FLAGS} -o $@ -c $<
+
+%.o : %.F90
+	${F90C} -I./ ${F90FLAGS} -o $@ -c $<
+
+%.o : %.f90
+	${F90C} ${F90FLAGS} -o $@ -c $< 
+
+%.o : %.f
+	${F90C} ${F90FLAGS} -o $@ -c $< 
+
+%.o : %.c
+	${CC} ${CFLAGS} -o $@ -c $< 
+
+clean: 
+	rm -f subroutines/tapenade/*.o \
+              subroutines/general/*.o\
+              numCore.pre.xb.x2w.w2f.post.o\
+              sicopolis.o\
+	rm -f numCore.*\
+              numcore_temp.F90\
+              *.o\
+              *.mod*\
+              driver\
+              *~\
+              oad_template_*.*\
+              sico_specs.h\
+              sico_specs_temp.h
+	rm -f ad_template*\
+              ad_inline.f\
+              OAD_*\
+              w2f__*\
+              iaddr*\
+              stream_vel_variables_passive.f90\
+              head_sf*
+cleanobj: 
+	rm -f subroutines/tapenade/*.o \
+              subroutines/general/*.o\
+              *.o
+
+.PHONY: clean

@@ -57,7 +57,7 @@ subroutine sico_init(delta_ts, glac_index, &
                ndat2d, ndat3d, n_output, &
                runname)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   use compare_float_m
 #endif /* Normal */
 
@@ -82,7 +82,7 @@ subroutine sico_init(delta_ts, glac_index, &
   use read_m, only : read_target_topo_nc, &
                      read_2d_input, read_kei, read_phys_para
 
-#if (defined(ALLOW_GRDCHK) || defined(ALLOW_OPENAD))
+#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
   use read_m, only : read_ad_data
 #endif
 
@@ -95,7 +95,7 @@ subroutine sico_init(delta_ts, glac_index, &
   use calc_dxyz_m
   use calc_temp_melt_bas_m
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   use output_m
 #endif /* Normal */
 
@@ -253,11 +253,11 @@ time_output = 0.0_dp
 !                                                     if required --------
 
 #if (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   call lis_initialize(ierr)
-#else /* OpenAD */
+#else /* Tapenade */
   call lis_init_f(ierr)
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 #endif
 
 !-------- Read physical parameters --------
@@ -301,7 +301,7 @@ call error(errormsg)
 !-------- Compatibility check of the horizontal resolution with the
 !         number of grid points --------
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 #if (GRID==0 || GRID==1)
 
@@ -366,12 +366,12 @@ call error(errormsg)
 
 #endif
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 print *, ' >>> sico_init: grid compatibility check not performed'
 print *, '          in adjoint applications; check manually.' 
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 !-------- Compatibility check of the thermodynamics mode
 !         (cold vs. polythermal vs. enthalpy method)
@@ -710,11 +710,11 @@ call system(trim(shell_command))
 
 filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'.log'
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 open(10, iostat=ios, file=trim(filename_with_path), status='new')
-#else /* OpenAD */
+#else /* Tapenade */
 open(10, iostat=ios, file=trim(filename_with_path))
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 if (ios /= 0) then
    errormsg = ' >>> sico_init: Error when opening the log file!'
@@ -1355,7 +1355,7 @@ do n=1, n_output
 end do
 #endif
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 if (.not.approx_integer_multiple(dtime_temp, dtime, eps_sp_dp)) then
    errormsg = ' >>> sico_init: dtime_temp must be a multiple of dtime!'
@@ -1381,13 +1381,13 @@ if (.not.approx_integer_multiple(dtime_out, dtime, eps_sp_dp)) then
 end if
 #endif
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 print *, ' >>> sico_init: not checking that time steps are '
 print *, '                multiples of each other in adjoint mode;'
 print *, '                check manually.'
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 #if (THK_EVOL==2)
 time_target_topo_init  = TIME_TARGET_TOPO_INIT0 *year2sec   ! a --> s
@@ -2107,7 +2107,7 @@ H_w     = 0.0_dp
   call error(errormsg)
 #endif
 
-#if (defined(ALLOW_GRDCHK) || defined(ALLOW_OPENAD))
+#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
   call read_ad_data()
 #endif
 
@@ -2368,11 +2368,11 @@ call error(errormsg)
 
 filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'.ser'
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 open(12, iostat=ios, file=trim(filename_with_path), status='new')
-#else /* OpenAD */
+#else /* Tapenade */
 open(12, iostat=ios, file=trim(filename_with_path))
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 if (ios /= 0) then
    errormsg = ' >>> sico_init: Error when opening the ser file!'
@@ -2475,11 +2475,11 @@ y_core = phi_core
 
 filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'.core'
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 open(14, iostat=ios, file=trim(filename_with_path), status='new')
-#else /* OpenAD */
+#else /* Tapenade */
 open(14, iostat=ios, file=trim(filename_with_path))
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 if (ios /= 0) then
    errormsg = ' >>> sico_init: Error when opening the core file!'
@@ -2520,7 +2520,7 @@ end if
 
 !-------- Output of the initial state --------
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 #if (defined(OUTPUT_INIT))
 
@@ -2597,12 +2597,12 @@ if (flag_init_output) then
    call output4(time_init, dxi, deta, delta_ts, glac_index)
 end if
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 print *, ' >>> sico_init: not producing initial, typical outputs'
 print *, '                in adjoint mode.'
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 #if (defined(EXEC_MAKE_C_DIS_0))
 

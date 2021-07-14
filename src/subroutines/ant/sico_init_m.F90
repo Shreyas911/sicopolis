@@ -57,7 +57,7 @@ subroutine sico_init(delta_ts, glac_index, &
                ndat2d, ndat3d, n_output, &
                runname)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   use compare_float_m
 #endif /* Normal */
 
@@ -84,7 +84,7 @@ subroutine sico_init(delta_ts, glac_index, &
   use calc_dxyz_m
   use calc_temp_melt_bas_m
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   use output_m
 #endif /* Normal */
 
@@ -259,11 +259,11 @@ time_output = 0.0_dp
 !                                                     if required --------
 
 #if (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   call lis_initialize(ierr)
-#else /* OpenAD */
+#else /* Tapenade */
   call lis_init_f(ierr)
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 #endif
 
 !-------- Read physical parameters --------
@@ -307,7 +307,7 @@ call error(errormsg)
 !-------- Compatibility check of the horizontal resolution with the
 !         number of grid points --------
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 #if (GRID==0 || GRID==1)
 
@@ -371,13 +371,13 @@ call error(errormsg)
 
 #endif
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 print *, ' >>> sico_init: not using compare_float for adjoint applications!'
 print *, '                double-check resolutions are integer multiples of'
 print *, '                domain size.'
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 !-------- Compatibility check of the thermodynamics mode
 !         (cold vs. polythermal vs. enthalpy method)
@@ -716,11 +716,11 @@ call system(trim(shell_command))
 
 filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'.log'
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 open(10, iostat=ios, file=trim(filename_with_path), status='new')
-#else /* OpenAD */
+#else /* Tapenade */
 open(10, iostat=ios, file=trim(filename_with_path))
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 if (ios /= 0) then
    errormsg = ' >>> sico_init: Error when opening the log file!'
@@ -1357,7 +1357,7 @@ do n=1, n_output
 end do
 #endif
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 if (.not.approx_integer_multiple(dtime_temp, dtime, eps_sp_dp)) then
    errormsg = ' >>> sico_init: dtime_temp must be a multiple of dtime!'
@@ -1383,13 +1383,13 @@ if (.not.approx_integer_multiple(dtime_out, dtime, eps_sp_dp)) then
 end if
 #endif
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 print *, ' >>> sico_init: compare_float not used in adjoint applications!'
 print *, '                double check your time step sizes are multples' 
 print *, '                of each other.' 
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 #if (THK_EVOL==2)
 time_target_topo_init  = TIME_TARGET_TOPO_INIT0 *year2sec   ! a --> s
@@ -2171,7 +2171,7 @@ z_sl_mean = -1.11e+11_dp   ! of subroutine boundary
 call boundary(time_init, dtime, dxi, deta, &
               delta_ts, glac_index, z_mar)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 where ((mask==0).or.(mask==3))
                  ! grounded or floating ice
@@ -2180,7 +2180,7 @@ elsewhere        ! mask==1 or 2, ice-free land or sea
    as_perp_apl = 0.0_dp
 end where
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 do j=0,JMAX
 do i=0,IMAX
@@ -2192,7 +2192,7 @@ do i=0,IMAX
 end do
 end do
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 smb_corr = 0.0_dp
 
@@ -2308,7 +2308,7 @@ call topography3(dxi, deta, anfdatname)
 call boundary(time_init, dtime, dxi, deta, &
               delta_ts, glac_index, z_mar)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 where ((mask==0).or.(mask==3))
                  ! grounded or floating ice
@@ -2317,7 +2317,7 @@ elsewhere        ! mask==1 or 2, ice-free land or sea
    as_perp_apl = 0.0_dp
 end where
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 do j=0,JMAX
 do i=0,IMAX
@@ -2329,7 +2329,7 @@ do i=0,IMAX
 end do
 end do
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 smb_corr = 0.0_dp
 
@@ -2479,7 +2479,7 @@ call error(errormsg)
 
 !  ------ Time-series file for the ice sheet on the whole
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'.ser'
 
@@ -2522,16 +2522,16 @@ else if (forcing_flag == 2) then
 
 end if
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 print *, ' >>> sico_init: not writing to the ser file in '
 print *, '                adjoint applications!' 
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 !  ------ Time-series file for deep boreholes
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 n_core = 6   ! Vostok, Dome A, Dome C, Dome F, Kohnen, Byrd
 
@@ -2588,15 +2588,15 @@ y_core = phi_core
 
 #endif
 
-#endif /* Normal (OpenAD: No core data for adjoint) */
+#endif /* Normal (Tapenade: No core data for adjoint) */
 
 filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'.core'
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 open(14, iostat=ios, file=trim(filename_with_path), status='new')
-#else /* OpenAD */
+#else /* Tapenade */
 open(14, iostat=ios, file=trim(filename_with_path))
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 if (ios /= 0) then
    errormsg = ' >>> sico_init: Error when opening the core file!'
@@ -2637,7 +2637,7 @@ end if
 
 !-------- Output of the initial state --------
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 #if (defined(OUTPUT_INIT))
 
@@ -2714,12 +2714,12 @@ if (flag_init_output) then
    call output4(time_init, dxi, deta, delta_ts, glac_index)
 end if
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 print *, ' >>> sico_init: not producing initial, typical outputs'
 print *, '                in adjoint mode.'
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 end subroutine sico_init
 

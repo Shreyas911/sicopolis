@@ -93,7 +93,7 @@ contains
 
 !-------- Calving of "underwater ice" --------
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
   where ( (mask == 0).and.(H < rhosw_rho_ratio*H_sea) )
      calv_uw_ice = calv_uw_coeff * H**r1_calv_uw * H_sea**r2_calv_uw
@@ -101,7 +101,7 @@ contains
      calv_uw_ice = 0.0_dp
   end where
 
-#else /* OpenAD */
+#else /* Tapenade */
 
   do i=0, IMAX
   do j=0, JMAX
@@ -113,7 +113,7 @@ contains
   end do
   end do
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
   calving = calving + calv_uw_ice
 

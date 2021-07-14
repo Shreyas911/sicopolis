@@ -51,12 +51,12 @@ contains
 
   write(6, fmt='(/,a,/)') trim(error_message)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   stop
-#else /* OpenAD */
+#else /* Tapenade */
   !!! continue
-  !!! (OpenAD cannot deal with stop statements!)
-#endif /* Normal vs. OpenAD */
+  !!! (Tapenade cannot deal with stop statements!)
+#endif /* Normal vs. Tapenade */
 
   end subroutine error
 

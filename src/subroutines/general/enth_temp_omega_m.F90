@@ -42,7 +42,7 @@ use error_m
 implicit none
 save
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 !> c_int_table:     Temperature integral of the specific heat of ice.
 !>                  Index is temperature in deg C.
@@ -78,7 +78,7 @@ public  :: calc_c_int_table, calc_c_int_inv_table
 public  :: enth_fct_temp_omega, temp_fct_enth, omega_fct_enth
 private :: c_int_val, c_int_inv_val
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 real(dp), dimension(-256:255), public       :: c_int_table
 real(dp), dimension(-524288:524287), public :: c_int_inv_table
@@ -94,7 +94,7 @@ public  :: enth_fct_temp_omega, temp_fct_enth, omega_fct_enth
 public :: c_int_val, c_int_inv_val
 private :: myfloor_local_ETO
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 contains
 
@@ -151,27 +151,27 @@ end do
 
 if ( present(L_val) ) then
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
    L = L_val
-#else /* OpenAD */
+#else /* Tapenade */
    L_eto = L_val
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 else
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
    L = 3.35e+05_dp   ! in J/kg
-#else /* OpenAD */
+#else /* Tapenade */
    L_eto = 3.35e+05_dp   ! in J/kg
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 end if
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
    L_inv = 1.0_dp/L
-#else /* OpenAD */
+#else /* Tapenade */
    L_inv = 1.0_dp/L_eto
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 end subroutine calc_c_int_table
 
@@ -181,9 +181,9 @@ end subroutine calc_c_int_table
 !<------------------------------------------------------------------------------
 subroutine calc_c_int_inv_table()
 
-#if defined(ALLOW_OPENAD) /* OpenAD */
+#if defined(ALLOW_TAPENADE) /* Tapenade */
   use ctrl_m, only: myceiling, myfloor
-#endif /* OpenAD */
+#endif /* Tapenade */
 
 implicit none
 
@@ -200,17 +200,17 @@ c_int_inv_table = 0.0_dp
 enth_min = c_int_val(real(n_temp_min,dp))
 enth_max = c_int_val(real(n_temp_max,dp))
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 n_enth_min = ceiling(enth_min)
-#else /* OpenAD */
+#else /* Tapenade */
 call myceiling(enth_min,n_enth_min)
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 n_enth_max = floor(enth_max)
-#else /* OpenAD */
+#else /* Tapenade */
 call myfloor(enth_max, n_enth_max)
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 if ((n_enth_min <= -524288).or.(n_enth_max >= 524287)) then
    errormsgg = ' >>> calc_c_int_inv_table: ' &
@@ -227,7 +227,7 @@ do n=n_enth_min, n_enth_max
 
    enth_val = real(n,dp)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
    do
 
@@ -247,7 +247,7 @@ do n=n_enth_min, n_enth_max
 
    end do
 
-#else /* OpenAD */
+#else /* Tapenade */
 
    enth_1 = c_int_val(real(n_temp_1,dp))
    enth_2 = c_int_val(real(n_temp_2,dp))
@@ -270,7 +270,7 @@ do n=n_enth_min, n_enth_max
 
    end do
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
    c_int_inv_table(n) = real(n_temp_1,dp) &
                         + (real(n_temp_2,dp)-real(n_temp_1,dp)) &
@@ -304,11 +304,11 @@ integer(i4b) :: n_temp_1, n_temp_2
 
 ! character(len=256) :: errormsgg
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 n_temp_1 = floor(temp_val)
-#else /* OpenAD */
+#else /* Tapenade */
 n_temp_1 = myfloor_local_ETO(temp_val)
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 n_temp_1 = max(min(n_temp_1, n_temp_max-1), n_temp_min)
 n_temp_2 = n_temp_1 + 1
@@ -340,11 +340,11 @@ integer(i4b) :: n_enth_1, n_enth_2
 
 ! character(len=256) :: errormsgg
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 n_enth_1 = floor(enth_val)
-#else /* OpenAD */
+#else /* Tapenade */
 n_enth_1 = myfloor_local_ETO(enth_val)
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 n_enth_1 = max(min(n_enth_1, n_enth_max-1), n_enth_min)
 n_enth_2 = n_enth_1 + 1
@@ -372,11 +372,11 @@ real(dp)              :: enth_fct_temp_omega
 
 real(dp), intent(in)  :: temp_val, omega_val
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 enth_fct_temp_omega = c_int_val(temp_val) + L*omega_val
-#else /* OpenAD */
+#else /* Tapenade */
 enth_fct_temp_omega = c_int_val(temp_val) + L_eto*omega_val
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 end function enth_fct_temp_omega
 
@@ -426,7 +426,7 @@ end function omega_fct_enth
 
 !-------------------------------------------------------------------------------
 
-#if defined(ALLOW_OPENAD) /* OpenAD */
+#if defined(ALLOW_TAPENADE) /* Tapenade */
 
   function myfloor_local_ETO(num)
 
@@ -451,7 +451,7 @@ end function omega_fct_enth
 
   end function myfloor_local_ETO
 
-#endif /* OpenAD */
+#endif /* Tapenade */
 
 !-------------------------------------------------------------------------------
 

@@ -1,9 +1,0 @@
-Sicopolis-AD TODO:
-
-1.	Nightly regression tests
-2.	Optimal regression test header designing and upload
-3.	SicoAD QuickStart Manual updataing
-  	(for read only link: https://www.overleaf.com/read/xtybnbhxmbcc)
-3.1 	Upload Quickstart in either openad/doc or ...  
-4.	md5hash for code / data management plan
-5.      redirect all the nasty screen output during compilation

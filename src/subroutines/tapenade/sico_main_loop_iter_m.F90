@@ -4,7 +4,7 @@
 !
 !> @file
 !!
-!! A catch-all module for openad-related subroutines.
+!! A catch-all module for tapenade-related subroutines.
 !!
 !! @section Copyright
 !!

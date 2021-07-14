@@ -4,7 +4,7 @@
 !
 !> @file
 !!
-!! A catch-all module for openad-related subroutines.
+!! A catch-all module for tapenade-related subroutines.
 !!
 !! @section Copyright
 !!
@@ -52,7 +52,7 @@ contains
                       itercount_max,iter_temp,iter_wss,iter_ser,&
                       iter_out,iter_output)
 
-!$openad xxx template ad_revolve_template.F
+!$tapenade xxx template ad_revolve_template.F
   use sico_types_m
   use sico_variables_m
   use sico_vars_m

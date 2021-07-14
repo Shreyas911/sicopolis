@@ -715,7 +715,7 @@ save
 !> epsi: Very small number
    real(dp), parameter :: epsi = 1.0e-12_dp
 
-#if (!defined(ALLOW_GRDCHK) && !defined(ALLOW_OPENAD)) /* Normal */
+#if (!defined(ALLOW_GRDCHK) && !defined(ALLOW_TAPENADE)) /* Normal */
 
 !> eps_sp: Small number to single-precision accuracy
    real(sp), parameter :: eps_sp = epsilon(1.0_sp)
@@ -724,7 +724,7 @@ save
 !> eps_dp: Small number to double-precision accuracy
    real(dp), parameter :: eps_dp = epsilon(1.0_dp)
 
-#else /* OpenAD */
+#else /* Tapenade */
 
    !myepsilon_sp was computed using the code below. 4 is the value of sp
    !real(4) :: y = 1.0
@@ -743,7 +743,7 @@ save
    real(dp), parameter :: myepsilon_dp  = 2.2204460492503131E-016
    real(dp), parameter :: eps_dp = myepsilon_dp
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 !-------- Further quantities -------- 
 
@@ -881,7 +881,7 @@ save
 !> end_of_line: End-of-line string
    character, parameter :: end_of_line = char(10)
 
-#if (defined(ALLOW_GRDCHK) || defined(ALLOW_OPENAD)) /* OpenAD */
+#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE)) /* Tapenade */
 !> fc: scalar cost function
    real(dp) :: fc
 !> objf_test: cost function
@@ -898,7 +898,7 @@ save
 !> acc_fact
 #endif /* No age cost used */
    real(dp), dimension(0:JMAX,0:IMAX) :: acc_fact
-#endif /* OpenAD */
+#endif /* Tapenade */
 
 end module sico_variables_m
 !

@@ -63,7 +63,7 @@ contains
 
   close(unit=12, status='keep')  ! Close time-series files
   close(unit=14, status='keep')
-#if !defined(ALLOW_OPENAD)
+#if !defined(ALLOW_TAPENADE)
   if (n_core >= 1) deallocate(lambda_core, phi_core, x_core, y_core, ch_core)
 #endif
 
@@ -78,7 +78,7 @@ contains
   close(unit=48, status='keep')
   close(unit=49, status='keep')
   close(unit=50, status='keep')
-#if !defined(ALLOW_OPENAD)
+#if !defined(ALLOW_TAPENADE)
   deallocate(lambda_surf, phi_surf, x_surf, y_surf)
 #endif
 #endif
@@ -103,7 +103,7 @@ contains
           ! Closing of NetCDF time-series output file for the deep ice cores
 
 #if (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
-#if !defined(ALLOW_OPENAD)
+#if !defined(ALLOW_TAPENADE)
   call lis_finalize(ierr)   ! Finalise execution environment of the
                             ! Library of Iterative Solvers Lis, if required
 #else

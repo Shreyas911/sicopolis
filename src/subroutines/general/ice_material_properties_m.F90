@@ -44,7 +44,7 @@ use error_m
 implicit none
 save
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 !> RF(n): Tabulated values for the rate factor of cold ice
    real(dp), dimension(-256:255), private       :: RF
@@ -85,7 +85,7 @@ public :: ice_mat_eqs_pars, &
           ratefac_c, ratefac_t, ratefac_c_t, kappa_val, c_val, &
           viscosity, creep
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 real(dp), dimension(-256:255), public       :: RF_IMQ
 real(dp)                     , public       :: R_T_IMQ
@@ -103,7 +103,7 @@ public :: ice_mat_eqs_pars, &
           viscosity, creep
 private :: myfloor_local
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 contains
 
@@ -127,7 +127,7 @@ character(len=256) :: errormsgg
 
 !-------- Initialisation --------
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 RF    = 0.0_dp
 KAPPA = 0.0_dp
@@ -135,7 +135,7 @@ C     = 0.0_dp
 n_temp_min = n_tmp_min
 n_temp_max = n_tmp_max
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 RF_IMQ    = 0.0_dp
 KAPPA_IMQ = 0.0_dp
@@ -143,13 +143,13 @@ C_IMQ     = 0.0_dp
 n_temp_min_IMQ = n_tmp_min
 n_temp_max_IMQ = n_tmp_max
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 if ((n_temp_min <= -256).or.(n_temp_max >= 255)) then
-#else /* OpenAD */
+#else /* Tapenade */
 if ((n_temp_min_IMQ <= -256).or.(n_temp_max_IMQ >= 255)) then
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
    errormsgg = ' >>> ice_mat_eqs_pars: ' &
                   //'Temperature indices out of allowed range!'
    call error(errormsgg)
@@ -157,7 +157,7 @@ end if
 
 !-------- Assignment --------
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 do n=n_temp_min, n_temp_max
    RF(n)    = RF_table(n)
@@ -165,7 +165,7 @@ do n=n_temp_min, n_temp_max
    C(n)     = C_table(n)
 end do
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 do n=n_temp_min_IMQ, n_temp_max_IMQ
    RF_IMQ(n)    = RF_table(n)
@@ -173,9 +173,9 @@ do n=n_temp_min_IMQ, n_temp_max_IMQ
    C_IMQ(n)     = C_table(n)
 end do
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 do n=-256, n_temp_min-1
    RF(n)    = RF(n_temp_min)      ! dummy values
@@ -183,7 +183,7 @@ do n=-256, n_temp_min-1
    C(n)     = C(n_temp_min)       ! dummy values
 end do
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 do n=-256, n_temp_min_IMQ-1
    RF_IMQ(n)    = RF_IMQ(n_temp_min_IMQ)      ! dummy values
@@ -191,9 +191,9 @@ do n=-256, n_temp_min_IMQ-1
    C_IMQ(n)     = C_IMQ(n_temp_min_IMQ)       ! dummy values
 end do
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 do n=n_temp_max+1, 255
    RF(n)    = RF(n_temp_max)      ! dummy values
@@ -201,7 +201,7 @@ do n=n_temp_max+1, 255
    C(n)     = C(n_temp_max)       ! dummy values
 end do
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 do n=n_temp_max_IMQ+1, 255
    RF_IMQ(n)    = RF_IMQ(n_temp_max_IMQ)      ! dummy values
@@ -209,17 +209,17 @@ do n=n_temp_max_IMQ+1, 255
    C_IMQ(n)     = C_IMQ(n_temp_max_IMQ)       ! dummy values
 end do
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 R_T = R_T_val
-#else /* OpenAD */
+#else /* Tapenade */
 R_T_IMQ = R_T_val
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 !-------- Martian stuff --------
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 if ( present(RHO_I_val) ) then
    RHO_I = RHO_I_val
@@ -227,7 +227,7 @@ else
    RHO_I = 0.0_dp   ! dummy value
 end if
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 if ( present(RHO_I_val) ) then
    RHO_I_IMQ = RHO_I_val
@@ -235,9 +235,9 @@ else
    RHO_I_IMQ = 0.0_dp   ! dummy value
 end if
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 if ( present(RHO_C_val) ) then
    RHO_C = RHO_C_val
@@ -245,7 +245,7 @@ else
    RHO_C = 0.0_dp   ! dummy value
 end if
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 if ( present(RHO_C_val) ) then
    RHO_C_IMQ = RHO_C_val
@@ -253,9 +253,9 @@ else
    RHO_C_IMQ = 0.0_dp   ! dummy value
 end if
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 if ( present(KAPPA_C_val) ) then
    KAPPA_C = KAPPA_C_val
@@ -263,7 +263,7 @@ else
    KAPPA_C = 0.0_dp   ! dummy value
 end if
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 if ( present(KAPPA_C_val) ) then
    KAPPA_C_IMQ = KAPPA_C_val
@@ -271,9 +271,9 @@ else
    KAPPA_C_IMQ = 0.0_dp   ! dummy value
 end if
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 if ( present(C_C_val) ) then
    C_C = C_C_val
@@ -281,7 +281,7 @@ else
    C_C = 0.0_dp   ! dummy value
 end if
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 if ( present(C_C_val) ) then
    C_C_IMQ = C_C_val
@@ -289,7 +289,7 @@ else
    C_C_IMQ = 0.0_dp   ! dummy value
 end if
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 end subroutine ice_mat_eqs_pars
 
@@ -308,13 +308,13 @@ real(dp), intent(in) :: temp_val, temp_m_val
 
 integer(i4b) :: n_temp_1, n_temp_2
 real(dp)     :: temp_h_val
-#if defined(ALLOW_OPENAD) /* OpenAD */
+#if defined(ALLOW_TAPENADE) /* Tapenade */
 integer(i4b) :: itemp_h_val
-#endif /* OpenAD */
+#endif /* Tapenade */
 
 temp_h_val = temp_val-temp_m_val
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 n_temp_1 = floor(temp_h_val)
 n_temp_1 = max(min(n_temp_1, n_temp_max-1), n_temp_min)
@@ -324,7 +324,7 @@ ratefac_c = RF(n_temp_1) &
             + (RF(n_temp_2)-RF(n_temp_1)) &
               * (temp_h_val-real(n_temp_1,dp))   ! Linear interpolation
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 n_temp_1 = myfloor_local(temp_h_val)
 n_temp_1 = max(min(n_temp_1, n_temp_max_IMQ-1), n_temp_min_IMQ)
@@ -334,7 +334,7 @@ ratefac_c = RF_IMQ(n_temp_1) &
               +(RF_IMQ(n_temp_2)-RF_IMQ(n_temp_1)) &
                *(temp_h_val-real(n_temp_1,dp))
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 end function ratefac_c
 
@@ -350,11 +350,11 @@ implicit none
 real(dp)             :: ratefac_t
 real(dp), intent(in) :: omega_val
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 ratefac_t = RF(0)*(1.0_dp+R_T*(omega_val))
-#else /* OpenAD */
+#else /* Tapenade */
 ratefac_t = RF_IMQ(0)*(1.0_dp+R_T_IMQ*(omega_val))
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 end function ratefac_t
 
@@ -373,13 +373,13 @@ real(dp), intent(in) :: temp_val, temp_m_val, omega_val
 
 integer(i4b) :: n_temp_1, n_temp_2
 real(dp)     :: temp_h_val
-#if defined(ALLOW_OPENAD) /* OpenAD */
+#if defined(ALLOW_TAPENADE) /* Tapenade */
 integer(i4b) :: itemp_h_val
-#endif /* OpenAD */
+#endif /* Tapenade */
 
 temp_h_val = temp_val-temp_m_val
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 n_temp_1 = floor(temp_h_val)
 n_temp_1 = max(min(n_temp_1, n_temp_max-1), n_temp_min)
@@ -390,7 +390,7 @@ ratefac_c_t = ( RF(n_temp_1) &
                   * (temp_h_val-real(n_temp_1,dp)) ) &
               *(1.0_dp+R_T*(omega_val))
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 n_temp_1 = myfloor_local(temp_h_val)
 n_temp_1 = max(min(n_temp_1, n_temp_max_IMQ-1), n_temp_min_IMQ)
@@ -401,7 +401,7 @@ ratefac_c_t = ( RF_IMQ(n_temp_1) &
                    *(temp_h_val-real(n_temp_1,dp)) ) &
               *(1.0_dp+R_T_IMQ*(omega_val))
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 end function ratefac_c_t
 
@@ -420,13 +420,13 @@ real(dp), intent(in) :: temp_val
 
 integer(i4b) :: n_temp_1, n_temp_2
 real(dp) :: kappa_ice
-#if defined(ALLOW_OPENAD) /* OpenAD */
+#if defined(ALLOW_TAPENADE) /* Tapenade */
 integer(i4b) :: itemp_val
-#endif /* OpenAD */
+#endif /* Tapenade */
 
 !-------- Heat conductivity of pure ice --------
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 n_temp_1 = floor(temp_val)
 n_temp_1 = max(min(n_temp_1, n_temp_max-1), n_temp_min)
@@ -442,7 +442,7 @@ kappa_val = KAPPA(n_temp_1) &
               * (temp_val-real(n_temp_1,dp))
 #endif
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 n_temp_1 = myfloor_local(temp_val)
 n_temp_1 = max(min(n_temp_1, n_temp_max_IMQ-1), n_temp_min_IMQ)
@@ -458,17 +458,17 @@ kappa_val = KAPPA_IMQ(n_temp_1) &
               * (temp_val-real(n_temp_1,dp))
 #endif
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 !-------- If dust is present (polar caps of Mars):
 !         Heat conductivity of ice-dust mixture --------
 
 #if defined(FRAC_DUST)
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 kappa_val = (1.0_dp-FRAC_DUST)*kappa_ice + FRAC_DUST*KAPPA_C
-#else /* OpenAD */
+#else /* Tapenade */
 kappa_val = (1.0_dp-FRAC_DUST)*kappa_ice + FRAC_DUST*KAPPA_C_IMQ
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 #endif
 
 end function kappa_val
@@ -488,13 +488,13 @@ real(dp), intent(in) :: temp_val
 
 integer(i4b) :: n_temp_1, n_temp_2
 real(dp) :: c_ice
-#if defined(ALLOW_OPENAD) /* OpenAD */
+#if defined(ALLOW_TAPENADE) /* Tapenade */
 integer(i4b) :: itemp_val
-#endif /* OpenAD */
+#endif /* Tapenade */
 
 !-------- Specific heat of pure ice --------
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 n_temp_1 = floor(temp_val)
 n_temp_1 = max(min(n_temp_1, n_temp_max-1), n_temp_min)
@@ -510,7 +510,7 @@ c_val = C(n_temp_1) &
           * (temp_val-real(n_temp_1,dp))
 #endif
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 n_temp_1 = myfloor_local(temp_val)
 n_temp_1 = max(min(n_temp_1, n_temp_max_IMQ-1), n_temp_min_IMQ)
@@ -526,18 +526,18 @@ c_val = C_IMQ(n_temp_1) &
           * (temp_val-real(n_temp_1,dp))
 #endif
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 !-------- If dust is present (polar caps of Mars):
 !         Specific heat of ice-dust mixture --------
 
 #if defined(FRAC_DUST)
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 c_val = rho_inv * ( (1.0_dp-FRAC_DUST)*RHO_I*c_ice + FRAC_DUST*RHO_C*C_C )
-#else /* OpenAD */
+#else /* Tapenade */
 c_val = rho_inv * ( (1.0_dp-FRAC_DUST)*RHO_I_IMQ*c_ice +
 FRAC_DUST*RHO_C_IMQ*C_C_IMQ )
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 #endif
 
 end function c_val
@@ -1009,7 +1009,7 @@ end function fct_visc_sm_deriv
 
 !-------------------------------------------------------------------------------
 
-#if defined(ALLOW_OPENAD) /* OpenAD */
+#if defined(ALLOW_TAPENADE) /* Tapenade */
 
   function myfloor_local(num)
   
@@ -1035,7 +1035,7 @@ end function fct_visc_sm_deriv
   
   end function myfloor_local
 
-#endif /* OpenAD */
+#endif /* Tapenade */
 
 !-------------------------------------------------------------------------------
 

@@ -19,7 +19,7 @@ module ctrl_m
   public :: ctrl_init
   public :: cost_independent_init, cost_dependent_init
   public :: cost_final 
-#if (defined(ALLOW_GRDCHK) || defined(ALLOW_OPENAD))
+#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
   public :: myceiling, myfloor 
 #endif
 
@@ -27,7 +27,7 @@ contains
  
 !------------------------------------------------------------------------------- 
 !> Initialiation of control variable.
-!! Recognized by OpenAD with the prefix xxVar,
+!! Recognized by Tapenade with the prefix xxVar,
 !! where Var is the variable of choice (normally
 !! something in sico_variables_m
 !<------------------------------------------------------------------------------
@@ -249,7 +249,7 @@ print *, '           AGE_COST simulations'
   
   !-------- Write final cost to a file:
   open(unit=97, iostat=ios, &
-#ifndef ALLOW_OPENAD
+#ifndef ALLOW_TAPENADE
        file=trim(OUT_PATH)//'/'//trim(runname)//'_COST.dat', &
 #else
        file='AD_COST', &
@@ -261,7 +261,7 @@ print *, '           AGE_COST simulations'
   
   end subroutine cost_final
 
-#if (defined(ALLOW_GRDCHK) || defined(ALLOW_OPENAD))
+#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
   subroutine myceiling(num, output)
   
   implicit none

@@ -41,7 +41,7 @@ module calc_temp_m
 
   implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   private
 #endif /* Normal */
 
@@ -1413,19 +1413,19 @@ subroutine calc_temp1(at1, at2_1, at2_2, at3_1, at3_2, &
 use ice_material_properties_m, only : ratefac_c, kappa_val, c_val, &
                                       creep, viscosity
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 use sico_maths_m, only : tri_sle
-#else /* OpenAD */
+#else /* Tapenade */
 use sico_maths_m
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in)    :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 real(dp), intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                         at3_1(0:KCMAX), at3_2(0:KCMAX), at4_1(0:KCMAX), &
                         at4_2(0:KCMAX), at5(0:KCMAX), at6(0:KCMAX), at7, &
@@ -1957,19 +1957,19 @@ subroutine calc_temp2(at1, at2_1, at2_2, at3_1, at3_2, &
 
 use ice_material_properties_m, only : ratefac_c, kappa_val, c_val, &
                                       creep, viscosity
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 use sico_maths_m, only : tri_sle
-#else /* OpenAD */
+#else /* Tapenade */
 use sico_maths_m
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in)    :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 real(dp), intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                         at3_1(0:KCMAX), at3_2(0:KCMAX), at4_1(0:KCMAX), &
                         at4_2(0:KCMAX), at5(0:KCMAX), at6(0:KCMAX), at7, &
@@ -2482,19 +2482,19 @@ subroutine calc_temp3(at1, at2_1, at2_2, at3_1, at3_2, &
 
 use ice_material_properties_m, only : ratefac_c, ratefac_t, kappa_val, c_val, &
                                       creep, viscosity
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 use sico_maths_m, only : tri_sle
-#else /* OpenAD */
+#else /* Tapenade */
 use sico_maths_m
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in)    :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 real(dp), intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                         at3_1(0:KCMAX), at3_2(0:KCMAX), at4_1(0:KCMAX), &
                         at4_2(0:KCMAX), at5(0:KCMAX), at6(0:KCMAX), at7, &
@@ -3501,19 +3501,19 @@ end subroutine calc_temp3
 !<------------------------------------------------------------------------------
 subroutine calc_temp_r(atr1, alb1, i, j)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 use sico_maths_m, only : tri_sle
-#else /* OpenAD */
+#else /* Tapenade */
 use sico_maths_m
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in)    :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 real(dp), intent(in) :: atr1, alb1
 
 integer(i4b) :: kc, kt, kr
@@ -3532,9 +3532,9 @@ clb1 = alb1*q_geo(j,i)
 !-------- Set up the equations for the bedrock temperature --------
 
 kr=0
-#if defined(ALLOW_OPENAD) /* OpenAD */
+#if defined(ALLOW_TAPENADE) /* Tapenade */
 lgs_a0(kr) = 0.0_dp
-#endif /* OpenAD */
+#endif /* Tapenade */
 lgs_a1(kr) = 1.0_dp
 lgs_a2(kr) = -1.0_dp
 lgs_b(kr)    = clb1
@@ -3606,11 +3606,11 @@ subroutine shift_cts_upward(at1, at2_1, at2_2, at3_1, at3_2, &
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in)    :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 real(dp),     intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                             at3_1(0:KCMAX), at3_2(0:KCMAX), at4_1(0:KCMAX), &
                             at4_2(0:KCMAX), at5(0:KCMAX), at6(0:KCMAX), at7, &
@@ -3700,11 +3700,11 @@ subroutine shift_cts_downward(at1, at2_1, at2_2, at3_1, at3_2, &
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in)    :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 real(dp),     intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                             at3_1(0:KCMAX), at3_2(0:KCMAX), at4_1(0:KCMAX), &
                             at4_2(0:KCMAX), at5(0:KCMAX), at6(0:KCMAX), at7, &
@@ -3869,19 +3869,19 @@ subroutine calc_temp_ssa(at1, at2_1, at2_2, at3_1, at3_2, &
 
 use ice_material_properties_m, only : kappa_val, c_val, viscosity
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 use sico_maths_m, only : tri_sle
-#else /* OpenAD */
+#else /* Tapenade */
 use sico_maths_m
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in)    :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 real(dp), intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                         at3_1(0:KCMAX), at3_2(0:KCMAX), at4_1(0:KCMAX), &
                         at4_2(0:KCMAX), at5(0:KCMAX), at6(0:KCMAX), at7, &

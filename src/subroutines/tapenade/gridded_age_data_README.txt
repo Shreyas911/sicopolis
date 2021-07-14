@@ -14,7 +14,7 @@ values!! This can be seen in the formatting of
 
 subroutine read_ad_data(), in read_m.
 
-OpenAD is extremely sensitive to read formats for IO, 
+Tapenade is extremely sensitive to read formats for IO, 
 and this is the best solution as yet.
 -----
 

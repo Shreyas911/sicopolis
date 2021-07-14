@@ -39,7 +39,7 @@ module sico_maths_m
 
   implicit none
 
-#if !defined(ALLOW_OPENAD)
+#if !defined(ALLOW_TAPENADE)
   public 
 #else
 
@@ -73,21 +73,21 @@ contains
 !! represented by arrays lgs_a_value(values), lgs_a_index (indices)
 !! and lgs_a_ptr (pointers)].
 !<------------------------------------------------------------------------------
-#if !defined(ALLOW_OPENAD)
+#if !defined(ALLOW_TAPENADE)
   subroutine sor_sprs(lgs_a_value, lgs_a_index, lgs_a_diag_index, lgs_a_ptr, &
 #else
   subroutine sor_sprs_local(lgs_a_value, lgs_a_index, lgs_a_diag_index, lgs_a_ptr, &
 #endif
                       lgs_b_value, &
                       nnz, nmax, &
-#if defined(ALLOW_OPENAD)
+#if defined(ALLOW_TAPENADE)
                       n_sprs, &
 #endif
                       omega, eps_sor, lgs_x_value, ierr)
 
   implicit none
 
-#if defined(ALLOW_OPENAD)
+#if defined(ALLOW_TAPENADE)
   integer(i4b),                     intent(in) :: n_sprs
 #endif
   integer(i4b),                     intent(in) :: nnz, nmax
@@ -104,7 +104,7 @@ contains
   integer(i4b) :: iter
   integer(i4b) :: iter_max
   integer(i4b) :: nr, k
-#if !defined(ALLOW_OPENAD)
+#if !defined(ALLOW_TAPENADE)
   real(dp), allocatable, dimension(:) :: lgs_x_value_prev
 #else
   real(dp),           dimension(nmax) :: lgs_x_value_prev
@@ -120,7 +120,7 @@ contains
   iter_max = 1000   ! default value
 #endif
 
-#if !defined(ALLOW_OPENAD)
+#if !defined(ALLOW_TAPENADE)
   allocate(lgs_x_value_prev(nmax))
 #endif
 
@@ -153,7 +153,7 @@ contains
      if (flag_convergence) then
         write(6,'(10x,a,i0)') 'sor_sprs: iter = ', iter
         ierr = 0   ! convergence criterion fulfilled
-#if !defined(ALLOW_OPENAD)
+#if !defined(ALLOW_TAPENADE)
         deallocate(lgs_x_value_prev)
 #endif
         return
@@ -163,11 +163,11 @@ contains
 
   write(6,'(10x,a,i0)') 'sor_sprs: iter = ', iter
   ierr = -1   ! convergence criterion not fulfilled
-#if !defined(ALLOW_OPENAD)
+#if !defined(ALLOW_TAPENADE)
   deallocate(lgs_x_value_prev)
 #endif
 
-#if !defined(ALLOW_OPENAD)
+#if !defined(ALLOW_TAPENADE)
   end subroutine sor_sprs
 #else
   end subroutine sor_sprs_local
@@ -182,7 +182,7 @@ contains
 !! @param[in]  nrows    size of matrix A (indices run from 0 (!!!) to nrows)
 !! @param[out] x        Solution vector.
 !<------------------------------------------------------------------------------
-#if !defined(ALLOW_OPENAD)
+#if !defined(ALLOW_TAPENADE)
   subroutine tri_sle(a0, a1, a2, x, b, nrows)
 #else
   subroutine tri_sle_local(a0, a1, a2, x, b, nrows)
@@ -242,7 +242,7 @@ contains
   !           diagonal becoming zero. In this case it crashes even
   !           though the system may be solvable. Otherwise ok.
 
-#if !defined(ALLOW_OPENAD)
+#if !defined(ALLOW_TAPENADE)
   end subroutine tri_sle
 #else
   end subroutine tri_sle_local
@@ -274,7 +274,7 @@ contains
 !! with a fractional error everywhere less than 1.2 x 10^(-7)
 !! (formula by Press et al., 'Numerical Recipes in Fortran 77').
 !<------------------------------------------------------------------------------
-#if defined(ALLOW_OPENAD)
+#if defined(ALLOW_TAPENADE)
   subroutine my_erfc(x, retval)
 
   implicit none
@@ -304,12 +304,12 @@ contains
 #endif
 
 !-------------------------------------------------------------------------------
-!> OpenAD needs a template to help differentiate through the LIS solver when  
+!> Tapenade needs a template to help differentiate through the LIS solver when  
 !! it is used. This is substituted in for adjoint modes in Antarctica with 
 !! ice shelves.
 !<------------------------------------------------------------------------------
 #if (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
-#if defined(ALLOW_OPENAD)
+#if defined(ALLOW_TAPENADE)
 #include "lisf.h"
 subroutine sico_lis_solver_local(nmax, nnz, &
 #else
@@ -391,7 +391,7 @@ call lis_vector_destroy(lgs_b, ierr)
 call lis_vector_destroy(lgs_x, ierr)
 call lis_solver_destroy(solver, ierr)
 
-#if defined(ALLOW_OPENAD)
+#if defined(ALLOW_TAPENADE)
 end subroutine sico_lis_solver_local
 #else
 end subroutine sico_lis_solver

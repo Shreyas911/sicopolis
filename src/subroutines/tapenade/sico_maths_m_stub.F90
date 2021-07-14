@@ -80,11 +80,11 @@ subroutine sor_sprs_stub(lgs_a_value, lgs_a_index, lgs_a_diag_index,&
                     lgs_a_ptr, &
                     lgs_b_value, &
                     nnz, nmax,&
-#ifdef ALLOW_OPENAD 
+#ifdef ALLOW_TAPENADE 
                     n_sprs,&
 #endif 
                     omega, eps_sor, lgs_x_value, ierr)
-    !$openad xxx template oad_template_sor_sprs.f90
+    !$tapenade xxx template oad_template_sor_sprs.f90
 implicit none
 
 integer(i4b),                     intent(in) :: nnz, nmax, n_sprs
@@ -225,7 +225,7 @@ end subroutine tri_sle_stub
   end subroutine my_erfc_stub
 
 !-------------------------------------------------------------------------------
-#ifdef ALLOW_OPENAD   /* OAD VERSION */
+#ifdef ALLOW_TAPENADE   /* OAD VERSION */
   subroutine my_erfc(x, retval)
 
   implicit none
@@ -259,7 +259,7 @@ subroutine sico_lis_solver_stub(nmax, nnz, &
                            lgs_a_ptr, lgs_a_index, &
                            lgs_a_value, lgs_b_value, lgs_x_value)
 
-    !$openad xxx template oad_template_sico_lis_solver.f90
+    !$tapenade xxx template oad_template_sico_lis_solver.f90
 implicit none
 
 integer(i4b),                   intent(in) :: nmax

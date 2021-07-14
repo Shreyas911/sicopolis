@@ -37,7 +37,7 @@ echo "                    "$HEADER_LOCAL" portion complete."
 function compare_outputs()
 # Compares regression_test results for the gradient check vs. adjoint values. This 
 # function is sensitive to output file location and number of points you have chosen
-# to compare. If in file src/subroutines/openad/opeand_m.F90 you modified the number
+# to compare. If in file src/subroutines/tapenade/opeand_m.F90 you modified the number
 # of gradient check points from the default 10 to some number NUM, please change
 # that below. If some error occurs here, it is 
 # likely due to (1) - model did not output results; (2) - user has modified directory
@@ -159,7 +159,7 @@ else
 fi
 
 # move around the maths modules: 
-cp $SRC_PATH/subroutines/openad/*_maths_* \
+cp $SRC_PATH/subroutines/tapenade/*_maths_* \
    $SRC_PATH/subroutines/general
 
 # Remove old regression_log:
@@ -197,12 +197,12 @@ do
    echo "Regression test: "$HEADER
 
 #  compile gradient check driver:
-   make -f MakefileOpenAD clean
+   make -f MakefileTapenade clean
 #  simulations using Library of Iterative Solvers (LIS), or not:
    if [ -z "${LISDIR}" ] ; then
-      make -f MakefileOpenAD LISDIR=$LISDIR HEADER=$HEADER drivergrdchk
+      make -f MakefileTapenade LISDIR=$LISDIR HEADER=$HEADER drivergrdchk
    else
-      make -f MakefileOpenAD                HEADER=$HEADER drivergrdchk
+      make -f MakefileTapenade                HEADER=$HEADER drivergrdchk
    fi
 
 #  call the executable something else:
@@ -226,12 +226,12 @@ do
    HEADER=$test"_OAD"
 
 #  compiling adjoint code:
-   make -f MakefileOpenAD clean
+   make -f MakefileTapenade clean
 #  simulations using Library of Iterative Solvers (LIS), or not:
    if [ -z "${LISDIR}"]; then
-      make -f MakefileOpenAD LISDIR=$LISDIR HEADER=$HEADER driver
+      make -f MakefileTapenade LISDIR=$LISDIR HEADER=$HEADER driver
    else
-      make -f MakefileOpenAD                HEADER=$HEADER driver
+      make -f MakefileTapenade                HEADER=$HEADER driver
    fi
 
 #  call the executable something else:
@@ -289,7 +289,7 @@ do
    done
 done
 
-# Go back to hiding the maths modules in openad/ 
+# Go back to hiding the maths modules in tapenade/ 
 rm $SRC_PATH/subroutines/general/*_stub* 
 rm $SRC_PATH/subroutines/general/*_grad*
 

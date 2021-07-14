@@ -1081,7 +1081,7 @@
 !                       the convergence criterion of the SOR method.
 !                       Need not be very precise, a rough estimate is
 !                       sufficient.]
-!#define ALLOW_OPENAD
+!#define ALLOW_TAPENADE
 #define ALLOW_GRDCHK
 #undef AGE_COST
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

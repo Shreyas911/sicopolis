@@ -1,0 +1,266 @@
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!
+!  Module :  o p e n a d _ m
+!
+!> @file
+!!
+!! A catch-all module for tapenade-related subroutines. 
+!!
+!! @section Copyright
+!!
+!! Copyright 2017-2021 Liz Curry-Logan, Sri Hari Krishna Narayanan,
+!!                     Patrick Heimbach, Ralf Greve
+!!
+!! @section License
+!!
+!! This file is part of SICOPOLIS.
+!!
+!! SICOPOLIS is free software: you can redistribute it and/or modify
+!! it under the terms of the GNU General Public License as published by
+!! the Free Software Foundation, either version 3 of the License, or
+!! (at your option) any later version.
+!!
+!! SICOPOLIS is distributed in the hope that it will be useful,
+!! but WITHOUT ANY WARRANTY; without even the implied warranty of
+!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!! GNU General Public License for more details.
+!!
+!! You should have received a copy of the GNU General Public License
+!! along with SICOPOLIS.  If not, see <http://www.gnu.org/licenses/>.
+!<
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+!-------------------------------------------------------------------------------
+!> Module for all tapenade-related subroutines 
+!<------------------------------------------------------------------------------
+module tapenade_m
+
+  implicit none
+
+  private
+  public :: adjoint_master
+
+#if   (defined (ALLOW_GRDCHK))
+  private :: deldirs
+  public :: grdchk_main
+#endif
+
+contains
+
+!-------------------------------------------------------------------------------
+!> Adjoint master is the main tool by which sicopolis.F90 invokes the adjoint
+!! code. Its job is to figure out what mode of the adjoint code is being invoked
+!! and run the appropriate subroutine. 
+!<------------------------------------------------------------------------------
+  subroutine adjoint_master
+
+  implicit none
+
+#ifdef ALLOW_GRDCHK
+    call grdchk_main
+#endif
+
+  end subroutine adjoint_master
+
+#ifdef ALLOW_GRDCHK
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!   Subroutine :  g r d c h k _ m a i n
+!   Purpose    :  Gradient check top level routine
+!                 Compares the gradients calculated by the adjoint model
+!                 to the gradients calculated by finite difference
+!                 approximations
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   subroutine grdchk_main
+   
+   use sico_types_m
+   use sico_variables_m
+   use sico_vars_m
+   
+   use sico_init_m
+   use sico_main_loop_m
+   use sico_end_m
+   
+   use ctrl_m, only: ctrl_init, cost_independent_init, cost_dependent_init, &
+                     cost_final
+   
+   implicit none
+   
+   integer(i4b)       :: ndat2d, ndat3d
+   integer(i4b)       :: n_output
+   real(dp)           :: delta_ts, glac_index
+   real(dp)           :: mean_accum
+   real(dp)           :: dtime, dtime_temp, dtime_wss, &
+                                      dtime_out, dtime_ser
+   real(dp)           :: time, time_init, time_end, time_output(100)
+   real(dp)           :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
+   real(dp)           :: z_sl, dzsl_dtau, z_mar
+   character(len=100) :: runname
+   
+   !-------- Variable declarations needed for this routine specifically
+   real(dp)                          :: orig_val, perturb_val = 5e-2
+   real(dp),     dimension(3)        :: fc_collected
+   real(dp),     dimension(3)        :: direction
+   real(dp)                          :: gfd0,gfd, perturbation
+   integer(i4b), parameter           :: points = 5
+   integer(i4b), dimension(points)   :: ipoints, jpoints
+   integer(i4b)                      :: i, j, p, d
+   character(len=100)                :: fname
+   
+   !-------- This array holds the direction of perturbations to follow:
+   direction(1) = 0
+   direction(2) = 1
+   direction(3) = -1
+
+#if (!defined(GRL) && !defined(ANT))
+   print *, ">>> Adjoint only available for GRL and ANT right now; kill code." 
+#endif
+
+   !-------- Test points along spines of the ice sheets
+   do p = 1, points
+#if (defined(GRL))
+      ipoints(p) = int(real(IMAX/2))
+      jpoints(p) = int(real(JMAX/5)) + (p-1) * points
+#elif (defined(ANT))
+      ipoints(p) = int(real(IMAX/3)) + int(real((.85-.33)*IMAX/points)) * (p - 1) 
+      jpoints(p) = int(real(JMAX/2)) 
+#endif
+   end do
+
+   !-------- Initialize output files 
+   open(99, file='GradientVals_'//trim(RUNNAME)//'.dat',&
+       form="FORMATTED", status="REPLACE")
+   open(98, file='CostVals_'//trim(RUNNAME)//'.dat',&
+       form="FORMATTED", status="REPLACE")
+   
+   !-------- Loop over points
+   do p = 1, points
+     i = ipoints(p)
+     j = jpoints(p)
+
+          !-------- Loop over perturbation direction (0, +, -)
+          do d = 1, 3 
+
+          !-------- Let yourself know where you are:
+          print *, ' point (p, i, j), direction (d) [ ', p , ', ', i, ', ', j, ', ', d, ' ] '
+
+          !-------- One complete forward run 
+            call deldirs
+            call cost_dependent_init
+        
+            call sico_init(delta_ts, glac_index, &
+                 mean_accum, &
+                 dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
+                 time, time_init, time_end, time_output, &
+                 dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
+                 z_sl, dzsl_dtau, z_mar, &
+                 ndat2d, ndat3d, n_output, &
+                 runname)
+
+            perturbation = 1 + direction(d) * perturb_val 
+
+
+          !-------- Controls to be perturbed (add your own here and below in
+          !         subroutine print_output()
+          !         store original value that will be perturbed
+          !         and then perturb it (first in +dir then -dir) 
+ 
+            ! -- H_c
+            orig_val = q_geo(j,i)
+            q_geo(j,i) = orig_val * perturbation 
+
+            ! -- mean annual temp 
+            !orig_val = temp_ma_present(j,i)
+            !temp_ma_present(j,i) = orig_val * perturbation
+
+            ! -- mean annual temp 
+            !orig_val = q_geo(j,i)
+            !q_geo(j,i) = orig_val * perturbation 
+
+            ! -- mean annual temp 
+            !orig_val = vx_c(24,j,i)
+            !vx_c(24,j,i) = orig_val * perturbation
+
+            ! -- mean annual temp 
+            !orig_val = c_slide(j,i)
+            !c_slide(j,i) = orig_val * perturbation
+
+            ! -- mean annual temp 
+            !orig_val = c_drag(j,i)
+            !c_drag(j,i) = orig_val * perturbation
+
+            ! -- precip_present
+            !orig_val = precip_present(j,i,1)
+            !precip_present(j,i,1) = orig_val * perturbation
+
+            ! -- experimental field acc_fact
+            !orig_val = acc_fact(j,i)
+            !acc_fact(j,i) = orig_val * perturbation
+
+            ! -- sanity check
+            write(6,fmt='(a,f40.20)') "orig_val = ", orig_val
+            write(6,fmt='(a,f40.20)') "pert_val = ", orig_val*perturbation
+
+            call sico_main_loop(delta_ts, glac_index, &
+                 mean_accum, &
+                 dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
+                 time, time_init, time_end, time_output, &
+                 dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
+                 z_sl, dzsl_dtau, z_mar, &
+                 ndat2d, ndat3d, n_output, &
+                 runname)
+          
+            call cost_final(runname)
+            call sico_end
+       
+            ! store cost
+            fc_collected(d) = fc
+        
+            ! --------- calculate simple 2-sided finite difference due to
+            !           perturbation: fc(+) - fc(-) / 2*espsilon
+            gfd = (fc_collected(2) - fc_collected(3))/(2.d0 * perturb_val * orig_val)
+          
+          end do ! (close perturb loop)
+
+          ! -- sanity check
+          write(6, fmt='(a,f40.20)')   "Finite difference is = ", gfd
+        
+          ! --------- write these values to output file
+          write(99, fmt='(f40.20)') gfd
+          write(98, fmt='(f40.20)') fc_collected(1)
+          write(98, fmt='(f40.20)') fc_collected(2)
+          write(98, fmt='(f40.20)') fc_collected(3)
+          write(98, fmt='(a)') '----------------------------------'
+    
+   end do ! (close loop over points)
+  
+   close(unit=99)
+   close(unit=98)
+   
+   end subroutine grdchk_main
+
+!!-------------------------------------------------------------------------------
+!!> Checks to see if output dir exists. If so, deletes it.
+!!<------------------------------------------------------------------------------
+  subroutine deldirs
+
+  implicit none
+
+  character(len=256) :: shell_command
+
+  !-------- deleting directories
+
+    shell_command = 'if [ -d'
+    shell_command = trim(shell_command)//' '//OUT_PATH
+    shell_command = trim(shell_command)//' '//'] ; then rm -rf'
+    shell_command = trim(shell_command)//' '//OUT_PATH
+    shell_command = trim(shell_command)//' '//'; fi'
+
+    call system(trim(shell_command))
+
+  end subroutine deldirs
+
+#endif /* Only ALLOW_GRDCHK */
+
+end module tapenade_m 
+!
