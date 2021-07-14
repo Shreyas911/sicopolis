@@ -199,10 +199,11 @@
 #include "subroutines/general/mask_update_sea_level_m.F90"
 #include "subroutines/general/flag_update_gf_gl_cf_m.F90"
 #include "subroutines/general/pdd_m.F90"
-
 !@ begin openad_extract @
-#if (MARGIN==2 || MARGIN==3)
-#include "subroutines/general/calving_m.F90"
+#if ((MARGIN==2) \
+      && (MARINE_ICE_FORMATION==2) \
+      && (MARINE_ICE_CALVING==9))
+#include "subroutines/general/calving_underwater_ice_m.F90"
 #endif
 
 #if (defined(GRL))
@@ -319,6 +320,8 @@ program sicopolis
 !  delta_ts          : Time-dependent surface-temperature variation
 !  glac_index        : Time-dependent glacial index
 !  forcing_flag      : 1 - forcing by delta_ts, 2 - forcing by glac_index
+!  z_sl              : Sea level
+!  dzsl_dtau         : Derivative of z_sl by tau (time)
 !  precip_mam_present(j,i) : Measured present spring precipitation
 !  precip_jja_present(j,i) : Measured present summer precipitation
 !  precip_son_present(j,i) : Measured present autumn precipitation

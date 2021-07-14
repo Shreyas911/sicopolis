@@ -65,6 +65,11 @@ use sico_variables_m_diff
   use enth_temp_omega_m_diff
   use sico_init_m_diff
   use globals_diff
+  USE CTRL_M_DIFF
+  USE SICO_TYPES_M
+  USE SICO_VARS_M
+  USE SICO_MAIN_LOOP_M_DIFF
+  USE SICO_END_M_DIFF
 
   implicit none
   integer(i4b)                               :: ndat2d, ndat3d
@@ -77,13 +82,63 @@ use sico_variables_m_diff
   real(dp), dimension(100)                   :: time_output
   real(dp)                                   :: dxi, deta, dzeta_c, &
                                                 dzeta_t, dzeta_r
-  real(dp)                                   :: z_sl, dzsl_dtau, z_mar
+  real(dp)                                   :: z_mar
   character(len=100)                         :: runname
-fcb = 1.
-call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
-& dtime_temp, dtime_wss, dtime_out, dtime_ser, time, time_init, time_end&
-& , time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, z_sl, dzsl_dtau, &
-& z_mar, ndat2d, ndat3d, n_output, runname)
+  integer(i4b), parameter                    :: points = 5
+  integer(i4b), dimension(points)            :: ipoints, jpoints
+  integer(i4b)                               :: i, j, p
+   !-------- Test points along spines of the ice sheets
+   do p = 1, points
+#if (defined(GRL))
+      ipoints(p) = int(real(IMAX/2))
+      jpoints(p) = int(real(JMAX/5)) + (p-1) * points
+#elif (defined(ANT))
+      ipoints(p) = int(real(IMAX/3)) + int(real((.85-.33)*IMAX/points)) * (p - 1)
+      jpoints(p) = int(real(JMAX/2))
+#endif
+   end do
+
+!@ python_automated_tlm IO begin @
+   open(99999, file='ForwardVals_H_'//trim(RUNNAME)//'_limited.dat',&
+       form="FORMATTED", status="REPLACE")
+
+
+   !-------- Loop over points
+   do p = 1, points !@ python_automated_tlm limited_or_full @
+     i = ipoints(p)
+     j = jpoints(p)
+
+  CALL CTRL_INIT()
+  CALL COST_INDEPENDENT_INIT()
+  CALL COST_DEPENDENT_INIT()
+  CALL SICO_INIT_D(delta_ts, glac_index, mean_accum, dtime, dtime_temp, &
+&            dtime_wss, dtime_out, dtime_ser, time, time_init, time_end&
+&            , time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, z_mar&
+&            , ndat2d, ndat3d, n_output, runname)
+
+!@ python_automated_tlm dep_vard @
+            Hd = 0.0
+            Hd(j,i) = 1.0
+
+!-------- Main loop --------
+  CALL SICO_MAIN_LOOP_D(delta_ts, glac_index, mean_accum, dtime, &
+&                 dtime_temp, dtime_wss, dtime_out, dtime_ser, time, &
+&                 time_init, time_end, time_output, dxi, deta, dzeta_c, &
+&                 dzeta_t, dzeta_r, z_mar, ndat2d, ndat3d, n_output, &
+&                 runname)
+  CALL COST_FINAL_D(runname)
+     
+  CALL SICO_END()
+
+!@ python_automated_tlm IO write @
+          write(99999, fmt='(f40.20)') fcd
+
+   end do
+
+
+!@ python_automated_tlm IO end @
+   close(unit=99999)
+
   end subroutine adjoint_master
 #endif
 
@@ -119,7 +174,7 @@ call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
                                       dtime_out, dtime_ser
    real(dp)           :: time, time_init, time_end, time_output(100)
    real(dp)           :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
-   real(dp)           :: z_sl, dzsl_dtau, z_mar
+   real(dp)           :: z_mar
    character(len=100) :: runname
    
    !-------- Variable declarations needed for this routine specifically
@@ -162,7 +217,7 @@ call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
 
    
    !-------- Loop over points
-   do p = 1, points
+   do p = 1, points !@ python_automated_grdchk limited_or_full @
      i = ipoints(p)
      j = jpoints(p)
 
@@ -181,7 +236,7 @@ call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
                  dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
                  time, time_init, time_end, time_output, &
                  dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-                 z_sl, dzsl_dtau, z_mar, &
+                 z_mar, &
                  ndat2d, ndat3d, n_output, &
                  runname)
 
@@ -238,7 +293,7 @@ call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
                  dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
                  time, time_init, time_end, time_output, &
                  dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-                 z_sl, dzsl_dtau, z_mar, &
+                 z_mar, &
                  ndat2d, ndat3d, n_output, &
                  runname)
           
@@ -250,8 +305,11 @@ call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
         
             ! --------- calculate simple 2-sided finite difference due to
             !           perturbation: fc(+) - fc(-) / 2*espsilon
-            gfd = (fc_collected(2) - fc_collected(3))/(2.d0 * perturb_val * orig_val)
-          
+            if (orig_val .ne. 0) then
+                gfd = (fc_collected(2) - fc_collected(3))/(2.d0 * perturb_val * orig_val)
+            else
+                gfd = 0.0
+            end if          
           end do ! (close perturb loop)
 
           ! -- sanity check

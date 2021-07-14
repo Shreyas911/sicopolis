@@ -132,7 +132,7 @@ contains
   end do
 #endif
 
-  !$AD BINOMIAL-CKP itercount_max+1 20 1  
+  !$NO AD BINOMIAL-CKP itercount_max+1 20 1
   main_loop : do itercount=1, itercount_max
   
   write(unit=6, fmt='(2x,i0)') itercount
