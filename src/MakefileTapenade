@@ -99,9 +99,7 @@ RUN=$(HEADER)
 INDIR=../sico_in
 RESDIR=../sico_out/$(HEADER)
 sico_specs.h: ../runs/headers/sico_specs_$(HEADER).h
-	cp $^ sico_specs_temp.h
-	# Reading the header and changing the values
-	sed 's%INPATH .*%INPATH '\'''${INDIR}\''%' sico_specs_temp.h | sed 's%OUTPATH .*%OUTPATH '\'''${RESDIR}\''%' > $@
+	cp $^ sico_specs.h
 
 drivergrdchk: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_COST) $(SRC)
 	${F90C} -I./ ${F90FLAGS} ${DEFINE_FLAGS_GRDCHK} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
