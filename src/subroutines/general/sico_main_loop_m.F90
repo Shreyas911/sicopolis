@@ -198,7 +198,6 @@ contains
      n_cts   = n_cts_new
      kc_cts  = kc_cts_new
      zm      = zm_new
-     H       = H_new
      H_c     = H_c_new
      H_t     = H_t_new
      temp_c  = temp_c_new
