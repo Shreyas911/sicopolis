@@ -16,6 +16,9 @@ my_*
 /tools/*/*.h
 
 /src/*.h
+/src/*.mod
+/src/*.dat
+/src/driver*
 
 /src/subroutines/xyz/*
 !/src/subroutines/xyz/*/
