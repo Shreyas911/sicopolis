@@ -12,7 +12,7 @@ RUN_DIR=./runs
 HEADER_DIR=${RUN_DIR}/headers
 
 SRC_DIR=./src
-AD_DIR=${SRC_DIR}/subroutines/openad
+AD_DIR=${SRC_DIR}/subroutines/tapenade
 
 echo "Copying scripts"
 echo "        from ${AD_DIR} to ${SRC_DIR} ..."
