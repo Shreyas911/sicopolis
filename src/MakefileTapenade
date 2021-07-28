@@ -1,4 +1,4 @@
-all: drivergrdchk
+all: drivergrdchk driveradjoint
 
 ifndef F90C
 F90C=gfortran
@@ -8,7 +8,13 @@ CC=gcc
 endif
 
 ifndef HEADER
+#HEADER=v5_ant64_b2_future09_ctrl
+#HEADER=ant20_shelves_OAD
 HEADER=v5_grl20_ss25ka
+endif
+
+ifndef DOMAIN_SHORT
+DOMAIN_SHORT=grl
 endif
 
 ifndef LISDIR
@@ -37,6 +43,10 @@ CFLAGS= -O3 -g
 IN_PATH_GRDCHK=../sico_in
 OUT_PATH_GRDCHK=../sico_out/GRDCHK_${HEADER}
 DEFINE_FLAGS_GRDCHK= -DALLOW_GRDCHK -DIN_PATH=\"${IN_PATH_GRDCHK}\" -DOUT_PATH=\"${OUT_PATH_GRDCHK}\" -DNETCDF=1
+
+IN_PATH_ADJOINT=../sico_in
+OUT_PATH_ADJOINT=../sico_out/ADJOINT_${HEADER}
+DEFINE_FLAGS_ADJOINT= -DDATE=\"15/07/21\" -DVERSION=\"5-dev\" -DALLOW_TAPENADE -DALLOW_TAPENADE_DIFFERENTIATE -DIN_PATH=\"${IN_PATH_ADJOINT}\" -DOUT_PATH=\"${OUT_PATH_ADJOINT}\"
 
 SRC_SICO_PASSIVE=\
 subroutines/grl/sico_init_m.F90\
@@ -88,6 +98,91 @@ sicopolis.F90
 
 CPPCMD = cat $< |  cpp -DRUN_SPECS_HEADER=\"sico_specs.h\" -DALLOW_TAPENADE_DIFFERENTIATE=1 -DALLOW_TAPENADE=1 -I../ -I./ -traditional-cpp -P 
 
+CPPCMD_FILES = cat $< |  cpp -DRUN_SPECS_HEADER=\"sico_specs.h\" -imacros sico_specs.h ${DEFINE_FLAGS_ADJOINT} ${LISFLAG} -I./pop_push -traditional-cpp -P
+
+driveradjoint:${LIBLIS} \
+	${LIB_NETCDF_F90} \
+	sico_specs.h \
+	pop_push/adStack.o \
+	error_m_cpp.o \
+	sico_types_m_cpp.o \
+	sico_maths_m_grad_cpp.o \
+	subroutines/tapenade/diffsizes.o \
+	globals_cpp.o \
+	sico_vars_m_cpp.o \
+	globals_cpp_b.o \
+	sico_variables_m_cpp_b.o \
+	ice_material_properties_m_cpp_b.o \
+	ctrl_m_cpp_b.o \
+	enth_temp_omega_m_cpp_b.o \
+	stereo_proj_m_cpp_b.o \
+	nc_check_m_cpp.o \
+	read_m_cpp_b.o \
+	mask_update_sea_level_m_cpp_b.o \
+	pdd_m_cpp_b.o \
+	boundary_m_cpp_b.o \
+	init_temp_water_age_m_cpp_b.o \
+	calc_enhance_m_cpp_b.o \
+	flag_update_gf_gl_cf_m_cpp_b.o \
+	calc_vxy_m_cpp_b.o \
+	calc_vz_m_cpp_b.o \
+	calc_dxyz_m_cpp_b.o \
+	calc_temp_melt_bas_m_cpp_b.o \
+	output_m_cpp_b.o \
+	metric_m_cpp_b.o \
+	topograd_m_cpp_b.o \
+	calc_temp_m_cpp_b.o \
+	calc_temp_enth_m_cpp_b.o \
+	calc_gia_m_cpp_b.o \
+	calc_thk_m_cpp_b.o \
+	calc_bas_melt_m_cpp_b.o \
+	calc_thk_water_bas_m_cpp_b.o \
+	sico_init_m_cpp_b.o \
+	numCore_cpp_b.o \
+	tapenade_m_cpp.o \
+	sicopolis.o
+	${F90C} ${F90FLAGS} -o $@ \
+		sico_types_m_cpp.o\
+		globals_cpp.o \
+		sico_maths_m_grad_cpp.o \
+		pop_push/adStack.o \
+		globals_cpp_b.o \
+		sico_variables_m_cpp_b.o \
+		ice_material_properties_m_cpp_b.o \
+		ctrl_m_cpp_b.o \
+		enth_temp_omega_m_cpp_b.o \
+		stereo_proj_m_cpp_b.o \
+		read_m_cpp_b.o \
+		mask_update_sea_level_m_cpp_b.o \
+		pdd_m_cpp_b.o \
+		boundary_m_cpp_b.o \
+		init_temp_water_age_m_cpp_b.o \
+		calc_enhance_m_cpp_b.o \
+		flag_update_gf_gl_cf_m_cpp_b.o \
+		calc_vxy_m_cpp_b.o \
+		calc_vz_m_cpp_b.o \
+		calc_dxyz_m_cpp_b.o \
+		calc_temp_melt_bas_m_cpp_b.o \
+		output_m_cpp_b.o \
+		metric_m_cpp_b.o \
+		topograd_m_cpp_b.o \
+		calc_temp_m_cpp_b.o \
+		calc_temp_enth_m_cpp_b.o \
+		calc_gia_m_cpp_b.o \
+		calc_thk_m_cpp_b.o \
+		calc_bas_melt_m_cpp_b.o \
+		calc_thk_water_bas_m_cpp_b.o \
+		sico_init_m_cpp_b.o \
+		numCore_cpp_b.o \
+		subroutines/tapenade/diffsizes.o \
+		sicopolis.o \
+		${LIBLISFLAG} \
+		${LIB_NETCDF_F90_FLAG}
+
+numCore_cpp_b.f90 sico_variables_m_cpp_b.f90 ice_material_properties_m_cpp_b.f90 ctrl_m_cpp_b.f90 enth_temp_omega_m_cpp_b.f90 stereo_proj_m_cpp_b.f90 read_m_cpp_b.f90 mask_update_sea_level_m_cpp_b.f90 pdd_m_cpp_b.f90 boundary_m_cpp_b.f90 init_temp_water_age_m_cpp_b.f90 calc_enhance_m_cpp_b.f90 flag_update_gf_gl_cf_m_cpp_b.f90 calc_vxy_m_cpp_b.f90 calc_vz_m_cpp_b.f90 calc_dxyz_m_cpp_b.f90i calc_temp_melt_bas_m_cpp_b.f90 output_m_cpp_b.f90 metric_m_cpp_b.f90 topograd_m_cpp_b.f90 calc_temp_m_cpp_b.f90 calc_temp_enth_m_cpp_b.f90 calc_gia_m_cpp_b.f90 calc_thk_m_cpp_b.f90 calc_bas_melt_m_cpp_b.f90 calc_thk_water_bas_m_cpp_b.f90 globals_cpp_b.f90 sico_init_m_cpp_b.f90: sico_specs.h numCore_cpp.f90 sico_maths_m_stub_cpp.f90 error_m_cpp.f90 sico_variables_m_cpp.f90 ice_material_properties_m_cpp.f90 ctrl_m_cpp.f90 enth_temp_omega_m_cpp.f90 stereo_proj_m_cpp.f90 nc_check_m_stub_cpp.f90 netcdf_stub_cpp.f90 read_m_cpp.f90 mask_update_sea_level_m_cpp.f90 pdd_m_cpp.f90 boundary_m_cpp.f90 init_temp_water_age_m_cpp.f90 calc_enhance_m_cpp.f90 flag_update_gf_gl_cf_m_cpp.f90 calc_vxy_m_cpp.f90 calc_vz_m_cpp.f90 calc_dxyz_m_cpp.f90 calc_temp_melt_bas_m_cpp.f90 output_m_cpp.f90 metric_m_cpp.f90 topograd_m_cpp.f90 calc_temp_m_cpp.f90 calc_temp_enth_m_cpp.f90 calc_gia_m_cpp.f90 calc_thk_m_cpp.f90 calc_bas_melt_m_cpp.f90 calc_thk_water_bas_m_cpp.f90 globals_cpp.f90 sico_init_m_cpp.f90
+	tapenade -b -ext "subroutines/tapenade/external_modules" -head "sicopolis_tapenade(fc)/(h)" numCore_cpp.f90 sico_maths_m_stub_cpp.f90 error_m_cpp.f90 sico_variables_m_cpp.f90 ice_material_properties_m_cpp.f90 ctrl_m_cpp.f90 enth_temp_omega_m_cpp.f90 stereo_proj_m_cpp.f90 nc_check_m_stub_cpp.f90 netcdf_stub_cpp.f90 read_m_cpp.f90 mask_update_sea_level_m_cpp.f90 pdd_m_cpp.f90 boundary_m_cpp.f90 init_temp_water_age_m_cpp.f90 calc_enhance_m_cpp.f90 flag_update_gf_gl_cf_m_cpp.f90 calc_vxy_m_cpp.f90 calc_vz_m_cpp.f90 calc_dxyz_m_cpp.f90 calc_temp_melt_bas_m_cpp.f90 output_m_cpp.f90 metric_m_cpp.f90 topograd_m_cpp.f90 calc_temp_m_cpp.f90 calc_temp_enth_m_cpp.f90 calc_gia_m_cpp.f90 calc_thk_m_cpp.f90 calc_bas_melt_m_cpp.f90 calc_thk_water_bas_m_cpp.f90 globals_cpp.f90 sico_init_m_cpp.f90
+
+
 numCore.f90: numCore.F90
 	$(CPPCMD) > numcore_temp.F90
 	cat numcore_temp.F90 > $@
@@ -103,15 +198,15 @@ sico_specs.h: ../runs/headers/sico_specs_$(HEADER).h
 
 drivergrdchk: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_COST) $(SRC)
 	${F90C} -I./ ${F90FLAGS} ${DEFINE_FLAGS_GRDCHK} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
-	${F90C} ${F90FLAGS} -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
+	${F90C} ${F90FLAGS} -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
 
 sicopolis.o: $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_COST) $(SRC)
-	${F90C} -DALLOW_TAPENADE ${LISFLAG} -I./ ${F90FLAGS} -o $@ -c $(SRC)
+	${F90C} -I./ ${F90FLAGS} ${DEFINE_FLAGS_ADJOINT} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
 
 subroutines/general/sico_maths_m.o : subroutines/general/sico_maths_m.F90
 	${F90C} -DALLOW_TAPENADE ${LISFLAG} -I./ ${F90FLAGS} -o $@ -c $<
 
-subroutines/general/sico_maths_m_grad.o : subroutines/general/sico_maths_m_grad.F90
+subroutines/tapenade/sico_maths_m_grad.o : subroutines/tapenade/sico_maths_m_grad.F90
 	${F90C} -DALLOW_TAPENADE ${LISFLAG} -I./ ${F90FLAGS} -o $@ -c $<
 subroutines/tapenade/tapenade_m.o: subroutines/tapenade/tapenade_m.F90
 	${F90C} -DALLOW_TAPENADE ${LISFLAG} -I./ ${F90FLAGS} -o $@ -c $<
@@ -128,6 +223,22 @@ subroutines/tapenade/tapenade_m.o: subroutines/tapenade/tapenade_m.F90
 %.o : %.c
 	${CC} ${CFLAGS} -o $@ -c $< 
 
+%_cpp.f90: subroutines/general/%.F90
+	$(CPPCMD_FILES) > dummy.f90
+	cat dummy.f90 > $@
+
+%_cpp.f90: subroutines/tapenade/%.F90
+	$(CPPCMD_FILES) > dummy.f90
+	cat dummy.f90 > $@
+
+%_cpp.f90: subroutines/${DOMAIN_SHORT}/%.F90
+	$(CPPCMD_FILES) > dummy.f90
+	cat dummy.f90 > $@
+
+%_cpp.f90: %.F90
+	$(CPPCMD_FILES) > dummy.f90
+	cat dummy.f90 > $@
+
 clean: 
 	rm -f subroutines/tapenade/*.o \
               subroutines/general/*.o\
@@ -135,9 +246,12 @@ clean:
               sicopolis.o\
 	rm -f numCore.*\
               numcore_temp.F90\
+	      dummy.f90\
+	      *_cpp.f90\
+	      *_cpp_b.f90\
               *.o\
               *.mod*\
-              driver\
+              driver*\
               *~\
               oad_template_*.*\
               sico_specs.h\
