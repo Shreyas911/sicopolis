@@ -3594,8 +3594,11 @@ end subroutine calc_vis_ssa
 !> Gradual limitation of computed horizontal velocities to the interval
 !! [-vel_max, vel_max].
 !<------------------------------------------------------------------------------
+#if !defined(ALLOW_TAPENADE)
 elemental subroutine velocity_limiter_gradual(velocity, vel_max, vel_max_inv)
-
+#else
+subroutine velocity_limiter_gradual(velocity, vel_max, vel_max_inv)
+#endif
 implicit none
 
 real(dp), intent(in)    :: vel_max, vel_max_inv
