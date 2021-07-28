@@ -38,11 +38,13 @@ module calc_vxy_m
   use sico_variables_m
   use sico_vars_m
   use error_m
-
+#if defined(ALLOW_TAPENADE)
+  use globals
+#endif
   implicit none
-
+#if !defined(ALLOW_TAPENADE)
   real(dp), dimension(0:JMAX,0:IMAX), save :: dzs_dx_aux, dzs_dy_aux
-
+#endif
   private
   public :: calc_dzs_dxy_aux, &
             calc_vxy_b_sia, calc_vxy_sia, calc_vxy_static, calc_vxy_ssa

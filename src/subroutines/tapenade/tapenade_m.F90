@@ -59,6 +59,10 @@ contains
 #ifdef ALLOW_GRDCHK
     call grdchk_main
 #endif
+  use ice_material_properties_m_diff
+  use enth_temp_omega_m_diff
+  use sico_init_m_diff
+  use globals_diff
 
   end subroutine adjoint_master
 
