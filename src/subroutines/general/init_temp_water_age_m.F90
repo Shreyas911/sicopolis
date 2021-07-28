@@ -46,8 +46,31 @@ module init_temp_water_age_m
   public :: init_temp_water_age_1_5
   public :: init_temp_water_age_2
 
+#if defined(ALLOW_TAPENADE)
+  public :: my_erf
+#endif
 contains
 
+#if defined(ALLOW_TAPENADE)
+  function my_erf(x)
+    implicit none
+    real(dp), INTENT(IN) :: x
+    real(dp) :: my_erf
+    real(dp) :: t, z
+    if (x .GE. 0.) then
+      z = x
+    else
+      z = -x
+    end if
+    t = 1.0_dp/(1.0_dp+0.5_dp*z)
+    my_erf = t*EXP(-(z*z)-1.26551223_dp+t*(1.00002368_dp+t*(&
+&     0.37409196_dp+t*(0.09678418_dp+t*(-0.18628806_dp+t*(0.27886807_dp+&
+&     t*(-1.13520398_dp+t*(1.48851587_dp+t*(-0.82215223_dp+t*&
+&     0.17087277_dp)))))))))
+    if (x .LT. 0.0_dp) my_erf = 2.0_dp - my_erf
+    my_erf = 1.0_dp -my_erf
+  end function my_erf
+#endif 
 !-------------------------------------------------------------------------------
 !> Initial temperature, water content and age
 !! (case ANF_DAT==1, TEMP_INIT==1:
@@ -235,11 +258,19 @@ contains
 
      K = sqrt( (kappa_const_val/(RHO*c_const_val)) * (H_val/as_val) )
 
+#if !defined(ALLOW_TAPENADE)
      erf_val_1 = erf(H_c(j,i)/(sqrt(2.0_dp)*K))
+#else
+     erf_val_1 = my_erf(H_c(j,i)/(sqrt(2.0_dp)*K))
+#endif
 
      do kc=0, KCMAX
         z_above_base   = H_c(j,i)*eaz_c_quotient(kc)
+#if !defined(ALLOW_TAPENADE)
         erf_val_2      = erf(z_above_base/(sqrt(2.0_dp)*K))
+#else
+        erf_val_2      = my_erf(z_above_base/(sqrt(2.0_dp)*K))
+#endif
         temp_c(kc,j,i) = temp_s(j,i) &
                           + (qgeo_val/kappa_const_val) &
                             * sqrt(0.5_dp*pi)*K*(erf_val_1-erf_val_2)
