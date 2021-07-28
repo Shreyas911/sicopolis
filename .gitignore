@@ -19,6 +19,10 @@ my_*
 /src/*.mod
 /src/*.dat
 /src/driver*
+/src/pop_push/
+/src/*.f90
+/src/*.F90
+/src/*.msg
 
 /src/subroutines/xyz/*
 !/src/subroutines/xyz/*/
