@@ -215,7 +215,7 @@ subroutines/tapenade/tapenade_m.o: subroutines/tapenade/tapenade_m.F90
 	${F90C} -I./ ${F90FLAGS} -o $@ -c $<
 
 %.o : %.f90
-	${F90C} ${F90FLAGS} -o $@ -c $< 
+	${F90C} ${LISFLAG} ${NETCDF_F90_FLAG} -I./ ${F90FLAGS} -o $@ -c $< 
 
 %.o : %.f
 	${F90C} ${F90FLAGS} -o $@ -c $< 
