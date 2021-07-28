@@ -38,7 +38,9 @@ module tapenade_m
   implicit none
 
   private
+#ifdef ALLOW_TAPENADE
   public :: adjoint_master
+#endif 
 
 #if   (defined (ALLOW_GRDCHK))
   private :: deldirs
@@ -52,19 +54,38 @@ contains
 !! code. Its job is to figure out what mode of the adjoint code is being invoked
 !! and run the appropriate subroutine. 
 !<------------------------------------------------------------------------------
+#ifdef ALLOW_TAPENADE
   subroutine adjoint_master
 
-  implicit none
-
-#ifdef ALLOW_GRDCHK
-    call grdchk_main
+use sico_variables_m_diff
+#if (defined(GRL) && DISC>0)
+  use discharge_workers_m_diff
 #endif
   use ice_material_properties_m_diff
   use enth_temp_omega_m_diff
   use sico_init_m_diff
   use globals_diff
 
+  implicit none
+  integer(i4b)                               :: ndat2d, ndat3d
+  integer(i4b)                               :: n_output
+  real(dp)                                   :: delta_ts, glac_index
+  real(dp)                                   :: mean_accum
+  real(dp)                                   :: dtime, dtime_temp, &
+                                                dtime_wss, dtime_out, dtime_ser
+  real(dp)                                   :: time, time_init, time_end
+  real(dp), dimension(100)                   :: time_output
+  real(dp)                                   :: dxi, deta, dzeta_c, &
+                                                dzeta_t, dzeta_r
+  real(dp)                                   :: z_sl, dzsl_dtau, z_mar
+  character(len=100)                         :: runname
+fcb = 1.
+call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
+& dtime_temp, dtime_wss, dtime_out, dtime_ser, time, time_init, time_end&
+& , time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, z_sl, dzsl_dtau, &
+& z_mar, ndat2d, ndat3d, n_output, runname)
   end subroutine adjoint_master
+#endif
 
 #ifdef ALLOW_GRDCHK
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
