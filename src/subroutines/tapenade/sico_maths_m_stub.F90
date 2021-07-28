@@ -32,7 +32,7 @@
 !-------------------------------------------------------------------------------
 !> Several mathematical tools used by SICOPOLIS.
 !<------------------------------------------------------------------------------
-module sico_maths_m_stub
+module sico_maths_m
 
 use sico_types_m
 
@@ -52,9 +52,9 @@ use sico_types_m
      module procedure tri_sle_stub
   end interface
 
-!  interface bilinint 
-!     module procedure bilinint_stub
-!  end interface
+  interface bilinint 
+     module procedure bilinint_stub
+  end interface
 
   interface my_erfc
      module procedure my_erfc_stub
@@ -80,33 +80,73 @@ subroutine sor_sprs_stub(lgs_a_value, lgs_a_index, lgs_a_diag_index,&
                     lgs_a_ptr, &
                     lgs_b_value, &
                     nnz, nmax,&
-#ifdef ALLOW_TAPENADE 
                     n_sprs,&
-#endif 
                     omega, eps_sor, lgs_x_value, ierr)
-    !$tapenade xxx template oad_template_sor_sprs.f90
-implicit none
+  implicit none
 
-integer(i4b),                     intent(in) :: nnz, nmax, n_sprs
-real(dp),                         intent(in) :: omega, eps_sor
-integer(i4b), dimension(nmax+1),  intent(inout) :: lgs_a_ptr
-integer(i4b), dimension(nnz),     intent(inout) :: lgs_a_index
-integer(i4b), dimension(nmax),    intent(inout) :: lgs_a_diag_index
-real(dp),     dimension(nnz),     intent(inout) :: lgs_a_value
-real(dp),     dimension(nmax),    intent(inout) :: lgs_b_value
+  integer(i4b),                     intent(in) :: n_sprs
+  integer(i4b),                     intent(in) :: nnz, nmax
+  real(dp),                         intent(in) :: omega, eps_sor
+  integer(i4b), dimension(nmax+1),  intent(in) :: lgs_a_ptr
+  integer(i4b), dimension(nnz),     intent(in) :: lgs_a_index
+  integer(i4b), dimension(nmax),    intent(in) :: lgs_a_diag_index
+  real(dp),     dimension(nnz),     intent(in) :: lgs_a_value
+  real(dp),     dimension(nmax),    intent(in) :: lgs_b_value
 
-integer(i4b),                    intent(out) :: ierr
-real(dp),     dimension(nmax), intent(inout) :: lgs_x_value
+  integer(i4b),                    intent(out) :: ierr
+  real(dp),     dimension(nmax), intent(inout) :: lgs_x_value
 
-integer(i4b) :: iter
-integer(i4b) :: nr, k
-real(dp), allocatable, dimension(:) :: lgs_x_value_prev
-real(dp)     :: b_nr
-logical      :: flag_convergence
+  integer(i4b) :: iter
+  integer(i4b) :: iter_max
+  integer(i4b) :: nr, k
+  real(dp),           dimension(nmax) :: lgs_x_value_prev
+  real(dp)     :: temp1, temp2
+  logical      :: isnanflag1, isnanflag2, isnanflag3
+  real(dp)     :: b_nr
+  logical      :: flag_convergence
 
-lgs_x_value_prev (0) = lgs_x_value(0) + omega +  eps_sor + lgs_a_value(0) + lgs_b_value(0)
-b_nr = lgs_x_value_prev(0)
-lgs_x_value(0) = b_nr
+#if (ITER_MAX_SOR > 0)
+  iter_max = ITER_MAX_SOR
+#else
+  iter_max = 1000   ! default value
+#endif
+
+  iter_loop : do iter=1, iter_max
+
+     lgs_x_value_prev = lgs_x_value
+
+     do nr=1, nmax
+
+        b_nr = 0.0_dp 
+
+        do k=lgs_a_ptr(nr), lgs_a_ptr(nr+1)-1
+           b_nr = b_nr + lgs_a_value(k)*lgs_x_value(lgs_a_index(k))
+        end do
+
+        lgs_x_value(nr) = lgs_x_value(nr) &
+                          -omega*(b_nr-lgs_b_value(nr)) &
+                                /lgs_a_value(lgs_a_diag_index(nr))
+
+     end do
+
+     flag_convergence = .true.
+     do nr=1, nmax
+        if (abs(lgs_x_value(nr)-lgs_x_value_prev(nr)) > eps_sor) then
+           flag_convergence = .false.
+           exit
+        end if
+     end do
+
+     if (flag_convergence) then
+        write(6,'(10x,a,i0)') 'sor_sprs: iter = ', iter
+        ierr = 0   ! convergence criterion fulfilled
+        return
+     end if
+
+  end do iter_loop
+
+  write(6,'(10x,a,i0)') 'sor_sprs: iter = ', iter
+  ierr = -1   ! convergence criterion not fulfilled
 
 end subroutine sor_sprs_stub
 #endif
@@ -174,23 +214,23 @@ end subroutine tri_sle_stub
 !-------------------------------------------------------------------------------
 !> Bilinear interpolation.
 !<------------------------------------------------------------------------------
-!  subroutine bilinint_stub(x1, x2, y1, y2, z11, z12, z21, z22, x, y, retval)
-!
-!  implicit none
-!
-!  real(dp), intent(in) :: x1, x2, y1, y2, z11, z12, z21, z22, x, y
-!
-!  real(dp) :: t, u
-!  real(dp), intent(out) :: retval
-!
-!  real(dp), parameter :: I = 1.0_dp
-!
-!  t = (x-x1)/(x2-x1)
-!  u = (y-y1)/(y2-y1)
-!
-!  retval = (I-t)*(I-u)*z11 + (I-t)*u*z12 + t*(I-u)*z21 + t*u*z22
-!
-!  end subroutine bilinint_stub
+  subroutine bilinint_stub(x1, x2, y1, y2, z11, z12, z21, z22, x, y, retval)
+
+  implicit none
+
+  real(dp), intent(in) :: x1, x2, y1, y2, z11, z12, z21, z22, x, y
+
+  real(dp) :: t, u
+  real(dp), intent(out) :: retval
+
+  real(dp), parameter :: I = 1.0_dp
+
+  t = (x-x1)/(x2-x1)
+  u = (y-y1)/(y2-y1)
+
+  retval = (I-t)*(I-u)*z11 + (I-t)*u*z12 + t*(I-u)*z21 + t*u*z22
+
+  end subroutine bilinint_stub
 
 !-------------------------------------------------------------------------------
 !> Computation of the complementary error function erfc(x) = 1-erf(x)
@@ -259,21 +299,41 @@ subroutine sico_lis_solver_stub(nmax, nnz, &
                            lgs_a_ptr, lgs_a_index, &
                            lgs_a_value, lgs_b_value, lgs_x_value)
 
-    !$tapenade xxx template oad_template_sico_lis_solver.f90
 implicit none
 
-integer(i4b),                   intent(in) :: nmax
-integer(i4b),                   intent(in) :: nnz
-integer(i4b), dimension(nmax+1),intent(inout) :: lgs_a_ptr
-integer(i4b), dimension(nnz),   intent(inout) :: lgs_a_index
-real(dp),     dimension(nnz),   intent(inout) :: lgs_a_value
-real(dp),     dimension(nmax),  intent(inout) :: lgs_b_value
-real(dp),     dimension(nmax),  intent(inout) :: lgs_x_value
+integer(i4b)                                 :: ierr
+integer(i4b)                                 :: iter
+integer(i4b)                                 :: nc, nr
+integer(i4b),                     intent(in) :: nmax
+integer(i4b),                     intent(in) :: nnz
+integer(i4b), dimension(nmax+1),  intent(in) :: lgs_a_ptr
+integer(i4b), dimension(nnz),  intent(in)    :: lgs_a_index
+real(dp),     dimension(nnz),  intent(in)    :: lgs_a_value
+real(dp),     dimension(nmax),    intent(in) :: lgs_b_value
+#if 0
+real(dp),     dimension(nmax), intent(in)    :: lgs_x_value
+#else
+real(dp),     dimension(nmax), intent(inout) :: lgs_x_value
+#endif
 
-!  ------ Settings for Lis
+character(len=256)                           :: ch_solver_set_option
 
-lgs_x_value(1) =  lgs_b_value(1) / lgs_a_value(1) 
+INTRINSIC SUM
+integer(i4b)                                 :: k
+real(dp)                                        :: b_nr
+     do nr=1, nmax
 
+        b_nr = 0.0_dp
+
+        do k=lgs_a_ptr(nr), lgs_a_ptr(nr+1)-1
+           b_nr = b_nr + lgs_a_value(k)*lgs_b_value(lgs_a_index(k))
+        end do
+        b_nr = b_nr + SUM(lgs_x_value)
+
+        lgs_x_value(nr) = lgs_x_value(nr)&
+                          -(b_nr-lgs_b_value(nr))
+        lgs_x_value(nr) = lgs_x_value(nr) + SUM(lgs_a_value) + SUM(lgs_b_value) + SUM(lgs_a_ptr)
+     end do
 end subroutine sico_lis_solver_stub
 #endif
 
