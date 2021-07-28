@@ -80,11 +80,7 @@ contains
     use calc_temp_melt_bas_m
     use calc_bas_melt_m
     use calc_thk_water_bas_m
-#if !defined(ALLOW_TAPENADE) /* Normal */
     use output_m
-#else /* Tapenade */
-    use sico_main_loop_wrapper_m
-#endif /* Normal vs. Tapenade */
  
   implicit none
 
@@ -136,7 +132,6 @@ contains
   end do
 #endif
   
-#if !defined(ALLOW_TAPENADE) /* Normal */
   main_loop : do itercount=1, itercount_max
   
   write(unit=6, fmt='(2x,i0)') itercount
@@ -493,22 +488,7 @@ contains
 
   end do main_loop   ! End of main loop (time integration)
 
-#else /* Tapenade */
-
-  call sico_main_loop_wrapper(delta_ts, glac_index, &
-                      mean_accum, &
-                      dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
-                      time, time_init, time_end, time_output, &
-                      dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-                      z_mar, &
-                      ndat2d, ndat3d, n_output, &
-                      runname,&
-                      itercount_max,iter_temp,iter_wss,iter_ser,&
-                      iter_out,iter_output)
-
-#endif /* Normal vs. Tapenade */
-  
-  end subroutine sico_main_loop
+    end subroutine sico_main_loop
 !-------------------------------------------------------------------------------
   
 end module sico_main_loop_m
