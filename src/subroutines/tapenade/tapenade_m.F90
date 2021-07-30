@@ -123,7 +123,7 @@ call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
    character(len=100) :: runname
    
    !-------- Variable declarations needed for this routine specifically
-   real(dp)                          :: orig_val, perturb_val = 5e-2
+   real(dp)                          :: orig_val, perturb_val = 1.e-3
    real(dp),     dimension(3)        :: fc_collected
    real(dp),     dimension(3)        :: direction
    real(dp)                          :: gfd0,gfd, perturbation
@@ -191,8 +191,8 @@ call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
           !         and then perturb it (first in +dir then -dir) 
  
             ! -- H_c
-            orig_val = q_geo(j,i)
-            q_geo(j,i) = orig_val * perturbation 
+            orig_val = H(j,i)
+            H(j,i) = orig_val * perturbation 
 
             ! -- mean annual temp 
             !orig_val = temp_ma_present(j,i)
