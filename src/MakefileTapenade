@@ -27,14 +27,14 @@ LIBLISFLAG=-L${LISDIR}/lib -llis
 LISFLAG=-DBUILD_LIS -I${LISDIR}/include/
 endif
 
-ifndef NETCDF
-NETCDF_F90_DIR=/opt/ohpc/pub/libs/gnu/openmpi/netcdf-fortran/4.4.4
+ifndef NETCDF_FORTRAN_DIR
+NETCDF_FORTRAN_DIR=/opt/ohpc/pub/libs/gnu/openmpi/netcdf-fortran/4.4.4
 endif
 
-ifdef NETCDF_DIR
-LIB_NETCDF_F90=${NETCDF_F90_DIR}/lib/libnetcdff.so
-LIB_NETCDF_F90_FLAG=-L${NETCDF_F90_DIR}/lib -lnetcdff
-NETCDF_F90_FLAG=-I${NETCDF_F90_DIR}/include/
+ifdef NETCDF_FORTRAN_DIR
+LIB_NETCDF_F90=${NETCDF_FORTRAN_DIR}/lib/libnetcdff.so
+LIB_NETCDF_F90_FLAG=-L${NETCDF_FORTRAN_DIR}/lib -lnetcdff
+NETCDF_F90_FLAG=-I${NETCDF_FORTRAN_DIR}/include/
 endif
 
 F90FLAGS= -O3 -g -DRUN_SPECS_HEADER=\"sico_specs.h\" -mcmodel=medium -fno-range-check -ffpe-trap=invalid,zero 
