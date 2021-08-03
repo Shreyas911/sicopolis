@@ -766,7 +766,7 @@ save
 !>               3: forcing by time-dependent surface temperature
 !>                  and precipitation data.
    integer(i4b) :: forcing_flag
-
+#if !defined(ALLOW_TAPENADE)
 !> n_core: Number of positions to be considered in the time-series file
 !>         for deep boreholes
    integer(i4b) :: n_core
@@ -780,7 +780,21 @@ save
    real(dp), dimension(:), allocatable :: y_core
 !> ch_core(n): Names of the prescribed borehole positions
    character(len=16), dimension(:), allocatable :: ch_core
-
+#else
+!> n_core: Number of positions to be considered in the time-series file
+!>         for deep boreholes
+   integer(i4b), parameter :: n_core = 7
+!> lambda_core(n): Geographical longitude of the prescribed borehole positions
+   real(dp), dimension(n_core) :: lambda_core
+!> phi_core(n): Geographical latitude of the prescribed borehole positions
+   real(dp), dimension(n_core) :: phi_core
+!> x_core(n): Coordinate xi (= x) of the prescribed borehole positions
+   real(dp), dimension(n_core) :: x_core
+!> y_core(n): Coordinate eta (= y) of the prescribed borehole positions
+   real(dp), dimension(n_core) :: y_core
+!> ch_core(n): Names of the prescribed borehole positions
+   character(len=16), dimension(n_core) :: ch_core
+#endif
 !> grip_time_min: Minimum time of the data values for the
 !>                surface temperature anomaly
    integer(i4b) :: grip_time_min
