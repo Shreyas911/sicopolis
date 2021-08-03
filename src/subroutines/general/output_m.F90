@@ -6936,16 +6936,9 @@ end subroutine output5
 
 !-------- Weighing of the four adjacent grid values --------
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
   field_val = bilinint(real(i1,dp), real(i2,dp), real(j1,dp), real(j2,dp), &
                        field(j1,i1), field(j2,i1), field(j1,i2), field(j2,i2), &
                        real_i, real_j)
-#else /* Tapenade */
-  call bilinint(real(i1,dp), real(i2,dp), real(j1,dp), real(j2,dp), &
-                       field(j1,i1), field(j2,i1), field(j1,i2), field(j2,i2), &
-                       real_i, real_j, field_val)
-#endif /* Normal vs. Tapenade */
-
   end subroutine borehole
 
 !-------------------------------------------------------------------------------
