@@ -3,7 +3,7 @@
 cd ../src
 
 LISDIR="/lis-2.0.30/installation"
-NETCDF_DIR="/usr"
+NETCDF_FORTRAN_DIR="/usr"
 @test "verify that the adjoint code is compiling for GRL" {
 	run make -f MakefileTapenade clean; make -f MakefileTapenade driveradjoint HEADER=v5_grl20_ss25ka DOMAIN_SHORT=grl LISDIR=${LISDIR} NETCDF_FORTRAN_DIR=${NETCDF_FORTRAN_DIR} TRAVIS_CI=yes;
 	[ "$status" -eq 0 ]
