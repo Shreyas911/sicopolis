@@ -146,6 +146,8 @@ driveradjoint:${LIBLIS} \
 	calc_bas_melt_m_cpp_b.o \
 	calc_thk_water_bas_m_cpp_b.o \
 	sico_init_m_cpp_b.o \
+	sico_main_loop_m_cpp_b.o \
+	sico_end_m_cpp_b.o \
 	numCore_cpp_b.o \
 	tapenade_m_cpp.o \
 	sicopolis.o
@@ -181,14 +183,16 @@ driveradjoint:${LIBLIS} \
 		calc_bas_melt_m_cpp_b.o \
 		calc_thk_water_bas_m_cpp_b.o \
 		sico_init_m_cpp_b.o \
+		sico_main_loop_m_cpp_b.o \
+		sico_end_m_cpp_b.o \
 		numCore_cpp_b.o \
 		subroutines/tapenade/diffsizes.o \
 		sicopolis.o \
 		${LIBLISFLAG} \
 		${LIB_NETCDF_F90_FLAG}
 
-numCore_cpp_b.f90 sico_variables_m_cpp_b.f90 ice_material_properties_m_cpp_b.f90 ctrl_m_cpp_b.f90 enth_temp_omega_m_cpp_b.f90 stereo_proj_m_cpp_b.f90 read_m_cpp_b.f90 mask_update_sea_level_m_cpp_b.f90 pdd_m_cpp_b.f90 boundary_m_cpp_b.f90 init_temp_water_age_m_cpp_b.f90 calc_enhance_m_cpp_b.f90 flag_update_gf_gl_cf_m_cpp_b.f90 calc_vxy_m_cpp_b.f90 calc_vz_m_cpp_b.f90 calc_dxyz_m_cpp_b.f90 calc_temp_melt_bas_m_cpp_b.f90 output_m_cpp_b.f90 metric_m_cpp_b.f90 topograd_m_cpp_b.f90 calc_temp_m_cpp_b.f90 calc_temp_enth_m_cpp_b.f90 calc_gia_m_cpp_b.f90 calc_thk_m_cpp_b.f90 calc_bas_melt_m_cpp_b.f90 calc_thk_water_bas_m_cpp_b.f90 globals_cpp_b.f90 sico_init_m_cpp_b.f90: sico_specs.h numCore_cpp.f90 sico_maths_m_stub_cpp.f90 error_m_cpp.f90 sico_variables_m_cpp.f90 ice_material_properties_m_cpp.f90 ctrl_m_cpp.f90 enth_temp_omega_m_cpp.f90 stereo_proj_m_cpp.f90 nc_check_m_stub_cpp.f90 netcdf_stub_cpp.f90 read_m_cpp.f90 mask_update_sea_level_m_cpp.f90 pdd_m_cpp.f90 boundary_m_cpp.f90 init_temp_water_age_m_cpp.f90 calc_enhance_m_cpp.f90 flag_update_gf_gl_cf_m_cpp.f90 calc_vxy_m_cpp.f90 calc_vz_m_cpp.f90 calc_dxyz_m_cpp.f90 calc_temp_melt_bas_m_cpp.f90 output_m_cpp.f90 metric_m_cpp.f90 topograd_m_cpp.f90 calc_temp_m_cpp.f90 calc_temp_enth_m_cpp.f90 calc_gia_m_cpp.f90 calc_thk_m_cpp.f90 calc_bas_melt_m_cpp.f90 calc_thk_water_bas_m_cpp.f90 globals_cpp.f90 sico_init_m_cpp.f90
-	tapenade -b -ext "subroutines/tapenade/external_modules" -head "sicopolis_tapenade(fc)/(h)" numCore_cpp.f90 sico_maths_m_stub_cpp.f90 error_m_cpp.f90 sico_variables_m_cpp.f90 ice_material_properties_m_cpp.f90 ctrl_m_cpp.f90 enth_temp_omega_m_cpp.f90 stereo_proj_m_cpp.f90 nc_check_m_stub_cpp.f90 netcdf_stub_cpp.f90 read_m_cpp.f90 mask_update_sea_level_m_cpp.f90 pdd_m_cpp.f90 boundary_m_cpp.f90 init_temp_water_age_m_cpp.f90 calc_enhance_m_cpp.f90 flag_update_gf_gl_cf_m_cpp.f90 calc_vxy_m_cpp.f90 calc_vz_m_cpp.f90 calc_dxyz_m_cpp.f90 calc_temp_melt_bas_m_cpp.f90 output_m_cpp.f90 metric_m_cpp.f90 topograd_m_cpp.f90 calc_temp_m_cpp.f90 calc_temp_enth_m_cpp.f90 calc_gia_m_cpp.f90 calc_thk_m_cpp.f90 calc_bas_melt_m_cpp.f90 calc_thk_water_bas_m_cpp.f90 globals_cpp.f90 sico_init_m_cpp.f90
+numCore_cpp_b.f90 sico_variables_m_cpp_b.f90 ice_material_properties_m_cpp_b.f90 ctrl_m_cpp_b.f90 enth_temp_omega_m_cpp_b.f90 stereo_proj_m_cpp_b.f90 read_m_cpp_b.f90 mask_update_sea_level_m_cpp_b.f90 pdd_m_cpp_b.f90 boundary_m_cpp_b.f90 init_temp_water_age_m_cpp_b.f90 calc_enhance_m_cpp_b.f90 flag_update_gf_gl_cf_m_cpp_b.f90 calc_vxy_m_cpp_b.f90 calc_vz_m_cpp_b.f90 calc_dxyz_m_cpp_b.f90 calc_temp_melt_bas_m_cpp_b.f90 output_m_cpp_b.f90 metric_m_cpp_b.f90 topograd_m_cpp_b.f90 calc_temp_m_cpp_b.f90 calc_temp_enth_m_cpp_b.f90 calc_gia_m_cpp_b.f90 calc_thk_m_cpp_b.f90 calc_bas_melt_m_cpp_b.f90 calc_thk_water_bas_m_cpp_b.f90 globals_cpp_b.f90 sico_init_m_cpp_b.f90 sico_main_loop_m_cpp_b.f90 sico_end_m_cpp_b.f90: sico_specs.h numCore_cpp.f90 sico_maths_m_stub_cpp.f90 error_m_cpp.f90 sico_variables_m_cpp.f90 ice_material_properties_m_cpp.f90 ctrl_m_cpp.f90 enth_temp_omega_m_cpp.f90 stereo_proj_m_cpp.f90 nc_check_m_stub_cpp.f90 netcdf_stub_cpp.f90 read_m_cpp.f90 mask_update_sea_level_m_cpp.f90 pdd_m_cpp.f90 boundary_m_cpp.f90 init_temp_water_age_m_cpp.f90 calc_enhance_m_cpp.f90 flag_update_gf_gl_cf_m_cpp.f90 calc_vxy_m_cpp.f90 calc_vz_m_cpp.f90 calc_dxyz_m_cpp.f90 calc_temp_melt_bas_m_cpp.f90 output_m_cpp.f90 metric_m_cpp.f90 topograd_m_cpp.f90 calc_temp_m_cpp.f90 calc_temp_enth_m_cpp.f90 calc_gia_m_cpp.f90 calc_thk_m_cpp.f90 calc_bas_melt_m_cpp.f90 calc_thk_water_bas_m_cpp.f90 globals_cpp.f90 sico_init_m_cpp.f90 sico_main_loop_m_cpp.f90 sico_end_m_cpp.f90
+	tapenade -b -ext "subroutines/tapenade/external_modules" -head "sicopolis_tapenade(fc)/(h)" numCore_cpp.f90 sico_maths_m_stub_cpp.f90 error_m_cpp.f90 sico_variables_m_cpp.f90 ice_material_properties_m_cpp.f90 ctrl_m_cpp.f90 enth_temp_omega_m_cpp.f90 stereo_proj_m_cpp.f90 nc_check_m_stub_cpp.f90 netcdf_stub_cpp.f90 read_m_cpp.f90 mask_update_sea_level_m_cpp.f90 pdd_m_cpp.f90 boundary_m_cpp.f90 init_temp_water_age_m_cpp.f90 calc_enhance_m_cpp.f90 flag_update_gf_gl_cf_m_cpp.f90 calc_vxy_m_cpp.f90 calc_vz_m_cpp.f90 calc_dxyz_m_cpp.f90 calc_temp_melt_bas_m_cpp.f90 output_m_cpp.f90 metric_m_cpp.f90 topograd_m_cpp.f90 calc_temp_m_cpp.f90 calc_temp_enth_m_cpp.f90 calc_gia_m_cpp.f90 calc_thk_m_cpp.f90 calc_bas_melt_m_cpp.f90 calc_thk_water_bas_m_cpp.f90 globals_cpp.f90 sico_init_m_cpp.f90 sico_main_loop_m_cpp.f90 sico_end_m_cpp.f90
 
 numCore.f90: numCore.F90
 	$(CPPCMD) > numcore_temp.F90

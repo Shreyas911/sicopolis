@@ -290,17 +290,9 @@
 #include "subroutines/xyz/sico_init_m.F90"
 #endif
 
-!@ begin tapenade_extract @
-
-#if defined(ALLOW_TAPENADE) /* Tapenade */
-#include "subroutines/tapenade/sico_main_loop_iter_m.F90"
-#include "subroutines/tapenade/sico_main_loop_wrapper_m.F90"
-#endif /* Tapenade */
-
 #include "subroutines/general/sico_main_loop_m.F90"
 #include "subroutines/general/sico_end_m.F90"
 
-!@ end tapenade_extract @
 
 #if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE)) /* Tapenade */
 #include "subroutines/tapenade/tapenade_m.F90"
