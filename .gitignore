@@ -23,6 +23,10 @@ my_*
 /src/*.f90
 /src/*.F90
 /src/*.msg
+/src/html/
+/src/*.gcda
+/src/*.gcno
+/src/*.info
 
 /src/subroutines/xyz/*
 !/src/subroutines/xyz/*/
