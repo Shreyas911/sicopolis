@@ -157,6 +157,9 @@ call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
        form="FORMATTED", status="REPLACE")
    open(98, file='CostVals_'//trim(RUNNAME)//'.dat',&
        form="FORMATTED", status="REPLACE")
+
+!@ python_automated_grdchk IO begin @
+
    
    !-------- Loop over points
    do p = 1, points
@@ -189,10 +192,14 @@ call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
           !         subroutine print_output()
           !         store original value that will be perturbed
           !         and then perturb it (first in +dir then -dir) 
+
+                
+            !@ python_automated_grdchk @
+
  
             ! -- H_c
-            orig_val = H(j,i)
-            H(j,i) = orig_val * perturbation 
+            !orig_val = H(j,i)
+            !H(j,i) = orig_val * perturbation 
 
             ! -- mean annual temp 
             !orig_val = temp_ma_present(j,i)
@@ -256,12 +263,14 @@ call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
           write(98, fmt='(f40.20)') fc_collected(2)
           write(98, fmt='(f40.20)') fc_collected(3)
           write(98, fmt='(a)') '----------------------------------'
+          
+          !@ python_automated_grdchk IO write @
     
    end do ! (close loop over points)
   
    close(unit=99)
    close(unit=98)
-   
+   !@ python_automated_grdchk IO end @   
    end subroutine grdchk_main
 
 !!-------------------------------------------------------------------------------
