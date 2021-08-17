@@ -112,6 +112,7 @@ driveradjoint:${LIBLIS} \
 	${LIB_NETCDF_F90} \
 	sico_specs.h \
 	pop_push/adStack.o \
+	pop_push/adBinomial.o \
 	error_m_cpp.o \
 	sico_types_m_cpp.o \
 	sico_maths_m_grad_cpp.o \
@@ -156,6 +157,7 @@ driveradjoint:${LIBLIS} \
 		globals_cpp.o \
 		sico_maths_m_grad_cpp.o \
 		pop_push/adStack.o \
+		pop_push/adBinomial.o \
 		globals_cpp_b.o \
 		sico_variables_m_cpp_b.o \
 		ice_material_properties_m_cpp_b.o \
