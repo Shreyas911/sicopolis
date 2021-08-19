@@ -1,4 +1,5 @@
 import os
+import sys
 import subprocess
 
 def compile_code(mode, header, domain, 
@@ -176,10 +177,9 @@ def setup_adjoint(ind_vars, header, domain,
 									
 				if ('CALL SICO_INIT_B' in line):
 
-					for ind_var in ind_vars:
+					for var_index, ind_var in enumerate(ind_vars, start = 1):
 
-						var_index = ind_vars.index(ind_var)
-						unit = [f'{var_index+1}000', f'{var_index+1}001']
+						unit = [f'{var_index}000', f'{var_index}001']
 
 						line = f'   open({unit[0]}, file=\'AdjointVals_{ind_var}_\'//trim(RUNNAME)//\'_limited.dat\',&\n' \
 							+ f'       form="FORMATTED", status="REPLACE")\n' \
@@ -211,7 +211,11 @@ def setup_adjoint(ind_vars, header, domain,
 		print("Some problem with adjoint setup.")
 
 if __name__ == "__main__":
-	
+
+	if (len(sys.argv) != 5) :
+		raise Exception('Insufficient number of command line arguments.')
+
+
 	try:
 	
 		# Change the current working Directory
@@ -219,15 +223,19 @@ if __name__ == "__main__":
 		print("Directory changed to ", os.getcwd())
 	
 	except OSError:
+
 		print("Can't change the Current Working Directory")
 
-	# setup_grdchk('H', 'v5_grl20_ss25ka', 'grl')
-	# compile_code('grdchk', 'v5_grl20_ss25ka', 'grl')
-	# run_executable('grdchk')
+	header_file = sys.argv[1]
+	domain = sys.argv[2]
+	dep_var = sys.argv[3]
+	ind_var = sys.argv[4]
 
-	ind_vars_str = 'H' 
-	compile_code('adjoint', 'v5_grl20_ss25ka', 'grl', dep_var = 'fc', ind_vars = ind_vars_str)
-	setup_adjoint(ind_vars_str.split(','), 'v5_grl20_ss25ka', 'grl')
-	compile_code('adjoint', 'v5_grl20_ss25ka', 'grl', clean = False, dep_var = 'fc', ind_vars = ind_vars_str)
+	setup_grdchk(ind_var, header_file, domain)
+	compile_code('grdchk', header_file, domain)
+	run_executable('grdchk')
+
+	compile_code('adjoint', header_file, domain, dep_var = dep_var, ind_vars = ind_var)
+	setup_adjoint([ind_var], header_file, domain)
+	compile_code('adjoint', header_file, domain, clean = False, dep_var = dep_var, ind_vars = ind_var)
 	run_executable('adjoint')
-	
