@@ -2054,7 +2054,19 @@ call read_2d_input(filename_with_path, &
                    ch_var_name='GHF', n_var_type=1, n_ascii_header=6, &
                    field2d_r=field2d_aux)
 
+#if !defined(ALLOW_TAPENADE)
+
 q_geo = field2d_aux *1.0e-03_dp   ! mW/m2 -> W/m2
+
+#else
+
+do i=0, IMAX
+do j=0, JMAX
+   q_geo(j,i) = field2d_aux(j,i) *1.0e-03_dp   ! mW/m2 -> W/m2
+end do
+end do
+
+#endif
 
 #endif
 
