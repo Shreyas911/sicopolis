@@ -233,9 +233,15 @@ if __name__ == "__main__":
 
 	setup_grdchk(ind_var, header_file, domain)
 	compile_code('grdchk', header_file, domain)
+	print(f'grdchk compilation complete for {header_file}.')
+
 	run_executable('grdchk')
+	print(f'grdchk execution complete for {header_file}.')
 
 	compile_code('adjoint', header_file, domain, dep_var = dep_var, ind_vars = ind_var)
 	setup_adjoint([ind_var], header_file, domain)
 	compile_code('adjoint', header_file, domain, clean = False, dep_var = dep_var, ind_vars = ind_var)
+	print(f'adjoint compilation complete for {header_file}.')
+	
 	run_executable('adjoint')
+	print(f'adjoint execution complete for {header_file}.')
