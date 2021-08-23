@@ -5,7 +5,7 @@ cd ../src
 LISDIR="/lis-2.0.30/installation"
 NETCDF_FORTRAN_DIR="/usr"
 @test "verify that the adjoint code is compiling for GRL" {
-	run make -f MakefileTapenade clean; make -f MakefileTapenade driveradjoint HEADER=v5_grl20_ss25ka DOMAIN_SHORT=grl LISDIR=${LISDIR} NETCDF_FORTRAN_DIR=${NETCDF_FORTRAN_DIR} TRAVIS_CI=yes;
+	run make -f MakefileTapenade clean; make -f MakefileTapenade driveradjoint HEADER=v5_grl20_ss25ka DOMAIN_SHORT=grl DEP_VAR=fc IND_VARS=H LISDIR=${LISDIR} NETCDF_FORTRAN_DIR=${NETCDF_FORTRAN_DIR} TRAVIS_CI=yes;
 	[ "$status" -eq 0 ]
 }
 
@@ -33,7 +33,7 @@ NETCDF_FORTRAN_DIR="/usr"
 #}
 
 @test "verify that the adjoint code is compiling for ANT" {
-        run make -f MakefileTapenade clean; make -f MakefileTapenade driveradjoint HEADER=v5_ant64_b2_future09_ctrl DOMAIN_SHORT=ant LISDIR=${LISDIR} NETCDF_FORTRAN_DIR=${NETCDF_FORTRAN_DIR} TRAVIS_CI=yes;
+        run make -f MakefileTapenade clean; make -f MakefileTapenade driveradjoint HEADER=v5_ant64_b2_future09_ctrl DOMAIN_SHORT=ant DEP_VAR=fc IND_VARS=H LISDIR=${LISDIR} NETCDF_FORTRAN_DIR=${NETCDF_FORTRAN_DIR} TRAVIS_CI=yes;
         [ "$status" -eq 0 ]
 }
 
