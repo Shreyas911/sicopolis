@@ -1,6 +1,7 @@
 import os
 import sys
 import subprocess
+import argparse
 
 def compile_code(mode, header, domain, 
 	clean = True,
@@ -94,6 +95,7 @@ def copy_tapenade_m_template(template_file = '../test_ad/tapenade_m_adjoint_temp
 		print(error)			
 	
 def setup_grdchk(ind_var, header, domain, 
+	perturbation = 1.e-3,
 	tapenade_m_file = 'subroutines/tapenade/tapenade_m.F90',
 	lisdir = '/home/shreyas/lis-1.4.43/installation', 
 	netcdf_fortran_dir = '/opt/ohpc/pub/libs/gnu/openmpi/netcdf-fortran/4.4.4', 
@@ -113,15 +115,21 @@ def setup_grdchk(ind_var, header, domain,
 					line = line \
 						+ f'            orig_val = {ind_var}(j,i)\n' \
 						+ f'            {ind_var}(j,i) = orig_val * perturbation\n'
+	
 				if ('!@ python_automated_grdchk IO begin @' in line):
 					line = line \
 						+ f'   open({unit}, ' \
-						+ f'file=\'GradientVals_{ind_var}_\'//trim(RUNNAME)//\'.dat\',&' \
+						+ f'file=\'GradientVals_{ind_var}_{perturbation:.2E}_\'//trim(RUNNAME)//\'.dat\',&' \
 						+ f'\n       form="FORMATTED", status="REPLACE")' 
+
 				if ('!@ python_automated_grdchk IO write @' in line):
 					line = line + f'          write({unit}, fmt=\'(f40.20)\') gfd\n'
+
 				if ('!@ python_automated_grdchk IO end @' in line):
 					line = line + f'   close(unit={unit})\n'
+
+				if ('real(dp)                          :: orig_val, perturb_val' in line):
+					line = f'   real(dp)                          :: orig_val, perturb_val = {perturbation}\n'
 
 				new_file_lines.append(line)
 	
@@ -131,8 +139,44 @@ def setup_grdchk(ind_var, header, domain,
 	except FileNotFoundError :
 		print(f'{tapenade_m_file} not found.')
 	
-	except :
+	except Exception as err:
 		print("Some problem with grdchk setup.")	
+		print(err)
+
+def setup_binomial_checkpointing(status = False, number_of_steps = 20, 
+	loop_file = 'subroutines/general/sico_main_loop_m.F90'):
+ 
+	try:
+
+		new_file_lines = []
+
+		with open(loop_file, "r") as f:	
+
+			file_lines = f.readlines()
+
+			for line in file_lines:
+				if status is True:
+					if('BINOMIAL-CKP' in line):
+						line = f'  !$AD BINOMIAL-CKP itercount_max+1 {number_of_steps} 1\n'
+				elif status is False:
+					if('BINOMIAL-CKP' in line):
+						line = f'  !$NO AD BINOMIAL-CKP itercount_max+1 {number_of_steps} 1\n'
+					
+				else:
+					raise ValueError('Incorrect status for checkpointing.')
+		
+				new_file_lines.append(line)
+			
+		with open(loop_file, "w") as f:
+			f.write(''.join(new_file_lines))
+
+	except FileNotFoundError :
+		print(f'{loop_file} not found.')
+	
+	except Exception as err:
+		print("Some problem with binomial checkpointing setup.")	
+		print(err)
+
 
 def setup_adjoint(ind_vars, header, domain, 
 	numCore_cpp_b_file = 'numCore_cpp_b.f90',
@@ -212,10 +256,6 @@ def setup_adjoint(ind_vars, header, domain,
 
 if __name__ == "__main__":
 
-	if (len(sys.argv) != 5) :
-		raise Exception('Insufficient number of command line arguments.')
-
-
 	try:
 	
 		# Change the current working Directory
@@ -226,22 +266,37 @@ if __name__ == "__main__":
 
 		print("Can't change the Current Working Directory")
 
-	header_file = sys.argv[1]
-	domain = sys.argv[2]
-	dep_var = sys.argv[3]
-	ind_var = sys.argv[4]
+	# python -head v5_ant64_b2_future09_ctrl -dom ant -dv fc -iv H 
+	parser = argparse.ArgumentParser()
 
-	setup_grdchk(ind_var, header_file, domain)
-	compile_code('grdchk', header_file, domain)
-	print(f'grdchk compilation complete for {header_file}.')
+	parser.add_argument("-head", "--header", help="name of header file", type=str, required=True)
+	parser.add_argument("-dom", "--domain", help="short name of domain, either grl or ant", type = str, required=True)
+	parser.add_argument("-dv", "--dep_var", help="name of dependent variable", type=str, required=True)
+	parser.add_argument("-iv", "--ind_var", help="name of independent variable", type=str, required=True)
+	parser.add_argument("-delta", "--perturbation", help="value of perturbation for grdchk", type=float)
+	parser.add_argument("-ckp", "--checkpoint", help="number of steps in checkpointing", type=int)
+	args = parser.parse_args()
+	
+	if args.perturbation:
+		setup_grdchk(args.ind_var, args.header, args.domain, perturbation = args.perturbation)
+	else:
+		setup_grdchk(args.ind_var, args.header, args.domain)
+
+	compile_code('grdchk', args.header, args.domain)
+	print(f'grdchk compilation complete for {args.header}.')
 
 	run_executable('grdchk')
-	print(f'grdchk execution complete for {header_file}.')
+	print(f'grdchk execution complete for {args.header}.')
 
-	compile_code('adjoint', header_file, domain, dep_var = dep_var, ind_vars = ind_var)
-	setup_adjoint([ind_var], header_file, domain)
-	compile_code('adjoint', header_file, domain, clean = False, dep_var = dep_var, ind_vars = ind_var)
-	print(f'adjoint compilation complete for {header_file}.')
+	if args.checkpoint:	
+		setup_binomial_checkpointing(status = True, number_of_steps = args.checkpoint)
+	else: 
+		setup_binomial_checkpointing(status = False)
+
+	compile_code('adjoint', args.header, args.domain, dep_var = args.dep_var, ind_vars = args.ind_var)
+	setup_adjoint([args.ind_var], args.header, args.domain)
+	compile_code('adjoint', args.header, args.domain, clean = False, dep_var = args.dep_var, ind_vars = args.ind_var)
+	print(f'adjoint compilation complete for {args.header}.')
 	
 	run_executable('adjoint')
-	print(f'adjoint execution complete for {header_file}.')
+	print(f'adjoint execution complete for {args.header}.')
