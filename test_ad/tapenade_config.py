@@ -15,8 +15,7 @@ def compile_code(mode, header, domain,
 		
 		if(clean is True):
 			process = subprocess.run (
-				['make', '-f', 'MakefileTapenade', 'clean'], 
-				capture_output = True)
+				['make', '-f', 'MakefileTapenade', 'clean'])
 
 		process = subprocess.run(
 			f'make -f MakefileTapenade '
@@ -26,7 +25,6 @@ def compile_code(mode, header, domain,
 			f'DEP_VAR={dep_var} '
 			f'IND_VARS={ind_vars} '
 			f'{travis_ci}', 
-			capture_output = True, 
 			shell = True, 
 			check = True)
 
@@ -48,7 +46,6 @@ def run_executable(mode):
 
 		process = subprocess.run(
 			f'./driver{mode}',
-			capture_output = True, 
 			shell = True, 
 			check = True)
 
@@ -86,8 +83,7 @@ def copy_tapenade_m_template(template_file = '../test_ad/tapenade_m_adjoint_temp
 
 	try :
 		process = subprocess.run (
-			['cp', template_file, destination_file],
-			capture_output = True)
+			['cp', template_file, destination_file])
 
 	except subprocess.CalledProcessError as error :
 		print("Some issue with copying template tapenade_m file")
