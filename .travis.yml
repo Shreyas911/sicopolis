@@ -9,7 +9,7 @@ before_install:
         - export DOCKER_RUN="docker run -v ${TRAVIS_BUILD_DIR}:/home/test/ shreyas911/sitado:v1.5"
 
 script:
-        - ${DOCKER_RUN} /bin/bash -l -c "cd /home/test/test_ad && cp sico_specs_v5_grl20_ss25ka.h ../runs/headers/ && cp sico_specs_v5_ant64_b2_future09_ctrl.h ../runs/headers/ && cp -r pop_push ../src/ && ./test.sh"
+        - ${DOCKER_RUN} /bin/bash -l -c "cd /home/test/test_ad && cp sico_specs_v5_ant40_ss25ka.h ../runs/headers && cp sico_specs_v5_grl20_ss25ka.h ../runs/headers/ && cp sico_specs_v5_ant64_b2_future09_ctrl.h ../runs/headers/ && cp -r pop_push ../src/ && pytest tests.py"
 
 notifications:
         email: 

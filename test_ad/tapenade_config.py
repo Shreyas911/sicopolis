@@ -6,8 +6,6 @@ import numpy as np
 
 def compile_code(mode, header, domain, 
 	clean = True,
-	lisdir = '/home/shreyas/lis-1.4.43/installation', 
-	netcdf_fortran_dir = '/opt/ohpc/pub/libs/gnu/openmpi/netcdf-fortran/4.4.4', 
 	travis_ci ='', dep_var=None, ind_vars = None):
 
 	if (mode == 'adjoint' and (dep_var is None or ind_vars is None)):
@@ -25,8 +23,6 @@ def compile_code(mode, header, domain,
 			f'driver{mode} '
 			f'HEADER={header} '
 			f'DOMAIN_SHORT={domain} '
-			f'LISDIR={lisdir} '
-			f'NETCDF_FORTRAN_DIR={netcdf_fortran_dir} '
 			f'DEP_VAR={dep_var} '
 			f'IND_VARS={ind_vars} '
 			f'{travis_ci}', 
@@ -40,12 +36,11 @@ def compile_code(mode, header, domain,
 		print(f'MODE-{mode}')
 		print(f'HEADER-{header}')
 		print(f'DOMAIN-{domain}')
-		print(f'LISDIR-{lisdir}')
-		print(f'NETCDF_DIR-{netcdf_fortran_dir}')
 		print(f'DEP_VAR-{dep_var}')
 		print(f'IND_VARS-{ind_vars}')
 		print(f'Error with compilation:')
 		print(error)
+		sys.exit(1)
 
 def run_executable(mode):
 
@@ -63,6 +58,7 @@ def run_executable(mode):
 		print(f'MODE-{mode}')
 		print(f'Error with running executable:')
 		print(error)
+		sys.exit(1)
 
 def get_imax_jmax(specs_file='sico_specs.h'):
 	
@@ -79,9 +75,11 @@ def get_imax_jmax(specs_file='sico_specs.h'):
 
 	except FileNotFoundError :
 		print(f'{specs_file} does not exist')
+		sys.exit(1)
 
 	except :
 		print('Some error in getting IMAX and JMAX.')
+		sys.exit(1)
 
 def copy_tapenade_m_template(template_file = '../test_ad/tapenade_m_adjoint_template.F90', 
 			destination_file = 'subroutines/tapenade/tapenade_m.F90'):
@@ -94,13 +92,12 @@ def copy_tapenade_m_template(template_file = '../test_ad/tapenade_m_adjoint_temp
 	except subprocess.CalledProcessError as error :
 		print("Some issue with copying template tapenade_m file")
 		print(error)			
+		sys.exit(1)
 	
 def setup_grdchk(ind_var, header, domain, 
 	perturbation = 1.e-3,
 	tapenade_m_file = 'subroutines/tapenade/tapenade_m.F90',
-	lisdir = '/home/shreyas/lis-1.4.43/installation', 
-	netcdf_fortran_dir = '/opt/ohpc/pub/libs/gnu/openmpi/netcdf-fortran/4.4.4', 
-	travis_ci ='', unit = '9999'):
+	unit = '9999'):
 
 	copy_tapenade_m_template()
 
@@ -139,10 +136,12 @@ def setup_grdchk(ind_var, header, domain,
 
 	except FileNotFoundError :
 		print(f'{tapenade_m_file} not found.')
-	
+		sys.exit(1)
+
 	except Exception as err:
 		print("Some problem with grdchk setup.")	
 		print(err)
+		sys.exit(1)
 
 def setup_binomial_checkpointing(status = False, number_of_steps = 20, 
 	loop_file = 'subroutines/general/sico_main_loop_m.F90'):
@@ -173,17 +172,15 @@ def setup_binomial_checkpointing(status = False, number_of_steps = 20,
 
 	except FileNotFoundError :
 		print(f'{loop_file} not found.')
+		sys.exit(1)
 	
 	except Exception as err:
 		print("Some problem with binomial checkpointing setup.")	
 		print(err)
-
+		sys.exit(1)
 
 def setup_adjoint(ind_vars, header, domain, 
-	numCore_cpp_b_file = 'numCore_cpp_b.f90',
-	lisdir = '/home/shreyas/lis-1.4.43/installation', 
-	netcdf_fortran_dir = '/opt/ohpc/pub/libs/gnu/openmpi/netcdf-fortran/4.4.4', 
-	travis_ci =''):
+	numCore_cpp_b_file = 'numCore_cpp_b.f90'):
 	
 	if(domain == 'grl' or domain == 'ant'):
 		pass
@@ -251,9 +248,10 @@ def setup_adjoint(ind_vars, header, domain,
 
 	except FileNotFoundError :
 		print(f'{numCore_cpp_b_file} not found.')
-
+		sys.exit(1)
 	except :
 		print("Some problem with adjoint setup.")
+		sys.exit(1)
 
 def validate_FD_AD(grdchk_file, ad_file, tolerance = 0.1):
 	grdchk_data = np.loadtxt(grdchk_file, dtype = float)
@@ -274,9 +272,8 @@ if __name__ == "__main__":
 		print("Directory changed to ", os.getcwd())
 	
 	except OSError:
-
 		print("Can't change the Current Working Directory")
-
+		sys.exit(1)
 	
 	parser = argparse.ArgumentParser()
 
@@ -293,8 +290,12 @@ if __name__ == "__main__":
 		setup_grdchk(args.ind_var, args.header, args.domain, perturbation = args.perturbation)
 	else:
 		setup_grdchk(args.ind_var, args.header, args.domain)
+	
+	if args.travis:
+		compile_code('grdchk', args.header, args.domain, travis_ci='TRAVIS_CI=yes')
+	else:
+		compile_code('grdchk', args.header, args.domain)
 
-	compile_code('grdchk', args.header, args.domain)
 	print(f'grdchk compilation complete for {args.header}.')
 
 	run_executable('grdchk')
@@ -305,9 +306,18 @@ if __name__ == "__main__":
 	else: 
 		setup_binomial_checkpointing(status = False)
 	
-	compile_code('adjoint', args.header, args.domain, dep_var = args.dep_var, ind_vars = args.ind_var)
+	if args.travis:
+		compile_code('adjoint', args.header, args.domain, dep_var = args.dep_var, ind_vars = args.ind_var, travis_ci='TRAVIS_CI=yes')
+	else:
+		compile_code('adjoint', args.header, args.domain, dep_var = args.dep_var, ind_vars = args.ind_var)
+
 	setup_adjoint([args.ind_var], args.header, args.domain)
-	compile_code('adjoint', args.header, args.domain, clean = False, dep_var = args.dep_var, ind_vars = args.ind_var)
+
+	if args.travis:
+		compile_code('adjoint', args.header, args.domain, clean = False, dep_var = args.dep_var, ind_vars = args.ind_var, travis_ci='TRAVIS_CI=yes')
+	else:
+		compile_code('adjoint', args.header, args.domain, clean = False, dep_var = args.dep_var, ind_vars = args.ind_var)
+
 	print(f'adjoint compilation complete for {args.header}.')
 	
 	run_executable('adjoint')
