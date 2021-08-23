@@ -2,6 +2,7 @@ import os
 import sys
 import subprocess
 import argparse
+import numpy as np
 
 def compile_code(mode, header, domain, 
 	clean = True,
@@ -254,6 +255,16 @@ def setup_adjoint(ind_vars, header, domain,
 	except :
 		print("Some problem with adjoint setup.")
 
+def validate_FD_AD(grdchk_file, ad_file, tolerance = 0.1):
+	grdchk_data = np.loadtxt(grdchk_file, dtype = float)
+	ad_data = np.loadtxt(ad_file, dtype = float)
+	
+	if(np.max(np.abs(ad_data/grdchk_data-1)) >= tolerance):
+		raise Exception("Validation failed.")
+		sys.exit(1)
+	else:
+		print("Validated successfully.")
+
 if __name__ == "__main__":
 
 	try:
@@ -266,15 +277,16 @@ if __name__ == "__main__":
 
 		print("Can't change the Current Working Directory")
 
-	# python -head v5_ant64_b2_future09_ctrl -dom ant -dv fc -iv H 
+	
 	parser = argparse.ArgumentParser()
 
 	parser.add_argument("-head", "--header", help="name of header file", type=str, required=True)
 	parser.add_argument("-dom", "--domain", help="short name of domain, either grl or ant", type = str, required=True)
 	parser.add_argument("-dv", "--dep_var", help="name of dependent variable", type=str, required=True)
 	parser.add_argument("-iv", "--ind_var", help="name of independent variable", type=str, required=True)
-	parser.add_argument("-delta", "--perturbation", help="value of perturbation for grdchk", type=float)
+	parser.add_argument("-delta", "--perturbation", help="value of perturbation for grdchk", type=float, required=True)
 	parser.add_argument("-ckp", "--checkpoint", help="number of steps in checkpointing", type=int)
+	parser.add_argument("--travis", help="travis setup", action="store_true")
 	args = parser.parse_args()
 	
 	if args.perturbation:
@@ -292,7 +304,7 @@ if __name__ == "__main__":
 		setup_binomial_checkpointing(status = True, number_of_steps = args.checkpoint)
 	else: 
 		setup_binomial_checkpointing(status = False)
-
+	
 	compile_code('adjoint', args.header, args.domain, dep_var = args.dep_var, ind_vars = args.ind_var)
 	setup_adjoint([args.ind_var], args.header, args.domain)
 	compile_code('adjoint', args.header, args.domain, clean = False, dep_var = args.dep_var, ind_vars = args.ind_var)
@@ -300,3 +312,5 @@ if __name__ == "__main__":
 	
 	run_executable('adjoint')
 	print(f'adjoint execution complete for {args.header}.')
+	
+	validate_FD_AD(f'GradientVals_{args.ind_var}_{args.perturbation:.2E}_{args.header}.dat', f'AdjointVals_{args.ind_var}_{args.header}_limited.dat')

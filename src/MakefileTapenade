@@ -19,6 +19,9 @@ endif
 
 ifndef LISDIR
 LISDIR=/home/shreyas/lis-1.4.43/installation
+ifdef TRAVIS_CI
+LISDIR=/lis-2.0.30/installation
+endif
 endif
 
 ifdef LISDIR
@@ -29,6 +32,9 @@ endif
 
 ifndef NETCDF_FORTRAN_DIR
 NETCDF_FORTRAN_DIR=/opt/ohpc/pub/libs/gnu/openmpi/netcdf-fortran/4.4.4
+ifdef TRAVIS_CI
+NETCDF_FORTRAN_DIR=/usr
+endif
 endif
 
 ifdef NETCDF_FORTRAN_DIR
