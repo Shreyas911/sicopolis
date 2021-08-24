@@ -74,8 +74,38 @@ def get_imax_jmax(specs_file='sico_specs.h'):
 		print(f'{specs_file} does not exist')
 		sys.exit(1)
 
-	except :
+	except Exception as err :
 		print('Some error in getting IMAX and JMAX.')
+		print(err)
+		sys.exit(1)
+
+def get_imax_jmax_kcmax_ktmax(specs_file='sico_specs.h'):
+	
+	try :
+	
+		with open(specs_file) as f:
+			file_lines = f.readlines()
+			for line in file_lines:
+				if ('#define IMAX' in line):
+					IMAX = [int(s) for s in line.split() if s.isdigit()]
+				elif ('#define JMAX' in line):
+					JMAX = [int(s) for s in line.split() if s.isdigit()]
+				elif ('#define KCMAX' in line):
+					KCMAX = [int(s) for s in line.split() if s.isdigit()]
+				elif ('#define KTMAX' in line):
+					KTMAX = [int(s) for s in line.split() if s.isdigit()]
+				else:
+					pass
+
+		return IMAX[0], JMAX[0], KCMAX[0], KTMAX[0]
+
+	except FileNotFoundError :
+		print(f'{specs_file} does not exist')
+		sys.exit(1)
+
+	except Exception as err :
+		print('Some error in getting IMAX, JMAX, KCMAX, KTMAX.')
+		print(err)
 		sys.exit(1)
 
 def copy_tapenade_m_template(template_file = '../test_ad/tapenade_m_adjoint_template.F90', 
@@ -91,11 +121,21 @@ def copy_tapenade_m_template(template_file = '../test_ad/tapenade_m_adjoint_temp
 		sys.exit(1)
 	
 def setup_grdchk(ind_var, header, domain, 
+	dimension = 2,
+	z_co_ord = None,
 	perturbation = 1.e-3,
 	tapenade_m_file = 'subroutines/tapenade/tapenade_m.F90',
 	unit = '9999'):
 
 	copy_tapenade_m_template()
+	
+	if(dimension == 3) :
+		*_, KCMAX, KTMAX = get_imax_jmax_kcmax_ktmax()
+	elif(dimension == 2) :
+		pass
+	else :
+		raise ValueError ("Incorrect dimension in grdchk")
+		sys.exit(1)
 
 	try :
 
@@ -106,10 +146,20 @@ def setup_grdchk(ind_var, header, domain,
 			for line in file_lines:
 	
 				if ('!@ python_automated_grdchk @' in line):
-					line = line \
-						+ f'            orig_val = {ind_var}(j,i)\n' \
-						+ f'            {ind_var}(j,i) = orig_val * perturbation\n'
-	
+					
+					if (dimension == 2) :
+						line = line \
+							+ f'            orig_val = {ind_var}(j,i)\n' \
+							+ f'            {ind_var}(j,i) = orig_val * perturbation\n'
+					elif(dimension == 3 and z_co_ord is not None and z_co_ord < KCMAX):
+						line = line \
+							+ f'            orig_val = {ind_var}({z_co_ord},j,i)\n' \
+							+ f'            {ind_var}({z_co_ord},j,i) = orig_val * perturbation\n'
+
+					else:
+						raise ValueError ("Something wrong with dimension in grdchk")
+						sys.exit(1)
+						
 				if ('!@ python_automated_grdchk IO begin @' in line):
 					line = line \
 						+ f'   open({unit}, ' \
@@ -176,15 +226,16 @@ def setup_binomial_checkpointing(status = False, number_of_steps = 20,
 		sys.exit(1)
 
 def setup_adjoint(ind_vars, header, domain, 
-	numCore_cpp_b_file = 'numCore_cpp_b.f90'):
+	numCore_cpp_b_file = 'numCore_cpp_b.f90',
+	dimensions = [2], 
+	z_co_ords = [None]):
 	
 	if(domain == 'grl' or domain == 'ant'):
 		pass
 	else:
 		raise ValueError('Wrong Domain')
 
-	IMAX, JMAX = get_imax_jmax()
-
+	IMAX, JMAX, KCMAX, KTMAX = get_imax_jmax_kcmax_ktmax()
 	try :
 	
 		with open('numCore_cpp_b.f90') as f:
@@ -193,7 +244,6 @@ def setup_adjoint(ind_vars, header, domain,
 			new_file_lines = []
 			
 			for line in file_lines:
-	
 				if ('CHARACTER(len=100) :: runname' in line):
 					line = line \
 						+ f'   INTEGER(i4b) :: i, j, p\n' \
@@ -212,30 +262,46 @@ def setup_adjoint(ind_vars, header, domain,
 							+ f'   jpoints(p) = int(real({JMAX}/2))\n'
 					
 					line = line + f'   END DO\n'
-									
+												
 				if ('CALL SICO_INIT_B' in line):
-
-					for var_index, ind_var in enumerate(ind_vars, start = 1):
+					for var_index, (ind_var, dimension, z_co_ord) in enumerate(zip(ind_vars, dimensions, z_co_ords), start = 1):
 
 						unit = [f'{var_index}000', f'{var_index}001']
 
-						line = f'   open({unit[0]}, file=\'AdjointVals_{ind_var}_\'//trim(RUNNAME)//\'_limited.dat\',&\n' \
+						line_add = f'   open({unit[0]}, file=\'AdjointVals_{ind_var}_\'//trim(RUNNAME)//\'_limited.dat\',&\n' \
 							+ f'       form="FORMATTED", status="REPLACE")\n' \
 							+ f'   open({unit[1]}, file=\'AdjointVals_{ind_var}_\'//trim(RUNNAME)//\'.dat\',&\n' \
 							+ f'       form="FORMATTED", status="REPLACE")\n' \
 							+ f'   do p = 1, points\n' \
 							+ f'   i = ipoints(p)\n' \
-							+ f'   j = jpoints(p)\n' \
-							+ f'   write ({unit[0]}, *) {ind_var}b(j,i)\n' \
+							+ f'   j = jpoints(p)\n'
+						if (dimension == 2) :
+							line_add = line_add + f'   write ({unit[0]}, *) {ind_var}b(j,i)\n'
+						elif (dimension == 3 and z_co_ord is not None) :
+							line_add = line_add + f'   write ({unit[0]}, *) {ind_var}b({z_co_ord},j,i)\n'
+						else :
+							raise ValueError("Wrong dimensions or z coord for adjoint")
+							sys.exit(1)
+
+						line_add = line_add \
 							+ f'   end do\n' \
 							+ f'   close(unit={unit[0]})\n' \
 							+ f'   do i = 0, {IMAX}\n' \
-							+ f'   do j = 0, {JMAX}\n' \
-							+ f'   write ({unit[1]}, *) {ind_var}b(j,i)\n' \
+							+ f'   do j = 0, {JMAX}\n'
+						if (dimension == 2) :
+							line_add = line_add + f'   write ({unit[1]}, *) {ind_var}b(j,i)\n'
+						elif (dimension == 3 and z_co_ord is not None) :
+							line_add = line_add + f'   write ({unit[1]}, *) {ind_var}b({z_co_ord},j,i)\n'
+						else:
+							raise ValueError("Wrong dimensions or z coord for adjoint")
+							sys.exit(1)
+
+						line_add = line_add \
 							+ f'   end do\n' \
 							+ f'   end do\n' \
-							+ f'   close(unit={unit[1]})\n' \
-							+ line
+							+ f'   close(unit={unit[1]})\n'
+
+						line = line_add + line
 
 				new_file_lines.append(line)
 		
@@ -245,8 +311,9 @@ def setup_adjoint(ind_vars, header, domain,
 	except FileNotFoundError :
 		print(f'{numCore_cpp_b_file} not found.')
 		sys.exit(1)
-	except :
+	except Exception as err:
 		print("Some problem with adjoint setup.")
+		print(err)
 		sys.exit(1)
 
 def validate_FD_AD(grdchk_file, ad_file, tolerance = 0.1):
@@ -280,12 +347,25 @@ if __name__ == "__main__":
 	parser.add_argument("-delta", "--perturbation", help="value of perturbation for grdchk", type=float, required=True)
 	parser.add_argument("-ckp", "--checkpoint", help="number of steps in checkpointing", type=int)
 	parser.add_argument("--travis", help="travis setup", action="store_true")
+	parser.add_argument("-dim", "--dimension", help="2D or 3D variable, default 2D", type=int)
+	parser.add_argument("-z", "--z_co_ord", help="z co-ordinate if 3D variable", type=int)
+
 	args = parser.parse_args()
 	
+	if args.dimension == 3 and args.z_co_ord is None:
+		raise Exception ("Wrong input arguments for dimension")
+		sys.exit(1)
+
 	if args.perturbation:
-		setup_grdchk(args.ind_var, args.header, args.domain, perturbation = args.perturbation)
+		if args.dimension == 3 :
+			setup_grdchk(args.ind_var, args.header, args.domain, perturbation = args.perturbation, dimension = args.dimension, z_co_ord = args.z_co_ord)
+		else :
+			setup_grdchk(args.ind_var, args.header, args.domain, perturbation = args.perturbation)
 	else:
-		setup_grdchk(args.ind_var, args.header, args.domain)
+		if args.dimension == 3 :
+			setup_grdchk(args.ind_var, args.header, args.domain, dimension = args.dimension, z_co_ord = args.z_co_ord)
+		else :
+			setup_grdchk(args.ind_var, args.header, args.domain)
 	
 	if args.travis:
 		compile_code('grdchk', args.header, args.domain, travis_ci='TRAVIS_CI=yes')
@@ -307,7 +387,13 @@ if __name__ == "__main__":
 	else:
 		compile_code('adjoint', args.header, args.domain, dep_var = args.dep_var, ind_vars = args.ind_var)
 
-	setup_adjoint([args.ind_var], args.header, args.domain)
+	if args.dimension == 2: 
+		setup_adjoint([args.ind_var], args.header, args.domain)
+	elif args.dimension == 3 and args.z_co_ord is not None:
+		setup_adjoint([args.ind_var], args.header, args.domain, dimensions = [args.dimension], z_co_ords = [args.z_co_ord])
+	else:
+		raise Exception('Some dimension related error in setting up adjoint.')
+		sys.exit(1)
 
 	if args.travis:
 		compile_code('adjoint', args.header, args.domain, clean = False, dep_var = args.dep_var, ind_vars = args.ind_var, travis_ci='TRAVIS_CI=yes')
