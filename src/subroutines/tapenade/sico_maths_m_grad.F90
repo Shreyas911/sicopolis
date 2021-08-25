@@ -580,11 +580,9 @@ lgs_aT_value = 0.
                     lgs_aT_value, lgs_aT_index, lgs_aT_ptr)
 
 incrbb = 0.
-print *, "incrbb before: ", SUM(ABS(incrbb))
   call sico_lis_solver(nmax, nnz, &
                            lgs_aT_ptr, lgs_aT_index, &
                            lgs_aT_value, lgs_x_valueb, incrbb)
-print *, "incrbb after: ", SUM(ABS(incrbb))
   DO nr=1,nmax
     lgs_b_valueb(nr) = lgs_b_valueb(nr) + incrbb(nr)
   ENDDO
