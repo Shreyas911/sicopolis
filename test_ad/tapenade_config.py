@@ -387,7 +387,7 @@ if __name__ == "__main__":
 	else:
 		compile_code('adjoint', args.header, args.domain, dep_var = args.dep_var, ind_vars = args.ind_var)
 
-	if args.dimension == 2: 
+	if args.dimension == 2 or args.dimension is None: 
 		setup_adjoint([args.ind_var], args.header, args.domain)
 	elif args.dimension == 3 and args.z_co_ord is not None:
 		setup_adjoint([args.ind_var], args.header, args.domain, dimensions = [args.dimension], z_co_ords = [args.z_co_ord])
