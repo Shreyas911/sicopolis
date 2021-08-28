@@ -124,18 +124,13 @@ def setup_grdchk(ind_var, header, domain,
 	dimension = 2,
 	z_co_ord = None,
 	perturbation = 1.e-3,
+	limited_or_full = 'limited',
 	tapenade_m_file = 'subroutines/tapenade/tapenade_m.F90',
 	unit = '9999'):
 
 	copy_tapenade_m_template()
-	
-	if(dimension == 3) :
-		*_, KCMAX, KTMAX = get_imax_jmax_kcmax_ktmax()
-	elif(dimension == 2) :
-		pass
-	else :
-		raise ValueError ("Incorrect dimension in grdchk")
-		sys.exit(1)
+
+	IMAX, JMAX, KCMAX, KTMAX = get_imax_jmax_kcmax_ktmax()
 
 	try :
 
@@ -144,7 +139,21 @@ def setup_grdchk(ind_var, header, domain,
 			file_lines = f.readlines()
 	
 			for line in file_lines:
-	
+
+				if(limited_or_full == 'full'):
+					if('!@ python_automated_grdchk limited_or_full @' in line) :
+						line = f'   do i = 0, {IMAX}\n' \
+							+ f'   do j = 0, {JMAX}\n'
+
+					if('i = ipoints(p)' in line) :
+						line = ''
+					
+					if('j = jpoints(p)' in line) :
+						line = ''	
+			
+					if('close loop over points' in line) : 
+						line = line + '   end do\n'
+					
 				if ('!@ python_automated_grdchk @' in line):
 					
 					if (dimension == 2) :
@@ -163,7 +172,7 @@ def setup_grdchk(ind_var, header, domain,
 				if ('!@ python_automated_grdchk IO begin @' in line):
 					line = line \
 						+ f'   open({unit}, ' \
-						+ f'file=\'GradientVals_{ind_var}_{perturbation:.2E}_\'//trim(RUNNAME)//\'.dat\',&' \
+						+ f'file=\'GradientVals_{ind_var}_{perturbation:.2E}_\'//trim(RUNNAME)//\'_{limited_or_full}.dat\',&' \
 						+ f'\n       form="FORMATTED", status="REPLACE")' 
 
 				if ('!@ python_automated_grdchk IO write @' in line):

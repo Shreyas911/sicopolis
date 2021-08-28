@@ -162,7 +162,7 @@ call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
 
    
    !-------- Loop over points
-   do p = 1, points
+   do p = 1, points !@ python_automated_grdchk limited_or_full @
      i = ipoints(p)
      j = jpoints(p)
 
@@ -250,8 +250,11 @@ call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
         
             ! --------- calculate simple 2-sided finite difference due to
             !           perturbation: fc(+) - fc(-) / 2*espsilon
-            gfd = (fc_collected(2) - fc_collected(3))/(2.d0 * perturb_val * orig_val)
-          
+            if (orig_val .ne. 0) then
+                gfd = (fc_collected(2) - fc_collected(3))/(2.d0 * perturb_val * orig_val)
+            else
+                gfd = 0.0
+            end if          
           end do ! (close perturb loop)
 
           ! -- sanity check
