@@ -107,7 +107,7 @@ contains
                                       dtime_out, dtime_ser
    real(dp)           :: time, time_init, time_end, time_output(100)
    real(dp)           :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
-   real(dp)           :: z_sl, dzsl_dtau, z_mar
+   real(dp)           :: z_mar
    character(len=100) :: runname
    
    !-------- Variable declarations needed for this routine specifically
@@ -166,7 +166,7 @@ contains
                  dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
                  time, time_init, time_end, time_output, &
                  dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-                 z_sl, dzsl_dtau, z_mar, &
+                 z_mar, &
                  ndat2d, ndat3d, n_output, &
                  runname)
 
@@ -219,7 +219,7 @@ contains
                  dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
                  time, time_init, time_end, time_output, &
                  dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-                 z_sl, dzsl_dtau, z_mar, &
+                 z_mar, &
                  ndat2d, ndat3d, n_output, &
                  runname)
           
@@ -304,7 +304,7 @@ contains
   real(dp), dimension(100)                   :: time_output
   real(dp)                                   :: dxi, deta, dzeta_c, &
                                                 dzeta_t, dzeta_r
-  real(dp)                                   :: z_sl, dzsl_dtau, z_mar
+  real(dp)                                   :: z_mar
   character(len=100)                         :: runname
 
   our_rev_mode%arg_store  = .false.
@@ -324,7 +324,7 @@ contains
       dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
       time, time_init, time_end, time_output, &
       dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-      z_sl, dzsl_dtau, z_mar, &
+      z_mar, &
       ndat2d, ndat3d, n_output, &
       runname)
 
@@ -363,8 +363,10 @@ contains
       vx_b_g,vy_b_g,vz_b,vz_m,vx_s_g,vy_s_g,vz_s,&
       flui_ave_sia,h_diff,qx,qy,q_gl_g,q_geo,temp_b,temph_b,Q_bm,Q_b_apl,&
       Q_tld,Q_b_tot,H_w,&
-      accum,runoff,runoff_apl,as_perp,temp_maat,temp_s,am_perp,&
-      am_perp_st,zs_new,zm_new,zb_new,zl_new, &
+      accum,runoff,runoff_apl,as_perp,temp_maat,temp_s, &
+      z_sl, dzsl_dtau, z_sl_mean, &
+      am_perp, am_perp_st, &
+      zs_new,zm_new,zb_new,zl_new, &
       H_new, H_c_new, H_t_new, &
       zs_ref,&
       accum_present,precip_ma_present,precip_ma_lgm_anom,&
@@ -438,7 +440,7 @@ contains
       dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
       time, time_init, time_end, time_output, &
       dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-      z_sl, dzsl_dtau, z_mar, &
+      z_mar, &
       ndat2d, ndat3d, n_output, &
       runname)
 
@@ -450,7 +452,7 @@ contains
         dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
         time, time_init, time_end, time_output, &
         dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-        z_sl, dzsl_dtau, z_mar, &
+        z_mar, &
         ndat2d, ndat3d, n_output, &
         runname)
         call print_output(runname)
@@ -607,8 +609,10 @@ contains
          a_vx_b_g,a_vy_b_g,a_vz_b,a_vz_m,a_vx_s_g,a_vy_s_g,a_vz_s,&
          a_flui_ave_sia,a_h_diff,a_qx,a_qy,a_q_gl_g,a_q_geo,a_temp_b,a_temph_b,a_Q_bm,a_Q_b_apl,&
          a_Q_tld,a_Q_b_tot,a_H_w,&
-         a_accum,a_runoff,a_runoff_apl,a_as_perp,a_temp_maat,a_temp_s,a_am_perp,&
-         a_am_perp_st,a_zs_new,a_zm_new,a_zb_new,a_zl_new, &
+         a_accum,a_runoff,a_runoff_apl,a_as_perp,a_temp_maat,a_temp_s, &
+         a_z_sl, a_dzsl_dtau, a_z_sl_mean, &
+         a_am_perp, a_am_perp_st, &
+         a_zs_new,a_zm_new,a_zb_new,a_zl_new, &
          a_H_new, a_H_c_new, a_H_t_new, &
          a_zs_ref,&
          a_accum_present,a_precip_ma_present,a_precip_ma_lgm_anom,&
@@ -967,6 +971,9 @@ contains
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_temp_b
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_temp_maat
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_temp_s
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_z_sl
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_dzsl_dtau
+    real(dp)                                           :: a_z_sl_mean
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_temph_b
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_temp_ma_lgm_anom
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_temp_ma_present
@@ -1462,6 +1469,9 @@ contains
     temp_r_new%v = a_temp_r_new
     temp_maat = a_temp_maat
     temp_s%v = a_temp_s
+    z_sl      = a_z_sl
+    dzsl_dtau = a_dzsl_dtau
+    z_sl_mean = a_z_sl_mean
     temp_t_m%v = a_temp_t_m
     time_lag_asth = a_time_lag_asth
     time_target_topo_final = a_time_target_topo_final
