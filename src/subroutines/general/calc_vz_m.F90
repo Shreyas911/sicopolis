@@ -255,11 +255,10 @@ end subroutine calc_vz_grounded
 !-------------------------------------------------------------------------------
 !> Computation of the vertical velocity vz for floating ice.
 !<------------------------------------------------------------------------------
-subroutine calc_vz_floating(z_sl, dxi, deta, dzeta_c)
+subroutine calc_vz_floating(dxi, deta, dzeta_c)
 
 implicit none
 
-real(dp), intent(in) :: z_sl
 real(dp), intent(in) :: dxi, deta, dzeta_c
 
 integer(i4b) :: i, j, kt, kc
@@ -313,11 +312,11 @@ do j=1, JMAX-1
 
 !  ------ Velocity at sea level vz_sl
 
-      vz_sl(j,i) = vz_b(j,i) - (z_sl-zb(j,i))*(dvx_dxi+dvy_deta)
+      vz_sl(j,i) = vz_b(j,i) - (z_sl(j,i)-zb(j,i))*(dvx_dxi+dvy_deta)
 
 !  ------ Surface velocity vz_s
 
-      vz_s(j,i) = vz_sl(j,i) - (zs(j,i)-z_sl)*(dvx_dxi+dvy_deta)
+      vz_s(j,i) = vz_sl(j,i) - (zs(j,i)-z_sl(j,i))*(dvx_dxi+dvy_deta)
 
 !  ------ Velocity vz_m at the interface between
 !                              the upper (kc) and the lower (kt) domain
@@ -337,7 +336,7 @@ do j=1, JMAX-1
 
       do kc=0, KCMAX-1
          vz_c(kc,j,i) = vz_sl(j,i) &
-                        -(zm(j,i)+eaz_c_quotient_sgz(kc)*H_c(j,i)-z_sl) &
+                        -(zm(j,i)+eaz_c_quotient_sgz(kc)*H_c(j,i)-z_sl(j,i)) &
                          *(dvx_dxi+dvy_deta)
       end do
 
@@ -354,7 +353,7 @@ do j=1, JMAX-1
             vz_t(kt,j,i) = vz_sl(j,i) &
                            -(zb(j,i) &
                              +0.5_dp*(zeta_t(kt)+zeta_t(kt+1))*H_t(j,i) &
-                             -z_sl) &
+                             -z_sl(j,i)) &
                             *(dvx_dxi+dvy_deta)
          end do
 

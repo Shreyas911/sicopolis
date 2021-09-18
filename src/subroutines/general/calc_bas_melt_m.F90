@@ -50,13 +50,13 @@ contains
 !> Computation of the basal melting rate Q_bm.
 !! Summation of Q_bm and Q_tld (water drainage rate from the temperate layer).
 !<------------------------------------------------------------------------------
-subroutine calc_qbm(time, z_sl, dzeta_c, dzeta_r)
+subroutine calc_qbm(time, dzeta_c, dzeta_r)
 
 use ice_material_properties_m, only : kappa_val
 
 implicit none
 
-real(dp), intent(in) :: time, z_sl
+real(dp), intent(in) :: time
 real(dp), intent(in) :: dzeta_c, dzeta_r
 
 integer(i4b) :: i, j
@@ -169,7 +169,7 @@ do j=1, JMAX-1
 
 #elif (MARINE_ICE_BASAL_MELTING==2)
 
-      if ( (zb(j,i) < z_sl) &          ! marine ice
+      if ( (zb(j,i) < z_sl(j,i)) &          ! marine ice
            .and. &
            (     (mask(j,i+1)==2_i1b) &   ! at least one
              .or.(mask(j,i-1)==2_i1b) &   ! nearest neighbour
@@ -185,7 +185,7 @@ do j=1, JMAX-1
 
 #elif (MARINE_ICE_BASAL_MELTING==3)
 
-      if ( (zb(j,i) < z_sl) &          ! marine ice
+      if ( (zb(j,i) < z_sl(j,i)) &          ! marine ice
            .and. &
            (     (mask(j,i+1)==2_i1b) &   ! at least one
              .or.(mask(j,i-1)==2_i1b) &   ! nearest neighbour
@@ -230,7 +230,7 @@ do j=1, JMAX-1
                                 ! grounding line (grounded-ice side)
          !!! continue
 
-      else if ( (zb(j,i) < z_sl) &          ! marine ice margin
+      else if ( (zb(j,i) < z_sl(j,i)) &          ! marine ice margin
                 .and. &
                 (     (mask(j,i+1)>=2_i1b) &   !  (at least one
                   .or.(mask(j,i-1)>=2_i1b) &   !   nearest neighbour
@@ -300,8 +300,7 @@ do j=1, JMAX-1
 #elif (FLOATING_ICE_BASAL_MELTING==4 || FLOATING_ICE_BASAL_MELTING==5)
 
       if ( zl(j,i) > z_abyssal ) then   ! floating ice over continental shelf
-         call sub_ice_shelf_melting_param_1(time, z_sl, &
-                                            sec2year, time_in_years, &
+         call sub_ice_shelf_melting_param_1(time, sec2year, time_in_years, &
                                             rhow_rho_ratio, &
                                             i, j, Q_bm_floating)
          Q_bm(j,i) = Q_bm_floating
@@ -334,8 +333,7 @@ end do
 
 #if (FLOATING_ICE_BASAL_MELTING==6)
 
-call sub_ice_shelf_melting_param_2(time, z_sl, &
-                                   sec2year, time_in_years, &
+call sub_ice_shelf_melting_param_2(time, sec2year, time_in_years, &
                                    rhow_rho_ratio, z_abyssal, &
                                    n_year_CE)
 
@@ -414,8 +412,7 @@ end subroutine calc_qbm
 !-------------------------------------------------------------------------------
 !> Local sub-ice-shelf melting parameterization.
 !<------------------------------------------------------------------------------
-subroutine sub_ice_shelf_melting_param_1(time, z_sl, &
-                                         sec2year, time_in_years, &
+subroutine sub_ice_shelf_melting_param_1(time, sec2year, time_in_years, &
                                          rhow_rho_ratio, &
                                          i, j, Q_bm_floating)
 
@@ -430,7 +427,7 @@ integer(i4b), intent(in)    :: i, j
 #else /* OpenAD */
 integer(i4b), intent(inout) :: i, j
 #endif /* Normal vs. OpenAD */
-real(dp), intent(in) :: time, z_sl
+real(dp), intent(in) :: time
 real(dp), intent(in) :: sec2year, time_in_years
 real(dp), intent(in) :: rhow_rho_ratio
 
@@ -594,7 +591,7 @@ call error(errormsg)
 if (mask(j,i)==2_i1b) then   ! ocean
    draft = 0.0_dp
 else if (mask(j,i)==3_i1b) then   ! floating ice
-   draft = max((z_sl-zb(j,i)), 0.0_dp)
+   draft = max((z_sl(j,i)-zb(j,i)), 0.0_dp)
 else
    errormsg = ' >>> sub_ice_shelf_melting_param_1:' &
             //          end_of_line &
@@ -668,8 +665,7 @@ end subroutine sub_ice_shelf_melting_param_1
 !-------------------------------------------------------------------------------
 !> Non-local sub-ice-shelf melting parameterization by ISMIP6.
 !<------------------------------------------------------------------------------
-subroutine sub_ice_shelf_melting_param_2(time, z_sl, &
-                                         sec2year, time_in_years, &
+subroutine sub_ice_shelf_melting_param_2(time, sec2year, time_in_years, &
                                          rhow_rho_ratio, z_abyssal, &
                                          n_year_CE)
 
@@ -688,7 +684,7 @@ subroutine sub_ice_shelf_melting_param_2(time, z_sl, &
 
 implicit none
 
-real(dp)    , intent(in) :: time, z_sl
+real(dp)    , intent(in) :: time
 real(dp)    , intent(in) :: sec2year, time_in_years
 real(dp)    , intent(in) :: rhow_rho_ratio, z_abyssal
 integer(i4b), intent(in) :: n_year_CE
@@ -921,7 +917,7 @@ do j=0, JMAX
          if (mask(j,i)==2_i1b) then   ! ocean
             draft = 0.0_dp
          else if (mask(j,i)==3_i1b) then   ! floating ice
-            draft = max((z_sl-zb(j,i)), 0.0_dp)
+            draft = max((z_sl(j,i)-zb(j,i)), 0.0_dp)
          end if
 
          real_n = (draft-ZMIN_TF_BM)*dz_inv

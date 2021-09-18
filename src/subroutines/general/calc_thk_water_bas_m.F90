@@ -53,11 +53,9 @@ contains
 !> Main subroutine of calc_thk_water_bas_m:
 !! Computation of the thickness of the water column under the ice base.
 !<------------------------------------------------------------------------------
-  subroutine calc_thk_water_bas(z_sl)
+  subroutine calc_thk_water_bas()
 
   implicit none
-
-  real(dp), intent(in) :: z_sl
 
 #if defined(ALLOW_OPENAD) /* OpenAD */
   integer(i4b) :: i, j
@@ -104,7 +102,7 @@ contains
 
   end if
 
-  hydro_topg       = transpose(zl)-z_sl
+  hydro_topg       = transpose(zl-z_sl)
   hydro_temppabase = transpose(temph_b)
 
   where (transpose(mask)==0_i1b)   ! grounded ice
@@ -186,7 +184,7 @@ contains
   ! hard-coding transpose
   do j=0,JMAX
   do i=0,IMAX
-     hydro_topg(i,j) = zl(j,i) - z_sl
+     hydro_topg(i,j) = zl(j,i) - z_sl(j,i)
      hydro_temppabase(i,j) = temph_b(j,i)
      ! transpose these arrays for easy searching below
      t_mask(i,j)    = mask(j,i)
@@ -252,7 +250,7 @@ contains
         q_w(j,i)   = 0.0_dp
         q_w_x(j,i) = 0.0_dp
         q_w_y(j,i) = 0.0_dp
-        H_w(j,i)   = z_sl-zl(j,i)
+        H_w(j,i)   = z_sl(j,i)-zl(j,i)
      else if ( mask(j,i)==3_i1b ) then
         q_w(j,i)   = 0.0_dp
         q_w_x(j,i) = 0.0_dp
