@@ -55,7 +55,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Writing of time-slice files in native binary or NetCDF format.
 !<------------------------------------------------------------------------------
-subroutine output1(runname, time, delta_ts, glac_index, z_sl, &
+subroutine output1(runname, time, delta_ts, glac_index, &
                    flag_3d_output, ndat2d, ndat3d, &
                    opt_flag_compute_flux_vars_only)
 
@@ -74,7 +74,7 @@ subroutine output1(runname, time, delta_ts, glac_index, z_sl, &
 
 implicit none
 
-real(dp),           intent(in) :: time, delta_ts, glac_index, z_sl
+real(dp),           intent(in) :: time, delta_ts, glac_index
 character(len=100), intent(in) :: runname
 logical,            intent(in) :: flag_3d_output
 
@@ -197,7 +197,7 @@ integer(i1b), dimension(0:IMAX,0:JMAX) :: flag_grounding_line_1_conv, &
                                           flag_grounded_front_b_2_conv
 
 real(dp) :: year2sec_conv, time_conv, &
-            delta_ts_conv, glac_index_conv, z_sl_conv, &
+            delta_ts_conv, glac_index_conv, z_sl_mean_conv, &
             V_tot_conv, V_af_conv, A_grounded_conv, A_floating_conv, &
             xi_conv(0:IMAX), eta_conv(0:JMAX), &
             sigma_level_c_conv(0:KCMAX), sigma_level_t_conv(0:KTMAX), &
@@ -212,6 +212,7 @@ real(sp), dimension(0:IMAX,0:JMAX) :: lambda_conv, phi_conv, &
             snowfall_conv, rainfall_conv, pdd_conv, &
             as_perp_conv, as_perp_apl_conv, smb_corr_conv, &
             mb_source_apl_conv, runoff_conv, runoff_apl_conv, &
+            z_sl_conv, &
             Q_b_tot_conv, Q_b_apl_conv, &
             calving_conv, calving_apl_conv, &
             q_geo_conv, &
@@ -569,9 +570,9 @@ else if (forcing_flag == 2) then
 
 end if
 
-!    ---- z_sl
+!    ---- z_sl_mean
 
-call check( nf90_def_var(ncid, 'z_sl', NF90_DOUBLE, ncv), &
+call check( nf90_def_var(ncid, 'z_sl_mean', NF90_DOUBLE, ncv), &
             thisroutine )
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
@@ -579,7 +580,7 @@ call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
 buffer = 'global_average_sea_level_change'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
             thisroutine )
-buffer = 'Sea level'
+buffer = 'Mean sea level'
 call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
             thisroutine )
 
@@ -1054,6 +1055,26 @@ buffer = 'applied_land_ice_surface_runoff'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
             thisroutine )
 buffer = 'Applied runoff rate at the ice surface'
+call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
+            thisroutine )
+call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
+            thisroutine )
+
+!    ---- z_sl
+
+call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
+            thisroutine )
+call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
+            thisroutine )
+call check( nf90_def_var(ncid, 'z_sl', NF90_FLOAT, nc2d, ncv), &
+            thisroutine )
+buffer = 'm'
+call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
+            thisroutine )
+buffer = 'sea_level_change'
+call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
+            thisroutine )
+buffer = 'Sea level'
 call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
             thisroutine )
 call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
@@ -3189,7 +3210,8 @@ do j=0, JMAX
       V_grounded = V_grounded + H(j,i)*area(j,i)
       A_grounded = A_grounded + area(j,i)
       V_gr_redu  = V_gr_redu &
-                   + rhosw_rho_ratio*max((z_sl-zl(j,i)),0.0_dp)*area(j,i)
+                   + rhosw_rho_ratio  &
+                        *max((z_sl(j,i)-zl(j,i)),0.0_dp)*area(j,i)
 
    else if (mask(j,i)==3_i1b) then   ! floating ice
 
@@ -3436,7 +3458,7 @@ call error(errormsg)
 
 delta_ts_conv   = delta_ts
 glac_index_conv = glac_index
-z_sl_conv       = z_sl
+z_sl_mean_conv  = z_sl_mean
 V_tot_conv      = V_tot
 V_af_conv       = V_af
 A_grounded_conv = A_grounded
@@ -3493,10 +3515,10 @@ do j=0, JMAX
    as_perp_conv(i,j)     = real(as_perp_flx(j,i)*year2sec,sp)
    as_perp_apl_conv(i,j) = real(as_perp_apl_flx(j,i)*year2sec,sp)
    smb_corr_conv(i,j)    = real(smb_corr_flx(j,i)*year2sec,sp)
-
    mb_source_apl_conv(i,j) = real(mb_source_apl_flx(j,i)*year2sec,sp)
    runoff_conv(i,j)        = real(runoff_flx(j,i)*year2sec,sp)
    runoff_apl_conv(i,j)    = real(runoff_apl_flx(j,i)*year2sec,sp)
+   z_sl_conv(i,j)          = real(z_sl(j,i),sp)
    Q_b_tot_conv(i,j)       = real(Q_b_tot_flx(j,i)*year2sec,sp)
    Q_b_apl_conv(i,j)       = real(Q_b_apl_flx(j,i)*year2sec,sp)
    calving_conv(i,j)       = real(calving_flx(j,i)*year2sec,sp)
@@ -3679,7 +3701,7 @@ if ((forcing_flag == 1).or.(forcing_flag == 3)) then
 else if (forcing_flag == 2) then
    write(unit=11) glac_index_conv
 end if
-write(unit=11) z_sl_conv
+write(unit=11) z_sl_mean_conv
 
 write(unit=11) V_tot_conv
 write(unit=11) V_af_conv
@@ -3706,6 +3728,7 @@ write(unit=11) pdd_conv
 write(unit=11) as_perp_conv
 write(unit=11) as_perp_apl_conv
 write(unit=11) smb_corr_conv
+write(unit=11) z_sl_conv
 
 #if (DISC>0)   /* Ice discharge parameterisation */
 
@@ -3828,8 +3851,8 @@ else if (forcing_flag == 2) then
 
 end if
 
-call check( nf90_inq_varid(ncid, 'z_sl', ncv), thisroutine )
-call check( nf90_put_var(ncid, ncv, z_sl_conv), thisroutine )
+call check( nf90_inq_varid(ncid, 'z_sl_mean', ncv), thisroutine )
+call check( nf90_put_var(ncid, ncv, z_sl_mean_conv), thisroutine )
 
 call check( nf90_inq_varid(ncid, 'V_tot', ncv), thisroutine )
 call check( nf90_put_var(ncid, ncv, V_tot_conv), thisroutine )
@@ -3950,6 +3973,11 @@ call check( nf90_put_var(ncid, ncv, runoff_conv, &
 
 call check( nf90_inq_varid(ncid, 'runoff_apl', ncv), thisroutine )
 call check( nf90_put_var(ncid, ncv, runoff_apl_conv, &
+                         start=nc2cor_ij, count=nc2cnt_ij), &
+            thisroutine )
+
+call check( nf90_inq_varid(ncid, 'z_sl', ncv), thisroutine )
+call check( nf90_put_var(ncid, ncv, z_sl_conv, &
                          start=nc2cor_ij, count=nc2cnt_ij), &
             thisroutine )
 
@@ -4481,7 +4509,7 @@ end subroutine output1
 !> Writing of time-series data on file in ASCII format
 !! (and optionally in NetCDF format).
 !<------------------------------------------------------------------------------
-subroutine output2(time, dxi, deta, delta_ts, glac_index, z_sl, &
+subroutine output2(time, dxi, deta, delta_ts, glac_index, &
                    opt_flag_compute_flux_vars_only)
 
 #if (NETCDF>1)
@@ -4495,7 +4523,7 @@ subroutine output2(time, dxi, deta, delta_ts, glac_index, z_sl, &
 
 implicit none
 
-real(dp), intent(in) :: time, dxi, deta, delta_ts, glac_index, z_sl
+real(dp), intent(in) :: time, dxi, deta, delta_ts, glac_index
 
 logical, optional, intent(in) :: opt_flag_compute_flux_vars_only
 
@@ -4638,7 +4666,7 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 
    if (n==0) then
 
-      call scalar_variables(time, z_sl, &
+      call scalar_variables(time, &
                             H_cold, H_temp, &
                             time_val, &
                             V_tot, V_grounded, V_floating, &
@@ -4655,7 +4683,7 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
       flag_region = .false.
       flag_region = (mask_region==n)
 
-      call scalar_variables(time, z_sl, &
+      call scalar_variables(time, &
                             H_cold, H_temp, &
                             time_val, &
                             V_tot, V_grounded, V_floating, &
@@ -4787,14 +4815,14 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 
       if ((forcing_flag == 1).or.(forcing_flag == 3)) then
 
-         write(unit=12, fmt=trim(fmt1)) time_val, delta_ts, z_sl, &
+         write(unit=12, fmt=trim(fmt1)) time_val, delta_ts, z_sl_mean, &
             V_tot, V_grounded, V_floating, A_tot, A_grounded, A_floating, &
             V_sle, V_temp, A_temp, &
             H_max, H_t_max, zs_max, vs_max, Tbh_max
 
       else if (forcing_flag == 2) then
 
-         write(unit=12, fmt=trim(fmt1)) time_val, glac_index, z_sl, &
+         write(unit=12, fmt=trim(fmt1)) time_val, glac_index, z_sl_mean, &
             V_tot, V_grounded, V_floating, A_tot, A_grounded, A_floating, &
             V_sle, V_temp, A_temp, &
             H_max, H_t_max, zs_max, vs_max, Tbh_max
@@ -4855,10 +4883,10 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- Writing of data on time-series file
 
       if ((forcing_flag == 1).or.(forcing_flag == 3)) then
-         write(unit=15, fmt=trim(fmt2)) time_val, delta_ts, z_sl, &
+         write(unit=15, fmt=trim(fmt2)) time_val, delta_ts, z_sl_mean, &
                                         H_ave_sed, Tbh_ave_sed, Atb_sed
       else if (forcing_flag == 2) then
-         write(unit=15, fmt=trim(fmt2)) time_val, glac_index, z_sl, &
+         write(unit=15, fmt=trim(fmt2)) time_val, glac_index, z_sl_mean, &
                                         H_ave_sed, Tbh_ave_sed, Atb_sed
       end if
 
@@ -5058,10 +5086,10 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 
       end if
 
-!    ---- z_sl
+!    ---- z_sl_mean
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
-      call check( nf90_def_var(ncid(n), 'z_sl', NF90_FLOAT, nc1d, ncv), &
+      call check( nf90_def_var(ncid(n), 'z_sl_mean', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
       buffer = 'm'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
@@ -5069,7 +5097,7 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
       buffer = 'global_average_sea_level_change'
       call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
                   thisroutine )
-      buffer = 'Sea level'
+      buffer = 'Mean sea level'
       call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
                   thisroutine )
 
@@ -5630,8 +5658,8 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 
       end if
 
-      call check( nf90_inq_varid(ncid(n), 'z_sl', ncv), thisroutine )
-      call check( nf90_put_var(ncid(n), ncv, real(z_sl,sp), &
+      call check( nf90_inq_varid(ncid(n), 'z_sl_mean', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(z_sl_mean,sp), &
                                start=nc1cor), thisroutine )
 
       call check( nf90_inq_varid(ncid(n), 'V_tot', ncv), thisroutine )
@@ -5793,7 +5821,7 @@ end subroutine output2
 !-------------------------------------------------------------------------------
 !> Computation of the scalar output variables.
 !<------------------------------------------------------------------------------
-subroutine scalar_variables(time, z_sl, &
+subroutine scalar_variables(time, &
                             H_cold, H_temp, &
                             time_val, &
                             V_tot, V_grounded, V_floating, &
@@ -5808,7 +5836,7 @@ subroutine scalar_variables(time, z_sl, &
 
 implicit none
 
-real(dp), intent(in) :: time, z_sl
+real(dp), intent(in) :: time
 real(dp), dimension(0:JMAX,0:IMAX), intent(in) :: H_cold, H_temp
 logical, dimension(0:JMAX,0:IMAX), optional, intent(in) :: opt_flag_region
 
@@ -5895,7 +5923,8 @@ do j=0, JMAX
       || defined(XYZ))   /* terrestrial ice sheet */
 
          V_gr_redu = V_gr_redu &
-                     + rhosw_rho_ratio*max((z_sl-zl(j,i)),0.0_dp)*area(j,i)
+                     + rhosw_rho_ratio &
+                          *max((z_sl(j,i)-zl(j,i)),0.0_dp)*area(j,i)
 
 #endif
 
@@ -6165,7 +6194,7 @@ end subroutine scalar_variables
 !> Writing of time-series data of the deep ice cores on file in ASCII format
 !! (and optionally in NetCDF format).
 !<------------------------------------------------------------------------------
-subroutine output4(time, dxi, deta, delta_ts, glac_index, z_sl)
+subroutine output4(time, dxi, deta, delta_ts, glac_index)
 
 #if (NETCDF>1)
   use netcdf
@@ -6174,7 +6203,7 @@ subroutine output4(time, dxi, deta, delta_ts, glac_index, z_sl)
 
 implicit none
 
-real(dp), intent(in) :: time, dxi, deta, delta_ts, glac_index, z_sl
+real(dp), intent(in) :: time, dxi, deta, delta_ts, glac_index
 
 integer(i4b)                        :: i, j, n
 integer(i4b)                        :: ios
@@ -6322,9 +6351,9 @@ if (n_core >= 1) then
 !-------- Writing of data on file --------
 
    if ((forcing_flag == 1).or.(forcing_flag == 3)) then
-      write(unit=14, fmt='(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
+      write(unit=14, fmt='(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
    else if (forcing_flag == 2) then
-      write(unit=14, fmt='(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
+      write(unit=14, fmt='(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
    end if
 
    n=1
@@ -6558,10 +6587,10 @@ if (n_core >= 1) then
 
       end if
 
-!    ---- z_sl
+!    ---- z_sl_mean
 
       call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-      call check( nf90_def_var(ncid, 'z_sl', NF90_FLOAT, nc1d, ncv), &
+      call check( nf90_def_var(ncid, 'z_sl_mean', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
       buffer = 'm'
       call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
@@ -6569,7 +6598,7 @@ if (n_core >= 1) then
       buffer = 'global_average_sea_level_change'
       call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
                   thisroutine )
-      buffer = 'Sea level'
+      buffer = 'Mean sea level'
       call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
                   thisroutine )
 
@@ -6743,8 +6772,8 @@ if (n_core >= 1) then
 
    end if
 
-   call check( nf90_inq_varid(ncid, 'z_sl', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(z_sl,sp), &
+   call check( nf90_inq_varid(ncid, 'z_sl_mean', ncv), thisroutine )
+   call check( nf90_put_var(ncid, ncv, real(z_sl_mean,sp), &
                             start=nc1cor), thisroutine )
 
    call check( nf90_inq_varid(ncid, 'H_core', ncv), thisroutine )
@@ -6803,11 +6832,11 @@ end subroutine output4
 !> Writing of time-series data for all defined surface points on file
 !! in ASCII format. Modification of Tolly's output7 by Thorben Dunse.
 !<------------------------------------------------------------------------------
-subroutine output5(time, dxi, deta, delta_ts, glac_index, z_sl)
+subroutine output5(time, dxi, deta, delta_ts, glac_index)
 
 implicit none
 
-real(dp), intent(in) :: time, dxi, deta, delta_ts, glac_index, z_sl
+real(dp), intent(in) :: time, dxi, deta, delta_ts, glac_index
 
 integer(i4b) :: n, k
 real(dp) :: time_val
@@ -6939,35 +6968,35 @@ end do
 !-------- Writing of data on file --------
 
 if ((forcing_flag == 1).or.(forcing_flag == 3)) then
-   write(41,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(42,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(43,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(44,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(45,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(46,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(47,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(48,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(49,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(50,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(51,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(52,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(53,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(54,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
+   write(41,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(42,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(43,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(44,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(45,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(46,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(47,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(48,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(49,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(50,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(51,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(52,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(53,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(54,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
 else if (forcing_flag == 2) then
-   write(41,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(42,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(43,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(44,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(45,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(46,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(47,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(48,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(49,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(50,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(51,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(52,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(53,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(54,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
+   write(41,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(42,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(43,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(44,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(45,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(46,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(47,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(48,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(49,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(50,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(51,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(52,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(53,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(54,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
 end if
 
 do n=1, n_surf-1

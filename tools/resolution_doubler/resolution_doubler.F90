@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2021-07-08
+!! 2021-09-18
 !!
 !! @section Copyright
 !!
@@ -89,7 +89,7 @@ real(dp) :: mapping_semi_major_axis_erg, &
             mapping_false_E_erg, &
             mapping_false_N_erg
 real(dp) :: year2sec_erg, time_erg, &
-            delta_ts_erg, glac_index_erg, z_sl_erg, &
+            delta_ts_erg, glac_index_erg, z_sl_mean_erg, &
             V_tot_erg, V_af_erg, A_grounded_erg, A_floating_erg, &
             xi_erg(0:IMAX), eta_erg(0:JMAX), &
             sigma_level_c_erg(0:KCMAX), sigma_level_t_erg(0:KTMAX), &
@@ -100,6 +100,7 @@ real(sp), dimension(0:IMAX,0:JMAX) :: lambda_erg, phi_erg, &
             temp_s_erg, prec_erg, &
             snowfall_erg, rainfall_erg, pdd_erg, & 
             as_perp_erg, as_perp_apl_erg, smb_corr_erg, &
+            z_sl_erg, &
             q_geo_erg, &
             zs_erg, zm_erg, zb_erg, zl_erg, zl0_erg, &
             H_cold_erg, H_temp_erg, H_erg, &
@@ -160,7 +161,7 @@ real(dp) :: mapping_semi_major_axis_dbl, &
             mapping_false_E_dbl, &
             mapping_false_N_dbl
 real(dp) :: year2sec_dbl, time_dbl, &
-            delta_ts_dbl, glac_index_dbl, z_sl_dbl, &
+            delta_ts_dbl, glac_index_dbl, z_sl_mean_dbl, &
             V_tot_dbl, V_af_dbl, A_grounded_dbl, A_floating_dbl, &
             xi_dbl(0:2*IMAX), eta_dbl(0:2*JMAX), &
             sigma_level_c_dbl(0:KCMAX), sigma_level_t_dbl(0:KTMAX), &
@@ -171,6 +172,7 @@ real(sp), dimension(0:2*IMAX,0:2*JMAX) :: lambda_dbl, phi_dbl, &
             temp_s_dbl, prec_dbl, &
             snowfall_dbl, rainfall_dbl, pdd_dbl, & 
             as_perp_dbl, as_perp_apl_dbl, smb_corr_dbl, &
+            z_sl_dbl, &
             q_geo_dbl, &
             zs_dbl, zm_dbl, zb_dbl, zl_dbl, zl0_dbl, &
             H_cold_dbl, H_temp_dbl, H_dbl, &
@@ -263,6 +265,7 @@ character(len=256) :: filename, filename_with_path
 
 integer(i4b) :: ios
 integer(i4b) :: ierr1, ierr2
+logical      :: flag_z_sl_xy_array
 
 integer(i4b) :: ncid, ncv, ncv_test1, ncv_test2
 !     ncid:      ID of the NetCDF file
@@ -276,7 +279,7 @@ year2sec_erg   = 0.0_dp
 time_erg       = 0.0_dp
 delta_ts_erg   = 0.0_dp
 glac_index_erg = 0.0_dp
-z_sl_erg       = 0.0_dp
+z_sl_mean_erg  = 0.0_dp
 V_tot_erg      = 0.0_dp
 V_af_erg       = 0.0_dp
 A_grounded_erg = 0.0_dp
@@ -380,8 +383,14 @@ else
    glac_index_erg = 0.0_dp
 end if
 
-call check( nf90_inq_varid(ncid, 'z_sl', ncv) )
-call check( nf90_get_var(ncid, ncv, z_sl_erg) )
+if ( nf90_inq_varid(ncid, 'z_sl_mean', ncv) == nf90_noerr ) then
+   call check( nf90_get_var(ncid, ncv, z_sl_mean_erg) )
+     flag_z_sl_xy_array = .true.
+else
+   call check( nf90_inq_varid(ncid, 'z_sl', ncv) )
+   call check( nf90_get_var(ncid, ncv, z_sl_mean_erg) )
+   flag_z_sl_xy_array = .false.
+end if
 
 call check( nf90_inq_varid(ncid, 'V_tot', ncv) )
 call check( nf90_get_var(ncid, ncv, V_tot_erg) )
@@ -445,6 +454,13 @@ call check( nf90_get_var(ncid, ncv, as_perp_apl_erg) )
 
 call check( nf90_inq_varid(ncid, 'smb_corr', ncv) )
 call check( nf90_get_var(ncid, ncv, smb_corr_erg) )
+
+if (flag_z_sl_xy_array) then
+   call check( nf90_inq_varid(ncid, 'z_sl', ncv) )
+   call check( nf90_get_var(ncid, ncv, z_sl_erg) )
+else
+   z_sl_erg = z_sl_mean_erg
+end if
 
 #if (DISC>0)   /* Ice discharge parameterisation */
 
@@ -825,7 +841,7 @@ year2sec_dbl   = year2sec_erg
 time_dbl       = time_erg
 delta_ts_dbl   = delta_ts_erg
 glac_index_dbl = glac_index_erg
-z_sl_dbl       = z_sl_erg
+z_sl_mean_dbl  = z_sl_mean_erg
 V_tot_dbl      = V_tot_erg
 V_af_dbl       = V_af_erg
 A_grounded_dbl = A_grounded_erg
@@ -880,6 +896,7 @@ do jj = 0, 2*JMAX, 2
    as_perp_dbl(ii,jj)   = as_perp_erg(i,j)
    as_perp_apl_dbl(ii,jj) = as_perp_apl_erg(i,j)
    smb_corr_dbl(ii,jj)  = smb_corr_erg(i,j)
+   z_sl_dbl(ii,jj)      = z_sl_erg(i,j)
 #if (DISC>0)   /* Ice discharge parameterisation */
    dis_perp_dbl(ii,jj)    = dis_perp_erg(i,j)
    cst_dist_dbl(ii,jj)    = cst_dist_erg(i,j)
@@ -966,6 +983,7 @@ do jj = 0, 2*JMAX, 2
    as_perp_dbl(ii,jj)   = 0.5*(as_perp_erg(i1,j)+as_perp_erg(i2,j))
    as_perp_apl_dbl(ii,jj) = 0.5*(as_perp_apl_erg(i1,j)+as_perp_apl_erg(i2,j))
    smb_corr_dbl(ii,jj)  = 0.5*(smb_corr_erg(i1,j)+smb_corr_erg(i2,j))
+   z_sl_dbl(ii,jj)      = 0.5*(z_sl_erg(i1,j)+z_sl_erg(i2,j))
 #if (DISC>0)   /* Ice discharge parameterisation */
    dis_perp_dbl(ii,jj)    = 0.5*(dis_perp_erg(i1,j)+dis_perp_erg(i2,j))
    cst_dist_dbl(ii,jj)    = 0.5*(cst_dist_erg(i1,j)+cst_dist_erg(i2,j))
@@ -1053,6 +1071,7 @@ do jj = 1, 2*JMAX-1, 2
    as_perp_dbl(ii,jj)   = 0.5*(as_perp_erg(i,j1)+as_perp_erg(i,j2))
    as_perp_apl_dbl(ii,jj) = 0.5*(as_perp_apl_erg(i,j1)+as_perp_apl_erg(i,j2))
    smb_corr_dbl(ii,jj)  = 0.5*(smb_corr_erg(i,j1)+smb_corr_erg(i,j2))
+   z_sl_dbl(ii,jj)      = 0.5*(z_sl_erg(i,j1)+z_sl_erg(i,j2))
 #if (DISC>0)   /* Ice discharge parameterisation */
    dis_perp_dbl(ii,jj)    = 0.5*(dis_perp_erg(i,j1)+dis_perp_erg(i,j2))
    cst_dist_dbl(ii,jj)    = 0.5*(cst_dist_erg(i,j1)+cst_dist_erg(i,j2))
@@ -1155,6 +1174,8 @@ do jj = 1, 2*JMAX-1, 2
                                   +as_perp_apl_erg(i2,j2) )
    smb_corr_dbl(ii,jj)  = 0.25*( smb_corr_erg(i1,j1)+smb_corr_erg(i2,j1) &
                                 +smb_corr_erg(i1,j2)+smb_corr_erg(i2,j2) )
+   z_sl_dbl(ii,jj)      = 0.25*( z_sl_erg(i1,j1)+z_sl_erg(i2,j1) &
+                                +z_sl_erg(i1,j2)+z_sl_erg(i2,j2) )
 #if (DISC>0)   /* Ice discharge parameterisation */
    dis_perp_dbl(ii,jj)    = 0.25*( dis_perp_erg(i1,j1) &
                                   +dis_perp_erg(i2,j1) &
@@ -1967,14 +1988,14 @@ else if (forcing_flag == 2) then
 
 end if
 
-!    ---- z_sl
+!    ---- z_sl_mean
 
-call check( nf90_def_var(ncid, 'z_sl', NF90_DOUBLE, ncv) )
+call check( nf90_def_var(ncid, 'z_sl_mean', NF90_DOUBLE, ncv) )
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'global_average_sea_level_change'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)) )
-buffer = 'Sea level'
+buffer = 'Mean sea level'
 call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 
 !    ---- V_tot
@@ -2225,6 +2246,19 @@ call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'land_ice_surface_mass_balance_diagnosed_correction'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)) )
 buffer = 'Diagnosed correction of the mass balance at the ice surface'
+call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
+call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
+
+!    ---- z_sl
+
+call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)) )
+call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)) )
+call check( nf90_def_var(ncid, 'z_sl', NF90_FLOAT, nc2d, ncv) )
+buffer = 'm'
+call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
+buffer = 'sea_level_change'
+call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)) )
+buffer = 'Sea level'
 call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 
@@ -3474,8 +3508,8 @@ else if (forcing_flag == 2) then
 
 end if
 
-call check( nf90_inq_varid(ncid, 'z_sl', ncv) )
-call check( nf90_put_var(ncid, ncv, z_sl_dbl) )
+call check( nf90_inq_varid(ncid, 'z_sl_mean', ncv) )
+call check( nf90_put_var(ncid, ncv, z_sl_mean_dbl) )
 
 call check( nf90_inq_varid(ncid, 'V_tot', ncv) )
 call check( nf90_put_var(ncid, ncv, V_tot_dbl) )
@@ -3555,6 +3589,10 @@ call check( nf90_put_var(ncid, ncv, as_perp_apl_dbl, &
 
 call check( nf90_inq_varid(ncid, 'smb_corr', ncv) )
 call check( nf90_put_var(ncid, ncv, smb_corr_dbl, &
+                         start=nc2cor_ij, count=nc2cnt_ij) )
+
+call check( nf90_inq_varid(ncid, 'z_sl', ncv) )
+call check( nf90_put_var(ncid, ncv, z_sl_dbl, &
                          start=nc2cor_ij, count=nc2cnt_ij) )
 
 #if (DISC>0)   /* Ice discharge parameterisation */

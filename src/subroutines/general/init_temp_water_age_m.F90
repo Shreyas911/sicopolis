@@ -279,14 +279,13 @@ contains
 !! present-day initial topography,
 !! ice temperature, water content and age from previous simulation).
 !<------------------------------------------------------------------------------
-  subroutine init_temp_water_age_1_5(z_sl, filename)
+  subroutine init_temp_water_age_1_5(filename)
 
   use read_m, only : read_tms_nc
 
   implicit none
 
   character(len=100), intent(in)    :: filename
-  real(dp),           intent(inout) :: z_sl
 
   integer(i4b) :: i, j, kc, kt, kr
   real(dp)     :: temp_ice_base, temp_scale_factor
@@ -301,7 +300,7 @@ contains
 
   call init_temp_water_age_1_4()
 
-  call read_tms_nc(z_sl, filename, &
+  call read_tms_nc(filename, &
                    opt_mask   = mask_aux   , &
                    opt_n_cts   = n_cts_aux   , &
                    opt_kc_cts  = kc_cts_aux  , &

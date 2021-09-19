@@ -46,7 +46,7 @@ contains
                       dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
                       time, time_init, time_end, time_output, &
                       dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-                      z_sl, dzsl_dtau, z_mar, &
+                      z_mar, &
                       ndat2d, ndat3d, n_output, &
                       runname, &
                       itercount,iter_temp,iter_wss,iter_ser,&
@@ -90,7 +90,7 @@ contains
   integer(i4b),       intent(inout) :: ndat2d, ndat3d
   real(dp),           intent(inout) :: delta_ts, glac_index
   real(dp),           intent(inout) :: time
-  real(dp),           intent(inout) :: z_sl, dzsl_dtau, z_mar
+  real(dp),           intent(inout) :: z_mar
 
   integer(i4b)                      :: i, j, kc, kt, kr, n
   integer(i4b),       intent(inout) :: itercount, iter_temp, iter_wss 
@@ -113,8 +113,7 @@ contains
   
   !-------- Boundary conditions --------
   
-  call boundary(time, dtime, dxi, deta, delta_ts, glac_index, &
-                z_sl, dzsl_dtau, z_mar)
+  call boundary(time, dtime, dxi, deta, delta_ts, glac_index, z_mar)
   
   !-------- Temperature, water content, age, flow enhancement factor --------
   if ((itercount - (iter_temp*int(real(itercount)/real(iter_temp)))) == 0) then 
@@ -194,17 +193,17 @@ contains
   
 #if (DYNAMICS==1 || DYNAMICS==2)
   
-  call calc_vxy_b_sia(time, z_sl)
+  call calc_vxy_b_sia(time)
   call calc_vxy_sia(dzeta_c, dzeta_t)
   
 #if (MARGIN==3 || DYNAMICS==2)
-  call calc_vxy_ssa(z_sl, dxi, deta, dzeta_c, dzeta_t)
+  call calc_vxy_ssa(dxi, deta, dzeta_c, dzeta_t)
 #endif
   
   call calc_vz_grounded(dxi, deta, dzeta_c, dzeta_t)
   
 #if (MARGIN==3)
-  call calc_vz_floating(z_sl, dxi, deta, dzeta_c)
+  call calc_vz_floating(dxi, deta, dzeta_c)
 #endif
   
 #elif (DYNAMICS==0)
@@ -220,7 +219,7 @@ contains
   
   !-------- Glacial isostatic adjustment and ice topography --------
   
-  call calc_gia(time, z_sl, dtime, dxi, deta, itercount, iter_wss)
+  call calc_gia(time, dtime, dxi, deta, itercount, iter_wss)
   
   call calc_thk_init()
   
@@ -244,14 +243,14 @@ contains
 #endif
   
 #if (MARGIN==3)       /* coupled SIA/SSA or SIA/SStA/SSA dynamics */
-  call calc_thk_mask_update(time, dtime, dxi, deta, z_sl, z_mar, 3_i1b)
+  call calc_thk_mask_update(time, dtime, dxi, deta, z_mar, 3_i1b)
 #elif (DYNAMICS==2)   /* hybrid SIA/SStA dynamics */
-  call calc_thk_mask_update(time, dtime, dxi, deta, z_sl, z_mar, 2_i1b)
+  call calc_thk_mask_update(time, dtime, dxi, deta, z_mar, 2_i1b)
 #else                 /* SIA-only dynamics */
 #if (CALCTHK==1 || CALCTHK==2 || CALCTHK==3)
-  call calc_thk_mask_update(time, dtime, dxi, deta, z_sl, z_mar, 1_i1b)
+  call calc_thk_mask_update(time, dtime, dxi, deta, z_mar, 1_i1b)
 #elif (CALCTHK==4 || CALCTHK==5 || CALCTHK==6)
-  call calc_thk_mask_update(time, dtime, dxi, deta, z_sl, z_mar, 2_i1b)
+  call calc_thk_mask_update(time, dtime, dxi, deta, z_mar, 2_i1b)
 #endif
 #endif
   
@@ -276,11 +275,11 @@ contains
   
   !-------- Basal melting rate --------
   
-  call calc_qbm(time, z_sl, dzeta_c, dzeta_r)
+  call calc_qbm(time, dzeta_c, dzeta_r)
   
   !-------- Effective thickness of subglacial water  --------
   
-  call calc_thk_water_bas(z_sl)
+  call calc_thk_water_bas()
   
   !-------- Data output --------
   ! We do none of the original data output in adjoint mode

@@ -53,7 +53,7 @@ subroutine sico_init(delta_ts, glac_index, &
                dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
                time, time_init, time_end, time_output, &
                dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-               z_sl, dzsl_dtau, z_mar, &
+               z_mar, &
                ndat2d, ndat3d, n_output, &
                runname)
 
@@ -85,7 +85,7 @@ real(dp),           intent(out) :: dtime, dtime_temp, dtime_wss, &
                                    dtime_out, dtime_ser
 real(dp),           intent(out) :: time, time_init, time_end, time_output(100)
 real(dp),           intent(out) :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
-real(dp),           intent(out) :: z_sl, dzsl_dtau, z_mar
+real(dp),           intent(out) :: z_mar
 character(len=100), intent(out) :: runname
 
 integer(i4b)       :: i, j, kc, kt, kr, m, n, ir, jr
@@ -1163,10 +1163,11 @@ flex_rig_lith = 0.0_dp   ! dummy values
 
 call topography1(dxi, deta)
 
-z_sl = -1.11e+11_dp   ! dummy value for initial call of subroutine boundary
+z_sl      = -1.11e+11_dp   ! dummy values for initial call
+z_sl_mean = -1.11e+11_dp   ! of subroutine boundary
 
 call boundary(time_init, dtime, dxi, deta, &
-              delta_ts, glac_index, z_sl, dzsl_dtau, z_mar)
+              delta_ts, glac_index, z_mar)
 
 where ((mask==0_i1b).or.(mask==3_i1b))
                  ! grounded or floating ice
@@ -1193,7 +1194,7 @@ H_w     = 0.0_dp
 #elif (TEMP_INIT==4)
   call init_temp_water_age_1_4()
 #elif (TEMP_INIT==5)
-  call init_temp_water_age_1_5(z_sl, anfdatname)
+  call init_temp_water_age_1_5(anfdatname)
 #else
   errormsg = ' >>> sico_init: TEMP_INIT must be between 1 and 5!'
   call error(errormsg)
@@ -1233,10 +1234,11 @@ vis_int_g = 0.0_dp
 
 call topography2(dxi, deta)
 
-z_sl = -1.11e+11_dp   ! dummy value for initial call of subroutine boundary
+z_sl      = -1.11e+11_dp   ! dummy values for initial call
+z_sl_mean = -1.11e+11_dp   ! of subroutine boundary
 
 call boundary(time_init, dtime, dxi, deta, &
-              delta_ts, glac_index, z_sl, dzsl_dtau, z_mar)
+              delta_ts, glac_index, z_mar)
 
 as_perp_apl = 0.0_dp
 
@@ -1283,10 +1285,10 @@ vis_int_g = 0.0_dp
 
 #elif (ANF_DAT==3)
 
-call topography3(dxi, deta, z_sl, anfdatname)
+call topography3(dxi, deta, anfdatname)
 
 call boundary(time_init, dtime, dxi, deta, &
-              delta_ts, glac_index, z_sl, dzsl_dtau, z_mar)
+              delta_ts, glac_index, z_mar)
 
 where ((mask==0_i1b).or.(mask==3_i1b))
                  ! grounded or floating ice
@@ -1347,21 +1349,21 @@ end do
 
 call calc_temp_melt()
 call flag_update_gf_gl_cf()
-call calc_dzs_dxy_aux(z_sl, dxi, deta)
+call calc_dzs_dxy_aux(dxi, deta)
 
 #if (DYNAMICS==1 || DYNAMICS==2)
 
-call calc_vxy_b_sia(time, z_sl)
+call calc_vxy_b_sia(time)
 call calc_vxy_sia(dzeta_c, dzeta_t)
 
 #if (MARGIN==3 || DYNAMICS==2)
-call calc_vxy_ssa(z_sl, dxi, deta, dzeta_c, dzeta_t)
+call calc_vxy_ssa(dxi, deta, dzeta_c, dzeta_t)
 #endif
 
 call calc_vz_grounded(dxi, deta, dzeta_c, dzeta_t)
 
 #if (MARGIN==3)
-call calc_vz_floating(z_sl, dxi, deta, dzeta_c)
+call calc_vz_floating(dxi, deta, dzeta_c)
 #endif
 
 #elif (DYNAMICS==0)
@@ -1457,7 +1459,7 @@ end if
 write(12,1102)
 write(12,1103)
 
-   1102 format('         t(a)  D_Ts(deg C)      z_sl(m)',/, &
+   1102 format('         t(a)  D_Ts(deg C) z_sl_mean(m)',/, &
                '                    V(m^3)     V_g(m^3)     V_f(m^3)', &
                '       A(m^2)     A_g(m^2)     A_f(m^2)',/, &
                '                               V_sle(m)     V_t(m^3)', &
@@ -1481,7 +1483,7 @@ end if
 write(15,1108)
 write(15,1109)
 
-1108 format('         t(a)  D_Ts(deg C)      z_sl(m)',/, &
+1108 format('         t(a)  D_Ts(deg C) z_sl_mean(m)',/, &
             '                  H_ave(m)   Tbh_ave(C)     Atb(m^2)')
 1109 format('----------------------------------------------------')
 
@@ -1548,7 +1550,7 @@ if (forcing_flag == 1) then
    write(14,1106)
    write(14,1107)
 
-   1106 format('         t(a)      D_Ts(C)      z_sl(m)',/, &
+   1106 format('         t(a)      D_Ts(C) z_sl_mean(m)',/, &
                '                   H_P1(m)      H_P2(m)      H_P3(m)      H_P4(m)', &
                '      H_P5(m)      H_P6(m)      H_P7(m)',/, &
                '                 v_P1(m/a)    v_P2(m/a)    v_P3(m/a)    v_P4(m/a)', &
@@ -1589,7 +1591,7 @@ end if
 #endif
 
    if (flag_init_output) &
-      call output1(runname, time_init, delta_ts, glac_index, z_sl, &
+      call output1(runname, time_init, delta_ts, glac_index, &
                    flag_3d_output, ndat2d, ndat3d)
 
 #elif (OUTPUT==2)
@@ -1605,7 +1607,7 @@ if (time_output(1) <= time_init+eps) then
    call error(errormsg)
 #endif
 
-   call output1(runname, time_init, delta_ts, glac_index, z_sl, &
+   call output1(runname, time_init, delta_ts, glac_index, &
                 flag_3d_output, ndat2d, ndat3d)
 
 end if
@@ -1615,14 +1617,14 @@ end if
    flag_3d_output = .false.
 
    if (flag_init_output) &
-      call output1(runname, time_init, delta_ts, glac_index, z_sl, &
+      call output1(runname, time_init, delta_ts, glac_index, &
                    flag_3d_output, ndat2d, ndat3d)
 
 if (time_output(1) <= time_init+eps) then
 
    flag_3d_output = .true.
 
-   call output1(runname, time_init, delta_ts, glac_index, z_sl, &
+   call output1(runname, time_init, delta_ts, glac_index, &
                 flag_3d_output, ndat2d, ndat3d)
 
 end if
@@ -1635,8 +1637,8 @@ end if
 #endif
 
 if (flag_init_output) then
-   call output2(time_init, dxi, deta, delta_ts, glac_index, z_sl)
-   call output4(time_init, dxi, deta, delta_ts, glac_index, z_sl)
+   call output2(time_init, dxi, deta, delta_ts, glac_index)
+   call output4(time_init, dxi, deta, delta_ts, glac_index)
 end if
 
 end subroutine sico_init
@@ -1978,7 +1980,7 @@ end subroutine topography2
 !! (including gradients) and of the horizontal grid spacings dxi, deta.
 !! For initial topography from previous simulation.
 !<------------------------------------------------------------------------------
-subroutine topography3(dxi, deta, z_sl, anfdatname)
+subroutine topography3(dxi, deta, anfdatname)
 
   use read_m, only : read_tms_nc, read_2d_input
 
@@ -1993,7 +1995,7 @@ implicit none
 
 character(len=100), intent(in) :: anfdatname
 
-real(dp),          intent(out) :: dxi, deta, z_sl
+real(dp),          intent(out) :: dxi, deta
 
 integer(i4b) :: i, j
 
@@ -2003,7 +2005,7 @@ real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 
 !-------- Read data from time-slice file of previous simulation --------
 
-call read_tms_nc(z_sl, anfdatname)
+call read_tms_nc(anfdatname)
 
 !-------- Set topography of the relaxed bedrock --------
 

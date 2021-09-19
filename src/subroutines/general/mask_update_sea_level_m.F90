@@ -49,7 +49,7 @@ contains
 !> Main function of mask_update_m:
 !! Update of the ice-land-ocean mask due to changes of the sea level.
 !<------------------------------------------------------------------------------
-  function mask_update_sea_level(z_sl, i, j)
+  function mask_update_sea_level(i, j)
 
   implicit none
 
@@ -58,7 +58,6 @@ contains
 #else
   integer(i4b), intent(inout) :: i, j
 #endif
-  real(dp),     intent(in) :: z_sl
 
   integer(i1b) :: mask_update_sea_level
   real(dp)     :: rhosw_rho_ratio, H_sea
@@ -69,7 +68,7 @@ contains
 
   if ( (mask(j,i) == 1_i1b).or.(mask(j,i) == 2_i1b) ) then
 
-     if (zl(j,i) > z_sl) then
+     if (zl(j,i) > z_sl(j,i)) then
         mask_update_sea_level = 1_i1b   ! now ice-free land
         return
      else
@@ -81,14 +80,14 @@ contains
 
   else   ! (mask(j,i) == 0_i1b, 3_i1b)
 
-     if (zl(j,i) > z_sl) then
+     if (zl(j,i) > z_sl(j,i)) then
 
         mask_update_sea_level = 0_i1b   ! now grounded ice
         return
 
      else
 
-        H_sea = z_sl-zl(j,i)   ! sea depth
+        H_sea = z_sl(j,i)-zl(j,i)   ! sea depth
 
         if ( H(j,i) < (rhosw_rho_ratio*H_sea) ) then
 

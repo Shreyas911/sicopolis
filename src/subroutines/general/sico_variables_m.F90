@@ -422,6 +422,12 @@ save
    real(dp), dimension(0:JMAX,0:IMAX) :: temp_maat
 !> temp_s(j,i): Ice surface temperature
    real(dp), dimension(0:JMAX,0:IMAX) :: temp_s
+!> z_sl(j,i): Sea level
+   real(dp), dimension(0:JMAX,0:IMAX) :: z_sl
+!> dzsl_dtau(j,i): Derivative of zsl by tau (time)
+   real(dp), dimension(0:JMAX,0:IMAX) :: dzsl_dtau
+!> z_sl_mean: Mean sea level
+   real(dp) :: z_sl_mean
 !> am_perp(j,i): Ice volume flux across the z=zm interface
    real(dp), dimension(0:JMAX,0:IMAX) :: am_perp
 !> am_perp_st(j,i): Steady-state part of am_perp

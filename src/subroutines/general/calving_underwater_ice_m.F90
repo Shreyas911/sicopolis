@@ -50,11 +50,9 @@ contains
 !-------------------------------------------------------------------------------
 !> Main routine: Calving of "underwater ice".
 !<------------------------------------------------------------------------------
-  subroutine calving_underwater_ice(z_sl)
+  subroutine calving_underwater_ice()
 
   implicit none
-
-  real(dp), intent(in) :: z_sl
 
   real(dp)                           :: year_sec_inv
   real(dp)                           :: rhosw_rho_ratio

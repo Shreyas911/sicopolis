@@ -5,7 +5,7 @@
 !
 #define       MODEL_SICOPOLIS
 #define       VERSION '5-dev'
-#define       DATE    '2021-07-14'
+#define       DATE    '2021-09-18'
 !
 !> @mainpage
 !!
@@ -329,8 +329,6 @@ program sicopolis
 !  delta_ts          : Time-dependent surface-temperature variation
 !  glac_index        : Time-dependent glacial index
 !  forcing_flag      : 1 - forcing by delta_ts, 2 - forcing by glac_index
-!  z_sl              : Sea level
-!  dzsl_dtau         : Derivative of z_sl by tau (time)
 !  precip_mam_present(j,i) : Measured present spring precipitation
 !  precip_jja_present(j,i) : Measured present summer precipitation
 !  precip_son_present(j,i) : Measured present autumn precipitation
@@ -408,7 +406,7 @@ real(dp) :: dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser
 real(dp) :: time, time_init, time_end
 real(dp), dimension(100) :: time_output
 real(dp) :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
-real(dp) :: z_sl, dzsl_dtau, z_mar
+real(dp) :: z_mar
 character(len=100) :: runname
 !openad sicopolis_independents_cost
 !@ end openad_extract @
@@ -427,7 +425,7 @@ call sico_init(delta_ts, glac_index, &
      dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
      time, time_init, time_end, time_output, &
      dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-     z_sl, dzsl_dtau, z_mar, &
+     z_mar, &
      ndat2d, ndat3d, n_output, &
      runname)
 
@@ -439,7 +437,7 @@ call sico_main_loop(delta_ts, glac_index, &
      dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
      time, time_init, time_end, time_output, &
      dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-     z_sl, dzsl_dtau, z_mar, &
+     z_mar, &
      ndat2d, ndat3d, n_output, &
      runname)
 
