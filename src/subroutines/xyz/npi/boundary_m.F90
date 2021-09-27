@@ -63,7 +63,7 @@ subroutine boundary(time, dtime, dxi, deta, &
 #if ((MARGIN==2) \
       && (MARINE_ICE_FORMATION==2) \
       && (MARINE_ICE_CALVING==9))
-  use calving_underwater_ice_m
+  use calving_m
 #endif
 
   use mask_update_sea_level_m
@@ -157,6 +157,12 @@ integer(i4b) :: nc3cor(3)
 !     nc3cor(3): Corner of a 3-d array
 integer(i4b) :: nc3cnt(3)
 !     nc3cnt(3): Count of a 3-d array
+#endif
+
+#if ((MARGIN==2) \
+      && (MARINE_ICE_FORMATION==2) \
+      && (MARINE_ICE_CALVING==9))
+  real(dp), dimension(0:JMAX,0:IMAX) :: calv_uw_ice
 #endif
 
 real(dp), parameter :: &
@@ -1202,7 +1208,7 @@ end do
 
 #endif /* Normal vs. OpenAD */
 
-!-------- Calving rate of grounded ice --------
+!-------- Calving --------
 
 calving = 0.0_dp
 
@@ -1210,7 +1216,7 @@ calving = 0.0_dp
       && (MARINE_ICE_FORMATION==2) \
       && (MARINE_ICE_CALVING==9))
 
-call calving_underwater_ice()
+call calving_underwater_ice(calv_uw_ice)
 calving = calving + calv_uw_ice
 
 #endif
