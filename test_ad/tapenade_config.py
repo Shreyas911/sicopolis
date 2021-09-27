@@ -365,23 +365,21 @@ if __name__ == "__main__":
 		raise Exception ("Wrong input arguments for dimension")
 		sys.exit(1)
 
-	if args.perturbation:
-		if args.dimension == 3 :
-			setup_grdchk(args.ind_var, args.header, args.domain, perturbation = args.perturbation, dimension = args.dimension, z_co_ord = args.z_co_ord)
-		else :
-			setup_grdchk(args.ind_var, args.header, args.domain, perturbation = args.perturbation)
-	else:
-		if args.dimension == 3 :
-			setup_grdchk(args.ind_var, args.header, args.domain, dimension = args.dimension, z_co_ord = args.z_co_ord)
-		else :
-			setup_grdchk(args.ind_var, args.header, args.domain)
-	
-	if args.travis:
-		compile_code('grdchk', args.header, args.domain, travis_ci='TRAVIS_CI=yes')
-	else:
-		compile_code('grdchk', args.header, args.domain)
+	kwargs = dict(ind_var=args.ind_var, header=args.header, domain=args.domain,
+		     dimension=args.dimension, perturbation=args.perturbation,z_co_ord=args.z_co_ord)
 
-	print(f'grdchk compilation complete for {args.header}.')
+	setup_grdchk(**{k: v for k, v in kwargs.items() if v is not None},
+        limited_or_full = 'limited',
+        tapenade_m_file = 'subroutines/tapenade/tapenade_m.F90',
+        unit = '9999')
+
+	if args.travis:
+		kwargs = dict(mode='grdchk', header=args.header, domain=args.domain, travis_ci='TRAVIS_CI=yes')
+	else:
+		kwargs = dict(mode='grdchk', header=args.header, domain=args.domain)
+
+	compile_code(**{k: v for k, v in kwargs.items() if v is not None}, clean = True)	
+	print(f'grdchk execution complete for {args.header}.')
 
 	run_executable('grdchk')
 	print(f'grdchk execution complete for {args.header}.')
@@ -390,28 +388,34 @@ if __name__ == "__main__":
 		setup_binomial_checkpointing(status = True, number_of_steps = args.checkpoint)
 	else: 
 		setup_binomial_checkpointing(status = False)
+
+	if args.travis:
+		kwargs = dict(mode='adjoint', header=args.header, domain=args.domain, 
+			     dep_var = args.dep_var, ind_vars = args.ind_var, travis_ci='TRAVIS_CI=yes')
+	else:
+		kwargs = dict(mode='adjoint', header=args.header, domain=args.domain,
+			     dep_var = args.dep_var, ind_vars = args.ind_var)
+
+	compile_code(**{k: v for k, v in kwargs.items() if v is not None}, clean = True)	
+
+	kwargs = dict(ind_vars = [args.ind_var], header=args.header, domain=args.domain,
+		     dimensions = [args.dimension], z_co_ords = [args.z_co_ord])
+
+	setup_adjoint(**{k: v for k, v in kwargs.items() if (v is not None and v != [None])},
+        	     numCore_cpp_b_file = 'numCore_cpp_b.f90')
+
+	if args.travis:
+		kwargs = dict(mode='adjoint', header=args.header, domain=args.domain, 
+			     dep_var = args.dep_var, ind_vars = args.ind_var, travis_ci='TRAVIS_CI=yes')
+	else:
+		kwargs = dict(mode='adjoint', header=args.header, domain=args.domain,
+			     dep_var = args.dep_var, ind_vars = args.ind_var)
+
+	compile_code(**{k: v for k, v in kwargs.items() if v is not None}, clean = False)
 	
-	if args.travis:
-		compile_code('adjoint', args.header, args.domain, dep_var = args.dep_var, ind_vars = args.ind_var, travis_ci='TRAVIS_CI=yes')
-	else:
-		compile_code('adjoint', args.header, args.domain, dep_var = args.dep_var, ind_vars = args.ind_var)
-
-	if args.dimension == 2 or args.dimension is None: 
-		setup_adjoint([args.ind_var], args.header, args.domain)
-	elif args.dimension == 3 and args.z_co_ord is not None:
-		setup_adjoint([args.ind_var], args.header, args.domain, dimensions = [args.dimension], z_co_ords = [args.z_co_ord])
-	else:
-		raise Exception('Some dimension related error in setting up adjoint.')
-		sys.exit(1)
-
-	if args.travis:
-		compile_code('adjoint', args.header, args.domain, clean = False, dep_var = args.dep_var, ind_vars = args.ind_var, travis_ci='TRAVIS_CI=yes')
-	else:
-		compile_code('adjoint', args.header, args.domain, clean = False, dep_var = args.dep_var, ind_vars = args.ind_var)
-
 	print(f'adjoint compilation complete for {args.header}.')
 	
 	run_executable('adjoint')
 	print(f'adjoint execution complete for {args.header}.')
-	
-	validate_FD_AD(f'GradientVals_{args.ind_var}_{args.perturbation:.2E}_{args.header}.dat', f'AdjointVals_{args.ind_var}_{args.header}_limited.dat')
+
+	validate_FD_AD(f'GradientVals_{args.ind_var}_{args.perturbation:.2E}_{args.header}_limited.dat', f'AdjointVals_{args.ind_var}_{args.header}_limited.dat')
