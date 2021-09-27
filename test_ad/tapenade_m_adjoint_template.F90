@@ -77,12 +77,12 @@ use sico_variables_m_diff
   real(dp), dimension(100)                   :: time_output
   real(dp)                                   :: dxi, deta, dzeta_c, &
                                                 dzeta_t, dzeta_r
-  real(dp)                                   :: z_sl, dzsl_dtau, z_mar
+  real(dp)                                   :: z_mar
   character(len=100)                         :: runname
 fcb = 1.
 call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
 & dtime_temp, dtime_wss, dtime_out, dtime_ser, time, time_init, time_end&
-& , time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, z_sl, dzsl_dtau, &
+& , time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
 & z_mar, ndat2d, ndat3d, n_output, runname)
   end subroutine adjoint_master
 #endif
@@ -119,7 +119,7 @@ call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
                                       dtime_out, dtime_ser
    real(dp)           :: time, time_init, time_end, time_output(100)
    real(dp)           :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
-   real(dp)           :: z_sl, dzsl_dtau, z_mar
+   real(dp)           :: z_mar
    character(len=100) :: runname
    
    !-------- Variable declarations needed for this routine specifically
@@ -181,7 +181,7 @@ call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
                  dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
                  time, time_init, time_end, time_output, &
                  dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-                 z_sl, dzsl_dtau, z_mar, &
+                 z_mar, &
                  ndat2d, ndat3d, n_output, &
                  runname)
 
@@ -238,7 +238,7 @@ call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
                  dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
                  time, time_init, time_end, time_output, &
                  dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-                 z_sl, dzsl_dtau, z_mar, &
+                 z_mar, &
                  ndat2d, ndat3d, n_output, &
                  runname)
           
