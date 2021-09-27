@@ -19,9 +19,6 @@ endif
 
 ifndef LISDIR
 LISDIR=/home/shreyas/lis-1.4.43/installation
-ifdef TRAVIS_CI
-LISDIR=/lis-2.0.30/installation
-endif
 endif
 
 ifdef LISDIR
@@ -32,25 +29,12 @@ endif
 
 ifndef NETCDF_FORTRAN_DIR
 NETCDF_FORTRAN_DIR=/opt/ohpc/pub/libs/gnu/openmpi/netcdf-fortran/4.4.4
-ifdef TRAVIS_CI
-NETCDF_FORTRAN_DIR=/usr
-endif
 endif
 
 ifdef NETCDF_FORTRAN_DIR
 LIB_NETCDF_F90=${NETCDF_FORTRAN_DIR}/lib/libnetcdff.so
 LIB_NETCDF_F90_FLAG=-L${NETCDF_FORTRAN_DIR}/lib -lnetcdff
 NETCDF_F90_FLAG=-I${NETCDF_FORTRAN_DIR}/include/
-ifdef TRAVIS_CI
-LIB_NETCDF_F90=${NETCDF_FORTRAN_DIR}/lib64/libnetcdff.so
-LIB_NETCDF_F90_FLAG=-L${NETCDF_FORTRAN_DIR}/lib64 -lnetcdff
-NETCDF_F90_FLAG=-I/usr/lib64/gfortran/modules/
-endif
-endif
-
-PYTHON=python
-ifdef TRAVIS_CI
-PYTHON=python3
 endif
 
 F90FLAGS= -O3 -g -DRUN_SPECS_HEADER=\"sico_specs.h\" -mcmodel=medium -fno-range-check -ffpe-trap=invalid,zero 
@@ -299,7 +283,7 @@ numCore.f90: numCore.F90
 	cat numcore_temp.F90 > $@
 
 numCore.F90: sicopolis.F90 sico_specs.h $(SRC) $(SRC_SICO) $(SRC_SICO_COST) $(SRC_SICO_SOLVERS)
-	${PYTHON} subroutines/tapenade/preprocessor.py sicopolis.F90
+	python subroutines/tapenade/preprocessor.py sicopolis.F90
 
 RUN=$(HEADER)
 INDIR=../sico_in
@@ -363,9 +347,6 @@ clean:
               *.o\
               *.mod*\
               driver*\
-              *.o\
-              *.mod*\
-              driver\
               *~\
               oad_template_*.*\
               sico_specs.h\
