@@ -57,7 +57,7 @@ subroutine boundary(time, dtime, dxi, deta, &
 #if ((MARGIN==2) \
       && (MARINE_ICE_FORMATION==2) \
       && (MARINE_ICE_CALVING==9))
-  use calving_underwater_ice_m
+  use calving_m
 #endif
 
   use mask_update_sea_level_m
@@ -82,6 +82,12 @@ real(dp) :: time_gr, time_kl
 real(dp), dimension(0:JMAX,0:IMAX) :: dist
 logical, dimension(0:JMAX,0:IMAX) :: check_point
 logical, save                     :: firstcall = .true.
+
+#if ((MARGIN==2) \
+      && (MARINE_ICE_FORMATION==2) \
+      && (MARINE_ICE_CALVING==9))
+  real(dp), dimension(0:JMAX,0:IMAX) :: calv_uw_ice
+#endif
 
 !-------- Initialization of variables --------
 
@@ -357,7 +363,7 @@ calving = 0.0_dp
       && (MARINE_ICE_FORMATION==2) \
       && (MARINE_ICE_CALVING==9))
 
-call calving_underwater_ice()
+call calving_underwater_ice(calv_uw_ice)
 calving = calving + calv_uw_ice
 
 #endif

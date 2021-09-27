@@ -1,10 +1,10 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !
-!  Module :  c a l v i n g _ u n d e r w a t e r _ i c e _ m
+!  Module :  c a l v i n g _ m
 !
 !> @file
 !!
-!! Calving of "underwater ice".
+!! Calving of grounded or floating ice.
 !!
 !! @section Copyright
 !!
@@ -30,9 +30,9 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
-!> Calving of "underwater ice".
+!> Calving of grounded or floating ice.
 !<------------------------------------------------------------------------------
-module calving_underwater_ice_m
+module calving_m
 
   use sico_types_m
   use sico_variables_m
@@ -41,8 +41,6 @@ module calving_underwater_ice_m
 
   implicit none
 
-  real(dp), dimension(0:JMAX,0:IMAX) :: calv_uw_ice
-
   public
 
 contains
@@ -50,9 +48,11 @@ contains
 !-------------------------------------------------------------------------------
 !> Main routine: Calving of "underwater ice".
 !<------------------------------------------------------------------------------
-  subroutine calving_underwater_ice()
+  subroutine calving_underwater_ice(calv_uw_ice)
 
   implicit none
+
+  real(dp), dimension(0:JMAX,0:IMAX), intent(out) :: calv_uw_ice
 
   real(dp)                           :: year_sec_inv
   real(dp)                           :: rhosw_rho_ratio
@@ -121,5 +121,5 @@ contains
 
 !-------------------------------------------------------------------------------
 
-end module calving_underwater_ice_m
+end module calving_m
 !

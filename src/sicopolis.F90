@@ -5,7 +5,7 @@
 !
 #define       MODEL_SICOPOLIS
 #define       VERSION '5-dev'
-#define       DATE    '2021-09-18'
+#define       DATE    '2021-09-25'
 !
 !> @mainpage
 !!
@@ -199,10 +199,8 @@
 #include "subroutines/general/flag_update_gf_gl_cf_m.F90"
 #include "subroutines/general/pdd_m.F90"
 
-#if ((MARGIN==2) \
-      && (MARINE_ICE_FORMATION==2) \
-      && (MARINE_ICE_CALVING==9))
-#include "subroutines/general/calving_underwater_ice_m.F90"
+#if (MARGIN==2 || MARGIN==3)
+#include "subroutines/general/calving_m.F90"
 #endif
 
 #if (defined(GRL))

@@ -72,7 +72,7 @@ subroutine boundary(time, dtime, dxi, deta, &
 #if ((MARGIN==2) \
       && (MARINE_ICE_FORMATION==2) \
       && (MARINE_ICE_CALVING==9))
-  use calving_underwater_ice_m
+  use calving_m
 #endif
 
 implicit none
@@ -112,6 +112,12 @@ logical, save                     :: firstcall = .true.
 
 #if (TSURFACE==6)
 type (ins) :: temp_now, temp_present
+#endif
+
+#if ((MARGIN==2) \
+      && (MARINE_ICE_FORMATION==2) \
+      && (MARINE_ICE_CALVING==9))
+  real(dp), dimension(0:JMAX,0:IMAX) :: calv_uw_ice
 #endif
 
 real(dp), parameter :: &
@@ -642,7 +648,7 @@ calving = 0.0_dp
       && (MARINE_ICE_FORMATION==2) \
       && (MARINE_ICE_CALVING==9))
 
-call calving_underwater_ice()
+call calving_underwater_ice(calv_uw_ice)
 calving = calving + calv_uw_ice
 
 #endif
