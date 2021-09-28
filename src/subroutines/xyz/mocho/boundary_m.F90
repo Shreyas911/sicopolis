@@ -559,9 +559,9 @@ runoff_prescribed = -min(smb_corr_prescribed, 0.0_dp)
 accum  = accum  + accum_prescribed
 runoff = runoff + runoff_prescribed
 
-!-------- Calving rate of grounded ice --------
+!-------- Calving --------
 
-calving = 0.0_dp
+calving = 0.0_dp   ! Initialization
 
 #if ((MARGIN==2) \
       && (MARINE_ICE_FORMATION==2) \

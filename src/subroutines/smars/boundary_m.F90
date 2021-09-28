@@ -640,9 +640,9 @@ temp_s = min(temp_ma, -eps)        ! Cut-off of positive air temperatures
 temp_s = max(temp_s, temp_s_min)   ! Cut-off of air temperatures below the
                                    ! sublimation temperature of CO2
 
-!-------- Calving rate of grounded ice --------
+!-------- Calving --------
 
-calving = 0.0_dp
+calving = 0.0_dp   ! Initialization
 
 #if ((MARGIN==2) \
       && (MARINE_ICE_FORMATION==2) \

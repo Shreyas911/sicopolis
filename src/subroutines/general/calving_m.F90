@@ -46,7 +46,7 @@ module calving_m
 contains
 
 !-------------------------------------------------------------------------------
-!> Main routine: Calving of "underwater ice".
+!> Calving of grounded "underwater ice".
 !<------------------------------------------------------------------------------
   subroutine calving_underwater_ice(calv_uw_ice)
 
