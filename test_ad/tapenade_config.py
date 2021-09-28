@@ -325,6 +325,86 @@ def setup_adjoint(ind_vars, header, domain,
 		print(err)
 		sys.exit(1)
 
+def setup_forward(ind_var, header, domain,
+	dimension = 2, 
+	z_co_ord = None, limited_or_full = 'limited',
+	tapenade_m_tlm_file = 'subroutines/tapenade/tapenade_m.F90',
+        unit = '99999'):
+	
+	if(domain == 'grl' or domain == 'ant'):
+		pass
+	else:
+		raise ValueError('Wrong Domain')
+
+	copy_tapenade_m_template(template_file = '../test_ad/tapenade_m_tlm_template.F90',
+                        	destination_file = tapenade_m_tlm_file)
+
+	IMAX, JMAX, KCMAX, KTMAX = get_imax_jmax_kcmax_ktmax()
+
+	try :
+	
+		with open(tapenade_m_tlm_file) as f:
+			
+			file_lines = f.readlines()
+			new_file_lines = []
+			
+			for line in file_lines:
+
+
+				if(limited_or_full == 'full'):
+					if('!@ python_automated_tlm limited_or_full @' in line) :
+						line = f'   do i = 0, {IMAX}\n' \
+							+ f'   do j = 0, {JMAX}\n'
+
+					if('i = ipoints(p)' in line) :
+						line = ''
+					
+					if('j = jpoints(p)' in line) :
+						line = ''	
+			
+					if('close loop over points' in line) : 
+						line = line + '   end do\n'
+					
+				if ('!@ python_automated_tlm dep_vard @' in line):
+					
+					if (dimension == 2) :
+						line = line \
+							+ f'            {ind_var}d = 0.0\n' \
+							+ f'            {ind_var}d(j,i) = 1.0\n'
+					elif (dimension == 3 and z_co_ord is not None and z_co_ord < KCMAX):
+						line = line \
+							+ f'            {ind_var}d = 0.0\n' \
+							+ f'            {ind_var}d({z_co_ord},j,i) = 1.0\n'
+
+					else:
+						raise ValueError ("Something wrong with dimension in TLM")
+						sys.exit(1)
+						
+				if ('!@ python_automated_tlm IO begin @' in line):
+					line = line \
+						+ f'   open({unit}, ' \
+						+ f'file=\'ForwardVals_{ind_var}_\'//trim(RUNNAME)//\'_{limited_or_full}.dat\',&' \
+						+ f'\n       form="FORMATTED", status="REPLACE")' 
+
+				if ('!@ python_automated_tlm IO write @' in line):
+					line = line + f'          write({unit}, fmt=\'(f40.20)\') fcd\n'
+
+				if ('!@ python_automated_tlm IO end @' in line):
+					line = line + f'   close(unit={unit})\n'
+
+				new_file_lines.append(line)
+
+		with open(tapenade_m_tlm_file, "w") as f:
+			f.write(''.join(new_file_lines))
+
+	except FileNotFoundError :
+		print(f'{tapenade_m_tlm_file} not found.')
+		sys.exit(1)
+	except Exception as err:
+		print("Some problem with TLM setup.")
+		print(err)
+		sys.exit(1)
+
 def validate_FD_AD(grdchk_file, ad_file, tolerance = 0.1):
 	grdchk_data = np.loadtxt(grdchk_file, dtype = float)
 	ad_data = np.loadtxt(ad_file, dtype = float)
@@ -419,3 +499,23 @@ if __name__ == "__main__":
 	print(f'adjoint execution complete for {args.header}.')
 
 	validate_FD_AD(f'GradientVals_{args.ind_var}_{args.perturbation:.2E}_{args.header}_limited.dat', f'AdjointVals_{args.ind_var}_{args.header}_limited.dat')
+
+	kwargs = dict(ind_var = args.ind_var, header=args.header, domain=args.domain,
+        		dimension = args.dimension, z_co_ord = args.z_co_ord)
+		
+	setup_forward(**{k: v for k, v in kwargs.items() if (v is not None and v != [None])},
+        		tapenade_m_tlm_file = 'subroutines/tapenade/tapenade_m.F90')
+
+	if args.travis:
+		kwargs = dict(mode='forward', header=args.header, domain=args.domain, 
+			dep_var = args.dep_var, ind_vars = args.ind_var, travis_ci='TRAVIS_CI=yes')
+	else:
+		kwargs = dict(mode='forward', header=args.header, domain=args.domain,
+			dep_var = args.dep_var, ind_vars = args.ind_var)
+
+	compile_code(**{k: v for k, v in kwargs.items() if v is not None}, clean = True) 
+	print(f'TLM compilation complete for {args.header}.')
+	
+	run_executable('forward')
+	print(f'TLM execution complete for {args.header}.')
+	validate_FD_AD(f'GradientVals_{args.ind_var}_{args.perturbation:.2E}_{args.header}_limited.dat', f'ForwardVals_{args.ind_var}_{args.header}_limited.dat')
