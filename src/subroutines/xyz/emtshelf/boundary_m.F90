@@ -355,9 +355,9 @@ end do
 
 runoff = accum - as_perp
 
-!-------- Calving rate of grounded ice --------
+!-------- Calving --------
 
-calving = 0.0_dp
+calving = 0.0_dp   ! Initialization
 
 #if ((MARGIN==2) \
       && (MARINE_ICE_FORMATION==2) \

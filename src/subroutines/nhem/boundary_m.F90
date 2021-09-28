@@ -671,9 +671,9 @@ end where
 where (temp_s > -0.001_dp) temp_s = -0.001_dp
                             ! Cut-off of positive air temperatures
 
-!-------- Calving rate of grounded ice --------
+!-------- Calving --------
 
-calving = 0.0_dp
+calving = 0.0_dp   ! Initialization
 
 #if ((MARGIN==2) \
       && (MARINE_ICE_FORMATION==2) \
