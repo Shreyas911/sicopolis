@@ -48,16 +48,14 @@ contains
 !-------------------------------------------------------------------------------
 !> Calving of grounded "underwater ice".
 !<------------------------------------------------------------------------------
-  subroutine calving_underwater_ice(calv_uw_ice)
+  subroutine calving_underwater_ice()
 
   implicit none
-
-  real(dp), dimension(0:JMAX,0:IMAX), intent(out) :: calv_uw_ice
 
   real(dp)                           :: year_sec_inv
   real(dp)                           :: rhosw_rho_ratio
   real(dp)                           :: calv_uw_coeff, r1_calv_uw, r2_calv_uw
-  real(dp), dimension(0:JMAX,0:IMAX) :: H_sea
+  real(dp), dimension(0:JMAX,0:IMAX) :: H_sea, calv_uw_ice
   integer(i4b)                       :: i, j
 
 !-------- Term abbreviations --------
@@ -116,6 +114,8 @@ contains
   end do
 
 #endif /* Normal vs. OpenAD */
+
+  calving = calving + calv_uw_ice
 
   end subroutine calving_underwater_ice
 
