@@ -157,6 +157,10 @@ end subroutine calc_thk_init
 !<------------------------------------------------------------------------------
 subroutine calc_thk_sia_expl(time, dtime, dxi, deta, z_mar)
 
+#if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
+  use calving_m
+#endif
+
 implicit none
 
 real(dp), intent(in) :: time, dtime, dxi, deta
@@ -240,6 +244,10 @@ use sico_maths_m, only : sor_sprs
 #else /* OpenAD */
 use sico_maths_m
 #endif /* Normal vs. OpenAD */
+
+#if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
+  use calving_m
+#endif
 
 implicit none
 
@@ -593,6 +601,10 @@ end subroutine calc_thk_sia_impl
 !<------------------------------------------------------------------------------
 subroutine calc_thk_expl(time, dtime, dxi, deta, z_mar)
 
+#if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
+  use calving_m
+#endif
+
 implicit none
 
 real(dp), intent(in) :: time, dtime, dxi, deta
@@ -740,6 +752,10 @@ use sico_maths_m, only : sor_sprs, sico_lis_solver
 #else /* OpenAD */
 use sico_maths_m
 #endif /* Normal vs. OpenAD */
+
+#if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
+  use calving_m
+#endif
 
 implicit none
 
