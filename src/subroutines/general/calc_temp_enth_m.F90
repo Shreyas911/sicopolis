@@ -185,7 +185,7 @@ do j=1, JMAX-1   ! skipping domain margins
          zm_new(j,i)     = zb(j,i)
          H_c_new(j,i)    = H_c(j,i)
          H_t_new(j,i)    = 0.0_dp
-
+         !$AD NOCHECKPOINT
          call calc_temp_enth_1(at1, at2_1, at2_2, at3_1, at3_2, &
                                at4_1, at4_2, at5, at6, at7, &
                                atr1, acb1, acb2, acb3, acb4, alb1, &
@@ -200,7 +200,7 @@ do j=1, JMAX-1   ! skipping domain margins
 
             n_cts_new(j,i)  = 0
             kc_cts_new(j,i) = 0
-
+            !$AD NOCHECKPOINT
             call calc_temp_enth_2(at1, at2_1, at2_2, at3_1, at3_2, &
                                   at4_1, at4_2, at5, at6, at7, atr1, alb1, &
                                   ai1, ai2, aqtlde, am3, &
@@ -219,7 +219,7 @@ do j=1, JMAX-1   ! skipping domain margins
          zm_new(j,i)     = zb(j,i)
          H_c_new(j,i)    = H_c(j,i)
          H_t_new(j,i)    = H_t(j,i)
-
+         !$AD NOCHECKPOINT
          call calc_temp_enth_2(at1, at2_1, at2_2, at3_1, at3_2, &
                                at4_1, at4_2, at5, at6, at7, atr1, alb1, &
                                ai1, ai2, aqtlde, am3, &
@@ -233,7 +233,7 @@ do j=1, JMAX-1   ! skipping domain margins
 
             n_cts_new(j,i)  = -1
             kc_cts_new(j,i) =  0
-
+            !$AD NOCHECKPOINT
             call calc_temp_enth_1(at1, at2_1, at2_2, at3_1, at3_2, &
                                   at4_1, at4_2, at5, at6, at7, &
                                   atr1, acb1, acb2, acb3, acb4, alb1, &
@@ -246,7 +246,7 @@ do j=1, JMAX-1   ! skipping domain margins
 
                n_cts_new(j,i)  = 0
                kc_cts_new(j,i) = 0
-
+               !$AD NOCHECKPOINT
                call calc_temp_enth_2(at1, at2_1, at2_2, at3_1, at3_2, &
                                      at4_1, at4_2, at5, at6, at7, atr1, alb1, &
                                      ai1, ai2, aqtlde, am3, &
@@ -269,7 +269,7 @@ do j=1, JMAX-1   ! skipping domain margins
       zm_new(j,i)     = zb(j,i)
       H_c_new(j,i)    = H_c(j,i)
       H_t_new(j,i)    = 0.0_dp
-
+      !$AD NOCHECKPOINT
       call calc_temp_enth_ssa(at1, at2_1, at2_2, at3_1, at3_2, &
                               at4_1, at4_2, at5, at6, at7, atr1, alb1, &
                               ai1, ai2, &
@@ -297,7 +297,7 @@ do j=1, JMAX-1   ! skipping domain margins
       zm_new(j,i)     = zb(j,i)
       H_c_new(j,i)    = H_c(j,i)
       H_t_new(j,i)    = 0.0_dp
-
+      !$AD NOCHECKPOINT
       call calc_temp_enth_r(atr1, alb1, i, j)
 
    end if
