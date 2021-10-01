@@ -48,16 +48,14 @@ contains
 !-------------------------------------------------------------------------------
 !> Calving of grounded "underwater ice".
 !<------------------------------------------------------------------------------
-  subroutine calving_underwater_ice(calv_uw_ice)
+  subroutine calving_underwater_ice()
 
   implicit none
-
-  real(dp), dimension(0:JMAX,0:IMAX), intent(out) :: calv_uw_ice
 
   real(dp)                           :: year_sec_inv
   real(dp)                           :: rhosw_rho_ratio
   real(dp)                           :: calv_uw_coeff, r1_calv_uw, r2_calv_uw
-  real(dp), dimension(0:JMAX,0:IMAX) :: H_sea
+  real(dp), dimension(0:JMAX,0:IMAX) :: H_sea, calv_uw_ice
   integer(i4b)                       :: i, j
 
 !-------- Term abbreviations --------
@@ -117,7 +115,69 @@ contains
 
 #endif /* Normal vs. OpenAD */
 
+  calving = calving + calv_uw_ice
+
   end subroutine calving_underwater_ice
+
+#if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
+!-------------------------------------------------------------------------------
+!> Adjustment of the newly computed ice thickness distribution due to either
+!  the retreat mask due to oceanic forcing or the ice-shelf collapse mask
+!  (counted as calving).
+!<------------------------------------------------------------------------------
+  subroutine calving_retreat_mask(time, dtime)
+
+  implicit none
+
+  real(dp), intent(in) :: time, dtime
+
+  integer(i4b) :: i, j
+  real(dp), dimension(0:JMAX,0:IMAX) :: H_new_tmp, dHdt_retreat
+  real(dp), dimension(0:JMAX,0:IMAX) :: calv_retreat_mask
+  real(dp)                           :: dtime_inv
+  real(dp)                           :: dtime_1year, dtime_1year_inv
+
+  dtime_inv       = 1.0_dp/dtime
+  dtime_1year     = year2sec   ! 1 year (in seconds)
+  dtime_1year_inv = 1.0_dp/dtime_1year
+
+!-------- Saving computed H_new before any adjustments --------
+
+  H_new_tmp = H_new
+
+!-------- Adjustment due to the retreat mask --------
+
+  dHdt_retreat = 0.0_dp   ! initialization
+
+  do i=0, IMAX
+  do j=0, JMAX
+
+#if (RETREAT_MASK==1)
+     if (H_new(j,i) > 0.0_dp) then
+#elif (ICE_SHELF_COLLAPSE_MASK==1)
+     if ((H_new(j,i) > 0.0_dp).and.(mask(j,i)==3_i1b)) then
+#endif
+
+        dHdt_retreat(j,i) = -(1.0_dp-r_mask_retreat(j,i))*H_ref_retreat(j,i) &
+                                                         *dtime_1year_inv
+
+        H_new(j,i) = max((H_new(j,i) + dHdt_retreat(j,i)*dtime), 0.0_dp)
+
+     end if
+
+  end do
+  end do
+
+!-------- Computation of the mass balance adjustment --------
+
+  calv_retreat_mask = (H_new_tmp-H_new)*dtime_inv
+                      ! calving is counted as positive for mass loss
+
+  calving = calving + calv_retreat_mask
+
+  end subroutine calving_retreat_mask
+
+#endif   /* (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1) */
 
 !-------------------------------------------------------------------------------
 

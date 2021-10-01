@@ -157,6 +157,10 @@ end subroutine calc_thk_init
 !<------------------------------------------------------------------------------
 subroutine calc_thk_sia_expl(time, dtime, dxi, deta, z_mar)
 
+#if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
+  use calving_m
+#endif
+
 implicit none
 
 real(dp), intent(in) :: time, dtime, dxi, deta
@@ -222,8 +226,10 @@ call apply_mb_source(dtime, z_mar)
 
 call thk_adjust(time, dtime)
 
+!-------- Calving due to prescribed retreat mask --------
+
 #if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
-call thk_adjust_retreat_mask(time, dtime)
+call calving_retreat_mask(time, dtime)
 #endif
 
 end subroutine calc_thk_sia_expl
@@ -238,6 +244,10 @@ use sico_maths_m, only : sor_sprs
 #else /* OpenAD */
 use sico_maths_m
 #endif /* Normal vs. OpenAD */
+
+#if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
+  use calving_m
+#endif
 
 implicit none
 
@@ -578,8 +588,10 @@ call apply_mb_source(dtime, z_mar)
 
 call thk_adjust(time, dtime)
 
+!-------- Calving due to prescribed retreat mask --------
+
 #if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
-call thk_adjust_retreat_mask(time, dtime)
+call calving_retreat_mask(time, dtime)
 #endif
 
 end subroutine calc_thk_sia_impl
@@ -588,6 +600,10 @@ end subroutine calc_thk_sia_impl
 !> Explicit solver for the general ice thickness equation.
 !<------------------------------------------------------------------------------
 subroutine calc_thk_expl(time, dtime, dxi, deta, z_mar)
+
+#if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
+  use calving_m
+#endif
 
 implicit none
 
@@ -714,8 +730,10 @@ call apply_mb_source(dtime, z_mar)
 
 call thk_adjust(time, dtime)
 
+!-------- Calving due to prescribed retreat mask --------
+
 #if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
-call thk_adjust_retreat_mask(time, dtime)
+call calving_retreat_mask(time, dtime)
 #endif
 
 end subroutine calc_thk_expl
@@ -734,6 +752,10 @@ use sico_maths_m, only : sor_sprs, sico_lis_solver
 #else /* OpenAD */
 use sico_maths_m
 #endif /* Normal vs. OpenAD */
+
+#if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
+  use calving_m
+#endif
 
 implicit none
 
@@ -1120,8 +1142,10 @@ call apply_mb_source(dtime, z_mar)
 
 call thk_adjust(time, dtime)
 
+!-------- Calving due to prescribed retreat mask --------
+
 #if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
-call thk_adjust_retreat_mask(time, dtime)
+call calving_retreat_mask(time, dtime)
 #endif
 
 end subroutine calc_thk_impl
@@ -1343,65 +1367,6 @@ end subroutine apply_mb_source
                     ! runoff is counted as positive for mass loss
 
 end subroutine thk_adjust
-
-#if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
-!-------------------------------------------------------------------------------
-!> Adjustment of the newly computed ice thickness distribution due to either
-!  the retreat mask due to oceanic forcing or the ice-shelf collapse mask
-!  (counted as calving).
-!<------------------------------------------------------------------------------
-  subroutine thk_adjust_retreat_mask(time, dtime)
-
-  implicit none
-
-  real(dp), intent(in) :: time, dtime
-
-  integer(i4b) :: i, j
-  real(dp), dimension(0:JMAX,0:IMAX) :: H_new_tmp, dHdt_retreat
-  real(dp)                           :: dtime_inv
-  real(dp)                           :: dtime_1year, dtime_1year_inv
-
-  dtime_inv       = 1.0_dp/dtime
-  dtime_1year     = year2sec   ! 1 year (in seconds)
-  dtime_1year_inv = 1.0_dp/dtime_1year
-
-!-------- Saving computed H_new before any adjustments --------
-
-  H_new_tmp = H_new
-
-!-------- Adjustment due to the retreat mask --------
-
-  dHdt_retreat = 0.0_dp
-
-  do i=0, IMAX
-  do j=0, JMAX
-
-#if (RETREAT_MASK==1)
-     if (H_new(j,i) > 0.0_dp) then
-#elif (ICE_SHELF_COLLAPSE_MASK==1)
-     if ((H_new(j,i) > 0.0_dp).and.(mask(j,i)==3_i1b)) then
-#endif
-
-        dHdt_retreat(j,i) = -(1.0_dp-r_mask_retreat(j,i))*H_ref_retreat(j,i) &
-                                                         *dtime_1year_inv
-
-        H_new(j,i) = max((H_new(j,i) + dHdt_retreat(j,i)*dtime), 0.0_dp)
-
-     end if
-
-  end do
-  end do
-
-!-------- Computation of the mass balance adjustment --------
-
-  smb_corr_retreat_mask = (H_new-H_new_tmp)*dtime_inv
-
-  calving = calving - smb_corr_retreat_mask
-                    ! calving is counted as positive for mass loss
-
-end subroutine thk_adjust_retreat_mask
-
-#endif   /* (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1) */
 
 !-------------------------------------------------------------------------------
 !> Update of the ice-land-ocean mask etc.
@@ -2026,31 +1991,6 @@ do j=0, JMAX
 end do
 end do
 
-#elif (ICE_SHELF_CALVING==9)
-
-#if (defined(MISMIPP))
-
-do i=0, IMAX
-do j=0, JMAX
-
-   if ((mask(j,i)==3_i1b).and.(xi(i) > Lx)) then
-      mask(j,i) = 2_i1b   ! floating ice point changes to sea point
-   end if
-
-end do
-end do
-
-#else
-
-errormsg = ' >>> calc_thk_mask_update_aux3:' &
-         //           end_of_line &
-         //'          Option ICE_SHELF_CALVING==9' &
-         //           end_of_line &
-         //'          only defined for MISMIP+!'
-call error(errormsg)
-
-#endif
-
 #endif
 
 #endif
@@ -2299,7 +2239,7 @@ end subroutine ocean_connect
 
 !-------------------------------------------------------------------------------
 !> Determination of the several components of the mass balance:
-!! Runoff, calving, basal melt. 
+!! Accumulation (precipitation), runoff, net SMB, calving, basal melt. 
 !<------------------------------------------------------------------------------
 subroutine account_mb_source(dtime, z_mar)
 

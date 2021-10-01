@@ -88,12 +88,6 @@ real(dp), dimension(0:JMAX,0:IMAX) :: accum_prescribed, &
 logical, dimension(0:JMAX,0:IMAX) :: check_point
 logical, save                     :: firstcall = .true.
 
-#if ((MARGIN==2) \
-      && (MARINE_ICE_FORMATION==2) \
-      && (MARINE_ICE_CALVING==9))
-  real(dp), dimension(0:JMAX,0:IMAX) :: calv_uw_ice
-#endif
-
 !-------- Initialization of variables --------
 
 z_sl_old      = z_sl
@@ -567,8 +561,7 @@ calving = 0.0_dp   ! Initialization
       && (MARINE_ICE_FORMATION==2) \
       && (MARINE_ICE_CALVING==9))
 
-call calving_underwater_ice(calv_uw_ice)
-calving = calving + calv_uw_ice
+call calving_underwater_ice()
 
 #endif
 

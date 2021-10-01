@@ -96,12 +96,6 @@ real(dp) :: s_stat, beta1, beta2, Pmax, mu, lambda_lti, temp_lti
 logical, dimension(0:JMAX,0:IMAX) :: check_point
 logical, save                     :: firstcall = .true.
 
-#if ((MARGIN==2) \
-      && (MARINE_ICE_FORMATION==2) \
-      && (MARINE_ICE_CALVING==9))
-  real(dp), dimension(0:JMAX,0:IMAX) :: calv_uw_ice
-#endif
-
 real(dp), parameter :: &
           inv_twelve = 1.0_dp/12.0_dp, one_third = 1.0_dp/3.0_dp
 
@@ -680,8 +674,7 @@ calving = 0.0_dp   ! Initialization
       && (MARINE_ICE_FORMATION==2) \
       && (MARINE_ICE_CALVING==9))
 
-call calving_underwater_ice(calv_uw_ice)
-calving = calving + calv_uw_ice
+call calving_underwater_ice()
 
 #endif
 

@@ -114,12 +114,6 @@ logical, save                     :: firstcall = .true.
 type (ins) :: temp_now, temp_present
 #endif
 
-#if ((MARGIN==2) \
-      && (MARINE_ICE_FORMATION==2) \
-      && (MARINE_ICE_CALVING==9))
-  real(dp), dimension(0:JMAX,0:IMAX) :: calv_uw_ice
-#endif
-
 real(dp), parameter :: &
           time_present  = 0.0_dp, &     ! Present time [s]
           zs_90_present = -2.0e+03_dp   ! Present elevation of the
@@ -648,8 +642,7 @@ calving = 0.0_dp   ! Initialization
       && (MARINE_ICE_FORMATION==2) \
       && (MARINE_ICE_CALVING==9))
 
-call calving_underwater_ice(calv_uw_ice)
-calving = calving + calv_uw_ice
+call calving_underwater_ice()
 
 #endif
 
