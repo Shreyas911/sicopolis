@@ -54,9 +54,9 @@ MODULE SICO_MATHS_M_DIFF
       MODULE PROCEDURE TRI_SLE_STUB_B
   END INTERFACE
 
-  INTERFACE BILININT
-      MODULE PROCEDURE BILININT_STUB
-  END INTERFACE
+  !INTERFACE BILININT
+  !    MODULE PROCEDURE BILININT_STUB
+  !END INTERFACE
 
   INTERFACE MY_ERFC
       MODULE PROCEDURE MY_ERFC_STUB
@@ -416,17 +416,24 @@ iter_loop:DO iter=1,iter_max
 !-------------------------------------------------------------------------------
 !> Bilinear interpolation.
 !<------------------------------------------------------------------------------
-  SUBROUTINE BILININT_STUB(x1, x2, y1, y2, z11, z12, z21, z22, x, y, &
-&   retval)
-    IMPLICIT NONE
-    REAL(dp), INTENT(IN) :: x1, x2, y1, y2, z11, z12, z21, z22, x, y
-    REAL(dp) :: t, u
-    REAL(dp), INTENT(OUT) :: retval
-    REAL(dp), PARAMETER :: i=1.0_dp
-    t = (x-x1)/(x2-x1)
-    u = (y-y1)/(y2-y1)
-    retval = (i-t)*(i-u)*z11 + (i-t)*u*z12 + t*(i-u)*z21 + t*u*z22
-  END SUBROUTINE BILININT_STUB
+  function bilinint(x1, x2, y1, y2, z11, z12, z21, z22, x, y)
+
+  implicit none
+
+  real(dp), intent(in) :: x1, x2, y1, y2, z11, z12, z21, z22, x, y
+
+  real(dp) :: t, u
+  real(dp) :: bilinint
+
+  real(dp), parameter :: I = 1.0_dp
+
+  t = (x-x1)/(x2-x1)
+  u = (y-y1)/(y2-y1)
+
+  bilinint = (I-t)*(I-u)*z11 + (I-t)*u*z12 + t*(I-u)*z21 + t*u*z22
+
+  end function bilinint
+  
 
 !  Differentiation of my_erfc_stub in reverse (adjoint) mode:
 !   gradient     of useful results: retval
