@@ -503,7 +503,7 @@ real(dp),     dimension(nmax), intent(inout) :: lgs_x_value
 character(len=256)                           :: ch_solver_set_option
 
 !  ------ Settings for Lis
-call lis_init_f(ierr)
+!call lis_init_f(ierr)
 call lis_matrix_create(LIS_COMM_WORLD, lgs_a, ierr)
 call lis_vector_create(LIS_COMM_WORLD, lgs_b, ierr)
 call lis_vector_create(LIS_COMM_WORLD, lgs_x, ierr)
@@ -553,7 +553,7 @@ call lis_matrix_destroy(lgs_a, ierr)
 call lis_vector_destroy(lgs_b, ierr)
 call lis_vector_destroy(lgs_x, ierr)
 call lis_solver_destroy(solver, ierr)
-call lis_finalize_f(ierr)
+!call lis_finalize_f(ierr)
   END SUBROUTINE SICO_LIS_SOLVER_STUB
 
 subroutine sico_lis_solver_stub_d(nmax, nnz, &
@@ -579,11 +579,12 @@ real(dp),     dimension(nmax), intent(inout) :: lgs_b_valued
 real(dp),     dimension(nmax), intent(inout) :: lgs_x_valued
 real(dp),     dimension(nmax) :: rhs_value
 
+LIS_SCALAR                                   :: alpha = -1.0
 LIS_MATRIX                                   :: lgs_ad
 LIS_VECTOR                                   :: lgs_bd
 LIS_VECTOR                                   :: lgs_x
 LIS_VECTOR                                   :: rhs
-
+ 
 call lis_init_f(ierr)
 call lis_matrix_create(LIS_COMM_WORLD, lgs_ad, ierr)
 call lis_vector_create(LIS_COMM_WORLD, lgs_bd, ierr)
@@ -595,9 +596,6 @@ call lis_vector_set_size(lgs_bd, 0, nmax, ierr)
 call lis_vector_set_size(lgs_x, 0, nmax, ierr)
 call lis_vector_set_size(rhs, 0, nmax, ierr)
 
-call sico_lis_solver(nmax, nnz, &
-                    & lgs_a_ptr, lgs_a_index, &
-                    & lgs_a_value, lgs_b_value, lgs_x_value)
 
 do nr=1, nmax
 
@@ -607,21 +605,36 @@ do nr=1, nmax
    end do
 
    call lis_vector_set_value(LIS_INS_VALUE, nr, lgs_b_valued(nr), lgs_bd, ierr)
-   call lis_vector_set_value(LIS_INS_VALUE, nr, lgs_x_value(nr), lgs_x, ierr)
 
 end do
 
 call lis_matrix_set_type(lgs_ad, LIS_MATRIX_CSR, ierr)
 call lis_matrix_assemble(lgs_ad, ierr)
-call lis_matvec(lgs_ad, lgs_x, rhs, ierr) 
-call lis_vector_xpay(-1, lgs_bd, rhs, ierr)
 
-rhs_value = 0.0_dp
+lgs_x_value = 0.0
+call sico_lis_solver(nmax, nnz, &
+                    & lgs_a_ptr, lgs_a_index, &
+                    & lgs_a_value, lgs_b_value, lgs_x_value)
+
+do nr=1, nmax
+   call lis_vector_set_value(LIS_INS_VALUE, nr, lgs_x_value(nr), lgs_x, ierr)
+end do
+
+rhs_value = 0.0
+call lis_matvec(lgs_ad, lgs_x, rhs, ierr) 
+call lis_vector_xpay(lgs_bd, alpha, rhs, ierr)
 call lis_vector_gather(rhs, rhs_value, ierr)
 
+lgs_x_valued = 0.0
 call sico_lis_solver(nmax, nnz, &
                     & lgs_a_ptr, lgs_a_index, &
                     & lgs_a_value, rhs_value, lgs_x_valued)
+
+call lis_matrix_destroy(lgs_ad, ierr)
+call lis_vector_destroy(lgs_bd, ierr)
+call lis_vector_destroy(lgs_x, ierr)
+call lis_vector_destroy(rhs, ierr)
+call lis_finalize_f(ierr)
 
 end subroutine sico_lis_solver_stub_d
 
