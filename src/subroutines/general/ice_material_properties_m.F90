@@ -632,7 +632,7 @@ real(dp)    , intent(in) :: de_val
 real(dp)    , intent(in) :: temp_val, temp_m_val
 real(dp)    , intent(in) :: omega_val
 real(dp)    , intent(in) :: enh_val
-integer(i1b), intent(in) :: i_flag_cold_temp
+integer(i4b), intent(in) :: i_flag_cold_temp
 
 real(dp) :: ratefac_val
 real(dp) :: de_val_m
@@ -650,9 +650,9 @@ real(dp), parameter :: sm_coeff_1 = 8.5112e-15_dp, &   ! s^-1 Pa^-1
 
 !-------- Rate factor and effective strain rate --------
 
-if (i_flag_cold_temp == 0_i1b) then   ! cold ice
+if (i_flag_cold_temp == 0) then   ! cold ice
    ratefac_val = ratefac_c(temp_val, temp_m_val)
-else if (i_flag_cold_temp == 1_i1b) then   ! temperate ice
+else if (i_flag_cold_temp == 1) then   ! temperate ice
    ratefac_val = ratefac_t(omega_val)
 else   ! enthalpy method
    ratefac_val = ratefac_c_t(temp_val, omega_val, temp_m_val)

@@ -148,7 +148,7 @@ contains
   do i=0, IMAX
   do j=0, JMAX
 
-     if (mask(j,i)<=2_i1b) then
+     if (mask(j,i)<=2) then
 
         do kc=0, KCMAX
 
@@ -171,7 +171,7 @@ contains
 
         end if
 
-     else   ! mask(j,i)==3_i1b, floating ice
+     else   ! mask(j,i)==3, floating ice
 
         temp_ice_base = -BETA*H_c(j,i) - DELTA_TM_SW
 
@@ -224,9 +224,9 @@ contains
   do i=0, IMAX
   do j=0, JMAX
 
-     if (mask(j,i)<=2_i1b) then
+     if (mask(j,i)<=2) then
         as_val = max(as_perp(j,i), epsi)
-     else   ! mask(j,i)==3_i1b, floating ice
+     else   ! mask(j,i)==3, floating ice
         as_val = epsi   ! this will produce an almost linear temperature profile
      end if
 
@@ -245,11 +245,11 @@ contains
                             * sqrt(0.5_dp*pi)*K*(erf_val_1-erf_val_2)
      end do
 
-     if ( (mask(j,i) <= 2_i1b).and.(temp_c(0,j,i) >= -BETA*H_c(j,i)) ) then
+     if ( (mask(j,i) <= 2).and.(temp_c(0,j,i) >= -BETA*H_c(j,i)) ) then
         temp_ice_base     = -BETA*H_c(j,i)
         temp_scale_factor = (temp_ice_base-temp_s(j,i)) &
                                   /(temp_c(0,j,i)-temp_s(j,i))
-     else if (mask(j,i) == 3_i1b) then
+     else if (mask(j,i) == 3) then
         temp_ice_base     = -BETA*H_c(j,i)-DELTA_TM_SW
         temp_scale_factor = (temp_ice_base-temp_s(j,i)) &
                                 /(temp_c(0,j,i)-temp_s(j,i))
@@ -290,7 +290,7 @@ contains
   integer(i4b) :: i, j, kc, kt, kr
   real(dp)     :: temp_ice_base, temp_scale_factor
 
-  integer(i1b), dimension(0:JMAX,0:IMAX)     :: mask_aux, n_cts_aux
+  integer(i4b), dimension(0:JMAX,0:IMAX)     :: mask_aux, n_cts_aux
   integer(i4b), dimension(0:JMAX,0:IMAX)     :: kc_cts_aux
   real(dp), dimension(0:JMAX,0:IMAX)         :: H_cold_aux, H_temp_aux, H_aux
   real(dp), dimension(0:KRMAX,0:JMAX,0:IMAX) :: temp_r_aux
@@ -318,9 +318,9 @@ contains
   do i=0, IMAX
   do j=0, JMAX
 
-     if ( ((mask(j,i)==0_i1b).or.(mask(j,i)==3_i1b)) &
+     if ( ((mask(j,i)==0).or.(mask(j,i)==3)) &
           .and. &
-          ((mask_aux(j,i)==0_i1b).or.(mask_aux(j,i)==3_i1b)) ) then
+          ((mask_aux(j,i)==0).or.(mask_aux(j,i)==3)) ) then
 
         n_cts(j,i)  = n_cts_aux(j,i)
         kc_cts(j,i) = kc_cts_aux(j,i)
@@ -346,10 +346,10 @@ contains
 
      end if
 
-     if ( (mask(j,i)==3_i1b).and.(mask_aux(j,i)==0_i1b) ) then
+     if ( (mask(j,i)==3).and.(mask_aux(j,i)==0) ) then
         ! correction for ice shelves
 
-        n_cts(j,i)  = -1_i1b
+        n_cts(j,i)  = -1
         kc_cts(j,i) = 0
 
         H_t(j,i) = 0.0_dp

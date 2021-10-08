@@ -1169,10 +1169,10 @@ z_sl_mean = -1.11e+11_dp   ! of subroutine boundary
 call boundary(time_init, dtime, dxi, deta, &
               delta_ts, glac_index, z_mar)
 
-where ((mask==0_i1b).or.(mask==3_i1b))
+where ((mask==0).or.(mask==3))
                  ! grounded or floating ice
    as_perp_apl = as_perp
-elsewhere        ! mask==1_i1b or 2_i1b, ice-free land or sea
+elsewhere        ! mask==1 or 2, ice-free land or sea
    as_perp_apl = 0.0_dp
 end where
 
@@ -1290,10 +1290,10 @@ call topography3(dxi, deta, anfdatname)
 call boundary(time_init, dtime, dxi, deta, &
               delta_ts, glac_index, z_mar)
 
-where ((mask==0_i1b).or.(mask==3_i1b))
+where ((mask==0).or.(mask==3))
                  ! grounded or floating ice
    as_perp_apl = as_perp
-elsewhere        ! mask==1_i1b or 2_i1b, ice-free land or sea
+elsewhere        ! mask==1 or 2, ice-free land or sea
    as_perp_apl = 0.0_dp
 end where
 
@@ -1407,7 +1407,7 @@ do j=0, JMAX
       enth_c(kc,j,i) = enth_fct_temp_omega(temp_c(kc,j,i), 0.0_dp)
    end do
 
-   if ( (mask(j,i) == 0_i1b).and.(n_cts(j,i) == 1_i1b) ) then
+   if ( (mask(j,i) == 0).and.(n_cts(j,i) == 1) ) then
       do kt=0, KTMAX
          enth_t(kt,j,i) = enth_fct_temp_omega(temp_t_m(kt,j,i), omega_t(kt,j,i))
       end do
@@ -1710,8 +1710,8 @@ do j=0, JMAX
    zb(j,i) = zl0(j,i)
    zl(j,i) = zl0(j,i)
 
-   if (mask(j,i) <= 1_i1b) then
-      mask(j,i) = 0_i1b
+   if (mask(j,i) <= 1) then
+      mask(j,i) = 0
       zs(j,i) = zs(j,i) + H_init
    end if
 
@@ -1719,7 +1719,7 @@ do j=0, JMAX
    eta(j) = eta0 + real(j,dp)*deta
 
    zm(j,i) = zb(j,i)
-   n_cts(j,i) = -1_i1b
+   n_cts(j,i) = -1
    kc_cts(j,i) = 0
 
    H(j,i)   = zs(j,i)-zm(j,i)
@@ -1881,7 +1881,7 @@ do j=0, JMAX
    eta(j) = eta0 + real(j,dp)*deta
 
    zm(j,i) = zb(j,i)
-   n_cts(j,i) = -1_i1b
+   n_cts(j,i) = -1
    kc_cts(j,i) = 0
 
    H(j,i)   = 0.0_dp

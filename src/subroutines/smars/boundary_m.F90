@@ -444,7 +444,7 @@ end do
 
 do i=1, IMAX-1
 do j=1, JMAX-1
-   if (mask(j,i) >= 2_i1b) then
+   if (mask(j,i) >= 2) then
       check_point(j  ,i  ) = .true.
       check_point(j  ,i+1) = .true.
       check_point(j  ,i-1) = .true.
@@ -615,7 +615,7 @@ do j=0, JMAX
 
 !    ---- Correction for additional wind erosion in the chasm area
 
-   if ( (mask_chasm(j,i) == 7_i1b) &
+   if ( (mask_chasm(j,i) == 7) &
         .and.(time >= time_chasm_init) &
         .and.(time <= time_chasm_end) ) then   ! active chasm area
       runoff(j,i)  = runoff(j,i) + erosion_chasm
@@ -659,7 +659,7 @@ q_geo_chasm = Q_GEO_CHASM *1.0e-03_dp   ! mW/m2 -> W/m2
 do i=0, IMAX
 do j=0, JMAX
 
-   if ( (mask_chasm(j,i) == 7_i1b) &
+   if ( (mask_chasm(j,i) == 7) &
         .and.(time >= time_chasm_init) &
         .and.(time <= time_chasm_end) ) then   ! active chasm area
       q_geo(j,i) = q_geo_chasm
