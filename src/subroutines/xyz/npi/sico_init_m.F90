@@ -107,7 +107,7 @@ character(len=100), intent(out) :: runname
 integer(i4b)       :: i, j, kc, kt, kr, m, n, ir, jr
 integer(i4b)       :: ios, ios1, ios2, ios3, ios4
 integer(i4b)       :: ierr
-integer(i1b), dimension(0:JMAX,0:IMAX) :: mask_ref
+integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_ref
 real(dp)           :: dtime0, dtime_temp0, dtime_wss0, dtime_out0, dtime_ser0
 real(dp)           :: time_init0, time_end0
 #if (OUTPUT==2 || OUTPUT==3)
@@ -1429,7 +1429,7 @@ mask_ref = nint(field2d_aux)
 
 do i=0, IMAX
 do j=0, JMAX
-   if (mask_ref(j,i) >= 2_i1b) zs_ref(j,i) = 0.0_dp
+   if (mask_ref(j,i) >= 2) zs_ref(j,i) = 0.0_dp
                  ! resetting elevations over the ocean
                  ! to the present-day sea surface
 end do
@@ -2037,10 +2037,10 @@ call boundary(time_init, dtime, dxi, deta, &
 
 #if !defined(ALLOW_OPENAD) /* Normal */
 
-where ((mask==0_i1b).or.(mask==3_i1b))
+where ((mask==0).or.(mask==3))
                  ! grounded or floating ice
    as_perp_apl = as_perp
-elsewhere        ! mask==1_i1b or 2_i1b, ice-free land or sea
+elsewhere        ! mask==1 or 2, ice-free land or sea
    as_perp_apl = 0.0_dp
 end where
 
@@ -2048,7 +2048,7 @@ end where
 
 do j=0,JMAX
 do i=0,IMAX
-  if ((mask(j,i)==0_i1b).or.(mask(j,i)==3_i1b)) then
+  if ((mask(j,i)==0).or.(mask(j,i)==3)) then
     as_perp_apl(j,i) = as_perp(j,i)
   else
     as_perp_apl(j,i) = 0.0_dp
@@ -2174,10 +2174,10 @@ call boundary(time_init, dtime, dxi, deta, &
 
 #if !defined(ALLOW_OPENAD) /* Normal */
 
-where ((mask==0_i1b).or.(mask==3_i1b))
+where ((mask==0).or.(mask==3))
                  ! grounded or floating ice
    as_perp_apl = as_perp
-elsewhere        ! mask==1_i1b or 2_i1b, ice-free land or sea
+elsewhere        ! mask==1 or 2, ice-free land or sea
    as_perp_apl = 0.0_dp
 end where
 
@@ -2185,7 +2185,7 @@ end where
 
 do j=0,JMAX
 do i=0,IMAX
-  if ((mask(j,i)==0_i1b).or.(mask(j,i)==3_i1b)) then
+  if ((mask(j,i)==0).or.(mask(j,i)==3)) then
     as_perp_apl(j,i) = as_perp(j,i)
   else
     as_perp_apl(j,i) = 0.0_dp
@@ -2303,7 +2303,7 @@ do j=0, JMAX
       enth_c(kc,j,i) = enth_fct_temp_omega(temp_c(kc,j,i), 0.0_dp)
    end do
 
-   if ( (mask(j,i) == 0_i1b).and.(n_cts(j,i) == 1_i1b) ) then
+   if ( (mask(j,i) == 0).and.(n_cts(j,i) == 1) ) then
       do kt=0, KTMAX
          enth_t(kt,j,i) = enth_fct_temp_omega(temp_t_m(kt,j,i), omega_t(kt,j,i))
       end do
@@ -2597,16 +2597,16 @@ freeboard_ratio = (RHO_SW-RHO)/RHO_SW
 do i=0, IMAX
 do j=0, JMAX
 
-   if (mask(j,i) <= 1_i1b) then
+   if (mask(j,i) <= 1) then
 
       zb(j,i) = zl(j,i)   ! ensure consistency
 
       if (zs(j,i) < zb(j,i)) then
          zs(j,i) = zb(j,i)
-         mask(j,i) = 1_i1b
+         mask(j,i) = 1
       end if
 
-   else if (mask(j,i) == 2_i1b) then
+   else if (mask(j,i) == 2) then
 
 #if (MARGIN==1 || MARGIN==2)
       zs(j,i) = zl(j,i)   ! ensure
@@ -2616,18 +2616,18 @@ do j=0, JMAX
       zb(j,i) = 0.0_dp    ! sea level
 #endif
 
-   else if (mask(j,i) == 3_i1b) then
+   else if (mask(j,i) == 3) then
 
 #if (MARGIN==1 || (MARGIN==2 && MARINE_ICE_FORMATION==1))
-      mask(j,i) = 2_i1b   ! floating ice cut off
+      mask(j,i) = 2   ! floating ice cut off
       zs(j,i) = zl(j,i)
       zb(j,i) = zl(j,i)
 #elif (MARGIN==2 && MARINE_ICE_FORMATION==2)
-      mask(j,i) = 0_i1b   ! floating ice becomes "underwater ice"
+      mask(j,i) = 0   ! floating ice becomes "underwater ice"
       H_ice   = zs(j,i)-zb(j,i)   ! ice thickness
       if (H_ice < 0.0_dp) then
          H_ice = 0.0_dp
-         mask(j,i) = 2_i1b
+         mask(j,i) = 2
       end if
       zs(j,i) = zl(j,i)+H_ice
       zb(j,i) = zl(j,i)
@@ -2635,7 +2635,7 @@ do j=0, JMAX
       H_ice = zs(j,i)-zb(j,i)   ! ice thickness
       if (H_ice < 0.0_dp) then
          H_ice = 0.0_dp
-         mask(j,i) = 2_i1b
+         mask(j,i) = 2
       end if
       zs(j,i) = freeboard_ratio*H_ice   ! ensure properly
       zb(j,i) = zs(j,i)-H_ice           ! floating ice
@@ -2647,7 +2647,7 @@ do j=0, JMAX
    eta(j) = eta0 + real(j,dp)*deta
 
    zm(j,i) = zb(j,i)
-   n_cts(j,i) = -1_i1b
+   n_cts(j,i) = -1
    kc_cts(j,i) = 0
 
    H(j,i)   = zs(j,i)-zm(j,i)
@@ -2799,13 +2799,13 @@ eta0 = Y0 *1000.0_dp   ! km -> m
 do i=0, IMAX
 do j=0, JMAX
 
-   if (mask(j,i) <= 1_i1b) then
-      mask(j,i) = 1_i1b
+   if (mask(j,i) <= 1) then
+      mask(j,i) = 1
       zs(j,i) = zl0(j,i)
       zb(j,i) = zl0(j,i)
       zl(j,i) = zl0(j,i)
-   else   ! (mask(j,i) >= 2_i1b)
-      mask(j,i) = 2_i1b
+   else   ! (mask(j,i) >= 2)
+      mask(j,i) = 2
 #if (MARGIN==1 || MARGIN==2)
       zs(j,i) = zl0(j,i)
       zb(j,i) = zl0(j,i)
@@ -2820,7 +2820,7 @@ do j=0, JMAX
    eta(j) = eta0 + real(j,dp)*deta
 
    zm(j,i) = zb(j,i)
-   n_cts(j,i) = -1_i1b
+   n_cts(j,i) = -1
    kc_cts(j,i) = 0
 
    H(j,i)   = 0.0_dp
