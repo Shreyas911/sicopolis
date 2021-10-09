@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2021-07-08
+!! 2021-10-08
 !!
 !! @section Copyright
 !!
@@ -54,7 +54,7 @@
 !<------------------------------------------------------------------------------
 module make_ismip_output_common
 
-integer, parameter :: i1b = selected_int_kind(2)   !< 1-byte integers
+! integer, parameter :: i1b = selected_int_kind(2)   !< 1-byte integers
 integer, parameter :: i4b = selected_int_kind(9)   ! 4-byte integers
 integer, parameter :: sp  = kind(1.0)              ! single-precision reals
 integer, parameter :: dp  = kind(1.0d0)            ! double-precision reals
@@ -83,7 +83,7 @@ character(len=256) :: runname
 character(len=  4) :: ergnum
 logical            :: flag_init_output
 
-integer(i1b)       :: mapping_val
+integer(i4b)       :: mapping_val
 real(dp)           :: mapping_semi_major_axis_val
 real(dp)           :: mapping_inv_flattening_val
 real(dp)           :: mapping_radius_of_sphere_val
@@ -331,7 +331,7 @@ character(len=256), intent(in) :: runname
 character(len=  4), intent(in) :: ergnum
 integer(i4b),       intent(in) :: n_variable_dim, n_variable_type, n
 
-integer(i1b),      intent(out) :: mapping_r
+integer(i4b),      intent(out) :: mapping_r
 real(dp),          intent(out) :: mapping_semi_major_axis_r
 real(dp),          intent(out) :: mapping_inv_flattening_r
 real(dp),          intent(out) :: mapping_radius_of_sphere_r
@@ -395,7 +395,7 @@ integer(i4b)       :: i, j
 real(dp)           :: year_to_year_or_sec
 character(len=256) :: filename, filename_with_path
 
-integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_erg
+integer(i4b), dimension(0:IMAX,0:JMAX) :: mask_erg
 real(dp) :: time_erg=0.0_dp, &
             V_tot_erg=0.0_dp, V_af_erg=0.0_dp, &
             A_grounded_erg=0.0_dp, A_floating_erg=0.0_dp, &
@@ -477,7 +477,7 @@ end if
 
 !-------- Reading of data --------
 
-mapping_r = 1_i1b                     ! initial value
+mapping_r = 1                     ! initial value
 
 mapping_grid_mapping_name_r = 'xxx'   ! initial value
 mapping_ellipsoid_r         = 'xxx'   ! initial value
@@ -810,7 +810,7 @@ do j=0, JMAX
                                        ! m/a -> kg/(m2*a) | kg/(m2*s),
                                        ! sign changed to negative for loss
 
-   if (mask_erg(i,j)==0_i1b) then
+   if (mask_erg(i,j)==0) then
       libmassbfgr_r(i,j) = Q_b_apl_erg(i,j) * (-rho/year_to_year_or_sec)
                                             ! m/a -> kg/(m2*a) | kg/(m2*s),
                                             ! sign changed to negative for loss
@@ -818,7 +818,7 @@ do j=0, JMAX
       libmassbfgr_r(i,j) = no_value_large_dp
    end if
 
-   if (mask_erg(i,j)==3_i1b) then
+   if (mask_erg(i,j)==3) then
       libmassbffl_r(i,j) = Q_b_apl_erg(i,j) * (-rho/year_to_year_or_sec)
                                             ! m/a -> kg/(m2*a) | kg/(m2*s),
                                             ! sign changed to negative for loss
@@ -844,13 +844,13 @@ do j=0, JMAX
    litemptop_r(i,j)  = temp_s_erg(i,j) + T0   ! C -> K
    litempbot_r(i,j)  = temp_b_erg(i,j) + T0   ! C -> K
 
-   if (mask_erg(i,j)==0_i1b) then
+   if (mask_erg(i,j)==0) then
       litempbotgr_r(i,j) = temp_b_erg(i,j) + T0   ! C -> K
    else
       litempbotgr_r(i,j) = no_value_large_dp
    end if
 
-   if (mask_erg(i,j)==3_i1b) then
+   if (mask_erg(i,j)==3) then
       litempbotfl_r(i,j) = temp_b_erg(i,j) + T0   ! C -> K
    else
       litempbotfl_r(i,j) = no_value_large_dp
@@ -874,13 +874,13 @@ do j=0, JMAX
                        !!! q_gl_g_erg(i,j) * rho/year_to_year_or_sec
                                                 ! m/a -> kg/(m2*a) | kg/(m2*s)
 
-   if ((mask_erg(i,j)==0_i1b).or.(mask_erg(i,j)==3_i1b)) &
+   if ((mask_erg(i,j)==0).or.(mask_erg(i,j)==3)) &
       sftgif_r(i,j)  = 1.0_dp   ! grounded or floating ice
 
-   if (mask_erg(i,j)==0_i1b) &
+   if (mask_erg(i,j)==0) &
       sftgrf_r(i,j)  = 1.0_dp   ! grounded ice
 
-   if (mask_erg(i,j)==3_i1b) &
+   if (mask_erg(i,j)==3) &
       sftflf_r(i,j)  = 1.0_dp   ! floating ice
 
 end do
@@ -1972,7 +1972,7 @@ implicit none
 character(len=256), intent(in) :: runname
 integer(i4b),       intent(in) :: n_variable_dim, n_variable_type, n
 integer(i4b),       intent(in) :: ncid   ! ID of the NetCDF file
-integer(i1b),       intent(in) :: mapping_aux
+integer(i4b),       intent(in) :: mapping_aux
 real(dp),           intent(in) :: time_aux, year_aux
 real(dp),           intent(in) :: time_bnds_val(2)
 real(dp),           intent(in) :: x_val(0:IMAX)
@@ -2045,7 +2045,7 @@ character(len= 16) :: ch_date, ch_time, ch_zone
 character(len=256) :: filename, buffer
 character          :: ch_empty
 
-integer(i1b) :: mapping_val(1)
+integer(i4b) :: mapping_val(1)
 real(dp)     :: time_val(1), year_val(1)
 real(dp)     :: lim_val(1)
 real(dp)     :: limnsw_val(1)

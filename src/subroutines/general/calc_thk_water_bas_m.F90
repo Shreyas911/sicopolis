@@ -97,7 +97,7 @@ contains
      hydro_topg(i,j)       = zl(j,i)-z_sl(j,i)
      hydro_temppabase(i,j) = temph_b(j,i)
 
-     if (mask(j,i)==0_i1b) then   ! grounded ice
+     if (mask(j,i)==0) then   ! grounded ice
         hydro_icemask(i,j) = 1
         hydro_thk(i,j)     = H(j,i)
         hydro_supply(i,j)  = rho_rho_w_ratio*Q_b_tot(j,i)
@@ -138,7 +138,7 @@ contains
   do i=0, IMAX
   do j=0, JMAX
 
-     if (mask(j,i)==0_i1b) then   ! grounded ice
+     if (mask(j,i)==0) then   ! grounded ice
         q_w(j,i)   = 0.0_dp
         q_w_x(j,i) = 0.0_dp
         q_w_y(j,i) = 0.0_dp
@@ -153,17 +153,17 @@ contains
   do i=0, IMAX
   do j=0, JMAX
 
-     if (mask(j,i)==2_i1b) then   ! ocean
+     if (mask(j,i)==2) then   ! ocean
         q_w(j,i)   = 0.0_dp
         q_w_x(j,i) = 0.0_dp
         q_w_y(j,i) = 0.0_dp
         H_w(j,i)   = z_sl(j,i)-zl(j,i)
-     else if (mask(j,i)==3_i1b) then   ! floating ice
+     else if (mask(j,i)==3) then   ! floating ice
         q_w(j,i)   = 0.0_dp
         q_w_x(j,i) = 0.0_dp
         q_w_y(j,i) = 0.0_dp
         H_w(j,i)   = zb(j,i)-zl(j,i)
-     else if (mask(j,i)==1_i1b) then   ! ice-free land
+     else if (mask(j,i)==1) then   ! ice-free land
         q_w(j,i)   = 0.0_dp
         q_w_x(j,i) = 0.0_dp
         q_w_y(j,i) = 0.0_dp

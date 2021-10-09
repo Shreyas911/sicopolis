@@ -1453,10 +1453,10 @@ z_sl_mean = -1.11e+11_dp   ! of subroutine boundary
 call boundary(time_init, dtime, dxi, deta, &
               delta_ts, glac_index, z_mar)
 
-where ((mask==0_i1b).or.(mask==3_i1b))
+where ((mask==0).or.(mask==3))
                  ! grounded or floating ice
    as_perp_apl = as_perp
-elsewhere        ! mask==1_i1b or 2_i1b, ice-free land or sea
+elsewhere        ! mask==1 or 2, ice-free land or sea
    as_perp_apl = 0.0_dp
 end where
 
@@ -1574,10 +1574,10 @@ call topography3(dxi, deta, anfdatname)
 call boundary(time_init, dtime, dxi, deta, &
               delta_ts, glac_index, z_mar)
 
-where ((mask==0_i1b).or.(mask==3_i1b))
+where ((mask==0).or.(mask==3))
                  ! grounded or floating ice
    as_perp_apl = as_perp
-elsewhere        ! mask==1_i1b or 2_i1b, ice-free land or sea
+elsewhere        ! mask==1 or 2, ice-free land or sea
    as_perp_apl = 0.0_dp
 end where
 
@@ -1691,7 +1691,7 @@ do j=0, JMAX
       enth_c(kc,j,i) = enth_fct_temp_omega(temp_c(kc,j,i), 0.0_dp)
    end do
 
-   if ( (mask(j,i) == 0_i1b).and.(n_cts(j,i) == 1_i1b) ) then
+   if ( (mask(j,i) == 0).and.(n_cts(j,i) == 1) ) then
       do kt=0, KTMAX
          enth_t(kt,j,i) = enth_fct_temp_omega(temp_t_m(kt,j,i), omega_t(kt,j,i))
       end do
@@ -1970,19 +1970,19 @@ zb = zl
 do i=1, IMAX-1
 do j=1, JMAX-1
    if ((zs(j,i)-zb(j,i)) > eps_dp) then
-      mask(j,i) = 0_i1b
+      mask(j,i) = 0
    else
       zs(j,i)    = zb(j,i)
-      mask(j,i) = 1_i1b
+      mask(j,i) = 1
    end if
 end do
 end do
 
-mask(0,:)    = 1_i1b
-mask(JMAX,:) = 1_i1b
+mask(0,:)    = 1
+mask(JMAX,:) = 1
 
-mask(:,0)    = 1_i1b
-mask(:,IMAX) = 1_i1b
+mask(:,0)    = 1
+mask(:,IMAX) = 1
 
 !-------- Further stuff --------
 
@@ -1990,7 +1990,7 @@ do i=0, IMAX
 do j=0, JMAX
 
    zm(j,i) = zb(j,i)
-   n_cts(j,i) = -1_i1b
+   n_cts(j,i) = -1
    kc_cts(j,i) = 0
 
    H(j,i)   = zs(j,i)-zm(j,i)
@@ -2145,7 +2145,7 @@ call read_2d_input(filename_with_path, &
 
 zl0 = field2d_aux
 
-mask = 1_i1b
+mask = 1
 
 !-------- Further stuff --------
 
@@ -2157,7 +2157,7 @@ do j=0, JMAX
    zl(j,i) = zl0(j,i)
 
    zm(j,i) = zb(j,i)
-   n_cts(j,i) = -1_i1b
+   n_cts(j,i) = -1
    kc_cts(j,i) = 0
 
    H(j,i)   = 0.0_dp

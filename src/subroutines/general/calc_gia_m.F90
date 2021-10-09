@@ -95,13 +95,13 @@ end do
 do i=0, IMAX
 do j=0, JMAX
 
-   if (mask(j,i) <= 1_i1b) then   ! grounded ice or ice-free land
+   if (mask(j,i) <= 1) then   ! grounded ice or ice-free land
 
       zl_new(j,i) = tldt_inv(j,i)*( time_lag_asth(j,i)*zl(j,i) &
                     + dtime*(zl0(j,i) &
                              -FRAC_LLRA*rho_rhoa_ratio*H(j,i)) )
 
-   else   ! (mask(j,i) >= 2_i1b)
+   else   ! (mask(j,i) >= 2)
 
       zl_new(j,i) = tldt_inv(j,i)*( time_lag_asth(j,i)*zl(j,i) &
                     + dtime*(zl0(j,i) &
@@ -299,11 +299,11 @@ do jl=jl_begin, jl_end
    i = min(max(il, 0), IMAX)
    j = min(max(jl, 0), JMAX)
 
-   if (mask(j,i)==0_i1b) then
+   if (mask(j,i)==0) then
       f_0(jl,il) = rho_g * area(j,i) * H(j,i)
-   else if (mask(j,i)==1_i1b) then
+   else if (mask(j,i)==1) then
       f_0(jl,il) = 0.0_dp
-   else   ! (mask(j,i)>=2_i1b)
+   else   ! (mask(j,i)>=2)
       f_0(jl,il) = rho_sw_g * area(j,i) * z_sl(j,i)
                    ! Water load relative to the present sea-level stand (0 m)
                    ! -> can be positive or negative
@@ -402,7 +402,7 @@ zl0_raw = zl   ! rigid lithosphere
 do i=0, IMAX
 do j=0, JMAX
 
-   if (mask(j,i) == 0_i1b) then
+   if (mask(j,i) == 0) then
       zl0_raw(j,i) = zl(j,i) + rho_ratio*H(j,i)
    else
       zl0_raw(j,i) = zl(j,i)

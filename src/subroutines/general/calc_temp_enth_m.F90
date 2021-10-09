@@ -174,13 +174,13 @@ strain_heating_t = 0.0_dp   ! purely diagnostic fields
 do i=1, IMAX-1   ! skipping domain margins
 do j=1, JMAX-1   ! skipping domain margins
 
-   if (mask(j,i)==0_i1b) then   ! glaciated land
+   if (mask(j,i)==0) then   ! glaciated land
 
 !  ------ Old vertical column cold
 
-      if (n_cts(j,i) == -1_i1b) then
+      if (n_cts(j,i) == -1) then
 
-         n_cts_new(j,i)  = -1_i1b
+         n_cts_new(j,i)  = -1
          kc_cts_new(j,i) =  0
          zm_new(j,i)     = zb(j,i)
          H_c_new(j,i)    = H_c(j,i)
@@ -198,7 +198,7 @@ do j=1, JMAX-1   ! skipping domain margins
 
          if (temp_c_new(0,j,i) > temp_c_m(0,j,i)-eps) then
 
-            n_cts_new(j,i)  = 0_i1b
+            n_cts_new(j,i)  = 0
             kc_cts_new(j,i) = 0
 
             call calc_temp_enth_2(at1, at2_1, at2_2, at3_1, at3_2, &
@@ -212,9 +212,9 @@ do j=1, JMAX-1   ! skipping domain margins
 
 !  ------ Old vertical column with temperate base
 
-      else if (n_cts(j,i) == 0_i1b) then
+      else if (n_cts(j,i) == 0) then
 
-         n_cts_new(j,i)  = 0_i1b
+         n_cts_new(j,i)  = 0
          kc_cts_new(j,i) = kc_cts(j,i)
          zm_new(j,i)     = zb(j,i)
          H_c_new(j,i)    = H_c(j,i)
@@ -231,7 +231,7 @@ do j=1, JMAX-1   ! skipping domain margins
 
          if ( (temp_c_new(1,j,i)-temp_c_new(0,j,i)) < (am1*H_c(j,i)) ) then
 
-            n_cts_new(j,i)  = -1_i1b
+            n_cts_new(j,i)  = -1
             kc_cts_new(j,i) =  0
 
             call calc_temp_enth_1(at1, at2_1, at2_2, at3_1, at3_2, &
@@ -244,7 +244,7 @@ do j=1, JMAX-1   ! skipping domain margins
 
             if (temp_c_new(0,j,i) > temp_c_m(0,j,i)-eps) then
 
-               n_cts_new(j,i)  = 0_i1b
+               n_cts_new(j,i)  = 0
                kc_cts_new(j,i) = 0
 
                call calc_temp_enth_2(at1, at2_1, at2_2, at3_1, at3_2, &
@@ -262,9 +262,9 @@ do j=1, JMAX-1   ! skipping domain margins
 
 #if (MARGIN==3)
 
-   else if (mask(j,i)==3_i1b) then   ! floating ice
+   else if (mask(j,i)==3) then   ! floating ice
 
-      n_cts_new(j,i)  = -1_i1b
+      n_cts_new(j,i)  = -1
       kc_cts_new(j,i) =  0
       zm_new(j,i)     = zb(j,i)
       H_c_new(j,i)    = H_c(j,i)
@@ -290,9 +290,9 @@ do j=1, JMAX-1   ! skipping domain margins
 
 #endif
 
-   else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+   else   ! mask(j,i) == 1, 2 (ice-free land or sea point)
 
-      n_cts_new(j,i)  = -1_i1b
+      n_cts_new(j,i)  = -1
       kc_cts_new(j,i) =  0
       zm_new(j,i)     = zb(j,i)
       H_c_new(j,i)    = H_c(j,i)
@@ -312,7 +312,7 @@ end do
 i=0
 j=0
 
-if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
+if ( (mask(j,i) == 0).or.(mask(j,i) == 3) ) then
                               ! glaciated land or floating ice
    ii=i+1
    jj=j+1
@@ -341,9 +341,9 @@ if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
    H_c_new(j,i)    = H_c(j,i)
    H_t_new(j,i)    = H_t(j,i)
 
-else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+else   ! mask(j,i) == 1, 2 (ice-free land or sea point)
 
-   n_cts_new(j,i)  = -1_i1b
+   n_cts_new(j,i)  = -1
    kc_cts_new(j,i) =  0
    zm_new(j,i)     = zb(j,i)
    H_c_new(j,i)    = H_c(j,i)
@@ -358,7 +358,7 @@ end if
 i=IMAX
 j=0
 
-if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
+if ( (mask(j,i) == 0).or.(mask(j,i) == 3) ) then
                               ! glaciated land or floating ice
    ii=i-1
    jj=j+1
@@ -387,9 +387,9 @@ if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
    H_c_new(j,i)    = H_c(j,i)
    H_t_new(j,i)    = H_t(j,i)
 
-else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+else   ! mask(j,i) == 1, 2 (ice-free land or sea point)
 
-   n_cts_new(j,i)  = -1_i1b
+   n_cts_new(j,i)  = -1
    kc_cts_new(j,i) =  0
    zm_new(j,i)     = zb(j,i)
    H_c_new(j,i)    = H_c(j,i)
@@ -404,7 +404,7 @@ end if
 i=0
 j=JMAX
 
-if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
+if ( (mask(j,i) == 0).or.(mask(j,i) == 3) ) then
                               ! glaciated land or floating ice
    ii=i+1
    jj=j-1
@@ -433,9 +433,9 @@ if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
    H_c_new(j,i)    = H_c(j,i)
    H_t_new(j,i)    = H_t(j,i)
 
-else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+else   ! mask(j,i) == 1, 2 (ice-free land or sea point)
 
-   n_cts_new(j,i)  = -1_i1b
+   n_cts_new(j,i)  = -1
    kc_cts_new(j,i) =  0
    zm_new(j,i)     = zb(j,i)
    H_c_new(j,i)    = H_c(j,i)
@@ -450,7 +450,7 @@ end if
 i=IMAX
 j=JMAX
 
-if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
+if ( (mask(j,i) == 0).or.(mask(j,i) == 3) ) then
                               ! glaciated land or floating ice
    ii=i-1
    jj=j-1
@@ -479,9 +479,9 @@ if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
    H_c_new(j,i)    = H_c(j,i)
    H_t_new(j,i)    = H_t(j,i)
 
-else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+else   ! mask(j,i) == 1, 2 (ice-free land or sea point)
 
-   n_cts_new(j,i)  = -1_i1b
+   n_cts_new(j,i)  = -1
    kc_cts_new(j,i) =  0
    zm_new(j,i)     = zb(j,i)
    H_c_new(j,i)    = H_c(j,i)
@@ -499,7 +499,7 @@ do i=1, IMAX-1
 
    j=0
 
-   if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
+   if ( (mask(j,i) == 0).or.(mask(j,i) == 3) ) then
                                  ! glaciated land or floating ice
       ii=i
       jj=j+1
@@ -528,9 +528,9 @@ do i=1, IMAX-1
       H_c_new(j,i)    = H_c(j,i)
       H_t_new(j,i)    = H_t(j,i)
 
-   else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+   else   ! mask(j,i) == 1, 2 (ice-free land or sea point)
 
-      n_cts_new(j,i)  = -1_i1b
+      n_cts_new(j,i)  = -1
       kc_cts_new(j,i) =  0
       zm_new(j,i)     = zb(j,i)
       H_c_new(j,i)    = H_c(j,i)
@@ -544,7 +544,7 @@ do i=1, IMAX-1
 
    j=JMAX
 
-   if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
+   if ( (mask(j,i) == 0).or.(mask(j,i) == 3) ) then
                                  ! glaciated land or floating ice
       ii=i
       jj=j-1
@@ -573,9 +573,9 @@ do i=1, IMAX-1
       H_c_new(j,i)    = H_c(j,i)
       H_t_new(j,i)    = H_t(j,i)
 
-   else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+   else   ! mask(j,i) == 1, 2 (ice-free land or sea point)
 
-      n_cts_new(j,i)  = -1_i1b
+      n_cts_new(j,i)  = -1
       kc_cts_new(j,i) =  0
       zm_new(j,i)     = zb(j,i)
       H_c_new(j,i)    = H_c(j,i)
@@ -595,7 +595,7 @@ do j=1, JMAX-1
 
    i=0
 
-   if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
+   if ( (mask(j,i) == 0).or.(mask(j,i) == 3) ) then
                                  ! glaciated land or floating ice
       ii=i+1
       jj=j
@@ -624,9 +624,9 @@ do j=1, JMAX-1
       H_c_new(j,i)    = H_c(j,i)
       H_t_new(j,i)    = H_t(j,i)
 
-   else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+   else   ! mask(j,i) == 1, 2 (ice-free land or sea point)
 
-      n_cts_new(j,i)  = -1_i1b
+      n_cts_new(j,i)  = -1
       kc_cts_new(j,i) =  0
       zm_new(j,i)     = zb(j,i)
       H_c_new(j,i)    = H_c(j,i)
@@ -640,7 +640,7 @@ do j=1, JMAX-1
 
    i=IMAX
 
-   if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
+   if ( (mask(j,i) == 0).or.(mask(j,i) == 3) ) then
                                  ! glaciated land or floating ice
       ii=i-1
       jj=j
@@ -669,9 +669,9 @@ do j=1, JMAX-1
       H_c_new(j,i)    = H_c(j,i)
       H_t_new(j,i)    = H_t(j,i)
 
-   else   ! mask(j,i) == 1_i1b, 2_i1b (ice-free land or sea point)
+   else   ! mask(j,i) == 1, 2 (ice-free land or sea point)
 
-      n_cts_new(j,i)  = -1_i1b
+      n_cts_new(j,i)  = -1
       kc_cts_new(j,i) =  0
       zm_new(j,i)     = zb(j,i)
       H_c_new(j,i)    = H_c(j,i)
@@ -1009,7 +1009,7 @@ do kc=0, KCMAX
       ce7(kc) = 2.0_dp*at7 &
                 *viscosity(de_c(kc,j,i), &
                            temp_c(kc,j,i), temp_c_m(kc,j,i), 0.0_dp, &
-                           enh_c(kc,j,i), 0_i1b) &
+                           enh_c(kc,j,i), 0) &
                 *de_c(kc,j,i)**2
    end if
 #endif
@@ -1962,7 +1962,7 @@ do kc=0, KCMAX
       ce7(kc) = 2.0_dp*at7 &
                 *viscosity(de_c(kc,j,i), &
                            temp_c_val(kc), temp_c_m(kc,j,i), omega_c_val(kc), &
-                           enh_c(kc,j,i), 2_i1b) &
+                           enh_c(kc,j,i), 2) &
                 *de_c(kc,j,i)**2
    end if
 #endif
@@ -2668,11 +2668,7 @@ do kc=0, KCMAX
    ce7(kc) = 2.0_dp*at7 &
              *viscosity(de_ssa(j,i), &
                         temp_c(kc,j,i), temp_c_m(kc,j,i), 0.0_dp, &
-#if !defined(ALLOW_OPENAD)
-                        enh_c(kc,j,i), 0_i1b) &
-#else
-                        enh_c(kc,j,i), 0_i4b) &
-#endif
+                        enh_c(kc,j,i), 0) &
              *de_ssa(j,i)**2
 
    strain_heating_c(kc,j,i) = ce7(kc)*dtime_temp_inv

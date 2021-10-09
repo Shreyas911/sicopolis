@@ -65,7 +65,7 @@ save
 !>                   0: grounded ice,
 !>                   1: ice-free land (normal area),
 !>                   7: chasma area
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: mask_chasm
+   integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_chasm
 !> time_chasm_init: Initial time for active chasma area
    real(dp) :: time_chasm_init
 !> time_chasm_end: Final time for active chasma area

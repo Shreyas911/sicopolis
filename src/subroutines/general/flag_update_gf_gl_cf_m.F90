@@ -73,77 +73,77 @@ contains
   do i=1, IMAX-1
   do j=1, JMAX-1
 
-     if ( (mask(j,i)==0_i1b) &   ! grounded ice point
+     if ( (mask(j,i)==0) &   ! grounded ice point
           .and. &
-            (    (mask(j,i+1)==1_i1b)   &   ! with
-             .or.(mask(j,i-1)==1_i1b)   &   ! one
-             .or.(mask(j+1,i)==1_i1b)   &   ! neighbouring
-             .or.(mask(j-1,i)==1_i1b) ) &   ! ice-free land point
+            (    (mask(j,i+1)==1)   &   ! with
+             .or.(mask(j,i-1)==1)   &   ! one
+             .or.(mask(j+1,i)==1)   &   ! neighbouring
+             .or.(mask(j-1,i)==1) ) &   ! ice-free land point
         ) &
      flag_grounded_front_a_1(j,i) = .true.
 
-     if ( (mask(j,i)==1_i1b) &   ! ice-free land point
+     if ( (mask(j,i)==1) &   ! ice-free land point
           .and. &
-            (    (mask(j,i+1)==0_i1b)   &   ! with
-             .or.(mask(j,i-1)==0_i1b)   &   ! one
-             .or.(mask(j+1,i)==0_i1b)   &   ! neighbouring
-             .or.(mask(j-1,i)==0_i1b) ) &   ! grounded ice point
+            (    (mask(j,i+1)==0)   &   ! with
+             .or.(mask(j,i-1)==0)   &   ! one
+             .or.(mask(j+1,i)==0)   &   ! neighbouring
+             .or.(mask(j-1,i)==0) ) &   ! grounded ice point
         ) &
      flag_grounded_front_a_2(j,i) = .true.
 
-     if ( (mask(j,i)==0_i1b) &   ! grounded ice point
+     if ( (mask(j,i)==0) &   ! grounded ice point
           .and. &
-            (    (mask(j,i+1)==2_i1b)   &   ! with
-             .or.(mask(j,i-1)==2_i1b)   &   ! one
-             .or.(mask(j+1,i)==2_i1b)   &   ! neighbouring
-             .or.(mask(j-1,i)==2_i1b) ) &   ! ocean point
+            (    (mask(j,i+1)==2)   &   ! with
+             .or.(mask(j,i-1)==2)   &   ! one
+             .or.(mask(j+1,i)==2)   &   ! neighbouring
+             .or.(mask(j-1,i)==2) ) &   ! ocean point
         ) &
      flag_grounded_front_b_1(j,i) = .true.
 
-     if ( (mask(j,i)==2_i1b) &   ! ocean point
+     if ( (mask(j,i)==2) &   ! ocean point
           .and. &
-            (    (mask(j,i+1)==0_i1b)   &   ! with
-             .or.(mask(j,i-1)==0_i1b)   &   ! one
-             .or.(mask(j+1,i)==0_i1b)   &   ! neighbouring
-             .or.(mask(j-1,i)==0_i1b) ) &   ! grounded ice point
+            (    (mask(j,i+1)==0)   &   ! with
+             .or.(mask(j,i-1)==0)   &   ! one
+             .or.(mask(j+1,i)==0)   &   ! neighbouring
+             .or.(mask(j-1,i)==0) ) &   ! grounded ice point
         ) &
      flag_grounded_front_b_2(j,i) = .true.
 
 #if (MARGIN==3)
 
-     if ( (mask(j,i)==0_i1b) &   ! grounded ice point
+     if ( (mask(j,i)==0) &   ! grounded ice point
           .and. &
-            (    (mask(j,i+1)==3_i1b)   &   ! with
-             .or.(mask(j,i-1)==3_i1b)   &   ! one
-             .or.(mask(j+1,i)==3_i1b)   &   ! neighbouring
-             .or.(mask(j-1,i)==3_i1b) ) &   ! floating ice point
+            (    (mask(j,i+1)==3)   &   ! with
+             .or.(mask(j,i-1)==3)   &   ! one
+             .or.(mask(j+1,i)==3)   &   ! neighbouring
+             .or.(mask(j-1,i)==3) ) &   ! floating ice point
         ) &
      flag_grounding_line_1(j,i) = .true.
 
-     if ( (mask(j,i)==3_i1b) &   ! floating ice point
+     if ( (mask(j,i)==3) &   ! floating ice point
           .and. &
-            (    (mask(j,i+1)==0_i1b)   &   ! with
-             .or.(mask(j,i-1)==0_i1b)   &   ! one
-             .or.(mask(j+1,i)==0_i1b)   &   ! neighbouring
-             .or.(mask(j-1,i)==0_i1b) ) &   ! grounded ice point
+            (    (mask(j,i+1)==0)   &   ! with
+             .or.(mask(j,i-1)==0)   &   ! one
+             .or.(mask(j+1,i)==0)   &   ! neighbouring
+             .or.(mask(j-1,i)==0) ) &   ! grounded ice point
         ) &
      flag_grounding_line_2(j,i) = .true.
 
-     if ( (mask(j,i)==3_i1b) &   ! floating ice point
+     if ( (mask(j,i)==3) &   ! floating ice point
           .and. &
-            (    (mask(j,i+1)==2_i1b)   &   ! with
-             .or.(mask(j,i-1)==2_i1b)   &   ! one
-             .or.(mask(j+1,i)==2_i1b)   &   ! neighbouring
-             .or.(mask(j-1,i)==2_i1b) ) &   ! ocean point
+            (    (mask(j,i+1)==2)   &   ! with
+             .or.(mask(j,i-1)==2)   &   ! one
+             .or.(mask(j+1,i)==2)   &   ! neighbouring
+             .or.(mask(j-1,i)==2) ) &   ! ocean point
         ) &
      flag_calving_front_1(j,i) = .true.
 
-     if ( (mask(j,i)==2_i1b) &   ! ocean point
+     if ( (mask(j,i)==2) &   ! ocean point
           .and. &
-            (    (mask(j,i+1)==3_i1b)   &   ! with
-             .or.(mask(j,i-1)==3_i1b)   &   ! one
-             .or.(mask(j+1,i)==3_i1b)   &   ! neighbouring
-             .or.(mask(j-1,i)==3_i1b) ) &   ! floating ice point
+            (    (mask(j,i+1)==3)   &   ! with
+             .or.(mask(j,i-1)==3)   &   ! one
+             .or.(mask(j+1,i)==3)   &   ! neighbouring
+             .or.(mask(j-1,i)==3) ) &   ! floating ice point
         ) &
      flag_calving_front_2(j,i) = .true.
 
@@ -156,20 +156,20 @@ contains
 
      j=0
 
-     if ( (mask(j,i)==1_i1b) &   ! ice-free land point
-          .and. (mask(j+1,i)==0_i1b) &   ! with one neighbouring
+     if ( (mask(j,i)==1) &   ! ice-free land point
+          .and. (mask(j+1,i)==0) &   ! with one neighbouring
         ) &                               ! grounded ice point
      flag_grounded_front_a_2(j,i) = .true.
 
-     if ( (mask(j,i)==2_i1b) &   ! ocean point
-          .and. (mask(j+1,i)==0_i1b) &   ! with one neighbouring
+     if ( (mask(j,i)==2) &   ! ocean point
+          .and. (mask(j+1,i)==0) &   ! with one neighbouring
         ) &                               ! grounded ice point
      flag_grounded_front_b_2(j,i) = .true.
 
 #if (MARGIN==3)
 
-     if ( (mask(j,i)==2_i1b) &   ! ocean point
-          .and. (mask(j+1,i)==3_i1b) &   ! with one neighbouring
+     if ( (mask(j,i)==2) &   ! ocean point
+          .and. (mask(j+1,i)==3) &   ! with one neighbouring
         ) &                               ! floating ice point
      flag_calving_front_2(j,i) = .true.
 
@@ -177,20 +177,20 @@ contains
 
      j=JMAX
 
-     if ( (mask(j,i)==1_i1b) &   ! ice-free land point
-          .and. (mask(j-1,i)==0_i1b) &   ! with one neighbouring
+     if ( (mask(j,i)==1) &   ! ice-free land point
+          .and. (mask(j-1,i)==0) &   ! with one neighbouring
         ) &                               ! grounded ice point
      flag_grounded_front_a_2(j,i) = .true.
 
-     if ( (mask(j,i)==2_i1b) &   ! ocean point
-          .and. (mask(j-1,i)==0_i1b) &   ! with one neighbouring
+     if ( (mask(j,i)==2) &   ! ocean point
+          .and. (mask(j-1,i)==0) &   ! with one neighbouring
         ) &                               ! grounded ice point
      flag_grounded_front_b_2(j,i) = .true.
 
 #if (MARGIN==3)
 
-     if ( (mask(j,i)==2_i1b) &   ! ocean point
-          .and. (mask(j-1,i)==3_i1b) &   ! with one neighbouring
+     if ( (mask(j,i)==2) &   ! ocean point
+          .and. (mask(j-1,i)==3) &   ! with one neighbouring
         ) &                               ! floating ice point
      flag_calving_front_2(j,i) = .true.
 
@@ -202,20 +202,20 @@ contains
 
      i=0
 
-     if ( (mask(j,i)==1_i1b) &   ! ice-free land point
-          .and. (mask(j,i+1)==0_i1b) &   ! with one neighbouring
+     if ( (mask(j,i)==1) &   ! ice-free land point
+          .and. (mask(j,i+1)==0) &   ! with one neighbouring
         ) &                               ! grounded ice point
      flag_grounded_front_a_2(j,i) = .true.
 
-     if ( (mask(j,i)==2_i1b) &   ! ocean point
-          .and. (mask(j,i+1)==0_i1b) &   ! with one neighbouring
+     if ( (mask(j,i)==2) &   ! ocean point
+          .and. (mask(j,i+1)==0) &   ! with one neighbouring
         ) &                               ! grounded ice point
      flag_grounded_front_b_2(j,i) = .true.
 
 #if (MARGIN==3)
 
-     if ( (mask(j,i)==2_i1b) &   ! ocean point
-          .and. (mask(j,i+1)==3_i1b) &   ! with one neighbouring
+     if ( (mask(j,i)==2) &   ! ocean point
+          .and. (mask(j,i+1)==3) &   ! with one neighbouring
         ) &                               ! floating ice point
      flag_calving_front_2(j,i) = .true.
 
@@ -223,20 +223,20 @@ contains
 
      i=IMAX
 
-     if ( (mask(j,i)==1_i1b) &   ! ice-free land point
-          .and. (mask(j,i-1)==0_i1b) &   ! with one neighbouring
+     if ( (mask(j,i)==1) &   ! ice-free land point
+          .and. (mask(j,i-1)==0) &   ! with one neighbouring
         ) &                               ! grounded ice point
      flag_grounded_front_a_2(j,i) = .true.
 
-     if ( (mask(j,i)==2_i1b) &   ! ocean point
-          .and. (mask(j,i-1)==0_i1b) &   ! with one neighbouring
+     if ( (mask(j,i)==2) &   ! ocean point
+          .and. (mask(j,i-1)==0) &   ! with one neighbouring
         ) &                               ! grounded ice point
      flag_grounded_front_b_2(j,i) = .true.
 
 #if (MARGIN==3)
 
-     if ( (mask(j,i)==2_i1b) &   ! ocean point
-          .and. (mask(j,i-1)==3_i1b) &   ! with one neighbouring
+     if ( (mask(j,i)==2) &   ! ocean point
+          .and. (mask(j,i-1)==3) &   ! with one neighbouring
         ) &                               ! floating ice point
      flag_calving_front_2(j,i) = .true.
 

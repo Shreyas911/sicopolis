@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2021-09-18
+!! 2021-10-08
 !!
 !! @section Copyright
 !!
@@ -50,8 +50,8 @@
 !<------------------------------------------------------------------------------
 module resolution_doubler_types
 
-integer, parameter :: i1b = selected_int_kind(2)   !< 1-byte integers
-!!! integer, parameter :: i2b = selected_int_kind(4)   ! 2-byte integers
+! integer, parameter :: i1b = selected_int_kind(2)   !< 1-byte integers
+! integer, parameter :: i2b = selected_int_kind(4)   ! 2-byte integers
 integer, parameter :: i4b = selected_int_kind(9)   ! 4-byte integers
 integer, parameter :: sp  = kind(1.0)              ! single-precision reals
 integer, parameter :: dp  = kind(1.0d0)            ! double-precision reals
@@ -65,8 +65,8 @@ module resolution_doubler_vars
 
 use resolution_doubler_types
 
-integer(i1b) :: mapping_erg
-integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_erg, mask_old_erg, &
+integer(i4b) :: mapping_erg
+integer(i4b), dimension(0:IMAX,0:JMAX) :: mask_erg, mask_old_erg, &
                                           n_cts_erg, &
                                           flag_shelfy_stream_x_erg, &
                                           flag_shelfy_stream_y_erg, &
@@ -132,13 +132,13 @@ real(sp), dimension(0:IMAX,0:JMAX,0:KRMAX) :: temp_r_erg
 character(len=64) :: mapping_grid_mapping_name_erg, mapping_ellipsoid_erg
 
 #if (DISC>0)   /* Ice discharge parameterisation */
-integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_mar_erg
+integer(i4b), dimension(0:IMAX,0:JMAX) :: mask_mar_erg
 real(sp),     dimension(0:IMAX,0:JMAX) :: dis_perp_erg, &
                                           cst_dist_erg, cos_grad_tc_erg
 #endif
 
-integer(i1b) :: mapping_dbl
-integer(i1b), dimension(0:2*IMAX,0:2*JMAX) :: mask_dbl, mask_old_dbl, &
+integer(i4b) :: mapping_dbl
+integer(i4b), dimension(0:2*IMAX,0:2*JMAX) :: mask_dbl, mask_old_dbl, &
                                               n_cts_dbl, &
                                               flag_shelfy_stream_x_dbl, &
                                               flag_shelfy_stream_y_dbl, &
@@ -208,7 +208,7 @@ real(sp), dimension(0:2*IMAX,0:2*JMAX,0:KRMAX) :: temp_r_dbl
 character(len=64) :: mapping_grid_mapping_name_dbl, mapping_ellipsoid_dbl
 
 #if (DISC>0)   /* Ice discharge parameterisation */
-integer(i1b), dimension(0:2*IMAX,0:2*JMAX) :: mask_mar_dbl
+integer(i4b), dimension(0:2*IMAX,0:2*JMAX) :: mask_mar_dbl
 real(sp),     dimension(0:2*IMAX,0:2*JMAX) :: dis_perp_dbl, &
                                               cst_dist_dbl, cos_grad_tc_dbl
 #endif
@@ -310,7 +310,7 @@ if (ios /= nf90_noerr) then
    stop
 end if
 
-mapping_erg = 1_i1b                     ! initial value
+mapping_erg = 1                     ! initial value
 mapping_grid_mapping_name_erg = 'xxx'   ! initial value
 mapping_ellipsoid_erg         = 'xxx'   ! initial value
 
@@ -1569,56 +1569,56 @@ do jj = 0, 2*JMAX
       i2 = (ii+1)/2
       j  = jj/2
 
-      if (    (mask_erg(i1,j)==3_i1b) &
-          .or.(mask_erg(i2,j)==3_i1b) ) &
+      if (    (mask_erg(i1,j)==3) &
+          .or.(mask_erg(i2,j)==3) ) &
       then
-         mask_dbl(ii,jj) = 3_i1b
-      else if (    (mask_erg(i1,j)==0_i1b) &
-               .or.(mask_erg(i2,j)==0_i1b) ) &
+         mask_dbl(ii,jj) = 3
+      else if (    (mask_erg(i1,j)==0) &
+               .or.(mask_erg(i2,j)==0) ) &
       then
-         mask_dbl(ii,jj) = 0_i1b
-      else if (    (mask_erg(i1,j)==1_i1b) &
-               .or.(mask_erg(i2,j)==1_i1b) ) &
+         mask_dbl(ii,jj) = 0
+      else if (    (mask_erg(i1,j)==1) &
+               .or.(mask_erg(i2,j)==1) ) &
       then
-         mask_dbl(ii,jj) = 1_i1b
+         mask_dbl(ii,jj) = 1
       else
-         mask_dbl(ii,jj) = 2_i1b
+         mask_dbl(ii,jj) = 2
       end if
 
-      if (    (mask_old_erg(i1,j)==3_i1b) &
-          .or.(mask_old_erg(i2,j)==3_i1b) ) &
+      if (    (mask_old_erg(i1,j)==3) &
+          .or.(mask_old_erg(i2,j)==3) ) &
       then
-         mask_old_dbl(ii,jj) = 3_i1b
-      else if (    (mask_old_erg(i1,j)==0_i1b) &
-               .or.(mask_old_erg(i2,j)==0_i1b) ) &
+         mask_old_dbl(ii,jj) = 3
+      else if (    (mask_old_erg(i1,j)==0) &
+               .or.(mask_old_erg(i2,j)==0) ) &
       then
-         mask_old_dbl(ii,jj) = 0_i1b
-      else if (    (mask_old_erg(i1,j)==1_i1b) &
-               .or.(mask_old_erg(i2,j)==1_i1b) ) &
+         mask_old_dbl(ii,jj) = 0
+      else if (    (mask_old_erg(i1,j)==1) &
+               .or.(mask_old_erg(i2,j)==1) ) &
       then
-         mask_old_dbl(ii,jj) = 1_i1b
+         mask_old_dbl(ii,jj) = 1
       else
-         mask_old_dbl(ii,jj) = 2_i1b
+         mask_old_dbl(ii,jj) = 2
       end if
 
-      if (    (n_cts_erg(i1,j)==1_i1b) &
-          .or.(n_cts_erg(i2,j)==1_i1b) ) &
+      if (    (n_cts_erg(i1,j)==1) &
+          .or.(n_cts_erg(i2,j)==1) ) &
       then
-         n_cts_dbl(ii,jj) = 1_i1b
-      else if (    (n_cts_erg(i1,j)==0_i1b) &
-               .or.(n_cts_erg(i2,j)==0_i1b) ) &
+         n_cts_dbl(ii,jj) = 1
+      else if (    (n_cts_erg(i1,j)==0) &
+               .or.(n_cts_erg(i2,j)==0) ) &
       then
-         n_cts_dbl(ii,jj) = 0_i1b
+         n_cts_dbl(ii,jj) = 0
       else
-         n_cts_dbl(ii,jj) = -1_i1b
+         n_cts_dbl(ii,jj) = -1
       end if
 
 #if (DISC>0)   /* Ice discharge parameterisation */
 
-      if ( (mask_mar_erg(i1,j)+mask_mar_erg(i2,j)) >= 1_i1b ) then
-         mask_mar_dbl(ii,jj) = 1_i1b
+      if ( (mask_mar_erg(i1,j)+mask_mar_erg(i2,j)) >= 1 ) then
+         mask_mar_dbl(ii,jj) = 1
       else
-         mask_mar_dbl(ii,jj) = 0_i1b
+         mask_mar_dbl(ii,jj) = 0
       end if
 
 #endif
@@ -1630,56 +1630,56 @@ do jj = 0, 2*JMAX
       j1 = (jj-1)/2
       j2 = (jj+1)/2
 
-      if (    (mask_erg(i,j1)==3_i1b) &
-          .or.(mask_erg(i,j2)==3_i1b) ) &
+      if (    (mask_erg(i,j1)==3) &
+          .or.(mask_erg(i,j2)==3) ) &
       then
-         mask_dbl(ii,jj) = 3_i1b
-      else if (    (mask_erg(i,j1)==0_i1b) &
-               .or.(mask_erg(i,j2)==0_i1b) ) &
+         mask_dbl(ii,jj) = 3
+      else if (    (mask_erg(i,j1)==0) &
+               .or.(mask_erg(i,j2)==0) ) &
       then
-         mask_dbl(ii,jj) = 0_i1b
-      else if (    (mask_erg(i,j1)==1_i1b) &
-               .or.(mask_erg(i,j2)==1_i1b) ) &
+         mask_dbl(ii,jj) = 0
+      else if (    (mask_erg(i,j1)==1) &
+               .or.(mask_erg(i,j2)==1) ) &
       then
-         mask_dbl(ii,jj) = 1_i1b
+         mask_dbl(ii,jj) = 1
       else
-         mask_dbl(ii,jj) = 2_i1b
+         mask_dbl(ii,jj) = 2
       end if
 
-      if (    (mask_old_erg(i,j1)==3_i1b) &
-          .or.(mask_old_erg(i,j2)==3_i1b) ) &
+      if (    (mask_old_erg(i,j1)==3) &
+          .or.(mask_old_erg(i,j2)==3) ) &
       then
-         mask_old_dbl(ii,jj) = 3_i1b
-      else if (    (mask_old_erg(i,j1)==0_i1b) &
-               .or.(mask_old_erg(i,j2)==0_i1b) ) &
+         mask_old_dbl(ii,jj) = 3
+      else if (    (mask_old_erg(i,j1)==0) &
+               .or.(mask_old_erg(i,j2)==0) ) &
       then
-         mask_old_dbl(ii,jj) = 0_i1b
-      else if (    (mask_old_erg(i,j1)==1_i1b) &
-               .or.(mask_old_erg(i,j2)==1_i1b) ) &
+         mask_old_dbl(ii,jj) = 0
+      else if (    (mask_old_erg(i,j1)==1) &
+               .or.(mask_old_erg(i,j2)==1) ) &
       then
-         mask_old_dbl(ii,jj) = 1_i1b
+         mask_old_dbl(ii,jj) = 1
       else
-         mask_old_dbl(ii,jj) = 2_i1b
+         mask_old_dbl(ii,jj) = 2
       end if
 
-      if (    (n_cts_erg(i,j1)==1_i1b) &
-          .or.(n_cts_erg(i,j2)==1_i1b) ) &
+      if (    (n_cts_erg(i,j1)==1) &
+          .or.(n_cts_erg(i,j2)==1) ) &
       then
-         n_cts_dbl(ii,jj) = 1_i1b
-      else if (    (n_cts_erg(i,j1)==0_i1b) &
-               .or.(n_cts_erg(i,j2)==0_i1b) ) &
+         n_cts_dbl(ii,jj) = 1
+      else if (    (n_cts_erg(i,j1)==0) &
+               .or.(n_cts_erg(i,j2)==0) ) &
       then
-         n_cts_dbl(ii,jj) = 0_i1b
+         n_cts_dbl(ii,jj) = 0
       else
-         n_cts_dbl(ii,jj) = -1_i1b
+         n_cts_dbl(ii,jj) = -1
       end if
 
 #if (DISC>0)   /* Ice discharge parameterisation */
 
-      if ( (mask_mar_erg(i,j1)+mask_mar_erg(i,j2)) >= 1_i1b ) then
-         mask_mar_dbl(ii,jj) = 1_i1b
+      if ( (mask_mar_erg(i,j1)+mask_mar_erg(i,j2)) >= 1 ) then
+         mask_mar_dbl(ii,jj) = 1
       else
-         mask_mar_dbl(ii,jj) = 0_i1b
+         mask_mar_dbl(ii,jj) = 0
       end if
 
 #endif
@@ -1692,73 +1692,73 @@ do jj = 0, 2*JMAX
       j1 = (jj-1)/2
       j2 = (jj+1)/2
 
-      if (    (mask_erg(i1,j1)==3_i1b) &
-          .or.(mask_erg(i2,j1)==3_i1b) &
-          .or.(mask_erg(i1,j2)==3_i1b) &
-          .or.(mask_erg(i2,j2)==3_i1b) ) &
+      if (    (mask_erg(i1,j1)==3) &
+          .or.(mask_erg(i2,j1)==3) &
+          .or.(mask_erg(i1,j2)==3) &
+          .or.(mask_erg(i2,j2)==3) ) &
       then
-         mask_dbl(ii,jj) = 3_i1b
-      else if (    (mask_erg(i1,j1)==0_i1b) &
-               .or.(mask_erg(i2,j1)==0_i1b) &
-               .or.(mask_erg(i1,j2)==0_i1b) &
-               .or.(mask_erg(i2,j2)==0_i1b) ) &
+         mask_dbl(ii,jj) = 3
+      else if (    (mask_erg(i1,j1)==0) &
+               .or.(mask_erg(i2,j1)==0) &
+               .or.(mask_erg(i1,j2)==0) &
+               .or.(mask_erg(i2,j2)==0) ) &
       then
-         mask_dbl(ii,jj) = 0_i1b
-      else if (    (mask_erg(i1,j1)==1_i1b) &
-               .or.(mask_erg(i2,j1)==1_i1b) &
-               .or.(mask_erg(i1,j2)==1_i1b) &
-               .or.(mask_erg(i2,j2)==1_i1b) ) &
+         mask_dbl(ii,jj) = 0
+      else if (    (mask_erg(i1,j1)==1) &
+               .or.(mask_erg(i2,j1)==1) &
+               .or.(mask_erg(i1,j2)==1) &
+               .or.(mask_erg(i2,j2)==1) ) &
       then
-         mask_dbl(ii,jj) = 1_i1b
+         mask_dbl(ii,jj) = 1
       else
-         mask_dbl(ii,jj) = 2_i1b
+         mask_dbl(ii,jj) = 2
       end if
 
-      if (    (mask_old_erg(i1,j1)==3_i1b) &
-          .or.(mask_old_erg(i2,j1)==3_i1b) &
-          .or.(mask_old_erg(i1,j2)==3_i1b) &
-          .or.(mask_old_erg(i2,j2)==3_i1b) ) &
+      if (    (mask_old_erg(i1,j1)==3) &
+          .or.(mask_old_erg(i2,j1)==3) &
+          .or.(mask_old_erg(i1,j2)==3) &
+          .or.(mask_old_erg(i2,j2)==3) ) &
       then
-         mask_old_dbl(ii,jj) = 3_i1b
-      else if (    (mask_old_erg(i1,j1)==0_i1b) &
-               .or.(mask_old_erg(i2,j1)==0_i1b) &
-               .or.(mask_old_erg(i1,j2)==0_i1b) &
-               .or.(mask_old_erg(i2,j2)==0_i1b) ) &
+         mask_old_dbl(ii,jj) = 3
+      else if (    (mask_old_erg(i1,j1)==0) &
+               .or.(mask_old_erg(i2,j1)==0) &
+               .or.(mask_old_erg(i1,j2)==0) &
+               .or.(mask_old_erg(i2,j2)==0) ) &
       then
-         mask_old_dbl(ii,jj) = 0_i1b
-      else if (    (mask_old_erg(i1,j1)==1_i1b) &
-               .or.(mask_old_erg(i2,j1)==1_i1b) &
-               .or.(mask_old_erg(i1,j2)==1_i1b) &
-               .or.(mask_old_erg(i2,j2)==1_i1b) ) &
+         mask_old_dbl(ii,jj) = 0
+      else if (    (mask_old_erg(i1,j1)==1) &
+               .or.(mask_old_erg(i2,j1)==1) &
+               .or.(mask_old_erg(i1,j2)==1) &
+               .or.(mask_old_erg(i2,j2)==1) ) &
       then
-         mask_old_dbl(ii,jj) = 1_i1b
+         mask_old_dbl(ii,jj) = 1
       else
-         mask_old_dbl(ii,jj) = 2_i1b
+         mask_old_dbl(ii,jj) = 2
       end if
 
-      if (    (n_cts_erg(i1,j1)==1_i1b) &
-          .or.(n_cts_erg(i2,j1)==1_i1b) &
-          .or.(n_cts_erg(i1,j2)==1_i1b) &
-          .or.(n_cts_erg(i2,j2)==1_i1b) ) &
+      if (    (n_cts_erg(i1,j1)==1) &
+          .or.(n_cts_erg(i2,j1)==1) &
+          .or.(n_cts_erg(i1,j2)==1) &
+          .or.(n_cts_erg(i2,j2)==1) ) &
       then
-         n_cts_dbl(ii,jj) = 1_i1b
-      else if (    (n_cts_erg(i1,j1)==0_i1b) &
-               .or.(n_cts_erg(i2,j1)==0_i1b) &
-               .or.(n_cts_erg(i1,j2)==0_i1b) &
-               .or.(n_cts_erg(i2,j2)==0_i1b) ) &
+         n_cts_dbl(ii,jj) = 1
+      else if (    (n_cts_erg(i1,j1)==0) &
+               .or.(n_cts_erg(i2,j1)==0) &
+               .or.(n_cts_erg(i1,j2)==0) &
+               .or.(n_cts_erg(i2,j2)==0) ) &
       then
-         n_cts_dbl(ii,jj) = 0_i1b
+         n_cts_dbl(ii,jj) = 0
       else
-         n_cts_dbl(ii,jj) = -1_i1b
+         n_cts_dbl(ii,jj) = -1
       end if
 
 #if (DISC>0)   /* Ice discharge parameterisation */
 
       if ( (mask_mar_erg(i1,j1)+mask_mar_erg(i2,j1) &
-           +mask_mar_erg(i1,j2)+mask_mar_erg(i2,j2)) >= 2_i1b ) then
-         mask_mar_dbl(ii,jj) = 1_i1b
+           +mask_mar_erg(i1,j2)+mask_mar_erg(i2,j2)) >= 2 ) then
+         mask_mar_dbl(ii,jj) = 1
       else
-         mask_mar_dbl(ii,jj) = 0_i1b
+         mask_mar_dbl(ii,jj) = 0
       end if
 
 #endif
@@ -1770,17 +1770,17 @@ end do
 
 !-------- Flags --------
 
-flag_shelfy_stream_x_dbl    = 0_i1b   ! all
-flag_shelfy_stream_y_dbl    = 0_i1b   ! set
-flag_shelfy_stream_dbl      = 0_i1b   ! to
-flag_grounding_line_1_dbl   = 0_i1b   ! 0
-flag_grounding_line_2_dbl   = 0_i1b   ! (false),
-flag_calving_front_1_dbl    = 0_i1b   ! will
-flag_calving_front_2_dbl    = 0_i1b   ! be
-flag_grounded_front_a_1_dbl = 0_i1b   ! re-set
-flag_grounded_front_a_2_dbl = 0_i1b   ! by
-flag_grounded_front_b_1_dbl = 0_i1b   ! SICOPOLIS
-flag_grounded_front_b_2_dbl = 0_i1b   ! anyway
+flag_shelfy_stream_x_dbl    = 0   ! all
+flag_shelfy_stream_y_dbl    = 0   ! set
+flag_shelfy_stream_dbl      = 0   ! to
+flag_grounding_line_1_dbl   = 0   ! 0
+flag_grounding_line_2_dbl   = 0   ! (false),
+flag_calving_front_1_dbl    = 0   ! will
+flag_calving_front_2_dbl    = 0   ! be
+flag_grounded_front_a_1_dbl = 0   ! re-set
+flag_grounded_front_a_2_dbl = 0   ! by
+flag_grounded_front_b_1_dbl = 0   ! SICOPOLIS
+flag_grounded_front_b_2_dbl = 0   ! anyway
 
 end subroutine double_res_interpol
 

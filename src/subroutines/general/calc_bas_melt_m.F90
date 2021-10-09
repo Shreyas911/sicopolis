@@ -103,14 +103,14 @@ z_abyssal = no_value_neg_1
 do i=1, IMAX-1
 do j=1, JMAX-1
 
-   if (mask(j,i)==0_i1b) then   ! grounded ice
+   if (mask(j,i)==0) then   ! grounded ice
 
-      if (n_cts(j,i)==-1_i1b) then
+      if (n_cts(j,i)==-1) then
 
          frictional_heating = 0.0_dp
          Q_bm(j,i)          = 0.0_dp
 
-      else if (n_cts(j,i)==0_i1b) then
+      else if (n_cts(j,i)==0) then
 
 #if (DYNAMICS==2)
          if (.not.flag_shelfy_stream(j,i)) then
@@ -135,7 +135,7 @@ do j=1, JMAX-1
                      - aqbm2*(temp_r(KRMAX,j,i)-temp_r(KRMAX-1,j,i)) &
                      + frictional_heating
 
-      else   ! n_cts(j,i)==1_i1b
+      else   ! n_cts(j,i)==1
 
 #if (DYNAMICS==2)
          if (.not.flag_shelfy_stream(j,i)) then
@@ -171,10 +171,10 @@ do j=1, JMAX-1
 
       if ( (zb(j,i) < z_sl(j,i)) &          ! marine ice
            .and. &
-           (     (mask(j,i+1)==2_i1b) &   ! at least one
-             .or.(mask(j,i-1)==2_i1b) &   ! nearest neighbour
-             .or.(mask(j+1,i)==2_i1b) &   ! is
-             .or.(mask(j-1,i)==2_i1b) &   ! ocean
+           (     (mask(j,i+1)==2) &   ! at least one
+             .or.(mask(j,i-1)==2) &   ! nearest neighbour
+             .or.(mask(j+1,i)==2) &   ! is
+             .or.(mask(j-1,i)==2) &   ! ocean
            ) &
          ) then
 
@@ -187,18 +187,18 @@ do j=1, JMAX-1
 
       if ( (zb(j,i) < z_sl(j,i)) &          ! marine ice
            .and. &
-           (     (mask(j,i+1)==2_i1b) &   ! at least one
-             .or.(mask(j,i-1)==2_i1b) &   ! nearest neighbour
-             .or.(mask(j+1,i)==2_i1b) &   ! is
-             .or.(mask(j-1,i)==2_i1b) &   ! ocean
+           (     (mask(j,i+1)==2) &   ! at least one
+             .or.(mask(j,i-1)==2) &   ! nearest neighbour
+             .or.(mask(j+1,i)==2) &   ! is
+             .or.(mask(j-1,i)==2) &   ! ocean
            ) &
          ) then
 
          n_ocean = 0
-         if (mask(j,i+1)==2_i1b) n_ocean = n_ocean+1
-         if (mask(j,i-1)==2_i1b) n_ocean = n_ocean+1
-         if (mask(j+1,i)==2_i1b) n_ocean = n_ocean+1
-         if (mask(j-1,i)==2_i1b) n_ocean = n_ocean+1
+         if (mask(j,i+1)==2) n_ocean = n_ocean+1
+         if (mask(j,i-1)==2) n_ocean = n_ocean+1
+         if (mask(j+1,i)==2) n_ocean = n_ocean+1
+         if (mask(j-1,i)==2) n_ocean = n_ocean+1
 
          if ( n_ocean > 0 ) then
 
@@ -232,10 +232,10 @@ do j=1, JMAX-1
 
       else if ( (zb(j,i) < z_sl(j,i)) &          ! marine ice margin
                 .and. &
-                (     (mask(j,i+1)>=2_i1b) &   !  (at least one
-                  .or.(mask(j,i-1)>=2_i1b) &   !   nearest neighbour
-                  .or.(mask(j+1,i)>=2_i1b) &   !   is
-                  .or.(mask(j-1,i)>=2_i1b) &   !   ocean)
+                (     (mask(j,i+1)>=2) &   !  (at least one
+                  .or.(mask(j,i-1)>=2) &   !   nearest neighbour
+                  .or.(mask(j+1,i)>=2) &   !   is
+                  .or.(mask(j-1,i)>=2) &   !   ocean)
                 ) &
               ) then
 
@@ -251,10 +251,10 @@ do j=1, JMAX-1
 #elif (MARINE_ICE_BASAL_MELTING==3)
 
          n_ocean = 0
-         if (mask(j,i+1)>=2_i1b) n_ocean = n_ocean+1
-         if (mask(j,i-1)>=2_i1b) n_ocean = n_ocean+1
-         if (mask(j+1,i)>=2_i1b) n_ocean = n_ocean+1
-         if (mask(j-1,i)>=2_i1b) n_ocean = n_ocean+1
+         if (mask(j,i+1)>=2) n_ocean = n_ocean+1
+         if (mask(j,i-1)>=2) n_ocean = n_ocean+1
+         if (mask(j+1,i)>=2) n_ocean = n_ocean+1
+         if (mask(j-1,i)>=2) n_ocean = n_ocean+1
 
          if ( n_ocean > 0 ) then
 
@@ -280,7 +280,7 @@ do j=1, JMAX-1
 
       end if
 
-   else if ( (mask(j,i)==2_i1b).or.(mask(j,i)==3_i1b) ) then
+   else if ( (mask(j,i)==2).or.(mask(j,i)==3) ) then
                                                 ! floating ice or ocean
 
 #if (FLOATING_ICE_BASAL_MELTING==1)
@@ -382,7 +382,7 @@ end if
 do i=0, IMAX
 do j=0, JMAX
 
-   if (mask(j,i)==0_i1b) then   ! grounded ice
+   if (mask(j,i)==0) then   ! grounded ice
 
       if (Q_bm(j,i)    < qbm_min) Q_bm(j,i)    = 0.0_dp
       if (Q_bm(j,i)    > qbm_max) Q_bm(j,i)    = qbm_max
@@ -391,7 +391,7 @@ do j=0, JMAX
       if (Q_b_tot(j,i) < qbm_min) Q_b_tot(j,i) = 0.0_dp
       if (Q_b_tot(j,i) > qbm_max) Q_b_tot(j,i) = qbm_max
 
-   else if ( (mask(j,i)==3_i1b).and.( zl(j,i) > z_abyssal ) ) then
+   else if ( (mask(j,i)==3).and.( zl(j,i) > z_abyssal ) ) then
                                  ! floating ice over continental shelf
 #if (defined(H_W_0))
       if (H_W_0 > eps_dp) then
@@ -588,9 +588,9 @@ call error(errormsg)
 
 !-------- Computation of the sub-ice-shelf melting rate --------
 
-if (mask(j,i)==2_i1b) then   ! ocean
+if (mask(j,i)==2) then   ! ocean
    draft = 0.0_dp
-else if (mask(j,i)==3_i1b) then   ! floating ice
+else if (mask(j,i)==3) then   ! floating ice
    draft = max((z_sl(j,i)-zb(j,i)), 0.0_dp)
 else
    errormsg = ' >>> sub_ice_shelf_melting_param_1:' &
@@ -909,14 +909,14 @@ tf_bm_local = 1.0_dp   ! default value
 do i=0, IMAX
 do j=0, JMAX
 
-   if ( (mask(j,i)==2_i1b).or.(mask(j,i)==3_i1b) ) then
+   if ( (mask(j,i)==2).or.(mask(j,i)==3) ) then
                                                 ! floating ice or ocean
 
       if ( zl(j,i) > z_abyssal ) then   ! continental shelf
 
-         if (mask(j,i)==2_i1b) then   ! ocean
+         if (mask(j,i)==2) then   ! ocean
             draft = 0.0_dp
-         else if (mask(j,i)==3_i1b) then   ! floating ice
+         else if (mask(j,i)==3) then   ! floating ice
             draft = max((z_sl(j,i)-zb(j,i)), 0.0_dp)
          end if
 
@@ -966,7 +966,7 @@ sum_weigh = 0.0_dp   ! initialization
 do i=0, IMAX
 do j=0, JMAX
 
-   if (mask(j,i)==3_i1b) then   ! floating ice
+   if (mask(j,i)==3) then   ! floating ice
 
       n = n_bm_region(j,i)
 
@@ -994,7 +994,7 @@ end do
 do i=0, IMAX
 do j=0, JMAX
 
-   if ( (mask(j,i)==2_i1b).or.(mask(j,i)==3_i1b) ) then
+   if ( (mask(j,i)==2).or.(mask(j,i)==3) ) then
                                                 ! floating ice or ocean
 
 !  ------ Melting rate over continental shelf
@@ -1007,7 +1007,7 @@ do j=0, JMAX
                         *(tf_bm_local(j,i)+delta_tf_bm(j,i)) &
                         *abs(tf_bm_ave(n)+delta_tf_bm(j,i))
 
-         if ((mask(j,i)==2_i1b).and.(Q_bm(j,i) < 0.0_dp)) Q_bm(j,i) = 0.0_dp
+         if ((mask(j,i)==2).and.(Q_bm(j,i) < 0.0_dp)) Q_bm(j,i) = 0.0_dp
                                      ! avoid negative values for the open ocean
 
 !    ---- Correction for ISMIP InitMIP

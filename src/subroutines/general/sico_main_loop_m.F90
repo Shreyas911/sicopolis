@@ -296,14 +296,14 @@ contains
 #endif
   
 #if (MARGIN==3)       /* coupled SIA/SSA or SIA/SStA/SSA dynamics */
-    call calc_thk_mask_update(time, dtime, dxi, deta, z_mar, 3_i1b)
+    call calc_thk_mask_update(time, dtime, dxi, deta, z_mar, 3)
 #elif (DYNAMICS==2)   /* hybrid SIA/SStA dynamics */
-    call calc_thk_mask_update(time, dtime, dxi, deta, z_mar, 2_i1b)
+    call calc_thk_mask_update(time, dtime, dxi, deta, z_mar, 2)
 #else                 /* SIA-only dynamics */
 #if (CALCTHK==1 || CALCTHK==2 || CALCTHK==3)
-    call calc_thk_mask_update(time, dtime, dxi, deta, z_mar, 1_i1b)
+    call calc_thk_mask_update(time, dtime, dxi, deta, z_mar, 1)
 #elif (CALCTHK==4 || CALCTHK==5 || CALCTHK==6)
-    call calc_thk_mask_update(time, dtime, dxi, deta, z_mar, 2_i1b)
+    call calc_thk_mask_update(time, dtime, dxi, deta, z_mar, 2)
 #endif
 #endif
 
