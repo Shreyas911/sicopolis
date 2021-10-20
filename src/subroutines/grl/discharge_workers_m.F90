@@ -301,7 +301,7 @@ contains
   !  do i=0, IMAX
   !  do j=0, JMAX
   !    if(mask(j,i).eq.0.or.mask(j,i).eq.3) then
-  !      disc_tot=disc_tot+dis_perp(j,i)*area(j,i)
+  !      disc_tot=disc_tot+dis_perp(j,i)*cell_area(j,i)
   !    end if
   !  end do
   !  end do
@@ -314,7 +314,7 @@ contains
   do j=1, JMAX-1
 
      if (mask_mar(j,i) == 1) then
-        disc_tot = disc_tot + dis_perp(j,i)*area(j,i)
+        disc_tot = disc_tot + dis_perp(j,i)*cell_area(j,i)
      end if
 
   end do

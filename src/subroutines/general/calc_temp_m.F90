@@ -748,7 +748,7 @@ Vol_t = 0.0_dp
 do i=0, IMAX   ! extended to domain margins (22.1.02 -> V1.1)
 do j=0, JMAX   ! extended to domain margins (22.1.02 -> V1.1)
    if (n_cts_new(j,i) == 1) then
-      Vol_t = Vol_t + H_t_new(j,i)*area(j,i)
+      Vol_t = Vol_t + H_t_new(j,i)*cell_area(j,i)
    end if
 end do
 end do
@@ -779,10 +779,10 @@ end do
 !  ------ Volume of temperate ice with smoothing
 
 Vol_t_smooth = 0.0_dp
-do i=0, IMAX   ! extended to domain margins (22.1.02 -> V1.1)
-do j=0, JMAX   ! extended to domain margins (22.1.02 -> V1.1)
+do i=0, IMAX
+do j=0, JMAX
    if (n_cts_new(j,i) == 1) then
-      Vol_t_smooth = Vol_t_smooth + H_t_new(j,i)*area(j,i)
+      Vol_t_smooth = Vol_t_smooth + H_t_new(j,i)*cell_area(j,i)
    end if
 end do
 end do

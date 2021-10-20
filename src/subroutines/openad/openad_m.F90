@@ -336,7 +336,9 @@ contains
       flag_grounding_line_1,flag_grounding_line_2,flag_calving_front_1,&
       flag_calving_front_2,flag_shelfy_stream_x,flag_shelfy_stream_y,&
       flag_shelfy_stream,xi,eta,zeta_c,zeta_t,zeta_r,aa,flag_aa_nonzero,&
-      ea,eaz_c,eaz_c_quotient,lambda,phi,area,sq_g11_g,sq_g22_g,&
+      ea,eaz_c,eaz_c_quotient,lambda,phi, &
+      cell_area, &
+      sq_g11_g,sq_g22_g,&
       insq_g11_g,insq_g22_g,sq_g11_sgx,sq_g11_sgy,sq_g22_sgx,sq_g22_sgy,&
       insq_g11_sgx,insq_g22_sgy,zs,zm,zb,zl,zl0,wss,flex_rig_lith,&
       time_lag_asth, &
@@ -582,7 +584,9 @@ contains
          a_flag_grounding_line_1,a_flag_grounding_line_2,a_flag_calving_front_1,&
          a_flag_calving_front_2,a_flag_shelfy_stream_x,a_flag_shelfy_stream_y,&
          a_flag_shelfy_stream,a_xi,a_eta,a_zeta_c,a_zeta_t,a_zeta_r,a_aa,a_flag_aa_nonzero,&
-         a_ea,a_eaz_c,a_eaz_c_quotient,a_lambda,a_phi,a_area,a_sq_g11_g,a_sq_g22_g,&
+         a_ea,a_eaz_c,a_eaz_c_quotient,a_lambda,a_phi, &
+         a_cell_area, &
+         a_sq_g11_g,a_sq_g22_g,&
          a_insq_g11_g,a_insq_g22_g,a_sq_g11_sgx,a_sq_g11_sgy,a_sq_g22_sgx,a_sq_g22_sgy,&
          a_insq_g11_sgx,a_insq_g22_sgy,a_zs,a_zm,a_zb,a_zl,a_zl0,a_wss,a_flex_rig_lith,&
          a_time_lag_asth, &
@@ -710,7 +714,7 @@ contains
 #endif /* No age cost used */
     real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_age_t
     real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_age_t_new
-    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_area
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_cell_area
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_am_perp
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_am_perp_st
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_as_perp
@@ -1086,7 +1090,7 @@ contains
 #endif
     am_perp = a_am_perp
     am_perp_st = a_am_perp_st
-    area = a_area
+    cell_area = a_cell_area
     as_perp%v = a_as_perp
     as_perp_apl = a_as_perp_apl
 #if (defined(INITMIP_SMB_ANOM_FILE))

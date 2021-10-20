@@ -133,7 +133,7 @@ call error(errormsg)
 
   real(sp), dimension(0:IMAX,0:JMAX) :: lambda_conv, phi_conv, &
               lon_conv, lat_conv, &
-              area_conv, &
+              cell_area_conv, &
               temp_maat_conv, temp_s_conv, accum_conv, &
               snowfall_conv, rainfall_conv, pdd_conv, & 
               as_perp_conv, as_perp_apl_conv, smb_corr_conv, &
@@ -232,7 +232,7 @@ call error(errormsg)
   read(unit=11) lat_conv
   read(unit=11) lambda_conv
   read(unit=11) phi_conv
-  read(unit=11) area_conv
+  read(unit=11) cell_area_conv
   read(unit=11) temp_maat_conv
   read(unit=11) temp_s_conv
   read(unit=11) accum_conv
@@ -409,11 +409,11 @@ call error(errormsg)
   call check( nf90_get_var(ncid, ncv, phi_conv) )
 
   if ( nf90_inq_varid(ncid, 'cell_area', ncv) == nf90_noerr ) then
-     call check( nf90_get_var(ncid, ncv, area_conv) )
+     call check( nf90_get_var(ncid, ncv, cell_area_conv) )
   else
      write(6,'(/1x,a)') '>>> read_tms_nc: Variable cell_area'
      write(6, '(1x,a)') '                 not available in read file *.nc.'
-     area_conv = 0.0_sp
+     cell_area_conv = 0.0_sp
   end if
 
   if ( nf90_inq_varid(ncid, 'temp_maat', ncv) == nf90_noerr ) then
