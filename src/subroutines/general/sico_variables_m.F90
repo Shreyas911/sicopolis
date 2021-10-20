@@ -168,8 +168,8 @@ save
    real(dp), dimension(0:JMAX,0:IMAX) :: lambda
 !> phi(j,i): Geographic latitude of grid point (i,j)
    real(dp), dimension(0:JMAX,0:IMAX) :: phi
-!> area(j,i): Area of grid cell associated with grid point (i,j)
-   real(dp), dimension(0:JMAX,0:IMAX) :: area
+!> cell_area(j,i): Area of grid cell associated with grid point (i,j)
+   real(dp), dimension(0:JMAX,0:IMAX) :: cell_area
 !> sq_g11_g(j,i): Square root of the coefficient g11 of the metric tensor
 !>                on grid point (i,j)
    real(dp), dimension(0:JMAX,0:IMAX) :: sq_g11_g

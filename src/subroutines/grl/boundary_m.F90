@@ -605,7 +605,7 @@ end if
 
 !  ------ Mean sea level
 
-z_sl_mean = sum(z_sl*area)/sum(area)
+z_sl_mean = sum(z_sl*cell_area)/sum(cell_area)
 
 !  ------ Time derivative of the sea level
 

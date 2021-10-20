@@ -970,7 +970,7 @@ do j=0, JMAX
 
       n = n_bm_region(j,i)
 
-      weigh        = area(j,i)
+      weigh        = cell_area(j,i)
       tf_bm_ave(n) = tf_bm_ave(n) + weigh*tf_bm_local(j,i)
       sum_weigh(n) = sum_weigh(n) + weigh
 

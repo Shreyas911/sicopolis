@@ -300,11 +300,11 @@ do jl=jl_begin, jl_end
    j = min(max(jl, 0), JMAX)
 
    if (mask(j,i)==0) then
-      f_0(jl,il) = rho_g * area(j,i) * H(j,i)
+      f_0(jl,il) = rho_g * cell_area(j,i) * H(j,i)
    else if (mask(j,i)==1) then
       f_0(jl,il) = 0.0_dp
    else   ! (mask(j,i)>=2)
-      f_0(jl,il) = rho_sw_g * area(j,i) * z_sl(j,i)
+      f_0(jl,il) = rho_sw_g * cell_area(j,i) * z_sl(j,i)
                    ! Water load relative to the present sea-level stand (0 m)
                    ! -> can be positive or negative
    end if

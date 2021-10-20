@@ -619,7 +619,7 @@ real(dp), dimension(0:JMAX,0:IMAX) :: sq_g11_y_1, sq_g11_y_2
 
 !-------- Abbreviations --------
 
-dt_darea = dtime/area
+dt_darea = dtime/cell_area
 
 do i=0, IMAX
 do j=0, JMAX
@@ -831,7 +831,7 @@ real(dp),             dimension(n_sprs) :: lgs_a_value_trim
 
 !-------- Abbreviations --------
 
-dt_darea = dtime/area
+dt_darea = dtime/cell_area
 
 do i=0, IMAX
 do j=0, JMAX

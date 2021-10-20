@@ -2049,11 +2049,11 @@ call topograd_1(dxi, deta, 1)
 call topograd_2(dxi, deta, 1)
 #endif
 
-!-------- Corresponding area of grid points --------
+!-------- Corresponding area of grid cells --------
 
 do i=0, IMAX
 do j=0, JMAX
-   area(j,i) = sq_g11_g(j,i)*sq_g22_g(j,i)*dxi*deta
+   cell_area(j,i) = sq_g11_g(j,i)*sq_g22_g(j,i)*dxi*deta
 end do
 end do
 
@@ -2216,11 +2216,11 @@ call topograd_1(dxi, deta, 1)
 call topograd_2(dxi, deta, 1)
 #endif
 
-!-------- Corresponding area of grid points --------
+!-------- Corresponding area of grid cells --------
 
 do i=0, IMAX
 do j=0, JMAX
-   area(j,i) = sq_g11_g(j,i)*sq_g22_g(j,i)*dxi*deta
+   cell_area(j,i) = sq_g11_g(j,i)*sq_g22_g(j,i)*dxi*deta
 end do
 end do
 
@@ -2345,11 +2345,11 @@ call topograd_1(dxi, deta, 1)
 call topograd_2(dxi, deta, 1)
 #endif
 
-!-------- Corresponding area of grid points --------
+!-------- Corresponding area of grid cells --------
 
 do i=0, IMAX
 do j=0, JMAX
-   area(j,i) = sq_g11_g(j,i)*sq_g22_g(j,i)*dxi*deta
+   cell_area(j,i) = sq_g11_g(j,i)*sq_g22_g(j,i)*dxi*deta
 end do
 end do
 
