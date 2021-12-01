@@ -1415,7 +1415,16 @@ end if
 
 !  ------ Enforce connectivity of the ocean
 
-call ocean_connect()
+#if (!defined(OCEAN_CONNECTIVITY) || OCEAN_CONNECTIVITY==1)
+   call ocean_connect()
+#elif (OCEAN_CONNECTIVITY==0)
+   !!! continue
+#else
+   errormsg = ' >>> calc_thk_mask_update:' &
+            //         end_of_line &
+            //'        OCEAN_CONNECTIVITY must be either 0 or 1!'
+   call error(errormsg)
+#endif
 
 !-------- Time derivatives --------
 

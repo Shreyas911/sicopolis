@@ -948,7 +948,9 @@ write(10, fmt=trim(fmt2)) 'CALCTHK = ', CALCTHK
 errormsg = ' >>> sico_init: Define CALCTHK in header file!'
 call error(errormsg)
 #endif
-
+#if (defined(OCEAN_CONNECTIVITY))
+write(10, fmt=trim(fmt2)) 'OCEAN_CONNECTIVITY =', OCEAN_CONNECTIVITY
+#endif
 #if (defined(H_ISOL_MAX))
 write(10, fmt=trim(fmt3)) 'H_isol_max =', H_ISOL_MAX
 #endif
