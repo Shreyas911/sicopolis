@@ -121,10 +121,9 @@ real(dp) :: c_slide_aux(N_SLIDE_REGIONS)
 real(dp) :: gamma_slide_aux(N_SLIDE_REGIONS)
 #endif
 
-character(len=64), parameter :: fmt1  = '(a)', &
-                                fmt2  = '(a,i4)', &
-                                fmt2a = '(a,i0)', &
-                                fmt3  = '(a,es12.4)'
+character(len=64), parameter :: fmt1 = '(a)', &
+                                fmt2 = '(a,i0)', &
+                                fmt3 = '(a,es12.4)'
 
 write(unit=6, fmt='(a)') ' '
 write(unit=6, fmt='(a)') ' -------- sico_init --------'
@@ -586,14 +585,14 @@ write(10, fmt=trim(fmt1)) 'Computational domain:'
 write(10, fmt=trim(fmt1)) trim(ch_domain_long)
 write(10, fmt=trim(fmt1)) ' '
 
-write(10, fmt=trim(fmt2a)) 'GRID = ', GRID
+write(10, fmt=trim(fmt2)) 'GRID = ', GRID
 write(10, fmt=trim(fmt1)) ' '
 
-write(10, fmt=trim(fmt2)) 'imax  =', IMAX
-write(10, fmt=trim(fmt2)) 'jmax  =', JMAX
-write(10, fmt=trim(fmt2)) 'kcmax =', KCMAX
-write(10, fmt=trim(fmt2)) 'ktmax =', KTMAX
-write(10, fmt=trim(fmt2)) 'krmax =', KRMAX
+write(10, fmt=trim(fmt2)) 'imax  = ', IMAX
+write(10, fmt=trim(fmt2)) 'jmax  = ', JMAX
+write(10, fmt=trim(fmt2)) 'kcmax = ', KCMAX
+write(10, fmt=trim(fmt2)) 'ktmax = ', KTMAX
+write(10, fmt=trim(fmt2)) 'krmax = ', KRMAX
 write(10, fmt=trim(fmt1)) ' '
 
 write(10, fmt=trim(fmt3)) 'a =', aa
@@ -620,7 +619,7 @@ write(10, fmt=trim(fmt3)) 'dtime_wss  =', dtime_wss0
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
-write(10, fmt=trim(fmt2)) 'ANF_DAT =', ANF_DAT
+write(10, fmt=trim(fmt2)) 'ANF_DAT = ', ANF_DAT
 write(10, fmt=trim(fmt1)) 'zs_present file   = '//ZS_PRESENT_FILE
 #if (ANF_DAT==1)
 #if (defined(ZB_PRESENT_FILE))
@@ -637,7 +636,7 @@ if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
 end if
 #endif
 #if (ANF_DAT==1 && defined(TEMP_INIT))
-write(10, fmt=trim(fmt2)) 'TEMP_INIT =', TEMP_INIT
+write(10, fmt=trim(fmt2)) 'TEMP_INIT = ', TEMP_INIT
 #endif
 #if (ANF_DAT==3 || (ANF_DAT==1 && TEMP_INIT==5))
 write(10, fmt=trim(fmt1)) 'Initial-value file = '//ANFDATNAME
@@ -649,19 +648,19 @@ write(10, fmt=trim(fmt1)) 'Physical-parameter file = '//PHYS_PARA_FILE
 write(10, fmt=trim(fmt1)) ' '
 
 #if (defined(THK_EVOL))
-write(10, fmt=trim(fmt2a)) 'THK_EVOL = ', THK_EVOL
+write(10, fmt=trim(fmt2)) 'THK_EVOL = ', THK_EVOL
 #else
 errormsg = ' >>> sico_init: Define THK_EVOL in header file!'
 call error(errormsg)
 #endif
 #if (defined(CALCTHK))
-write(10, fmt=trim(fmt2a)) 'CALCTHK = ', CALCTHK
+write(10, fmt=trim(fmt2)) 'CALCTHK = ', CALCTHK
 #else
 errormsg = ' >>> sico_init: Define CALCTHK in header file!'
 call error(errormsg)
 #endif
 #if (defined(OCEAN_CONNECTIVITY))
-write(10, fmt=trim(fmt2)) 'OCEAN_CONNECTIVITY =', OCEAN_CONNECTIVITY
+write(10, fmt=trim(fmt2)) 'OCEAN_CONNECTIVITY = ', OCEAN_CONNECTIVITY
 #endif
 #if (defined(H_ISOL_MAX))
 write(10, fmt=trim(fmt3)) 'H_isol_max =', H_ISOL_MAX
@@ -672,7 +671,7 @@ write(10, fmt=trim(fmt3))  'ovi_weight   =', OVI_WEIGHT
 #if (CALCTHK==2 || CALCTHK==5)
 write(10, fmt=trim(fmt3))  'omega_sor    =', OMEGA_SOR
 #if (ITER_MAX_SOR>0)
-write(10, fmt=trim(fmt2a)) 'iter_max_sor = ', ITER_MAX_SOR
+write(10, fmt=trim(fmt2)) 'iter_max_sor = ', ITER_MAX_SOR
 #endif
 #endif
 #endif
@@ -704,7 +703,7 @@ write(10, fmt=trim(fmt1)) 'precip_mm_anom file    = '//PRECIP_MM_ANOM_FILE
 write(10, fmt=trim(fmt3)) 'precip_mm_anom fact    = ', PRECIP_MM_ANOM_FACT
 #endif
 #if (ACCSURFACE <= 3)
-write(10, fmt=trim(fmt2)) 'ELEV_DESERT =', ELEV_DESERT
+write(10, fmt=trim(fmt2)) 'ELEV_DESERT = ', ELEV_DESERT
 #if (ELEV_DESERT == 1)
 write(10, fmt=trim(fmt3)) 'gamma_p     =', GAMMA_P
 write(10, fmt=trim(fmt3)) 'zs_thresh   =', ZS_THRESH
@@ -716,7 +715,7 @@ write(10, fmt=trim(fmt3)) 'lambda_lti     =', LAMBDA_LTI
 write(10, fmt=trim(fmt3)) 'temp_lti       =', TEMP_LTI
 #endif
 
-write(10, fmt=trim(fmt2a)) 'SEA_LEVEL  = ', SEA_LEVEL
+write(10, fmt=trim(fmt2)) 'SEA_LEVEL  = ', SEA_LEVEL
 #if (SEA_LEVEL==1)
 write(10, fmt=trim(fmt3)) 'z_sl0          =', Z_SL0
 #elif (SEA_LEVEL==3)
@@ -746,13 +745,13 @@ write(10, fmt=trim(fmt1)) ' '
 #endif
 
 #if (defined(BASAL_HYDROLOGY))
-write(10, fmt=trim(fmt2a)) 'BASAL_HYDROLOGY = ', BASAL_HYDROLOGY
+write(10, fmt=trim(fmt2)) 'BASAL_HYDROLOGY = ', BASAL_HYDROLOGY
 #endif
 
-write(10, fmt=trim(fmt2a)) 'SLIDE_LAW = ', SLIDE_LAW
+write(10, fmt=trim(fmt2)) 'SLIDE_LAW = ', SLIDE_LAW
 
 #if (defined(N_SLIDE_REGIONS))
-write(10, fmt=trim(fmt2a)) 'N_SLIDE_REGIONS = ', N_SLIDE_REGIONS
+write(10, fmt=trim(fmt2)) 'N_SLIDE_REGIONS = ', N_SLIDE_REGIONS
 #if (N_SLIDE_REGIONS>1)
 write(10, fmt=trim(fmt1)) 'SLIDE_REGIONS_FILE = '//SLIDE_REGIONS_FILE
 #endif
@@ -783,17 +782,17 @@ do n=2, n_slide_regions
 end do
 #endif
 
-write(10, fmt=trim(fmt2a)) 'p_weert = ', p_weert_aux(1)
+write(10, fmt=trim(fmt2)) 'p_weert = ', p_weert_aux(1)
 #if (N_SLIDE_REGIONS>1)
 do n=2, n_slide_regions
-   write(10, fmt=trim(fmt2a)) '          ', p_weert_aux(n)
+   write(10, fmt=trim(fmt2)) '          ', p_weert_aux(n)
 end do
 #endif
 
-write(10, fmt=trim(fmt2a)) 'q_weert = ', q_weert_aux(1)
+write(10, fmt=trim(fmt2)) 'q_weert = ', q_weert_aux(1)
 #if (N_SLIDE_REGIONS>1)
 do n=2, n_slide_regions
-   write(10, fmt=trim(fmt2a)) '          ', q_weert_aux(n)
+   write(10, fmt=trim(fmt2)) '          ', q_weert_aux(n)
 end do
 #endif
 
@@ -806,13 +805,13 @@ write(10, fmt=trim(fmt3)) 'red_pres_limit_fact =', RED_PRES_LIMIT_FACT
 #if (BASAL_HYDROLOGY==1 \
        && defined(HYDRO_SLIDE_SAT_FCT) \
        && defined(C_HW_SLIDE) && defined(HW0_SLIDE))
-write(10, fmt=trim(fmt2a)) 'HYDRO_SLIDE_SAT_FCT = ', HYDRO_SLIDE_SAT_FCT
+write(10, fmt=trim(fmt2)) 'HYDRO_SLIDE_SAT_FCT = ', HYDRO_SLIDE_SAT_FCT
 write(10, fmt=trim(fmt3)) 'c_Hw_slide  =', C_HW_SLIDE
 write(10, fmt=trim(fmt3)) 'Hw0_slide   =', HW0_SLIDE
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
-write(10, fmt=trim(fmt2a)) 'Q_GEO_MOD = ', Q_GEO_MOD
+write(10, fmt=trim(fmt2)) 'Q_GEO_MOD = ', Q_GEO_MOD
 #if (Q_GEO_MOD==1)
 write(10, fmt=trim(fmt3)) 'q_geo =', Q_GEO
 #elif (Q_GEO_MOD==2)
@@ -821,19 +820,19 @@ write(10, fmt=trim(fmt1)) 'q_geo file = '//Q_GEO_FILE
 write(10, fmt=trim(fmt1)) ' '
 
 #if (defined(MARINE_ICE_BASAL_MELTING))
-write(10, fmt=trim(fmt2)) 'MARINE_ICE_BASAL_MELTING =', MARINE_ICE_BASAL_MELTING
+write(10, fmt=trim(fmt2)) 'MARINE_ICE_BASAL_MELTING = ', MARINE_ICE_BASAL_MELTING
 #if (MARINE_ICE_BASAL_MELTING==2 || MARINE_ICE_BASAL_MELTING==3)
 write(10, fmt=trim(fmt3)) 'qbm_marine               =', QBM_MARINE
 #endif
 write(10, fmt=trim(fmt1)) ' '
 #endif
 
-write(10, fmt=trim(fmt2)) 'REBOUND       =', REBOUND
+write(10, fmt=trim(fmt2)) 'REBOUND       = ', REBOUND
 #if (REBOUND==1)
 write(10, fmt=trim(fmt3)) 'frac_llra     =', FRAC_LLRA
 #endif
 #if (REBOUND==1 || REBOUND==2)
-write(10, fmt=trim(fmt2)) 'TIME_LAG_MOD  =', TIME_LAG_MOD
+write(10, fmt=trim(fmt2)) 'TIME_LAG_MOD  = ', TIME_LAG_MOD
 #if (TIME_LAG_MOD==1)
 write(10, fmt=trim(fmt3)) 'time_lag      =', TIME_LAG
 #elif (TIME_LAG_MOD==2)
@@ -844,7 +843,7 @@ call error(errormsg)
 #endif
 #endif
 #if (REBOUND==2)
-write(10, fmt=trim(fmt2)) 'FLEX_RIG_MOD  =', FLEX_RIG_MOD
+write(10, fmt=trim(fmt2)) 'FLEX_RIG_MOD  = ', FLEX_RIG_MOD
 #if (FLEX_RIG_MOD==1)
 write(10, fmt=trim(fmt3)) 'flex_rig      =', FLEX_RIG
 #elif (FLEX_RIG_MOD==2)
@@ -854,7 +853,7 @@ errormsg = ' >>> sico_init: FLEX_RIG_MOD must be either 1 or 2!'
 call error(errormsg)
 #endif
 #endif
-write(10, fmt=trim(fmt2)) 'Q_LITHO       =', Q_LITHO
+write(10, fmt=trim(fmt2)) 'Q_LITHO       = ', Q_LITHO
 write(10, fmt=trim(fmt1)) ' '
 
 #if (FLOW_LAW==2)
@@ -866,7 +865,7 @@ write(10, fmt=trim(fmt3)) 'sigma_res =', SIGMA_RES
 write(10, fmt=trim(fmt1)) ' '
 #endif
 
-write(10, fmt=trim(fmt2)) 'ENHMOD =', ENHMOD
+write(10, fmt=trim(fmt2)) 'ENHMOD = ', ENHMOD
 #if (ENHMOD==1 || ENHMOD==2 || ENHMOD==3)
 write(10, fmt=trim(fmt3)) 'enh_fact    =', ENH_FACT
 #endif
@@ -894,7 +893,7 @@ write(10, fmt=trim(fmt3)) 'enh_shelf   =', ENH_SHELF
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
-write(10, fmt=trim(fmt2a)) 'DYNAMICS = ', DYNAMICS
+write(10, fmt=trim(fmt2)) 'DYNAMICS = ', DYNAMICS
 #if (DYNAMICS==2 && defined(HYB_MODE))
 write(10, fmt=trim(fmt2)) 'HYB_MODE = ', HYB_MODE
 #endif
@@ -906,16 +905,16 @@ write(10, fmt=trim(fmt1)) 'lis_opts = '//LIS_OPTS
 write(10, fmt=trim(fmt3)) 'tol_iter_ssa =', TOL_ITER_SSA
 #endif
 #if (defined(N_ITER_SSA))
-write(10, fmt=trim(fmt2a)) 'n_iter_ssa = ', N_ITER_SSA
+write(10, fmt=trim(fmt2)) 'n_iter_ssa = ', N_ITER_SSA
 #endif
 #if (defined(ITER_INIT_SSA))
-write(10, fmt=trim(fmt2a)) 'iter_init_ssa = ', ITER_INIT_SSA
+write(10, fmt=trim(fmt2)) 'iter_init_ssa = ', ITER_INIT_SSA
 #endif
 #if (defined(VISC_INIT_SSA))
 write(10, fmt=trim(fmt3)) 'visc_init_ssa =', VISC_INIT_SSA
 #endif
 #if (defined(N_VISC_SMOOTH))
-write(10, fmt=trim(fmt2a)) 'n_visc_smooth = ', N_VISC_SMOOTH
+write(10, fmt=trim(fmt2)) 'n_visc_smooth = ', N_VISC_SMOOTH
 #endif
 #if (defined(VISC_SMOOTH_DIFF))
 write(10, fmt=trim(fmt3)) 'visc_smooth_diff =', VISC_SMOOTH_DIFF
@@ -928,14 +927,14 @@ write(10, fmt=trim(fmt3)) 'relax_fact_ssa =', RELAX_FACT_SSA
 write(10, fmt=trim(fmt3)) 'ratio_sl_thresh =', RATIO_SL_THRESH
 #endif
 #if (DYNAMICS==2 && HYB_MODE==0 && defined(SSTA_SIA_WEIGH_FCT))
-write(10, fmt=trim(fmt2a)) 'SSTA_SIA_WEIGH_FCT = ', SSTA_SIA_WEIGH_FCT
+write(10, fmt=trim(fmt2)) 'SSTA_SIA_WEIGH_FCT = ', SSTA_SIA_WEIGH_FCT
 #endif
 #if (DYNAMICS==2 && HYB_MODE==1 && defined(HYB_REF_SPEED))
 write(10, fmt=trim(fmt3)) 'hyb_ref_speed =', HYB_REF_SPEED
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
-write(10, fmt=trim(fmt2)) 'CALCMOD    =', CALCMOD
+write(10, fmt=trim(fmt2)) 'CALCMOD    = ', CALCMOD
 #if (CALCMOD==-1 && defined(TEMP_CONST))
 write(10, fmt=trim(fmt3)) 'TEMP_CONST =', TEMP_CONST
 #endif
@@ -943,32 +942,32 @@ write(10, fmt=trim(fmt3)) 'TEMP_CONST =', TEMP_CONST
 write(10, fmt=trim(fmt3)) 'AGE_CONST  =', AGE_CONST
 #endif
 #if (CALCMOD==1 && defined(CTS_MELTING_FREEZING))
-write(10, fmt=trim(fmt2)) 'CTS_MELTING_FREEZING =', CTS_MELTING_FREEZING
+write(10, fmt=trim(fmt2)) 'CTS_MELTING_FREEZING = ', CTS_MELTING_FREEZING
 #endif
-write(10, fmt=trim(fmt2)) 'FLOW_LAW   =', FLOW_LAW
-write(10, fmt=trim(fmt2)) 'FIN_VISC   =', FIN_VISC
-write(10, fmt=trim(fmt2)) 'MARGIN     =', MARGIN
+write(10, fmt=trim(fmt2)) 'FLOW_LAW   = ', FLOW_LAW
+write(10, fmt=trim(fmt2)) 'FIN_VISC   = ', FIN_VISC
+write(10, fmt=trim(fmt2)) 'MARGIN     = ', MARGIN
 #if (MARGIN==2)
-write(10, fmt=trim(fmt2)) 'MARINE_ICE_FORMATION =', MARINE_ICE_FORMATION
-write(10, fmt=trim(fmt2)) 'MARINE_ICE_CALVING   =', MARINE_ICE_CALVING
+write(10, fmt=trim(fmt2)) 'MARINE_ICE_FORMATION = ', MARINE_ICE_FORMATION
+write(10, fmt=trim(fmt2)) 'MARINE_ICE_CALVING   = ', MARINE_ICE_CALVING
 #elif (MARGIN==3)
-write(10, fmt=trim(fmt2)) 'ICE_SHELF_CALVING =', ICE_SHELF_CALVING
+write(10, fmt=trim(fmt2)) 'ICE_SHELF_CALVING = ', ICE_SHELF_CALVING
 #endif
-write(10, fmt=trim(fmt2)) 'ADV_HOR    =', ADV_HOR
-write(10, fmt=trim(fmt2)) 'ADV_VERT   =', ADV_VERT
-write(10, fmt=trim(fmt2)) 'TOPOGRAD   =', TOPOGRAD
+write(10, fmt=trim(fmt2)) 'ADV_HOR    = ', ADV_HOR
+write(10, fmt=trim(fmt2)) 'ADV_VERT   = ', ADV_VERT
+write(10, fmt=trim(fmt2)) 'TOPOGRAD   = ', TOPOGRAD
 #if (MARGIN==3 && defined(GL_SURF_GRAD))
-write(10, fmt=trim(fmt2a)) 'GL_SURF_GRAD = ', GL_SURF_GRAD
+write(10, fmt=trim(fmt2)) 'GL_SURF_GRAD = ', GL_SURF_GRAD
 #endif
-write(10, fmt=trim(fmt2)) 'TSURFACE   =', TSURFACE
-write(10, fmt=trim(fmt2)) 'ACCSURFACE =', ACCSURFACE
+write(10, fmt=trim(fmt2)) 'TSURFACE   = ', TSURFACE
+write(10, fmt=trim(fmt2)) 'ACCSURFACE = ', ACCSURFACE
 #if (ACCSURFACE==5)
-write(10, fmt=trim(fmt2)) 'PRECIP_ANOM_INTERPOL =', PRECIP_ANOM_INTERPOL
+write(10, fmt=trim(fmt2)) 'PRECIP_ANOM_INTERPOL = ', PRECIP_ANOM_INTERPOL
 #endif
-write(10, fmt=trim(fmt2)) 'SOLID_PRECIP =', SOLID_PRECIP
-write(10, fmt=trim(fmt2)) 'ABLSURFACE =', ABLSURFACE
+write(10, fmt=trim(fmt2)) 'SOLID_PRECIP = ', SOLID_PRECIP
+write(10, fmt=trim(fmt2)) 'ABLSURFACE = ', ABLSURFACE
 #if (defined(MB_ACCOUNT))
-write(10, fmt=trim(fmt2a)) 'MB_ACCOUNT = ', MB_ACCOUNT
+write(10, fmt=trim(fmt2)) 'MB_ACCOUNT = ', MB_ACCOUNT
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
@@ -992,25 +991,25 @@ write(10, fmt=trim(fmt3)) 'age_diff    =', AGEDIFF
 write(10, fmt=trim(fmt1)) ' '
 
 #if (defined(OUT_TIMES))
-write(10, fmt=trim(fmt2a)) 'OUT_TIMES   = ', OUT_TIMES
+write(10, fmt=trim(fmt2)) 'OUT_TIMES   = ', OUT_TIMES
 #endif
 #if (defined(OUTPUT_INIT))
-write(10, fmt=trim(fmt2a)) 'OUTPUT_INIT = ', OUTPUT_INIT
+write(10, fmt=trim(fmt2)) 'OUTPUT_INIT = ', OUTPUT_INIT
 #endif
-write(10, fmt=trim(fmt2a)) 'OUTPUT      = ', OUTPUT
+write(10, fmt=trim(fmt2)) 'OUTPUT      = ', OUTPUT
 #if (OUTPUT==1 || OUTPUT==3)
 write(10, fmt=trim(fmt3))  'dtime_out   =' , dtime_out0
 #endif
 write(10, fmt=trim(fmt3))  'dtime_ser   =' , dtime_ser0
 #if (OUTPUT==1 || OUTPUT==2)
-write(10, fmt=trim(fmt2a)) 'ERGDAT      = ', ERGDAT
+write(10, fmt=trim(fmt2)) 'ERGDAT      = ', ERGDAT
 #endif
 #if (defined(OUTPUT_FLUX_VARS))
-write(10, fmt=trim(fmt2a)) 'OUTPUT_FLUX_VARS = ', OUTPUT_FLUX_VARS
+write(10, fmt=trim(fmt2)) 'OUTPUT_FLUX_VARS = ', OUTPUT_FLUX_VARS
 #endif
-write(10, fmt=trim(fmt2a)) 'NETCDF      = ', NETCDF
+write(10, fmt=trim(fmt2)) 'NETCDF      = ', NETCDF
 #if (OUTPUT==2 || OUTPUT==3)
-write(10, fmt=trim(fmt2a)) 'n_output    = ', n_output
+write(10, fmt=trim(fmt2)) 'n_output    = ', n_output
 do n=1, n_output
    if (n==1) then
       write(10, fmt=trim(fmt3))  'time_output =' , time_output0(n)
