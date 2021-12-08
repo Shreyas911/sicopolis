@@ -272,7 +272,7 @@ end if
 
 !  ------ Mean sea level
 
-z_sl_mean = sum(z_sl*area)/sum(area)
+z_sl_mean = sum(z_sl*cell_area)/sum(cell_area)
 
 !  ------ Time derivative of the sea level
 
@@ -314,7 +314,7 @@ end do
 
 do i=1, IMAX-1
 do j=1, JMAX-1
-   if (mask(j,i) >= 2_i1b) then
+   if (mask(j,i) >= 2) then
       check_point(j  ,i  ) = .true.
       check_point(j  ,i+1) = .true.
       check_point(j  ,i-1) = .true.

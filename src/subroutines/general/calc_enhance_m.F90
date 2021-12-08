@@ -347,7 +347,7 @@ contains
   do i=0, IMAX
   do j=0, JMAX
 
-     if ( mask(j,i)==3_i1b ) then   ! floating ice
+     if ( mask(j,i)==3 ) then   ! floating ice
 
         do kt=0, KTMAX
            enh_t(kt,j,i) = enh_shelf

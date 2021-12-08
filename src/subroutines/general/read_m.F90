@@ -72,7 +72,7 @@ contains
   character(len=100), intent(in)    :: filename
 
   logical, optional,  intent(in)    :: opt_flag_temp_age_only
-  integer(i1b), optional, dimension(0:JMAX,0:IMAX), &
+  integer(i4b), optional, dimension(0:JMAX,0:IMAX), &
                       intent(inout) :: opt_mask, opt_n_cts
   integer(i4b), optional, dimension(0:JMAX,0:IMAX), &
                       intent(inout) :: opt_kc_cts
@@ -109,7 +109,7 @@ errormsg = ' >>> read_tms_nc: Parameter NETCDF must be either 1 or 2!'
 call error(errormsg)
 #endif
 
-  integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_conv, mask_old_conv, &
+  integer(i4b), dimension(0:IMAX,0:JMAX) :: mask_conv, mask_old_conv, &
                                             n_cts_conv, &
                                             flag_shelfy_stream_x_conv, &
                                             flag_shelfy_stream_y_conv, &
@@ -133,7 +133,7 @@ call error(errormsg)
 
   real(sp), dimension(0:IMAX,0:JMAX) :: lambda_conv, phi_conv, &
               lon_conv, lat_conv, &
-              area_conv, &
+              cell_area_conv, &
               temp_maat_conv, temp_s_conv, accum_conv, &
               snowfall_conv, rainfall_conv, pdd_conv, & 
               as_perp_conv, as_perp_apl_conv, smb_corr_conv, &
@@ -167,7 +167,7 @@ call error(errormsg)
   real(sp), dimension(0:IMAX,0:JMAX,0:KRMAX) :: temp_r_conv
 
 #if (DISC>0)   /* Ice discharge parameterisation */
-  integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_mar_conv
+  integer(i4b), dimension(0:IMAX,0:JMAX) :: mask_mar_conv
   real(sp),     dimension(0:IMAX,0:JMAX) :: dis_perp_conv, &
                                             cst_dist_conv, cos_grad_tc_conv
 #endif
@@ -232,7 +232,7 @@ call error(errormsg)
   read(unit=11) lat_conv
   read(unit=11) lambda_conv
   read(unit=11) phi_conv
-  read(unit=11) area_conv
+  read(unit=11) cell_area_conv
   read(unit=11) temp_maat_conv
   read(unit=11) temp_s_conv
   read(unit=11) accum_conv
@@ -409,11 +409,11 @@ call error(errormsg)
   call check( nf90_get_var(ncid, ncv, phi_conv) )
 
   if ( nf90_inq_varid(ncid, 'cell_area', ncv) == nf90_noerr ) then
-     call check( nf90_get_var(ncid, ncv, area_conv) )
+     call check( nf90_get_var(ncid, ncv, cell_area_conv) )
   else
      write(6,'(/1x,a)') '>>> read_tms_nc: Variable cell_area'
      write(6, '(1x,a)') '                 not available in read file *.nc.'
-     area_conv = 0.0_sp
+     cell_area_conv = 0.0_sp
   end if
 
   if ( nf90_inq_varid(ncid, 'temp_maat', ncv) == nf90_noerr ) then
@@ -872,67 +872,67 @@ call error(errormsg)
         ratio_sl_y(j,i) = real(ratio_sl_y_conv(i,j),dp)
         ratio_sl(j,i)   = real(ratio_sl_conv(i,j),dp)
 
-        if (flag_shelfy_stream_x_conv(i,j) == 1_i1b) then
+        if (flag_shelfy_stream_x_conv(i,j) == 1) then
            flag_shelfy_stream_x(j,i) = .true.
         else
            flag_shelfy_stream_x(j,i) = .false.
         end if
 
-        if (flag_shelfy_stream_y_conv(i,j) == 1_i1b) then
+        if (flag_shelfy_stream_y_conv(i,j) == 1) then
            flag_shelfy_stream_y(j,i) = .true.
         else
            flag_shelfy_stream_y(j,i) = .false.
         end if
 
-        if (flag_shelfy_stream_conv(i,j) == 1_i1b) then
+        if (flag_shelfy_stream_conv(i,j) == 1) then
            flag_shelfy_stream(j,i) = .true.
         else
            flag_shelfy_stream(j,i) = .false.
         end if
 
-        if (flag_grounding_line_1_conv(i,j) == 1_i1b) then
+        if (flag_grounding_line_1_conv(i,j) == 1) then
            flag_grounding_line_1(j,i) = .true.
         else
            flag_grounding_line_1(j,i) = .false.
         end if
 
-        if (flag_grounding_line_2_conv(i,j) == 1_i1b) then
+        if (flag_grounding_line_2_conv(i,j) == 1) then
            flag_grounding_line_2(j,i) = .true.
         else
            flag_grounding_line_2(j,i) = .false.
         end if
 
-        if (flag_calving_front_1_conv(i,j) == 1_i1b) then
+        if (flag_calving_front_1_conv(i,j) == 1) then
            flag_calving_front_1(j,i) = .true.
         else
            flag_calving_front_1(j,i) = .false.
         end if
 
-        if (flag_calving_front_2_conv(i,j) == 1_i1b) then
+        if (flag_calving_front_2_conv(i,j) == 1) then
            flag_calving_front_2(j,i) = .true.
         else
            flag_calving_front_2(j,i) = .false.
         end if
 
-        if (flag_grounded_front_a_1_conv(i,j) == 1_i1b) then
+        if (flag_grounded_front_a_1_conv(i,j) == 1) then
            flag_grounded_front_a_1(j,i) = .true.
         else
            flag_grounded_front_a_1(j,i) = .false.
         end if
 
-        if (flag_grounded_front_a_2_conv(i,j) == 1_i1b) then
+        if (flag_grounded_front_a_2_conv(i,j) == 1) then
            flag_grounded_front_a_2(j,i) = .true.
         else
            flag_grounded_front_a_2(j,i) = .false.
         end if
 
-        if (flag_grounded_front_b_1_conv(i,j) == 1_i1b) then
+        if (flag_grounded_front_b_1_conv(i,j) == 1) then
            flag_grounded_front_b_1(j,i) = .true.
         else
            flag_grounded_front_b_1(j,i) = .false.
         end if
 
-        if (flag_grounded_front_b_2_conv(i,j) == 1_i1b) then
+        if (flag_grounded_front_b_2_conv(i,j) == 1) then
            flag_grounded_front_b_2(j,i) = .true.
         else
            flag_grounded_front_b_2(j,i) = .false.
@@ -978,7 +978,7 @@ call error(errormsg)
         do i=1, IMAX-1
         do j=1, JMAX-1
 
-           if (mask(j,i) == 0_i1b) &   ! grounded ice
+           if (mask(j,i) == 0) &   ! grounded ice
               ratio_sl(j,i) = 0.25_dp &
                                 * (   ratio_sl_x(j,i-1) + ratio_sl_x(j,i) &
                                     + ratio_sl_y(j-1,i) + ratio_sl_y(j,i) )
@@ -1006,14 +1006,14 @@ call error(errormsg)
         do i=0, IMAX
         do j=0, JMAX
 
-           if ((mask(j,i)==0_i1b).or.(mask(j,i)==3_i1b)) then
+           if ((mask(j,i)==0).or.(mask(j,i)==3)) then
                   ! grounded or floating ice
 
               vis_ave_g(j,i) = vis_int_g(j,i)/max(H(j,i), eps_dp)
 
               vis_ave_g(j,i) = max(min(vis_ave_g(j,i), visc_max), visc_min)
 
-           else   ! (mask(j,i)==1_i1b).or.(mask(j,i)==2_i1b),
+           else   ! (mask(j,i)==1).or.(mask(j,i)==2),
                   ! ice-free land or ocean
 
               vis_ave_g(j,i) = visc_init   ! dummy value
@@ -1105,7 +1105,7 @@ call error(errormsg)
 !    mask_target, zs_target, zb_target, zl_target, H_target
 
   integer(i4b)                           :: ios
-  integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_conv
+  integer(i4b), dimension(0:IMAX,0:JMAX) :: mask_conv
   real(sp), dimension(0:IMAX,0:JMAX)     :: zs_conv, zb_conv, zl_conv, H_conv
   character(len=256)                     :: target_topo_dat_path
   character(len=256)                     :: filename_with_path
@@ -1174,7 +1174,7 @@ call error(errormsg)
 
 #else   /* NETCDF != 2, not allowed */
 
-  mask_conv = 0_i1b    ! dummy values
+  mask_conv = 0    ! dummy values
   zs_conv    = 0.0_sp   ! dummy values
   zb_conv    = 0.0_sp   ! dummy values
   zl_conv    = 0.0_sp   ! dummy values
@@ -1237,7 +1237,7 @@ call error(errormsg)
   character          :: ch_dummy
   logical            :: flag_nc
 
-  integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_aux_conv
+  integer(i4b), dimension(0:IMAX,0:JMAX) :: mask_aux_conv
   integer(i4b), dimension(0:IMAX,0:JMAX) :: n_aux_conv
   real(dp)    , dimension(0:IMAX,0:JMAX) :: r_aux_conv
 

@@ -178,16 +178,16 @@ real(dp), dimension(0:JMAX,0:IMAX) :: accum_flx         , &
                                               zs_flx
 #endif
 
-integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_conv, mask_old_conv, &
+integer(i4b), dimension(0:IMAX,0:JMAX) :: mask_conv, mask_old_conv, &
                                           mask_ablation_type_conv, &
                                           n_cts_conv
 integer(i4b), dimension(0:IMAX,0:JMAX) :: mask_region_conv
 integer(i4b), dimension(0:IMAX,0:JMAX) :: kc_cts_conv
-integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_mar_conv
-integer(i1b), dimension(0:IMAX,0:JMAX) :: flag_shelfy_stream_x_conv, &
+integer(i4b), dimension(0:IMAX,0:JMAX) :: mask_mar_conv
+integer(i4b), dimension(0:IMAX,0:JMAX) :: flag_shelfy_stream_x_conv, &
                                           flag_shelfy_stream_y_conv, &
                                           flag_shelfy_stream_conv
-integer(i1b), dimension(0:IMAX,0:JMAX) :: flag_grounding_line_1_conv, &
+integer(i4b), dimension(0:IMAX,0:JMAX) :: flag_grounding_line_1_conv, &
                                           flag_grounding_line_2_conv, &
                                           flag_calving_front_1_conv, &
                                           flag_calving_front_2_conv, &
@@ -207,7 +207,7 @@ real(sp) :: H_R_conv
 
 real(sp), dimension(0:IMAX,0:JMAX) :: lambda_conv, phi_conv, &
             lond_conv, latd_conv, &
-            area_conv, &
+            cell_area_conv, &
             temp_maat_conv, temp_s_conv, accum_conv, &
             snowfall_conv, rainfall_conv, pdd_conv, &
             as_perp_conv, as_perp_apl_conv, smb_corr_conv, &
@@ -811,7 +811,7 @@ call check( nf90_def_var(ncid, 'cell_area', NF90_FLOAT, nc2d, ncv), &
 buffer = 'm2'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
-buffer = 'area'
+buffer = 'cell_area'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
             thisroutine )
 buffer = 'Area of grid cell'
@@ -3137,7 +3137,7 @@ do j=0, JMAX
       enth_c(kc,j,i) = enth_fct_temp_omega(temp_c(kc,j,i), 0.0_dp)
    end do
 
-   if ( (mask(j,i)==0_i1b).and.(n_cts(j,i)==1_i1b) ) then
+   if ( (mask(j,i)==0).and.(n_cts(j,i)==1) ) then
       do kt=0, KTMAX
          enth_t(kt,j,i) = enth_fct_temp_omega(temp_t_m(kt,j,i), omega_t(kt,j,i))
       end do
@@ -3180,7 +3180,7 @@ vy_m_g = 0.0_dp
 do i=1, IMAX-1
 do j=1, JMAX-1
 
-   if ( (mask(j,i)==0_i1b).or.(mask(j,i)==3_i1b) ) then
+   if ( (mask(j,i)==0).or.(mask(j,i)==3) ) then
       vx_m_g(j,i) = 0.5_dp*(vx_m(j,i)+vx_m(j,i-1))
       vy_m_g(j,i) = 0.5_dp*(vy_m(j,i)+vy_m(j-1,i))
    end if
@@ -3205,18 +3205,18 @@ A_floating = 0.0_dp
 do i=0, IMAX
 do j=0, JMAX
 
-   if (mask(j,i)==0_i1b) then   ! grounded ice
+   if (mask(j,i)==0) then   ! grounded ice
 
-      V_grounded = V_grounded + H(j,i)*area(j,i)
-      A_grounded = A_grounded + area(j,i)
+      V_grounded = V_grounded + H(j,i)*cell_area(j,i)
+      A_grounded = A_grounded + cell_area(j,i)
       V_gr_redu  = V_gr_redu &
                    + rhosw_rho_ratio  &
-                        *max((z_sl(j,i)-zl(j,i)),0.0_dp)*area(j,i)
+                        *max((z_sl(j,i)-zl(j,i)),0.0_dp)*cell_area(j,i)
 
-   else if (mask(j,i)==3_i1b) then   ! floating ice
+   else if (mask(j,i)==3) then   ! floating ice
 
-      V_floating = V_floating + H(j,i)*area(j,i)
-      A_floating = A_floating + area(j,i)
+      V_floating = V_floating + H(j,i)*cell_area(j,i)
+      A_floating = A_floating + cell_area(j,i)
 
    end if
 
@@ -3505,7 +3505,7 @@ do j=0, JMAX
    if (latd_conv(i,j) >  90.0_sp) latd_conv(i,j) =  90.0_sp
    if (latd_conv(i,j) < -90.0_sp) latd_conv(i,j) = -90.0_sp
                                  ! constraining to interval [-90 deg, +90 deg]
-   area_conv(i,j)        = real(area(j,i),sp)
+   cell_area_conv(i,j)   = real(cell_area(j,i),sp)
    temp_maat_conv(i,j)   = real(temp_maat(j,i),sp)
    temp_s_conv(i,j)      = real(temp_s(j,i),sp)
    accum_conv(i,j)       = real(accum_flx(j,i)*year2sec,sp)
@@ -3588,69 +3588,69 @@ do j=0, JMAX
 #endif
 
    if (flag_shelfy_stream_x(j,i)) then
-      flag_shelfy_stream_x_conv(i,j) = 1_i1b
+      flag_shelfy_stream_x_conv(i,j) = 1
    else
-      flag_shelfy_stream_x_conv(i,j) = 0_i1b
+      flag_shelfy_stream_x_conv(i,j) = 0
    end if
 
    if (flag_shelfy_stream_y(j,i)) then
-      flag_shelfy_stream_y_conv(i,j) = 1_i1b
+      flag_shelfy_stream_y_conv(i,j) = 1
    else
-      flag_shelfy_stream_y_conv(i,j) = 0_i1b
+      flag_shelfy_stream_y_conv(i,j) = 0
    end if
 
    if (flag_shelfy_stream(j,i)) then
-      flag_shelfy_stream_conv(i,j) = 1_i1b
+      flag_shelfy_stream_conv(i,j) = 1
    else
-      flag_shelfy_stream_conv(i,j) = 0_i1b
+      flag_shelfy_stream_conv(i,j) = 0
    end if
 
    if (flag_grounding_line_1(j,i)) then
-      flag_grounding_line_1_conv(i,j) = 1_i1b
+      flag_grounding_line_1_conv(i,j) = 1
    else
-      flag_grounding_line_1_conv(i,j) = 0_i1b
+      flag_grounding_line_1_conv(i,j) = 0
    end if
 
    if (flag_grounding_line_2(j,i)) then
-      flag_grounding_line_2_conv(i,j) = 1_i1b
+      flag_grounding_line_2_conv(i,j) = 1
    else
-      flag_grounding_line_2_conv(i,j) = 0_i1b
+      flag_grounding_line_2_conv(i,j) = 0
    end if
 
    if (flag_calving_front_1(j,i)) then
-      flag_calving_front_1_conv(i,j) = 1_i1b
+      flag_calving_front_1_conv(i,j) = 1
    else
-      flag_calving_front_1_conv(i,j) = 0_i1b
+      flag_calving_front_1_conv(i,j) = 0
    end if
 
    if (flag_calving_front_2(j,i)) then
-      flag_calving_front_2_conv(i,j) = 1_i1b
+      flag_calving_front_2_conv(i,j) = 1
    else
-      flag_calving_front_2_conv(i,j) = 0_i1b
+      flag_calving_front_2_conv(i,j) = 0
    end if
 
    if (flag_grounded_front_a_1(j,i)) then
-      flag_grounded_front_a_1_conv(i,j) = 1_i1b
+      flag_grounded_front_a_1_conv(i,j) = 1
    else
-      flag_grounded_front_a_1_conv(i,j) = 0_i1b
+      flag_grounded_front_a_1_conv(i,j) = 0
    end if
 
    if (flag_grounded_front_a_2(j,i)) then
-      flag_grounded_front_a_2_conv(i,j) = 1_i1b
+      flag_grounded_front_a_2_conv(i,j) = 1
    else
-      flag_grounded_front_a_2_conv(i,j) = 0_i1b
+      flag_grounded_front_a_2_conv(i,j) = 0
    end if
 
    if (flag_grounded_front_b_1(j,i)) then
-      flag_grounded_front_b_1_conv(i,j) = 1_i1b
+      flag_grounded_front_b_1_conv(i,j) = 1
    else
-      flag_grounded_front_b_1_conv(i,j) = 0_i1b
+      flag_grounded_front_b_1_conv(i,j) = 0
    end if
 
    if (flag_grounded_front_b_2(j,i)) then
-      flag_grounded_front_b_2_conv(i,j) = 1_i1b
+      flag_grounded_front_b_2_conv(i,j) = 1
    else
-      flag_grounded_front_b_2_conv(i,j) = 0_i1b
+      flag_grounded_front_b_2_conv(i,j) = 0
    end if
 
    vis_ave_g_conv(i,j) = real(vis_ave_g(j,i),sp)
@@ -3718,7 +3718,7 @@ write(unit=11) lond_conv
 write(unit=11) latd_conv
 write(unit=11) lambda_conv
 write(unit=11) phi_conv
-write(unit=11) area_conv
+write(unit=11) cell_area_conv
 write(unit=11) temp_maat_conv
 write(unit=11) temp_s_conv
 write(unit=11) accum_conv
@@ -3912,7 +3912,7 @@ call check( nf90_put_var(ncid, ncv, phi_conv, &
             thisroutine )
 
 call check( nf90_inq_varid(ncid, 'cell_area', ncv), thisroutine )
-call check( nf90_put_var(ncid, ncv, area_conv, &
+call check( nf90_put_var(ncid, ncv, cell_area_conv, &
                          start=nc2cor_ij, count=nc2cnt_ij), &
             thisroutine )
 
@@ -4854,18 +4854,18 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 
          if (n_slide_region(j,i)==3) then   ! sediment region
 
-            sum_area_sed = sum_area_sed + area(j,i)
+            sum_area_sed = sum_area_sed + cell_area(j,i)
 
-            H_ave_sed = H_ave_sed + area(j,i)*H(j,i)
+            H_ave_sed = H_ave_sed + cell_area(j,i)*H(j,i)
 
-            if (n_cts(j,i) /= -1_i1b) then   ! temperate base
+            if (n_cts(j,i) /= -1) then   ! temperate base
                Tbh_help    = 0.0_dp
             else   ! cold base
                Tbh_help    = min((temp_c(0,j,i)-temp_c_m(0,j,i)), 0.0_dp)
             end if
-            Tbh_ave_sed = Tbh_ave_sed + area(j,i)*Tbh_help
+            Tbh_ave_sed = Tbh_ave_sed + cell_area(j,i)*Tbh_help
 
-            if (n_cts(j,i) /= -1_i1b) Atb_sed = Atb_sed + area(j,i)
+            if (n_cts(j,i) /= -1) Atb_sed = Atb_sed + cell_area(j,i)
 
          end if
 
@@ -5904,14 +5904,14 @@ do j=0, JMAX
 
    if (flag_inner_point(j,i).and.flag_region(j,i)) then
 
-      if (mask(j,i)==0_i1b) then   ! grounded ice
+      if (mask(j,i)==0) then   ! grounded ice
 
          if (zs(j,i)       > zs_max)  zs_max  = zs(j,i)
          if (H(j,i)        > H_max  ) H_max   = H(j,i)
          if (H_temp(j,i)   > H_t_max) H_t_max = H_temp(j,i)
 
-         V_grounded = V_grounded + H(j,i)     *area(j,i)
-         V_temp     = V_temp     + H_temp(j,i)*area(j,i)
+         V_grounded = V_grounded + H(j,i)     *cell_area(j,i)
+         V_temp     = V_temp     + H_temp(j,i)*cell_area(j,i)
 
 #if (defined(ANT) \
       || defined(GRL) \
@@ -5924,35 +5924,35 @@ do j=0, JMAX
 
          V_gr_redu = V_gr_redu &
                      + rhosw_rho_ratio &
-                          *max((z_sl(j,i)-zl(j,i)),0.0_dp)*area(j,i)
+                          *max((z_sl(j,i)-zl(j,i)),0.0_dp)*cell_area(j,i)
 
 #endif
 
-         A_grounded = A_grounded + area(j,i)
+         A_grounded = A_grounded + cell_area(j,i)
 
-         if (n_cts(j,i) /= -1_i1b) A_temp = A_temp + area(j,i)
+         if (n_cts(j,i) /= -1) A_temp = A_temp + cell_area(j,i)
 
          vs_help = sqrt(0.25_dp &
                           * ( (vx_c(KCMAX,j,i)+vx_c(KCMAX,j,i-1))**2 &
                              +(vy_c(KCMAX,j,i)+vy_c(KCMAX,j-1,i))**2 ) )
          if (vs_help > vs_max) vs_max = vs_help
 
-         if (n_cts(j,i) >= 0_i1b) then   ! temperate base
+         if (n_cts(j,i) >= 0) then   ! temperate base
             Tbh_max = 0.0_dp
          else   ! cold base
             Tbh_help = min((temp_c(0,j,i)-temp_c_m(0,j,i)), 0.0_dp)
             if (Tbh_help > Tbh_max) Tbh_max = Tbh_help
          end if
 
-      else if (mask(j,i)==3_i1b) then   ! floating ice
+      else if (mask(j,i)==3) then   ! floating ice
                                     ! (basal temperature assumed to be below
                                     ! the pressure melting point for pure ice)
 
          if (zs(j,i)    > zs_max) zs_max = zs(j,i)
          if (H(j,i)     > H_max)  H_max  = H(j,i)
 
-         V_floating = V_floating + H(j,i)*area(j,i)
-         A_floating = A_floating + area(j,i)
+         V_floating = V_floating + H(j,i)*cell_area(j,i)
+         A_floating = A_floating + cell_area(j,i)
 
          vs_help = sqrt(0.25_dp &
                           * ( (vx_c(KCMAX,j,i)+vx_c(KCMAX,j,i-1))**2 &
@@ -6031,18 +6031,18 @@ do j=0, JMAX
 
    if (flag_inner_point(j,i).and.flag_region(j,i)) then
 
-      Q_s = Q_s + as_perp_apl(j,i) * area(j,i)
+      Q_s = Q_s + as_perp_apl(j,i) * cell_area(j,i)
 
-      if (     (mask(j,i)==0_i1b).or.(mask_old(j,i)==0_i1b) &
-           .or.(mask(j,i)==3_i1b).or.(mask_old(j,i)==3_i1b) &
+      if (     (mask(j,i)==0).or.(mask_old(j,i)==0) &
+           .or.(mask(j,i)==3).or.(mask_old(j,i)==3) &
          ) &   ! grounded or floating ice before or after the time step
-         Q_b = Q_b + Q_bm(j,i) * area(j,i)   !!% Also *_apl required
-                                             !!% (or delete?)
+         Q_b = Q_b + Q_bm(j,i) * cell_area(j,i)
+                                 !!% Also *_apl required (or delete?)
 
-      if ( (mask(j,i)==0_i1b).or.(mask_old(j,i)==0_i1b) &
+      if ( (mask(j,i)==0).or.(mask_old(j,i)==0) &
          ) &   ! grounded ice before or after the time step
-         Q_temp = Q_temp + Q_tld(j,i) * area(j,i)   !!% Also *_apl required
-                                                    !!% (or delete?)
+         Q_temp = Q_temp + Q_tld(j,i) * cell_area(j,i)
+                                        !!% Also *_apl required (or delete?)
 
    end if
 
@@ -6061,14 +6061,14 @@ do j=0, JMAX
 
    if (flag_inner_point(j,i).and.flag_region(j,i)) then
 
-      if (     (mask(j,i)==0_i1b).or.(mask_old(j,i)==0_i1b) &
-           .or.(mask(j,i)==3_i1b).or.(mask_old(j,i)==3_i1b) ) then
+      if (     (mask(j,i)==0).or.(mask_old(j,i)==0) &
+           .or.(mask(j,i)==3).or.(mask_old(j,i)==3) ) then
                ! grounded or floating ice before or after the time step
-         dV_dt = dV_dt + (dzs_dtau(j,i)-dzb_dtau(j,i))*area(j,i)
+         dV_dt = dV_dt + (dzs_dtau(j,i)-dzb_dtau(j,i))*cell_area(j,i)
                  !!% change to more direct, V_tot-based computation?
       end if
 
-      precip_tot = precip_tot + accum_apl(j,i)*area(j,i)
+      precip_tot = precip_tot + accum_apl(j,i)*cell_area(j,i)
 
    end if
 
@@ -6105,34 +6105,34 @@ do j=0, JMAX
 
    if (flag_inner_point(j,i).and.flag_region(j,i)) then
 
-      if ( mask_ablation_type(j,i) /= 0_i1b ) then
+      if ( mask_ablation_type(j,i) /= 0 ) then
                      ! glaciated land and ocean (including hidden melt points)
 
          ! Quantify what types of melt occurred
          select case ( mask_ablation_type(j,i) )
-            case( 3_i1b )
-               LMT  = LMT + runoff_apl(j,i)  * area(j,i)
-               PAT  = PAT + calving_apl(j,i) * area(j,i)
+            case( 3 )
+               LMT  = LMT + runoff_apl(j,i)  * cell_area(j,i)
+               PAT  = PAT + calving_apl(j,i) * cell_area(j,i)
                                ! could cause problems for Greenland
-               SIMB = SIMB + Q_b_apl(j,i)    * area(j,i)
-            case( 1_i1b )
-               LMT  = LMT + runoff_apl(j,i)  * area(j,i)
-               PAT  = PAT + calving_apl(j,i) * area(j,i)  ! ok
-               GIMB = GIMB + Q_b_apl(j,i)    * area(j,i)
-            case( 9_i1b )
-               mb_mis = mb_mis + mb_source_apl(j,i) * area(j,i)
-            case( -1_i1b )
-               LMH = LMH + runoff_apl(j,i)  * area(j,i)
-               PAH = PAH + calving_apl(j,i) * area(j,i)
-               LQH = LQH + Q_b_apl(j,i)     * area(j,i)
-            case( -2_i1b )
-               OMH = OMH + calving_apl(j,i) * area(j,i) ! only one contribution
+               SIMB = SIMB + Q_b_apl(j,i)    * cell_area(j,i)
+            case( 1 )
+               LMT  = LMT + runoff_apl(j,i)  * cell_area(j,i)
+               PAT  = PAT + calving_apl(j,i) * cell_area(j,i)  ! ok
+               GIMB = GIMB + Q_b_apl(j,i)    * cell_area(j,i)
+            case( 9 )
+               mb_mis = mb_mis + mb_source_apl(j,i) * cell_area(j,i)
+            case( -1 )
+               LMH = LMH + runoff_apl(j,i)  * cell_area(j,i)
+               PAH = PAH + calving_apl(j,i) * cell_area(j,i)
+               LQH = LQH + Q_b_apl(j,i)     * cell_area(j,i)
+            case( -2 )
+               OMH = OMH + calving_apl(j,i) * cell_area(j,i) ! only one contribution
          end select
 
       end if
 
       ! Actual ice mass balance (from top melt, bottom melt and calving)
-      MB = MB + mb_source_apl(j,i)*area(j,i)
+      MB = MB + mb_source_apl(j,i)*cell_area(j,i)
 
    end if
 

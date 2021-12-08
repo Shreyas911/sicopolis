@@ -46,19 +46,19 @@ save
 !>             1: ice-free land,
 !>             2: ocean,
 !>             3: floating ice
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: mask
+   integer(i4b), dimension(0:JMAX,0:IMAX) :: mask
 !> mask_old(j,i): Old value of mask (at the previous time step)
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: mask_old
+   integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_old
 !> mask_new(j,i): New value of mask computed during an integration step
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: mask_new
+   integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_new
 !> n_cts(j,i): Mask for thermal conditions.
 !>             -1: cold ice base,
 !>              0: temperate ice base with cold ice above,
 !>              1: temperate ice base with temperate ice layer above
 !>                 (only for POLY)
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: n_cts
+   integer(i4b), dimension(0:JMAX,0:IMAX) :: n_cts
 !> (.)_new: New value of quantity (.) computed during an integration step
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: n_cts_new
+   integer(i4b), dimension(0:JMAX,0:IMAX) :: n_cts_new
 !> kc_cts(j,i): Position kc of the CTS (for COLD, ENTC, ENTM)
    integer(i4b), dimension(0:JMAX,0:IMAX) :: kc_cts
 !> (.)_new: New value of quantity (.) computed during an integration step
@@ -168,8 +168,8 @@ save
    real(dp), dimension(0:JMAX,0:IMAX) :: lambda
 !> phi(j,i): Geographic latitude of grid point (i,j)
    real(dp), dimension(0:JMAX,0:IMAX) :: phi
-!> area(j,i): Area of grid cell associated with grid point (i,j)
-   real(dp), dimension(0:JMAX,0:IMAX) :: area
+!> cell_area(j,i): Area of grid cell associated with grid point (i,j)
+   real(dp), dimension(0:JMAX,0:IMAX) :: cell_area
 !> sq_g11_g(j,i): Square root of the coefficient g11 of the metric tensor
 !>                on grid point (i,j)
    real(dp), dimension(0:JMAX,0:IMAX) :: sq_g11_g
@@ -417,7 +417,7 @@ save
 !>             1: visible (grounded ice),
 !>            -1: hidden on land,
 !>            -2: hidden in ocean
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: mask_ablation_type
+   integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_ablation_type
 !> temp_maat(j,i): Mean annual air temperature
    real(dp), dimension(0:JMAX,0:IMAX) :: temp_maat
 !> temp_s(j,i): Ice surface temperature
@@ -765,7 +765,7 @@ save
 !>               2: forcing by a glacial index (glac_index),
 !>               3: forcing by time-dependent surface temperature
 !>                  and precipitation data.
-   integer(i1b) :: forcing_flag
+   integer(i4b) :: forcing_flag
 
 !> n_core: Number of positions to be considered in the time-series file
 !>         for deep boreholes
@@ -824,7 +824,7 @@ save
 !> target_topo_tau_0: Relaxation time for target-topography adjustment
    real(dp) :: target_topo_tau_0
 !> mask_target(j,i): Target topography (ice-land-ocean mask)
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: mask_target
+   integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_target
 !> zs_target(j,i): Target topography (ice surface)
    real(dp), dimension(0:JMAX,0:IMAX) :: zs_target
 !> zb_target(j,i): Target topography (ice base)
@@ -837,7 +837,7 @@ save
 !> mask_maxextent(j,i): Maximum ice extent mask.
 !>                       0: not allowed to glaciate,
 !>                       1: allowed to glaciate.
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: mask_maxextent
+   integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_maxextent
 
 !> ncid_ser: IDs of the NetCDF time-series output files
    integer(i4b), dimension(0:99) :: ncid_ser

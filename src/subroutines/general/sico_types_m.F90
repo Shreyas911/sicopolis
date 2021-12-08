@@ -39,16 +39,16 @@ save
 
 #if !defined(ALLOW_OPENAD)
 
-integer, parameter :: i1b = selected_int_kind(2)   !< 1-byte integers
+! integer, parameter :: i1b = selected_int_kind(2)   !< 1-byte integers
 integer, parameter :: i4b = selected_int_kind(9)   !< 4-byte integers
 integer, parameter :: sp  = kind(1.0)              !< Single-precision reals
 integer, parameter :: dp  = kind(1.0d0)            !< Double-precision reals
 
 #else
 
-integer, parameter :: i1b = 4
-   ! SHK: found that setting i1b=4 (4-byte integers) is the only way
-   !      to make OpenAD not have a whirl opcode error
+! integer, parameter :: i1b = 4
+!    ! SHK: found that setting i1b=4 (4-byte integers) is the only way
+!    !      to make OpenAD not have a whirl opcode error
 integer, parameter :: i4b = 4
 integer, parameter :: sp  = 4
 integer, parameter :: dp  = 8
