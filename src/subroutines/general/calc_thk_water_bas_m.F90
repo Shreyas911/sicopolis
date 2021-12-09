@@ -8,6 +8,11 @@
 !!
 !! @section Copyright
 !!
+!! Modified by Marius Schaefer mschaefer@uach.cl: 8-12-2021
+!!
+!! New option to add run-off from the surface to the basal water  
+!! Header parameter: MELT_DRAIN
+!!
 !! Copyright 2009-2021 Ralf Greve
 !!
 !! @section License
@@ -100,7 +105,12 @@ contains
      if (mask(j,i)==0) then   ! grounded ice
         hydro_icemask(i,j) = 1
         hydro_thk(i,j)     = H(j,i)
-        hydro_supply(i,j)  = rho_rho_w_ratio*Q_b_tot(j,i)
+        if (MELT_DRAIN==1) then !drainage of melt water 
+        	hydro_supply(i,j)  = rho_rho_w_ratio*(Q_b_tot(j,i)+ runoff(j,i))
+        	!print *,' Draining Meltwater!' 
+        else 
+        	hydro_supply(i,j)  = rho_rho_w_ratio*Q_b_tot(j,i)
+        end if 
      else
         hydro_icemask(i,j) = 0
         hydro_thk(i,j)     = 0.0_dp
