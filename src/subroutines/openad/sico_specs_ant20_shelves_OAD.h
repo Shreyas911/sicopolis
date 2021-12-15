@@ -601,7 +601,7 @@
 !                             glacial index (requires ACCSURFACE==5)
 !                         6 : Surface temperature anomaly as a function of time
 !                             is read directly from a NetCDF file
-!                             (requires ACCSURFACE==6 and NETCDF==2)
+!                             (requires ACCSURFACE==6)
 
 #define DELTA_TS0 0.0d0
 !#define DELTA_TS0 -6.864d0
@@ -683,7 +683,7 @@
 !                             glacial index (requires TSURFACE==5)
 !                         6 : Precipitation anomaly as a function of time
 !                             is read directly from a NetCDF file
-!                             (requires TSURFACE==6 and NETCDF==2)
+!                             (requires TSURFACE==6)
 
 #define ACCFACT 1.0d0
 !                       Constant ratio between actual and present
@@ -1011,13 +1011,6 @@
 !                             (only for OUTPUT==1,2)
 !                         1 : Full set of 2-d and 3-d fields written
 !                             as time-slice data (only for OUTPUT==1,2)
-
-#define NETCDF 1
-!#define NETCDF 2
-!                         1 : Time-slice files unformatted ('.erg')
-!                         2 : Time-slice files in netCDF format ('.nc'),
-!                             and writing of an extended time-series file
-!                             '_ser.nc' in netCDF format
 
 #define DTIME_OUT0 10.0d0
 !                             Time step (in a) for writing of

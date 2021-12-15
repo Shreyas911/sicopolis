@@ -53,7 +53,7 @@ module output_m
 contains
 
 !-------------------------------------------------------------------------------
-!> Writing of time-slice files in native binary or NetCDF format.
+!> Writing of time-slice files in NetCDF format.
 !<------------------------------------------------------------------------------
 subroutine output1(runname, time, delta_ts, glac_index, &
                    flag_3d_output, ndat2d, ndat3d, &
@@ -63,10 +63,8 @@ subroutine output1(runname, time, delta_ts, glac_index, &
   use enth_temp_omega_m, only : enth_fct_temp_omega
 #endif
 
-#if (NETCDF==2)   /* time-slice file in NetCDF format */
   use netcdf
   use nc_check_m
-#endif
 
 #if (DISC>0)
   use discharge_workers_m, only: dis_perp, cst_dist, cos_grad_tc, mask_mar
@@ -245,14 +243,6 @@ real(sp), dimension(0:IMAX,0:JMAX,0:KTMAX) :: vx_t_conv, vy_t_conv, vz_t_conv, &
                                               enh_t_conv, strain_heating_t_conv
 real(sp), dimension(0:IMAX,0:JMAX,0:KRMAX) :: temp_r_conv
 
-#if (NETCDF==1)   /* time-slice file in native binary format */
-
-character(len=256) :: ch_attr_title, ch_attr_institution, ch_attr_source, &
-                      ch_attr_history, ch_attr_references
-character(len= 16), parameter :: filename_extension = '.erg'
-
-#elif (NETCDF==2) /* time-slice file in NetCDF format */
-
 integer(i4b) :: ncid, ncv
 !     ncid:      ID of the output file
 !     ncv:       Variable ID
@@ -284,18 +274,11 @@ character(len=256) :: buffer
 character(len= 16), parameter :: filename_extension = '.nc'
 character(len= 16), allocatable :: coord_id(:)
 
-#else
-errormsg = ' >>> output1: Parameter NETCDF must be either 1 or 2!'
-call error(errormsg)
-#endif
-
 if (present(opt_flag_compute_flux_vars_only)) then
    flag_compute_flux_vars_only = opt_flag_compute_flux_vars_only
 else
    flag_compute_flux_vars_only = .false.
 end if
-
-#if (NETCDF==2)   /* time-slice file in NetCDF format */
 
 nc1cor_i = (/ 1 /)
 nc1cnt_i = (/ IMAX+1 /)
@@ -323,8 +306,6 @@ nc3cnt_ijkt = (/ IMAX+1, JMAX+1, KTMAX+1 /)
 
 nc3cor_ijkr = (/ 1, 1, 1 /)
 nc3cnt_ijkr = (/ IMAX+1, JMAX+1, KRMAX+1 /)
-
-#endif
 
 !-------- Create consecutively numbered file names --------
 
@@ -356,41 +337,6 @@ end if   ! (.not.flag_compute_flux_vars_only)
 !-------- File initialization --------
 
 if (.not.flag_compute_flux_vars_only) then
-
-#if (NETCDF==1)   /* time-slice file in native binary format */
-
-!  ------ Open native binary file
-
-open(unit=11, iostat=ios, file=trim(filename_with_path), status='new', &
-              form='unformatted')
-
-if (ios /= 0) then 
-   errormsg = ' >>> output1: Error when opening an erg (time-slice) file!'
-   call error(errormsg)
-end if
-
-!  ------ Global attributes
-
-ch_attr_title = 'Time-slice output no. '//ch_ndat//' of simulation ' &
-                                        //trim(runname)
-write(unit=11) ch_attr_title
-
-call set_ch_institution(ch_attr_institution)
-write(unit=11) ch_attr_institution
-
-ch_attr_source = 'SICOPOLIS Version '//VERSION
-write(unit=11) ch_attr_source
-
-call date_and_time(ch_date, ch_time, ch_zone)
-ch_attr_history = ch_date(1:4)//'-'//ch_date(5:6)//'-'//ch_date(7:8)//' '// &
-                  ch_time(1:2)//':'//ch_time(3:4)//':'//ch_time(5:6)//' '// &
-                  ch_zone(1:3)//':'//ch_zone(4:5)//' - Data produced'
-write(unit=11) ch_attr_history
-
-ch_attr_references = 'http://www.sicopolis.net/'
-write(unit=11) ch_attr_references
-
-#elif (NETCDF==2) /* time-slice file in NetCDF format */
 
 if (allocated(coord_id)) deallocate(coord_id); allocate(coord_id(5))
 coord_id(1) = 'x'; coord_id(2) = 'y'
@@ -3095,8 +3041,6 @@ end if
 
 call check( nf90_enddef(ncid), thisroutine )
 
-#endif
-
 end if   ! (.not.flag_compute_flux_vars_only)
 
 !-------- Thickness of the cold and temperate layers --------
@@ -3691,144 +3635,6 @@ end if   ! (.not.flag_compute_flux_vars_only)
 !-------- Write data on file --------
 
 if (.not.flag_compute_flux_vars_only) then
-
-#if (NETCDF==1)   /* time-slice file in native binary format */
-
-write(unit=11) year2sec_conv
-write(unit=11) time_conv
-if ((forcing_flag == 1).or.(forcing_flag == 3)) then
-   write(unit=11) delta_ts_conv
-else if (forcing_flag == 2) then
-   write(unit=11) glac_index_conv
-end if
-write(unit=11) z_sl_mean_conv
-
-write(unit=11) V_tot_conv
-write(unit=11) V_af_conv
-write(unit=11) A_grounded_conv
-write(unit=11) A_floating_conv
-
-write(unit=11) xi_conv
-write(unit=11) eta_conv
-write(unit=11) sigma_level_c_conv
-write(unit=11) sigma_level_t_conv
-write(unit=11) sigma_level_r_conv
-
-write(unit=11) lond_conv
-write(unit=11) latd_conv
-write(unit=11) lambda_conv
-write(unit=11) phi_conv
-write(unit=11) cell_area_conv
-write(unit=11) temp_maat_conv
-write(unit=11) temp_s_conv
-write(unit=11) accum_conv
-write(unit=11) snowfall_conv
-write(unit=11) rainfall_conv
-write(unit=11) pdd_conv
-write(unit=11) as_perp_conv
-write(unit=11) as_perp_apl_conv
-write(unit=11) smb_corr_conv
-write(unit=11) z_sl_conv
-
-#if (DISC>0)   /* Ice discharge parameterisation */
-
-write(unit=11) dis_perp_conv
-write(unit=11) cst_dist_conv
-write(unit=11) cos_grad_tc_conv
-write(unit=11) mask_mar_conv
-
-#endif
-
-write(unit=11) q_geo_conv
-write(unit=11) mask_conv
-write(unit=11) mask_old_conv
-write(unit=11) n_cts_conv
-write(unit=11) kc_cts_conv
-write(unit=11) zs_conv
-write(unit=11) zm_conv
-write(unit=11) zb_conv
-write(unit=11) zl_conv
-write(unit=11) zl0_conv
-write(unit=11) H_cold_conv
-write(unit=11) H_temp_conv
-write(unit=11) H_conv
-write(unit=11) H_R_conv
-write(unit=11) Q_bm_conv
-write(unit=11) Q_tld_conv
-write(unit=11) am_perp_conv
-write(unit=11) qx_conv
-write(unit=11) qy_conv
-write(unit=11) vx_m_sia_conv
-write(unit=11) vy_m_sia_conv
-write(unit=11) vx_m_ssa_conv
-write(unit=11) vy_m_ssa_conv
-write(unit=11) dzs_dtau_conv
-write(unit=11) dzm_dtau_conv
-write(unit=11) dzb_dtau_conv
-write(unit=11) dzl_dtau_conv
-write(unit=11) dH_c_dtau_conv
-write(unit=11) dH_t_dtau_conv
-write(unit=11) dH_dtau_conv
-write(unit=11) vx_b_g_conv
-write(unit=11) vy_b_g_conv
-write(unit=11) vz_b_conv
-write(unit=11) vh_b_conv
-write(unit=11) vx_s_g_conv
-write(unit=11) vy_s_g_conv
-write(unit=11) vz_s_conv
-write(unit=11) vh_s_conv
-write(unit=11) vx_m_g_conv
-write(unit=11) vy_m_g_conv
-write(unit=11) vh_m_conv
-write(unit=11) temp_b_conv
-write(unit=11) temph_b_conv
-write(unit=11) tau_dr_conv
-write(unit=11) tau_b_conv
-write(unit=11) p_b_w_conv
-write(unit=11) q_w_conv
-write(unit=11) q_w_x_conv
-write(unit=11) q_w_y_conv
-write(unit=11) H_w_conv
-write(unit=11) q_gl_g_conv
-write(unit=11) ratio_sl_x_conv
-write(unit=11) ratio_sl_y_conv
-write(unit=11) ratio_sl_conv
-write(unit=11) flag_shelfy_stream_x_conv
-write(unit=11) flag_shelfy_stream_y_conv
-write(unit=11) flag_shelfy_stream_conv
-write(unit=11) flag_grounding_line_1_conv
-write(unit=11) flag_grounding_line_2_conv
-write(unit=11) flag_calving_front_1_conv
-write(unit=11) flag_calving_front_2_conv
-write(unit=11) flag_grounded_front_a_1_conv
-write(unit=11) flag_grounded_front_a_2_conv
-write(unit=11) flag_grounded_front_b_1_conv
-write(unit=11) flag_grounded_front_b_2_conv
-write(unit=11) vis_ave_g_conv
-write(unit=11) vis_int_g_conv
-
-if (flag_3d_output) then
-   write(unit=11) vx_c_conv
-   write(unit=11) vy_c_conv
-   write(unit=11) vz_c_conv
-   write(unit=11) vx_t_conv
-   write(unit=11) vy_t_conv
-   write(unit=11) vz_t_conv
-   write(unit=11) temp_c_conv
-   write(unit=11) omega_t_conv
-   write(unit=11) temp_r_conv
-   write(unit=11) enth_c_conv
-   write(unit=11) enth_t_conv
-   write(unit=11) omega_c_conv
-   write(unit=11) enh_c_conv
-   write(unit=11) enh_t_conv
-   write(unit=11) strain_heating_c_conv
-   write(unit=11) strain_heating_t_conv
-   write(unit=11) age_c_conv
-   write(unit=11) age_t_conv
-end if
-
-#elif (NETCDF==2) /* time-slice file in NetCDF format */
 
 call check( nf90_inq_varid(ncid, 'mapping', ncv), thisroutine )
 call check( nf90_put_var(ncid, ncv, 0), thisroutine )
@@ -4464,26 +4270,16 @@ if (flag_3d_output) then
 
 end if
 
-#endif
-
 end if   ! (.not.flag_compute_flux_vars_only)
 
 !-------- Close file --------
 
 if (.not.flag_compute_flux_vars_only) then
 
-#if (NETCDF==1)   /* time-slice file in native binary format */
-
-close(unit=11, status='keep')
-
-#elif (NETCDF==2) /* time-slice file in NetCDF format */
-
 call check( nf90_sync(ncid),  thisroutine )
 call check( nf90_close(ncid), thisroutine )
 
 deallocate(coord_id)
-
-#endif
 
 end if   ! (.not.flag_compute_flux_vars_only)
 
@@ -4512,10 +4308,8 @@ end subroutine output1
 subroutine output2(time, dxi, deta, delta_ts, glac_index, &
                    opt_flag_compute_flux_vars_only)
 
-#if (NETCDF>1)
   use netcdf
   use nc_check_m
-#endif
 
 #if (DISC>0)
   use discharge_workers_m, only: dT_glann, dT_sub
@@ -4546,7 +4340,6 @@ real(dp) :: sum_area_sed
 logical :: flag_compute_flux_vars_only
 logical, dimension(0:JMAX,0:IMAX) :: flag_region
 
-#if (NETCDF>1)
 integer(i4b), dimension(0:99), save :: ncid
 integer(i4b)       :: ncd, ncv, nc1d
 integer(i4b)       :: nc1cor(1), nc1cnt(1)
@@ -4556,7 +4349,6 @@ character(len= 16) :: ch_date, ch_time, ch_zone
 character(len=256) :: filename, filename_with_path, buffer
 character(len=  2) :: ch2_aux
 logical, save      :: grads_nc_tweaks
-#endif
 
 integer(i4b), save :: counter = 0
 logical,      save :: firstcall_output2 = .true.
@@ -4897,8 +4689,6 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 #endif
 
 !-------- Extended time-series file in NetCDF format --------
-
-#if (NETCDF>1)
 
    if (firstcall_output2) then
 
@@ -5808,8 +5598,6 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 
    end if   ! (.not.flag_compute_flux_vars_only)
 
-#endif   /* (NETCDF>1) */
-
 !-------- End loop over regions --------
 
 end do   ! n=0, maxval(mask_region)
@@ -6196,10 +5984,8 @@ end subroutine scalar_variables
 !<------------------------------------------------------------------------------
 subroutine output4(time, dxi, deta, delta_ts, glac_index)
 
-#if (NETCDF>1)
   use netcdf
   use nc_check_m
-#endif
 
 implicit none
 
@@ -6216,7 +6002,6 @@ real(dp), dimension(:), allocatable :: H_core, temp_b_core, &
                                        Rx_b_core, Ry_b_core, R_b_core, &
                                        bmb_core
 
-#if (NETCDF>1)
 integer(i4b), save :: ncid
 integer(i4b)       :: ncd, ncv, nc1d, nc2d(2)
 integer(i4b)       :: nc1cor(1), nc1cnt(1), nc2cor(2), nc2cnt(2)
@@ -6225,7 +6010,6 @@ real(dp), save     :: time_add_offset_val
 character(len= 16) :: ch_date, ch_time, ch_zone
 character(len=256) :: filename, filename_with_path, buffer
 logical, save      :: grads_nc_tweaks
-#endif
 
 integer(i4b), save :: counter = 0
 logical,      save :: firstcall_output4 = .true.
@@ -6381,8 +6165,6 @@ if (n_core >= 1) then
    write(unit=14, fmt='(1pe13.4,/)') temp_b_core(n)
 
 !-------- Extended time-series file in NetCDF format --------
-
-#if (NETCDF>1)
 
    if (firstcall_output4) then
 
@@ -6807,8 +6589,6 @@ if (n_core >= 1) then
    if ( mod((counter-1), n_sync) == 0 ) &
       call check( nf90_sync(ncid),  thisroutine )
 
-#endif
-
    deallocate(r_n_core, H_core, &
               vx_b_core, vy_b_core, vh_b_core, &
               vx_s_core, vy_s_core, vh_s_core, &
@@ -7185,8 +6965,6 @@ end subroutine output5
 
   character(len=16) :: ch_value
 
-#if (NETCDF>1)
-
   grads_nc_tweaks = .false.
 
 !-------- Try environment variable --------
@@ -7210,10 +6988,6 @@ end subroutine output5
 #else
   grads_nc_tweaks = .false.
 #endif
-#endif
-
-#else   /* NetCDF not used */
-  grads_nc_tweaks = .false.   ! dummy value
 #endif
 
   end subroutine set_grads_nc_tweaks

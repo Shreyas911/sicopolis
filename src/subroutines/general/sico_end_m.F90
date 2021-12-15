@@ -49,10 +49,8 @@ contains
 !<------------------------------------------------------------------------------
   subroutine sico_end()
 
-#if (NETCDF>1)
   use netcdf
   use nc_check_m
-#endif
 
   implicit none
 
@@ -93,7 +91,6 @@ contains
 #endif
 #endif
 
-#if (NETCDF>1)
   do n=0, maxval(mask_region)
      call check( nf90_sync(ncid_ser(n)),  thisroutine )
      call check( nf90_close(ncid_ser(n)), thisroutine )
@@ -104,7 +101,6 @@ contains
      call check( nf90_close(ncid_core), thisroutine )
   end if
           ! Closing of NetCDF time-series output file for the deep ice cores
-#endif
 
 #if (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
 #if !defined(ALLOW_OPENAD)
