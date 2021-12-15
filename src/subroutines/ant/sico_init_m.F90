@@ -53,7 +53,7 @@ subroutine sico_init(delta_ts, glac_index, &
                dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
                time, time_init, time_end, time_output, &
                dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-               z_sl, dzsl_dtau, z_mar, &
+               z_mar, &
                ndat2d, ndat3d, n_output, &
                runname)
 
@@ -98,14 +98,14 @@ real(dp),           intent(out) :: dtime, dtime_temp, dtime_wss, &
                                    dtime_out, dtime_ser
 real(dp),           intent(out) :: time, time_init, time_end, time_output(100)
 real(dp),           intent(out) :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
-real(dp),           intent(out) :: z_sl, dzsl_dtau, z_mar
+real(dp),           intent(out) :: z_mar
 
 character(len=100), intent(out) :: runname
 
 integer(i4b)       :: i, j, kc, kt, kr, m, n, ir, jr
 integer(i4b)       :: ios, ios1, ios2, ios3, ios4
 integer(i4b)       :: ierr
-integer(i1b), dimension(0:JMAX,0:IMAX) :: mask_ref
+integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_ref
 real(dp)           :: dtime0, dtime_temp0, dtime_wss0, dtime_out0, dtime_ser0
 real(dp)           :: time_init0, time_end0
 #if (OUTPUT==2 || OUTPUT==3)
@@ -917,7 +917,9 @@ write(10, fmt=trim(fmt2)) 'CALCTHK = ', CALCTHK
 errormsg = ' >>> sico_init: Define CALCTHK in header file!'
 call error(errormsg)
 #endif
-
+#if (defined(OCEAN_CONNECTIVITY))
+write(10, fmt=trim(fmt2)) 'OCEAN_CONNECTIVITY = ', OCEAN_CONNECTIVITY
+#endif
 #if (defined(H_ISOL_MAX))
 write(10, fmt=trim(fmt3)) 'H_isol_max =', H_ISOL_MAX
 #endif
@@ -1472,7 +1474,7 @@ mask_ref = nint(field2d_aux)
 
 do i=0, IMAX
 do j=0, JMAX
-   if (mask_ref(j,i) >= 2_i1b) zs_ref(j,i) = 0.0_dp
+   if (mask_ref(j,i) >= 2) zs_ref(j,i) = 0.0_dp
                  ! resetting elevations over the ocean
                  ! to the present-day sea surface
 end do
@@ -2160,17 +2162,18 @@ end do
 
 call topography1(dxi, deta)
 
-z_sl = -1.11e+11_dp   ! dummy value for initial call of subroutine boundary
+z_sl      = -1.11e+11_dp   ! dummy values for initial call
+z_sl_mean = -1.11e+11_dp   ! of subroutine boundary
 
 call boundary(time_init, dtime, dxi, deta, &
-              delta_ts, glac_index, z_sl, dzsl_dtau, z_mar)
+              delta_ts, glac_index, z_mar)
 
 #if !defined(ALLOW_OPENAD) /* Normal */
 
-where ((mask==0_i1b).or.(mask==3_i1b))
+where ((mask==0).or.(mask==3))
                  ! grounded or floating ice
    as_perp_apl = as_perp
-elsewhere        ! mask==1_i1b or 2_i1b, ice-free land or sea
+elsewhere        ! mask==1 or 2, ice-free land or sea
    as_perp_apl = 0.0_dp
 end where
 
@@ -2178,7 +2181,7 @@ end where
 
 do j=0,JMAX
 do i=0,IMAX
-  if ((mask(j,i)==0_i1b).or.(mask(j,i)==3_i1b)) then
+  if ((mask(j,i)==0).or.(mask(j,i)==3)) then
     as_perp_apl(j,i) = as_perp(j,i)
   else
     as_perp_apl(j,i) = 0.0_dp
@@ -2206,7 +2209,7 @@ H_w     = 0.0_dp
 #elif (TEMP_INIT==4)
   call init_temp_water_age_1_4()
 #elif (TEMP_INIT==5)
-  call init_temp_water_age_1_5(z_sl, anfdatname)
+  call init_temp_water_age_1_5(anfdatname)
 #else
   errormsg = ' >>> sico_init: TEMP_INIT must be between 1 and 5!'
   call error(errormsg)
@@ -2246,10 +2249,11 @@ vis_int_g = 0.0_dp
 
 call topography2(dxi, deta)
 
-z_sl = -1.11e+11_dp   ! dummy value for initial call of subroutine boundary
+z_sl      = -1.11e+11_dp   ! dummy values for initial call
+z_sl_mean = -1.11e+11_dp   ! of subroutine boundary
 
 call boundary(time_init, dtime, dxi, deta, &
-              delta_ts, glac_index, z_sl, dzsl_dtau, z_mar)
+              delta_ts, glac_index, z_mar)
 
 as_perp_apl = 0.0_dp
 
@@ -2296,17 +2300,17 @@ vis_int_g = 0.0_dp
 
 #elif (ANF_DAT==3)
 
-call topography3(dxi, deta, z_sl, anfdatname)
+call topography3(dxi, deta, anfdatname)
 
 call boundary(time_init, dtime, dxi, deta, &
-              delta_ts, glac_index, z_sl, dzsl_dtau, z_mar)
+              delta_ts, glac_index, z_mar)
 
 #if !defined(ALLOW_OPENAD) /* Normal */
 
-where ((mask==0_i1b).or.(mask==3_i1b))
+where ((mask==0).or.(mask==3))
                  ! grounded or floating ice
    as_perp_apl = as_perp
-elsewhere        ! mask==1_i1b or 2_i1b, ice-free land or sea
+elsewhere        ! mask==1 or 2, ice-free land or sea
    as_perp_apl = 0.0_dp
 end where
 
@@ -2314,7 +2318,7 @@ end where
 
 do j=0,JMAX
 do i=0,IMAX
-  if ((mask(j,i)==0_i1b).or.(mask(j,i)==3_i1b)) then
+  if ((mask(j,i)==0).or.(mask(j,i)==3)) then
     as_perp_apl(j,i) = as_perp(j,i)
   else
     as_perp_apl(j,i) = 0.0_dp
@@ -2376,21 +2380,21 @@ end do
 
 call calc_temp_melt()
 call flag_update_gf_gl_cf()
-call calc_dzs_dxy_aux(z_sl, dxi, deta)
+call calc_dzs_dxy_aux(dxi, deta)
 
 #if (DYNAMICS==1 || DYNAMICS==2)
 
-call calc_vxy_b_sia(time, z_sl)
+call calc_vxy_b_sia(time)
 call calc_vxy_sia(dzeta_c, dzeta_t)
 
 #if (MARGIN==3 || DYNAMICS==2)
-call calc_vxy_ssa(z_sl, dxi, deta, dzeta_c, dzeta_t)
+call calc_vxy_ssa(dxi, deta, dzeta_c, dzeta_t)
 #endif
 
 call calc_vz_grounded(dxi, deta, dzeta_c, dzeta_t)
 
 #if (MARGIN==3)
-call calc_vz_floating(z_sl, dxi, deta, dzeta_c)
+call calc_vz_floating(dxi, deta, dzeta_c)
 #endif
 
 #elif (DYNAMICS==0)
@@ -2432,7 +2436,7 @@ do j=0, JMAX
       enth_c(kc,j,i) = enth_fct_temp_omega(temp_c(kc,j,i), 0.0_dp)
    end do
 
-   if ( (mask(j,i) == 0_i1b).and.(n_cts(j,i) == 1_i1b) ) then
+   if ( (mask(j,i) == 0).and.(n_cts(j,i) == 1) ) then
       do kt=0, KTMAX
          enth_t(kt,j,i) = enth_fct_temp_omega(temp_t_m(kt,j,i), omega_t(kt,j,i))
       end do
@@ -2488,7 +2492,7 @@ if ((forcing_flag == 1).or.(forcing_flag == 3)) then
    write(12,1102)
    write(12,1103)
 
-   1102 format('         t(a)  D_Ts(deg C)      z_sl(m)',/, &
+   1102 format('         t(a)  D_Ts(deg C) z_sl_mean(m)',/, &
                '                    V(m^3)     V_g(m^3)     V_f(m^3)', &
                '       A(m^2)     A_g(m^2)     A_f(m^2)',/, &
                '                               V_sle(m)     V_t(m^3)', &
@@ -2503,7 +2507,7 @@ else if (forcing_flag == 2) then
    write(12,1112)
    write(12,1113)
 
-   1112 format('         t(a)  glac_ind(1)      z_sl(m)',/, &
+   1112 format('         t(a)  glac_ind(1) z_sl_mean(m)',/, &
                '                    V(m^3)     V_g(m^3)     V_f(m^3)', &
                '       A(m^2)     A_g(m^2)     A_f(m^2)',/, &
                '                               V_sle(m)     V_t(m^3)', &
@@ -2601,7 +2605,7 @@ if ((forcing_flag == 1).or.(forcing_flag == 3)) then
    write(14,1106)
    write(14,1107)
 
-   1106 format('         t(a)      D_Ts(C)      z_sl(m)',/, &
+   1106 format('         t(a)      D_Ts(C) z_sl_mean(m)',/, &
                '                   H_Vo(m)      H_DA(m)      H_DC(m)', &
                '      H_DF(m)      H_Ko(m)      H_By(m)',/, &
                '                 v_Vo(m/a)    v_DA(m/a)    v_DC(m/a)', &
@@ -2616,7 +2620,7 @@ else if (forcing_flag == 2) then
    write(14,1116)
    write(14,1117)
 
-   1116 format('         t(a)  glac_ind(1)      z_sl(m)',/, &
+   1116 format('         t(a)  glac_ind(1) z_sl_mean(m)',/, &
                '                   H_Vo(m)      H_DA(m)      H_DC(m)', &
                '      H_DF(m)      H_Ko(m)      H_By(m)',/, &
                '                 v_Vo(m/a)    v_DA(m/a)    v_DC(m/a)', &
@@ -2659,7 +2663,7 @@ end if
 #endif
 
    if (flag_init_output) &
-      call output1(runname, time_init, delta_ts, glac_index, z_sl, &
+      call output1(runname, time_init, delta_ts, glac_index, &
                    flag_3d_output, ndat2d, ndat3d)
 
 #elif (OUTPUT==2)
@@ -2675,7 +2679,7 @@ if (time_output(1) <= time_init+eps) then
    call error(errormsg)
 #endif
 
-   call output1(runname, time_init, delta_ts, glac_index, z_sl, &
+   call output1(runname, time_init, delta_ts, glac_index, &
                 flag_3d_output, ndat2d, ndat3d)
 
 end if
@@ -2685,14 +2689,14 @@ end if
    flag_3d_output = .false.
 
    if (flag_init_output) &
-      call output1(runname, time_init, delta_ts, glac_index, z_sl, &
+      call output1(runname, time_init, delta_ts, glac_index, &
                    flag_3d_output, ndat2d, ndat3d)
 
 if (time_output(1) <= time_init+eps) then
 
    flag_3d_output = .true.
 
-   call output1(runname, time_init, delta_ts, glac_index, z_sl, &
+   call output1(runname, time_init, delta_ts, glac_index, &
                 flag_3d_output, ndat2d, ndat3d)
 
 end if
@@ -2703,8 +2707,8 @@ end if
 #endif
 
 if (flag_init_output) then
-   call output2(time_init, dxi, deta, delta_ts, glac_index, z_sl)
-   call output4(time_init, dxi, deta, delta_ts, glac_index, z_sl)
+   call output2(time_init, dxi, deta, delta_ts, glac_index)
+   call output4(time_init, dxi, deta, delta_ts, glac_index)
 end if
 
 #else /* OpenAD */
@@ -2815,16 +2819,16 @@ freeboard_ratio = (RHO_SW-RHO)/RHO_SW
 do i=0, IMAX
 do j=0, JMAX
 
-   if (mask(j,i) <= 1_i1b) then
+   if (mask(j,i) <= 1) then
 
       zb(j,i) = zl(j,i)   ! ensure consistency
 
       if (zs(j,i) < zb(j,i)) then
          zs(j,i) = zb(j,i)
-         mask(j,i) = 1_i1b
+         mask(j,i) = 1
       end if
 
-   else if (mask(j,i) == 2_i1b) then
+   else if (mask(j,i) == 2) then
 
 #if (MARGIN==1 || MARGIN==2)
       zs(j,i) = zl(j,i)   ! ensure
@@ -2834,18 +2838,18 @@ do j=0, JMAX
       zb(j,i) = 0.0_dp    ! sea level
 #endif
 
-   else if (mask(j,i) == 3_i1b) then
+   else if (mask(j,i) == 3) then
 
 #if (MARGIN==1 || (MARGIN==2 && MARINE_ICE_FORMATION==1))
-      mask(j,i) = 2_i1b   ! floating ice cut off
+      mask(j,i) = 2   ! floating ice cut off
       zs(j,i) = zl(j,i)
       zb(j,i) = zl(j,i)
 #elif (MARGIN==2 && MARINE_ICE_FORMATION==2)
-      mask(j,i) = 0_i1b   ! floating ice becomes "underwater ice"
+      mask(j,i) = 0   ! floating ice becomes "underwater ice"
       H_ice   = zs(j,i)-zb(j,i)   ! ice thickness
       if (H_ice < 0.0_dp) then
          H_ice = 0.0_dp
-         mask(j,i) = 2_i1b
+         mask(j,i) = 2
       end if
       zs(j,i) = zl(j,i)+H_ice
       zb(j,i) = zl(j,i)
@@ -2853,7 +2857,7 @@ do j=0, JMAX
       H_ice = zs(j,i)-zb(j,i)   ! ice thickness
       if (H_ice < 0.0_dp) then
          H_ice = 0.0_dp
-         mask(j,i) = 2_i1b
+         mask(j,i) = 2
       end if
       zs(j,i) = freeboard_ratio*H_ice   ! ensure properly
       zb(j,i) = zs(j,i)-H_ice           ! floating ice
@@ -2865,16 +2869,18 @@ do j=0, JMAX
    eta(j) = eta0 + real(j,dp)*deta
 
    zm(j,i) = zb(j,i)
-   n_cts(j,i) = -1_i1b
+   n_cts(j,i) = -1
    kc_cts(j,i) = 0
 
-   H_c(j,i) = zs(j,i)-zm(j,i)
+   H(j,i)   = zs(j,i)-zm(j,i)
+   H_c(j,i) = H(j,i)
    H_t(j,i) = 0.0_dp
 
    dzs_dtau(j,i)  = 0.0_dp
    dzm_dtau(j,i)  = 0.0_dp
    dzb_dtau(j,i)  = 0.0_dp
    dzl_dtau(j,i)  = 0.0_dp
+   dH_dtau(j,i)   = 0.0_dp
    dH_c_dtau(j,i) = 0.0_dp
    dH_t_dtau(j,i) = 0.0_dp
 
@@ -2922,11 +2928,11 @@ call topograd_1(dxi, deta, 1)
 call topograd_2(dxi, deta, 1)
 #endif
 
-!-------- Corresponding area of grid points --------
+!-------- Corresponding area of grid cells --------
 
 do i=0, IMAX
 do j=0, JMAX
-   area(j,i) = sq_g11_g(j,i)*sq_g22_g(j,i)*dxi*deta
+   cell_area(j,i) = sq_g11_g(j,i)*sq_g22_g(j,i)*dxi*deta
 end do
 end do
 
@@ -3043,13 +3049,13 @@ eta0 = Y0 *1000.0_dp   ! km -> m
 do i=0, IMAX
 do j=0, JMAX
 
-   if (mask(j,i) <= 1_i1b) then
-      mask(j,i) = 1_i1b
+   if (mask(j,i) <= 1) then
+      mask(j,i) = 1
       zs(j,i) = zl0(j,i)
       zb(j,i) = zl0(j,i)
       zl(j,i) = zl0(j,i)
-   else   ! (mask(j,i) >= 2_i1b)
-      mask(j,i) = 2_i1b
+   else   ! (mask(j,i) >= 2)
+      mask(j,i) = 2
 #if (MARGIN==1 || MARGIN==2)
       zs(j,i) = zl0(j,i)
       zb(j,i) = zl0(j,i)
@@ -3064,9 +3070,10 @@ do j=0, JMAX
    eta(j) = eta0 + real(j,dp)*deta
 
    zm(j,i) = zb(j,i)
-   n_cts(j,i) = -1_i1b
+   n_cts(j,i) = -1
    kc_cts(j,i) = 0
 
+   H(j,i)   = 0.0_dp
    H_c(j,i) = 0.0_dp
    H_t(j,i) = 0.0_dp
 
@@ -3074,6 +3081,7 @@ do j=0, JMAX
    dzm_dtau(j,i)  = 0.0_dp
    dzb_dtau(j,i)  = 0.0_dp
    dzl_dtau(j,i)  = 0.0_dp
+   dH_dtau(j,i)   = 0.0_dp
    dH_c_dtau(j,i) = 0.0_dp
    dH_t_dtau(j,i) = 0.0_dp
 
@@ -3121,11 +3129,11 @@ call topograd_1(dxi, deta, 1)
 call topograd_2(dxi, deta, 1)
 #endif
 
-!-------- Corresponding area of grid points --------
+!-------- Corresponding area of grid cells --------
 
 do i=0, IMAX
 do j=0, JMAX
-   area(j,i) = sq_g11_g(j,i)*sq_g22_g(j,i)*dxi*deta
+   cell_area(j,i) = sq_g11_g(j,i)*sq_g22_g(j,i)*dxi*deta
 end do
 end do
 
@@ -3189,7 +3197,7 @@ end subroutine topography2
 !! (including gradients) and of the horizontal grid spacings dxi, deta.
 !! For initial topography from previous simulation.
 !<------------------------------------------------------------------------------
-subroutine topography3(dxi, deta, z_sl, anfdatname)
+subroutine topography3(dxi, deta, anfdatname)
 
   use read_m, only : read_tms_nc, read_2d_input
 
@@ -3204,7 +3212,7 @@ implicit none
 
 character(len=100), intent(in) :: anfdatname
 
-real(dp),          intent(out) :: dxi, deta, z_sl
+real(dp),          intent(out) :: dxi, deta
 
 integer(i4b) :: i, j, n
 
@@ -3214,7 +3222,7 @@ real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 
 !-------- Read data from time-slice file of previous simulation --------
 
-call read_tms_nc(z_sl, anfdatname)
+call read_tms_nc(anfdatname)
 
 !-------- Read topography of the relaxed bedrock --------
 
@@ -3271,11 +3279,11 @@ call topograd_1(dxi, deta, 1)
 call topograd_2(dxi, deta, 1)
 #endif
 
-!-------- Corresponding area of grid points --------
+!-------- Corresponding area of grid cells --------
 
 do i=0, IMAX
 do j=0, JMAX
-   area(j,i) = sq_g11_g(j,i)*sq_g22_g(j,i)*dxi*deta
+   cell_area(j,i) = sq_g11_g(j,i)*sq_g22_g(j,i)*dxi*deta
 end do
 end do
 

@@ -76,7 +76,7 @@ end do
 do i=1, IMAX-1
 do j=1, JMAX-1
 
-   if (mask(j,i)==0_i1b) then   ! grounded ice
+   if (mask(j,i)==0) then   ! grounded ice
 
 !-------- Abbreviations --------
 
@@ -182,7 +182,7 @@ do j=1, JMAX-1
 
 !-------- Computation of vz --------
 
-      if ((n_cts(j,i) == -1_i1b).or.(n_cts(j,i) == 0_i1b)) then
+      if ((n_cts(j,i) == -1).or.(n_cts(j,i) == 0)) then
                         ! cold ice base, temperate ice base
 
          do kt=0, KTMAX-1
@@ -199,7 +199,7 @@ do j=1, JMAX-1
                            +(-cvz3(kc)+cvz4(kc)+cvz5(kc))
          end do
 
-      else   ! n_cts(j,i) == 1_i1b, temperate ice layer
+      else   ! n_cts(j,i) == 1, temperate ice layer
 
          vz_t(0,j,i) = vz_b(j,i) &
                        +0.5_dp*(-cvz0(0)+cvz1(0)+cvz2(0))
@@ -229,7 +229,7 @@ do j=1, JMAX-1
       vz_s(j,i) = vz_c(kc-1,j,i) &
                   +0.5_dp*(-cvz3(kc)+cvz4(kc)+cvz5(kc))
 
-   else   ! mask(j,i) /= 0_i1b (not grounded ice)
+   else   ! mask(j,i) /= 0 (not grounded ice)
 
       vz_b(j,i) = 0.0_dp
 
@@ -255,11 +255,10 @@ end subroutine calc_vz_grounded
 !-------------------------------------------------------------------------------
 !> Computation of the vertical velocity vz for floating ice.
 !<------------------------------------------------------------------------------
-subroutine calc_vz_floating(z_sl, dxi, deta, dzeta_c)
+subroutine calc_vz_floating(dxi, deta, dzeta_c)
 
 implicit none
 
-real(dp), intent(in) :: z_sl
 real(dp), intent(in) :: dxi, deta, dzeta_c
 
 integer(i4b) :: i, j, kt, kc
@@ -292,7 +291,7 @@ end do
 do i=1, IMAX-1
 do j=1, JMAX-1
 
-   if (mask(j,i)==3_i1b) then   ! floating ice
+   if (mask(j,i)==3) then   ! floating ice
 
 !  ------ Derivatives of the horizontal velocity
 
@@ -313,21 +312,21 @@ do j=1, JMAX-1
 
 !  ------ Velocity at sea level vz_sl
 
-      vz_sl(j,i) = vz_b(j,i) - (z_sl-zb(j,i))*(dvx_dxi+dvy_deta)
+      vz_sl(j,i) = vz_b(j,i) - (z_sl(j,i)-zb(j,i))*(dvx_dxi+dvy_deta)
 
 !  ------ Surface velocity vz_s
 
-      vz_s(j,i) = vz_sl(j,i) - (zs(j,i)-z_sl)*(dvx_dxi+dvy_deta)
+      vz_s(j,i) = vz_sl(j,i) - (zs(j,i)-z_sl(j,i))*(dvx_dxi+dvy_deta)
 
 !  ------ Velocity vz_m at the interface between
 !                              the upper (kc) and the lower (kt) domain
 
-      if ((n_cts(j,i) == -1_i1b).or.(n_cts(j,i) == 0_i1b)) then
+      if ((n_cts(j,i) == -1).or.(n_cts(j,i) == 0)) then
                         ! cold ice base, temperate ice base
 
          vz_m(j,i) = vz_b(j,i)
 
-      else   ! n_cts(j,i) == 1_i1b, temperate ice layer
+      else   ! n_cts(j,i) == 1, temperate ice layer
 
          vz_m(j,i) = vz_b(j,i) - H_t(j,i)*(dvx_dxi+dvy_deta)
 
@@ -337,24 +336,24 @@ do j=1, JMAX-1
 
       do kc=0, KCMAX-1
          vz_c(kc,j,i) = vz_sl(j,i) &
-                        -(zm(j,i)+eaz_c_quotient_sgz(kc)*H_c(j,i)-z_sl) &
+                        -(zm(j,i)+eaz_c_quotient_sgz(kc)*H_c(j,i)-z_sl(j,i)) &
                          *(dvx_dxi+dvy_deta)
       end do
 
-      if ((n_cts(j,i) == -1_i1b).or.(n_cts(j,i) == 0_i1b)) then
+      if ((n_cts(j,i) == -1).or.(n_cts(j,i) == 0)) then
                         ! cold ice base, temperate ice base
 
          do kt=0, KTMAX-1
             vz_t(kt,j,i) = vz_b(j,i)
          end do
 
-      else   ! n_cts(j,i) == 1_i1b, temperate ice layer
+      else   ! n_cts(j,i) == 1, temperate ice layer
 
          do kt=0, KTMAX-1
             vz_t(kt,j,i) = vz_sl(j,i) &
                            -(zb(j,i) &
                              +0.5_dp*(zeta_t(kt)+zeta_t(kt+1))*H_t(j,i) &
-                             -z_sl) &
+                             -z_sl(j,i)) &
                             *(dvx_dxi+dvy_deta)
          end do
 
@@ -379,7 +378,7 @@ integer(i4b) :: i, j, kc, kt
 do i=0, IMAX
 do j=0, JMAX
 
-   if ((mask(j,i)==0_i1b).or.(mask(j,i)==3_i1b)) then
+   if ((mask(j,i)==0).or.(mask(j,i)==3)) then
                               ! grounded or floating ice
 
       vz_b(j,i) = dzb_dtau(j,i)-Q_b_tot(j,i)
@@ -397,7 +396,7 @@ do j=0, JMAX
 
       vz_s(j,i) = vz_b(j,i)
 
-   else   ! mask(j,i) == (1_i1b or 2_i1b)
+   else   ! mask(j,i) == (1 or 2)
 
       vz_b(j,i) = 0.0_dp
 

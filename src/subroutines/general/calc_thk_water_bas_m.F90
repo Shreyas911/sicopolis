@@ -53,15 +53,11 @@ contains
 !> Main subroutine of calc_thk_water_bas_m:
 !! Computation of the thickness of the water column under the ice base.
 !<------------------------------------------------------------------------------
-  subroutine calc_thk_water_bas(z_sl)
+  subroutine calc_thk_water_bas()
 
   implicit none
 
-  real(dp), intent(in) :: z_sl
-
-#if defined(ALLOW_OPENAD) /* OpenAD */
   integer(i4b) :: i, j
-#endif /* OpenAD */
 
   logical, save :: firstcall = .true.
 
@@ -73,20 +69,11 @@ contains
                                         hydro_sflux, hydro_vflux, &
                                         hydro_vfluxX, hydro_vfluxY, &
                                         hydro_bwat
-
-#if defined(ALLOW_OPENAD) /* OpenAD */
-  integer(i1b), dimension(0:IMAX,0:JMAX) :: t_mask
-  real(dp)    , dimension(0:IMAX,0:JMAX) :: t_H_c, t_H_t, t_Q_b_tot
-#endif /* OpenAD */
-
   type(hydro_t), save :: hydro
-                         !!! RG: Does this need a save attribute?
 #endif
 
 !-------- Water column --------
 
-#if !defined(ALLOW_OPENAD) /* Normal */
-
 #if (BASAL_HYDROLOGY==1)
 
   if (firstcall) then
@@ -104,109 +91,22 @@ contains
 
   end if
 
-  hydro_topg       = transpose(zl)-z_sl
-  hydro_temppabase = transpose(temph_b)
+  do i=0, IMAX
+  do j=0, JMAX
 
-  where (transpose(mask)==0_i1b)   ! grounded ice
-     hydro_icemask = 1
-     hydro_thk     = transpose(H_c+H_t)
-     hydro_supply  = rho_rho_w_ratio*transpose(Q_b_tot)
-  elsewhere
-     hydro_icemask = 0
-     hydro_thk     = 0.0_dp
-     hydro_supply  = 0.0_dp
-  end where
-
-  call hydro_set_topg(hydro, hydro_topg)
-  call hydro_set_thk(hydro, hydro_thk)
-  call hydro_set_temppabase(hydro, hydro_temppabase)
-  call hydro_set_supply(hydro, hydro_supply)
-  call hydro_set_mask(hydro, hydro_icemask)
-
-  call hydro_update(hydro)
-
-  call hydro_get_sflux(hydro, hydro_sflux)
-  call hydro_get_vflux(hydro, hydro_vflux, hydro_vfluxX, hydro_vfluxY)
-  call hydro_get_bwat(hydro, hydro_bwat)
-
-  q_w   = transpose(hydro_vflux)
-  q_w_x = transpose(hydro_vfluxX)
-  q_w_y = transpose(hydro_vfluxY)
-  H_w   = transpose(hydro_bwat)
-
-#else
-
-  where (mask==0_i1b)   ! grounded ice
-     q_w   = 0.0_dp
-     q_w_x = 0.0_dp
-     q_w_y = 0.0_dp
-     H_w   = 0.0_dp
-  end where
-
-#endif
-
-  where (mask==2_i1b)   ! ocean
-     q_w   = 0.0_dp
-     q_w_x = 0.0_dp
-     q_w_y = 0.0_dp
-     H_w   = z_sl-zl
-  elsewhere (mask==3_i1b)   ! floating ice
-     q_w   = 0.0_dp
-     q_w_x = 0.0_dp
-     q_w_y = 0.0_dp
-     H_w   = zb-zl
-  elsewhere (mask==1_i1b)   ! ice-free land
-     q_w   = 0.0_dp
-     q_w_x = 0.0_dp
-     q_w_y = 0.0_dp
-     H_w   = 0.0_dp
-  end where
-
-  if (firstcall) firstcall = .false.
-
-#else /* OpenAD */
-
-#if (BASAL_HYDROLOGY==1)
-
-  if (firstcall) then
-
-     rho_rho_w_ratio = RHO/RHO_W
-
-     call hydro_init(hydro, xi, eta)
-     call hydro_gen_conf(hydro, &
-          & method='quinn', &
-          & avoid_frz=.false., &
-          & filter_len=0.0_dp, &
-          & rho_seawater=RHO_SW, &
-          & rho_freshwater=RHO_W, &
-          & rho_ice=RHO)
-
-  end if
-
-  ! hard-coding transpose
-  do j=0,JMAX
-  do i=0,IMAX
-     hydro_topg(i,j) = zl(j,i) - z_sl
+     hydro_topg(i,j)       = zl(j,i)-z_sl(j,i)
      hydro_temppabase(i,j) = temph_b(j,i)
-     ! transpose these arrays for easy searching below
-     t_mask(i,j) = mask(j,i)
-     t_H_c(i,j) = H_c(j,i)
-     t_H_t(i,j) = H_t(j,i)
-     t_Q_b_tot(i,j) = Q_b_tot(j,i)
-  end do
-  end do
 
-  do j=0,JMAX
-  do i=0,IMAX
-     if (t_mask(i,j)==0_i1b) then
+     if (mask(j,i)==0) then   ! grounded ice
         hydro_icemask(i,j) = 1
-        hydro_thk(i,j)     = t_H_c(i,j) + t_H_t(i,j)
-        hydro_supply(i,j)  = rho_rho_w_ratio*t_Q_b_tot(i,j)
+        hydro_thk(i,j)     = H(j,i)
+        hydro_supply(i,j)  = rho_rho_w_ratio*Q_b_tot(j,i)
      else
         hydro_icemask(i,j) = 0
         hydro_thk(i,j)     = 0.0_dp
         hydro_supply(i,j)  = 0.0_dp
      end if
+
   end do
   end do
 
@@ -222,44 +122,48 @@ contains
   call hydro_get_vflux(hydro, hydro_vflux, hydro_vfluxX, hydro_vfluxY)
   call hydro_get_bwat(hydro, hydro_bwat)
 
-  do i=0,IMAX
-  do j=0,JMAX
+  do i=0, IMAX
+  do j=0, JMAX
+
      q_w(j,i)   = hydro_vflux(i,j)
      q_w_x(j,i) = hydro_vfluxX(i,j)
      q_w_y(j,i) = hydro_vfluxY(i,j)
      H_w(j,i)   = hydro_bwat(i,j)
+
   end do
   end do
 
 #else
 
-  do i=0,IMAX
-  do j=0,JMAX
-     if ( mask(j,i)==0_i1b ) then   ! grounded ice
+  do i=0, IMAX
+  do j=0, JMAX
+
+     if (mask(j,i)==0) then   ! grounded ice
         q_w(j,i)   = 0.0_dp
         q_w_x(j,i) = 0.0_dp
         q_w_y(j,i) = 0.0_dp
         H_w(j,i)   = 0.0_dp
      end if
+
   end do
   end do
 
 #endif
 
-  do i=0,IMAX
-  do j=0,JMAX
+  do i=0, IMAX
+  do j=0, JMAX
 
-     if ( mask(j,i)==2_i1b ) then
+     if (mask(j,i)==2) then   ! ocean
         q_w(j,i)   = 0.0_dp
         q_w_x(j,i) = 0.0_dp
         q_w_y(j,i) = 0.0_dp
-        H_w(j,i)   = z_sl-zl(j,i)
-     else if ( mask(j,i)==3_i1b ) then
+        H_w(j,i)   = z_sl(j,i)-zl(j,i)
+     else if (mask(j,i)==3) then   ! floating ice
         q_w(j,i)   = 0.0_dp
         q_w_x(j,i) = 0.0_dp
         q_w_y(j,i) = 0.0_dp
         H_w(j,i)   = zb(j,i)-zl(j,i)
-     else if ( mask(j,i)==1_i1b ) then
+     else if (mask(j,i)==1) then   ! ice-free land
         q_w(j,i)   = 0.0_dp
         q_w_x(j,i) = 0.0_dp
         q_w_y(j,i) = 0.0_dp
@@ -270,8 +174,6 @@ contains
   end do
 
   if (firstcall) firstcall = .false.
-
-#endif /* Normal vs. OpenAD */
 
   end subroutine calc_thk_water_bas
 

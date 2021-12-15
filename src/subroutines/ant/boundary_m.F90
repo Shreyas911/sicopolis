@@ -53,7 +53,7 @@ contains
 !! and of the accumulation-ablation function.
 !<------------------------------------------------------------------------------
 subroutine boundary(time, dtime, dxi, deta, &
-                    delta_ts, glac_index, z_sl, dzsl_dtau, z_mar)
+                    delta_ts, glac_index, z_mar)
 
   use netcdf
   use nc_check_m
@@ -61,7 +61,7 @@ subroutine boundary(time, dtime, dxi, deta, &
 #if ((MARGIN==2) \
       && (MARINE_ICE_FORMATION==2) \
       && (MARINE_ICE_CALVING==9))
-  use calving_underwater_ice_m
+  use calving_m
 #endif
 
   use mask_update_sea_level_m
@@ -76,8 +76,7 @@ implicit none
 
 real(dp), intent(in) :: time, dtime, dxi, deta
 
-real(dp), intent(out)   :: delta_ts, glac_index, dzsl_dtau, z_mar
-real(dp), intent(inout) :: z_sl
+real(dp), intent(out)   :: delta_ts, glac_index, z_mar
 
 ! Further return variables
 ! (defined as global variables in module sico_variables_m):
@@ -88,7 +87,8 @@ integer(i4b) :: i, j, n
 integer(i4b) :: i_gr, i_kl
 integer(i4b) :: n_year_CE
 integer(i4b) :: ios
-real(dp) :: z_sl_old
+real(dp), dimension(0:JMAX,0:IMAX) :: z_sl_old
+real(dp) :: z_sl_old_mean
 real(dp) :: z_sl_min, t1, t2, t3, t4, t5, t6
 real(dp) :: sec2year, time_in_years
 real(dp) :: rho_inv
@@ -171,9 +171,10 @@ n_year_CE     = floor((time_in_years+YEAR_ZERO)+eps_sp_dp)
 
 rho_inv       = 1.0_dp/RHO
 
-!-------- Initialization of intent(out) variables --------
+!-------- Initialization of variables --------
 
-z_sl_old   = z_sl
+z_sl_old      = z_sl
+z_sl_old_mean = z_sl_mean
 
 delta_ts   = 0.0_dp
 glac_index = 0.0_dp
@@ -541,9 +542,13 @@ end if
 
 #endif
 
+!  ------ Mean sea level
+
+z_sl_mean = sum(z_sl*cell_area)/sum(cell_area)
+
 !  ------ Time derivative of the sea level
 
-if ( z_sl_old > -999999.9_dp ) then
+if ( z_sl_old_mean > -999999.9_dp ) then
    dzsl_dtau = (z_sl-z_sl_old)/dtime
 else   ! only dummy value for z_sl_old available
    dzsl_dtau = 0.0_dp
@@ -556,12 +561,12 @@ end if
 #if (MARINE_ICE_CALVING==2 || MARINE_ICE_CALVING==3)
 z_mar = Z_MAR
 #elif (MARINE_ICE_CALVING==4 || MARINE_ICE_CALVING==5)
-z_mar = FACT_Z_MAR*z_sl
+z_mar = FACT_Z_MAR*z_sl_mean
 #elif (MARINE_ICE_CALVING==6 || MARINE_ICE_CALVING==7)
-if (z_sl >= -80.0_dp) then
-   z_mar = 2.5_dp*z_sl
+if (z_sl_mean >= -80.0_dp) then
+   z_mar = 2.5_dp*z_sl_mean
 else
-   z_mar = 10.25_dp*(z_sl+80.0_dp)-200.0_dp
+   z_mar = 10.25_dp*(z_sl_mean+80.0_dp)-200.0_dp
 end if
 z_mar = FACT_Z_MAR*z_mar
 #endif
@@ -581,7 +586,7 @@ end do
 
 do i=1, IMAX-1
 do j=1, JMAX-1
-   if (mask(j,i) >= 2_i1b) then
+   if (mask(j,i) >= 2) then
       check_point(j  ,i  ) = .true.
       check_point(j  ,i+1) = .true.
       check_point(j  ,i-1) = .true.
@@ -594,7 +599,7 @@ end do
 do i=1, IMAX-1
 do j=1, JMAX-1
    if (check_point(j,i)) then
-      mask_new(j,i) = mask_update_sea_level(z_sl, i, j)
+      mask_new(j,i) = mask_update_sea_level(i, j)
    end if
 end do
 end do
@@ -1114,7 +1119,7 @@ smb_no_ice = -1000.0_dp*sec2year   ! -1000 m/a -> m/s
 do i=0, IMAX
 do j=0, JMAX
 
-   if ((mask_target(j,i)==0_i1b).or.(mask_target(j,i)==3_i1b)) then
+   if ((mask_target(j,i)==0).or.(mask_target(j,i)==3)) then
       as_perp(j,i) = (zs_target(j,i)-zs(j,i))*target_topo_tau_inv
    else
       as_perp(j,i) = smb_no_ice
@@ -1214,16 +1219,15 @@ end do
 
 #endif /* Normal vs. OpenAD */
 
-!-------- Calving rate of grounded ice --------
+!-------- Calving --------
 
-calving = 0.0_dp
+calving = 0.0_dp   ! Initialization
 
 #if ((MARGIN==2) \
       && (MARINE_ICE_FORMATION==2) \
       && (MARINE_ICE_CALVING==9))
 
-call calving_underwater_ice(z_sl)
-calving = calving + calv_uw_ice
+call calving_underwater_ice()
 
 #endif
 

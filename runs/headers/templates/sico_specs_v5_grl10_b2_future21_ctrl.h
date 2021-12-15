@@ -11,7 +11,7 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2021-06-16'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2021-12-15'
 !                      Date of last change
 
 !-------- Domain --------
@@ -541,6 +541,10 @@
 !                         4 : Evolution of the ice thickness,
 !                             but maximum ice extent is constrained by the
 !                             prescribed mask MASK_MAXEXTENT_FILE.
+
+#define OCEAN_CONNECTIVITY 1
+!                         0 : Ocean connectivity not enforced.
+!                         1 : Ocean connectivity enforced.
 
 #define H_ISOL_MAX 1000.0d0
 !                             Maximum thickness of isolated ice points (in m)

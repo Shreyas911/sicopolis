@@ -53,16 +53,16 @@ contains
 !> Computation of the auxiliary surface gradients dzs_dx_aux, dzs_dy_aux
 !! (optional one-sided gradients at the grounding line).
 !<------------------------------------------------------------------------------
-subroutine calc_dzs_dxy_aux(z_sl, dxi, deta)
+subroutine calc_dzs_dxy_aux(dxi, deta)
 
 implicit none
 
-real(dp), intent(in) :: z_sl, dxi, deta
+real(dp), intent(in) :: dxi, deta
 
 integer(i4b) :: i, j
 real(dp)     :: inv_dx, inv_dy
 real(dp)     :: rhosw_rho_ratio
-real(dp)     :: H_mid, zl_mid, zs_mid
+real(dp)     :: H_mid, zl_mid, zs_mid, z_sl_mid
 
 inv_dx          = 1.0_dp/dxi
 inv_dy          = 1.0_dp/deta
@@ -90,11 +90,12 @@ do j=1, JMAX-1
         ! one neighbour is floating ice and the other is grounded ice
         ! (grounding line)
 
-      H_mid  = 0.5_dp*((H_c(j,i)+H_t(j,i))+(H_c(j,i+1)+H_t(j,i+1)))
-      zl_mid = 0.5_dp*(zl(j,i)+zl(j,i+1))
-      zs_mid = 0.5_dp*(zs(j,i)+zs(j,i+1))
+      H_mid    = 0.5_dp*(H(j,i)   +H(j,i+1))
+      zl_mid   = 0.5_dp*(zl(j,i)  +zl(j,i+1))
+      zs_mid   = 0.5_dp*(zs(j,i)  +zs(j,i+1))
+      z_sl_mid = 0.5_dp*(z_sl(j,i)+z_sl(j,i+1))
 
-      if (H_mid < (z_sl-zl_mid)*rhosw_rho_ratio) then
+      if (H_mid < (z_sl_mid-zl_mid)*rhosw_rho_ratio) then
          ! floating condition is satisfied
 
          if ( &
@@ -103,7 +104,7 @@ do j=1, JMAX-1
               (i+2 <= IMAX) &
             ) then
 
-            if ((mask(j,i+2) == 3_i1b).or.(mask(j,i+2) == 2_i1b)) &
+            if ((mask(j,i+2) == 3).or.(mask(j,i+2) == 2)) &
                dzs_dx_aux(j,i) = (0.5_dp*(zs(j,i+1)+zs(j,i+2))-zs_mid)*inv_dx
                                  ! one-sided gradient into floating ice
 
@@ -113,13 +114,13 @@ do j=1, JMAX-1
               (i-1 >= 0) &
             ) then
 
-            if ((mask(j,i-1) == 3_i1b).or.(mask(j,i-1) == 2_i1b)) &
+            if ((mask(j,i-1) == 3).or.(mask(j,i-1) == 2)) &
                dzs_dx_aux(j,i) = (zs_mid-0.5_dp*(zs(j,i)+zs(j,i-1)))*inv_dx
                                  ! one-sided gradient into floating ice
 
          end if
 
-      else   ! H_mid >= (z_sl-zl_mid)*rhosw_rho_ratio,
+      else   ! H_mid >= (z_sl_mid-zl_mid)*rhosw_rho_ratio,
              ! floating condition is not satisfied
 
          if ( &
@@ -128,7 +129,7 @@ do j=1, JMAX-1
               (i-1 >= 0) &
             ) then
 
-            if ((mask(j,i-1) == 0_i1b).or.(mask(j,i-1) == 1_i1b)) &
+            if ((mask(j,i-1) == 0).or.(mask(j,i-1) == 1)) &
                dzs_dx_aux(j,i) = (zs_mid-0.5_dp*(zs(j,i)+zs(j,i-1)))*inv_dx
                                  ! one-sided gradient into grounded ice
 
@@ -138,7 +139,7 @@ do j=1, JMAX-1
               (i+2 <= IMAX) &
             ) then
 
-            if ((mask(j,i+2) == 0_i1b).or.(mask(j,i+2) == 1_i1b)) &
+            if ((mask(j,i+2) == 0).or.(mask(j,i+2) == 1)) &
                dzs_dx_aux(j,i) = (0.5_dp*(zs(j,i+1)+zs(j,i+2))-zs_mid)*inv_dx
                                  ! one-sided gradient into grounded ice
 
@@ -163,11 +164,12 @@ do j=0, JMAX-1
         ! one neighbour is floating ice and the other is grounded ice
         ! (grounding line)
 
-      H_mid  = 0.5_dp*((H_c(j,i)+H_t(j,i))+(H_c(j+1,i)+H_t(j+1,i)))
-      zl_mid = 0.5_dp*(zl(j,i)+zl(j+1,i))
-      zs_mid = 0.5_dp*(zs(j,i)+zs(j+1,i))
+      H_mid    = 0.5_dp*(H(j,i)   +H(j+1,i))
+      zl_mid   = 0.5_dp*(zl(j,i)  +zl(j+1,i))
+      zs_mid   = 0.5_dp*(zs(j,i)  +zs(j+1,i))
+      z_sl_mid = 0.5_dp*(z_sl(j,i)+z_sl(j+1,i))
 
-      if (H_mid < (z_sl-zl_mid)*rhosw_rho_ratio) then
+      if (H_mid < (z_sl_mid-zl_mid)*rhosw_rho_ratio) then
          ! floating condition is satisfied
 
          if ( &
@@ -176,7 +178,7 @@ do j=0, JMAX-1
               (j+2 <= JMAX) &
             ) then
 
-            if ((mask(j+2,i) == 3_i1b).or.(mask(j+2,i) == 2_i1b)) &
+            if ((mask(j+2,i) == 3).or.(mask(j+2,i) == 2)) &
                dzs_dy_aux(j,i) = (0.5_dp*(zs(j+1,i)+zs(j+2,i))-zs_mid)*inv_dy
                                  ! one-sided gradient into floating ice
 
@@ -186,13 +188,13 @@ do j=0, JMAX-1
               (j-1 >= 0) &
             ) then
 
-            if ((mask(j-1,i) == 3_i1b).or.(mask(j-1,i) == 2_i1b)) &
+            if ((mask(j-1,i) == 3).or.(mask(j-1,i) == 2)) &
                dzs_dy_aux(j,i) = (zs_mid-0.5_dp*(zs(j,i)+zs(j-1,i)))*inv_dy
                                  ! one-sided gradient into floating ice
 
          end if
 
-      else   ! H_mid >= (z_sl-zl_mid)*rhosw_rho_ratio,
+      else   ! H_mid >= (z_sl_mid-zl_mid)*rhosw_rho_ratio,
              ! floating condition is not satisfied
 
          if ( &
@@ -201,7 +203,7 @@ do j=0, JMAX-1
               (j-1 >= 0) &
             ) then
 
-            if ((mask(j-1,i) == 0_i1b).or.(mask(j-1,i) == 1_i1b)) &
+            if ((mask(j-1,i) == 0).or.(mask(j-1,i) == 1)) &
                dzs_dy_aux(j,i) = (zs_mid-0.5_dp*(zs(j,i)+zs(j-1,i)))*inv_dy
                                  ! one-sided gradient into grounded ice
 
@@ -211,7 +213,7 @@ do j=0, JMAX-1
               (j+2 <= JMAX) &
             ) then
 
-            if ((mask(j+2,i) == 0_i1b).or.(mask(j+2,i) == 1_i1b)) &
+            if ((mask(j+2,i) == 0).or.(mask(j+2,i) == 1)) &
                dzs_dy_aux(j,i) = (0.5_dp*(zs(j+1,i)+zs(j+2,i))-zs_mid)*inv_dy
                                  ! one-sided gradient into grounded ice
 
@@ -240,11 +242,11 @@ end subroutine calc_dzs_dxy_aux
 !> Computation of the basal horizontal velocity vx_b, vy_b in the shallow ice
 !! approximation.
 !<------------------------------------------------------------------------------
-subroutine calc_vxy_b_sia(time, z_sl)
+subroutine calc_vxy_b_sia(time)
 
 implicit none
 
-real(dp), intent(in) :: time, z_sl
+real(dp), intent(in) :: time
 
 integer(i4b) :: i, j, n, n_slide_regions
 #if (!defined(N_SLIDE_REGIONS) || N_SLIDE_REGIONS<=1)
@@ -383,15 +385,15 @@ end if
 do i=0, IMAX
 do j=0, JMAX
 
-   if ((mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b)) then
+   if ((mask(j,i) == 0).or.(mask(j,i) == 3)) then
                      ! grounded or floating ice
 
-      p_b(j,i)   = max(RHO*G*(H_c(j,i)+H_t(j,i)), 0.0_dp)
-      p_b_w(j,i) = RHO_SW*G*max((z_sl-zb(j,i)), 0.0_dp)
+      p_b(j,i)   = max(RHO*G*H(j,i), 0.0_dp)
+      p_b_w(j,i) = RHO_SW*G*max((z_sl(j,i)-zb(j,i)), 0.0_dp)
 
-      if (mask(j,i) == 0_i1b) then
+      if (mask(j,i) == 0) then
          p_b_red(j,i) = max(p_b(j,i)-p_b_w(j,i), 0.0_dp)
-      else   ! (mask(j,i) == 3_i1b)
+      else   ! (mask(j,i) == 3)
          p_b_red(j,i) = 0.0_dp
       end if
 
@@ -417,7 +419,7 @@ end do
 do i=0, IMAX
 do j=0, JMAX
 
-   if ((mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b)) then
+   if ((mask(j,i) == 0).or.(mask(j,i) == 3)) then
                      ! grounded or floating ice
 
       zs_grad_sq = dzs_dxi_g(j,i)**2+dzs_deta_g(j,i)**2
@@ -455,7 +457,7 @@ end do
 do i=0, IMAX
 do j=0, JMAX
 
-   if ((mask(j,i) == 0_i1b).or.flag_grounding_line_2(j,i)) then
+   if ((mask(j,i) == 0).or.flag_grounding_line_2(j,i)) then
                      ! grounded ice, or floating ice at the grounding line
 
 !  ------ Abbreviations
@@ -492,7 +494,7 @@ do j=0, JMAX
 
 !  ------ d_help_b, c_drag
 
-      if (n_cts(j,i) == -1_i1b) then   ! cold ice base
+      if (n_cts(j,i) == -1) then   ! cold ice base
 
          if (sub_melt_flag(j,i)) then
             temp_diff = max((temp_c_m(0,j,i)-temp_c(0,j,i)), 0.0_dp)
@@ -506,12 +508,12 @@ do j=0, JMAX
          d_help_b(j,i) = cvxy1*cvxy1a
          c_drag(j,i)   = ctau1*ctau1a
 
-      else if (n_cts(j,i) == 0_i1b) then   ! temperate ice base
+      else if (n_cts(j,i) == 0) then   ! temperate ice base
 
          d_help_b(j,i) = cvxy1   ! basal sliding
          c_drag(j,i)   = ctau1   ! (pressure-melting conditions)
 
-      else   ! n_cts(j,i) == 1_i1b, temperate ice layer
+      else   ! n_cts(j,i) == 1, temperate ice layer
 
          d_help_b(j,i) = cvxy1   ! basal sliding
          c_drag(j,i)   = ctau1   ! (pressure-melting conditions)
@@ -573,7 +575,7 @@ do j=0, JMAX
 
 #endif
 
-   else   ! mask(j,i) == 1_i1b, 2_i1b or 3_i1b away from the grounding line
+   else   ! mask(j,i) == 1, 2 or 3 away from the grounding line
 
       d_help_b(j,i) = 0.0_dp
       c_drag(j,i)   = 0.0_dp
@@ -700,20 +702,20 @@ end do
 do i=0, IMAX
 do j=0, JMAX
 
-   if ((mask(j,i) == 0_i1b).or.flag_grounding_line_2(j,i)) then
+   if ((mask(j,i) == 0).or.flag_grounding_line_2(j,i)) then
                      ! grounded ice, or floating ice at the grounding line
 
       do kc=0, KCMAX
          ctxyz1(kc,j,i) = RHO*G*H_c(j,i)*(1.0_dp-eaz_c_quotient(kc))
       end do
 
-      if (n_cts(j,i) == 1_i1b) then   ! temperate layer
+      if (n_cts(j,i) == 1) then   ! temperate layer
 
          do kt=0, KTMAX
             ctxyz2(kt,j,i) = RHO*G*H_t(j,i)*(1.0_dp-zeta_t(kt))
          end do
 
-      else   ! cold base (-1_i1b), temperate base (0_i1b)
+      else   ! cold base (-1), temperate base (0)
 
          do kt=0, KTMAX
             ctxyz2(kt,j,i) = 0.0_dp
@@ -721,7 +723,7 @@ do j=0, JMAX
 
       end if
 
-   else   ! mask(j,i) == 1_i1b, 2_i1b or 3_i1b away from the grounding line
+   else   ! mask(j,i) == 1, 2 or 3 away from the grounding line
 
       do kc=0, KCMAX
          ctxyz1(kc,j,i) = 0.0_dp
@@ -844,7 +846,7 @@ end do
 do i=0, IMAX
 do j=0, JMAX
 
-   if ((mask(j,i) == 0_i1b).or.flag_grounding_line_2(j,i)) then
+   if ((mask(j,i) == 0).or.flag_grounding_line_2(j,i)) then
                      ! grounded ice, or floating ice at the grounding line
 
 !  ------ Fluidity, abbreviations
@@ -874,7 +876,7 @@ do j=0, JMAX
 
       flui_ave_sia(j,i) = 0.0_dp
 
-      if (n_cts(j,i) == 1_i1b) then
+      if (n_cts(j,i) == 1) then
 
          do kt=0, KTMAX-1
             flui_ave_sia(j,i) = flui_ave_sia(j,i)+0.5_dp*(cflui0(kt+1)+cflui0(kt))
@@ -886,11 +888,11 @@ do j=0, JMAX
          flui_ave_sia(j,i) = flui_ave_sia(j,i)+0.5_dp*(cflui1(kc+1)+cflui1(kc))
       end do
 
-      flui_ave_sia(j,i) = flui_ave_sia(j,i)/max((H_c(j,i)+H_t(j,i)), eps_dp)
+      flui_ave_sia(j,i) = flui_ave_sia(j,i)/max(H(j,i), eps_dp)
 
       flui_ave_sia(j,i) = max(min(flui_ave_sia(j,i), flui_max), flui_min)
 
-   else   ! mask(j,i) == 1_i1b, 2_i1b or 3_i1b away from the grounding line
+   else   ! mask(j,i) == 1, 2 or 3 away from the grounding line
 
       flui_ave_sia(j,i) = flui_init   ! dummy value
 
@@ -905,7 +907,7 @@ end do
 do i=0, IMAX
 do j=0, JMAX
 
-   if ((mask(j,i) == 0_i1b).or.flag_grounding_line_2(j,i)) then
+   if ((mask(j,i) == 0).or.flag_grounding_line_2(j,i)) then
                      ! grounded ice, or floating ice at the grounding line
 
 !  ------ Abbreviations
@@ -934,7 +936,7 @@ do j=0, JMAX
 
 !  ------ d_help_c, d_help_t
 
-      if (n_cts(j,i) == -1_i1b) then   ! cold ice base
+      if (n_cts(j,i) == -1) then   ! cold ice base
 
          do kt=0, KTMAX
             d_help_t(kt,j,i) = d_help_b(j,i)
@@ -947,7 +949,7 @@ do j=0, JMAX
                                 +0.5_dp*(cvxy3(kc+1)+cvxy3(kc))
          end do
 
-      else if (n_cts(j,i) == 0_i1b) then   ! temperate ice base
+      else if (n_cts(j,i) == 0) then   ! temperate ice base
 
          do kt=0, KTMAX
             d_help_t(kt,j,i) = d_help_b(j,i)
@@ -960,7 +962,7 @@ do j=0, JMAX
                                 +0.5_dp*(cvxy3(kc+1)+cvxy3(kc))
          end do
 
-      else   ! n_cts(j,i) == 1_i1b, temperate ice layer
+      else   ! n_cts(j,i) == 1, temperate ice layer
 
          d_help_t(0,j,i) = d_help_b(j,i)
 
@@ -978,7 +980,7 @@ do j=0, JMAX
 
       end if
 
-   else   ! mask(j,i) == 1_i1b, 2_i1b or 3_i1b away from the grounding line
+   else   ! mask(j,i) == 1, 2 or 3 away from the grounding line
 
       do kt=0, KTMAX
          d_help_t(kt,j,i) = 0.0_dp
@@ -1084,7 +1086,7 @@ end do
 do i=0, IMAX
 do j=0, JMAX
 
-   if ((mask(j,i) == 0_i1b).or.flag_grounding_line_2(j,i)) then
+   if ((mask(j,i) == 0).or.flag_grounding_line_2(j,i)) then
                      ! grounded ice, or floating ice at the grounding line
 
 !  ------ Abbreviations
@@ -1101,7 +1103,7 @@ do j=0, JMAX
 
       h_diff(j,i) = 0.0_dp
 
-      if (n_cts(j,i) == 1_i1b) then
+      if (n_cts(j,i) == 1) then
 
          do kt=0, KTMAX-1
             h_diff(j,i) = h_diff(j,i)+0.5_dp*(cqxy0(kt+1)+cqxy0(kt))
@@ -1118,7 +1120,7 @@ do j=0, JMAX
       if (h_diff(j,i) < HD_MIN) h_diff(j,i) = 0.0_dp
       if (h_diff(j,i) > HD_MAX) h_diff(j,i) = HD_MAX
 
-   else   ! mask(j,i) == 1_i1b, 2_i1b or 3_i1b away from the grounding line
+   else   ! mask(j,i) == 1, 2 or 3 away from the grounding line
 
       h_diff(j,i) = 0.0_dp
 
@@ -1135,12 +1137,10 @@ do j=0, JMAX
 
    qx(j,i) = -0.5_dp*(h_diff(j,i)+h_diff(j,i+1))*dzs_dx_aux(j,i)
 
-   if ( (mask(j,i)==0_i1b).or.(mask(j,i+1)==0_i1b) ) then
+   if ( (mask(j,i)==0).or.(mask(j,i+1)==0) ) then
                                ! at least one neighbour point is grounded ice
 
-      vx_m(j,i) = qx(j,i) &
-                    / ( 0.5_dp &
-                      * ( (H_c(j,i)+H_t(j,i)) + (H_c(j,i+1)+H_t(j,i+1)) ) )
+      vx_m(j,i) = qx(j,i) / ( 0.5_dp*(H(j,i)+H(j,i+1)) )
 
       call velocity_limiter_gradual(vx_m(j,i), vh_max, vh_max_inv)
 
@@ -1161,12 +1161,10 @@ do j=0, JMAX-1
 
    qy(j,i) = -0.5_dp*(h_diff(j,i)+h_diff(j+1,i))*dzs_dy_aux(j,i)
 
-   if ( (mask(j,i)==0_i1b).or.(mask(j+1,i)==0_i1b) ) then
+   if ( (mask(j,i)==0).or.(mask(j+1,i)==0) ) then
                                ! at least one neighbour point is grounded ice
 
-      vy_m(j,i) = qy(j,i) &
-                    / ( 0.5_dp &
-                      * ( (H_c(j,i)+H_t(j,i)) + (H_c(j+1,i)+H_t(j+1,i)) ) )
+      vy_m(j,i) = qy(j,i) / ( 0.5_dp*(H(j,i)+H(j+1,i)) )
 
       call velocity_limiter_gradual(vy_m(j,i), vh_max, vh_max_inv)
 
@@ -1187,7 +1185,7 @@ ratio_sl = 0.0_dp
 do i=1, IMAX-1
 do j=1, JMAX-1
 
-   if (mask(j,i) == 0_i1b) &   ! grounded ice
+   if (mask(j,i) == 0) &   ! grounded ice
       ratio_sl(j,i) = 0.25_dp &
                         * (   ratio_sl_x(j,i-1) + ratio_sl_x(j,i) &
                             + ratio_sl_y(j-1,i) + ratio_sl_y(j,i) )
@@ -1222,7 +1220,7 @@ do j=0, JMAX
    if (ratio_sl_x(j,i) > ratio_sl_threshold) &
       flag_shelfy_stream_x(j,i) = .true.
 #elif (HYB_MODE==1 || HYB_MODE==2)
-   if ( (mask(j,i)==0_i1b).or.(mask(j,i+1)==0_i1b) ) &
+   if ( (mask(j,i)==0).or.(mask(j,i+1)==0) ) &
       flag_shelfy_stream_x(j,i) = .true.
 #else
    errormsg = ' >>> calc_vxy_sia: HYB_MODE must be 0, 1 or 2!'
@@ -1237,7 +1235,7 @@ do j=0, JMAX-1
    if (ratio_sl_y(j,i) > ratio_sl_threshold) &
       flag_shelfy_stream_y(j,i) = .true.
 #elif (HYB_MODE==1 || HYB_MODE==2)
-   if ( (mask(j,i)==0_i1b).or.(mask(j+1,i)==0_i1b) ) &
+   if ( (mask(j,i)==0).or.(mask(j+1,i)==0) ) &
       flag_shelfy_stream_y(j,i) = .true.
 #else
    errormsg = ' >>> calc_vxy_sia: HYB_MODE must be 0, 1 or 2!'
@@ -1249,7 +1247,7 @@ end do
 do i=1, IMAX-1
 do j=1, JMAX-1
 
-   if (mask(j,i) == 0_i1b) then   ! grounded ice
+   if (mask(j,i) == 0) then   ! grounded ice
 
       if (     flag_shelfy_stream_x(j,i-1)   &   ! at least
            .or.flag_shelfy_stream_x(j,i)     &   ! one neighbour
@@ -1364,7 +1362,7 @@ end subroutine calc_vxy_static
 !! qx, qy and the flux across the grounding line q_gl_g in the shallow shelf
 !! approximation (SSA) or the shelfy stream approximation (SStA).
 !<------------------------------------------------------------------------------
-subroutine calc_vxy_ssa(z_sl, dxi, deta, dzeta_c, dzeta_t)
+subroutine calc_vxy_ssa(dxi, deta, dzeta_c, dzeta_t)
 
 #if (DYNAMICS==2)
   use calc_enhance_m, only : calc_enhance_hybrid_weighted
@@ -1372,7 +1370,7 @@ subroutine calc_vxy_ssa(z_sl, dxi, deta, dzeta_c, dzeta_t)
 
 implicit none
 
-real(dp), intent(in) :: z_sl, dxi, deta, dzeta_c, dzeta_t
+real(dp), intent(in) :: dxi, deta, dzeta_c, dzeta_t
 
 integer(i4b) :: i, j, kc, kt, m
 integer(i4b) :: iter_ssa
@@ -1453,10 +1451,10 @@ do while ((m < iter_ssa).and.(res_vxy_m_ssa > tol_ssa))
    else   ! (m == 1, first iteration)
 
 #if (!defined(ITER_INIT_SSA) || ITER_INIT_SSA==1)
-      vis_int_g = (H_c+H_t)*visc_init
+      vis_int_g = H*visc_init
                   ! constant viscosity times ice thickness
 #elif (ITER_INIT_SSA==2)
-      vis_int_g = (H_c+H_t)*vis_ave_g
+      vis_int_g = H*vis_ave_g
                   ! previous depth-averaged viscosity times
                   ! ice thickness
 #elif (ITER_INIT_SSA==3)
@@ -1475,7 +1473,7 @@ do while ((m < iter_ssa).and.(res_vxy_m_ssa > tol_ssa))
    flag_calc_vxy_ssa_x = .false.   ! initialization
    flag_calc_vxy_ssa_y = .false.   ! initialization
 
-   call calc_vxy_ssa_matrix(z_sl, dxi, deta, &
+   call calc_vxy_ssa_matrix(dxi, deta, &
                             flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y)
 
 #if !defined(ALLOW_OPENAD) /* Normal */
@@ -1671,8 +1669,7 @@ do j=0, JMAX
       call error(errormsg)
 #endif
 
-      qx(j,i)   = vx_m(j,i) &
-                     * 0.5_dp * ( (H_c(j,i)+H_t(j,i))+(H_c(j,i+1)+H_t(j,i+1)) )
+      qx(j,i) = vx_m(j,i) * 0.5_dp*(H(j,i)+H(j,i+1))
 
    else if (flag_calc_vxy_ssa_x(j,i)) then   ! floating ice
 
@@ -1688,8 +1685,7 @@ do j=0, JMAX
 
       vx_m(j,i) = vx_m_ssa(j,i)
 
-      qx(j,i)   = vx_m(j,i) &
-                     * 0.5_dp * ( (H_c(j,i)+H_t(j,i))+(H_c(j,i+1)+H_t(j,i+1)) )
+      qx(j,i) = vx_m(j,i) * 0.5_dp*(H(j,i)+H(j,i+1))
 
 !  else
 !     In all other cases, the depth-averaged velocities vx_m_ssa(j,i) computed
@@ -1802,8 +1798,7 @@ do j=0, JMAX-1
       call error(errormsg)
 #endif
 
-      qy(j,i)   = vy_m(j,i) &
-                     * 0.5_dp * ( (H_c(j,i)+H_t(j,i))+(H_c(j+1,i)+H_t(j+1,i)) )
+      qy(j,i) = vy_m(j,i) * 0.5_dp*(H(j,i)+H(j+1,i))
 
    else if (flag_calc_vxy_ssa_y(j,i)) then   ! floating ice
 
@@ -1819,8 +1814,7 @@ do j=0, JMAX-1
 
       vy_m(j,i) = vy_m_ssa(j,i)
 
-      qy(j,i)   = vy_m(j,i) &
-                     * 0.5_dp * ( (H_c(j,i)+H_t(j,i))+(H_c(j+1,i)+H_t(j+1,i)) )
+      qy(j,i) = vy_m(j,i) * 0.5_dp*(H(j,i)+H(j+1,i))
 
 !  else
 !     In all other cases, the depth-averaged velocities vy_m_ssa(j,i) computed
@@ -1933,7 +1927,7 @@ do j=1, JMAX-1
       vy_s_g(j,i) = 0.5_dp*(vy_c(KCMAX,j-1,i)+vy_c(KCMAX,j,i))
       vy_b_g(j,i) = 0.5_dp*(vy_b(      j-1,i)+vy_b(      j,i))
 
-   else if (mask(j,i)==3_i1b) then   ! floating ice
+   else if (mask(j,i)==3) then   ! floating ice
 
       vx_s_g(j,i) = 0.5_dp*(vx_m(j,i-1)+vx_m(j,i))
       vx_b_g(j,i) = vx_s_g(j,i)
@@ -1951,7 +1945,7 @@ end do
 do i=1, IMAX-1
 do j=1, JMAX-1
 
-   if (mask(j,i) == 3_i1b) then   ! floating ice
+   if (mask(j,i) == 3) then   ! floating ice
 
       tau_b(j,i) = 0.0_dp
 
@@ -2021,7 +2015,7 @@ end subroutine calc_vxy_ssa
 !> Solution of the system of linear equations for the horizontal velocities
 !! vx_m_ssa, vy_m_ssa in the SSA/SStA.
 !<------------------------------------------------------------------------------
-subroutine calc_vxy_ssa_matrix(z_sl, dxi, deta, &
+subroutine calc_vxy_ssa_matrix(dxi, deta, &
                                flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y)
 
 #if (MARGIN==3 || DYNAMICS==2) 
@@ -2032,7 +2026,7 @@ use sico_maths_m
 
 implicit none
 
-real(dp), intent(in) :: dxi, deta, z_sl
+real(dp), intent(in) :: dxi, deta
 logical, dimension(0:JMAX,0:IMAX), intent(inout) :: &
                             flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y
 
@@ -2041,7 +2035,7 @@ integer(i4b) :: i1, j1
 real(dp) :: inv_dxi, inv_deta, inv_dxi_deta, inv_dxi2, inv_deta2
 real(dp) :: factor_rhs_1, factor_rhs_2, factor_rhs_3a, factor_rhs_3b
 real(dp) :: rhosw_rho_ratio
-real(dp) :: H_mid, zl_mid
+real(dp) :: H_mid, zl_mid, z_sl_mid
 real(dp), dimension(0:JMAX,0:IMAX) :: vis_int_sgxy, beta_drag
 character(len=256) :: ch_solver_set_option
 
@@ -2102,22 +2096,22 @@ do j=0, JMAX-1
 
    k=0
 
-   if ((mask(j,i)==0_i1b).or.(mask(j,i)==3_i1b)) then
+   if ((mask(j,i)==0).or.(mask(j,i)==3)) then
       k = k+1                              ! floating or grounded ice
       vis_int_sgxy(j,i) = vis_int_sgxy(j,i) + vis_int_g(j,i)
    end if
 
-   if ((mask(j,i+1)==0_i1b).or.(mask(j,i+1)==3_i1b)) then
+   if ((mask(j,i+1)==0).or.(mask(j,i+1)==3)) then
       k = k+1                                  ! floating or grounded ice
       vis_int_sgxy(j,i) = vis_int_sgxy(j,i) + vis_int_g(j,i+1)
    end if
 
-   if ((mask(j+1,i)==0_i1b).or.(mask(j+1,i)==3_i1b)) then
+   if ((mask(j+1,i)==0).or.(mask(j+1,i)==3)) then
       k = k+1                                  ! floating or grounded ice
       vis_int_sgxy(j,i) = vis_int_sgxy(j,i) + vis_int_g(j+1,i)
    end if
 
-   if ((mask(j+1,i+1)==0_i1b).or.(mask(j+1,i+1)==3_i1b)) then
+   if ((mask(j+1,i+1)==0).or.(mask(j+1,i+1)==3)) then
       k = k+1                                      ! floating or grounded ice
       vis_int_sgxy(j,i) = vis_int_sgxy(j,i) + vis_int_g(j+1,i+1)
    end if
@@ -2182,17 +2176,18 @@ do n=1, nmax-1, 2
    if ( (i /= IMAX).and.(j /= 0).and.(j /= JMAX) ) then
       ! inner point on the staggered grid in x-direction
 
-      H_mid  = 0.5_dp*((H_c(j,i)+H_t(j,i))+(H_c(j,i+1)+H_t(j,i+1)))
-      zl_mid = 0.5_dp*(zl(j,i)+zl(j,i+1))
+      H_mid    = 0.5_dp*(H(j,i)   +H(j,i+1))
+      zl_mid   = 0.5_dp*(zl(j,i)  +zl(j,i+1))
+      z_sl_mid = 0.5_dp*(z_sl(j,i)+z_sl(j,i+1))
 
       if ( &
-           ( (mask(j,i)==3_i1b).and.(mask(j,i+1)==3_i1b) ) &
+           ( (mask(j,i)==3).and.(mask(j,i+1)==3) ) &
            .or. &
            ( flag_grounding_line_1(j,i).and.flag_grounding_line_2(j,i+1) &
-             .and.(H_mid < (z_sl-zl_mid)*rhosw_rho_ratio) ) &
+             .and.(H_mid < (z_sl_mid-zl_mid)*rhosw_rho_ratio) ) &
            .or. &
            ( flag_grounding_line_2(j,i).and.flag_grounding_line_1(j,i+1) &
-             .and.(H_mid < (z_sl-zl_mid)*rhosw_rho_ratio) ) &
+             .and.(H_mid < (z_sl_mid-zl_mid)*rhosw_rho_ratio) ) &
          ) then
            ! both neighbours are floating ice
            !   or
@@ -2299,7 +2294,7 @@ do n=1, nmax-1, 2
                 ( flag_grounded_front_b_2(j,i) &
                        .and.flag_grounded_front_b_1(j,i+1) ) ) &
               .and. &
-              ( zl_mid < z_sl ) &
+              ( zl_mid < z_sl_mid ) &
             ) then
             ! one neighbour is grounded ice and the other is ocean
             ! (ocean-terminating grounded front)
@@ -2358,9 +2353,9 @@ do n=1, nmax-1, 2
                lgs_a_index(k) = nc
 
                lgs_b_value(nr) = factor_rhs_3a &
-                                    *(H_c(j,i1)+H_t(j,i1))**2 &
+                                    *H(j,i1)**2 &
                                - factor_rhs_3b &
-                                    *(max((z_sl-zb(j,i1)), 0.0_dp))**2
+                                    *(max((z_sl(j,i1)-zb(j,i1)), 0.0_dp))**2
 
                lgs_x_value(nr) = vx_m_ssa(j,i)
 
@@ -2426,7 +2421,7 @@ do n=1, nmax-1, 2
                lgs_a_index(k) = nc
 
                lgs_b_value(nr) = factor_rhs_3a &
-                                    *(H_c(j,i1)+H_t(j,i1))**2
+                                    *H(j,i1)**2
 
                lgs_x_value(nr) = vx_m_ssa(j,i)
 
@@ -2541,10 +2536,10 @@ do n=1, nmax-1, 2
 
       else if ( &
                 ( flag_grounding_line_1(j,i).and.flag_grounding_line_2(j,i+1) &
-                  .and.(H_mid >= (z_sl-zl_mid)*rhosw_rho_ratio) ) &
+                  .and.(H_mid >= (z_sl_mid-zl_mid)*rhosw_rho_ratio) ) &
                 .or. &
                 ( flag_grounding_line_2(j,i).and.flag_grounding_line_1(j,i+1) &
-                  .and.(H_mid >= (z_sl-zl_mid)*rhosw_rho_ratio) ) &
+                  .and.(H_mid >= (z_sl_mid-zl_mid)*rhosw_rho_ratio) ) &
               ) then 
               ! one neighbour is floating ice and the other is grounded ice
               ! (grounding line)
@@ -2563,9 +2558,9 @@ do n=1, nmax-1, 2
          lgs_x_value(nr) = vx_m_sia(j,i)
 
       else if ( &
-                ( (mask(j,i)==3_i1b).and.(mask(j,i+1)==1_i1b) ) &
+                ( (mask(j,i)==3).and.(mask(j,i+1)==1) ) &
                 .or. &
-                ( (mask(j,i)==1_i1b).and.(mask(j,i+1)==3_i1b) ) &
+                ( (mask(j,i)==1).and.(mask(j,i+1)==3) ) &
               ) then
               ! one neighbour is floating ice and the other is ice-free land;
               ! velocity assumed to be zero
@@ -2627,7 +2622,7 @@ do n=1, nmax-1, 2
             lgs_a_index(k) = nc
 
             lgs_b_value(nr) = factor_rhs_2 &
-                                 *(H_c(j,i1)+H_t(j,i1))**2
+                                 *H(j,i1)**2
 
             lgs_x_value(nr) = vx_m_ssa(j,i)
 
@@ -2645,7 +2640,7 @@ do n=1, nmax-1, 2
 
          end if
 
-      else if ( (mask(j,i)==0_i1b).or.(mask(j,i+1)==0_i1b) ) then
+      else if ( (mask(j,i)==0).or.(mask(j,i+1)==0) ) then
            ! neither neighbour is floating ice, but at least one neighbour is
            ! grounded ice; velocity taken from the SIA solution for grounded ice
 
@@ -2700,17 +2695,18 @@ do n=1, nmax-1, 2
    if ( (j /= JMAX).and.(i /= 0).and.(i /= IMAX) ) then
       ! inner point on the staggered grid in y-direction
 
-      H_mid  = 0.5_dp*((H_c(j,i)+H_t(j,i))+(H_c(j+1,i)+H_t(j+1,i)))
-      zl_mid = 0.5_dp*(zl(j,i)+zl(j+1,i))
+      H_mid    = 0.5_dp*(H(j,i)   +H(j+1,i))
+      zl_mid   = 0.5_dp*(zl(j,i)  +zl(j+1,i))
+      z_sl_mid = 0.5_dp*(z_sl(j,i)+z_sl(j+1,i))
    
       if ( &
-           ( (mask(j,i)==3_i1b).and.(mask(j+1,i)==3_i1b) ) &
+           ( (mask(j,i)==3).and.(mask(j+1,i)==3) ) &
            .or. &
            ( flag_grounding_line_1(j,i).and.flag_grounding_line_2(j+1,i) &
-             .and.(H_mid < (z_sl-zl_mid)*rhosw_rho_ratio) ) &
+             .and.(H_mid < (z_sl_mid-zl_mid)*rhosw_rho_ratio) ) &
            .or. &
            ( flag_grounding_line_2(j,i).and.flag_grounding_line_1(j+1,i) &
-             .and.(H_mid < (z_sl-zl_mid)*rhosw_rho_ratio) ) &
+             .and.(H_mid < (z_sl_mid-zl_mid)*rhosw_rho_ratio) ) &
          ) then
            ! both neighbours are floating ice
            !   or
@@ -2817,7 +2813,7 @@ do n=1, nmax-1, 2
                 ( flag_grounded_front_b_2(j,i) &
                        .and.flag_grounded_front_b_1(j+1,i) ) ) &
               .and. &
-              ( zl_mid < z_sl ) &
+              ( zl_mid < z_sl_mid ) &
             ) then
             ! one neighbour is grounded ice and the other is ocean
             ! (ocean-terminating grounded front)
@@ -2876,9 +2872,9 @@ do n=1, nmax-1, 2
                lgs_a_index(k) = nc
 
                lgs_b_value(nr) = factor_rhs_3a &
-                                    *(H_c(j1,i)+H_t(j1,i))**2 &
+                                    *H(j1,i)**2 &
                                - factor_rhs_3b &
-                                    *(max((z_sl-zb(j1,i)), 0.0_dp))**2
+                                    *(max((z_sl(j1,i)-zb(j1,i)), 0.0_dp))**2
 
                lgs_x_value(nr) = vy_m_ssa(j,i)
 
@@ -2944,7 +2940,7 @@ do n=1, nmax-1, 2
                lgs_a_index(k) = nc
 
                lgs_b_value(nr) = factor_rhs_3a &
-                                    *(H_c(j1,i)+H_t(j1,i))**2
+                                    *H(j1,i)**2
 
                lgs_x_value(nr) = vy_m_ssa(j,i)
 
@@ -3059,10 +3055,10 @@ do n=1, nmax-1, 2
 
       else if ( &
                 ( flag_grounding_line_1(j,i).and.flag_grounding_line_2(j+1,i) &
-                  .and.(H_mid >= (z_sl-zl_mid)*rhosw_rho_ratio) ) &
+                  .and.(H_mid >= (z_sl_mid-zl_mid)*rhosw_rho_ratio) ) &
                 .or. &
                 ( flag_grounding_line_2(j,i).and.flag_grounding_line_1(j+1,i) &
-                  .and.(H_mid >= (z_sl-zl_mid)*rhosw_rho_ratio) ) &
+                  .and.(H_mid >= (z_sl_mid-zl_mid)*rhosw_rho_ratio) ) &
               ) then
               ! one neighbour is floating ice and the other is grounded ice
               ! (grounding line)
@@ -3081,9 +3077,9 @@ do n=1, nmax-1, 2
          lgs_x_value(nr) = vy_m_sia(j,i)
 
       else if ( &
-                ( (mask(j,i)==3_i1b).and.(mask(j+1,i)==1_i1b) ) &
+                ( (mask(j,i)==3).and.(mask(j+1,i)==1) ) &
                 .or. &
-                ( (mask(j,i)==1_i1b).and.(mask(j+1,i)==3_i1b) ) &
+                ( (mask(j,i)==1).and.(mask(j+1,i)==3) ) &
               ) then
            ! one neighbour is floating ice and the other is ice-free land;
            ! velocity assumed to be zero
@@ -3145,7 +3141,7 @@ do n=1, nmax-1, 2
             lgs_a_index(k) = nc
 
             lgs_b_value(nr) = factor_rhs_2 &
-                                 *(H_c(j1,i)+H_t(j1,i))**2
+                                 *H(j1,i)**2
 
             lgs_x_value(nr) = vy_m_ssa(j,i)
 
@@ -3163,7 +3159,7 @@ do n=1, nmax-1, 2
 
          end if
 
-      else if ( (mask(j,i)==0_i1b).or.(mask(j+1,i)==0_i1b) ) then
+      else if ( (mask(j,i)==0).or.(mask(j+1,i)==0) ) then
            ! neither neighbour is floating ice, but at least one neighbour is
            ! grounded ice; velocity taken from the SIA solution for grounded ice
 
@@ -3368,22 +3364,22 @@ end do
 do i=0, IMAX
 do j=0, JMAX
 
-   if ((mask(j,i)==0_i1b).and.(.not.flag_shelfy_stream(j,i))) then
+   if ((mask(j,i)==0).and.(.not.flag_shelfy_stream(j,i))) then
                                                    ! grounded ice, but
                                                    ! not shelfy stream
       de_ssa(j,i) = 0.0_dp   ! dummy value
 
       vis_ave_g(j,i) = 1.0_dp/flui_ave_sia(j,i)
-      vis_int_g(j,i) = (H_c(j,i)+H_t(j,i)) * vis_ave_g(j,i)
+      vis_int_g(j,i) = H(j,i) * vis_ave_g(j,i)
 
-   else if ((mask(j,i)==1_i1b).or.(mask(j,i)==2_i1b)) then
+   else if ((mask(j,i)==1).or.(mask(j,i)==2)) then
                                                    ! ice-free land or ocean
       de_ssa(j,i) = 0.0_dp   ! dummy value
 
       vis_ave_g(j,i) = visc_init   ! dummy value
       vis_int_g(j,i) = 0.0_dp      ! dummy value
 
-   else   ! (mask(j,i)==3_i1b).or.(flag_shelfy_stream(j,i)),
+   else   ! (mask(j,i)==3).or.(flag_shelfy_stream(j,i)),
           ! floating ice or shelfy stream; 
           ! must not be at the margin of the computational domain
 
@@ -3435,7 +3431,7 @@ do j=0, JMAX
             cvis1(kc) = aqxy1(kc)*H_c(j,i) &
                            *viscosity(de_ssa(j,i), &
                               temp_c(kc,j,i), temp_c_m(kc,j,i), &
-                              0.0_dp, enh_val, 0_i1b)
+                              0.0_dp, enh_val, 0)
          end do
          ! Ice shelves (floating ice) are assumed to consist of cold ice only
 
@@ -3455,7 +3451,7 @@ do j=0, JMAX
             cvis1(kc) = aqxy1(kc)*H_c(j,i) &
                            *viscosity(de_ssa(j,i), &
                               temp_c(kc,j,i), temp_c_m(kc,j,i), &
-                              0.0_dp, enh_val, 0_i1b)
+                              0.0_dp, enh_val, 0)
          end do
 
 #elif (CALCMOD==1)
@@ -3471,7 +3467,7 @@ do j=0, JMAX
             cvis0(kt) = dzeta_t*H_t(j,i) &
                            *viscosity(de_ssa(j,i), &
                               temp_t_m(kt,j,i), temp_t_m(kt,j,i), &
-                              omega_t(kt,j,i), enh_val, 1_i1b)
+                              omega_t(kt,j,i), enh_val, 1)
          end do
 
          do kc=0, KCMAX
@@ -3485,7 +3481,7 @@ do j=0, JMAX
             cvis1(kc) = aqxy1(kc)*H_c(j,i) &
                            *viscosity(de_ssa(j,i), &
                               temp_c(kc,j,i), temp_c_m(kc,j,i), &
-                              0.0_dp, enh_val, 0_i1b)
+                              0.0_dp, enh_val, 0)
          end do
 
 #elif (CALCMOD==2 || CALCMOD==3)
@@ -3501,7 +3497,7 @@ do j=0, JMAX
             cvis1(kc) = aqxy1(kc)*H_c(j,i) &
                          *viscosity(de_ssa(j,i), &
                            temp_c(kc,j,i), temp_c_m(kc,j,i), &
-                           omega_c(kc,j,i), enh_val, 2_i1b)
+                           omega_c(kc,j,i), enh_val, 2)
          end do
 
 #else
@@ -3529,7 +3525,7 @@ do j=0, JMAX
 
 !  ------ Depth-averaged viscosity
 
-      vis_ave_g(j,i) = vis_int_g(j,i)/max((H_c(j,i)+H_t(j,i)), eps_dp)
+      vis_ave_g(j,i) = vis_int_g(j,i)/max(H(j,i), eps_dp)
 
       vis_ave_g(j,i) = max(min(vis_ave_g(j,i), visc_max), visc_min)
 
@@ -3581,7 +3577,7 @@ end if
 
 !-------- Final depth-integrated viscosity --------
 
-vis_int_g = vis_ave_g*(H_c+H_t)
+vis_int_g = vis_ave_g*H
 
 #else
 

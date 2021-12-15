@@ -68,7 +68,7 @@ module discharge_workers_m
 
   real(dp),     public  :: dT_glann, dT_sub
 
-  integer(i1b), dimension(0:JMAX,0:IMAX), public  :: mask_mar
+  integer(i4b), dimension(0:JMAX,0:IMAX), public  :: mask_mar
 
 #if !defined(ALLOW_OPENAD) /* Normal */
   real(dp),     dimension(0:JMAX,0:IMAX), private :: c_dis
@@ -270,7 +270,9 @@ contains
   ! 350 Gt/yr Calov et al. (2015)   !!! 400 Gt/yr van den Broeke et al (2016)
   disc_target = 350.0_dp ! in Gt/yr  
 
-  H_c=zs-zb; H_t=0.0_dp
+  H   = zs-zb
+  H_c = H
+  H_t = 0.0_dp
 
 #if !defined(ALLOW_OPENAD) /* Normal */
   c_dis_0   =  1.0_dp
@@ -298,8 +300,8 @@ contains
   !  disc_tot=0.0_dp
   !  do i=0, IMAX
   !  do j=0, JMAX
-  !    if(mask(j,i).eq.0_i1b.or.mask(j,i).eq.3_i1b) then
-  !      disc_tot=disc_tot+dis_perp(j,i)*area(j,i)
+  !    if(mask(j,i).eq.0.or.mask(j,i).eq.3) then
+  !      disc_tot=disc_tot+dis_perp(j,i)*cell_area(j,i)
   !    end if
   !  end do
   !  end do
@@ -311,8 +313,8 @@ contains
   do i=1, IMAX-1
   do j=1, JMAX-1
 
-     if (mask_mar(j,i) == 1_i1b) then
-        disc_tot = disc_tot + dis_perp(j,i)*area(j,i)
+     if (mask_mar(j,i) == 1) then
+        disc_tot = disc_tot + dis_perp(j,i)*cell_area(j,i)
      end if
 
   end do
@@ -460,8 +462,8 @@ contains
 #if !defined(ALLOW_OPENAD) /* Normal */
 
   if(disc.ge.1) then !------------------ disc >= 1
-    where(mask_mar.eq.1_i1b.and.cos_grad_tc.ge.cos_tc) 
-      dis_perp=c_dis*(H_c+H_t)**m_H/cst_dist**m_D
+    where(mask_mar.eq.1.and.cos_grad_tc.ge.cos_tc) 
+      dis_perp=c_dis*H**m_H/cst_dist**m_D
     elsewhere
       dis_perp=0.0_dp
     end where
@@ -481,8 +483,8 @@ contains
   if(disc_DW.ge.1) then !------------------ disc >= 1
    do i=0, IMAX
    do j=0, JMAX
-      if (mask_mar(j,i).eq.1_i1b .and. cos_grad_tc(j,i).ge.cos_tc) then
-         dis_perp(j,i) = c_dis_DW(j,i)*( H_c(j,i) + H_t(j,i) )**m_H_DW/cst_dist(j,i)**m_D_DW
+      if (mask_mar(j,i).eq.1 .and. cos_grad_tc(j,i).ge.cos_tc) then
+         dis_perp(j,i) = c_dis_DW(j,i)*H(j,i)**m_H_DW/cst_dist(j,i)**m_D_DW
       else
          dis_perp(j,i) = 0.0_dp
       end if
@@ -552,11 +554,11 @@ contains
 
       do i_pos=0, IMAX
       do j_pos=0, JMAX
-        if(mask(j_pos,i_pos).ne.2_i1b) then
+        if(mask(j_pos,i_pos).ne.2) then
           cst_dist(j_pos,i_pos)=1.d+20
           do i=0, IMAX
           do j=0, JMAX
-            if(mask(j,i).eq.2_i1b) then
+            if(mask(j,i).eq.2) then
               cst_dist_tmp=sqrt((xi(i_pos)-xi(i))**2+(eta(j_pos)-eta(j))**2)
               if(cst_dist_tmp.le.cst_dist(j_pos,i_pos)) then
                 cst_dist(j_pos,i_pos)=cst_dist_tmp
@@ -574,7 +576,7 @@ contains
 
       do i_pos=0, IMAX
       do j_pos=0, JMAX
-        if(mask(j_pos,i_pos).ne.2_i1b) then
+        if(mask(j_pos,i_pos).ne.2) then
           leave_loop=.false.
           cst_dist(j_pos,i_pos)=1.d+20
 
@@ -587,7 +589,7 @@ contains
 
             do i=max(i_pos-l,0), min(i_pos+l,IMAX)
               j=max(j_pos-l,0); j=min(j,JMAX)
-              if(mask(j,i).eq.2_i1b) then
+              if(mask(j,i).eq.2) then
                 leave_loop=.true.
                 cst_dist_tmp=sqrt((xi(i_pos)-xi(i))**2+(eta(j_pos)-eta(j))**2)
                 if(cst_dist_tmp.le.cst_dist(j_pos,i_pos)) then
@@ -595,7 +597,7 @@ contains
                 end if
               end if
               j=min(j_pos+l,JMAX)
-              if(mask(j,i).eq.2_i1b) then
+              if(mask(j,i).eq.2) then
                 leave_loop=.true.
                 cst_dist_tmp=sqrt((xi(i_pos)-xi(i))**2+(eta(j_pos)-eta(j))**2)
                 if(cst_dist_tmp.le.cst_dist(j_pos,i_pos)) then
@@ -605,7 +607,7 @@ contains
             end do
             do j=max(j_pos-l+1,0), min(j_pos+l-1,JMAX)
               i=max(i_pos-l,0); i=min(i,IMAX)
-              if(mask(j,i).eq.2_i1b) then
+              if(mask(j,i).eq.2) then
                 leave_loop=.true.
                 cst_dist_tmp=sqrt((xi(i_pos)-xi(i))**2+(eta(j_pos)-eta(j))**2)
                 if(cst_dist_tmp.le.cst_dist(j_pos,i_pos)) then
@@ -613,7 +615,7 @@ contains
                 end if
               end if
               i=min(i_pos+l,IMAX)
-              if(mask(j,i).eq.2_i1b) then
+              if(mask(j,i).eq.2) then
                 leave_loop=.true.
                 cst_dist_tmp=sqrt((xi(i_pos)-xi(i))**2+(eta(j_pos)-eta(j))**2)
                 if(cst_dist_tmp.le.cst_dist(j_pos,i_pos)) then
@@ -640,7 +642,7 @@ contains
           ! left
           do i=max(i_pos-(l_e+d_l),0),min(i_pos-(l_e-1),IMAX)
           do j=max(j_pos-l_e,0),min(j_pos+l_e,JMAX)
-            if(mask(j,i).eq.2_i1b) then
+            if(mask(j,i).eq.2) then
               cst_dist_tmp=sqrt((xi(i_pos)-xi(i))**2+(eta(j_pos)-eta(j))**2)
               if(cst_dist_tmp.le.cst_dist(j_pos,i_pos)) then
                 cst_dist(j_pos,i_pos)=cst_dist_tmp
@@ -651,7 +653,7 @@ contains
           ! right
           do i=max(i_pos+l_e+1,0),min(i_pos+l_e+d_l,IMAX)
           do j=max(j_pos-l_e,0),min(j_pos+l_e,JMAX)
-            if(mask(j,i).eq.2_i1b) then
+            if(mask(j,i).eq.2) then
               cst_dist_tmp=sqrt((xi(i_pos)-xi(i))**2+(eta(j_pos)-eta(j))**2)
               if(cst_dist_tmp.le.cst_dist(j_pos,i_pos)) then
                 cst_dist(j_pos,i_pos)=cst_dist_tmp
@@ -662,7 +664,7 @@ contains
           ! lower
           do i=max(i_pos-l_e,0),min(i_pos+l_e,IMAX)
           do j=max(j_pos-(l_e+d_l),0),min(j_pos-(l_e-1),JMAX)
-            if(mask(j,i).eq.2_i1b) then
+            if(mask(j,i).eq.2) then
               cst_dist_tmp=sqrt((xi(i_pos)-xi(i))**2+(eta(j_pos)-eta(j))**2)
               if(cst_dist_tmp.le.cst_dist(j_pos,i_pos)) then
                 cst_dist(j_pos,i_pos)=cst_dist_tmp
@@ -673,7 +675,7 @@ contains
           ! upper
           do i=max(i_pos-l_e,0),min(i_pos+l_e,IMAX)
           do j=max(j_pos+l_e+1,0),min(j_pos+l_e+d_l,JMAX)
-            if(mask(j,i).eq.2_i1b) then
+            if(mask(j,i).eq.2) then
               cst_dist_tmp=sqrt((xi(i_pos)-xi(i))**2+(eta(j_pos)-eta(j))**2)
               if(cst_dist_tmp.le.cst_dist(j_pos,i_pos)) then
                 cst_dist(j_pos,i_pos)=cst_dist_tmp
@@ -821,22 +823,22 @@ contains
     if(r_mar_eff_DW.le.1.0e6_dp) then
 #endif /* Normal vs. OpenAD */
 
-      mask_mar=0_i1b
+      mask_mar=0
       do i_pos=1, IMAX-1
       do j_pos=1, JMAX-1
-        if((mask(j_pos,i_pos).eq.1_i1b.or.mask(j_pos,i_pos).eq.2_i1b).and.     &
-           .not.(mask(j_pos,i_pos).eq.1_i1b.and.mask(j_pos,i_pos-1).eq.0_i1b   &
-                 .and.mask(j_pos,i_pos+1).eq.0_i1b.or. &
-                  mask(j_pos,i_pos).eq.1_i1b.and.mask(j_pos-1,i_pos).eq.0_i1b  &
-                  .and.mask(j_pos+1,i_pos).eq.0_i1b.or. &
-                   mask(j_pos,i_pos).eq.1_i1b.and.mask(j_pos,i_pos-1).eq.3_i1b &
-                   .and.mask(j_pos,i_pos+1).eq.3_i1b.or. &
-                   mask(j_pos,i_pos).eq.1_i1b.and.mask(j_pos-1,i_pos).eq.3_i1b &
-                   .and.mask(j_pos+1,i_pos).eq.3_i1b.or. &
-                   mask(j_pos,i_pos).eq.1_i1b.and.mask(j_pos,i_pos-1).eq.3_i1b &
-                   .and.mask(j_pos,i_pos+1).eq.0_i1b.or. &
-                   mask(j_pos,i_pos).eq.1_i1b.and.mask(j_pos-1,i_pos).eq.0_i1b &
-                   .and.mask(j_pos+1,i_pos).eq.3_i1b)) then ! outside ice sheet, exclude isolated land stripes
+        if((mask(j_pos,i_pos).eq.1.or.mask(j_pos,i_pos).eq.2).and.     &
+           .not.(mask(j_pos,i_pos).eq.1.and.mask(j_pos,i_pos-1).eq.0   &
+                 .and.mask(j_pos,i_pos+1).eq.0.or. &
+                  mask(j_pos,i_pos).eq.1.and.mask(j_pos-1,i_pos).eq.0  &
+                  .and.mask(j_pos+1,i_pos).eq.0.or. &
+                   mask(j_pos,i_pos).eq.1.and.mask(j_pos,i_pos-1).eq.3 &
+                   .and.mask(j_pos,i_pos+1).eq.3.or. &
+                   mask(j_pos,i_pos).eq.1.and.mask(j_pos-1,i_pos).eq.3 &
+                   .and.mask(j_pos+1,i_pos).eq.3.or. &
+                   mask(j_pos,i_pos).eq.1.and.mask(j_pos,i_pos-1).eq.3 &
+                   .and.mask(j_pos,i_pos+1).eq.0.or. &
+                   mask(j_pos,i_pos).eq.1.and.mask(j_pos-1,i_pos).eq.0 &
+                   .and.mask(j_pos+1,i_pos).eq.3)) then ! outside ice sheet, exclude isolated land stripes
 
 #if !defined(ALLOW_OPENAD) /* Normal */
           di_eff=int(r_mar_eff/dxi)+1; dj_eff=int(r_mar_eff/deta)+1 ! only for grid=0, 1 yet!
@@ -849,12 +851,12 @@ contains
             r_p=sqrt((xi(i_pos)-xi(i))**2+(eta(j_pos)-eta(j))**2)
 
 #if !defined(ALLOW_OPENAD) /* Normal */
-            if(r_p.le.r_mar_eff.and.(mask(j,i).eq.0_i1b.or.mask(j,i).eq.3_i1b)) then
+            if(r_p.le.r_mar_eff.and.(mask(j,i).eq.0.or.mask(j,i).eq.3)) then
 #else /* OpenAD */
-            if(r_p.le.r_mar_eff_DW.and.(mask(j,i).eq.0_i1b.or.mask(j,i).eq.3_i1b)) then
+            if(r_p.le.r_mar_eff_DW.and.(mask(j,i).eq.0.or.mask(j,i).eq.3)) then
 #endif /* Normal vs. OpenAD */
 
-              mask_mar(j,i)=1_i1b
+              mask_mar(j,i)=1
             end if
           end do
           end do
@@ -863,21 +865,21 @@ contains
       end do
 
 #if !defined(ALLOW_OPENAD) /* Normal */
-      where(mask.ge.1_i1b)
-        mask_mar=1_i1b
+      where(mask.ge.1)
+        mask_mar=1
       end where
 #else /* OpenAD */
       do i=0,IMAX
       do j=0,JMAX
-        if (mask(j,i).ge.1_i1b) then
-          mask_mar(j,i)=1_i1b
+        if (mask(j,i).ge.1) then
+          mask_mar(j,i)=1
         end if
       end do
       end do
 #endif /* Normal vs. OpenAD */
 
     else ! the ring encompassed entire Greenland 
-      mask_mar=1_i1b
+      mask_mar=1
     end if
 
   end subroutine marginal_ring

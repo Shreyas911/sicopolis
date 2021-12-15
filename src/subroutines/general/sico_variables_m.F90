@@ -46,19 +46,19 @@ save
 !>             1: ice-free land,
 !>             2: ocean,
 !>             3: floating ice
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: mask
+   integer(i4b), dimension(0:JMAX,0:IMAX) :: mask
 !> mask_old(j,i): Old value of mask (at the previous time step)
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: mask_old
+   integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_old
 !> mask_new(j,i): New value of mask computed during an integration step
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: mask_new
+   integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_new
 !> n_cts(j,i): Mask for thermal conditions.
 !>             -1: cold ice base,
 !>              0: temperate ice base with cold ice above,
 !>              1: temperate ice base with temperate ice layer above
 !>                 (only for POLY)
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: n_cts
+   integer(i4b), dimension(0:JMAX,0:IMAX) :: n_cts
 !> (.)_new: New value of quantity (.) computed during an integration step
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: n_cts_new
+   integer(i4b), dimension(0:JMAX,0:IMAX) :: n_cts_new
 !> kc_cts(j,i): Position kc of the CTS (for COLD, ENTC, ENTM)
    integer(i4b), dimension(0:JMAX,0:IMAX) :: kc_cts
 !> (.)_new: New value of quantity (.) computed during an integration step
@@ -168,8 +168,8 @@ save
    real(dp), dimension(0:JMAX,0:IMAX) :: lambda
 !> phi(j,i): Geographic latitude of grid point (i,j)
    real(dp), dimension(0:JMAX,0:IMAX) :: phi
-!> area(j,i): Area of grid cell associated with grid point (i,j)
-   real(dp), dimension(0:JMAX,0:IMAX) :: area
+!> cell_area(j,i): Area of grid cell associated with grid point (i,j)
+   real(dp), dimension(0:JMAX,0:IMAX) :: cell_area
 !> sq_g11_g(j,i): Square root of the coefficient g11 of the metric tensor
 !>                on grid point (i,j)
    real(dp), dimension(0:JMAX,0:IMAX) :: sq_g11_g
@@ -211,6 +211,8 @@ save
    real(dp), dimension(0:JMAX,0:IMAX) :: flex_rig_lith
 !> time_lag_asth(j,i): Time lag of the relaxing asthenosphere
    real(dp), dimension(0:JMAX,0:IMAX) :: time_lag_asth
+!> H(j,i): Ice thickness (= H_c + H_t)
+   real(dp), dimension(0:JMAX,0:IMAX) :: H
 !> H_c(j,i): Thickness of ice in the upper (kc) domain
 !>           (thickness of the cold-ice layer for POLY,
 !>           entire ice thickness for ISOT, COLD, ENTC, ENTM)
@@ -267,6 +269,8 @@ save
    real(dp), dimension(0:JMAX,0:IMAX) :: dzb_dtau
 !> dzl_dtau(j,i): Derivative of zl by tau (time)
    real(dp), dimension(0:JMAX,0:IMAX) :: dzl_dtau
+!> dH_dtau(j,i): Derivative of H by tau (time)
+   real(dp), dimension(0:JMAX,0:IMAX) :: dH_dtau
 !> dH_c_dtau(j,i): Derivative of H_c by tau (time)
    real(dp), dimension(0:JMAX,0:IMAX) :: dH_c_dtau
 !> dH_t_dtau(j,i): Derivative of H_t by tau (time)
@@ -413,11 +417,17 @@ save
 !>             1: visible (grounded ice),
 !>            -1: hidden on land,
 !>            -2: hidden in ocean
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: mask_ablation_type
+   integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_ablation_type
 !> temp_maat(j,i): Mean annual air temperature
    real(dp), dimension(0:JMAX,0:IMAX) :: temp_maat
 !> temp_s(j,i): Ice surface temperature
    real(dp), dimension(0:JMAX,0:IMAX) :: temp_s
+!> z_sl(j,i): Sea level
+   real(dp), dimension(0:JMAX,0:IMAX) :: z_sl
+!> dzsl_dtau(j,i): Derivative of zsl by tau (time)
+   real(dp), dimension(0:JMAX,0:IMAX) :: dzsl_dtau
+!> z_sl_mean: Mean sea level
+   real(dp) :: z_sl_mean
 !> am_perp(j,i): Ice volume flux across the z=zm interface
    real(dp), dimension(0:JMAX,0:IMAX) :: am_perp
 !> am_perp_st(j,i): Steady-state part of am_perp
@@ -431,6 +441,8 @@ save
    real(dp), dimension(0:JMAX,0:IMAX) :: zb_new
 !> (.)_new: New value of quantity (.) computed during an integration step
    real(dp), dimension(0:JMAX,0:IMAX) :: zl_new
+!> (.)_new: New value of quantity (.) computed during an integration step
+   real(dp), dimension(0:JMAX,0:IMAX) :: H_new
 !> (.)_new: New value of quantity (.) computed during an integration step
    real(dp), dimension(0:JMAX,0:IMAX) :: H_c_new
 !> (.)_new: New value of quantity (.) computed during an integration step
@@ -511,6 +523,8 @@ save
    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: sigma_c
 !> enh_c(kc,j,i): Flow enhancement factor in the upper (kc) ice domain
    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: enh_c
+!> strain_heating_c(kc,j,i): Strain heating in the upper (kc) ice domain
+   real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: strain_heating_c
 
 !> de_ssa(j,i): Effective strain rate of the SSA, at (i,j)
    real(dp), dimension(0:JMAX,0:IMAX) :: de_ssa
@@ -554,6 +568,8 @@ save
    real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX) :: sigma_t
 !> enh_t(kt,j,i): Flow enhancement factor in the lower (kt) ice domain
    real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX) :: enh_t
+!> strain_heating_t(kt,j,i): Strain heating in the lower (kt) ice domain
+   real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX) :: strain_heating_t
 
 !> temp_r(kr,j,i): Temperature in the bedrock
    real(dp), dimension(0:KRMAX,0:JMAX,0:IMAX) :: temp_r
@@ -749,7 +765,7 @@ save
 !>               2: forcing by a glacial index (glac_index),
 !>               3: forcing by time-dependent surface temperature
 !>                  and precipitation data.
-   integer(i1b) :: forcing_flag
+   integer(i4b) :: forcing_flag
 
 !> n_core: Number of positions to be considered in the time-series file
 !>         for deep boreholes
@@ -808,7 +824,7 @@ save
 !> target_topo_tau_0: Relaxation time for target-topography adjustment
    real(dp) :: target_topo_tau_0
 !> mask_target(j,i): Target topography (ice-land-ocean mask)
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: mask_target
+   integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_target
 !> zs_target(j,i): Target topography (ice surface)
    real(dp), dimension(0:JMAX,0:IMAX) :: zs_target
 !> zb_target(j,i): Target topography (ice base)
@@ -821,7 +837,7 @@ save
 !> mask_maxextent(j,i): Maximum ice extent mask.
 !>                       0: not allowed to glaciate,
 !>                       1: allowed to glaciate.
-   integer(i1b), dimension(0:JMAX,0:IMAX) :: mask_maxextent
+   integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_maxextent
 
 !> ncid_ser: IDs of the NetCDF time-series output files
    integer(i4b), dimension(0:99) :: ncid_ser

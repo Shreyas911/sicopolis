@@ -91,16 +91,16 @@ contains
   do i=0, IMAX
   do j=0, JMAX
 
-     if ( (mask(j,i) == 0_i1b).or.(mask(j,i) == 3_i1b) ) then
+     if ( (mask(j,i) == 0).or.(mask(j,i) == 3) ) then
                                    ! glaciated land or floating ice
 
-        if (n_cts(j,i) == -1_i1b) then   ! cold ice base
+        if (n_cts(j,i) == -1) then   ! cold ice base
 
            temp_b(j,i)  = temp_c(0,j,i)
            temph_b(j,i) = temp_c(0,j,i) - temp_c_m(0,j,i)
                           ! relative to the pressure melting point
 
-        else   ! n_cts(j,i) == 0_i1b or 1_i1b, temperate ice base
+        else   ! n_cts(j,i) == 0 or 1, temperate ice base
 
            temp_b(j,i)  = temp_t_m(0,j,i)
            temph_b(j,i) = 0.0_dp
@@ -108,7 +108,7 @@ contains
 
         end if
 
-     else   ! mask(j,i) == 1_i1b or 2_i1b, ice-free land or sea
+     else   ! mask(j,i) == 1 or 2, ice-free land or sea
 
         temp_b(j,i)  = temp_c(0,j,i)
         temph_b(j,i) = temp_c(0,j,i) - temp_c_m(0,j,i)

@@ -49,7 +49,7 @@ contains
 !> Main function of mask_update_m:
 !! Update of the ice-land-ocean mask due to changes of the sea level.
 !<------------------------------------------------------------------------------
-  function mask_update_sea_level(z_sl, i, j)
+  function mask_update_sea_level(i, j)
 
   implicit none
 
@@ -58,54 +58,52 @@ contains
 #else
   integer(i4b), intent(inout) :: i, j
 #endif
-  real(dp),     intent(in) :: z_sl
 
-  integer(i1b) :: mask_update_sea_level
-  real(dp)     :: rhosw_rho_ratio, H_ice, H_sea
+  integer(i4b) :: mask_update_sea_level
+  real(dp)     :: rhosw_rho_ratio, H_sea
 
   rhosw_rho_ratio = RHO_SW/RHO
 
 !-------- Previously ice-free land point or sea point --------
 
-  if ( (mask(j,i) == 1_i1b).or.(mask(j,i) == 2_i1b) ) then
+  if ( (mask(j,i) == 1).or.(mask(j,i) == 2) ) then
 
-     if (zl(j,i) > z_sl) then
-        mask_update_sea_level = 1_i1b   ! now ice-free land
+     if (zl(j,i) > z_sl(j,i)) then
+        mask_update_sea_level = 1   ! now ice-free land
         return
      else
-        mask_update_sea_level = 2_i1b   ! now sea point
+        mask_update_sea_level = 2   ! now sea point
         return
      end if
 
 !-------- Previously grounded-ice or floating-ice point --------
 
-  else   ! (mask(j,i) == 0_i1b, 3_i1b)
+  else   ! (mask(j,i) == 0, 3)
 
-     if (zl(j,i) > z_sl) then
+     if (zl(j,i) > z_sl(j,i)) then
 
-        mask_update_sea_level = 0_i1b   ! now grounded ice
+        mask_update_sea_level = 0   ! now grounded ice
         return
 
      else
 
-        H_ice = zs(j,i)-zb(j,i)   ! ice thickness
-        H_sea = z_sl   -zl(j,i)   ! sea depth
+        H_sea = z_sl(j,i)-zl(j,i)   ! sea depth
 
-        if ( H_ice < (rhosw_rho_ratio*H_sea) ) then
+        if ( H(j,i) < (rhosw_rho_ratio*H_sea) ) then
 
 #if (MARGIN==1 || (MARGIN==2 && MARINE_ICE_FORMATION==1))
-           mask_update_sea_level = 2_i1b     ! ice becomes floating, therefore
-                                             ! now sea point (ice cut off)
+           mask_update_sea_level = 2     ! ice becomes floating, therefore
+                                         ! now sea point (ice cut off)
 #elif (MARGIN==2 && MARINE_ICE_FORMATION==2)
-           mask_update_sea_level = 0_i1b     ! now "underwater ice"
+           mask_update_sea_level = 0     ! now "underwater ice"
 #elif (MARGIN==3)
-           mask_update_sea_level = 3_i1b     ! now floating ice
+           mask_update_sea_level = 3     ! now floating ice
 #endif
            return
 
         else
 
-           mask_update_sea_level = 0_i1b     ! now grounded ice
+           mask_update_sea_level = 0     ! now grounded ice
            return
 
         end if

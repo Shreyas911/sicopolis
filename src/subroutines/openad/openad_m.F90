@@ -107,7 +107,7 @@ contains
                                       dtime_out, dtime_ser
    real(dp)           :: time, time_init, time_end, time_output(100)
    real(dp)           :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
-   real(dp)           :: z_sl, dzsl_dtau, z_mar
+   real(dp)           :: z_mar
    character(len=100) :: runname
    
    !-------- Variable declarations needed for this routine specifically
@@ -166,7 +166,7 @@ contains
                  dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
                  time, time_init, time_end, time_output, &
                  dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-                 z_sl, dzsl_dtau, z_mar, &
+                 z_mar, &
                  ndat2d, ndat3d, n_output, &
                  runname)
 
@@ -219,7 +219,7 @@ contains
                  dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
                  time, time_init, time_end, time_output, &
                  dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-                 z_sl, dzsl_dtau, z_mar, &
+                 z_mar, &
                  ndat2d, ndat3d, n_output, &
                  runname)
           
@@ -304,7 +304,7 @@ contains
   real(dp), dimension(100)                   :: time_output
   real(dp)                                   :: dxi, deta, dzeta_c, &
                                                 dzeta_t, dzeta_r
-  real(dp)                                   :: z_sl, dzsl_dtau, z_mar
+  real(dp)                                   :: z_mar
   character(len=100)                         :: runname
 
   our_rev_mode%arg_store  = .false.
@@ -324,7 +324,7 @@ contains
       dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
       time, time_init, time_end, time_output, &
       dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-      z_sl, dzsl_dtau, z_mar, &
+      z_mar, &
       ndat2d, ndat3d, n_output, &
       runname)
 
@@ -336,14 +336,27 @@ contains
       flag_grounding_line_1,flag_grounding_line_2,flag_calving_front_1,&
       flag_calving_front_2,flag_shelfy_stream_x,flag_shelfy_stream_y,&
       flag_shelfy_stream,xi,eta,zeta_c,zeta_t,zeta_r,aa,flag_aa_nonzero,&
-      ea,eaz_c,eaz_c_quotient,lambda,phi,area,sq_g11_g,sq_g22_g,&
+      ea,eaz_c,eaz_c_quotient,lambda,phi, &
+      cell_area, &
+      sq_g11_g,sq_g22_g,&
       insq_g11_g,insq_g22_g,sq_g11_sgx,sq_g11_sgy,sq_g22_sgx,sq_g22_sgy,&
       insq_g11_sgx,insq_g22_sgy,zs,zm,zb,zl,zl0,wss,flex_rig_lith,&
-      time_lag_asth,H_c,H_t,dzs_dxi,dzm_dxi,dzb_dxi,dH_c_dxi,dH_t_dxi,&
-      dzs_deta,dzm_deta,dzb_deta,dH_c_deta,dH_t_deta,dzs_dxi_g,&
-      dzm_dxi_g,dzb_dxi_g,dH_c_dxi_g,dH_t_dxi_g,dzs_deta_g,dzm_deta_g,&
-      dzb_deta_g,dH_c_deta_g,dH_t_deta_g,dzs_dtau,dzm_dtau,dzb_dtau,&
-      dzl_dtau,dH_c_dtau,dH_t_dtau,p_weert,q_weert,p_weert_inv,&
+      time_lag_asth, &
+      H, H_c, H_t, &
+      dzs_dxi,dzm_dxi,dzb_dxi, &
+      dH_c_dxi, dH_t_dxi, &
+      dzs_deta,dzm_deta,dzb_deta, &
+      dH_c_deta, dH_t_deta, &
+      dzs_dxi_g,&
+      dzm_dxi_g,dzb_dxi_g, &
+      dH_c_dxi_g, dH_t_dxi_g, &
+      dzs_deta_g,dzm_deta_g,&
+      dzb_deta_g, &
+      dH_c_deta_g, dH_t_deta_g, &
+      dzs_dtau,dzm_dtau,dzb_dtau,&
+      dzl_dtau, &
+      dH_dtau, dH_c_dtau, dH_t_dtau, &
+      p_weert,q_weert,p_weert_inv,&
       c_slide,d_help_b,c_drag, &
       p_b, p_b_w, p_b_red, tau_dr, tau_b, &
       vx_b,vy_b,&
@@ -352,15 +365,21 @@ contains
       vx_b_g,vy_b_g,vz_b,vz_m,vx_s_g,vy_s_g,vz_s,&
       flui_ave_sia,h_diff,qx,qy,q_gl_g,q_geo,temp_b,temph_b,Q_bm,Q_b_apl,&
       Q_tld,Q_b_tot,H_w,&
-      accum,runoff,runoff_apl,as_perp,temp_maat,temp_s,am_perp,&
-      am_perp_st,zs_new,zm_new,zb_new,zl_new,H_c_new,H_t_new,zs_ref,&
+      accum,runoff,runoff_apl,as_perp,temp_maat,temp_s, &
+      z_sl, dzsl_dtau, z_sl_mean, &
+      am_perp, am_perp_st, &
+      zs_new,zm_new,zb_new,zl_new, &
+      H_new, H_c_new, H_t_new, &
+      zs_ref,&
       accum_present,precip_ma_present,precip_ma_lgm_anom,&
       temp_ma_present,temp_mj_present,temp_ma_lgm_anom,temp_mj_lgm_anom,&
       dist_dxdy,acc_fact,precip_present,precip_lgm_anom,gamma_precip_lgm_anom,&
       temp_mm_present,temp_mm_lgm_anom,d_help_c,vx_c,vy_c,vz_c,temp_c,&
       temp_c_new,temp_c_m,age_c,age_c_new,txz_c,tyz_c,sigma_c,enh_c,&
+      strain_heating_c, &
       de_ssa,vis_int_g,vx_g,vy_g,d_help_t,vx_t,vy_t,vz_t,omega_t,&
       omega_t_new,temp_t_m,age_t,age_t_new,txz_t,tyz_t,sigma_t,enh_t,&
+      strain_heating_t, &
       temp_r,temp_r_new,enth_c,enth_c_new,omega_c,omega_c_new,enth_t,&
       enth_t_new,dxx_c,dyy_c,dxy_c,dxz_c,dyz_c,de_c,lambda_shear_c,&
       dxx_t,dyy_t,dxy_t,dxz_t,dyz_t,de_t,lambda_shear_t,RHO,RHO_W,&
@@ -423,7 +442,7 @@ contains
       dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
       time, time_init, time_end, time_output, &
       dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-      z_sl, dzsl_dtau, z_mar, &
+      z_mar, &
       ndat2d, ndat3d, n_output, &
       runname)
 
@@ -435,7 +454,7 @@ contains
         dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
         time, time_init, time_end, time_output, &
         dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-        z_sl, dzsl_dtau, z_mar, &
+        z_mar, &
         ndat2d, ndat3d, n_output, &
         runname)
         call print_output(runname)
@@ -565,14 +584,27 @@ contains
          a_flag_grounding_line_1,a_flag_grounding_line_2,a_flag_calving_front_1,&
          a_flag_calving_front_2,a_flag_shelfy_stream_x,a_flag_shelfy_stream_y,&
          a_flag_shelfy_stream,a_xi,a_eta,a_zeta_c,a_zeta_t,a_zeta_r,a_aa,a_flag_aa_nonzero,&
-         a_ea,a_eaz_c,a_eaz_c_quotient,a_lambda,a_phi,a_area,a_sq_g11_g,a_sq_g22_g,&
+         a_ea,a_eaz_c,a_eaz_c_quotient,a_lambda,a_phi, &
+         a_cell_area, &
+         a_sq_g11_g,a_sq_g22_g,&
          a_insq_g11_g,a_insq_g22_g,a_sq_g11_sgx,a_sq_g11_sgy,a_sq_g22_sgx,a_sq_g22_sgy,&
          a_insq_g11_sgx,a_insq_g22_sgy,a_zs,a_zm,a_zb,a_zl,a_zl0,a_wss,a_flex_rig_lith,&
-         a_time_lag_asth,a_H_c,a_H_t,a_dzs_dxi,a_dzm_dxi,a_dzb_dxi,a_dH_c_dxi,a_dH_t_dxi,&
-         a_dzs_deta,a_dzm_deta,a_dzb_deta,a_dH_c_deta,a_dH_t_deta,a_dzs_dxi_g,&
-         a_dzm_dxi_g,a_dzb_dxi_g,a_dH_c_dxi_g,a_dH_t_dxi_g,a_dzs_deta_g,a_dzm_deta_g,&
-         a_dzb_deta_g,a_dH_c_deta_g,a_dH_t_deta_g,a_dzs_dtau,a_dzm_dtau,a_dzb_dtau,&
-         a_dzl_dtau,a_dH_c_dtau,a_dH_t_dtau,a_p_weert,a_q_weert,a_p_weert_inv,&
+         a_time_lag_asth, &
+         a_H, a_H_c, a_H_t, &
+         a_dzs_dxi,a_dzm_dxi,a_dzb_dxi, &
+         a_dH_c_dxi, a_dH_t_dxi, &
+         a_dzs_deta,a_dzm_deta,a_dzb_deta, &
+         a_dH_c_deta, a_dH_t_deta, &
+         a_dzs_dxi_g,&
+         a_dzm_dxi_g,a_dzb_dxi_g, &
+         a_dH_c_dxi_g, a_dH_t_dxi_g, &
+         a_dzs_deta_g,a_dzm_deta_g,&
+         a_dzb_deta_g, &
+         a_dH_c_deta_g, a_dH_t_deta_g, &
+         a_dzs_dtau,a_dzm_dtau,a_dzb_dtau,&
+         a_dzl_dtau, &
+         a_dH_dtau, a_dH_c_dtau, a_dH_t_dtau, &
+         a_p_weert,a_q_weert,a_p_weert_inv,&
          a_c_slide,a_d_help_b,a_c_drag, &
          a_p_b, a_p_b_w, a_p_b_red, a_tau_dr, a_tau_b, &
          a_vx_b,a_vy_b,&
@@ -581,15 +613,21 @@ contains
          a_vx_b_g,a_vy_b_g,a_vz_b,a_vz_m,a_vx_s_g,a_vy_s_g,a_vz_s,&
          a_flui_ave_sia,a_h_diff,a_qx,a_qy,a_q_gl_g,a_q_geo,a_temp_b,a_temph_b,a_Q_bm,a_Q_b_apl,&
          a_Q_tld,a_Q_b_tot,a_H_w,&
-         a_accum,a_runoff,a_runoff_apl,a_as_perp,a_temp_maat,a_temp_s,a_am_perp,&
-         a_am_perp_st,a_zs_new,a_zm_new,a_zb_new,a_zl_new,a_H_c_new,a_H_t_new,a_zs_ref,&
+         a_accum,a_runoff,a_runoff_apl,a_as_perp,a_temp_maat,a_temp_s, &
+         a_z_sl, a_dzsl_dtau, a_z_sl_mean, &
+         a_am_perp, a_am_perp_st, &
+         a_zs_new,a_zm_new,a_zb_new,a_zl_new, &
+         a_H_new, a_H_c_new, a_H_t_new, &
+         a_zs_ref,&
          a_accum_present,a_precip_ma_present,a_precip_ma_lgm_anom,&
          a_temp_ma_present,a_temp_mj_present,a_temp_ma_lgm_anom,a_temp_mj_lgm_anom,&
          a_dist_dxdy,a_acc_fact,a_precip_present,a_precip_lgm_anom,a_gamma_precip_lgm_anom,&
          a_temp_mm_present,a_temp_mm_lgm_anom,a_d_help_c,a_vx_c,a_vy_c,a_vz_c,a_temp_c,&
          a_temp_c_new,a_temp_c_m,a_age_c,a_age_c_new,a_txz_c,a_tyz_c,a_sigma_c,a_enh_c,&
+         a_strain_heating_c, &
          a_de_ssa,a_vis_int_g,a_vx_g,a_vy_g,a_d_help_t,a_vx_t,a_vy_t,a_vz_t,a_omega_t,&
          a_omega_t_new,a_temp_t_m,a_age_t,a_age_t_new,a_txz_t,a_tyz_t,a_sigma_t,a_enh_t,&
+         a_strain_heating_t, &
          a_temp_r,a_temp_r_new,a_enth_c,a_enth_c_new,a_omega_c,a_omega_c_new,a_enth_t,&
          a_enth_t_new,a_dxx_c,a_dyy_c,a_dxy_c,a_dxz_c,a_dyz_c,a_de_c,a_lambda_shear_c,&
          a_dxx_t,a_dyy_t,a_dxy_t,a_dxz_t,a_dyz_t,a_de_t,a_lambda_shear_t,a_RHO,a_RHO_W,&
@@ -676,7 +714,7 @@ contains
 #endif /* No age cost used */
     real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_age_t
     real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_age_t_new
-    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_area
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_cell_area
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_am_perp
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_am_perp_st
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_as_perp
@@ -707,6 +745,7 @@ contains
     real(dp)                                           :: a_DELTA_TM_SW
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_dH_c_deta
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_dH_c_deta_g
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_dH_dtau
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_dH_c_dtau
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_dH_c_dxi
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_dH_c_dxi_g
@@ -746,7 +785,9 @@ contains
     real(dp), dimension(0:KCMAX)                       :: a_eaz_c
     real(dp), dimension(0:KCMAX)                       :: a_eaz_c_quotient
     real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_enh_c
+    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_strain_heating_c
     real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_enh_t
+    real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_strain_heating_t
     real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_enth_c
     real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)         :: a_enth_c_new
     real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX)         :: a_enth_t
@@ -791,6 +832,8 @@ contains
     integer(i4b)                                       :: a_grip_time_stp
     real(dp), dimension(0:a_ndata_grip)                :: a_griptemp
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_h_diff
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_H
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_H_new
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_H_c
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_H_c_new
     real(dp)                                           :: a_H_R
@@ -932,6 +975,9 @@ contains
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_temp_b
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_temp_maat
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_temp_s
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_z_sl
+    real(dp), dimension(0:JMAX,0:IMAX)                 :: a_dzsl_dtau
+    real(dp)                                           :: a_z_sl_mean
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_temph_b
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_temp_ma_lgm_anom
     real(dp), dimension(0:JMAX,0:IMAX)                 :: a_temp_ma_present
@@ -1044,7 +1090,7 @@ contains
 #endif
     am_perp = a_am_perp
     am_perp_st = a_am_perp_st
-    area = a_area
+    cell_area = a_cell_area
     as_perp%v = a_as_perp
     as_perp_apl = a_as_perp_apl
 #if (defined(INITMIP_SMB_ANOM_FILE))
@@ -1089,6 +1135,7 @@ contains
     de_t = a_de_t
     dH_c_deta = a_dH_c_deta
     dH_c_deta_g%v = a_dH_c_deta_g
+    dH_dtau%v = a_dH_dtau
     dH_c_dtau%v = a_dH_c_dtau
     dH_c_dxi = a_dH_c_dxi
     dH_c_dxi_g%v = a_dH_c_dxi_g
@@ -1152,6 +1199,8 @@ contains
     enh_c = a_enh_c
     enh_t = a_enh_t
 #endif
+    strain_heating_c = a_strain_heating_c
+    strain_heating_t = a_strain_heating_t
 #if (CALCMOD >= 2)
     enth_c%v = a_enth_c
     enth_c_new%v = a_enth_c_new
@@ -1206,6 +1255,8 @@ contains
     ndata_glann = a_ndata_glann
     dT_glann_CLIMBER = a_dT_glann_CLIMBER
 #endif
+    H%v = a_H
+    H_new%v = a_H_new
     H_c%v = a_H_c
     H_c_new%v = a_H_c_new
     h_diff%v = a_h_diff
@@ -1422,6 +1473,9 @@ contains
     temp_r_new%v = a_temp_r_new
     temp_maat = a_temp_maat
     temp_s%v = a_temp_s
+    z_sl      = a_z_sl
+    dzsl_dtau = a_dzsl_dtau
+    z_sl_mean = a_z_sl_mean
     temp_t_m%v = a_temp_t_m
     time_lag_asth = a_time_lag_asth
     time_target_topo_final = a_time_target_topo_final

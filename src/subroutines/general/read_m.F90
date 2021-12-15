@@ -52,7 +52,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Reading of time-slice files in NetCDF format.
 !<------------------------------------------------------------------------------
-  subroutine read_tms_nc(z_sl, filename, &
+  subroutine read_tms_nc(filename, &
                          opt_mask, opt_n_cts, opt_kc_cts, &
                          opt_H_cold, opt_H_temp, opt_H, &
                          opt_temp_r, opt_omega_t, opt_age_t, &
@@ -68,10 +68,9 @@ contains
   implicit none
 
   character(len=100), intent(in)    :: filename
-  real(dp),           intent(inout) :: z_sl
 
   logical, optional,  intent(in)    :: opt_flag_temp_age_only
-  integer(i1b), optional, dimension(0:JMAX,0:IMAX), &
+  integer(i4b), optional, dimension(0:JMAX,0:IMAX), &
                       intent(inout) :: opt_mask, opt_n_cts
   integer(i4b), optional, dimension(0:JMAX,0:IMAX), &
                       intent(inout) :: opt_kc_cts
@@ -90,12 +89,13 @@ contains
   character(len=256) :: anfdat_path
   character(len=256) :: filename_with_path
   logical            :: flag_temp_age_only
+  logical            :: flag_z_sl_xy_array
 
   integer(i4b) :: ncid, ncv
   !     ncid:      ID of the output file
   !     ncv:       Variable ID
 
-  integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_conv, mask_old_conv, &
+  integer(i4b), dimension(0:IMAX,0:JMAX) :: mask_conv, mask_old_conv, &
                                             n_cts_conv, &
                                             flag_shelfy_stream_x_conv, &
                                             flag_shelfy_stream_y_conv, &
@@ -110,7 +110,7 @@ contains
                                             flag_grounded_front_b_2_conv
   integer(i4b), dimension(0:IMAX,0:JMAX) :: kc_cts_conv
 
-  real(dp) :: year2sec_conv, time_conv, z_sl_conv, dummy_conv, &
+  real(dp) :: year2sec_conv, time_conv, dummy_conv, z_sl_mean_conv, &
               xi_conv(0:IMAX), eta_conv(0:JMAX), &
               sigma_level_c_conv(0:KCMAX), sigma_level_t_conv(0:KTMAX), &
               sigma_level_r_conv(0:KRMAX)
@@ -119,10 +119,11 @@ contains
 
   real(sp), dimension(0:IMAX,0:JMAX) :: lambda_conv, phi_conv, &
               lon_conv, lat_conv, &
-              area_conv, &
+              cell_area_conv, &
               temp_maat_conv, temp_s_conv, accum_conv, &
               snowfall_conv, rainfall_conv, pdd_conv, & 
               as_perp_conv, as_perp_apl_conv, smb_corr_conv, &
+              z_sl_conv, &
               q_geo_conv, &
               zs_conv, zm_conv, zb_conv, zl_conv, zl0_conv, &
               H_cold_conv, H_temp_conv, H_conv, &
@@ -144,15 +145,15 @@ contains
   real(sp), dimension(0:IMAX,0:JMAX,0:KCMAX) :: vx_c_conv, vy_c_conv, vz_c_conv, &
                                                 temp_c_conv, age_c_conv, &
                                                 enth_c_conv, omega_c_conv, &
-                                                enh_c_conv
+                                                enh_c_conv, strain_heating_c_conv
   real(sp), dimension(0:IMAX,0:JMAX,0:KTMAX) :: vx_t_conv, vy_t_conv, vz_t_conv, &
                                                 omega_t_conv, age_t_conv, &
                                                 enth_t_conv, &
-                                                enh_t_conv
+                                                enh_t_conv, strain_heating_t_conv
   real(sp), dimension(0:IMAX,0:JMAX,0:KRMAX) :: temp_r_conv
 
 #if (DISC>0)   /* Ice discharge parameterisation */
-  integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_mar_conv
+  integer(i4b), dimension(0:IMAX,0:JMAX) :: mask_mar_conv
   real(sp),     dimension(0:IMAX,0:JMAX) :: dis_perp_conv, &
                                             cst_dist_conv, cos_grad_tc_conv
 #endif
@@ -204,8 +205,14 @@ contains
      dummy_conv = 0.0_dp
   end if
 
-  call check( nf90_inq_varid(ncid, 'z_sl', ncv) )
-  call check( nf90_get_var(ncid, ncv, z_sl_conv) )
+  if ( nf90_inq_varid(ncid, 'z_sl_mean', ncv) == nf90_noerr ) then
+     call check( nf90_get_var(ncid, ncv, z_sl_mean_conv) )
+     flag_z_sl_xy_array = .true.
+  else
+     call check( nf90_inq_varid(ncid, 'z_sl', ncv) )
+     call check( nf90_get_var(ncid, ncv, z_sl_mean_conv) )
+     flag_z_sl_xy_array = .false.
+  end if
 
   call check( nf90_inq_varid(ncid, 'x', ncv) )
   call check( nf90_get_var(ncid, ncv, xi_conv) )
@@ -235,11 +242,11 @@ contains
   call check( nf90_get_var(ncid, ncv, phi_conv) )
 
   if ( nf90_inq_varid(ncid, 'cell_area', ncv) == nf90_noerr ) then
-     call check( nf90_get_var(ncid, ncv, area_conv) )
+     call check( nf90_get_var(ncid, ncv, cell_area_conv) )
   else
      write(6,'(/1x,a)') '>>> read_tms_nc: Variable cell_area'
      write(6, '(1x,a)') '                 not available in read file *.nc.'
-     area_conv = 0.0_sp
+     cell_area_conv = 0.0_sp
   end if
 
   if ( nf90_inq_varid(ncid, 'temp_maat', ncv) == nf90_noerr ) then
@@ -274,6 +281,13 @@ contains
   call check( nf90_inq_varid(ncid, 'smb_corr', ncv) )
   call check( nf90_get_var(ncid, ncv, smb_corr_conv) )
 
+  if (flag_z_sl_xy_array) then
+     call check( nf90_inq_varid(ncid, 'z_sl', ncv) )
+     call check( nf90_get_var(ncid, ncv, z_sl_conv) )
+  else
+     z_sl_conv = z_sl_mean_conv
+  end if
+
 #if (DISC>0)   /* Ice discharge parameterisation */
 
   call check( nf90_inq_varid(ncid, 'dis_perp', ncv) )
@@ -293,11 +307,27 @@ contains
   call check( nf90_inq_varid(ncid, 'q_geo', ncv) )
   call check( nf90_get_var(ncid, ncv, q_geo_conv) )
 
-  call check( nf90_inq_varid(ncid, 'mask', ncv) )
-  call check( nf90_get_var(ncid, ncv, mask_conv) )
+  if ( nf90_inq_varid(ncid, 'mask', ncv) == nf90_noerr ) then
+     call check( nf90_get_var(ncid, ncv, mask_conv) )
+  else if ( nf90_inq_varid(ncid, 'maske', ncv) == nf90_noerr ) then
+     call check( nf90_get_var(ncid, ncv, mask_conv) )
+  else
+     errormsg = ' >>> read_tms_nc: Variable mask' &
+              //                   end_of_line &
+              //'                  not available in read file *.nc!'
+     call error(errormsg)
+  end if
 
-  call check( nf90_inq_varid(ncid, 'mask_old', ncv) )
-  call check( nf90_get_var(ncid, ncv, mask_old_conv) )
+  if ( nf90_inq_varid(ncid, 'mask_old', ncv) == nf90_noerr ) then
+     call check( nf90_get_var(ncid, ncv, mask_old_conv) )
+  else if ( nf90_inq_varid(ncid, 'maske_old', ncv) == nf90_noerr ) then
+     call check( nf90_get_var(ncid, ncv, mask_old_conv) )
+  else
+     errormsg = ' >>> read_tms_nc: Variable mask_old' &
+              //                   end_of_line &
+              //'                  not available in read file *.nc!'
+     call error(errormsg)
+  end if
 
   call check( nf90_inq_varid(ncid, 'n_cts', ncv) )
   call check( nf90_get_var(ncid, ncv, n_cts_conv) )
@@ -577,6 +607,22 @@ contains
   call check( nf90_inq_varid(ncid, 'enh_t', ncv) )
   call check( nf90_get_var(ncid, ncv, enh_t_conv) )
 
+  if ( nf90_inq_varid(ncid, 'strain_heating_c', ncv) == nf90_noerr ) then
+     call check( nf90_get_var(ncid, ncv, strain_heating_c_conv) )
+  else
+     write(6,'(/1x,a)') '>>> read_tms_nc: Variable strain_heating_c'
+     write(6, '(1x,a)') '                 not available in read file *.nc.'
+     strain_heating_c_conv = 0.0_sp
+  end if
+
+  if ( nf90_inq_varid(ncid, 'strain_heating_t', ncv) == nf90_noerr ) then
+     call check( nf90_get_var(ncid, ncv, strain_heating_t_conv) )
+  else
+     write(6,'(/1x,a)') '>>> read_tms_nc: Variable strain_heating_t'
+     write(6, '(1x,a)') '                 not available in read file *.nc.'
+     strain_heating_t_conv = 0.0_sp
+  end if
+
   call check( nf90_inq_varid(ncid, 'age_c', ncv) )
   call check( nf90_get_var(ncid, ncv, age_c_conv) )
 
@@ -591,7 +637,7 @@ contains
 
   if (.not.flag_temp_age_only) then
 
-     z_sl = z_sl_conv
+     z_sl_mean = z_sl_mean_conv
 
      do i=0, IMAX
         xi(i)  = xi_conv(i)
@@ -608,18 +654,21 @@ contains
 
         mask(j,i)     = mask_conv(i,j)
         mask_old(j,i) = mask_old_conv(i,j)
-        n_cts(j,i)   = n_cts_conv(i,j)
-        kc_cts(j,i)  = kc_cts_conv(i,j)
-        zs(j,i)      = real(zs_conv(i,j),dp)
-        zm(j,i)      = real(zm_conv(i,j),dp)
-        zb(j,i)      = real(zb_conv(i,j),dp)
-        zl(j,i)      = real(zl_conv(i,j),dp)
+        n_cts(j,i)    = n_cts_conv(i,j)
+        kc_cts(j,i)   = kc_cts_conv(i,j)
+
+        z_sl(j,i) = real(z_sl_conv(i,j),dp)
+        zs(j,i)   = real(zs_conv(i,j),dp)
+        zm(j,i)   = real(zm_conv(i,j),dp)
+        zb(j,i)   = real(zb_conv(i,j),dp)
+        zl(j,i)   = real(zl_conv(i,j),dp)
+        H(j,i)    = real(H_conv(i,j),dp)
 #if (CALCMOD==1)
-        H_c(j,i)     = real(H_cold_conv(i,j),dp)
-        H_t(j,i)     = real(H_temp_conv(i,j),dp)
+        H_c(j,i)  = real(H_cold_conv(i,j),dp)
+        H_t(j,i)  = real(H_temp_conv(i,j),dp)
 #elif (CALCMOD==0 || CALCMOD==2 || CALCMOD==3 || CALCMOD==-1)
-        H_c(j,i)     = real(H_conv(i,j),dp)
-        H_t(j,i)     = 0.0_dp
+        H_c(j,i)  = H(j,i)
+        H_t(j,i)  = 0.0_dp
 #endif
         Q_bm(j,i)    = real(Q_bm_conv(i,j),dp)*year2sec_inv
         Q_tld(j,i)   = real(Q_tld_conv(i,j),dp)*year2sec_inv
@@ -634,6 +683,7 @@ contains
         dzm_dtau(j,i)  = real(dzm_dtau_conv(i,j),dp)*year2sec_inv
         dzb_dtau(j,i)  = real(dzb_dtau_conv(i,j),dp)*year2sec_inv
         dzl_dtau(j,i)  = real(dzl_dtau_conv(i,j),dp)*year2sec_inv
+        dH_dtau(j,i)   = real(dH_dtau_conv(i,j),dp)*year2sec_inv
         dH_c_dtau(j,i) = real(dH_c_dtau_conv(i,j),dp)*year2sec_inv
         dH_t_dtau(j,i) = real(dH_t_dtau_conv(i,j),dp)*year2sec_inv
         vx_b_g(j,i)  = real(vx_b_g_conv(i,j),dp)*year2sec_inv
@@ -653,67 +703,67 @@ contains
         ratio_sl_y(j,i) = real(ratio_sl_y_conv(i,j),dp)
         ratio_sl(j,i)   = real(ratio_sl_conv(i,j),dp)
 
-        if (flag_shelfy_stream_x_conv(i,j) == 1_i1b) then
+        if (flag_shelfy_stream_x_conv(i,j) == 1) then
            flag_shelfy_stream_x(j,i) = .true.
         else
            flag_shelfy_stream_x(j,i) = .false.
         end if
 
-        if (flag_shelfy_stream_y_conv(i,j) == 1_i1b) then
+        if (flag_shelfy_stream_y_conv(i,j) == 1) then
            flag_shelfy_stream_y(j,i) = .true.
         else
            flag_shelfy_stream_y(j,i) = .false.
         end if
 
-        if (flag_shelfy_stream_conv(i,j) == 1_i1b) then
+        if (flag_shelfy_stream_conv(i,j) == 1) then
            flag_shelfy_stream(j,i) = .true.
         else
            flag_shelfy_stream(j,i) = .false.
         end if
 
-        if (flag_grounding_line_1_conv(i,j) == 1_i1b) then
+        if (flag_grounding_line_1_conv(i,j) == 1) then
            flag_grounding_line_1(j,i) = .true.
         else
            flag_grounding_line_1(j,i) = .false.
         end if
 
-        if (flag_grounding_line_2_conv(i,j) == 1_i1b) then
+        if (flag_grounding_line_2_conv(i,j) == 1) then
            flag_grounding_line_2(j,i) = .true.
         else
            flag_grounding_line_2(j,i) = .false.
         end if
 
-        if (flag_calving_front_1_conv(i,j) == 1_i1b) then
+        if (flag_calving_front_1_conv(i,j) == 1) then
            flag_calving_front_1(j,i) = .true.
         else
            flag_calving_front_1(j,i) = .false.
         end if
 
-        if (flag_calving_front_2_conv(i,j) == 1_i1b) then
+        if (flag_calving_front_2_conv(i,j) == 1) then
            flag_calving_front_2(j,i) = .true.
         else
            flag_calving_front_2(j,i) = .false.
         end if
 
-        if (flag_grounded_front_a_1_conv(i,j) == 1_i1b) then
+        if (flag_grounded_front_a_1_conv(i,j) == 1) then
            flag_grounded_front_a_1(j,i) = .true.
         else
            flag_grounded_front_a_1(j,i) = .false.
         end if
 
-        if (flag_grounded_front_a_2_conv(i,j) == 1_i1b) then
+        if (flag_grounded_front_a_2_conv(i,j) == 1) then
            flag_grounded_front_a_2(j,i) = .true.
         else
            flag_grounded_front_a_2(j,i) = .false.
         end if
 
-        if (flag_grounded_front_b_1_conv(i,j) == 1_i1b) then
+        if (flag_grounded_front_b_1_conv(i,j) == 1) then
            flag_grounded_front_b_1(j,i) = .true.
         else
            flag_grounded_front_b_1(j,i) = .false.
         end if
 
-        if (flag_grounded_front_b_2_conv(i,j) == 1_i1b) then
+        if (flag_grounded_front_b_2_conv(i,j) == 1) then
            flag_grounded_front_b_2(j,i) = .true.
         else
            flag_grounded_front_b_2(j,i) = .false.
@@ -734,6 +784,7 @@ contains
            age_t(kt,j,i)   = real(age_t_conv(i,j,kt),dp)*year2sec
            enth_t(kt,j,i)  = real(enth_t_conv(i,j,kt),dp)
            enh_t(kt,j,i)   = real(enh_t_conv(i,j,kt),dp)
+           strain_heating_t(kt,j,i) = real(strain_heating_t_conv(i,j,kt),dp)
         end do
 
         do kc=0, KCMAX
@@ -745,6 +796,7 @@ contains
            enth_c(kc,j,i)  = real(enth_c_conv(i,j,kc),dp)
            omega_c(kc,j,i) = real(omega_c_conv(i,j,kc),dp)
            enh_c(kc,j,i)   = real(enh_c_conv(i,j,kc),dp)
+           strain_heating_c(kc,j,i) = real(strain_heating_c_conv(i,j,kc),dp)
         end do
 
      end do
@@ -757,7 +809,7 @@ contains
         do i=1, IMAX-1
         do j=1, JMAX-1
 
-           if (mask(j,i) == 0_i1b) &   ! grounded ice
+           if (mask(j,i) == 0) &   ! grounded ice
               ratio_sl(j,i) = 0.25_dp &
                                 * (   ratio_sl_x(j,i-1) + ratio_sl_x(j,i) &
                                     + ratio_sl_y(j-1,i) + ratio_sl_y(j,i) )
@@ -785,14 +837,14 @@ contains
         do i=0, IMAX
         do j=0, JMAX
 
-           if ((mask(j,i)==0_i1b).or.(mask(j,i)==3_i1b)) then
+           if ((mask(j,i)==0).or.(mask(j,i)==3)) then
                   ! grounded or floating ice
 
-              vis_ave_g(j,i) = vis_int_g(j,i)/max((H_c(j,i)+H_t(j,i)), eps_dp)
+              vis_ave_g(j,i) = vis_int_g(j,i)/max(H(j,i), eps_dp)
 
               vis_ave_g(j,i) = max(min(vis_ave_g(j,i), visc_max), visc_min)
 
-           else   ! (mask(j,i)==1_i1b).or.(mask(j,i)==2_i1b),
+           else   ! (mask(j,i)==1).or.(mask(j,i)==2),
                   ! ice-free land or ocean
 
               vis_ave_g(j,i) = visc_init   ! dummy value
@@ -882,7 +934,7 @@ contains
 !    mask_target, zs_target, zb_target, zl_target, H_target
 
   integer(i4b)                           :: ios
-  integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_conv
+  integer(i4b), dimension(0:IMAX,0:JMAX) :: mask_conv
   real(sp), dimension(0:IMAX,0:JMAX)     :: zs_conv, zb_conv, zl_conv, H_conv
   character(len=256)                     :: target_topo_dat_path
   character(len=256)                     :: filename_with_path
@@ -920,8 +972,16 @@ contains
      call error(errormsg)
   end if
 
-  call check( nf90_inq_varid(ncid, 'mask', ncv),  thisroutine )
-  call check( nf90_get_var(ncid, ncv, mask_conv), thisroutine )
+  if ( nf90_inq_varid(ncid, 'mask', ncv) == nf90_noerr ) then
+     call check( nf90_get_var(ncid, ncv, mask_conv), thisroutine )
+  else if ( nf90_inq_varid(ncid, 'maske', ncv) == nf90_noerr ) then
+     call check( nf90_get_var(ncid, ncv, mask_conv), thisroutine )
+  else
+     errormsg = ' >>> read_target_topo_nc: Variable mask' &
+              //                           end_of_line &
+              //'                 not available in target-topography file!'
+     call error(errormsg)
+  end if
 
   call check( nf90_inq_varid(ncid, 'zs', ncv),  thisroutine )
   call check( nf90_get_var(ncid, ncv, zs_conv), thisroutine )
@@ -987,7 +1047,7 @@ contains
   character          :: ch_dummy
   logical            :: flag_nc
 
-  integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_aux_conv
+  integer(i4b), dimension(0:IMAX,0:JMAX) :: mask_aux_conv
   integer(i4b), dimension(0:IMAX,0:JMAX) :: n_aux_conv
   real(dp)    , dimension(0:IMAX,0:JMAX) :: r_aux_conv
 

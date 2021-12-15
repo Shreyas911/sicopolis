@@ -46,7 +46,7 @@ contains
                       dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
                       time, time_init, time_end, time_output, &
                       dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-                      z_sl, dzsl_dtau, z_mar, &
+                      z_mar, &
                       ndat2d, ndat3d, n_output, &
                       runname, &
                       itercount_max,iter_temp,iter_wss,iter_ser,&
@@ -92,7 +92,7 @@ contains
   integer(i4b),       intent(inout) :: ndat2d, ndat3d
   real(dp),           intent(inout) :: delta_ts, glac_index
   real(dp),           intent(inout) :: time
-  real(dp),           intent(inout) :: z_sl, dzsl_dtau, z_mar
+  real(dp),           intent(inout) :: z_mar
 
   integer(i4b)                      :: i, j, kc, kt, kr, n
   integer(i4b)                      :: itercount
@@ -110,7 +110,7 @@ contains
                       dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
                       time, time_init, time_end, time_output, &
                       dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-                      z_sl, dzsl_dtau, z_mar, &
+                      z_mar, &
                       ndat2d, ndat3d, n_output, &
                       runname, &
                       itercount,iter_temp,iter_wss,iter_ser,&

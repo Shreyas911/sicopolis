@@ -51,13 +51,12 @@ contains
 !> Main subroutine of calc_gia_m:
 !! Computation of the glacial isostatic adjustment of the lithosphere surface.
 !<------------------------------------------------------------------------------
-subroutine calc_gia(time, z_sl, dtime, dxi, deta, itercount, iter_wss)
+subroutine calc_gia(time, dtime, dxi, deta, itercount, iter_wss)
 
 implicit none
 
 integer(i4b), intent(in) :: itercount, iter_wss
 real(dp),     intent(in) :: time
-real(dp),     intent(in) :: z_sl
 real(dp),     intent(in) :: dtime, dxi, deta
 
 integer(i4b) :: i, j
@@ -96,17 +95,17 @@ end do
 do i=0, IMAX
 do j=0, JMAX
 
-   if (mask(j,i) <= 1_i1b) then   ! grounded ice or ice-free land
+   if (mask(j,i) <= 1) then   ! grounded ice or ice-free land
 
       zl_new(j,i) = tldt_inv(j,i)*( time_lag_asth(j,i)*zl(j,i) &
                     + dtime*(zl0(j,i) &
-                             -FRAC_LLRA*rho_rhoa_ratio*(H_c(j,i)+H_t(j,i))) )
+                             -FRAC_LLRA*rho_rhoa_ratio*H(j,i)) )
 
-   else   ! (mask(j,i) >= 2_i1b)
+   else   ! (mask(j,i) >= 2)
 
       zl_new(j,i) = tldt_inv(j,i)*( time_lag_asth(j,i)*zl(j,i) &
                     + dtime*(zl0(j,i) &
-                             -FRAC_LLRA*rhosw_rhoa_ratio*z_sl) )
+                             -FRAC_LLRA*rhosw_rhoa_ratio*z_sl(j,i)) )
 
                    ! Water load relative to the present sea-level stand (0 m)
                    ! -> can be positive or negative
@@ -122,8 +121,8 @@ end do
 
 if ((mod(itercount, iter_wss)==0).or.(itercount==1)) then
    write(6, fmt='(10x,a)') 'Computation of wss'
-   call calc_elra(z_sl, dxi, deta)   ! Update of the steady-state displacement
-                                     ! of the lithosphere (wss)
+   call calc_elra(dxi, deta)   ! Update of the steady-state displacement
+                               ! of the lithosphere (wss)
 end if
 
 do i=0, IMAX
@@ -207,7 +206,7 @@ end subroutine calc_gia
 !> Computation of the isostatic steady-state displacement of the lithosphere
 !! (wss) for the ELRA model.
 !<------------------------------------------------------------------------------
-subroutine calc_elra(z_sl, dxi, deta)
+subroutine calc_elra(dxi, deta)
 
 #if defined(ALLOW_OPENAD) /* OpenAD */
   use ctrl_m, only: myfloor
@@ -215,7 +214,7 @@ subroutine calc_elra(z_sl, dxi, deta)
 
 implicit none
 
-real(dp), intent(in) :: z_sl, dxi, deta
+real(dp), intent(in) :: dxi, deta
 
 integer(i4b) :: i, j, ir, jr, il, jl, n
 integer(i4b) :: ir_max, jr_max, min_imax_jmax
@@ -300,12 +299,12 @@ do jl=jl_begin, jl_end
    i = min(max(il, 0), IMAX)
    j = min(max(jl, 0), JMAX)
 
-   if (mask(j,i)==0_i1b) then
-      f_0(jl,il) = rho_g * area(j,i) * (H_c(j,i) + H_t(j,i))
-   else if (mask(j,i)==1_i1b) then
+   if (mask(j,i)==0) then
+      f_0(jl,il) = rho_g * cell_area(j,i) * H(j,i)
+   else if (mask(j,i)==1) then
       f_0(jl,il) = 0.0_dp
-   else   ! (mask(j,i)>=2_i1b)
-      f_0(jl,il) = rho_sw_g * area(j,i) * z_sl
+   else   ! (mask(j,i)>=2)
+      f_0(jl,il) = rho_sw_g * cell_area(j,i) * z_sl(j,i)
                    ! Water load relative to the present sea-level stand (0 m)
                    ! -> can be positive or negative
    end if
@@ -403,8 +402,8 @@ zl0_raw = zl   ! rigid lithosphere
 do i=0, IMAX
 do j=0, JMAX
 
-   if (mask(j,i) == 0_i1b) then
-      zl0_raw(j,i) = zl(j,i) + rho_ratio*(H_c(j,i)+H_t(j,i))
+   if (mask(j,i) == 0) then
+      zl0_raw(j,i) = zl(j,i) + rho_ratio*H(j,i)
    else
       zl0_raw(j,i) = zl(j,i)
    end if            ! local lithosphere

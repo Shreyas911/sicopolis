@@ -55,7 +55,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Writing of time-slice files in NetCDF format.
 !<------------------------------------------------------------------------------
-subroutine output1(runname, time, delta_ts, glac_index, z_sl, &
+subroutine output1(runname, time, delta_ts, glac_index, &
                    flag_3d_output, ndat2d, ndat3d, &
                    opt_flag_compute_flux_vars_only)
 
@@ -72,7 +72,7 @@ subroutine output1(runname, time, delta_ts, glac_index, z_sl, &
 
 implicit none
 
-real(dp),           intent(in) :: time, delta_ts, glac_index, z_sl
+real(dp),           intent(in) :: time, delta_ts, glac_index
 character(len=100), intent(in) :: runname
 logical,            intent(in) :: flag_3d_output
 
@@ -83,7 +83,7 @@ integer(i4b),    intent(inout) :: ndat2d, ndat3d
 integer(i4b) :: i, j, kc, kt, kr
 integer(i4b) :: ios
 integer(i4b) :: ndat
-real(dp), dimension(0:JMAX,0:IMAX) :: H, H_cold, H_temp, dH_dtau
+real(dp), dimension(0:JMAX,0:IMAX) :: H_cold, H_temp
 real(dp), dimension(0:JMAX,0:IMAX) :: vx_m_g, vy_m_g
 real(dp) :: V_tot, V_grounded, V_floating, V_gr_redu, V_af
 real(dp) :: A_grounded, A_floating
@@ -176,16 +176,16 @@ real(dp), dimension(0:JMAX,0:IMAX) :: accum_flx         , &
                                               zs_flx
 #endif
 
-integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_conv, mask_old_conv, &
+integer(i4b), dimension(0:IMAX,0:JMAX) :: mask_conv, mask_old_conv, &
                                           mask_ablation_type_conv, &
                                           n_cts_conv
 integer(i4b), dimension(0:IMAX,0:JMAX) :: mask_region_conv
 integer(i4b), dimension(0:IMAX,0:JMAX) :: kc_cts_conv
-integer(i1b), dimension(0:IMAX,0:JMAX) :: mask_mar_conv
-integer(i1b), dimension(0:IMAX,0:JMAX) :: flag_shelfy_stream_x_conv, &
+integer(i4b), dimension(0:IMAX,0:JMAX) :: mask_mar_conv
+integer(i4b), dimension(0:IMAX,0:JMAX) :: flag_shelfy_stream_x_conv, &
                                           flag_shelfy_stream_y_conv, &
                                           flag_shelfy_stream_conv
-integer(i1b), dimension(0:IMAX,0:JMAX) :: flag_grounding_line_1_conv, &
+integer(i4b), dimension(0:IMAX,0:JMAX) :: flag_grounding_line_1_conv, &
                                           flag_grounding_line_2_conv, &
                                           flag_calving_front_1_conv, &
                                           flag_calving_front_2_conv, &
@@ -195,7 +195,7 @@ integer(i1b), dimension(0:IMAX,0:JMAX) :: flag_grounding_line_1_conv, &
                                           flag_grounded_front_b_2_conv
 
 real(dp) :: year2sec_conv, time_conv, &
-            delta_ts_conv, glac_index_conv, z_sl_conv, &
+            delta_ts_conv, glac_index_conv, z_sl_mean_conv, &
             V_tot_conv, V_af_conv, A_grounded_conv, A_floating_conv, &
             xi_conv(0:IMAX), eta_conv(0:JMAX), &
             sigma_level_c_conv(0:KCMAX), sigma_level_t_conv(0:KTMAX), &
@@ -205,11 +205,12 @@ real(sp) :: H_R_conv
 
 real(sp), dimension(0:IMAX,0:JMAX) :: lambda_conv, phi_conv, &
             lond_conv, latd_conv, &
-            area_conv, &
+            cell_area_conv, &
             temp_maat_conv, temp_s_conv, accum_conv, &
             snowfall_conv, rainfall_conv, pdd_conv, &
             as_perp_conv, as_perp_apl_conv, smb_corr_conv, &
             mb_source_apl_conv, runoff_conv, runoff_apl_conv, &
+            z_sl_conv, &
             Q_b_tot_conv, Q_b_apl_conv, &
             calving_conv, calving_apl_conv, &
             q_geo_conv, &
@@ -235,11 +236,11 @@ real(sp), dimension(0:IMAX,0:JMAX) :: lambda_conv, phi_conv, &
 real(sp), dimension(0:IMAX,0:JMAX,0:KCMAX) :: vx_c_conv, vy_c_conv, vz_c_conv, &
                                               temp_c_conv, age_c_conv, &
                                               enth_c_conv, omega_c_conv, &
-                                              enh_c_conv
+                                              enh_c_conv, strain_heating_c_conv
 real(sp), dimension(0:IMAX,0:JMAX,0:KTMAX) :: vx_t_conv, vy_t_conv, vz_t_conv, &
                                               omega_t_conv, age_t_conv, &
                                               enth_t_conv, &
-                                              enh_t_conv
+                                              enh_t_conv, strain_heating_t_conv
 real(sp), dimension(0:IMAX,0:JMAX,0:KRMAX) :: temp_r_conv
 
 integer(i4b) :: ncid, ncv
@@ -515,9 +516,9 @@ else if (forcing_flag == 2) then
 
 end if
 
-!    ---- z_sl
+!    ---- z_sl_mean
 
-call check( nf90_def_var(ncid, 'z_sl', NF90_DOUBLE, ncv), &
+call check( nf90_def_var(ncid, 'z_sl_mean', NF90_DOUBLE, ncv), &
             thisroutine )
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
@@ -525,7 +526,7 @@ call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
 buffer = 'global_average_sea_level_change'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
             thisroutine )
-buffer = 'Sea level'
+buffer = 'Mean sea level'
 call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
             thisroutine )
 
@@ -756,7 +757,7 @@ call check( nf90_def_var(ncid, 'cell_area', NF90_FLOAT, nc2d, ncv), &
 buffer = 'm2'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
-buffer = 'area'
+buffer = 'cell_area'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
             thisroutine )
 buffer = 'Area of grid cell'
@@ -1000,6 +1001,26 @@ buffer = 'applied_land_ice_surface_runoff'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
             thisroutine )
 buffer = 'Applied runoff rate at the ice surface'
+call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
+            thisroutine )
+call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
+            thisroutine )
+
+!    ---- z_sl
+
+call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
+            thisroutine )
+call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
+            thisroutine )
+call check( nf90_def_var(ncid, 'z_sl', NF90_FLOAT, nc2d, ncv), &
+            thisroutine )
+buffer = 'm'
+call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
+            thisroutine )
+buffer = 'sea_level_change'
+call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
+            thisroutine )
+buffer = 'Sea level'
 call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
             thisroutine )
 call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
@@ -2926,6 +2947,50 @@ if (flag_3d_output) then
    call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
                thisroutine )
 
+!    ---- strain_heating_c
+
+   call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc3d(1)), &
+               thisroutine )
+   call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc3d(2)), &
+               thisroutine )
+   call check( nf90_inq_dimid(ncid, trim(coord_id(3)), nc3d(3)), &
+               thisroutine )
+   call check( nf90_def_var(ncid, 'strain_heating_c', NF90_FLOAT, nc3d, ncv), &
+               thisroutine )
+   buffer = 'W kg-1'
+   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
+               thisroutine )
+   buffer = 'land_ice_kc_layer_strain_heating'
+   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
+               thisroutine )
+   buffer = 'Strain heating in the upper (kc) ice layer'
+   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
+               thisroutine )
+   call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
+               thisroutine )
+
+!    ---- strain_heating_t
+
+   call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc3d(1)), &
+               thisroutine )
+   call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc3d(2)), &
+               thisroutine )
+   call check( nf90_inq_dimid(ncid, trim(coord_id(4)), nc3d(3)), &
+               thisroutine )
+   call check( nf90_def_var(ncid, 'strain_heating_t', NF90_FLOAT, nc3d, ncv), &
+               thisroutine )
+   buffer = 'W kg-1'
+   call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
+               thisroutine )
+   buffer = 'land_ice_kt_layer_strain_heating'
+   call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
+               thisroutine )
+   buffer = 'Strain heating in the lower (kt) ice layer'
+   call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
+               thisroutine )
+   call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
+               thisroutine )
+
 !    ---- age_c
 
    call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc3d(1)), &
@@ -2978,11 +3043,6 @@ call check( nf90_enddef(ncid), thisroutine )
 
 end if   ! (.not.flag_compute_flux_vars_only)
 
-!-------- Ice thickness and time derivative --------
-
-H       = H_c       + H_t
-dH_dtau = dH_c_dtau + dH_t_dtau
-
 !-------- Thickness of the cold and temperate layers --------
 
 if (.not.flag_compute_flux_vars_only) then
@@ -3021,7 +3081,7 @@ do j=0, JMAX
       enth_c(kc,j,i) = enth_fct_temp_omega(temp_c(kc,j,i), 0.0_dp)
    end do
 
-   if ( (mask(j,i)==0_i1b).and.(n_cts(j,i)==1_i1b) ) then
+   if ( (mask(j,i)==0).and.(n_cts(j,i)==1) ) then
       do kt=0, KTMAX
          enth_t(kt,j,i) = enth_fct_temp_omega(temp_t_m(kt,j,i), omega_t(kt,j,i))
       end do
@@ -3064,7 +3124,7 @@ vy_m_g = 0.0_dp
 do i=1, IMAX-1
 do j=1, JMAX-1
 
-   if ( (mask(j,i)==0_i1b).or.(mask(j,i)==3_i1b) ) then
+   if ( (mask(j,i)==0).or.(mask(j,i)==3) ) then
       vx_m_g(j,i) = 0.5_dp*(vx_m(j,i)+vx_m(j,i-1))
       vy_m_g(j,i) = 0.5_dp*(vy_m(j,i)+vy_m(j-1,i))
    end if
@@ -3089,17 +3149,18 @@ A_floating = 0.0_dp
 do i=0, IMAX
 do j=0, JMAX
 
-   if (mask(j,i)==0_i1b) then   ! grounded ice
+   if (mask(j,i)==0) then   ! grounded ice
 
-      V_grounded = V_grounded + H(j,i)*area(j,i)
-      A_grounded = A_grounded + area(j,i)
+      V_grounded = V_grounded + H(j,i)*cell_area(j,i)
+      A_grounded = A_grounded + cell_area(j,i)
       V_gr_redu  = V_gr_redu &
-                   + rhosw_rho_ratio*max((z_sl-zl(j,i)),0.0_dp)*area(j,i)
+                   + rhosw_rho_ratio  &
+                        *max((z_sl(j,i)-zl(j,i)),0.0_dp)*cell_area(j,i)
 
-   else if (mask(j,i)==3_i1b) then   ! floating ice
+   else if (mask(j,i)==3) then   ! floating ice
 
-      V_floating = V_floating + H(j,i)*area(j,i)
-      A_floating = A_floating + area(j,i)
+      V_floating = V_floating + H(j,i)*cell_area(j,i)
+      A_floating = A_floating + cell_area(j,i)
 
    end if
 
@@ -3341,7 +3402,7 @@ call error(errormsg)
 
 delta_ts_conv   = delta_ts
 glac_index_conv = glac_index
-z_sl_conv       = z_sl
+z_sl_mean_conv  = z_sl_mean
 V_tot_conv      = V_tot
 V_af_conv       = V_af
 A_grounded_conv = A_grounded
@@ -3388,7 +3449,7 @@ do j=0, JMAX
    if (latd_conv(i,j) >  90.0_sp) latd_conv(i,j) =  90.0_sp
    if (latd_conv(i,j) < -90.0_sp) latd_conv(i,j) = -90.0_sp
                                  ! constraining to interval [-90 deg, +90 deg]
-   area_conv(i,j)        = real(area(j,i),sp)
+   cell_area_conv(i,j)   = real(cell_area(j,i),sp)
    temp_maat_conv(i,j)   = real(temp_maat(j,i),sp)
    temp_s_conv(i,j)      = real(temp_s(j,i),sp)
    accum_conv(i,j)       = real(accum_flx(j,i)*year2sec,sp)
@@ -3398,10 +3459,10 @@ do j=0, JMAX
    as_perp_conv(i,j)     = real(as_perp_flx(j,i)*year2sec,sp)
    as_perp_apl_conv(i,j) = real(as_perp_apl_flx(j,i)*year2sec,sp)
    smb_corr_conv(i,j)    = real(smb_corr_flx(j,i)*year2sec,sp)
-
    mb_source_apl_conv(i,j) = real(mb_source_apl_flx(j,i)*year2sec,sp)
    runoff_conv(i,j)        = real(runoff_flx(j,i)*year2sec,sp)
    runoff_apl_conv(i,j)    = real(runoff_apl_flx(j,i)*year2sec,sp)
+   z_sl_conv(i,j)          = real(z_sl(j,i),sp)
    Q_b_tot_conv(i,j)       = real(Q_b_tot_flx(j,i)*year2sec,sp)
    Q_b_apl_conv(i,j)       = real(Q_b_apl_flx(j,i)*year2sec,sp)
    calving_conv(i,j)       = real(calving_flx(j,i)*year2sec,sp)
@@ -3471,69 +3532,69 @@ do j=0, JMAX
 #endif
 
    if (flag_shelfy_stream_x(j,i)) then
-      flag_shelfy_stream_x_conv(i,j) = 1_i1b
+      flag_shelfy_stream_x_conv(i,j) = 1
    else
-      flag_shelfy_stream_x_conv(i,j) = 0_i1b
+      flag_shelfy_stream_x_conv(i,j) = 0
    end if
 
    if (flag_shelfy_stream_y(j,i)) then
-      flag_shelfy_stream_y_conv(i,j) = 1_i1b
+      flag_shelfy_stream_y_conv(i,j) = 1
    else
-      flag_shelfy_stream_y_conv(i,j) = 0_i1b
+      flag_shelfy_stream_y_conv(i,j) = 0
    end if
 
    if (flag_shelfy_stream(j,i)) then
-      flag_shelfy_stream_conv(i,j) = 1_i1b
+      flag_shelfy_stream_conv(i,j) = 1
    else
-      flag_shelfy_stream_conv(i,j) = 0_i1b
+      flag_shelfy_stream_conv(i,j) = 0
    end if
 
    if (flag_grounding_line_1(j,i)) then
-      flag_grounding_line_1_conv(i,j) = 1_i1b
+      flag_grounding_line_1_conv(i,j) = 1
    else
-      flag_grounding_line_1_conv(i,j) = 0_i1b
+      flag_grounding_line_1_conv(i,j) = 0
    end if
 
    if (flag_grounding_line_2(j,i)) then
-      flag_grounding_line_2_conv(i,j) = 1_i1b
+      flag_grounding_line_2_conv(i,j) = 1
    else
-      flag_grounding_line_2_conv(i,j) = 0_i1b
+      flag_grounding_line_2_conv(i,j) = 0
    end if
 
    if (flag_calving_front_1(j,i)) then
-      flag_calving_front_1_conv(i,j) = 1_i1b
+      flag_calving_front_1_conv(i,j) = 1
    else
-      flag_calving_front_1_conv(i,j) = 0_i1b
+      flag_calving_front_1_conv(i,j) = 0
    end if
 
    if (flag_calving_front_2(j,i)) then
-      flag_calving_front_2_conv(i,j) = 1_i1b
+      flag_calving_front_2_conv(i,j) = 1
    else
-      flag_calving_front_2_conv(i,j) = 0_i1b
+      flag_calving_front_2_conv(i,j) = 0
    end if
 
    if (flag_grounded_front_a_1(j,i)) then
-      flag_grounded_front_a_1_conv(i,j) = 1_i1b
+      flag_grounded_front_a_1_conv(i,j) = 1
    else
-      flag_grounded_front_a_1_conv(i,j) = 0_i1b
+      flag_grounded_front_a_1_conv(i,j) = 0
    end if
 
    if (flag_grounded_front_a_2(j,i)) then
-      flag_grounded_front_a_2_conv(i,j) = 1_i1b
+      flag_grounded_front_a_2_conv(i,j) = 1
    else
-      flag_grounded_front_a_2_conv(i,j) = 0_i1b
+      flag_grounded_front_a_2_conv(i,j) = 0
    end if
 
    if (flag_grounded_front_b_1(j,i)) then
-      flag_grounded_front_b_1_conv(i,j) = 1_i1b
+      flag_grounded_front_b_1_conv(i,j) = 1
    else
-      flag_grounded_front_b_1_conv(i,j) = 0_i1b
+      flag_grounded_front_b_1_conv(i,j) = 0
    end if
 
    if (flag_grounded_front_b_2(j,i)) then
-      flag_grounded_front_b_2_conv(i,j) = 1_i1b
+      flag_grounded_front_b_2_conv(i,j) = 1
    else
-      flag_grounded_front_b_2_conv(i,j) = 0_i1b
+      flag_grounded_front_b_2_conv(i,j) = 0
    end if
 
    vis_ave_g_conv(i,j) = real(vis_ave_g(j,i),sp)
@@ -3551,6 +3612,7 @@ do j=0, JMAX
       age_t_conv(i,j,kt)   = real(age_t(kt,j,i)*sec2year,sp)
       enth_t_conv(i,j,kt)  = real(enth_t(kt,j,i),sp)
       enh_t_conv(i,j,kt)   = real(enh_t(kt,j,i),sp)
+      strain_heating_t_conv(i,j,kt) = real(strain_heating_t(kt,j,i),sp)
    end do
 
    do kc=0, KCMAX
@@ -3562,6 +3624,7 @@ do j=0, JMAX
       enth_c_conv(i,j,kc)  = real(enth_c(kc,j,i),sp)
       omega_c_conv(i,j,kc) = real(omega_c(kc,j,i),sp)
       enh_c_conv(i,j,kc)   = real(enh_c(kc,j,i),sp)
+      strain_heating_c_conv(i,j,kc) = real(strain_heating_c(kc,j,i),sp)
    end do
 
 end do
@@ -3594,8 +3657,8 @@ else if (forcing_flag == 2) then
 
 end if
 
-call check( nf90_inq_varid(ncid, 'z_sl', ncv), thisroutine )
-call check( nf90_put_var(ncid, ncv, z_sl_conv), thisroutine )
+call check( nf90_inq_varid(ncid, 'z_sl_mean', ncv), thisroutine )
+call check( nf90_put_var(ncid, ncv, z_sl_mean_conv), thisroutine )
 
 call check( nf90_inq_varid(ncid, 'V_tot', ncv), thisroutine )
 call check( nf90_put_var(ncid, ncv, V_tot_conv), thisroutine )
@@ -3655,7 +3718,7 @@ call check( nf90_put_var(ncid, ncv, phi_conv, &
             thisroutine )
 
 call check( nf90_inq_varid(ncid, 'cell_area', ncv), thisroutine )
-call check( nf90_put_var(ncid, ncv, area_conv, &
+call check( nf90_put_var(ncid, ncv, cell_area_conv, &
                          start=nc2cor_ij, count=nc2cnt_ij), &
             thisroutine )
 
@@ -3716,6 +3779,11 @@ call check( nf90_put_var(ncid, ncv, runoff_conv, &
 
 call check( nf90_inq_varid(ncid, 'runoff_apl', ncv), thisroutine )
 call check( nf90_put_var(ncid, ncv, runoff_apl_conv, &
+                         start=nc2cor_ij, count=nc2cnt_ij), &
+            thisroutine )
+
+call check( nf90_inq_varid(ncid, 'z_sl', ncv), thisroutine )
+call check( nf90_put_var(ncid, ncv, z_sl_conv, &
                          start=nc2cor_ij, count=nc2cnt_ij), &
             thisroutine )
 
@@ -4180,6 +4248,16 @@ if (flag_3d_output) then
                             start=nc3cor_ijkt, count=nc3cnt_ijkt), &
                thisroutine )
 
+   call check( nf90_inq_varid(ncid, 'strain_heating_c', ncv), thisroutine )
+   call check( nf90_put_var(ncid, ncv, strain_heating_c_conv, &
+                            start=nc3cor_ijkc, count=nc3cnt_ijkc), &
+               thisroutine )
+
+   call check( nf90_inq_varid(ncid, 'strain_heating_t', ncv), thisroutine )
+   call check( nf90_put_var(ncid, ncv, strain_heating_t_conv, &
+                            start=nc3cor_ijkt, count=nc3cnt_ijkt), &
+               thisroutine )
+
    call check( nf90_inq_varid(ncid, 'age_c', ncv), thisroutine )
    call check( nf90_put_var(ncid, ncv, age_c_conv, &
                             start=nc3cor_ijkc, count=nc3cnt_ijkc), &
@@ -4227,7 +4305,7 @@ end subroutine output1
 !> Writing of time-series data on file in ASCII format
 !! (and optionally in NetCDF format).
 !<------------------------------------------------------------------------------
-subroutine output2(time, dxi, deta, delta_ts, glac_index, z_sl, &
+subroutine output2(time, dxi, deta, delta_ts, glac_index, &
                    opt_flag_compute_flux_vars_only)
 
   use netcdf
@@ -4239,7 +4317,7 @@ subroutine output2(time, dxi, deta, delta_ts, glac_index, z_sl, &
 
 implicit none
 
-real(dp), intent(in) :: time, dxi, deta, delta_ts, glac_index, z_sl
+real(dp), intent(in) :: time, dxi, deta, delta_ts, glac_index
 
 logical, optional, intent(in) :: opt_flag_compute_flux_vars_only
 
@@ -4255,7 +4333,7 @@ real(dp) :: time_val, &
             Q_b, Q_temp, bmb_tot, bmb_gr_tot, bmb_fl_tot, &
             calv_tot, mbp, mb_resid, mb_mis, disc_lsc, disc_ssc
 real(dp) :: x_pos, y_pos
-real(dp), dimension(0:JMAX,0:IMAX) :: H, H_cold, H_temp
+real(dp), dimension(0:JMAX,0:IMAX) :: H_cold, H_temp
 real(dp) :: Tbh_help
 real(dp) :: H_ave_sed, Tbh_ave_sed, Atb_sed
 real(dp) :: sum_area_sed
@@ -4346,10 +4424,6 @@ end if
 if (.not.flag_compute_flux_vars_only) &
    counter = counter + 1
 
-!-------- Ice thickness --------
-
-H = H_c + H_t
-
 !-------- Thickness of the cold and temperate layers --------
 
 H_cold = 0.0_dp
@@ -4384,8 +4458,8 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 
    if (n==0) then
 
-      call scalar_variables(time, z_sl, &
-                            H, H_cold, H_temp, &
+      call scalar_variables(time, &
+                            H_cold, H_temp, &
                             time_val, &
                             V_tot, V_grounded, V_floating, &
                             A_tot, A_grounded, A_floating, &
@@ -4401,8 +4475,8 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
       flag_region = .false.
       flag_region = (mask_region==n)
 
-      call scalar_variables(time, z_sl, &
-                            H, H_cold, H_temp, &
+      call scalar_variables(time, &
+                            H_cold, H_temp, &
                             time_val, &
                             V_tot, V_grounded, V_floating, &
                             A_tot, A_grounded, A_floating, &
@@ -4533,14 +4607,14 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 
       if ((forcing_flag == 1).or.(forcing_flag == 3)) then
 
-         write(unit=12, fmt=trim(fmt1)) time_val, delta_ts, z_sl, &
+         write(unit=12, fmt=trim(fmt1)) time_val, delta_ts, z_sl_mean, &
             V_tot, V_grounded, V_floating, A_tot, A_grounded, A_floating, &
             V_sle, V_temp, A_temp, &
             H_max, H_t_max, zs_max, vs_max, Tbh_max
 
       else if (forcing_flag == 2) then
 
-         write(unit=12, fmt=trim(fmt1)) time_val, glac_index, z_sl, &
+         write(unit=12, fmt=trim(fmt1)) time_val, glac_index, z_sl_mean, &
             V_tot, V_grounded, V_floating, A_tot, A_grounded, A_floating, &
             V_sle, V_temp, A_temp, &
             H_max, H_t_max, zs_max, vs_max, Tbh_max
@@ -4572,18 +4646,18 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 
          if (n_slide_region(j,i)==3) then   ! sediment region
 
-            sum_area_sed = sum_area_sed + area(j,i)
+            sum_area_sed = sum_area_sed + cell_area(j,i)
 
-            H_ave_sed = H_ave_sed + area(j,i)*H(j,i)
+            H_ave_sed = H_ave_sed + cell_area(j,i)*H(j,i)
 
-            if (n_cts(j,i) /= -1_i1b) then   ! temperate base
+            if (n_cts(j,i) /= -1) then   ! temperate base
                Tbh_help    = 0.0_dp
             else   ! cold base
                Tbh_help    = min((temp_c(0,j,i)-temp_c_m(0,j,i)), 0.0_dp)
             end if
-            Tbh_ave_sed = Tbh_ave_sed + area(j,i)*Tbh_help
+            Tbh_ave_sed = Tbh_ave_sed + cell_area(j,i)*Tbh_help
 
-            if (n_cts(j,i) /= -1_i1b) Atb_sed = Atb_sed + area(j,i)
+            if (n_cts(j,i) /= -1) Atb_sed = Atb_sed + cell_area(j,i)
 
          end if
 
@@ -4601,10 +4675,10 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- Writing of data on time-series file
 
       if ((forcing_flag == 1).or.(forcing_flag == 3)) then
-         write(unit=15, fmt=trim(fmt2)) time_val, delta_ts, z_sl, &
+         write(unit=15, fmt=trim(fmt2)) time_val, delta_ts, z_sl_mean, &
                                         H_ave_sed, Tbh_ave_sed, Atb_sed
       else if (forcing_flag == 2) then
-         write(unit=15, fmt=trim(fmt2)) time_val, glac_index, z_sl, &
+         write(unit=15, fmt=trim(fmt2)) time_val, glac_index, z_sl_mean, &
                                         H_ave_sed, Tbh_ave_sed, Atb_sed
       end if
 
@@ -4802,10 +4876,10 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 
       end if
 
-!    ---- z_sl
+!    ---- z_sl_mean
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
-      call check( nf90_def_var(ncid(n), 'z_sl', NF90_FLOAT, nc1d, ncv), &
+      call check( nf90_def_var(ncid(n), 'z_sl_mean', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
       buffer = 'm'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
@@ -4813,7 +4887,7 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
       buffer = 'global_average_sea_level_change'
       call check( nf90_put_att(ncid(n), ncv, 'standard_name', trim(buffer)), &
                   thisroutine )
-      buffer = 'Sea level'
+      buffer = 'Mean sea level'
       call check( nf90_put_att(ncid(n), ncv, 'long_name', trim(buffer)), &
                   thisroutine )
 
@@ -5374,8 +5448,8 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 
       end if
 
-      call check( nf90_inq_varid(ncid(n), 'z_sl', ncv), thisroutine )
-      call check( nf90_put_var(ncid(n), ncv, real(z_sl,sp), &
+      call check( nf90_inq_varid(ncid(n), 'z_sl_mean', ncv), thisroutine )
+      call check( nf90_put_var(ncid(n), ncv, real(z_sl_mean,sp), &
                                start=nc1cor), thisroutine )
 
       call check( nf90_inq_varid(ncid(n), 'V_tot', ncv), thisroutine )
@@ -5535,8 +5609,8 @@ end subroutine output2
 !-------------------------------------------------------------------------------
 !> Computation of the scalar output variables.
 !<------------------------------------------------------------------------------
-subroutine scalar_variables(time, z_sl, &
-                            H, H_cold, H_temp, &
+subroutine scalar_variables(time, &
+                            H_cold, H_temp, &
                             time_val, &
                             V_tot, V_grounded, V_floating, &
                             A_tot, A_grounded, A_floating, &
@@ -5550,8 +5624,8 @@ subroutine scalar_variables(time, z_sl, &
 
 implicit none
 
-real(dp), intent(in) :: time, z_sl
-real(dp), dimension(0:JMAX,0:IMAX), intent(in) :: H, H_cold, H_temp
+real(dp), intent(in) :: time
+real(dp), dimension(0:JMAX,0:IMAX), intent(in) :: H_cold, H_temp
 logical, dimension(0:JMAX,0:IMAX), optional, intent(in) :: opt_flag_region
 
 real(dp), intent(out) :: time_val, &
@@ -5618,14 +5692,14 @@ do j=0, JMAX
 
    if (flag_inner_point(j,i).and.flag_region(j,i)) then
 
-      if (mask(j,i)==0_i1b) then   ! grounded ice
+      if (mask(j,i)==0) then   ! grounded ice
 
          if (zs(j,i)       > zs_max)  zs_max  = zs(j,i)
          if (H(j,i)        > H_max  ) H_max   = H(j,i)
          if (H_temp(j,i)   > H_t_max) H_t_max = H_temp(j,i)
 
-         V_grounded = V_grounded + H(j,i)     *area(j,i)
-         V_temp     = V_temp     + H_temp(j,i)*area(j,i)
+         V_grounded = V_grounded + H(j,i)     *cell_area(j,i)
+         V_temp     = V_temp     + H_temp(j,i)*cell_area(j,i)
 
 #if (defined(ANT) \
       || defined(GRL) \
@@ -5637,35 +5711,36 @@ do j=0, JMAX
       || defined(XYZ))   /* terrestrial ice sheet */
 
          V_gr_redu = V_gr_redu &
-                     + rhosw_rho_ratio*max((z_sl-zl(j,i)),0.0_dp)*area(j,i)
+                     + rhosw_rho_ratio &
+                          *max((z_sl(j,i)-zl(j,i)),0.0_dp)*cell_area(j,i)
 
 #endif
 
-         A_grounded = A_grounded + area(j,i)
+         A_grounded = A_grounded + cell_area(j,i)
 
-         if (n_cts(j,i) /= -1_i1b) A_temp = A_temp + area(j,i)
+         if (n_cts(j,i) /= -1) A_temp = A_temp + cell_area(j,i)
 
          vs_help = sqrt(0.25_dp &
                           * ( (vx_c(KCMAX,j,i)+vx_c(KCMAX,j,i-1))**2 &
                              +(vy_c(KCMAX,j,i)+vy_c(KCMAX,j-1,i))**2 ) )
          if (vs_help > vs_max) vs_max = vs_help
 
-         if (n_cts(j,i) >= 0_i1b) then   ! temperate base
+         if (n_cts(j,i) >= 0) then   ! temperate base
             Tbh_max = 0.0_dp
          else   ! cold base
             Tbh_help = min((temp_c(0,j,i)-temp_c_m(0,j,i)), 0.0_dp)
             if (Tbh_help > Tbh_max) Tbh_max = Tbh_help
          end if
 
-      else if (mask(j,i)==3_i1b) then   ! floating ice
+      else if (mask(j,i)==3) then   ! floating ice
                                     ! (basal temperature assumed to be below
                                     ! the pressure melting point for pure ice)
 
          if (zs(j,i)    > zs_max) zs_max = zs(j,i)
          if (H(j,i)     > H_max)  H_max  = H(j,i)
 
-         V_floating = V_floating + H(j,i)*area(j,i)
-         A_floating = A_floating + area(j,i)
+         V_floating = V_floating + H(j,i)*cell_area(j,i)
+         A_floating = A_floating + cell_area(j,i)
 
          vs_help = sqrt(0.25_dp &
                           * ( (vx_c(KCMAX,j,i)+vx_c(KCMAX,j,i-1))**2 &
@@ -5744,18 +5819,18 @@ do j=0, JMAX
 
    if (flag_inner_point(j,i).and.flag_region(j,i)) then
 
-      Q_s = Q_s + as_perp_apl(j,i) * area(j,i)
+      Q_s = Q_s + as_perp_apl(j,i) * cell_area(j,i)
 
-      if (     (mask(j,i)==0_i1b).or.(mask_old(j,i)==0_i1b) &
-           .or.(mask(j,i)==3_i1b).or.(mask_old(j,i)==3_i1b) &
+      if (     (mask(j,i)==0).or.(mask_old(j,i)==0) &
+           .or.(mask(j,i)==3).or.(mask_old(j,i)==3) &
          ) &   ! grounded or floating ice before or after the time step
-         Q_b = Q_b + Q_bm(j,i) * area(j,i)   !!% Also *_apl required
-                                             !!% (or delete?)
+         Q_b = Q_b + Q_bm(j,i) * cell_area(j,i)
+                                 !!% Also *_apl required (or delete?)
 
-      if ( (mask(j,i)==0_i1b).or.(mask_old(j,i)==0_i1b) &
+      if ( (mask(j,i)==0).or.(mask_old(j,i)==0) &
          ) &   ! grounded ice before or after the time step
-         Q_temp = Q_temp + Q_tld(j,i) * area(j,i)   !!% Also *_apl required
-                                                    !!% (or delete?)
+         Q_temp = Q_temp + Q_tld(j,i) * cell_area(j,i)
+                                        !!% Also *_apl required (or delete?)
 
    end if
 
@@ -5774,14 +5849,14 @@ do j=0, JMAX
 
    if (flag_inner_point(j,i).and.flag_region(j,i)) then
 
-      if (     (mask(j,i)==0_i1b).or.(mask_old(j,i)==0_i1b) &
-           .or.(mask(j,i)==3_i1b).or.(mask_old(j,i)==3_i1b) ) then
+      if (     (mask(j,i)==0).or.(mask_old(j,i)==0) &
+           .or.(mask(j,i)==3).or.(mask_old(j,i)==3) ) then
                ! grounded or floating ice before or after the time step
-         dV_dt = dV_dt + (dzs_dtau(j,i)-dzb_dtau(j,i))*area(j,i)
+         dV_dt = dV_dt + (dzs_dtau(j,i)-dzb_dtau(j,i))*cell_area(j,i)
                  !!% change to more direct, V_tot-based computation?
       end if
 
-      precip_tot = precip_tot + accum_apl(j,i)*area(j,i)
+      precip_tot = precip_tot + accum_apl(j,i)*cell_area(j,i)
 
    end if
 
@@ -5818,34 +5893,34 @@ do j=0, JMAX
 
    if (flag_inner_point(j,i).and.flag_region(j,i)) then
 
-      if ( mask_ablation_type(j,i) /= 0_i1b ) then
+      if ( mask_ablation_type(j,i) /= 0 ) then
                      ! glaciated land and ocean (including hidden melt points)
 
          ! Quantify what types of melt occurred
          select case ( mask_ablation_type(j,i) )
-            case( 3_i1b )
-               LMT  = LMT + runoff_apl(j,i)  * area(j,i)
-               PAT  = PAT + calving_apl(j,i) * area(j,i)
+            case( 3 )
+               LMT  = LMT + runoff_apl(j,i)  * cell_area(j,i)
+               PAT  = PAT + calving_apl(j,i) * cell_area(j,i)
                                ! could cause problems for Greenland
-               SIMB = SIMB + Q_b_apl(j,i)    * area(j,i)
-            case( 1_i1b )
-               LMT  = LMT + runoff_apl(j,i)  * area(j,i)
-               PAT  = PAT + calving_apl(j,i) * area(j,i)  ! ok
-               GIMB = GIMB + Q_b_apl(j,i)    * area(j,i)
-            case( 9_i1b )
-               mb_mis = mb_mis + mb_source_apl(j,i) * area(j,i)
-            case( -1_i1b )
-               LMH = LMH + runoff_apl(j,i)  * area(j,i)
-               PAH = PAH + calving_apl(j,i) * area(j,i)
-               LQH = LQH + Q_b_apl(j,i)     * area(j,i)
-            case( -2_i1b )
-               OMH = OMH + calving_apl(j,i) * area(j,i) ! only one contribution
+               SIMB = SIMB + Q_b_apl(j,i)    * cell_area(j,i)
+            case( 1 )
+               LMT  = LMT + runoff_apl(j,i)  * cell_area(j,i)
+               PAT  = PAT + calving_apl(j,i) * cell_area(j,i)  ! ok
+               GIMB = GIMB + Q_b_apl(j,i)    * cell_area(j,i)
+            case( 9 )
+               mb_mis = mb_mis + mb_source_apl(j,i) * cell_area(j,i)
+            case( -1 )
+               LMH = LMH + runoff_apl(j,i)  * cell_area(j,i)
+               PAH = PAH + calving_apl(j,i) * cell_area(j,i)
+               LQH = LQH + Q_b_apl(j,i)     * cell_area(j,i)
+            case( -2 )
+               OMH = OMH + calving_apl(j,i) * cell_area(j,i) ! only one contribution
          end select
 
       end if
 
       ! Actual ice mass balance (from top melt, bottom melt and calving)
-      MB = MB + mb_source_apl(j,i)*area(j,i)
+      MB = MB + mb_source_apl(j,i)*cell_area(j,i)
 
    end if
 
@@ -5907,14 +5982,14 @@ end subroutine scalar_variables
 !> Writing of time-series data of the deep ice cores on file in ASCII format
 !! (and optionally in NetCDF format).
 !<------------------------------------------------------------------------------
-subroutine output4(time, dxi, deta, delta_ts, glac_index, z_sl)
+subroutine output4(time, dxi, deta, delta_ts, glac_index)
 
   use netcdf
   use nc_check_m
 
 implicit none
 
-real(dp), intent(in) :: time, dxi, deta, delta_ts, glac_index, z_sl
+real(dp), intent(in) :: time, dxi, deta, delta_ts, glac_index
 
 integer(i4b)                        :: i, j, n
 integer(i4b)                        :: ios
@@ -6060,9 +6135,9 @@ if (n_core >= 1) then
 !-------- Writing of data on file --------
 
    if ((forcing_flag == 1).or.(forcing_flag == 3)) then
-      write(unit=14, fmt='(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
+      write(unit=14, fmt='(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
    else if (forcing_flag == 2) then
-      write(unit=14, fmt='(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
+      write(unit=14, fmt='(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
    end if
 
    n=1
@@ -6294,10 +6369,10 @@ if (n_core >= 1) then
 
       end if
 
-!    ---- z_sl
+!    ---- z_sl_mean
 
       call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
-      call check( nf90_def_var(ncid, 'z_sl', NF90_FLOAT, nc1d, ncv), &
+      call check( nf90_def_var(ncid, 'z_sl_mean', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
       buffer = 'm'
       call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
@@ -6305,7 +6380,7 @@ if (n_core >= 1) then
       buffer = 'global_average_sea_level_change'
       call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
                   thisroutine )
-      buffer = 'Sea level'
+      buffer = 'Mean sea level'
       call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
                   thisroutine )
 
@@ -6479,8 +6554,8 @@ if (n_core >= 1) then
 
    end if
 
-   call check( nf90_inq_varid(ncid, 'z_sl', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(z_sl,sp), &
+   call check( nf90_inq_varid(ncid, 'z_sl_mean', ncv), thisroutine )
+   call check( nf90_put_var(ncid, ncv, real(z_sl_mean,sp), &
                             start=nc1cor), thisroutine )
 
    call check( nf90_inq_varid(ncid, 'H_core', ncv), thisroutine )
@@ -6537,11 +6612,11 @@ end subroutine output4
 !> Writing of time-series data for all defined surface points on file
 !! in ASCII format. Modification of Tolly's output7 by Thorben Dunse.
 !<------------------------------------------------------------------------------
-subroutine output5(time, dxi, deta, delta_ts, glac_index, z_sl)
+subroutine output5(time, dxi, deta, delta_ts, glac_index)
 
 implicit none
 
-real(dp), intent(in) :: time, dxi, deta, delta_ts, glac_index, z_sl
+real(dp), intent(in) :: time, dxi, deta, delta_ts, glac_index
 
 integer(i4b) :: n, k
 real(dp) :: time_val
@@ -6673,35 +6748,35 @@ end do
 !-------- Writing of data on file --------
 
 if ((forcing_flag == 1).or.(forcing_flag == 3)) then
-   write(41,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(42,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(43,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(44,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(45,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(46,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(47,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(48,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(49,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(50,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(51,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(52,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(53,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
-   write(54,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl
+   write(41,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(42,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(43,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(44,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(45,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(46,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(47,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(48,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(49,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(50,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(51,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(52,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(53,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
+   write(54,'(1pe13.6,2(1pe13.4))') time_val, delta_ts, z_sl_mean
 else if (forcing_flag == 2) then
-   write(41,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(42,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(43,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(44,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(45,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(46,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(47,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(48,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(49,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(50,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(51,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(52,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(53,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
-   write(54,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl
+   write(41,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(42,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(43,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(44,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(45,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(46,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(47,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(48,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(49,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(50,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(51,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(52,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(53,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
+   write(54,'(1pe13.6,2(1pe13.4))') time_val, glac_index, z_sl_mean
 end if
 
 do n=1, n_surf-1

@@ -232,7 +232,7 @@ print *, '           AGE_COST simulations'
     do i=0, IMAX
       do j=0, JMAX
         !--- Other cost functions:
-        objf_test = objf_test + (H_c(j,i) + H_t(j,i))*area(j,i)
+        objf_test = objf_test + (H_c(j,i) + H_t(j,i))*cell_area(j,i)
       end do
     end do
 
