@@ -123,7 +123,7 @@
 \\
 So far, the GNU GCC (gfortran) and Intel Fortran (ifort) compilers are supported. If you wish to use a different compiler, please contact $<$help@sicopolis.net$>$.
 
-\item SICOPOLIS supports output either in NetCDF or in native binary format. For the former (default \& strongly recommended), an installation of NetCDF version 3.6.x or newer (https://www.unidata.ucar.edu/software/netcdf/) is needed. For installation support, see Appendix~\ref{sect_install_nc}.
+\item SICOPOLIS writes output in NetCDF format (plus some ASCII). An installation of NetCDF version 3.6.x or newer (https://www.unidata.ucar.edu/software/netcdf/) is therefore required. For installation support, see Appendix~\ref{sect_install_nc}.
 
 \item For the shallow-shelf/shelfy-stream solver, the Library of Iterative Solvers for Linear Systems (Lis, version 1.4.43 or newer) is required (https://www.ssisc.org/lis/). For installation support, see Appendix~\ref{sect_install_lis}.
 
@@ -171,15 +171,15 @@ The latter can be configured if you want to download only selected input files (
 
 \item Set the flags
 \\
-NETCDF\_FLAG, LIS\_FLAG, OPENMP\_FLAG and LARGE\_DATA\_\-FLAG 
+LIS\_FLAG, OPENMP\_FLAG and LARGE\_DATA\_\-FLAG 
 \\
-according to your needs (default is ``true''/``true''/``true''/``false'').
+according to your needs. 
 
-If you wish to create output in native binary format rather than in NetCDF format, set NETCDF\_FLAG to ``false''. For simulations with shallow-shelf dynamics (for floating ice) or hybrid shallow-ice--shelfy-stream dynamics (for grounded ice), LIS\_FLAG and OPENMP\_FLAG must both be set to ``true''. For high-resolution simulations (e.g., Greenland/5\,km or Antarctica/8\,km), LARGE\_DATA\_FLAG must be set to ``true''.
+Default is ``true''/``true''/``false'', which works for all test simulations included in the SICOPOLIS package. LIS\_FLAG and OPENMP\_FLAG can be set to ``false'' for simulations with pure shallow-ice dynamics. However, ``true'' is required for simulations with shallow-shelf dynamics (for floating ice) or hybrid shallow-ice--shelfy-stream dynamics (for grounded ice). For high-resolution simulations (e.g., Greenland/5\,km or Antarctica/8\,km), LARGE\_DATA\_FLAG must be set to ``true''.
 
-\item If NETCDF\_FLAG=``true'', set NETCDFHOME to the correct path of your NetCDF installation.
+\item Set NETCDFHOME to the correct path of your NetCDF installation.
 
-If LIS\_FLAG=``true'', set LISHOME to the correct path of your Lis installation.
+If LIS\_FLAG\,=\,``true'', set LISHOME to the correct path of your Lis installation.
 
 \item Depending on your system, some additional settings might have to be added in sico\_configs.sh (\verb+module load+\, commands for dynamic loading etc.).
 
@@ -205,7 +205,7 @@ Shell script (bash) sico.sh for running a single simulation.
 
 Shell scripts (bash) multi\_sico\_1.sh and multi\_sico\_2.sh for running multiple simulations by repeated calls of sico.sh.
 
-Subdirectory \textbf{headers}: specification files sico\_specs\_\emph{run\_name}.h (\emph{run\_name}: name of run).
+Subdirectory \textbf{headers}: specification files sico\_specs\_\emph{run\_name}.h (\emph{run\_name}: name of run) for a number of computationally rather inexpensive test runs.
 
 \begin{itemize}
 
@@ -432,8 +432,6 @@ Directory that contains a copy of the GNU General Public License (version~3).
 
 \begin{enumerate}
 
-\item It is recommended to run SICOPOLIS with output in NetCDF format. If you wish to create output in native binary format instead, set NETCDF to 1 (rather than 2) in all specification files sico\_specs\_\emph{run\_name}.h.
-
 \item For example, to run simulation v5\_grl20\_ss25ka, use the script sico.sh:
 \\
 \hspace*{10mm}\verb+(./sico.sh -m v5_grl20_ss25ka) >out_001.dat 2>&1 &+
@@ -516,12 +514,12 @@ For the Antarctic ice sheet, these data are written for six locations:
 \\
 Vostok (xxx=Vo), Dome A (xxx=DA), Dome C (xxx=DC), Dome F (xxx=DF), Kohnen (xxx=Ko), Byrd (xxx=By).
 
-\item \textbf{run\_name0001.nc/.erg}, \textbf{run\_name0002.nc/.erg}, ...:
+\item \textbf{run\_name0001.nc}, \textbf{run\_name0002.nc}, ...:
 
-Complete set of fields (topography, velocity, temperature etc., written either in NetCDF (*.nc) or in native binary (*.erg) format; see subroutines output\_nc and output1, respectively) for selected time slices defined in specifications file.
-\linebreak
+Complete set of fields (topography, velocity, temperature etc., written in NetCDF (*.nc) format) for selected time slices defined in specifications file.
+
 For example, simulation v5\_grl20\_ss25ka produces three files
-\linebreak
+\\
 v5\_grl20\_ss25ka0001.nc, v5\_grl20\_ss25ka0002.nc and v5\_grl20\_ss25ka0003.nc, which correspond to $t=0$, 10\,ka and 25\,ka, respectively.
 
 \end{itemize}
