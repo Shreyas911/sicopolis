@@ -60,10 +60,8 @@ subroutine boundary(time, dtime, dxi, deta, &
   use sico_maths_m, only: my_erfc
 #endif /* OpenAD */
 
-#if (NETCDF > 1)
   use netcdf
   use nc_check_m
-#endif
 
 #if ((MARGIN==2) \
       && (MARINE_ICE_FORMATION==2) \
@@ -149,7 +147,6 @@ character(len=256) :: filename_rtr
 real(dp), dimension(0:IMAX,0:JMAX) :: r_mask_retreat_conv
 #endif
 
-#if (NETCDF > 1)
 integer(i4b) :: ncid
 !     ncid:      File ID
 integer(i4b) :: ncv
@@ -158,7 +155,6 @@ integer(i4b) :: nc3cor(3)
 !     nc3cor(3): Corner of a 3-d array
 integer(i4b) :: nc3cnt(3)
 !     nc3cnt(3): Count of a 3-d array
-#endif
 
 real(dp), parameter :: &
           inv_twelve = 1.0_dp/12.0_dp, one_third = 1.0_dp/3.0_dp

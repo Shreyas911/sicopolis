@@ -65,10 +65,8 @@ subroutine sico_init(delta_ts, glac_index, &
   use enth_temp_omega_m, only : calc_c_int_table, calc_c_int_inv_table, &
                                 enth_fct_temp_omega
 
-#if (NETCDF > 1)
   use netcdf
   use nc_check_m
-#endif
 
 #if (DISC>0 && !defined(EXEC_MAKE_C_DIS_0))
   use discharge_workers_m, only: disc_param, disc_fields
@@ -169,12 +167,10 @@ real(dp), dimension(0:IMAX,0:JMAX) :: smb_anom_initmip_conv
 real(dp), dimension(0:IMAX,0:JMAX) :: H_ref_retreat_conv
 #endif
 
-#if (NETCDF > 1)
 integer(i4b) :: dimid, ncid, ncv
 !   dimid:       Dimension ID
 !    ncid:       File ID
 !     ncv:       Variable ID
-#endif
 
 real(dp), parameter :: inv_twelve = 1.0_dp/12.0_dp
 
@@ -408,57 +404,48 @@ call error(errormsg)
 #endif
 
 #if (TSURFACE == 6)
-#if (ACCSURFACE != 6 || ABLSURFACE != 6 || NETCDF != 2)
+#if (ACCSURFACE != 6 || ABLSURFACE != 6)
 errormsg = ' >>> sico_init: Options TSURFACE==6, ACCSURFACE==6, ABLSURFACE==6' &
          //         end_of_line &
-         //'        and NETCDF==2 must be used together!'
+         //'        must be used together!'
 call error(errormsg)
 #endif
 #endif
 
 #if (ACCSURFACE == 6)
-#if (TSURFACE != 6 || ABLSURFACE != 6 || NETCDF != 2)
+#if (TSURFACE != 6 || ABLSURFACE != 6)
 errormsg = ' >>> sico_init: Options TSURFACE==6, ACCSURFACE==6, ABLSURFACE==6' &
          //         end_of_line &
-         //'        and NETCDF==2 must be used together!'
+         //'        must be used together!'
 call error(errormsg)
 #endif
 #endif
 
 #if (ABLSURFACE == 6)
-#if (TSURFACE != 6 || ACCSURFACE != 6 || NETCDF != 2)
+#if (TSURFACE != 6 || ACCSURFACE != 6)
 errormsg = ' >>> sico_init: Options TSURFACE==6, ACCSURFACE==6, ABLSURFACE==6' &
          //         end_of_line &
-         //'        and NETCDF==2 must be used together!'
+         //'        must be used together!'
 call error(errormsg)
 #endif
 #endif
 
 #if (ACCSURFACE == 7)
-#if (ABLSURFACE != 7 || NETCDF != 2)
+#if (ABLSURFACE != 7)
 errormsg = ' >>> sico_init: Options ACCSURFACE==7, ABLSURFACE==7' &
          //         end_of_line &
-         //'        and NETCDF==2 must be used together!'
+         //'        must be used together!'
 call error(errormsg)
 #endif
 #endif
 
 #if (ABLSURFACE == 7)
-#if (ACCSURFACE != 7 || NETCDF != 2)
+#if (ACCSURFACE != 7)
 errormsg = ' >>> sico_init: Options ACCSURFACE==7, ABLSURFACE==7' &
          //         end_of_line &
-         //'        and NETCDF==2 must be used together!'
+         //'        must be used together!'
 call error(errormsg)
 #endif
-#endif
-
-#if (defined(INITMIP_SMB_ANOM_FILE) && NETCDF != 2)
-if ( trim(adjustl(INITMIP_SMB_ANOM_FILE)) /= 'none' ) then
-   errormsg = ' >>> sico_init: Defining INITMIP_SMB_ANOM_FILE' &
-            //         end_of_line &
-            //'        must be used together with NETCDF==2!'
-   call error(errormsg)
-end if
 #endif
 
 !-------- Compatibility check of discretization schemes for the horizontal and
@@ -1312,7 +1299,6 @@ write(10, fmt=trim(fmt2)) 'OUTPUT_FLUX_VARS = ', OUTPUT_FLUX_VARS
     !!! Climatology extraction hack (must not be used routinely) !!!
 write(10, fmt=trim(fmt1)) '!!! CLIMATOLOGY_EXTRACTION_HACK defined !!!'
 #endif
-write(10, fmt=trim(fmt2)) 'NETCDF = ', NETCDF
 #if (OUTPUT==2 || OUTPUT==3)
 write(10, fmt=trim(fmt2)) 'n_output = ', n_output
 do n=1, n_output
@@ -1612,17 +1598,7 @@ n_slide_region = nint(field2d_aux)
 
 target_topo_dat_name = trim(TARGET_TOPO_DAT_NAME)
 
-#if (NETCDF==1)
-errormsg = ' >>> sico_init: Reading of target topography' &
-         //         end_of_line &
-         //'        only implemented for NetCDF files (NETCDF==2)!'
-call error(errormsg)
-#elif (NETCDF==2)
 call read_target_topo_nc(target_topo_dat_name)
-#else
-errormsg = ' >>> sico_init: Parameter NETCDF must be either 1 or 2!'
-call error(errormsg)
-#endif
 
 #endif
 
