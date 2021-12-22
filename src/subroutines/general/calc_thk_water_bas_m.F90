@@ -42,6 +42,7 @@ module calc_thk_water_bas_m
   use sico_types_m
   use sico_variables_m
   use sico_vars_m
+  use error_m
 
 #if (BASAL_HYDROLOGY==1)
   use hydro_m
@@ -105,12 +106,14 @@ contains
      if (mask(j,i)==0) then   ! grounded ice
         hydro_icemask(i,j) = 1
         hydro_thk(i,j)     = H(j,i)
-        if (MELT_DRAIN==1) then !drainage of melt water 
-        	hydro_supply(i,j)  = rho_rho_w_ratio*(Q_b_tot(j,i)+ runoff(j,i))
-        	!print *,' Draining Meltwater!' 
-        else 
-        	hydro_supply(i,j)  = rho_rho_w_ratio*Q_b_tot(j,i)
-        end if 
+#if (!defined(MELT_DRAIN) || MELT_DRAIN==0)
+        hydro_supply(i,j)  = rho_rho_w_ratio*Q_b_tot(j,i)
+#elif (MELT_DRAIN==1)   /* drainage of surface melt water included */
+        hydro_supply(i,j)  = rho_rho_w_ratio*(Q_b_tot(j,i) + runoff(j,i))
+#else
+        errormsg = ' >>> calc_thk_water_bas: MELT_DRAIN must be 0 or 1!'
+        call error(errormsg)
+#endif
      else
         hydro_icemask(i,j) = 0
         hydro_thk(i,j)     = 0.0_dp
