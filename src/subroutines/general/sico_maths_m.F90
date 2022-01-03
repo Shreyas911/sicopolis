@@ -8,7 +8,8 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2021 Ralf Greve
+!! Copyright 2009-2022 Ralf Greve,
+!!                     Liz Curry-Logan, Sri Hari Krishna Narayanan
 !!
 !! @section License
 !!

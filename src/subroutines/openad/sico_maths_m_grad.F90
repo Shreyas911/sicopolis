@@ -1,14 +1,14 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !
-!  Module :  s i c o _ s l e _ s o l v e r s
+!  Module :  s i c o _ m a t h s _ m _ g r a d
 !
 !> @file
 !!
-!! Solvers for systems of linear equations used by SICOPOLIS.
+!! Several mathematical tools used by SICOPOLIS.
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2021 Ralf Greve, Tatsuru Sato
+!! Copyright 2017-2022 Liz Curry-Logan, Sri Hari Krishna Narayanan
 !!
 !! @section License
 !!
@@ -30,7 +30,7 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
-!> Solvers for systems of linear equations used by SICOPOLIS.
+!> Several mathematical tools used by SICOPOLIS.
 !<------------------------------------------------------------------------------
 module sico_maths_m_grad
 

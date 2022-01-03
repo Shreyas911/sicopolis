@@ -9,7 +9,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2021 Ralf Greve, Reinhard Calov, Alex Robinson
+!! Copyright 2009-2022 Ralf Greve, Reinhard Calov, Alex Robinson
 !!
 !! @section License
 !!

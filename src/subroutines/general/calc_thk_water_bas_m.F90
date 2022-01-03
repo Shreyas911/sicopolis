@@ -8,12 +8,7 @@
 !!
 !! @section Copyright
 !!
-!! Modified by Marius Schaefer mschaefer@uach.cl: 8-12-2021
-!!
-!! New option to add run-off from the surface to the basal water  
-!! Header parameter: MELT_DRAIN
-!!
-!! Copyright 2009-2021 Ralf Greve
+!! Copyright 2009-2022 Ralf Greve, Marius Schaefer
 !!
 !! @section License
 !!
