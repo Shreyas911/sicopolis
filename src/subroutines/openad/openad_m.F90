@@ -8,7 +8,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2017-2021 Liz Curry-Logan, Sri Hari Krishna Narayanan,
+!! Copyright 2017-2022 Liz Curry-Logan, Sri Hari Krishna Narayanan,
 !!                     Patrick Heimbach, Ralf Greve
 !!
 !! @section License

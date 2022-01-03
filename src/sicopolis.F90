@@ -5,7 +5,7 @@
 !
 #define       MODEL_SICOPOLIS
 #define       VERSION '5-dev'
-#define       DATE    '2021-12-15'
+#define       DATE    '2022-01-03'
 !
 !> @mainpage
 !!
@@ -81,12 +81,14 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2021 Ralf Greve\n
+!! Copyright 2009-2022 Ralf Greve\n
 !! (with contributions by Jorge Bernales, Sebastian Beyer, Heinz Blatter,
-!! Reinhard Calov, Thorben Dunse, Ben Galton-Fenzi, Thomas Goelles,
-!! Philipp Hancke, Patrick Heimbach, Nina Kirchner, Thomas Kleiner,
-!! Sascha Knell, Anne Le Brocq, Liz Curry Logan, Sri Hari Krishna Narayanan,
-!! Alex Robinson, Fuyuki Saito, Tatsuru Sato, Malte Thoma, Roland Warner)
+!! Reinhard Calov, Thorben Dunse, Eduardo Flandez, Ben Galton-Fenzi,
+!! Thomas Goelles, Bjoern Grieger, Philipp Hancke, Patrick Heimbach,
+!! Nina Kirchner, Thomas Kleiner, Sascha Knell, Anne Le Brocq, Liz Curry Logan,
+!! Sri Hari Krishna Narayanan, Alex Robinson, Fuyuki Saito, Tatsuru Sato,
+!! Marius Schaefer, Matthias Scheiter, Oliver J. Stenzel, Malte Thoma,
+!! Roland Warner)
 !!
 !! @section License
 !!
@@ -109,7 +111,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2021 Ralf Greve
+!! Copyright 2009-2022 Ralf Greve
 !!
 !! @section License
 !!

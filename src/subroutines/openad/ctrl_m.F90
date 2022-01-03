@@ -1,8 +1,10 @@
 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   
-!   Module     :  c t r l
+!   Module  :  c t r l
   
-!   Purpose    :  Declarations of control variables for adjointing
+!   Purpose :  Declarations of control variables for adjointing
+
+!   Copyright 2017-2022 Liz Curry-Logan, Sri Hari Krishna Narayanan
   
 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   

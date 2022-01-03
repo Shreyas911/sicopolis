@@ -8,7 +8,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2021 Ralf Greve, Thorben Dunse
+!! Copyright 2009-2022 Ralf Greve, Thorben Dunse
 !!
 !! @section License
 !!
