@@ -11,7 +11,7 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2021-12-15'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2022-01-03'
 !                      Date of last change
 
 !-------- Domain --------
@@ -647,6 +647,12 @@
 !                           equal to zero everywhere
 !                       1 : Water film thickness under grounded ice
 !                           computed by flux routing scheme
+
+#define MELT_DRAIN 0
+!                       Input for water film under grounded ice
+!                       (only for BASAL_HYDROLOGY==1):
+!                       0 : Basal meltwater only
+!                       1 : Basal meltwater plus surface runoff
 
 !-------- Basal sliding --------
 
