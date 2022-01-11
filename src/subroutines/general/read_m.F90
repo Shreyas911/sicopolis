@@ -43,7 +43,7 @@ module read_m
   public :: read_tms_nc, read_target_topo_nc, &
             read_2d_input, read_phys_para, read_kei
 
-#if (defined(ALLOW_GRDCHK) || defined(ALLOW_OPENAD))
+#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
   public :: read_ad_data
 #endif
 
@@ -945,9 +945,9 @@ contains
 
   character(len=64), parameter :: thisroutine = 'read_target_topo_nc'
 
-#if defined(ALLOW_OPENAD) /* OpenAD */
+#if defined(ALLOW_TAPENADE) /* Tapenade */
   integer(i4b) :: i, j
-#endif /* OpenAD */
+#endif /* Tapenade */
 
 !-------- Read target-topography data
 !         (from a time-slice file of a previous simulation) --------
@@ -999,13 +999,13 @@ contains
 
 !-------- Convert data to double precision --------
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   mask_target = transpose(mask_conv)
   zs_target    = real(transpose(zs_conv),dp)
   zb_target    = real(transpose(zb_conv),dp)
   zl_target    = real(transpose(zl_conv),dp)
   H_target     = real(transpose(H_conv) ,dp)
-#else /* OpenAD */
+#else /* Tapenade */
   do i=0, IMAX
   do j=0, JMAX
      mask_target(j,i) = mask_conv(i,j)
@@ -1015,7 +1015,7 @@ contains
      H_target(j,i)     = real(H_conv(i,j) ,dp)
   end do
   end do
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
   end subroutine read_target_topo_nc
 
@@ -1183,11 +1183,11 @@ contains
 
   filename_with_path = trim(IN_PATH)//'/general/kei.dat'
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   open(unit=11, iostat=ios, file=trim(filename_with_path), status='old')
-#else /* OpenAD */
+#else /* Tapenade */
   open(unit=11, iostat=ios, file=trim(filename_with_path))
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
   if (ios /= 0) then
      errormsg = ' >>> read_kei: Error when opening the kei file!'
@@ -1278,11 +1278,11 @@ contains
 
   else   ! ASCII file
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
      open(n_unit, iostat=ios, file=trim(filename_aux), status='old')
-#else /* OpenAD */
+#else /* Tapenade */
      open(n_unit, iostat=ios, file=trim(filename_aux))
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
      if (ios /= 0) then
         errormsg = ' >>> read_phys_para: Error when opening the phys_para file!'
@@ -1687,12 +1687,12 @@ contains
 
   character :: check
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
   integer             :: i0
   character(len=1024) :: txt
 
-#else /* OpenAD */
+#else /* Tapenade */
 
   character                   :: ch_dummy
   character(len=*), parameter :: fmt1='(a)', fmt3='(15x)'
@@ -1700,7 +1700,7 @@ contains
 
   first_read = .true.
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
   n_cnt_phys_para = n_cnt_phys_para + 1
 
@@ -1708,7 +1708,7 @@ contains
 
   do while (check == '%')
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
      read(unit=n_unit, fmt='(a)') txt
 
@@ -1719,7 +1719,7 @@ contains
         read(txt(i0:), *) para
      end if
 
-#else /* OpenAD: cannot differentiate through index function */
+#else /* Tapenade: cannot differentiate through index function */
 
      if (first_read) then
         read(unit=n_unit, fmt=trim(fmt1), advance='no') check
@@ -1734,13 +1734,13 @@ contains
         read(unit=n_unit, fmt=*) para
      end if
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
   end do
 
   end subroutine read_phys_para_value
 
-#if (defined(ALLOW_GRDCHK) || defined(ALLOW_OPENAD))
+#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
 !-------------------------------------------------------------------------------
 !> Reading in of adjoint related data (only set up for ages right now).
 !<------------------------------------------------------------------------------
@@ -1766,9 +1766,9 @@ contains
     ! Note: the last lines of these files
     ! correspond to the surface of the ice sheet:
     open(unit=90, iostat=ios, &
-file='subroutines/openad/gridded_age_obs.dat', status='old')
+file='subroutines/tapenade/gridded_age_obs.dat', status='old')
     open(unit=91, iostat=ios, &
-file='subroutines/openad/gridded_age_unc.dat', status='old')
+file='subroutines/tapenade/gridded_age_unc.dat', status='old')
     do k=0,KDATA
        do j=0,JMAX
           do i=0,IMAX
@@ -1805,7 +1805,7 @@ file='subroutines/openad/gridded_age_unc.dat', status='old')
 
   end subroutine read_ad_data
 
-#endif /* inclusion of OpenAD only routine */
+#endif /* inclusion of Tapenade only routine */
 
 !-------------------------------------------------------------------------------
 

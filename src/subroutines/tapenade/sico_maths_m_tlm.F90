@@ -474,7 +474,7 @@ iter_loop:DO iter=1,iter_max
 #if  defined(BUILD_LIS) && (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
 !#if  (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
 !-------------------------------------------------------------------------------
-!> OpenAD needs a template to help differentiate through the LIS solver when  
+!> Tapenade needs a template to help differentiate through the LIS solver when  
 !! it is used. This is substituted in for adjoint modes in Antarctica with 
 !! ice shelves.
 !<------------------------------------------------------------------------------
