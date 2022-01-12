@@ -1,4 +1,4 @@
-all: drivergrdchk driveradjoint driverforward
+all: drivergrdchk_cov drivergrdchk driveradjoint driverforward cov
 
 ifndef F90C
 F90C=gfortran
@@ -34,6 +34,17 @@ LIB_NETCDF_F90=${NETCDF_FORTRAN_DIR}/lib/libnetcdff.so
 LIB_NETCDF_F90_FLAG=-L${NETCDF_FORTRAN_DIR}/lib -lnetcdff
 NETCDF_F90_FLAG=-I${NETCDF_FORTRAN_DIR}/include/
 endif
+
+ifndef GCOV
+GCOV=/opt/ohpc/pub/compiler/gcc/5.4.0/bin/gcov
+endif
+
+ifndef LCOV
+LCOV=/usr/bin/lcov
+endif
+
+F90FLAGS_COV= --coverage -fprofile-arcs -ftest-coverage -O0 -g -DRUN_SPECS_HEADER=\"sico_specs.h\" -mcmodel=medium -fno-range-check -ffpe-trap=invalid,zero
+CFLAGS_COV= --coverage -fprofile-arcs -ftest-coverage -O0 -g
 
 F90FLAGS= -O3 -g -DRUN_SPECS_HEADER=\"sico_specs.h\" -mcmodel=medium -fno-range-check -ffpe-trap=invalid,zero 
 CFLAGS= -O3 -g
@@ -293,6 +304,17 @@ drivergrdchk: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $
 	${F90C} -I./ ${F90FLAGS} ${DEFINE_FLAGS_GRDCHK} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
 	${F90C} ${F90FLAGS} -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
 
+drivergrdchk_cov: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_COST) $(SRC)
+	${F90C} -I./ ${F90FLAGS_COV} ${DEFINE_FLAGS_GRDCHK} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
+	${F90C} ${F90FLAGS_COV} -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
+
+
+cov: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_COST) $(SRC)
+	${GCOV} $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_COST) $(SRC)
+
+coverage.info: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_COST) $(SRC)
+	${LCOV} --gcov-tool $(GCOV) --capture --directory . --output-file coverage.info
+
 sicopolis.o: $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_COST) $(SRC)
 	${F90C} -I./ ${F90FLAGS} ${DEFINE_FLAGS_ADJOINT} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
 
@@ -344,6 +366,9 @@ clean:
 	      *_cpp_b.f90\
 	      *_cpp_d.f90\
               *.o\
+	      *.gcov\
+	      *.gcda\
+              *.gcno\
               *.mod*\
               driver*\
               *~\
@@ -357,6 +382,7 @@ clean:
               iaddr*\
               stream_vel_variables_passive.f90\
               head_sf*
+
 cleanobj: 
 	rm -f subroutines/tapenade/*.o \
               subroutines/general/*.o\
