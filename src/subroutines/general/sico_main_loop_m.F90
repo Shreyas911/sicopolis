@@ -337,7 +337,7 @@ contains
   call calc_thk_water_bas()
   
   !-------- Data output --------
-  
+#if !(defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
   !  ------ Time-slice data
   
 #if (OUTPUT==1)
@@ -487,6 +487,7 @@ contains
 
 #endif
 
+#endif   /* !ALLOW_GRDCHK & !ALLOW_TAPENADE */
   end do main_loop   ! End of main loop (time integration)
 
     end subroutine sico_main_loop

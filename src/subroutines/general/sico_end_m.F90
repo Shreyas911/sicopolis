@@ -91,6 +91,7 @@ contains
 #endif
 #endif
 
+#if !(defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
   do n=0, maxval(mask_region)
      call check( nf90_sync(ncid_ser(n)),  thisroutine )
      call check( nf90_close(ncid_ser(n)), thisroutine )
@@ -101,7 +102,7 @@ contains
      call check( nf90_close(ncid_core), thisroutine )
   end if
           ! Closing of NetCDF time-series output file for the deep ice cores
-
+#endif
 #if (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
 #if !defined(ALLOW_TAPENADE)
   call lis_finalize(ierr)   ! Finalise execution environment of the
