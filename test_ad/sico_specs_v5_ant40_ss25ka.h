@@ -11,7 +11,7 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2021-06-15'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2022-01-03'
 !                      Date of last change
 
 !-------- Domain --------
@@ -536,6 +536,10 @@
 !                             but maximum ice extent is constrained by the
 !                             prescribed mask MASK_MAXEXTENT_FILE.
 
+#define OCEAN_CONNECTIVITY 1
+!                         0 : Ocean connectivity not enforced.
+!                         1 : Ocean connectivity enforced.
+
 #define H_ISOL_MAX 1000.0d0
 !                             Maximum thickness of isolated ice points (in m)
 !                             (if set to 0.0d0, isolated ice points are killed).
@@ -654,8 +658,7 @@
 !                             glacial index (requires ACCSURFACE==5)
 !                         6 : Surface temperature climatology and anomaly
 !                             read directly from NetCDF files
-!                             (requires ACCSURFACE==6, ABLSURFACE==6
-!                              and NETCDF==2)
+!                             (requires ACCSURFACE==6, ABLSURFACE==6)
 
 #define TEMP_PRESENT_PARA 1
 !                         Parameterization of the present-day mean-annual
@@ -733,10 +736,9 @@
 !                             glacial index (requires TSURFACE==5)
 !                         6 : SMB climatology and anomaly
 !                             read directly from NetCDF files
-!                             (requires TSURFACE==6, ABLSURFACE==6
-!                              and NETCDF==2)
+!                             (requires TSURFACE==6, ABLSURFACE==6)
 !                         7 : Implied SMB by Calov+ (2018, Cryosphere 12)
-!                             (requires ABLSURFACE==7 and NETCDF==2)
+!                             (requires ABLSURFACE==7)
 
 #define PRECIP_PRESENT_FILE 'ant_sr_dev1.0_40_prec_a.dat'
 !                       Name of the file containing the present-day
@@ -810,10 +812,9 @@
 !                             by linear-temperature-index (LTI) method.
 !                         6 : SMB climatology and anomaly
 !                             read directly from NetCDF files
-!                             (requires TSURFACE==6, ACCSURFACE==6
-!                              and NETCDF==2)
+!                             (requires TSURFACE==6, ACCSURFACE==6)
 !                         7 : Implied SMB by Calov+ (2018, Cryosphere 12)
-!                             (requires ACCSURFACE==7 and NETCDF==2)
+!                             (requires ACCSURFACE==7)
 
 #define LAMBDA_LTI 500.0d0
 !                       Melting coefficient for the LTI method
@@ -965,6 +966,12 @@
 !                           equal to zero everywhere
 !                       1 : Water film thickness under grounded ice
 !                           computed by flux routing scheme
+
+#define MELT_DRAIN 0
+!                       Input for water film under grounded ice
+!                       (only for BASAL_HYDROLOGY==1):
+!                       0 : Basal meltwater only
+!                       1 : Basal meltwater plus surface runoff
 
 !-------- Basal sliding --------
 
@@ -1243,12 +1250,6 @@
 !                             (exception:
 !                              time-slice output with all 3-d fields for
 !                              OUTPUT==3, in which case snapshots are written)
-
-#define NETCDF 1
-!                         1 : Time-slice files unformatted ('.erg')
-!                         2 : Time-slice files in netCDF format ('.nc'),
-!                             and writing of an extended time-series file
-!                             '_ser.nc' in netCDF format
 
 #define DTIME_OUT0 0.0d0
 !                             Time step (in a) for writing of
