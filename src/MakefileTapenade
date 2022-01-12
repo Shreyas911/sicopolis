@@ -8,8 +8,6 @@ CC=gcc
 endif
 
 ifndef HEADER
-#HEADER=v5_ant64_b2_future09_ctrl
-#HEADER=ant20_shelves_OAD
 HEADER=v5_grl20_ss25ka
 endif
 
