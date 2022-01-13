@@ -45,7 +45,10 @@ module discharge_workers_m
   use sico_variables_m
   use sico_vars_m
   use error_m
-  
+#if defined(ALLOW_TAPENADE)
+  use globals
+#endif
+ 
 #if !defined(ALLOW_TAPENADE) /* Normal */
   use compare_float_m
 #endif /* Normal */
@@ -58,40 +61,23 @@ module discharge_workers_m
   real(dp),     private :: c_dis_0, s_dis, c_dis_fac
   real(dp),     private :: T_sub_PD, alpha_sub, alpha_o, m_H, m_D, r_mar_eff
   real(dp),     private :: T_sea_freeze
-#else /* Tapenade */
-  integer(i4b), public :: disc_DW
-  integer(i4b), public :: n_discharge_call_DW, iter_mar_coa_DW
-  real(dp),     public :: c_dis_0_DW, s_dis_DW, c_dis_fac_DW
-  real(dp),     public :: T_sub_PD_DW, alpha_sub_DW, alpha_o_DW, m_H_DW, m_D_DW, r_mar_eff_DW
-  real(dp),     public :: T_sea_freeze_DW
-#endif /* Normal vs. Tapenade */
 
   real(dp),     public  :: dT_glann, dT_sub
 
   integer(i4b), dimension(0:JMAX,0:IMAX), public  :: mask_mar
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
   real(dp),     dimension(0:JMAX,0:IMAX), private :: c_dis
-#else /* Tapenade */
-  real(dp),     dimension(0:JMAX,0:IMAX), public :: c_dis_DW
-#endif /* Normal vs. Tapenade */
 
   real(dp),     dimension(0:JMAX,0:IMAX), public  :: cst_dist, cos_grad_tc
   real(dp),     dimension(0:JMAX,0:IMAX), public  :: dis_perp
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
   private
 #endif /* Normal */
 
-#if !defined(ALLOW_TAPENADE_DIFFERENTIATE) /* ALLOW_TAPENADE_DIFFERENTIATE unset */
   public :: disc_param, disc_fields, calc_c_dis_0, discharge
-#else  /* ALLOW_TAPENADE_DIFFERENTIATE set */
-  public :: disc_fields, calc_c_dis_0, discharge
-#endif /* Unset vs. set ALLOW_TAPENADE_DIFFERENTIATE */
 
 contains
 
-#if !defined(ALLOW_TAPENADE_DIFFERENTIATE) /* ALLOW_TAPENADE_DIFFERENTIATE unset */
 
 !-------------------------------------------------------------------------------
 !> Ice discharge parameters (Greenland).
@@ -235,7 +221,6 @@ contains
 
   end subroutine disc_param
 
-#endif /* ALLOW_TAPENADE_DIFFERENTIATE unset */
 
 !-------------------------------------------------------------------------------
 !> Constant in ice discharge parameterization (Greenland).
