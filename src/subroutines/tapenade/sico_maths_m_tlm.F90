@@ -242,6 +242,61 @@ iter_loop:DO iter=1,iter_max
 !<------------------------------------------------------------------------------
   SUBROUTINE TRI_SLE_STUB_D(a0, a0d, a1, a1d, a2, a2d, x, xd, b, bd, &
 &   nrows)
+!    IMPLICIT NONE
+!    INTEGER(i4b), INTENT(IN) :: nrows
+!    REAL(dp), DIMENSION(0:nrows), INTENT(IN) :: a0, a2
+!    REAL(dp), DIMENSION(0:nrows), INTENT(IN) :: a0d, a2d
+!    REAL(dp), DIMENSION(0:nrows), INTENT(INOUT) :: a1, b
+!    REAL(dp), DIMENSION(0:nrows), INTENT(INOUT) :: a1d, bd
+!    REAL(dp), DIMENSION(0:nrows), INTENT(OUT) :: x
+!    REAL(dp), DIMENSION(0:nrows), INTENT(OUT) :: xd
+!    REAL(dp), DIMENSION(0:nrows) :: help_x
+!    REAL(dp), DIMENSION(0:nrows) :: help_xd
+!    INTEGER(i4b) :: n
+!    REAL(dp) :: temp
+!    REAL(dp) :: temp0
+!!--------  Generate an upper triangular matrix
+!!                      ('obere Dreiecksmatrix') --------
+!!x(1) = a0(0) + a1(0) + a2(0) + b(0) 
+!!x(0) = x(1)
+!!b(0) = x(1)
+!!a1(0) = x(1)
+!    DO n=1,nrows
+!      temp = a0(n)*a2(n-1)/a1(n-1)
+!      a1d(n) = a1d(n) - (a2(n-1)*a0d(n)+a0(n)*a2d(n-1)-temp*a1d(n-1))/a1&
+!&       (n-1)
+!      a1(n) = a1(n) - temp
+!    END DO
+!    DO n=1,nrows
+!      temp = a0(n)*b(n-1)/a1(n-1)
+!      bd(n) = bd(n) - (b(n-1)*a0d(n)+a0(n)*bd(n-1)-temp*a1d(n-1))/a1(n-1&
+!&       )
+!      b(n) = b(n) - temp
+!    END DO
+!!         a0(n)  = 0.0_dp , not needed in the following, therefore
+!!                           not set
+!!-------- Iterative solution of the new system --------
+!!      x(nrows) = b(nrows)/a1(nrows)
+!!      do n=nrows-1, 0, -1
+!!         x(n) = (b(n)-a2(n)*x(n+1))/a1(n)
+!!      end do
+!    help_xd = 0.0_8
+!    temp = b(nrows)/a1(nrows)
+!    help_xd(0) = (bd(nrows)-temp*a1d(nrows))/a1(nrows)
+!    help_x(0) = temp
+!    DO n=1,nrows
+!      temp = b(nrows-n)/a1(nrows-n)
+!      temp0 = a2(nrows-n)*help_x(n-1)/a1(nrows-n)
+!      help_xd(n) = (bd(nrows-n)-temp*a1d(nrows-n))/a1(nrows-n) - (help_x&
+!&       (n-1)*a2d(nrows-n)+a2(nrows-n)*help_xd(n-1)-temp0*a1d(nrows-n))/&
+!&       a1(nrows-n)
+!      help_x(n) = temp - temp0
+!    END DO
+!    DO n=0,nrows
+!      xd(n) = help_xd(nrows-n)
+!      x(n) = help_x(nrows-n)
+!    END DO
+
     IMPLICIT NONE
     INTEGER(i4b), INTENT(IN) :: nrows
     REAL(dp), DIMENSION(0:nrows), INTENT(IN) :: a0, a2
@@ -250,52 +305,24 @@ iter_loop:DO iter=1,iter_max
     REAL(dp), DIMENSION(0:nrows), INTENT(INOUT) :: a1d, bd
     REAL(dp), DIMENSION(0:nrows), INTENT(OUT) :: x
     REAL(dp), DIMENSION(0:nrows), INTENT(OUT) :: xd
-    REAL(dp), DIMENSION(0:nrows) :: help_x
-    REAL(dp), DIMENSION(0:nrows) :: help_xd
     INTEGER(i4b) :: n
-    REAL(dp) :: temp
-    REAL(dp) :: temp0
-!--------  Generate an upper triangular matrix
-!                      ('obere Dreiecksmatrix') --------
-!x(1) = a0(0) + a1(0) + a2(0) + b(0) 
-!x(0) = x(1)
-!b(0) = x(1)
-!a1(0) = x(1)
-    DO n=1,nrows
-      temp = a0(n)*a2(n-1)/a1(n-1)
-      a1d(n) = a1d(n) - (a2(n-1)*a0d(n)+a0(n)*a2d(n-1)-temp*a1d(n-1))/a1&
-&       (n-1)
-      a1(n) = a1(n) - temp
+    REAL(dp), DIMENSION(0:nrows) :: rhs, a1copy
+    INTEGER(i4b) :: n1
+
+    do n1 = 0, nrows
+    a1copy(n1) = a1(n1)
+    end do
+
+    call tri_sle(a0, a1, a2, x, b, nrows)
+
+    rhs(0) = bd(0) - a1d(0)*x(0) - a2d(0)*x(1)
+    rhs(nrows) = bd(nrows) - a0d(nrows)*x(nrows-1) - a1d(nrows)*x(nrows)
+
+    DO n=1,nrows-1
+        rhs(n) = bd(n) - a0d(n)*x(n-1) - a1d(n)*x(n) - a2d(n)*x(n+1)
     END DO
-    DO n=1,nrows
-      temp = a0(n)*b(n-1)/a1(n-1)
-      bd(n) = bd(n) - (b(n-1)*a0d(n)+a0(n)*bd(n-1)-temp*a1d(n-1))/a1(n-1&
-&       )
-      b(n) = b(n) - temp
-    END DO
-!         a0(n)  = 0.0_dp , not needed in the following, therefore
-!                           not set
-!-------- Iterative solution of the new system --------
-!      x(nrows) = b(nrows)/a1(nrows)
-!      do n=nrows-1, 0, -1
-!         x(n) = (b(n)-a2(n)*x(n+1))/a1(n)
-!      end do
-    help_xd = 0.0_8
-    temp = b(nrows)/a1(nrows)
-    help_xd(0) = (bd(nrows)-temp*a1d(nrows))/a1(nrows)
-    help_x(0) = temp
-    DO n=1,nrows
-      temp = b(nrows-n)/a1(nrows-n)
-      temp0 = a2(nrows-n)*help_x(n-1)/a1(nrows-n)
-      help_xd(n) = (bd(nrows-n)-temp*a1d(nrows-n))/a1(nrows-n) - (help_x&
-&       (n-1)*a2d(nrows-n)+a2(nrows-n)*help_xd(n-1)-temp0*a1d(nrows-n))/&
-&       a1(nrows-n)
-      help_x(n) = temp - temp0
-    END DO
-    DO n=0,nrows
-      xd(n) = help_xd(nrows-n)
-      x(n) = help_x(nrows-n)
-    END DO
+
+    call tri_sle(a0, a1copy, a2, xd, rhs, nrows)
   END SUBROUTINE TRI_SLE_STUB_D
 
 !-------------------------------------------------------------------------------

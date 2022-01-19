@@ -77,6 +77,49 @@ MODULE SICO_MATHS_M_DIFF
 #endif
 
 CONTAINS
+
+subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
+                    nnz, nmax, &
+                    b_value, b_index, b_diag_index, b_ptr)
+
+implicit none
+
+integer(i4b),                     intent(in)  :: nnz, nmax
+integer(i4b), dimension(nmax+1),  intent(in)  :: a_ptr
+integer(i4b), dimension(nnz),     intent(in)  :: a_index
+integer(i4b), dimension(nmax),    intent(in)  :: a_diag_index
+real(dp),     dimension(nnz),     intent(in)  :: a_value
+integer(i4b), dimension(nmax+1),  intent(out) :: b_ptr
+integer(i4b), dimension(nnz),     intent(out) :: b_index
+integer(i4b), dimension(nmax),    intent(out) :: b_diag_index
+real(dp),     dimension(nnz),     intent(out) :: b_value
+
+integer(i4b) :: nr, k
+integer(i4b), dimension(nmax)                 :: b_ptr_plus
+
+   b_ptr = 0
+   do nr=1, nmax
+      do k=a_ptr(nr), a_ptr(nr+1)-1
+         b_ptr(a_index(k)+1) = b_ptr(a_index(k)+1) + 1
+      end do
+   end do
+   b_ptr(1) = 1
+   do nr=1, nmax
+     b_ptr(nr+1) = b_ptr(nr) + b_ptr(nr+1)
+   end do
+   b_ptr_plus = 0
+   do nr=1, nmax
+      do k=a_ptr(nr), a_ptr(nr+1)-1
+         b_index(b_ptr(a_index(k)) + b_ptr_plus(a_index(k))) = nr
+         if(a_index(k).eq.nr)then
+           b_diag_index(nr) = b_ptr(a_index(k)) + b_ptr_plus(a_index(k))
+         end if
+         b_value(b_ptr(a_index(k)) + b_ptr_plus(a_index(k))) = a_value(k)
+         b_ptr_plus(a_index(k)) = b_ptr_plus(a_index(k)) + 1
+      end do
+   end do
+end subroutine transpose_csr
+
 !  Differentiation of sor_sprs_stub in reverse (adjoint) mode:
 !   gradient     of useful results: lgs_x_value
 !   with respect to varying inputs: lgs_b_value lgs_x_value lgs_a_value
@@ -89,124 +132,185 @@ CONTAINS
   SUBROUTINE SOR_SPRS_STUB_B(lgs_a_value, lgs_a_valueb, lgs_a_index, &
 &   lgs_a_diag_index, lgs_a_ptr, lgs_b_value, lgs_b_valueb, nnz, nmax, &
 &   n_sprs, omega, eps_sor, lgs_x_value, lgs_x_valueb, ierr)
-    IMPLICIT NONE
-    INTEGER(i4b), INTENT(IN) :: n_sprs
-    INTEGER(i4b), INTENT(IN) :: nnz, nmax
-    REAL(dp), INTENT(IN) :: omega, eps_sor
-    INTEGER(i4b), DIMENSION(nmax+1), INTENT(IN) :: lgs_a_ptr
-    INTEGER(i4b), DIMENSION(nnz), INTENT(IN) :: lgs_a_index
-    INTEGER(i4b), DIMENSION(nmax), INTENT(IN) :: lgs_a_diag_index
-    REAL(dp), DIMENSION(nnz), INTENT(IN) :: lgs_a_value
-    REAL(dp), DIMENSION(nnz) :: lgs_a_valueb
-    REAL(dp), DIMENSION(nmax), INTENT(IN) :: lgs_b_value
-    REAL(dp), DIMENSION(nmax) :: lgs_b_valueb
-    INTEGER(i4b) :: ierr
-    REAL(dp), DIMENSION(nmax), INTENT(INOUT) :: lgs_x_value
-    REAL(dp), DIMENSION(nmax), INTENT(INOUT) :: lgs_x_valueb
-    INTEGER(i4b) :: iter
-    INTEGER(i4b) :: iter_max
-    INTEGER(i4b) :: nr, k
-    REAL(dp), DIMENSION(nmax) :: lgs_x_value_prev
-    REAL(dp) :: temp1, temp2
-    LOGICAL :: isnanflag1, isnanflag2, isnanflag3
-    REAL(dp) :: b_nr
-    REAL(dp) :: b_nrb
-    LOGICAL :: flag_convergence
-    INTRINSIC ABS
-    REAL(dp) :: abs0
-    REAL(dp) :: tempb
-    INTEGER :: ad_from
-    INTEGER*4 :: ad_to
-    INTEGER :: ad_count
-    INTEGER :: i
-    INTEGER*4 :: branch
-    INTEGER :: ad_count0
-    INTEGER :: i0
-    iter_max = 1000
-    ad_count0 = 1
-iter_loop:DO iter=1,iter_max
-      lgs_x_value_prev = lgs_x_value
-      DO nr=1,nmax
-        CALL PUSHREAL8(b_nr)
-        b_nr = 0.0_dp
-        ad_from = lgs_a_ptr(nr)
-        DO k=ad_from,lgs_a_ptr(nr+1)-1
-          b_nr = b_nr + lgs_a_value(k)*lgs_x_value(lgs_a_index(k))
-        END DO
-        CALL PUSHINTEGER4(k - 1)
-        CALL PUSHINTEGER4(ad_from)
-        CALL PUSHREAL8(lgs_x_value(nr))
-        lgs_x_value(nr) = lgs_x_value(nr) - omega*(b_nr-lgs_b_value(nr))&
-&         /lgs_a_value(lgs_a_diag_index(nr))
-      END DO
-      flag_convergence = .true.
-      ad_count = 1
-      DO nr=1,nmax
-        IF (lgs_x_value(nr) - lgs_x_value_prev(nr) .GE. 0.) THEN
-          abs0 = lgs_x_value(nr) - lgs_x_value_prev(nr)
-        ELSE
-          abs0 = -(lgs_x_value(nr)-lgs_x_value_prev(nr))
-        END IF
-        IF (abs0 .GT. eps_sor) THEN
-          GOTO 100
-        ELSE
-          ad_count = ad_count + 1
-        END IF
-      END DO
-      CALL PUSHCONTROL1B(0)
-      CALL PUSHINTEGER4(ad_count)
-      GOTO 110
- 100  CALL PUSHCONTROL1B(1)
-      CALL PUSHINTEGER4(ad_count)
-      flag_convergence = .false.
- 110  IF (flag_convergence) THEN
-        GOTO 120
-      ELSE
-        ad_count0 = ad_count0 + 1
-      END IF
-    END DO iter_loop
-    CALL PUSHCONTROL1B(0)
-    CALL PUSHINTEGER4(ad_count0)
-    GOTO 130
- 120 CALL PUSHCONTROL1B(1)
-    CALL PUSHINTEGER4(ad_count0)
- 130 CALL POPINTEGER4(ad_count0)
-    DO 140 i0=1,ad_count0
-      IF (i0 .EQ. 1) THEN
-        CALL POPCONTROL1B(branch)
-        IF (branch .EQ. 0) THEN
-          lgs_b_valueb = 0.0_8
-          lgs_a_valueb = 0.0_8
-          GOTO 140
-        ELSE
-          lgs_b_valueb = 0.0_8
-          lgs_a_valueb = 0.0_8
-        END IF
-      END IF
-      CALL POPINTEGER4(ad_count)
-      DO i=1,ad_count
-        IF (i .EQ. 1) CALL POPCONTROL1B(branch)
-      END DO
-      DO nr=nmax,1,-1
-        CALL POPREAL8(lgs_x_value(nr))
-        tempb = -(omega*lgs_x_valueb(nr)/lgs_a_value(lgs_a_diag_index(nr&
-&         )))
-        b_nrb = tempb
-        lgs_b_valueb(nr) = lgs_b_valueb(nr) - tempb
-        lgs_a_valueb(lgs_a_diag_index(nr)) = lgs_a_valueb(&
-&         lgs_a_diag_index(nr)) - (b_nr-lgs_b_value(nr))*tempb/&
-&         lgs_a_value(lgs_a_diag_index(nr))
-        CALL POPINTEGER4(ad_from)
-        CALL POPINTEGER4(ad_to)
-        DO k=ad_to,ad_from,-1
-          lgs_a_valueb(k) = lgs_a_valueb(k) + lgs_x_value(lgs_a_index(k)&
-&           )*b_nrb
-          lgs_x_valueb(lgs_a_index(k)) = lgs_x_valueb(lgs_a_index(k)) + &
-&           lgs_a_value(k)*b_nrb
-        END DO
-        CALL POPREAL8(b_nr)
-      END DO
- 140 CONTINUE
+!    IMPLICIT NONE
+!    INTEGER(i4b), INTENT(IN) :: n_sprs
+!    INTEGER(i4b), INTENT(IN) :: nnz, nmax
+!    REAL(dp), INTENT(IN) :: omega, eps_sor
+!    INTEGER(i4b), DIMENSION(nmax+1), INTENT(IN) :: lgs_a_ptr
+!    INTEGER(i4b), DIMENSION(nnz), INTENT(IN) :: lgs_a_index
+!    INTEGER(i4b), DIMENSION(nmax), INTENT(IN) :: lgs_a_diag_index
+!    REAL(dp), DIMENSION(nnz), INTENT(IN) :: lgs_a_value
+!    REAL(dp), DIMENSION(nnz) :: lgs_a_valueb
+!    REAL(dp), DIMENSION(nmax), INTENT(IN) :: lgs_b_value
+!    REAL(dp), DIMENSION(nmax) :: lgs_b_valueb
+!    INTEGER(i4b) :: ierr
+!    REAL(dp), DIMENSION(nmax), INTENT(INOUT) :: lgs_x_value
+!    REAL(dp), DIMENSION(nmax), INTENT(INOUT) :: lgs_x_valueb
+!    INTEGER(i4b) :: iter
+!    INTEGER(i4b) :: iter_max
+!    INTEGER(i4b) :: nr, k
+!    REAL(dp), DIMENSION(nmax) :: lgs_x_value_prev
+!    REAL(dp) :: temp1, temp2
+!    LOGICAL :: isnanflag1, isnanflag2, isnanflag3
+!    REAL(dp) :: b_nr
+!    REAL(dp) :: b_nrb
+!    LOGICAL :: flag_convergence
+!    INTRINSIC ABS
+!    REAL(dp) :: abs0
+!    REAL(dp) :: tempb
+!    INTEGER :: ad_from
+!    INTEGER*4 :: ad_to
+!    INTEGER :: ad_count
+!    INTEGER :: i
+!    INTEGER*4 :: branch
+!    INTEGER :: ad_count0
+!    INTEGER :: i0
+!    iter_max = 1000
+!    ad_count0 = 1
+!iter_loop:DO iter=1,iter_max
+!      lgs_x_value_prev = lgs_x_value
+!      DO nr=1,nmax
+!        CALL PUSHREAL8(b_nr)
+!        b_nr = 0.0_dp
+!        ad_from = lgs_a_ptr(nr)
+!        DO k=ad_from,lgs_a_ptr(nr+1)-1
+!          b_nr = b_nr + lgs_a_value(k)*lgs_x_value(lgs_a_index(k))
+!        END DO
+!        CALL PUSHINTEGER4(k - 1)
+!        CALL PUSHINTEGER4(ad_from)
+!        CALL PUSHREAL8(lgs_x_value(nr))
+!        lgs_x_value(nr) = lgs_x_value(nr) - omega*(b_nr-lgs_b_value(nr))&
+!&         /lgs_a_value(lgs_a_diag_index(nr))
+!      END DO
+!      flag_convergence = .true.
+!      ad_count = 1
+!      DO nr=1,nmax
+!        IF (lgs_x_value(nr) - lgs_x_value_prev(nr) .GE. 0.) THEN
+!          abs0 = lgs_x_value(nr) - lgs_x_value_prev(nr)
+!        ELSE
+!          abs0 = -(lgs_x_value(nr)-lgs_x_value_prev(nr))
+!        END IF
+!        IF (abs0 .GT. eps_sor) THEN
+!          GOTO 100
+!        ELSE
+!          ad_count = ad_count + 1
+!        END IF
+!      END DO
+!      CALL PUSHCONTROL1B(0)
+!      CALL PUSHINTEGER4(ad_count)
+!      GOTO 110
+! 100  CALL PUSHCONTROL1B(1)
+!      CALL PUSHINTEGER4(ad_count)
+!      flag_convergence = .false.
+! 110  IF (flag_convergence) THEN
+!        GOTO 120
+!      ELSE
+!        ad_count0 = ad_count0 + 1
+!      END IF
+!    END DO iter_loop
+!    CALL PUSHCONTROL1B(0)
+!    CALL PUSHINTEGER4(ad_count0)
+!    GOTO 130
+! 120 CALL PUSHCONTROL1B(1)
+!    CALL PUSHINTEGER4(ad_count0)
+! 130 CALL POPINTEGER4(ad_count0)
+!    DO 140 i0=1,ad_count0
+!      IF (i0 .EQ. 1) THEN
+!        CALL POPCONTROL1B(branch)
+!        IF (branch .EQ. 0) THEN
+!          lgs_b_valueb = 0.0_8
+!          lgs_a_valueb = 0.0_8
+!          GOTO 140
+!        ELSE
+!          lgs_b_valueb = 0.0_8
+!          lgs_a_valueb = 0.0_8
+!        END IF
+!      END IF
+!      CALL POPINTEGER4(ad_count)
+!      DO i=1,ad_count
+!        IF (i .EQ. 1) CALL POPCONTROL1B(branch)
+!      END DO
+!      DO nr=nmax,1,-1
+!        CALL POPREAL8(lgs_x_value(nr))
+!        tempb = -(omega*lgs_x_valueb(nr)/lgs_a_value(lgs_a_diag_index(nr&
+!&         )))
+!        b_nrb = tempb
+!        lgs_b_valueb(nr) = lgs_b_valueb(nr) - tempb
+!        lgs_a_valueb(lgs_a_diag_index(nr)) = lgs_a_valueb(&
+!&         lgs_a_diag_index(nr)) - (b_nr-lgs_b_value(nr))*tempb/&
+!&         lgs_a_value(lgs_a_diag_index(nr))
+!        CALL POPINTEGER4(ad_from)
+!        CALL POPINTEGER4(ad_to)
+!        DO k=ad_to,ad_from,-1
+!          lgs_a_valueb(k) = lgs_a_valueb(k) + lgs_x_value(lgs_a_index(k)&
+!&           )*b_nrb
+!          lgs_x_valueb(lgs_a_index(k)) = lgs_x_valueb(lgs_a_index(k)) + &
+!&           lgs_a_value(k)*b_nrb
+!        END DO
+!        CALL POPREAL8(b_nr)
+!      END DO
+! 140 CONTINUE
+
+
+implicit none
+
+integer(i4b),                     intent(in) :: nnz, nmax, n_sprs
+real(dp),                         intent(in) :: omega, eps_sor
+integer(i4b), dimension(nmax+1),  intent(in) :: lgs_a_ptr
+integer(i4b), dimension(nnz),     intent(in) :: lgs_a_index
+integer(i4b), dimension(nmax),    intent(in) :: lgs_a_diag_index
+real(dp),     dimension(nnz),     intent(in) :: lgs_a_value
+real(dp),     dimension(nmax),    intent(in) :: lgs_b_value
+
+integer(i4b),                    intent(out) :: ierr
+real(dp),     dimension(nmax), intent(inout) :: lgs_x_value
+
+real(dp),     dimension(nnz),  intent(inout) :: lgs_a_valueb
+real(dp),     dimension(nmax), intent(inout) :: lgs_b_valueb
+real(dp),     dimension(nmax), intent(inout) :: lgs_x_valueb
+
+integer(i4b), dimension(nmax+1)              :: lgs_aT_ptr
+integer(i4b), dimension(nnz)                 :: lgs_aT_index
+integer(i4b), dimension(nmax)                :: lgs_aT_diag_index
+real(dp),     dimension(nnz)                 :: lgs_aT_value
+real(dp),     dimension(nmax)                :: incrbb
+integer(i4b) :: iter
+integer(i4b) :: nr, k
+real(dp), allocatable, dimension(:) :: lgs_x_value_prev
+real(dp)     :: b_nr
+logical      :: flag_convergence
+logical      :: inif, infor
+
+  incrbb = 0.0
+  call transpose_csr(lgs_a_value, lgs_a_index, lgs_a_diag_index, lgs_a_ptr, &
+                    nnz, nmax, &
+                    lgs_aT_value, lgs_aT_index, lgs_aT_diag_index, lgs_aT_ptr)
+
+  call sor_sprs(lgs_aT_value, lgs_aT_index, lgs_aT_diag_index, lgs_aT_ptr, &
+                    lgs_x_valueb, &
+                    nnz, nmax, n_sprs, omega, eps_sor, incrbb, ierr)
+
+  DO nr=1,nmax
+    lgs_b_valueb(nr) = lgs_b_valueb(nr) + incrbb(nr)
+  ENDDO
+
+  call sor_sprs(lgs_a_value, lgs_a_index, lgs_a_diag_index, lgs_a_ptr, &
+                    lgs_b_value, &
+                    nnz, nmax, n_sprs, omega, eps_sor, lgs_x_value, ierr)
+  do nr=1, nmax
+    inif = .false. 
+    infor = .false. 
+    if(nr .eq. lgs_a_diag_index(nr)) then
+      inif = .true.
+      lgs_a_valueb(lgs_a_diag_index(nr)) = lgs_a_valueb(lgs_a_diag_index(nr)) -&
+             lgs_x_value(lgs_a_index(nr)) * incrbb(nr)
+    end if
+    do k=lgs_a_ptr(nr), lgs_a_ptr(nr+1)-1
+      infor = .true.
+      lgs_a_valueb(k) = lgs_a_valueb(k) - lgs_x_value(lgs_a_index(k)) *incrbb(nr)
+    end do
+  end do
+  lgs_x_valueb = 0.0
   END SUBROUTINE SOR_SPRS_STUB_B
 
 !-------------------------------------------------------------------------------
@@ -290,12 +394,12 @@ iter_loop:DO iter=1,iter_max
 &   nrows)
     IMPLICIT NONE
     INTEGER(i4b), INTENT(IN) :: nrows
-    REAL(dp), DIMENSION(0:nrows), INTENT(IN) :: a0, a2
-    REAL(dp), DIMENSION(0:nrows) :: a0b, a2b
-    REAL(dp), DIMENSION(0:nrows), INTENT(INOUT) :: a1, b
-    REAL(dp), DIMENSION(0:nrows), INTENT(INOUT) :: a1b, bb
-    REAL(dp), DIMENSION(0:nrows) :: x
-    REAL(dp), DIMENSION(0:nrows) :: xb
+    REAL(dp), DIMENSION(0:*), INTENT(IN) :: a0, a2
+    REAL(dp), DIMENSION(0:*) :: a0b, a2b
+    REAL(dp), DIMENSION(0:*), INTENT(INOUT) :: a1, b
+    REAL(dp), DIMENSION(0:*), INTENT(INOUT) :: a1b, bb
+    REAL(dp), DIMENSION(0:*) :: x
+    REAL(dp), DIMENSION(0:*) :: xb
     REAL(dp), DIMENSION(0:nrows) :: help_x
     REAL(dp), DIMENSION(0:nrows) :: help_xb
     INTEGER(i4b) :: n
@@ -333,9 +437,6 @@ iter_loop:DO iter=1,iter_max
       help_xb(nrows-n) = help_xb(nrows-n) + xb(n)
       xb(n) = 0.0_8
     END DO
-    a1b = 0.0_8
-    a2b = 0.0_8
-    bb = 0.0_8
     DO n=nrows,1,-1
       CALL POPREAL8(help_x(n))
       tempb = help_xb(n)/a1(nrows-n)
@@ -350,7 +451,6 @@ iter_loop:DO iter=1,iter_max
     tempb = help_xb(0)/a1(nrows)
     bb(nrows) = bb(nrows) + tempb
     a1b(nrows) = a1b(nrows) - b(nrows)*tempb/a1(nrows)
-    a0b = 0.0_8
     DO n=nrows,1,-1
       CALL POPREAL8(b(n))
       tempb = -(bb(n)/a1(n-1))
@@ -365,6 +465,45 @@ iter_loop:DO iter=1,iter_max
       a2b(n-1) = a2b(n-1) + a0(n)*tempb
       a1b(n-1) = a1b(n-1) - a0(n)*a2(n-1)*tempb/a1(n-1)
     END DO
+
+!implicit none
+!
+!integer(i4b),             intent(in)    :: nrows
+!real(dp), dimension(0:*), intent(in)    :: a0, a2
+!real(dp), dimension(0:*), intent(inout) :: a1, b
+!
+!real(dp), dimension(0:*), intent(out)   :: x
+!
+!
+!real(dp), dimension(0:*), intent(inout) :: a0b, a2b
+!real(dp), dimension(0:*), intent(inout) :: a1b, bb
+!real(dp), dimension(0:*), intent(inout) :: xb
+!real(dp), dimension(0:nrows)            :: a0T, a1T, a2T
+!real(dp), dimension(0:nrows)            :: incrbb
+!integer(i4b) :: i
+!        a0T(0) = 0.0   
+!        a0T(1:nrows) = a2(0:nrows-1)
+!        a1T = a1(0:nrows)
+!        a2T(0:nrows-1) = a0(1:nrows)
+!        a2T(nrows) = 0.0
+!        call tri_sle(a0T, a1T, a2T, incrbb, xb, nrows)
+!        DO i=0,nrows
+!          bb(i) = bb(i) + incrbb(i)
+!        ENDDO
+!        call tri_sle(a0, a1, a2, x, b, nrows)
+!        DO i=0,nrows
+!          a0b(i) = a0b(i) - x(i-1)*incrbb(i)
+!        ENDDO
+!        DO i=0,nrows
+!          a1b(i) = a1b(i) - x(i)*incrbb(i)
+!        ENDDO
+!        DO i=0,nrows
+!          a2b(i) = a2b(i) - x(i+1)*incrbb(i)
+!        ENDDO
+!        DO i=0,nrows
+!          xb(i) = 0
+!        ENDDO
+
   END SUBROUTINE TRI_SLE_STUB_B
 
 !-------------------------------------------------------------------------------
