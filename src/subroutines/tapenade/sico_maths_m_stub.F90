@@ -166,10 +166,10 @@ implicit none
 
 integer(i4b),             intent(in)    :: nrows
 
-real(dp), dimension(0:KCMAX+KTMAX+KRMAX+IMAX+JMAX), intent(in)    :: a0, a2
-real(dp), dimension(0:KCMAX+KTMAX+KRMAX+IMAX+JMAX), intent(inout) :: a1, b
+real(dp), dimension(0:*), intent(in)    :: a0, a2
+real(dp), dimension(0:*), intent(inout) :: a1, b
 
-real(dp), dimension(0:KCMAX+KTMAX+KRMAX+IMAX+JMAX), intent(out)   :: x
+real(dp), dimension(0:*), intent(out)   :: x
 real(dp), dimension(0:nrows) :: help_x
 integer(i4b) :: n
 
