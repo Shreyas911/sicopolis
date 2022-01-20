@@ -89,6 +89,72 @@ CONTAINS
   SUBROUTINE SOR_SPRS_STUB_D(lgs_a_value, lgs_a_valued, lgs_a_index, &
 &   lgs_a_diag_index, lgs_a_ptr, lgs_b_value, lgs_b_valued, nnz, nmax, &
 &   n_sprs, omega, eps_sor, lgs_x_value, lgs_x_valued, ierr)
+!    IMPLICIT NONE
+!    INTEGER(i4b), INTENT(IN) :: n_sprs
+!    INTEGER(i4b), INTENT(IN) :: nnz, nmax
+!    REAL(dp), INTENT(IN) :: omega, eps_sor
+!    INTEGER(i4b), DIMENSION(nmax+1), INTENT(IN) :: lgs_a_ptr
+!    INTEGER(i4b), DIMENSION(nnz), INTENT(IN) :: lgs_a_index
+!    INTEGER(i4b), DIMENSION(nmax), INTENT(IN) :: lgs_a_diag_index
+!    REAL(dp), DIMENSION(nnz), INTENT(IN) :: lgs_a_value
+!    REAL(dp), DIMENSION(nnz), INTENT(IN) :: lgs_a_valued
+!    REAL(dp), DIMENSION(nmax), INTENT(IN) :: lgs_b_value
+!    REAL(dp), DIMENSION(nmax), INTENT(IN) :: lgs_b_valued
+!    INTEGER(i4b), INTENT(OUT) :: ierr
+!    REAL(dp), DIMENSION(nmax), INTENT(INOUT) :: lgs_x_value
+!    REAL(dp), DIMENSION(nmax), INTENT(INOUT) :: lgs_x_valued
+!    INTEGER(i4b) :: iter
+!    INTEGER(i4b) :: iter_max
+!    INTEGER(i4b) :: nr, k
+!    REAL(dp), DIMENSION(nmax) :: lgs_x_value_prev
+!    REAL(dp) :: temp1, temp2
+!    LOGICAL :: isnanflag1, isnanflag2, isnanflag3
+!    REAL(dp) :: b_nr
+!    REAL(dp) :: b_nrd
+!    LOGICAL :: flag_convergence
+!    INTRINSIC ABS
+!    REAL(dp) :: abs0
+!    REAL(dp) :: temp
+!    iter_max = 1000
+!iter_loop:DO iter=1,iter_max
+!      lgs_x_value_prev = lgs_x_value
+!      DO nr=1,nmax
+!        b_nr = 0.0_dp
+!        b_nrd = 0.0_8
+!        DO k=lgs_a_ptr(nr),lgs_a_ptr(nr+1)-1
+!          b_nrd = b_nrd + lgs_x_value(lgs_a_index(k))*lgs_a_valued(k) + &
+!&           lgs_a_value(k)*lgs_x_valued(lgs_a_index(k))
+!          b_nr = b_nr + lgs_a_value(k)*lgs_x_value(lgs_a_index(k))
+!        END DO
+!        temp = (b_nr-lgs_b_value(nr))/lgs_a_value(lgs_a_diag_index(nr))
+!        lgs_x_valued(nr) = lgs_x_valued(nr) - omega*(b_nrd-lgs_b_valued(&
+!&         nr)-temp*lgs_a_valued(lgs_a_diag_index(nr)))/lgs_a_value(&
+!&         lgs_a_diag_index(nr))
+!        lgs_x_value(nr) = lgs_x_value(nr) - omega*temp
+!      END DO
+!      flag_convergence = .true.
+!      DO nr=1,nmax
+!        IF (lgs_x_value(nr) - lgs_x_value_prev(nr) .GE. 0.) THEN
+!          abs0 = lgs_x_value(nr) - lgs_x_value_prev(nr)
+!        ELSE
+!          abs0 = -(lgs_x_value(nr)-lgs_x_value_prev(nr))
+!        END IF
+!        IF (abs0 .GT. eps_sor) GOTO 100
+!      END DO
+!      GOTO 110
+! 100  flag_convergence = .false.
+! 110  IF (flag_convergence) GOTO 120
+!    END DO iter_loop
+!    WRITE(6, '(10x,a,i0)') 'sor_sprs: iter = ', iter
+!! convergence criterion not fulfilled
+!    ierr = -1
+!    GOTO 130
+! 120 WRITE(6, '(10x,a,i0)') 'sor_sprs: iter = ', iter
+!! convergence criterion fulfilled
+!    ierr = 0
+!    RETURN
+! 130 CONTINUE
+
     IMPLICIT NONE
     INTEGER(i4b), INTENT(IN) :: n_sprs
     INTEGER(i4b), INTENT(IN) :: nnz, nmax
@@ -103,57 +169,28 @@ CONTAINS
     INTEGER(i4b), INTENT(OUT) :: ierr
     REAL(dp), DIMENSION(nmax), INTENT(INOUT) :: lgs_x_value
     REAL(dp), DIMENSION(nmax), INTENT(INOUT) :: lgs_x_valued
-    INTEGER(i4b) :: iter
-    INTEGER(i4b) :: iter_max
     INTEGER(i4b) :: nr, k
-    REAL(dp), DIMENSION(nmax) :: lgs_x_value_prev
-    REAL(dp) :: temp1, temp2
-    LOGICAL :: isnanflag1, isnanflag2, isnanflag3
-    REAL(dp) :: b_nr
-    REAL(dp) :: b_nrd
-    LOGICAL :: flag_convergence
-    INTRINSIC ABS
-    REAL(dp) :: abs0
-    REAL(dp) :: temp
-    iter_max = 1000
-iter_loop:DO iter=1,iter_max
-      lgs_x_value_prev = lgs_x_value
-      DO nr=1,nmax
-        b_nr = 0.0_dp
-        b_nrd = 0.0_8
-        DO k=lgs_a_ptr(nr),lgs_a_ptr(nr+1)-1
-          b_nrd = b_nrd + lgs_x_value(lgs_a_index(k))*lgs_a_valued(k) + &
-&           lgs_a_value(k)*lgs_x_valued(lgs_a_index(k))
-          b_nr = b_nr + lgs_a_value(k)*lgs_x_value(lgs_a_index(k))
-        END DO
-        temp = (b_nr-lgs_b_value(nr))/lgs_a_value(lgs_a_diag_index(nr))
-        lgs_x_valued(nr) = lgs_x_valued(nr) - omega*(b_nrd-lgs_b_valued(&
-&         nr)-temp*lgs_a_valued(lgs_a_diag_index(nr)))/lgs_a_value(&
-&         lgs_a_diag_index(nr))
-        lgs_x_value(nr) = lgs_x_value(nr) - omega*temp
-      END DO
-      flag_convergence = .true.
-      DO nr=1,nmax
-        IF (lgs_x_value(nr) - lgs_x_value_prev(nr) .GE. 0.) THEN
-          abs0 = lgs_x_value(nr) - lgs_x_value_prev(nr)
-        ELSE
-          abs0 = -(lgs_x_value(nr)-lgs_x_value_prev(nr))
-        END IF
-        IF (abs0 .GT. eps_sor) GOTO 100
-      END DO
-      GOTO 110
- 100  flag_convergence = .false.
- 110  IF (flag_convergence) GOTO 120
-    END DO iter_loop
-    WRITE(6, '(10x,a,i0)') 'sor_sprs: iter = ', iter
-! convergence criterion not fulfilled
-    ierr = -1
-    GOTO 130
- 120 WRITE(6, '(10x,a,i0)') 'sor_sprs: iter = ', iter
-! convergence criterion fulfilled
-    ierr = 0
-    RETURN
- 130 CONTINUE
+    REAL(dp), DIMENSION(nmax) :: lgs_rhs_value
+
+call SOR_SPRS(lgs_a_value, lgs_a_index, lgs_a_diag_index, &
+&   lgs_a_ptr, lgs_b_value, nnz, nmax, n_sprs, omega, eps_sor, &
+&   lgs_x_value, ierr)
+
+do nr=1, nmax
+
+        lgs_rhs_value(nr) = lgs_b_valued(nr)
+
+        do k=lgs_a_ptr(nr), lgs_a_ptr(nr+1)-1
+
+                lgs_rhs_value(nr) = lgs_rhs_value(nr) - lgs_a_valued(k)*lgs_x_value(lgs_a_index(k))
+
+        end do
+
+end do
+
+call SOR_SPRS(lgs_a_value, lgs_a_index, lgs_a_diag_index, &
+&   lgs_a_ptr, lgs_rhs_value, nnz, nmax, n_sprs, omega, eps_sor/10000.0, &
+&   lgs_x_valued, ierr)
   END SUBROUTINE SOR_SPRS_STUB_D
 
 !-------------------------------------------------------------------------------
