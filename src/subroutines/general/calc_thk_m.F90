@@ -478,9 +478,6 @@ call sor_sprs(lgs_a_value_trim, &
               lgs_a_index_trim, lgs_a_diag_index, lgs_a_ptr, &
               lgs_b_value, &
               nnz, nmax, &
-#if defined(ALLOW_TAPENADE) /* Tapenade */
-              n_sprs, &
-#endif /* Tapenade */
               OMEGA_SOR, eps_sor, lgs_x_value, ierr)
 
 do nr=1, nmax
@@ -1034,9 +1031,6 @@ call sor_sprs(lgs_a_value_trim, &
               lgs_a_index_trim, lgs_a_diag_index, lgs_a_ptr, &
               lgs_b_value, &
               nnz, nmax, &
-#if defined(ALLOW_TAPENADE) /* Tapenade */
-              n_sprs, &
-#endif /* Tapenade */
               OMEGA_SOR, eps_sor, lgs_x_value, ierr)
 
 do nr=1, nmax

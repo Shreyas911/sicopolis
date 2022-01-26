@@ -88,75 +88,9 @@ CONTAINS
 !<------------------------------------------------------------------------------
   SUBROUTINE SOR_SPRS_STUB_D(lgs_a_value, lgs_a_valued, lgs_a_index, &
 &   lgs_a_diag_index, lgs_a_ptr, lgs_b_value, lgs_b_valued, nnz, nmax, &
-&   n_sprs, omega, eps_sor, lgs_x_value, lgs_x_valued, ierr)
-!    IMPLICIT NONE
-!    INTEGER(i4b), INTENT(IN) :: n_sprs
-!    INTEGER(i4b), INTENT(IN) :: nnz, nmax
-!    REAL(dp), INTENT(IN) :: omega, eps_sor
-!    INTEGER(i4b), DIMENSION(nmax+1), INTENT(IN) :: lgs_a_ptr
-!    INTEGER(i4b), DIMENSION(nnz), INTENT(IN) :: lgs_a_index
-!    INTEGER(i4b), DIMENSION(nmax), INTENT(IN) :: lgs_a_diag_index
-!    REAL(dp), DIMENSION(nnz), INTENT(IN) :: lgs_a_value
-!    REAL(dp), DIMENSION(nnz), INTENT(IN) :: lgs_a_valued
-!    REAL(dp), DIMENSION(nmax), INTENT(IN) :: lgs_b_value
-!    REAL(dp), DIMENSION(nmax), INTENT(IN) :: lgs_b_valued
-!    INTEGER(i4b), INTENT(OUT) :: ierr
-!    REAL(dp), DIMENSION(nmax), INTENT(INOUT) :: lgs_x_value
-!    REAL(dp), DIMENSION(nmax), INTENT(INOUT) :: lgs_x_valued
-!    INTEGER(i4b) :: iter
-!    INTEGER(i4b) :: iter_max
-!    INTEGER(i4b) :: nr, k
-!    REAL(dp), DIMENSION(nmax) :: lgs_x_value_prev
-!    REAL(dp) :: temp1, temp2
-!    LOGICAL :: isnanflag1, isnanflag2, isnanflag3
-!    REAL(dp) :: b_nr
-!    REAL(dp) :: b_nrd
-!    LOGICAL :: flag_convergence
-!    INTRINSIC ABS
-!    REAL(dp) :: abs0
-!    REAL(dp) :: temp
-!    iter_max = 1000
-!iter_loop:DO iter=1,iter_max
-!      lgs_x_value_prev = lgs_x_value
-!      DO nr=1,nmax
-!        b_nr = 0.0_dp
-!        b_nrd = 0.0_8
-!        DO k=lgs_a_ptr(nr),lgs_a_ptr(nr+1)-1
-!          b_nrd = b_nrd + lgs_x_value(lgs_a_index(k))*lgs_a_valued(k) + &
-!&           lgs_a_value(k)*lgs_x_valued(lgs_a_index(k))
-!          b_nr = b_nr + lgs_a_value(k)*lgs_x_value(lgs_a_index(k))
-!        END DO
-!        temp = (b_nr-lgs_b_value(nr))/lgs_a_value(lgs_a_diag_index(nr))
-!        lgs_x_valued(nr) = lgs_x_valued(nr) - omega*(b_nrd-lgs_b_valued(&
-!&         nr)-temp*lgs_a_valued(lgs_a_diag_index(nr)))/lgs_a_value(&
-!&         lgs_a_diag_index(nr))
-!        lgs_x_value(nr) = lgs_x_value(nr) - omega*temp
-!      END DO
-!      flag_convergence = .true.
-!      DO nr=1,nmax
-!        IF (lgs_x_value(nr) - lgs_x_value_prev(nr) .GE. 0.) THEN
-!          abs0 = lgs_x_value(nr) - lgs_x_value_prev(nr)
-!        ELSE
-!          abs0 = -(lgs_x_value(nr)-lgs_x_value_prev(nr))
-!        END IF
-!        IF (abs0 .GT. eps_sor) GOTO 100
-!      END DO
-!      GOTO 110
-! 100  flag_convergence = .false.
-! 110  IF (flag_convergence) GOTO 120
-!    END DO iter_loop
-!    WRITE(6, '(10x,a,i0)') 'sor_sprs: iter = ', iter
-!! convergence criterion not fulfilled
-!    ierr = -1
-!    GOTO 130
-! 120 WRITE(6, '(10x,a,i0)') 'sor_sprs: iter = ', iter
-!! convergence criterion fulfilled
-!    ierr = 0
-!    RETURN
-! 130 CONTINUE
+&   omega, eps_sor, lgs_x_value, lgs_x_valued, ierr)
 
     IMPLICIT NONE
-    INTEGER(i4b), INTENT(IN) :: n_sprs
     INTEGER(i4b), INTENT(IN) :: nnz, nmax
     REAL(dp), INTENT(IN) :: omega, eps_sor
     INTEGER(i4b), DIMENSION(nmax+1), INTENT(IN) :: lgs_a_ptr
@@ -173,7 +107,7 @@ CONTAINS
     REAL(dp), DIMENSION(nmax) :: lgs_rhs_value
 
 call SOR_SPRS(lgs_a_value, lgs_a_index, lgs_a_diag_index, &
-&   lgs_a_ptr, lgs_b_value, nnz, nmax, n_sprs, omega, eps_sor, &
+&   lgs_a_ptr, lgs_b_value, nnz, nmax, omega, eps_sor, &
 &   lgs_x_value, ierr)
 
 do nr=1, nmax
@@ -189,7 +123,7 @@ do nr=1, nmax
 end do
 
 call SOR_SPRS(lgs_a_value, lgs_a_index, lgs_a_diag_index, &
-&   lgs_a_ptr, lgs_rhs_value, nnz, nmax, n_sprs, omega, eps_sor/10000.0, &
+&   lgs_a_ptr, lgs_rhs_value, nnz, nmax, omega, eps_sor/10000.0, &
 &   lgs_x_valued, ierr)
   END SUBROUTINE SOR_SPRS_STUB_D
 
@@ -200,62 +134,76 @@ call SOR_SPRS(lgs_a_value, lgs_a_index, lgs_a_diag_index, &
 !! and lgs_a_ptr (pointers)].
 !<------------------------------------------------------------------------------
   SUBROUTINE SOR_SPRS_STUB(lgs_a_value, lgs_a_index, lgs_a_diag_index, &
-&   lgs_a_ptr, lgs_b_value, nnz, nmax, n_sprs, omega, eps_sor, &
+&   lgs_a_ptr, lgs_b_value, nnz, nmax, omega, eps_sor, &
 &   lgs_x_value, ierr)
-    IMPLICIT NONE
-    INTEGER(i4b), INTENT(IN) :: n_sprs
-    INTEGER(i4b), INTENT(IN) :: nnz, nmax
-    REAL(dp), INTENT(IN) :: omega, eps_sor
-    INTEGER(i4b), DIMENSION(nmax+1), INTENT(IN) :: lgs_a_ptr
-    INTEGER(i4b), DIMENSION(nnz), INTENT(IN) :: lgs_a_index
-    INTEGER(i4b), DIMENSION(nmax), INTENT(IN) :: lgs_a_diag_index
-    REAL(dp), DIMENSION(nnz), INTENT(IN) :: lgs_a_value
-    REAL(dp), DIMENSION(nmax), INTENT(IN) :: lgs_b_value
-    INTEGER(i4b), INTENT(OUT) :: ierr
-    REAL(dp), DIMENSION(nmax), INTENT(INOUT) :: lgs_x_value
-    INTEGER(i4b) :: iter
-    INTEGER(i4b) :: iter_max
-    INTEGER(i4b) :: nr, k
-    REAL(dp), DIMENSION(nmax) :: lgs_x_value_prev
-    REAL(dp) :: temp1, temp2
-    LOGICAL :: isnanflag1, isnanflag2, isnanflag3
-    REAL(dp) :: b_nr
-    LOGICAL :: flag_convergence
-    INTRINSIC ABS
-    REAL(dp) :: abs0
-    iter_max = 1000
-iter_loop:DO iter=1,iter_max
-      lgs_x_value_prev = lgs_x_value
-      DO nr=1,nmax
-        b_nr = 0.0_dp
-        DO k=lgs_a_ptr(nr),lgs_a_ptr(nr+1)-1
-          b_nr = b_nr + lgs_a_value(k)*lgs_x_value(lgs_a_index(k))
-        END DO
-        lgs_x_value(nr) = lgs_x_value(nr) - omega*(b_nr-lgs_b_value(nr))&
-&         /lgs_a_value(lgs_a_diag_index(nr))
-      END DO
-      flag_convergence = .true.
-      DO nr=1,nmax
-        IF (lgs_x_value(nr) - lgs_x_value_prev(nr) .GE. 0.) THEN
-          abs0 = lgs_x_value(nr) - lgs_x_value_prev(nr)
-        ELSE
-          abs0 = -(lgs_x_value(nr)-lgs_x_value_prev(nr))
-        END IF
-        IF (abs0 .GT. eps_sor) THEN
-          flag_convergence = .false.
-          GOTO 100
-        END IF
-      END DO
- 100  IF (flag_convergence) THEN
-        WRITE(6, '(10x,a,i0)') 'sor_sprs: iter = ', iter
-! convergence criterion fulfilled
-        ierr = 0
-        RETURN
-      END IF
-    END DO iter_loop
-    WRITE(6, '(10x,a,i0)') 'sor_sprs: iter = ', iter
-! convergence criterion not fulfilled
-    ierr = -1
+
+  implicit none
+
+  integer(i4b),                     intent(in) :: nnz, nmax
+  real(dp),                         intent(in) :: omega, eps_sor
+  integer(i4b), dimension(nmax+1),  intent(in) :: lgs_a_ptr
+  integer(i4b), dimension(nnz),     intent(in) :: lgs_a_index
+  integer(i4b), dimension(nmax),    intent(in) :: lgs_a_diag_index
+  real(dp),     dimension(nnz),     intent(in) :: lgs_a_value
+  real(dp),     dimension(nmax),    intent(in) :: lgs_b_value
+
+  integer(i4b),                    intent(out) :: ierr
+  real(dp),     dimension(nmax), intent(inout) :: lgs_x_value
+
+  integer(i4b) :: iter
+  integer(i4b) :: iter_max
+  integer(i4b) :: nr, k
+  real(dp), allocatable, dimension(:) :: lgs_x_value_prev
+  real(dp)     :: b_nr
+  logical      :: flag_convergence
+
+#if (ITER_MAX_SOR > 0)
+  iter_max = ITER_MAX_SOR
+#else
+  iter_max = 1000   ! default value
+#endif
+
+  allocate(lgs_x_value_prev(nmax))
+
+  iter_loop : do iter=1, iter_max
+
+     lgs_x_value_prev = lgs_x_value
+
+     do nr=1, nmax
+
+        b_nr = 0.0_dp 
+
+        do k=lgs_a_ptr(nr), lgs_a_ptr(nr+1)-1
+           b_nr = b_nr + lgs_a_value(k)*lgs_x_value(lgs_a_index(k))
+        end do
+
+        lgs_x_value(nr) = lgs_x_value(nr) &
+                          -omega*(b_nr-lgs_b_value(nr)) &
+                                /lgs_a_value(lgs_a_diag_index(nr))
+
+     end do
+
+     flag_convergence = .true.
+     do nr=1, nmax
+        if (abs(lgs_x_value(nr)-lgs_x_value_prev(nr)) > eps_sor) then
+           flag_convergence = .false.
+           exit
+        end if
+     end do
+
+     if (flag_convergence) then
+        write(6,'(10x,a,i0)') 'sor_sprs: iter = ', iter
+        ierr = 0   ! convergence criterion fulfilled
+        deallocate(lgs_x_value_prev)
+        return
+     end if
+
+  end do iter_loop
+
+  write(6,'(10x,a,i0)') 'sor_sprs: iter = ', iter
+  ierr = -1   ! convergence criterion not fulfilled
+  deallocate(lgs_x_value_prev)
+
   END SUBROUTINE SOR_SPRS_STUB
 
 

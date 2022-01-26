@@ -80,11 +80,9 @@ subroutine sor_sprs_stub(lgs_a_value, lgs_a_index, lgs_a_diag_index,&
                     lgs_a_ptr, &
                     lgs_b_value, &
                     nnz, nmax,&
-                    n_sprs,&
                     omega, eps_sor, lgs_x_value, ierr)
   implicit none
 
-  integer(i4b),                     intent(in) :: n_sprs
   integer(i4b),                     intent(in) :: nnz, nmax
   real(dp),                         intent(in) :: omega, eps_sor
   integer(i4b), dimension(nmax+1),  intent(in) :: lgs_a_ptr
