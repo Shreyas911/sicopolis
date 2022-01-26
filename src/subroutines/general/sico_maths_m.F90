@@ -190,53 +190,45 @@ contains
 
   implicit none
 
-  integer(i4b),             intent(in)    :: nrows
-  real(dp), dimension(0:*), intent(in)    :: a0, a2
-  real(dp), dimension(0:*), intent(inout) :: a1, b
+  integer(i4b),                 intent(in) :: nrows
+  real(dp), dimension(0:nrows), intent(in) :: a0, a1, a2, b
 
-  real(dp), dimension(0:*), intent(out)   :: x
+  real(dp), dimension(0:nrows), intent(out) :: x
 
-  real(dp), allocatable, dimension(:) :: help_x
   integer(i4b) :: n
+  real(dp), dimension(0:nrows) :: a0_aux, a1_aux, a2_aux, b_aux, x_aux
 
-!--------  Generate an upper triangular matrix
-!                      ('obere Dreiecksmatrix') --------
+!--------  Define local variables --------
+
+  a0_aux = a0
+  a1_aux = a1
+  a2_aux = a2
+  b_aux  = b
+  x_aux  = 0.0_dp   ! initialization
+
+!--------  Generate an upper triangular matrix --------
 
   do n=1, nrows
-     a1(n)   = a1(n) - a0(n)/a1(n-1)*a2(n-1)
+     a1_aux(n) = a1_aux(n) - a0_aux(n)/a1_aux(n-1)*a2_aux(n-1)
   end do
 
   do n=1, nrows
-     b(n)    = b(n) - a0(n)/a1(n-1)*b(n-1)
-     ! a0(n)  = 0.0_dp , not needed in the following, therefore
-     !                   not set
+     b_aux(n) = b_aux(n) - a0_aux(n)/a1_aux(n-1)*b_aux(n-1)
+     ! a0_aux(n) = 0.0_dp , not needed in the following, therefore not set
   end do
 
 !-------- Iterative solution of the new system --------
 
-  ! x(nrows) = b(nrows)/a1(nrows)
-
-  ! do n=nrows-1, 0, -1
-  !    x(n) = (b(n)-a2(n)*x(n+1))/a1(n)
-  ! end do
-
-  allocate(help_x(0:nrows))
-
-  help_x(0) = b(nrows)/a1(nrows)
+  x_aux(0) = b_aux(nrows)/a1_aux(nrows)
 
   do n=1, nrows
-     help_x(n) = b(nrows-n)/a1(nrows-n) &
-                -a2(nrows-n)/a1(nrows-n)*help_x(n-1)
+     x_aux(n) = b_aux(nrows-n)/a1_aux(nrows-n) &
+                -a2_aux(nrows-n)/a1_aux(nrows-n)*x_aux(n-1)
   end do
 
   do n=0, nrows
-     x(n) = help_x(nrows-n)
+     x(n) = x_aux(nrows-n)
   end do
-
-  !       (The trick with the help_x was introduced in order to avoid
-  !        the negative step in the original, blanked-out loop.)
-
-  deallocate(help_x)
 
   !  WARNING: Subroutine does not check for elements of the main
   !           diagonal becoming zero. In this case it crashes even

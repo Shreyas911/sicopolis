@@ -392,117 +392,43 @@ iter_loop:DO iter=1,iter_max
 !<------------------------------------------------------------------------------
   SUBROUTINE TRI_SLE_STUB_B(a0, a0b, a1, a1b, a2, a2b, x, xb, b, bb, &
 &   nrows)
+
     IMPLICIT NONE
     INTEGER(i4b), INTENT(IN) :: nrows
-    REAL(dp), DIMENSION(0:*), INTENT(IN) :: a0, a2
-    REAL(dp), DIMENSION(0:*) :: a0b, a2b
-    REAL(dp), DIMENSION(0:*), INTENT(INOUT) :: a1, b
-    REAL(dp), DIMENSION(0:*), INTENT(INOUT) :: a1b, bb
-    REAL(dp), DIMENSION(0:*) :: x
-    REAL(dp), DIMENSION(0:*) :: xb
-    REAL(dp), DIMENSION(0:nrows) :: help_x
-    REAL(dp), DIMENSION(0:nrows) :: help_xb
+    REAL(dp), DIMENSION(0:nrows), INTENT(IN) :: a0, a1, a2, b
+    REAL(dp), DIMENSION(0:nrows) :: a0b, a1b, a2b, bb
+    REAL(dp), DIMENSION(0:nrows) :: x, x_copy
+    REAL(dp), DIMENSION(0:nrows) :: xb
     INTEGER(i4b) :: n
-    REAL(dp) :: tempb
-    REAL(dp) :: tempb0
-!--------  Generate an upper triangular matrix
-!                      ('obere Dreiecksmatrix') --------
-!x(1) = a0(0) + a1(0) + a2(0) + b(0) 
-!x(0) = x(1)
-!b(0) = x(1)
-!a1(0) = x(1)
-    DO n=1,nrows
-      CALL PUSHREAL8(a1(n))
-      a1(n) = a1(n) - a0(n)/a1(n-1)*a2(n-1)
-    END DO
-    DO n=1,nrows
-      CALL PUSHREAL8(b(n))
-      b(n) = b(n) - a0(n)/a1(n-1)*b(n-1)
-    END DO
-!         a0(n)  = 0.0_dp , not needed in the following, therefore
-!                           not set
-!-------- Iterative solution of the new system --------
-!      x(nrows) = b(nrows)/a1(nrows)
-!      do n=nrows-1, 0, -1
-!         x(n) = (b(n)-a2(n)*x(n+1))/a1(n)
-!      end do
-    help_x(0) = b(nrows)/a1(nrows)
-    DO n=1,nrows
-      CALL PUSHREAL8(help_x(n))
-      help_x(n) = b(nrows-n)/a1(nrows-n) - a2(nrows-n)/a1(nrows-n)*&
-&       help_x(n-1)
-    END DO
-    help_xb = 0.0_8
-    DO n=nrows,0,-1
-      help_xb(nrows-n) = help_xb(nrows-n) + xb(n)
-      xb(n) = 0.0_8
-    END DO
-    DO n=nrows,1,-1
-      CALL POPREAL8(help_x(n))
-      tempb = help_xb(n)/a1(nrows-n)
-      tempb0 = -(help_xb(n)/a1(nrows-n))
-      help_xb(n) = 0.0_8
-      a2b(nrows-n) = a2b(nrows-n) + help_x(n-1)*tempb0
-      help_xb(n-1) = help_xb(n-1) + a2(nrows-n)*tempb0
-      a1b(nrows-n) = a1b(nrows-n) - a2(nrows-n)*help_x(n-1)*tempb0/a1(&
-&       nrows-n) - b(nrows-n)*tempb/a1(nrows-n)
-      bb(nrows-n) = bb(nrows-n) + tempb
-    END DO
-    tempb = help_xb(0)/a1(nrows)
-    bb(nrows) = bb(nrows) + tempb
-    a1b(nrows) = a1b(nrows) - b(nrows)*tempb/a1(nrows)
-    DO n=nrows,1,-1
-      CALL POPREAL8(b(n))
-      tempb = -(bb(n)/a1(n-1))
-      a0b(n) = a0b(n) + b(n-1)*tempb
-      bb(n-1) = bb(n-1) + a0(n)*tempb
-      a1b(n-1) = a1b(n-1) - a0(n)*b(n-1)*tempb/a1(n-1)
-    END DO
-    DO n=nrows,1,-1
-      CALL POPREAL8(a1(n))
-      tempb = -(a1b(n)/a1(n-1))
-      a0b(n) = a0b(n) + a2(n-1)*tempb
-      a2b(n-1) = a2b(n-1) + a0(n)*tempb
-      a1b(n-1) = a1b(n-1) - a0(n)*a2(n-1)*tempb/a1(n-1)
-    END DO
 
-!implicit none
-!
-!integer(i4b),             intent(in)    :: nrows
-!real(dp), dimension(0:*), intent(in)    :: a0, a2
-!real(dp), dimension(0:*), intent(inout) :: a1, b
-!
-!real(dp), dimension(0:*), intent(out)   :: x
-!
-!
-!real(dp), dimension(0:*), intent(inout) :: a0b, a2b
-!real(dp), dimension(0:*), intent(inout) :: a1b, bb
-!real(dp), dimension(0:*), intent(inout) :: xb
-!real(dp), dimension(0:nrows)            :: a0T, a1T, a2T
-!real(dp), dimension(0:nrows)            :: incrbb
-!integer(i4b) :: i
-!        a0T(0) = 0.0   
-!        a0T(1:nrows) = a2(0:nrows-1)
-!        a1T = a1(0:nrows)
-!        a2T(0:nrows-1) = a0(1:nrows)
-!        a2T(nrows) = 0.0
-!        call tri_sle(a0T, a1T, a2T, incrbb, xb, nrows)
-!        DO i=0,nrows
-!          bb(i) = bb(i) + incrbb(i)
-!        ENDDO
-!        call tri_sle(a0, a1, a2, x, b, nrows)
-!        DO i=0,nrows
-!          a0b(i) = a0b(i) - x(i-1)*incrbb(i)
-!        ENDDO
-!        DO i=0,nrows
-!          a1b(i) = a1b(i) - x(i)*incrbb(i)
-!        ENDDO
-!        DO i=0,nrows
-!          a2b(i) = a2b(i) - x(i+1)*incrbb(i)
-!        ENDDO
-!        DO i=0,nrows
-!          xb(i) = 0
-!        ENDDO
+
+    real(dp), dimension(0:nrows) :: a0T, a1T, a2T
+    real(dp), dimension(0:nrows) :: incrbb
+    integer(i4b) :: i
+
+        a0T(0) = 0.0   
+        a0T(1:nrows) = a2(0:nrows-1)
+        a1T(0:nrows) = a1(0:nrows)
+        a2T(0:nrows-1) = a0(1:nrows)
+        a2T(nrows) = 0.0
+        call tri_sle(a0T, a1T, a2T, incrbb, xb, nrows)
+        DO i=0,nrows
+          bb(i) = incrbb(i)
+        ENDDO
+        ! The results go wrong when x is calculated here, so calculate x_copy.
+        call tri_sle(a0, a1, a2, x_copy, b, nrows)
+        DO i=0,nrows
+          a0b(i) = - x_copy(i-1)*incrbb(i)
+        ENDDO
+        DO i=0,nrows
+          a1b(i) = - x_copy(i)*incrbb(i)
+        ENDDO
+        DO i=0,nrows
+          a2b(i) = - x_copy(i+1)*incrbb(i)
+        ENDDO
+        xb = 0.0
+
+
 
   END SUBROUTINE TRI_SLE_STUB_B
 
@@ -516,40 +442,53 @@ iter_loop:DO iter=1,iter_max
 !! @param[out] x        Solution vector.
 !<------------------------------------------------------------------------------
   SUBROUTINE TRI_SLE_STUB(a0, a1, a2, x, b, nrows)
-    IMPLICIT NONE
-    INTEGER(i4b), INTENT(IN) :: nrows
-    REAL(dp), DIMENSION(0:nrows), INTENT(IN) :: a0, a2
-    REAL(dp), DIMENSION(0:nrows), INTENT(INOUT) :: a1, b
-    REAL(dp), DIMENSION(0:nrows), INTENT(OUT) :: x
-    REAL(dp), DIMENSION(0:nrows) :: help_x
-    INTEGER(i4b) :: n
-!--------  Generate an upper triangular matrix
-!                      ('obere Dreiecksmatrix') --------
-!x(1) = a0(0) + a1(0) + a2(0) + b(0) 
-!x(0) = x(1)
-!b(0) = x(1)
-!a1(0) = x(1)
-    DO n=1,nrows
-      a1(n) = a1(n) - a0(n)/a1(n-1)*a2(n-1)
-    END DO
-    DO n=1,nrows
-      b(n) = b(n) - a0(n)/a1(n-1)*b(n-1)
-    END DO
-!         a0(n)  = 0.0_dp , not needed in the following, therefore
-!                           not set
+
+  implicit none
+
+  integer(i4b),                 intent(in) :: nrows
+  real(dp), dimension(0:nrows), intent(in) :: a0, a1, a2, b
+
+  real(dp), dimension(0:nrows), intent(out) :: x
+
+  integer(i4b) :: n
+  real(dp), dimension(0:nrows) :: a0_aux, a1_aux, a2_aux, b_aux, x_aux
+
+!--------  Define local variables --------
+
+  a0_aux = a0
+  a1_aux = a1
+  a2_aux = a2
+  b_aux  = b
+  x_aux  = 0.0_dp   ! initialization
+
+!--------  Generate an upper triangular matrix --------
+
+  do n=1, nrows
+     a1_aux(n) = a1_aux(n) - a0_aux(n)/a1_aux(n-1)*a2_aux(n-1)
+  end do
+
+  do n=1, nrows
+     b_aux(n) = b_aux(n) - a0_aux(n)/a1_aux(n-1)*b_aux(n-1)
+     ! a0_aux(n) = 0.0_dp , not needed in the following, therefore not set
+  end do
+
 !-------- Iterative solution of the new system --------
-!      x(nrows) = b(nrows)/a1(nrows)
-!      do n=nrows-1, 0, -1
-!         x(n) = (b(n)-a2(n)*x(n+1))/a1(n)
-!      end do
-    help_x(0) = b(nrows)/a1(nrows)
-    DO n=1,nrows
-      help_x(n) = b(nrows-n)/a1(nrows-n) - a2(nrows-n)/a1(nrows-n)*&
-&       help_x(n-1)
-    END DO
-    DO n=0,nrows
-      x(n) = help_x(nrows-n)
-    END DO
+
+  x_aux(0) = b_aux(nrows)/a1_aux(nrows)
+
+  do n=1, nrows
+     x_aux(n) = b_aux(nrows-n)/a1_aux(nrows-n) &
+                -a2_aux(nrows-n)/a1_aux(nrows-n)*x_aux(n-1)
+  end do
+
+  do n=0, nrows
+     x(n) = x_aux(nrows-n)
+  end do
+
+  !  WARNING: Subroutine does not check for elements of the main
+  !           diagonal becoming zero. In this case it crashes even
+  !           though the system may be solvable. Otherwise ok.
+
   END SUBROUTINE TRI_SLE_STUB
 
 !-------------------------------------------------------------------------------
