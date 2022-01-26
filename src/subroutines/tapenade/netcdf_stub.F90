@@ -53,6 +53,10 @@ interface nf90_put_att
                          nf90_put_att_1D_character, nf90_put_att_1D_integer
 end interface nf90_put_att
 
+interface nf90_get_att
+    module procedure nf90_get_att_text
+end interface
+
 interface nf90_put_var
         module procedure nf90_put_var_one_real, nf90_put_var_1D_real, nf90_put_var_2D_real, nf90_put_var_3D_real
         module procedure nf90_put_var_one_integer, nf90_put_var_1D_integer, nf90_put_var_2D_integer, nf90_put_var_3D_integer
@@ -68,7 +72,28 @@ end interface nf90_get_var
 interface nf90_def_var
         module procedure nf90_def_var_Scalar, nf90_def_var_oneDim, nf90_def_var_ManyDims
 end interface nf90_def_var
+
+public :: nf90_inquire_attribute
+
 contains
+
+function nf90_get_att_text(ncid, varid, name, values)
+    integer,                          intent( in) :: ncid, varid
+    character(len = *),               intent( in) :: name
+    character(len = *),               intent(out) :: values
+    integer                                       :: nf90_get_att_text
+    values = ""
+    nf90_get_att_text = 0
+end function nf90_get_att_text
+
+function nf90_inquire_attribute(ncid, varid, name, xtype, len, attnum)
+    integer,             intent( in)           :: ncid, varid
+    character (len = *), intent( in)           :: name
+    integer,             intent(out), optional :: xtype, len, attnum
+    integer                                    :: nf90_inquire_attribute
+    integer                          :: local_xtype, local_len
+    nf90_inquire_attribute = 0
+end function nf90_inquire_attribute
 
 function nf90_open(path, mode, ncid, bufrsize, cache_size, cache_nelems, &
                    cache_preemption, comm, info)
@@ -261,6 +286,8 @@ function nf90_get_var_one_real(ncid, varid, values, start, count, stride, map)
                                    real (8), intent(out) :: values
   integer, dimension(:), optional, intent( in) :: start, count, stride, map
   integer                                                :: nf90_get_var_one_real
+  values = 0.0
+  nf90_get_var_one_real = 0
 end function nf90_get_var_one_real
 
 function nf90_get_var_1D_real(ncid, varid, values, start, count)
@@ -268,6 +295,8 @@ function nf90_get_var_1D_real(ncid, varid, values, start, count)
            real (8), dimension(:), intent( in) :: values
   integer, dimension(:), optional, intent( in) :: start, count
   integer                                                :: nf90_get_var_1D_real
+  values(:) = 0.0
+  nf90_get_var_1D_real = 0
 end function nf90_get_var_1D_real
 
 function nf90_get_var_2D_real(ncid, varid, values, start, count)
@@ -275,6 +304,8 @@ function nf90_get_var_2D_real(ncid, varid, values, start, count)
            real (8), dimension(:,:), intent( in) :: values
   integer, dimension(:), optional, intent( in) :: start, count
   integer                                                :: nf90_get_var_2D_real
+  values(:,:) = 0.0
+  nf90_get_var_2D_real = 0
 end function nf90_get_var_2D_real
 
 function nf90_get_var_3D_real(ncid, varid, values, start, count)
@@ -282,6 +313,8 @@ function nf90_get_var_3D_real(ncid, varid, values, start, count)
            real (8), dimension(:,:,:), intent( in) :: values
   integer, dimension(:), optional, intent( in) :: start, count
   integer                                                :: nf90_get_var_3D_real
+  values(:,:,:) = 0.0
+  nf90_get_var_3D_real = 0
 end function nf90_get_var_3D_real
 
 function nf90_get_var_one_integer(ncid, varid, values, start, count)
@@ -289,6 +322,8 @@ function nf90_get_var_one_integer(ncid, varid, values, start, count)
            integer (4), intent( in) :: values
   integer, dimension(:), optional, intent( in) :: start, count
   integer                                                :: nf90_get_var_one_integer
+  values = 0
+  nf90_get_var_one_integer = 0
 end function nf90_get_var_one_integer
 
 function nf90_get_var_1D_integer(ncid, varid, values, start, count)
@@ -296,6 +331,8 @@ function nf90_get_var_1D_integer(ncid, varid, values, start, count)
            integer (4), dimension(:), intent( in) :: values
   integer, dimension(:), optional, intent( in) :: start, count
   integer                                                :: nf90_get_var_1D_integer
+  values(:) = 0
+  nf90_get_var_1D_integer = 0
 end function nf90_get_var_1D_integer
 
 function nf90_get_var_2D_integer(ncid, varid, values, start, count)
@@ -303,6 +340,8 @@ function nf90_get_var_2D_integer(ncid, varid, values, start, count)
            integer (4), dimension(:,:), intent( in) :: values
   integer, dimension(:), optional, intent( in) :: start, count
   integer                                                :: nf90_get_var_2D_integer
+  values(:,:) = 0
+  nf90_get_var_2D_integer = 0
 end function nf90_get_var_2D_integer
 
 function nf90_get_var_3D_integer(ncid, varid, values, start, count)
@@ -310,6 +349,8 @@ function nf90_get_var_3D_integer(ncid, varid, values, start, count)
            integer (4), dimension(:,:,:), intent( in) :: values
   integer, dimension(:), optional, intent( in) :: start, count
   integer                                                :: nf90_get_var_3D_integer
+  values(:,:,:) = 0
+  nf90_get_var_3D_integer = 0
 end function nf90_get_var_3D_integer
 
 function nf90_def_var_Scalar(ncid, name, xtype, varid)
