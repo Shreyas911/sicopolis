@@ -234,7 +234,10 @@ contains
   end subroutine my_erfc
 
 !-------------------------------------------------------------------------------
-
+!> sico_lis_solver
+!! TAPENADE needs a definition of sico_lis_solver here.
+!! The code does nothing because only a definition is needed.
+!<------------------------------------------------------------------------------
 #if defined(ALLOW_TAPENADE)
 #include "lisf.h"
 subroutine sico_lis_solver(nmax, nnz, &
