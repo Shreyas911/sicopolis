@@ -14,4 +14,13 @@ module globals
   real(dp),     dimension(0:JMAX,0:IMAX) :: cst_dist, cos_grad_tc
   real(dp),     dimension(0:JMAX,0:IMAX) :: dis_perp 
 
+  real(dp), dimension(-256:255), public       :: c_int_table
+  real(dp), dimension(-524288:524287), public :: c_int_inv_table
+  integer(i4b), public                        :: n_temp_min
+  integer(i4b), public                        :: n_temp_max
+  integer(i4b), public                        :: n_enth_min
+  integer(i4b), public                        :: n_enth_max
+  real(dp), public                            :: L_inv
+  real(dp), public                            :: L_eto
+ 
 end module globals
