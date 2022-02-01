@@ -38,6 +38,9 @@ module enth_temp_omega_m
 
 use sico_types_m
 use error_m
+#if defined(ALLOW_TAPENADE)
+  use globals
+#endif
 
 implicit none
 save
@@ -79,15 +82,6 @@ public  :: enth_fct_temp_omega, temp_fct_enth, omega_fct_enth
 private :: c_int_val, c_int_inv_val
 
 #else /* Tapenade */
-
-real(dp), dimension(-256:255), public       :: c_int_table
-real(dp), dimension(-524288:524287), public :: c_int_inv_table
-integer(i4b), public                        :: n_temp_min
-integer(i4b), public                        :: n_temp_max
-integer(i4b), public                        :: n_enth_min
-integer(i4b), public                        :: n_enth_max
-real(dp), public                            :: L_inv
-real(dp), public                            :: L_eto
 
 public  :: calc_c_int_table, calc_c_int_inv_table
 public  :: enth_fct_temp_omega, temp_fct_enth, omega_fct_enth
