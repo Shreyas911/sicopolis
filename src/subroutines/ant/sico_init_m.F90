@@ -1730,7 +1730,7 @@ if (ios /= 0) then
    errormsg = ' >>> sico_init: Error when opening the data file for delta_ts!'
    call error(errormsg)
 end if
-
+#if !defined(ALLOW_TAPENADE)
 read(21, fmt=*) ch_dummy, grip_time_min, grip_time_stp, grip_time_max
 
 if (ch_dummy /= '#') then
@@ -1743,7 +1743,9 @@ end if
 ndata_grip = (grip_time_max-grip_time_min)/grip_time_stp
 
 allocate(griptemp(0:ndata_grip))
-
+#else 
+read(21, fmt=*)
+#endif
 do n=0, ndata_grip
    read(21, fmt=*) d_dummy, griptemp(n)
 end do
@@ -2007,7 +2009,7 @@ if (ios /= 0) then
    errormsg = ' >>> sico_init: Error when opening the data file for z_sl!'
    call error(errormsg)
 end if
-
+#if !defined(ALLOW_TAPENADE)
 read(21, fmt=*) ch_dummy, specmap_time_min, specmap_time_stp, specmap_time_max
 
 if (ch_dummy /= '#') then
@@ -2022,7 +2024,9 @@ end if
 ndata_specmap = (specmap_time_max-specmap_time_min)/specmap_time_stp
 
 allocate(specmap_zsl(0:ndata_specmap))
-
+#else 
+read(21, fmt=*)
+#endif
 do n=0, ndata_specmap
    read(21, fmt=*) d_dummy, specmap_zsl(n)
 end do

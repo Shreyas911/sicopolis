@@ -795,6 +795,7 @@ save
 !> ch_core(n): Names of the prescribed borehole positions
    character(len=16), dimension(n_core) :: ch_core
 #endif
+#if !defined(ALLOW_TAPENADE)
 !> grip_time_min: Minimum time of the data values for the
 !>                surface temperature anomaly
    integer(i4b) :: grip_time_min
@@ -808,7 +809,37 @@ save
    integer(i4b) :: ndata_grip
 !> griptemp(n): Data values for the surface temperature anomaly
    real(dp), dimension(:), allocatable :: griptemp
-
+#else
+#if (TSURFACE!=4)
+!> grip_time_min: Minimum time of the data values for the
+!>                surface temperature anomaly
+   integer(i4b) :: grip_time_min
+!> grip_time_stp: Time step of the data values for the
+!>                surface temperature anomaly
+   integer(i4b) :: grip_time_stp
+!> grip_time_max: Maximum time of the data values for the
+!>                surface temperature anomaly
+   integer(i4b) :: grip_time_max
+!> ndata_grip: Number of data values for the surface temperature anomaly
+   integer(i4b) :: ndata_grip
+!> griptemp(n): Data values for the surface temperature anomaly
+   real(dp), dimension(:), allocatable :: griptemp
+#else
+!> grip_time_min: Minimum time of the data values for the
+!>                surface temperature anomaly
+   integer(i4b) :: grip_time_min = -139990 !@ python_automated_metadata GRIP_TIME_MIN @ 
+!> grip_time_stp: Time step of the data values for the
+!>                surface temperature anomaly
+   integer(i4b) :: grip_time_stp = 1 !@ python_automated_metadata GRIP_TIME_STP @ 
+!> grip_time_max: Maximum time of the data values for the
+!>                surface temperature anomaly
+   integer(i4b) :: grip_time_max = 3 !@ python_automated_metadata GRIP_TIME_MAX @ 
+!> ndata_grip: Number of data values for the surface temperature anomaly
+   integer(i4b), parameter :: ndata_grip = 139993 !@ python_automated_metadata NDATA_GRIP @ 
+!> griptemp(n): Data values for the surface temperature anomaly
+   real(dp), dimension(:), allocatable :: griptemp
+#endif
+#endif
 !> gi_time_min: Minimum time of the data values for the glacial index
    integer(i4b) :: gi_time_min
 !> gi_time_stp: Time step of the data values for the glacial index
@@ -819,7 +850,7 @@ save
    integer(i4b) :: ndata_gi
 !> glacial_index(n): Data values for the glacial index
    real(dp), dimension(:), allocatable :: glacial_index
-
+#if !defined(ALLOW_TAPENADE)
 !> specmap_time_min: Minimum time of the data values for the sea level
    integer(i4b) :: specmap_time_min
 !> specmap_time_stp: Time step of the data values for the sea level
@@ -830,7 +861,31 @@ save
    integer(i4b) :: ndata_specmap
 !> specmap_zsl(n): Data values for the sea level
    real(dp), dimension(:), allocatable :: specmap_zsl
-
+#else
+#if (SEA_LEVEL!=3)
+!> specmap_time_min: Minimum time of the data values for the sea level
+   integer(i4b) :: specmap_time_min
+!> specmap_time_stp: Time step of the data values for the sea level
+   integer(i4b) :: specmap_time_stp
+!> specmap_time_max: Maximum time of the data values for the sea level
+   integer(i4b) :: specmap_time_max
+!> ndata_specmap: Number of data values for the sea level
+   integer(i4b) :: ndata_specmap
+!> specmap_zsl(n): Data values for the sea level
+   real(dp), dimension(:), allocatable :: specmap_zsl
+#else
+!> specmap_time_min: Minimum time of the data values for the sea level
+   integer(i4b) :: specmap_time_min = -124000 !@ python_automated_metadata SPECMAP_TIME_MIN @ 
+!> specmap_time_stp: Time step of the data values for the sea level
+   integer(i4b) :: specmap_time_stp = 1000 !@ python_automated_metadata SPECMAP_TIME_STP @ 
+!> specmap_time_max: Maximum time of the data values for the sea level
+   integer(i4b) :: specmap_time_max = 0 !@ python_automated_metadata SPECMAP_TIME_MAX @ 
+!> ndata_specmap: Number of data values for the sea level
+   integer(i4b), parameter :: ndata_specmap = 124 !@ python_automated_metadata NDATA_SPECMAP @ 
+!> specmap_zsl(n): Data values for the sea level
+   real(dp), dimension(0:ndata_specmap) :: specmap_zsl
+#endif
+#endif
 !> time_target_topo_init: Initial time for target-topography adjustment
    real(dp) :: time_target_topo_init
 !> time_target_topo_final: Final time for target-topography adjustment

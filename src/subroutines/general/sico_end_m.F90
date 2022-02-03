@@ -82,9 +82,9 @@ contains
   deallocate(lambda_surf, phi_surf, x_surf, y_surf)
 #endif
 #endif
-
+#if !defined(ALLOW_TAPENADE)
   if (allocated(specmap_zsl)) deallocate(specmap_zsl)
-
+#endif
 #if (defined(XYZ))
 #if (defined(HEINO))
   close(unit=15, status='keep')
