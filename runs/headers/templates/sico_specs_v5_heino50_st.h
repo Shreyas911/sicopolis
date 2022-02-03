@@ -11,7 +11,7 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2022-01-03'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2022-02-03'
 !                      Date of last change
 
 !-------- Domain --------
@@ -736,7 +736,7 @@
 
 #define OUTPUT_INIT 0
 !                         Output of initial conditions
-!                         in time-slice files '.erg' or '.nc'
+!                         in time-slice files '.nc'
 !                         (for prescribed output time step, OUTPUT==1,3)
 !                         and in time-series files '.ser' and '.core':
 !                         0 : Initial conditions are not written to
@@ -746,15 +746,15 @@
 
 #define OUTPUT 1
 !                         1 : Writing of time-slice data in files
-!                             '.erg' or '.nc' with prescribed time step
+!                             '.nc' with prescribed time step
 !                         2 : Writing of time-slice data in files
-!                             '.erg' or '.nc' at arbitrarily specified times
+!                             '.nc' at arbitrarily specified times
 !                         3 : Writing of time-slice data (only 2-d fields) in
-!                             files '.erg' or '.nc' with prescribed time step
+!                             files '.nc' with prescribed time step
 !                             plus
 !                             writing of time-slice data
 !                             (full set of 2-d and 3-d fields) in files
-!                             '.erg' or '.nc' at arbitrarily specified times
+!                             '.nc' at arbitrarily specified times
 
 #define ERGDAT 1
 !                         0 : Only 2-d fields written as time-slice data
