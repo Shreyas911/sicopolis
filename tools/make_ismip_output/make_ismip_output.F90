@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2022-01-03
+!! 2022-02-03
 !!
 !! @section Copyright
 !!
@@ -36,7 +36,7 @@
 
 !-------- Settings --------
 
-#define TIME_UNIT 1
+#define TIME_UNIT 2
 !                     Time unit of ISMIP6 output to be generated:
 !                      1 - days for time itself, seconds for other
 !                          time-dependent variables (ISMIP6 default)
@@ -58,6 +58,8 @@ module make_ismip_output_common
 integer, parameter :: i4b = selected_int_kind(9)   ! 4-byte integers
 integer, parameter :: sp  = kind(1.0)              ! single-precision reals
 integer, parameter :: dp  = kind(1.0d0)            ! double-precision reals
+
+integer(i4b), parameter :: ndat_max = 9999
 
 real(dp), parameter :: no_value_large_dp = 1.0e+20_dp
 real(dp), parameter :: no_value_neg_dp = -9999.0_dp
@@ -181,8 +183,10 @@ do n_variable_type = 1, 2
       else
          ndat = nint((TIME_END0-TIME_INIT0)/DTIME_OUT0)
       end if
-#else   /* OUTPUT==2 */
-      stop ' >>> make_ismip_output: OUTPUT==2 not allowed!'
+#elif (OUTPUT==2)
+      ndat = N_OUTPUT
+#else
+      stop ' >>> make_ismip_output: OUTPUT must be 1, 2 or 3!'
 #endif
 
    else if (n_variable_dim == 2) then
@@ -198,7 +202,7 @@ do n_variable_type = 1, 2
    end if
 
    if (n_variable_dim == 1) then
-      if (ndat > 9999) stop ' >>> make_ismip_output: Too many records!'
+      if (ndat > ndat_max) stop ' >>> make_ismip_output: Too many records!'
    end if
 
    do n=1, ndat
@@ -426,6 +430,10 @@ integer(i4b) :: ncid, ncv, ncv_test1, ncv_test2
 !     ncv:       Variable ID
 integer(i4b) :: nc1cor(1)
 
+#if (OUTPUT==2)
+real(dp) :: times_aux(0:N_OUTPUT)
+#endif
+
 real(dp) :: time_aux_1, time_aux_2, year_aux_1, year_aux_2
 real(dp) :: r_aux
 
@@ -441,15 +449,14 @@ real(dp), parameter :: year_to_day =      360.0_dp   ! 360_day calendar used
 
 if (n_variable_dim == 1) then
 
-#if (OUTPUT==1 && ERGDAT==0)
+#if ((OUTPUT==1 || OUTPUT==2) && ERGDAT==0)
    filename = trim(runname)//'_2d_'//trim(ergnum)//'.nc'
-#elif (OUTPUT==1 && ERGDAT==1)
+#elif ((OUTPUT==1 || OUTPUT==2) && ERGDAT==1)
    filename = trim(runname)//trim(ergnum)//'.nc'
 #elif (OUTPUT==3)
    filename = trim(runname)//'_2d_'//trim(ergnum)//'.nc'
 #else
    write(6,'(/a)') ' >>> read_nc: File name cannot be determined!'
-   write(6, '(a)') '          (OUTPUT==2 not allowed, other settings wrong?)'
    stop
 #endif
 
@@ -639,21 +646,21 @@ call check( nf90_get_var(ncid, ncv, p_b_w_erg) )
 
 ierr1 = nf90_inq_varid(ncid, 'tau_dr', ncv)
 if (ierr1 == nf90_noerr) then
-   call check( nf90_get_var(ncid, ncv, tau_dr_erg, start=nc1cor) )
+   call check( nf90_get_var(ncid, ncv, tau_dr_erg) )
 else
    ierr2 = nf90_inq_varid(ncid, 'tau_b_driving', ncv)   ! obsolete name
    if (ierr2 == nf90_noerr) then
-      call check( nf90_get_var(ncid, ncv, tau_dr_erg, start=nc1cor) )
+      call check( nf90_get_var(ncid, ncv, tau_dr_erg) )
    end if
 end if
 
 ierr1 = nf90_inq_varid(ncid, 'tau_b', ncv)
 if (ierr1 == nf90_noerr) then
-   call check( nf90_get_var(ncid, ncv, tau_b_erg, start=nc1cor) )
+   call check( nf90_get_var(ncid, ncv, tau_b_erg) )
 else
    ierr2 = nf90_inq_varid(ncid, 'tau_b_drag', ncv)   ! obsolete name
    if (ierr2 == nf90_noerr) then
-      call check( nf90_get_var(ncid, ncv, tau_b_erg, start=nc1cor) )
+      call check( nf90_get_var(ncid, ncv, tau_b_erg) )
    end if
 end if
 
@@ -732,10 +739,30 @@ if (n_variable_type == 1) then   ! state variables
 else if (n_variable_type == 2) then   ! flux variables
 
    if (n_variable_dim == 1) then
+
+#if (OUTPUT==1 || OUTPUT==3)
+
       time_aux_1 = time_erg-real(DTIME_OUT0,dp)
       time_aux_2 = time_erg
       time_erg   = time_erg-0.5_dp*real(DTIME_OUT0,dp)
                    ! shifted to the centre of the time interval
+
+#elif (OUTPUT==2)
+
+      times_aux(0)          = TIME_INIT0
+      times_aux(1:N_OUTPUT) = TIME_OUT0
+
+#if (OUT_TIMES==2)
+      times_aux = times_aux + YEAR_ZERO   ! year CE
+#endif
+
+      time_aux_1 = times_aux(n-1)
+      time_aux_2 = times_aux(n)   ! (= time_erg)
+      time_erg   = 0.5_dp*(time_aux_1+time_aux_2)
+                   ! shifted to the centre of the time interval
+
+#endif
+
    else if (n_variable_dim == 2) then
       time_aux_1 = time_erg-real(DTIME_SER0,dp)
       time_aux_2 = time_erg
@@ -1298,7 +1325,7 @@ call check( nf90_inq_dimid(ncid, 'time', nc1d) )
 call check( nf90_def_var(ncid, 'tendlibmassbffl', NF90_FLOAT, nc1d, ncv) )
 buffer = 'kg '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
-buffer = 'tendency_of_land_ice_mass_due_to_basal_mass_balance_for_floating_ice'
+buffer = 'tendency_of_floating_ice_shelf_mass_due_to_basal_mass_balance'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)) )
 buffer = 'Total BMB flux for floating ice'
 call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
