@@ -1089,7 +1089,7 @@ call check( nf90_put_att(ncid, NF90_GLOBAL, 'history', trim(buffer)) )
 buffer = 'http://www.sicopolis.net/'
 call check( nf90_put_att(ncid, NF90_GLOBAL, 'references', trim(buffer)) )
 
-buffer = 'CF-1.6'
+buffer = 'NetCDF Climate and Forecast (CF) Metadata Conventions'
 call check( nf90_put_att(ncid, NF90_GLOBAL, 'Conventions', trim(buffer)) )
 
 !-------- Definition of the dimensions --------
