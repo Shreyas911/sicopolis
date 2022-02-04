@@ -94,6 +94,7 @@ real(dp)           :: mapping_standard_parallel_val
 real(dp)           :: mapping_reference_longitude_val
 real(dp)           :: mapping_false_E_val
 real(dp)           :: mapping_false_N_val
+real(dp)           :: year2sec_val
 real(dp)           :: time_val, year_val
 real(dp)           :: time_bnds_val(2)
 real(dp)           :: x_val(0:IMAX)
@@ -221,6 +222,7 @@ do n_variable_type = 1, 2
                 mapping_reference_longitude_val, &
                 mapping_false_E_val, &
                 mapping_false_N_val, &
+                year2sec_val, &
                 time_val, year_val, time_bnds_val, x_val, y_val, &
                 lon_val, lat_val, &
                 lim_val, limnsw_val, iareagr_val, iareafl_val, &
@@ -259,6 +261,7 @@ do n_variable_type = 1, 2
 
       call write_ismip_netcdf(runname, n_variable_dim, n_variable_type, &
                     n, ncid, mapping_val, &
+                    year2sec_val, &
                     time_val, year_val, time_bnds_val, x_val, y_val, &
                     lon_val, lat_val, &
                     lim_val, limnsw_val, iareagr_val, iareafl_val, &
@@ -305,6 +308,7 @@ subroutine read_nc(runname, n_variable_dim, n_variable_type, ergnum, n, &
                    mapping_reference_longitude_r, &
                    mapping_false_E_r, &
                    mapping_false_N_r, &
+                   year2sec_r, &
                    time_r, year_r, time_bnds_r, x_r, y_r, &
                    lon_r, lat_r, &
                    lim_r, limnsw_r, iareagr_r, iareafl_r, &
@@ -344,6 +348,7 @@ real(dp),          intent(out) :: mapping_standard_parallel_r
 real(dp),          intent(out) :: mapping_reference_longitude_r
 real(dp),          intent(out) :: mapping_false_E_r
 real(dp),          intent(out) :: mapping_false_N_r
+real(dp),          intent(out) :: year2sec_r
 real(dp),          intent(out) :: time_r, year_r
 real(dp),          intent(out) :: time_bnds_r(2)
 real(dp),          intent(out) :: x_r(0:IMAX)
@@ -400,7 +405,7 @@ real(dp)           :: year_to_year_or_sec
 character(len=256) :: filename, filename_with_path
 
 integer(i4b), dimension(0:IMAX,0:JMAX) :: mask_erg
-real(dp) :: time_erg=0.0_dp, &
+real(dp) :: year2sec_erg=0.0_dp, time_erg=0.0_dp, &
             V_tot_erg=0.0_dp, V_af_erg=0.0_dp, &
             A_grounded_erg=0.0_dp, A_floating_erg=0.0_dp, &
             Q_s_erg=0.0_dp, &
@@ -442,8 +447,7 @@ character(len=64) :: ch_aux
 real(dp), parameter :: T0  = 273.15_dp
 real(dp), parameter :: rho = 910.0_dp
 
-real(dp), parameter :: year_to_sec = 31556926.0_dp
-real(dp), parameter :: year_to_day =      360.0_dp   ! 360_day calendar used
+real(dp), parameter :: year2day = 360.0_dp   ! 360_day calendar used
 
 !-------- Name of file --------
 
@@ -537,6 +541,9 @@ call check( nf90_get_att(ncid, ncv, 'false_easting',  mapping_false_E_r) )
 call check( nf90_get_att(ncid, ncv, 'false_northing', mapping_false_N_r) )
 
 #endif
+
+call check( nf90_inq_varid(ncid, 'year2sec', ncv) )
+call check( nf90_get_var(ncid, ncv, year2sec_erg) )
 
 call check( nf90_inq_varid(ncid, 'time', ncv) )
 call check( nf90_get_var(ncid, ncv, time_erg) )
@@ -681,6 +688,9 @@ else if (n_variable_dim == 2) then
 
 nc1cor(1) = n
 
+call check( nf90_inq_varid(ncid, 'year2sec', ncv) )
+call check( nf90_get_var(ncid, ncv, year2sec_erg) )
+
 call check( nf90_inq_varid(ncid, 't', ncv) )
 call check( nf90_get_var(ncid, ncv, time_erg, start=nc1cor) )
 
@@ -723,8 +733,10 @@ call check( nf90_close(ncid) )
 
 !-------- Conversion of read data --------
 
+year2sec_r = year2sec_erg
+
 #if (TIME_UNIT==1)
-   year_to_year_or_sec = year_to_sec   ! a -> s
+   year_to_year_or_sec = year2sec_erg   ! a -> s
 #elif (TIME_UNIT==2)
    year_to_year_or_sec = 1.0_dp        ! a -> a
 #else
@@ -783,11 +795,11 @@ end if
 #endif
 
 #if (TIME_UNIT==1)
-   time_r         = (year_r-real(YEAR_REF,dp))     * year_to_day
+   time_r         = (year_r-real(YEAR_REF,dp))     * year2day
                                  ! year CE -> days since reference datum
-   time_bnds_r(1) = (year_aux_1-real(YEAR_REF,dp)) * year_to_day
+   time_bnds_r(1) = (year_aux_1-real(YEAR_REF,dp)) * year2day
                                  ! year CE -> days since reference datum
-   time_bnds_r(2) = (year_aux_2-real(YEAR_REF,dp)) * year_to_day
+   time_bnds_r(2) = (year_aux_2-real(YEAR_REF,dp)) * year2day
                                  ! year CE -> days since reference datum
 #elif (TIME_UNIT==2)
    time_r         = time_erg     ! a
@@ -1143,6 +1155,16 @@ call check( nf90_put_att(ncid, ncv, 'false_easting', mapping_false_E_val) )
 call check( nf90_put_att(ncid, ncv, 'false_northing', mapping_false_N_val) )
 
 end if
+
+!  ------ year2sec
+
+call check( nf90_def_var(ncid, 'year2sec', NF90_DOUBLE, ncv) )
+buffer = 's a-1'
+call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
+buffer = 'seconds_per_year'
+call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)) )
+buffer = '1 year (1 a) in seconds'
+call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 
 !  ------ Time
 
@@ -1970,6 +1992,7 @@ end subroutine init_ismip_netcdf
 !<------------------------------------------------------------------------------
 subroutine write_ismip_netcdf(runname, n_variable_dim, n_variable_type, &
                     n, ncid, mapping_aux, &
+                    year2sec_aux, &
                     time_aux, year_aux, time_bnds_val, x_val, y_val, &
                     lon_val, lat_val, &
                     lim_aux, limnsw_aux, iareagr_aux, iareafl_aux, &
@@ -2000,6 +2023,7 @@ character(len=256), intent(in) :: runname
 integer(i4b),       intent(in) :: n_variable_dim, n_variable_type, n
 integer(i4b),       intent(in) :: ncid   ! ID of the NetCDF file
 integer(i4b),       intent(in) :: mapping_aux
+real(dp),           intent(in) :: year2sec_aux
 real(dp),           intent(in) :: time_aux, year_aux
 real(dp),           intent(in) :: time_bnds_val(2)
 real(dp),           intent(in) :: x_val(0:IMAX)
@@ -2073,6 +2097,7 @@ character(len=256) :: filename, buffer
 character          :: ch_empty
 
 integer(i4b) :: mapping_val(1)
+real(dp)     :: year2sec_val(1)
 real(dp)     :: time_val(1), year_val(1)
 real(dp)     :: lim_val(1)
 real(dp)     :: limnsw_val(1)
@@ -2086,6 +2111,7 @@ real(dp)     :: tendlifmassbf_val(1)
 real(dp)     :: tendligroundf_val(1)
 
 mapping_val(1)         = mapping_aux
+year2sec_val(1)        = year2sec_aux
 time_val(1)            = time_aux
 year_val(1)            = year_aux
 lim_val(1)             = lim_aux
@@ -2105,41 +2131,47 @@ write(6,'(a)') ' Now writing data in new NetCDF file ...'
 
 !  ------ Mapping variable and projection coordinates
 
-if (n_variable_dim == 1) then
-
 if (n==1) then   ! output only once
 
-   call check( nf90_inq_varid(ncid, 'mapping', ncv) )
+   if (n_variable_dim == 1) then
+
+      call check( nf90_inq_varid(ncid, 'mapping', ncv) )
+      nc1cor(1) = 1
+      nc1cnt(1) = 1
+      call check( nf90_put_var(ncid, ncv, mapping_val, &
+                               start=nc1cor, count=nc1cnt) )
+
+      call check( nf90_inq_varid(ncid, 'x', ncv) )
+      nc1cor(1) = 1
+      nc1cnt(1) = IMAX + 1
+      call check( nf90_put_var(ncid, ncv, x_val, start=nc1cor, count=nc1cnt) )
+
+      call check( nf90_inq_varid(ncid, 'y', ncv) )
+      nc1cor(1) = 1
+      nc1cnt(1) = JMAX + 1
+      call check( nf90_put_var(ncid, ncv, y_val, start=nc1cor, count=nc1cnt) )
+
+      call check( nf90_inq_varid(ncid, 'lon', ncv) )
+      nc2cor(1) = 1
+      nc2cor(2) = 1
+      nc2cnt(1) = IMAX + 1
+      nc2cnt(2) = JMAX + 1
+      call check( nf90_put_var(ncid, ncv, lon_val, start=nc2cor, count=nc2cnt) )
+
+      call check( nf90_inq_varid(ncid, 'lat', ncv) )
+      nc2cor(1) = 1
+      nc2cor(2) = 1
+      nc2cnt(1) = IMAX + 1
+      nc2cnt(2) = JMAX + 1
+      call check( nf90_put_var(ncid, ncv, lat_val, start=nc2cor, count=nc2cnt) )
+
+   end if
+
+   call check( nf90_inq_varid(ncid, 'year2sec', ncv) )
    nc1cor(1) = 1
    nc1cnt(1) = 1
-   call check( nf90_put_var(ncid, ncv, mapping_val, &
+   call check( nf90_put_var(ncid, ncv, year2sec_val, &
                             start=nc1cor, count=nc1cnt) )
-
-   call check( nf90_inq_varid(ncid, 'x', ncv) )
-   nc1cor(1) = 1
-   nc1cnt(1) = IMAX + 1
-   call check( nf90_put_var(ncid, ncv, x_val, start=nc1cor, count=nc1cnt) )
-
-   call check( nf90_inq_varid(ncid, 'y', ncv) )
-   nc1cor(1) = 1
-   nc1cnt(1) = JMAX + 1
-   call check( nf90_put_var(ncid, ncv, y_val, start=nc1cor, count=nc1cnt) )
-
-   call check( nf90_inq_varid(ncid, 'lon', ncv) )
-   nc2cor(1) = 1
-   nc2cor(2) = 1
-   nc2cnt(1) = IMAX + 1
-   nc2cnt(2) = JMAX + 1
-   call check( nf90_put_var(ncid, ncv, lon_val, start=nc2cor, count=nc2cnt) )
-
-   call check( nf90_inq_varid(ncid, 'lat', ncv) )
-   nc2cor(1) = 1
-   nc2cor(2) = 1
-   nc2cnt(1) = IMAX + 1
-   nc2cnt(2) = JMAX + 1
-   call check( nf90_put_var(ncid, ncv, lat_val, start=nc2cor, count=nc2cnt) )
-
-end if
 
 end if
 
