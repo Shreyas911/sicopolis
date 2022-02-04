@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2022-01-03
+!! 2022-02-04
 !!
 !! @section Copyright
 !!
@@ -36,7 +36,7 @@
 
 !-------- Settings --------
 
-#define TIME_UNIT 1
+#define TIME_UNIT 2
 !                     Time unit of ISMIP6 output to be generated:
 !                      1 - days for time itself, seconds for other
 !                          time-dependent variables (ISMIP6 default)
@@ -58,6 +58,8 @@ module make_ismip_output_common
 integer, parameter :: i4b = selected_int_kind(9)   ! 4-byte integers
 integer, parameter :: sp  = kind(1.0)              ! single-precision reals
 integer, parameter :: dp  = kind(1.0d0)            ! double-precision reals
+
+integer(i4b), parameter :: ndat_max = 9999
 
 real(dp), parameter :: no_value_large_dp = 1.0e+20_dp
 real(dp), parameter :: no_value_neg_dp = -9999.0_dp
@@ -92,6 +94,7 @@ real(dp)           :: mapping_standard_parallel_val
 real(dp)           :: mapping_reference_longitude_val
 real(dp)           :: mapping_false_E_val
 real(dp)           :: mapping_false_N_val
+real(dp)           :: year2sec_val
 real(dp)           :: time_val, year_val
 real(dp)           :: time_bnds_val(2)
 real(dp)           :: x_val(0:IMAX)
@@ -181,8 +184,10 @@ do n_variable_type = 1, 2
       else
          ndat = nint((TIME_END0-TIME_INIT0)/DTIME_OUT0)
       end if
-#else   /* OUTPUT==2 */
-      stop ' >>> make_ismip_output: OUTPUT==2 not allowed!'
+#elif (OUTPUT==2)
+      ndat = N_OUTPUT
+#else
+      stop ' >>> make_ismip_output: OUTPUT must be 1, 2 or 3!'
 #endif
 
    else if (n_variable_dim == 2) then
@@ -198,7 +203,7 @@ do n_variable_type = 1, 2
    end if
 
    if (n_variable_dim == 1) then
-      if (ndat > 9999) stop ' >>> make_ismip_output: Too many records!'
+      if (ndat > ndat_max) stop ' >>> make_ismip_output: Too many records!'
    end if
 
    do n=1, ndat
@@ -217,6 +222,7 @@ do n_variable_type = 1, 2
                 mapping_reference_longitude_val, &
                 mapping_false_E_val, &
                 mapping_false_N_val, &
+                year2sec_val, &
                 time_val, year_val, time_bnds_val, x_val, y_val, &
                 lon_val, lat_val, &
                 lim_val, limnsw_val, iareagr_val, iareafl_val, &
@@ -255,6 +261,7 @@ do n_variable_type = 1, 2
 
       call write_ismip_netcdf(runname, n_variable_dim, n_variable_type, &
                     n, ncid, mapping_val, &
+                    year2sec_val, &
                     time_val, year_val, time_bnds_val, x_val, y_val, &
                     lon_val, lat_val, &
                     lim_val, limnsw_val, iareagr_val, iareafl_val, &
@@ -301,6 +308,7 @@ subroutine read_nc(runname, n_variable_dim, n_variable_type, ergnum, n, &
                    mapping_reference_longitude_r, &
                    mapping_false_E_r, &
                    mapping_false_N_r, &
+                   year2sec_r, &
                    time_r, year_r, time_bnds_r, x_r, y_r, &
                    lon_r, lat_r, &
                    lim_r, limnsw_r, iareagr_r, iareafl_r, &
@@ -340,6 +348,7 @@ real(dp),          intent(out) :: mapping_standard_parallel_r
 real(dp),          intent(out) :: mapping_reference_longitude_r
 real(dp),          intent(out) :: mapping_false_E_r
 real(dp),          intent(out) :: mapping_false_N_r
+real(dp),          intent(out) :: year2sec_r
 real(dp),          intent(out) :: time_r, year_r
 real(dp),          intent(out) :: time_bnds_r(2)
 real(dp),          intent(out) :: x_r(0:IMAX)
@@ -396,7 +405,7 @@ real(dp)           :: year_to_year_or_sec
 character(len=256) :: filename, filename_with_path
 
 integer(i4b), dimension(0:IMAX,0:JMAX) :: mask_erg
-real(dp) :: time_erg=0.0_dp, &
+real(dp) :: year2sec_erg=0.0_dp, time_erg=0.0_dp, &
             V_tot_erg=0.0_dp, V_af_erg=0.0_dp, &
             A_grounded_erg=0.0_dp, A_floating_erg=0.0_dp, &
             Q_s_erg=0.0_dp, &
@@ -426,6 +435,10 @@ integer(i4b) :: ncid, ncv, ncv_test1, ncv_test2
 !     ncv:       Variable ID
 integer(i4b) :: nc1cor(1)
 
+#if (OUTPUT==2)
+real(dp) :: times_aux(0:N_OUTPUT)
+#endif
+
 real(dp) :: time_aux_1, time_aux_2, year_aux_1, year_aux_2
 real(dp) :: r_aux
 
@@ -434,22 +447,20 @@ character(len=64) :: ch_aux
 real(dp), parameter :: T0  = 273.15_dp
 real(dp), parameter :: rho = 910.0_dp
 
-real(dp), parameter :: year_to_sec = 31556926.0_dp
-real(dp), parameter :: year_to_day =      360.0_dp   ! 360_day calendar used
+real(dp), parameter :: year2day = 360.0_dp   ! 360_day calendar used
 
 !-------- Name of file --------
 
 if (n_variable_dim == 1) then
 
-#if (OUTPUT==1 && ERGDAT==0)
+#if ((OUTPUT==1 || OUTPUT==2) && ERGDAT==0)
    filename = trim(runname)//'_2d_'//trim(ergnum)//'.nc'
-#elif (OUTPUT==1 && ERGDAT==1)
+#elif ((OUTPUT==1 || OUTPUT==2) && ERGDAT==1)
    filename = trim(runname)//trim(ergnum)//'.nc'
 #elif (OUTPUT==3)
    filename = trim(runname)//'_2d_'//trim(ergnum)//'.nc'
 #else
    write(6,'(/a)') ' >>> read_nc: File name cannot be determined!'
-   write(6, '(a)') '          (OUTPUT==2 not allowed, other settings wrong?)'
    stop
 #endif
 
@@ -530,6 +541,9 @@ call check( nf90_get_att(ncid, ncv, 'false_easting',  mapping_false_E_r) )
 call check( nf90_get_att(ncid, ncv, 'false_northing', mapping_false_N_r) )
 
 #endif
+
+call check( nf90_inq_varid(ncid, 'year2sec', ncv) )
+call check( nf90_get_var(ncid, ncv, year2sec_erg) )
 
 call check( nf90_inq_varid(ncid, 'time', ncv) )
 call check( nf90_get_var(ncid, ncv, time_erg) )
@@ -639,21 +653,21 @@ call check( nf90_get_var(ncid, ncv, p_b_w_erg) )
 
 ierr1 = nf90_inq_varid(ncid, 'tau_dr', ncv)
 if (ierr1 == nf90_noerr) then
-   call check( nf90_get_var(ncid, ncv, tau_dr_erg, start=nc1cor) )
+   call check( nf90_get_var(ncid, ncv, tau_dr_erg) )
 else
    ierr2 = nf90_inq_varid(ncid, 'tau_b_driving', ncv)   ! obsolete name
    if (ierr2 == nf90_noerr) then
-      call check( nf90_get_var(ncid, ncv, tau_dr_erg, start=nc1cor) )
+      call check( nf90_get_var(ncid, ncv, tau_dr_erg) )
    end if
 end if
 
 ierr1 = nf90_inq_varid(ncid, 'tau_b', ncv)
 if (ierr1 == nf90_noerr) then
-   call check( nf90_get_var(ncid, ncv, tau_b_erg, start=nc1cor) )
+   call check( nf90_get_var(ncid, ncv, tau_b_erg) )
 else
    ierr2 = nf90_inq_varid(ncid, 'tau_b_drag', ncv)   ! obsolete name
    if (ierr2 == nf90_noerr) then
-      call check( nf90_get_var(ncid, ncv, tau_b_erg, start=nc1cor) )
+      call check( nf90_get_var(ncid, ncv, tau_b_erg) )
    end if
 end if
 
@@ -673,6 +687,9 @@ end if
 else if (n_variable_dim == 2) then
 
 nc1cor(1) = n
+
+call check( nf90_inq_varid(ncid, 'year2sec', ncv) )
+call check( nf90_get_var(ncid, ncv, year2sec_erg) )
 
 call check( nf90_inq_varid(ncid, 't', ncv) )
 call check( nf90_get_var(ncid, ncv, time_erg, start=nc1cor) )
@@ -716,8 +733,10 @@ call check( nf90_close(ncid) )
 
 !-------- Conversion of read data --------
 
+year2sec_r = year2sec_erg
+
 #if (TIME_UNIT==1)
-   year_to_year_or_sec = year_to_sec   ! a -> s
+   year_to_year_or_sec = year2sec_erg   ! a -> s
 #elif (TIME_UNIT==2)
    year_to_year_or_sec = 1.0_dp        ! a -> a
 #else
@@ -732,10 +751,30 @@ if (n_variable_type == 1) then   ! state variables
 else if (n_variable_type == 2) then   ! flux variables
 
    if (n_variable_dim == 1) then
+
+#if (OUTPUT==1 || OUTPUT==3)
+
       time_aux_1 = time_erg-real(DTIME_OUT0,dp)
       time_aux_2 = time_erg
       time_erg   = time_erg-0.5_dp*real(DTIME_OUT0,dp)
                    ! shifted to the centre of the time interval
+
+#elif (OUTPUT==2)
+
+      times_aux(0)          = TIME_INIT0
+      times_aux(1:N_OUTPUT) = TIME_OUT0
+
+#if (OUT_TIMES==2)
+      times_aux = times_aux + YEAR_ZERO   ! year CE
+#endif
+
+      time_aux_1 = times_aux(n-1)
+      time_aux_2 = times_aux(n)   ! (= time_erg)
+      time_erg   = 0.5_dp*(time_aux_1+time_aux_2)
+                   ! shifted to the centre of the time interval
+
+#endif
+
    else if (n_variable_dim == 2) then
       time_aux_1 = time_erg-real(DTIME_SER0,dp)
       time_aux_2 = time_erg
@@ -756,11 +795,11 @@ end if
 #endif
 
 #if (TIME_UNIT==1)
-   time_r         = (year_r-real(YEAR_REF,dp))     * year_to_day
+   time_r         = (year_r-real(YEAR_REF,dp))     * year2day
                                  ! year CE -> days since reference datum
-   time_bnds_r(1) = (year_aux_1-real(YEAR_REF,dp)) * year_to_day
+   time_bnds_r(1) = (year_aux_1-real(YEAR_REF,dp)) * year2day
                                  ! year CE -> days since reference datum
-   time_bnds_r(2) = (year_aux_2-real(YEAR_REF,dp)) * year_to_day
+   time_bnds_r(2) = (year_aux_2-real(YEAR_REF,dp)) * year2day
                                  ! year CE -> days since reference datum
 #elif (TIME_UNIT==2)
    time_r         = time_erg     ! a
@@ -1062,7 +1101,7 @@ call check( nf90_put_att(ncid, NF90_GLOBAL, 'history', trim(buffer)) )
 buffer = 'http://www.sicopolis.net/'
 call check( nf90_put_att(ncid, NF90_GLOBAL, 'references', trim(buffer)) )
 
-buffer = 'CF-1.6'
+buffer = 'NetCDF Climate and Forecast (CF) Metadata Conventions'
 call check( nf90_put_att(ncid, NF90_GLOBAL, 'Conventions', trim(buffer)) )
 
 !-------- Definition of the dimensions --------
@@ -1116,6 +1155,16 @@ call check( nf90_put_att(ncid, ncv, 'false_easting', mapping_false_E_val) )
 call check( nf90_put_att(ncid, ncv, 'false_northing', mapping_false_N_val) )
 
 end if
+
+!  ------ year2sec
+
+call check( nf90_def_var(ncid, 'year2sec', NF90_DOUBLE, ncv) )
+buffer = 's a-1'
+call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
+buffer = 'seconds_per_year'
+call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)) )
+buffer = '1 year (1 a) in seconds'
+call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 
 !  ------ Time
 
@@ -1298,7 +1347,7 @@ call check( nf90_inq_dimid(ncid, 'time', nc1d) )
 call check( nf90_def_var(ncid, 'tendlibmassbffl', NF90_FLOAT, nc1d, ncv) )
 buffer = 'kg '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
-buffer = 'tendency_of_land_ice_mass_due_to_basal_mass_balance_for_floating_ice'
+buffer = 'tendency_of_floating_ice_shelf_mass_due_to_basal_mass_balance'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)) )
 buffer = 'Total BMB flux for floating ice'
 call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
@@ -1662,7 +1711,7 @@ call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
 call check( nf90_def_var(ncid, 'litempbotgr', NF90_FLOAT, nc3d, ncv) )
 buffer = 'K'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
-buffer = 'temperature_at_base_of_ice_sheet_model_for_grounded_ice'
+buffer = 'temperature_at_base_of_grounded_ice_sheet'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)) )
 buffer = 'Basal temperature for grounded ice'
 call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
@@ -1680,7 +1729,7 @@ call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
 call check( nf90_def_var(ncid, 'litempbotfl', NF90_FLOAT, nc3d, ncv) )
 buffer = 'K'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
-buffer = 'temperature_at_base_of_ice_sheet_model_for_floating_ice'
+buffer = 'temperature_at_base_of_floating_ice_shelf'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)) )
 buffer = 'Basal temperature for floating ice'
 call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
@@ -1810,7 +1859,7 @@ call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
 call check( nf90_def_var(ncid, 'libmassbfgr', NF90_FLOAT, nc3d, ncv) )
 buffer = 'kg m-2 '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
-buffer = 'land_ice_basal_specific_mass_balance_flux_for_grounded_ice'
+buffer = 'grounded_ice_sheet_basal_specific_mass_balance_flux'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)) )
 buffer = 'Basal mass balance flux for grounded ice'
 call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
@@ -1828,7 +1877,7 @@ call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
 call check( nf90_def_var(ncid, 'libmassbffl', NF90_FLOAT, nc3d, ncv) )
 buffer = 'kg m-2 '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
-buffer = 'land_ice_basal_specific_mass_balance_flux_for_floating_ice'
+buffer = 'floating_ice_shelf_basal_specific_mass_balance_flux'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)) )
 buffer = 'Basal mass balance flux for floating ice'
 call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
@@ -1943,6 +1992,7 @@ end subroutine init_ismip_netcdf
 !<------------------------------------------------------------------------------
 subroutine write_ismip_netcdf(runname, n_variable_dim, n_variable_type, &
                     n, ncid, mapping_aux, &
+                    year2sec_aux, &
                     time_aux, year_aux, time_bnds_val, x_val, y_val, &
                     lon_val, lat_val, &
                     lim_aux, limnsw_aux, iareagr_aux, iareafl_aux, &
@@ -1973,6 +2023,7 @@ character(len=256), intent(in) :: runname
 integer(i4b),       intent(in) :: n_variable_dim, n_variable_type, n
 integer(i4b),       intent(in) :: ncid   ! ID of the NetCDF file
 integer(i4b),       intent(in) :: mapping_aux
+real(dp),           intent(in) :: year2sec_aux
 real(dp),           intent(in) :: time_aux, year_aux
 real(dp),           intent(in) :: time_bnds_val(2)
 real(dp),           intent(in) :: x_val(0:IMAX)
@@ -2046,6 +2097,7 @@ character(len=256) :: filename, buffer
 character          :: ch_empty
 
 integer(i4b) :: mapping_val(1)
+real(dp)     :: year2sec_val(1)
 real(dp)     :: time_val(1), year_val(1)
 real(dp)     :: lim_val(1)
 real(dp)     :: limnsw_val(1)
@@ -2059,6 +2111,7 @@ real(dp)     :: tendlifmassbf_val(1)
 real(dp)     :: tendligroundf_val(1)
 
 mapping_val(1)         = mapping_aux
+year2sec_val(1)        = year2sec_aux
 time_val(1)            = time_aux
 year_val(1)            = year_aux
 lim_val(1)             = lim_aux
@@ -2078,41 +2131,47 @@ write(6,'(a)') ' Now writing data in new NetCDF file ...'
 
 !  ------ Mapping variable and projection coordinates
 
-if (n_variable_dim == 1) then
-
 if (n==1) then   ! output only once
 
-   call check( nf90_inq_varid(ncid, 'mapping', ncv) )
+   if (n_variable_dim == 1) then
+
+      call check( nf90_inq_varid(ncid, 'mapping', ncv) )
+      nc1cor(1) = 1
+      nc1cnt(1) = 1
+      call check( nf90_put_var(ncid, ncv, mapping_val, &
+                               start=nc1cor, count=nc1cnt) )
+
+      call check( nf90_inq_varid(ncid, 'x', ncv) )
+      nc1cor(1) = 1
+      nc1cnt(1) = IMAX + 1
+      call check( nf90_put_var(ncid, ncv, x_val, start=nc1cor, count=nc1cnt) )
+
+      call check( nf90_inq_varid(ncid, 'y', ncv) )
+      nc1cor(1) = 1
+      nc1cnt(1) = JMAX + 1
+      call check( nf90_put_var(ncid, ncv, y_val, start=nc1cor, count=nc1cnt) )
+
+      call check( nf90_inq_varid(ncid, 'lon', ncv) )
+      nc2cor(1) = 1
+      nc2cor(2) = 1
+      nc2cnt(1) = IMAX + 1
+      nc2cnt(2) = JMAX + 1
+      call check( nf90_put_var(ncid, ncv, lon_val, start=nc2cor, count=nc2cnt) )
+
+      call check( nf90_inq_varid(ncid, 'lat', ncv) )
+      nc2cor(1) = 1
+      nc2cor(2) = 1
+      nc2cnt(1) = IMAX + 1
+      nc2cnt(2) = JMAX + 1
+      call check( nf90_put_var(ncid, ncv, lat_val, start=nc2cor, count=nc2cnt) )
+
+   end if
+
+   call check( nf90_inq_varid(ncid, 'year2sec', ncv) )
    nc1cor(1) = 1
    nc1cnt(1) = 1
-   call check( nf90_put_var(ncid, ncv, mapping_val, &
+   call check( nf90_put_var(ncid, ncv, year2sec_val, &
                             start=nc1cor, count=nc1cnt) )
-
-   call check( nf90_inq_varid(ncid, 'x', ncv) )
-   nc1cor(1) = 1
-   nc1cnt(1) = IMAX + 1
-   call check( nf90_put_var(ncid, ncv, x_val, start=nc1cor, count=nc1cnt) )
-
-   call check( nf90_inq_varid(ncid, 'y', ncv) )
-   nc1cor(1) = 1
-   nc1cnt(1) = JMAX + 1
-   call check( nf90_put_var(ncid, ncv, y_val, start=nc1cor, count=nc1cnt) )
-
-   call check( nf90_inq_varid(ncid, 'lon', ncv) )
-   nc2cor(1) = 1
-   nc2cor(2) = 1
-   nc2cnt(1) = IMAX + 1
-   nc2cnt(2) = JMAX + 1
-   call check( nf90_put_var(ncid, ncv, lon_val, start=nc2cor, count=nc2cnt) )
-
-   call check( nf90_inq_varid(ncid, 'lat', ncv) )
-   nc2cor(1) = 1
-   nc2cor(2) = 1
-   nc2cnt(1) = IMAX + 1
-   nc2cnt(2) = JMAX + 1
-   call check( nf90_put_var(ncid, ncv, lat_val, start=nc2cor, count=nc2cnt) )
-
-end if
 
 end if
 
