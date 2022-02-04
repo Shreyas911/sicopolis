@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2022-02-03
+!! 2022-02-04
 !!
 !! @section Copyright
 !!
@@ -1689,7 +1689,7 @@ call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
 call check( nf90_def_var(ncid, 'litempbotgr', NF90_FLOAT, nc3d, ncv) )
 buffer = 'K'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
-buffer = 'temperature_at_base_of_ice_sheet_model_for_grounded_ice'
+buffer = 'temperature_at_base_of_grounded_ice_sheet'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)) )
 buffer = 'Basal temperature for grounded ice'
 call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
@@ -1707,7 +1707,7 @@ call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
 call check( nf90_def_var(ncid, 'litempbotfl', NF90_FLOAT, nc3d, ncv) )
 buffer = 'K'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
-buffer = 'temperature_at_base_of_ice_sheet_model_for_floating_ice'
+buffer = 'temperature_at_base_of_floating_ice_shelf'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)) )
 buffer = 'Basal temperature for floating ice'
 call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
@@ -1837,7 +1837,7 @@ call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
 call check( nf90_def_var(ncid, 'libmassbfgr', NF90_FLOAT, nc3d, ncv) )
 buffer = 'kg m-2 '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
-buffer = 'land_ice_basal_specific_mass_balance_flux_for_grounded_ice'
+buffer = 'grounded_ice_sheet_basal_specific_mass_balance_flux'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)) )
 buffer = 'Basal mass balance flux for grounded ice'
 call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
@@ -1855,7 +1855,7 @@ call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
 call check( nf90_def_var(ncid, 'libmassbffl', NF90_FLOAT, nc3d, ncv) )
 buffer = 'kg m-2 '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
-buffer = 'land_ice_basal_specific_mass_balance_flux_for_floating_ice'
+buffer = 'floating_ice_shelf_basal_specific_mass_balance_flux'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)) )
 buffer = 'Basal mass balance flux for floating ice'
 call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
