@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2022-02-04
+!! 2022-02-05
 !!
 !! @section Copyright
 !!
@@ -105,6 +105,7 @@ real(dp)           :: lim_val
 real(dp)           :: limnsw_val
 real(dp)           :: iareagr_val
 real(dp)           :: iareafl_val
+real(dp)           :: dlimdt_val
 real(dp)           :: tendacabf_val
 real(dp)           :: tendlibmassbf_val
 real(dp)           :: tendlibmassbffl_val
@@ -226,7 +227,7 @@ do n_variable_type = 1, 2
                 time_val, year_val, time_bnds_val, x_val, y_val, &
                 lon_val, lat_val, &
                 lim_val, limnsw_val, iareagr_val, iareafl_val, &
-                tendacabf_val, &
+                dlimdt_val, tendacabf_val, &
                 tendlibmassbf_val, tendlibmassbffl_val, &
                 tendlicalvf_val, tendlifmassbf_val, &
                 tendligroundf_val, &
@@ -265,7 +266,7 @@ do n_variable_type = 1, 2
                     time_val, year_val, time_bnds_val, x_val, y_val, &
                     lon_val, lat_val, &
                     lim_val, limnsw_val, iareagr_val, iareafl_val, &
-                    tendacabf_val, &
+                    dlimdt_val, tendacabf_val, &
                     tendlibmassbf_val, tendlibmassbffl_val, &
                     tendlicalvf_val, tendlifmassbf_val, &
                     tendligroundf_val, &
@@ -312,7 +313,7 @@ subroutine read_nc(runname, n_variable_dim, n_variable_type, ergnum, n, &
                    time_r, year_r, time_bnds_r, x_r, y_r, &
                    lon_r, lat_r, &
                    lim_r, limnsw_r, iareagr_r, iareafl_r, &
-                   tendacabf_r, &
+                   dlimdt_r, tendacabf_r, &
                    tendlibmassbf_r, tendlibmassbffl_r, &
                    tendlicalvf_r, tendlifmassbf_r, &
                    tendligroundf_r, &
@@ -359,6 +360,7 @@ real(dp),          intent(out) :: lim_r
 real(dp),          intent(out) :: limnsw_r
 real(dp),          intent(out) :: iareagr_r
 real(dp),          intent(out) :: iareafl_r
+real(dp),          intent(out) :: dlimdt_r
 real(dp),          intent(out) :: tendacabf_r
 real(dp),          intent(out) :: tendlibmassbf_r
 real(dp),          intent(out) :: tendlibmassbffl_r
@@ -408,7 +410,7 @@ integer(i4b), dimension(0:IMAX,0:JMAX) :: mask_erg
 real(dp) :: year2sec_erg=0.0_dp, time_erg=0.0_dp, &
             V_tot_erg=0.0_dp, V_af_erg=0.0_dp, &
             A_grounded_erg=0.0_dp, A_floating_erg=0.0_dp, &
-            Q_s_erg=0.0_dp, &
+            dV_dt_erg=0.0_dp, Q_s_erg=0.0_dp, &
             bmb_tot_erg=0.0_dp, bmb_fl_tot_erg=0.0_dp, &
             calv_tot_erg=0.0_dp, &
             xi_erg(0:IMAX), eta_erg(0:JMAX), &
@@ -706,6 +708,9 @@ call check( nf90_get_var(ncid, ncv, A_grounded_erg, start=nc1cor) )
 call check( nf90_inq_varid(ncid, 'A_floating', ncv) )
 call check( nf90_get_var(ncid, ncv, A_floating_erg, start=nc1cor) )
 
+call check( nf90_inq_varid(ncid, 'dV_dt', ncv) )
+call check( nf90_get_var(ncid, ncv, dV_dt_erg, start=nc1cor) )
+
 call check( nf90_inq_varid(ncid, 'Q_s', ncv) )
 call check( nf90_get_var(ncid, ncv, Q_s_erg, start=nc1cor) )
 
@@ -813,6 +818,7 @@ lim_r             = no_value_large_dp
 limnsw_r          = no_value_large_dp
 iareagr_r         = no_value_large_dp
 iareafl_r         = no_value_large_dp
+dlimdt_r          = no_value_large_dp
 tendacabf_r       = no_value_large_dp
 tendlibmassbf_r   = no_value_large_dp
 tendlibmassbffl_r = no_value_large_dp
@@ -931,6 +937,8 @@ lim_r             = V_tot_erg * rho   ! m3 -> kg
 limnsw_r          = V_af_erg  * rho   ! m3 -> kg
 iareagr_r         = A_grounded_erg    ! m2
 iareafl_r         = A_floating_erg    ! m2
+dlimdt_r          = dV_dt_erg * rho/year_to_year_or_sec
+                                ! m3/a -> kg/a | kg/s
 tendacabf_r       = Q_s_erg * rho/year_to_year_or_sec
                                 ! m3/a -> kg/a | kg/s
 tendlibmassbf_r   = bmb_tot_erg * rho/year_to_year_or_sec
@@ -1318,6 +1326,17 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 !    ---- Flux variables
 
 else if (n_variable_type == 2) then
+
+!      -- dlimdt
+
+call check( nf90_inq_dimid(ncid, 'time', nc1d) )
+call check( nf90_def_var(ncid, 'dlimdt', NF90_FLOAT, nc1d, ncv) )
+buffer = 'kg '//ch_time_unit//'-1'
+call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
+buffer = 'tendency_of_land_ice_mass'
+call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)) )
+buffer = 'Total ice mass change'
+call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 
 !      -- tendacabf
 
@@ -1915,7 +1934,7 @@ buffer = 'm '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'tendency_of_land_ice_thickness'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)) )
-buffer = 'Ice thickness imbalance'
+buffer = 'Ice thickness change'
 call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 call check( nf90_put_att(ncid, ncv, '_FillValue', &
                                     real(no_value_large_dp,sp)) )
@@ -1996,7 +2015,7 @@ subroutine write_ismip_netcdf(runname, n_variable_dim, n_variable_type, &
                     time_aux, year_aux, time_bnds_val, x_val, y_val, &
                     lon_val, lat_val, &
                     lim_aux, limnsw_aux, iareagr_aux, iareafl_aux, &
-                    tendacabf_aux, &
+                    dlimdt_aux, tendacabf_aux, &
                     tendlibmassbf_aux, tendlibmassbffl_aux, &
                     tendlicalvf_aux, tendlifmassbf_aux, &
                     tendligroundf_aux, &
@@ -2034,6 +2053,7 @@ real(dp),           intent(in) :: lim_aux
 real(dp),           intent(in) :: limnsw_aux
 real(dp),           intent(in) :: iareagr_aux
 real(dp),           intent(in) :: iareafl_aux
+real(dp),           intent(in) :: dlimdt_aux
 real(dp),           intent(in) :: tendacabf_aux
 real(dp),           intent(in) :: tendlibmassbf_aux
 real(dp),           intent(in) :: tendlibmassbffl_aux
@@ -2103,6 +2123,7 @@ real(dp)     :: lim_val(1)
 real(dp)     :: limnsw_val(1)
 real(dp)     :: iareagr_val(1)
 real(dp)     :: iareafl_val(1)
+real(dp)     :: dlimdt_val(1)
 real(dp)     :: tendacabf_val(1)
 real(dp)     :: tendlibmassbf_val(1)
 real(dp)     :: tendlibmassbffl_val(1)
@@ -2118,6 +2139,7 @@ lim_val(1)             = lim_aux
 limnsw_val(1)          = limnsw_aux
 iareagr_val(1)         = iareagr_aux
 iareafl_val(1)         = iareafl_aux
+dlimdt_val(1)          = dlimdt_aux
 tendacabf_val(1)       = tendacabf_aux
 tendlibmassbf_val(1)   = tendlibmassbf_aux
 tendlibmassbffl_val(1) = tendlibmassbffl_aux
@@ -2231,6 +2253,11 @@ call check( nf90_put_var(ncid, ncv, iareafl_val, start=nc1cor, count=nc1cnt) )
 !    ---- Flux variables
 
 else if (n_variable_type == 2) then
+
+call check( nf90_inq_varid(ncid, 'dlimdt', ncv) )
+nc1cor(1) = n
+nc1cnt(1) = 1
+call check( nf90_put_var(ncid, ncv, dlimdt_val, start=nc1cor, count=nc1cnt) )
 
 call check( nf90_inq_varid(ncid, 'tendacabf', ncv) )
 nc1cor(1) = n
