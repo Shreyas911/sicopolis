@@ -837,7 +837,7 @@ save
 !> ndata_grip: Number of data values for the surface temperature anomaly
    integer(i4b), parameter :: ndata_grip = 139993 !@ python_automated_metadata NDATA_GRIP @ 
 !> griptemp(n): Data values for the surface temperature anomaly
-   real(dp), dimension(:), allocatable :: griptemp
+   real(dp), dimension(0:ndata_grip) :: griptemp
 #endif
 #endif
 !> gi_time_min: Minimum time of the data values for the glacial index
