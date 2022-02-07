@@ -22,5 +22,10 @@ module globals
   integer(i4b), public                        :: n_enth_max
   real(dp), public                            :: L_inv
   real(dp), public                            :: L_eto
- 
+
+logical                     :: firstcall = .true.
+integer(i4b) :: n_year_CE_aux_save = -9999 
+
+  real(dp) :: enh_stream
+  logical  :: flag_enh_stream
 end module globals
