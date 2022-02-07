@@ -523,6 +523,13 @@ subroutines/tapenade/sico_maths_m_grad.o : subroutines/tapenade/sico_maths_m_gra
 subroutines/tapenade/tapenade_m.o: subroutines/tapenade/tapenade_m.F90
 	${F90C} -DALLOW_TAPENADE ${LISFLAG} -I./ ${F90FLAGS} -o $@ -c $<
 
+sico_variables_cpp.f90: subroutines/general/sico_variables.F90
+	python subroutines/tapenade/deal_with_metadata.py -SS ../runs/headers/sico_specs_${HEADER}.h -SV subroutines/general/sico_variables_m.F90
+	$(CPPCMD_FILES) > dummy.f90
+	cat dummy.f90 > $@
+	sed -i 's/__NL__/\n/g' $@
+	
+
 %.o : %.F90
 	${F90C} -I./ ${F90FLAGS} -o $@ -c $<
 
@@ -536,7 +543,6 @@ subroutines/tapenade/tapenade_m.o: subroutines/tapenade/tapenade_m.F90
 	${CC} ${CFLAGS} -o $@ -c $< 
 
 %_cpp.f90: subroutines/general/%.F90
-	python subroutines/tapenade/deal_with_metadata.py -SS ../runs/headers/sico_specs_${HEADER}.h -SV subroutines/general/sico_variables_m.F90
 	$(CPPCMD_FILES) > dummy.f90
 	cat dummy.f90 > $@
 	sed -i 's/__NL__/\n/g' $@
