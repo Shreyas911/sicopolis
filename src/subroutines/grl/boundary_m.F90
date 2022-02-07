@@ -40,7 +40,9 @@ module boundary_m
   use sico_variables_m
   use sico_vars_m
   use error_m
-
+#if defined(ALLOW_TAPENADE)
+  use globals
+#endif
   implicit none
 
   public
@@ -119,11 +121,14 @@ real(dp) :: s_stat, &
             beta1_lt, beta1_ht, beta2_lt, beta2_ht, &
             beta1, beta2, Pmax, mu, lambda_lti, temp_lti
 logical, dimension(0:JMAX,0:IMAX) :: check_point
+#if !defined(ALLOW_TAPENADE)
 logical, save                     :: firstcall = .true.
-
+#endif
 #if (TSURFACE==6 && ACCSURFACE==6 && ABLSURFACE==6)
 integer(i4b)       :: n_year_CE_aux
+#if !defined(ALLOW_TAPENADE)
 integer(i4b), save :: n_year_CE_aux_save = -9999
+#endif
 integer(i4b)       :: n_cnt
 real(dp)           :: delta_ts_sum
 character(len= 16) :: ch_year_CE
