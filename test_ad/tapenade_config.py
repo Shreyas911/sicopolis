@@ -459,7 +459,7 @@ if __name__ == "__main__":
 		kwargs = dict(mode='grdchk', header=args.header, domain=args.domain)
 
 	compile_code(**{k: v for k, v in kwargs.items() if v is not None}, clean = True)	
-	print(f'grdchk execution complete for {args.header}.')
+	print(f'grdchk compilation complete for {args.header}.')
 
 	run_executable('grdchk')
 	print(f'grdchk execution complete for {args.header}.')
