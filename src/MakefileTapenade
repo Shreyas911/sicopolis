@@ -486,7 +486,7 @@ numCore.f90: numCore.F90
 	cat numcore_temp.F90 > $@
 	sed -i 's/__NL__/\n/g' $@
 
-numCore.F90: sicopolis.F90 $(SRC) $(SRC_SICO) $(SRC_SICO_COST) $(SRC_SICO_SOLVERS)
+numCore.F90: sicopolis.F90
 	python subroutines/tapenade/preprocessor.py sicopolis.F90
 
 RUN=$(HEADER)
