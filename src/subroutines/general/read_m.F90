@@ -44,7 +44,7 @@ module read_m
             read_2d_input, read_phys_para, read_kei
 
 #if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
-  public :: read_ad_data
+  public :: read_ad_data, read_BedMachine_data
 #endif
 
 contains
@@ -1805,6 +1805,33 @@ file='subroutines/tapenade/gridded_age_unc.dat', status='old')
 
   end subroutine read_ad_data
 
+  subroutine read_BedMachine_data()
+
+  use sico_variables_m
+  use sico_vars_m
+
+  implicit none
+
+    integer(i4b) :: i, j
+
+#if (defined(BEDMACHINE_COST)) 
+    open(unit=92, &
+file='subroutines/tapenade/BedMachine_thickness_10km.dat', status='old')
+    open(unit=93, &
+file='subroutines/tapenade/BedMachine_err_thickness_10km.dat', status='old')
+
+       do j=0,JMAX
+          do i=0,IMAX
+             read(92, *) H_BedMachine_data(j,i)
+             read(93, *) H_unc_BedMachine_data(j,i)
+          end do
+       end do
+    close(unit=92)
+    close(unit=93)
+
+
+#endif
+  end subroutine read_BedMachine_data
 #endif /* inclusion of Tapenade only routine */
 
 !-------------------------------------------------------------------------------

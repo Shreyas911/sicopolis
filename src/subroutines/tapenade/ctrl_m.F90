@@ -229,8 +229,16 @@ print *, '           AGE_COST simulations'
     end do
   end do
 
-#else
+#elif defined(BEDMACHINE_COST)
+    do i=0, IMAX
+      do j=0, JMAX
+        !--- Other cost functions:
+        objf_test = objf_test &
+        + (H(j,i) - H_BedMachine_data(j,i))**2/H_unc_BedMachine_data(j,i)**2
+      end do
+    end do
 
+#else
     do i=0, IMAX
       do j=0, JMAX
         !--- Other cost functions:

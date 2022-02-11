@@ -967,6 +967,10 @@ save
 !> acc_fact
 #endif /* No age cost used */
    real(dp), dimension(0:JMAX,0:IMAX) :: acc_fact
+#if (defined(BEDMACHINE_COST)) 
+   real(dp), dimension(0:JMAX,0:IMAX) :: H_BedMachine_data
+   real(dp), dimension(0:JMAX,0:IMAX) :: H_unc_BedMachine_data
+#endif
 #endif /* Tapenade */
 
 end module sico_variables_m
