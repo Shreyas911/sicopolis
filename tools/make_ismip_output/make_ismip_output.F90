@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2022-02-05
+!! 2022-02-15
 !!
 !! @section Copyright
 !!
@@ -59,6 +59,7 @@ integer, parameter :: i4b = selected_int_kind(9)   ! 4-byte integers
 integer, parameter :: sp  = kind(1.0)              ! single-precision reals
 integer, parameter :: dp  = kind(1.0d0)            ! double-precision reals
 
+integer(i4b)            :: ndat = 0
 integer(i4b), parameter :: ndat_max = 9999
 
 real(dp), parameter :: no_value_large_dp = 1.0e+20_dp
@@ -80,7 +81,7 @@ implicit none
 
 integer(i4b)       :: i, j, n
 integer(i4b)       :: n_variable_dim, n_variable_type
-integer(i4b)       :: ndat, ncid
+integer(i4b)       :: ncid
 character(len=256) :: runname
 character(len=  4) :: ergnum
 logical            :: flag_init_output
@@ -181,9 +182,9 @@ do n_variable_type = 1, 2
 
 #if (OUTPUT==1 || OUTPUT==3)
       if (flag_init_output) then
-         ndat = nint((TIME_END0-TIME_INIT0)/DTIME_OUT0)+1
+         ndat = floor((TIME_END0-TIME_INIT0)/DTIME_OUT0+eps_dp)+1
       else
-         ndat = nint((TIME_END0-TIME_INIT0)/DTIME_OUT0)
+         ndat = floor((TIME_END0-TIME_INIT0)/DTIME_OUT0+eps_dp)
       end if
 #elif (OUTPUT==2)
       ndat = N_OUTPUT
@@ -194,9 +195,9 @@ do n_variable_type = 1, 2
    else if (n_variable_dim == 2) then
 
       if (flag_init_output) then
-         ndat = nint((TIME_END0-TIME_INIT0)/DTIME_SER0)+1
+         ndat = floor((TIME_END0-TIME_INIT0)/DTIME_SER0+eps_dp)+1
       else
-         ndat = nint((TIME_END0-TIME_INIT0)/DTIME_SER0)
+         ndat = floor((TIME_END0-TIME_INIT0)/DTIME_SER0+eps_dp)
       end if
 
    else
@@ -544,8 +545,12 @@ call check( nf90_get_att(ncid, ncv, 'false_northing', mapping_false_N_r) )
 
 #endif
 
-call check( nf90_inq_varid(ncid, 'year2sec', ncv) )
-call check( nf90_get_var(ncid, ncv, year2sec_erg) )
+ierr1 = nf90_inq_varid(ncid, 'year2sec', ncv)
+if (ierr1 == nf90_noerr) then
+   call check( nf90_get_var(ncid, ncv, year2sec_erg) )
+else
+   year2sec_erg = 31556926.0_dp   ! default value
+end if
 
 call check( nf90_inq_varid(ncid, 'time', ncv) )
 call check( nf90_get_var(ncid, ncv, time_erg) )
@@ -690,8 +695,12 @@ else if (n_variable_dim == 2) then
 
 nc1cor(1) = n
 
-call check( nf90_inq_varid(ncid, 'year2sec', ncv) )
-call check( nf90_get_var(ncid, ncv, year2sec_erg) )
+ierr1 = nf90_inq_varid(ncid, 'year2sec', ncv)
+if (ierr1 == nf90_noerr) then
+   call check( nf90_get_var(ncid, ncv, year2sec_erg) )
+else
+   year2sec_erg = 31556926.0_dp   ! default value
+end if
 
 call check( nf90_inq_varid(ncid, 't', ncv) )
 call check( nf90_get_var(ncid, ncv, time_erg, start=nc1cor) )
