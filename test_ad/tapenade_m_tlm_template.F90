@@ -103,7 +103,7 @@ use sico_variables_m_diff
 
 
    !-------- Loop over points
-   do p = 1, points !@ python_automated_tlm limited_or_full @
+   do p = 1, points !@ python_automated_tlm limited_or_block_or_full @
      i = ipoints(p)
      j = jpoints(p)
 
@@ -129,7 +129,7 @@ use sico_variables_m_diff
 
 !@ python_automated_tlm IO write @
 
-   end do
+   end do ! (close loop over points)
 
 
 !@ python_automated_tlm IO end @

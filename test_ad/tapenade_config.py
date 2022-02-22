@@ -327,7 +327,8 @@ def setup_adjoint(ind_vars, header, domain,
 
 def setup_forward(ind_var, header, domain,
 	dimension = 2, 
-	z_co_ord = None, limited_or_full = 'limited',
+	z_co_ord = None, limited_or_block_or_full = 'limited',
+	block_imin = None, block_imax = None, block_jmin = None, block_jmax = None,
 	tapenade_m_tlm_file = 'subroutines/tapenade/tapenade_m.F90',
         unit = '99999'):
 	
@@ -351,8 +352,8 @@ def setup_forward(ind_var, header, domain,
 			for line in file_lines:
 
 
-				if(limited_or_full == 'full'):
-					if('!@ python_automated_tlm limited_or_full @' in line) :
+				if(limited_or_block_or_full == 'full'):
+					if('!@ python_automated_tlm limited_or_block_or_full @' in line) :
 						line = f'   do i = 0, {IMAX}\n' \
 							+ f'   do j = 0, {JMAX}\n'
 
@@ -364,6 +365,25 @@ def setup_forward(ind_var, header, domain,
 			
 					if('close loop over points' in line) : 
 						line = line + '   end do\n'
+
+				if(limited_or_block_or_full == 'block'):
+					if (float(block_imin).is_integer() and float(block_imax).is_integer() and float(block_jmin).is_integer() and float(block_jmax).is_integer()):
+						if('!@ python_automated_tlm limited_or_block_or_full @' in line) :
+							line = f'   do i = {block_imin}, {block_imax}\n' \
+								+ f'   do j = {block_jmin}, {block_jmax}\n'
+	
+						if('i = ipoints(p)' in line) :
+							line = ''
+						
+						if('j = jpoints(p)' in line) :
+							line = ''	
+				
+						if('close loop over points' in line) : 
+							line = line + '   end do\n'
+
+					else:
+						raise ValueError("Something wrong with block bounds in TLM")
+						sys.exit(1)						
 					
 				if ('!@ python_automated_tlm dep_vard @' in line):
 					
@@ -383,7 +403,7 @@ def setup_forward(ind_var, header, domain,
 				if ('!@ python_automated_tlm IO begin @' in line):
 					line = line \
 						+ f'   open({unit}, ' \
-						+ f'file=\'ForwardVals_{ind_var}_\'//trim(RUNNAME)//\'_{limited_or_full}.dat\',&' \
+						+ f'file=\'ForwardVals_{ind_var}_\'//trim(RUNNAME)//\'_{limited_or_block_or_full}.dat\',&' \
 						+ f'\n       form="FORMATTED", status="REPLACE")' 
 
 				if ('!@ python_automated_tlm IO write @' in line):
