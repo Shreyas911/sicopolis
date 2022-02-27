@@ -117,6 +117,8 @@ real(dp) :: gamma_p, zs_thresh, &
             inv_delta_temp_rain_snow, coeff(0:5), inv_sqrt2_s_stat, &
             precip_fact, frac_solid
 real(dp) :: s_stat, beta1, beta2, Pmax, mu, lambda_lti, temp_lti
+real(dp) :: r_aux
+character(len=256) :: ch_aux
 logical, dimension(0:JMAX,0:IMAX) :: check_point
 logical, save                     :: firstcall = .true.
 
@@ -337,23 +339,33 @@ if ( firstcall.or.(n_year_CE_aux /= n_year_CE_aux_save) ) then
 
    if ( trim(adjustl(dTEMPdz_FILES)) /= 'none' ) then
 
-      filename_with_path = trim(TEMP_SMB_ANOM_DIR)//'/'// &
-                           trim(dTEMPdz_SUBDIR)//'/'// &
-                           trim(dTEMPdz_FILES)//trim(ch_year_CE)//'.nc'
+      if ( trim(adjustl(dTEMPdz_SUBDIR)) /= 'value' ) then   ! read from file
 
-      ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+         filename_with_path = trim(TEMP_SMB_ANOM_DIR)//'/'// &
+                              trim(dTEMPdz_SUBDIR)//'/'// &
+                              trim(dTEMPdz_FILES)//trim(ch_year_CE)//'.nc'
 
-      if (ios /= nf90_noerr) then
-         errormsg = ' >>> boundary: Error when opening the file' &
-                  //                end_of_line &
-                  //'               for the surface-temperature vertical gradient!'
-         call error(errormsg)
+         ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+         if (ios /= nf90_noerr) then
+            errormsg = ' >>> boundary: Error when opening the file' &
+                     //                end_of_line &
+                     //'        for the surface-temperature vertical gradient!'
+            call error(errormsg)
+         end if
+
+         call check( nf90_inq_varid(ncid, 'dSTdz', ncv), thisroutine )
+         call check( nf90_get_var(ncid, ncv, dtemp_maat_dz_conv), thisroutine )
+
+         call check( nf90_close(ncid), thisroutine )
+
+      else   ! use constant value
+
+         ch_aux = trim(adjustl(dTEMPdz_FILES))
+         read(ch_aux, *) r_aux
+         dtemp_maat_dz_conv = r_aux
+
       end if
-
-      call check( nf90_inq_varid(ncid, 'dSTdz', ncv), thisroutine )
-      call check( nf90_get_var(ncid, ncv, dtemp_maat_dz_conv), thisroutine )
-
-      call check( nf90_close(ncid), thisroutine )
 
    else
 
@@ -393,23 +405,33 @@ if ( firstcall.or.(n_year_CE_aux /= n_year_CE_aux_save) ) then
 
    if ( trim(adjustl(dSMBdz_FILES)) /= 'none' ) then
 
-      filename_with_path = trim(TEMP_SMB_ANOM_DIR)//'/'// &
-                           trim(dSMBdz_SUBDIR)//'/'// &
-                           trim(dSMBdz_FILES)//trim(ch_year_CE)//'.nc'
+      if ( trim(adjustl(dSMBdz_SUBDIR)) /= 'value' ) then   ! read from file
 
-      ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+         filename_with_path = trim(TEMP_SMB_ANOM_DIR)//'/'// &
+                              trim(dSMBdz_SUBDIR)//'/'// &
+                              trim(dSMBdz_FILES)//trim(ch_year_CE)//'.nc'
 
-      if (ios /= nf90_noerr) then
-         errormsg = ' >>> boundary: Error when opening the file' &
-                  //                end_of_line &
-                  //'               for the SMB vertical gradient!'
-         call error(errormsg)
+         ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+         if (ios /= nf90_noerr) then
+            errormsg = ' >>> boundary: Error when opening the file' &
+                     //                end_of_line &
+                     //'               for the SMB vertical gradient!'
+            call error(errormsg)
+         end if
+
+         call check( nf90_inq_varid(ncid, 'dSMBdz', ncv), thisroutine )
+         call check( nf90_get_var(ncid, ncv, dsmb_dz_conv), thisroutine )
+
+         call check( nf90_close(ncid), thisroutine )
+
+      else   ! use constant value
+
+         ch_aux = trim(adjustl(dSMBdz_FILES))
+         read(ch_aux, *) r_aux
+         dsmb_dz_conv = r_aux *(RHO*sec2year)   ! [m/a ice equiv.]/m -> [kg/(m2*s)]/m
+
       end if
-
-      call check( nf90_inq_varid(ncid, 'dSMBdz', ncv), thisroutine )
-      call check( nf90_get_var(ncid, ncv, dsmb_dz_conv), thisroutine )
-
-      call check( nf90_close(ncid), thisroutine )
 
    else
 
