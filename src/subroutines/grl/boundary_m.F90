@@ -120,6 +120,8 @@ real(dp) :: s_stat, &
             phi_sep, temp_lt, temp_ht, inv_delta_temp_ht_lt, &
             beta1_lt, beta1_ht, beta2_lt, beta2_ht, &
             beta1, beta2, Pmax, mu, lambda_lti, temp_lti
+real(dp) :: r_aux
+character(len=256) :: ch_aux
 logical, dimension(0:JMAX,0:IMAX) :: check_point
 #if !defined(ALLOW_TAPENADE)
 logical, save                     :: firstcall = .true.
@@ -137,6 +139,8 @@ real(dp), dimension(0:IMAX,0:JMAX) :: temp_maat_anom_conv, &
                                       dtemp_maat_dz_conv, &
                                       smb_anom_conv, &
                                       dsmb_dz_conv
+integer(i4b)        :: n_smb_anom_unit_length, n_dsmb_dz_unit_length
+character(len=64)   :: ch_smb_anom_unit, ch_dsmb_dz_unit
 #endif
 
 #if (ACCSURFACE==7 && ABLSURFACE==7)
@@ -343,23 +347,33 @@ if ( firstcall.or.(n_year_CE_aux /= n_year_CE_aux_save) ) then
 
    if ( trim(adjustl(dTEMPdz_FILES)) /= 'none' ) then
 
-      filename_with_path = trim(TEMP_SMB_ANOM_DIR)//'/'// &
-                           trim(dTEMPdz_SUBDIR)//'/'// &
-                           trim(dTEMPdz_FILES)//trim(ch_year_CE)//'.nc'
+      if ( trim(adjustl(dTEMPdz_SUBDIR)) /= 'value' ) then   ! read from file
 
-      ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+         filename_with_path = trim(TEMP_SMB_ANOM_DIR)//'/'// &
+                              trim(dTEMPdz_SUBDIR)//'/'// &
+                              trim(dTEMPdz_FILES)//trim(ch_year_CE)//'.nc'
 
-      if (ios /= nf90_noerr) then
-         errormsg = ' >>> boundary: Error when opening the file' &
-                  //                end_of_line &
-                  //'               for the surface-temperature vertical gradient!'
-         call error(errormsg)
+         ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+         if (ios /= nf90_noerr) then
+            errormsg = ' >>> boundary: Error when opening the file' &
+                     //                end_of_line &
+                     //'        for the surface-temperature vertical gradient!'
+            call error(errormsg)
+         end if
+
+         call check( nf90_inq_varid(ncid, 'dSTdz', ncv), thisroutine )
+         call check( nf90_get_var(ncid, ncv, dtemp_maat_dz_conv), thisroutine )
+
+         call check( nf90_close(ncid), thisroutine )
+
+      else   ! use constant value
+
+         ch_aux = trim(adjustl(dTEMPdz_FILES))
+         read(ch_aux, *) r_aux
+         dtemp_maat_dz_conv = r_aux
+
       end if
-
-      call check( nf90_inq_varid(ncid, 'dSTdz', ncv), thisroutine )
-      call check( nf90_get_var(ncid, ncv, dtemp_maat_dz_conv), thisroutine )
-
-      call check( nf90_close(ncid), thisroutine )
 
    else
 
@@ -386,8 +400,23 @@ if ( firstcall.or.(n_year_CE_aux /= n_year_CE_aux_save) ) then
 
       call check( nf90_inq_varid(ncid, 'aSMB', ncv), thisroutine )
       call check( nf90_get_var(ncid, ncv, smb_anom_conv), thisroutine )
+      call check( nf90_inquire_attribute(ncid, ncv, 'units', &
+                                         len=n_smb_anom_unit_length) )
+      call check( nf90_get_att(ncid, ncv, 'units', ch_smb_anom_unit) )
 
       call check( nf90_close(ncid), thisroutine )
+
+      if (trim(adjustl(ch_smb_anom_unit))=='kg m-2 s-1') then
+         smb_anom_conv = smb_anom_conv *rho_inv
+                                       ! kg/(m2*s) -> m/s ice equiv.
+      else if (trim(adjustl(ch_smb_anom_unit))=='m a-1') then
+         smb_anom_conv = smb_anom_conv *sec2year
+                                       ! m/a ice equiv. -> m/s ice equiv.
+      else
+         errormsg = ' >>> boundary: ' &
+                       //'Unit of smb_anom_conv could not be determined!'
+         call error(errormsg)
+      end if
 
    else
 
@@ -399,23 +428,56 @@ if ( firstcall.or.(n_year_CE_aux /= n_year_CE_aux_save) ) then
 
    if ( trim(adjustl(dSMBdz_FILES)) /= 'none' ) then
 
-      filename_with_path = trim(TEMP_SMB_ANOM_DIR)//'/'// &
-                           trim(dSMBdz_SUBDIR)//'/'// &
-                           trim(dSMBdz_FILES)//trim(ch_year_CE)//'.nc'
+      if ( trim(adjustl(dSMBdz_SUBDIR)) /= 'value' ) then   ! read from file
 
-      ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+         filename_with_path = trim(TEMP_SMB_ANOM_DIR)//'/'// &
+                              trim(dSMBdz_SUBDIR)//'/'// &
+                              trim(dSMBdz_FILES)//trim(ch_year_CE)//'.nc'
 
-      if (ios /= nf90_noerr) then
-         errormsg = ' >>> boundary: Error when opening the file' &
-                  //                end_of_line &
-                  //'               for the SMB vertical gradient!'
-         call error(errormsg)
+         ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+         if (ios /= nf90_noerr) then
+            errormsg = ' >>> boundary: Error when opening the file' &
+                     //                end_of_line &
+                     //'               for the SMB vertical gradient!'
+            call error(errormsg)
+         end if
+
+         call check( nf90_inq_varid(ncid, 'dSMBdz', ncv), thisroutine )
+         call check( nf90_get_var(ncid, ncv, dsmb_dz_conv), thisroutine )
+         call check( nf90_inquire_attribute(ncid, ncv, 'units', &
+                                            len=n_dsmb_dz_unit_length) )
+         call check( nf90_get_att(ncid, ncv, 'units', ch_dsmb_dz_unit) )
+
+         call check( nf90_close(ncid), thisroutine )
+
+         if ( &
+              (trim(adjustl(ch_dsmb_dz_unit))=='kg m-2 s-1 m-1') &
+              .or. &
+              (trim(adjustl(ch_dsmb_dz_unit))=='kg m-3 s-1') &
+            ) then
+            dsmb_dz_conv = dsmb_dz_conv *rho_inv
+                                      ! [kg/(m2*s)]/m -> [m/s ice equiv.]/m
+         else if ( &
+                   (trim(adjustl(ch_dsmb_dz_unit))=='m a-1 m-1') &
+                   .or. &
+                   (trim(adjustl(ch_dsmb_dz_unit))=='a-1') &
+                 ) then
+            dsmb_dz_conv = dsmb_dz_conv *sec2year
+                                      ! [m/a ice equiv.]/m -> [m/s ice equiv.]/m
+         else
+            errormsg = ' >>> boundary: ' &
+                          //'Unit of dsmb_dz_conv could not be determined!'
+            call error(errormsg)
+         end if
+
+      else   ! use constant value
+
+         ch_aux = trim(adjustl(dSMBdz_FILES))
+         read(ch_aux, *) r_aux
+         dsmb_dz_conv = r_aux *sec2year
+                              ! [m/a ice equiv.]/m -> [m/s ice equiv.]/m
       end if
-
-      call check( nf90_inq_varid(ncid, 'dSMBdz', ncv), thisroutine )
-      call check( nf90_get_var(ncid, ncv, dsmb_dz_conv), thisroutine )
-
-      call check( nf90_close(ncid), thisroutine )
 
    else
 
@@ -429,10 +491,8 @@ if ( firstcall.or.(n_year_CE_aux /= n_year_CE_aux_save) ) then
    do j=0, JMAX
       temp_maat_anom(j,i) = temp_maat_anom_conv(i,j)
       dtemp_maat_dz(j,i)  = dtemp_maat_dz_conv(i,j)
-      smb_anom(j,i)       = smb_anom_conv(i,j) *rho_inv
-                            ! kg/(m2*s) -> m/s ice equiv.
-      dsmb_dz(j,i)        = dsmb_dz_conv(i,j) *rho_inv
-                            ! [kg/(m2*s)]/m -> [m/s ice equiv.]/m
+      smb_anom(j,i)       = smb_anom_conv(i,j)
+      dsmb_dz(j,i)        = dsmb_dz_conv(i,j)
    end do
    end do
 

@@ -11,7 +11,7 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2022-02-03'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2022-03-01'
 !                      Date of last change
 
 !-------- Domain --------
@@ -846,46 +846,57 @@
 #define TEMP_SMB_ANOM_DIR 'none'
 !                       Directory for the
 !                       yearly surface-temperature and SMB anomalies
+!                       ('none' if no directory is to be specified)
 
 #define TEMP_ANOM_SUBDIR 'none'
 !                       Subdirectory for the
 !                       yearly surface-temperature anomalies
+!                       ('none' if no directory is to be specified)
 
-#define TEMP_ANOM_FILES  'none'
+#define TEMP_ANOM_FILES 'none'
 !                       NetCDF files containing the
 !                       yearly surface-temperature anomalies
 !                       (without final year number and .nc extension)
-!                       ('none' if no such files are to be specified)
+!                       ('none' if no files are to be specified)
 
-#define dTEMPdz_SUBDIR   'none'
+#define dTEMPdz_SUBDIR 'none'
 !                       Subdirectory for the
 !                       yearly surface-temperature vertical gradients
+!                       ('none' if no directory is to be specified,
+!                        'value' if constant value is to be used)
 
-#define dTEMPdz_FILES    'none'
+#define dTEMPdz_FILES 'none'
 !                       NetCDF files containing the
 !                       yearly surface-temperature vertical gradients
 !                       (without final year number and .nc extension)
-!                       ('none' if no such files are to be specified)
+!                       ('none' if no files are to be specified,
+!                        value as string number [in K/m]
+!                        if dTEMPdz_SUBDIR is set to 'value')
 
-#define SMB_ANOM_SUBDIR  'none'
+#define SMB_ANOM_SUBDIR 'none'
 !                       Subdirectory for the
 !                       yearly SMB anomalies
+!                       ('none' if no directory is to be specified)
 
-#define SMB_ANOM_FILES   'none'
+#define SMB_ANOM_FILES 'none'
 !                       NetCDF files containing the
 !                       yearly SMB anomalies
 !                       (without final year number and .nc extension)
-!                       ('none' if no such files are to be specified)
+!                       ('none' if no files are to be specified)
 
-#define dSMBdz_SUBDIR    'none'
+#define dSMBdz_SUBDIR 'none'
 !                       Subdirectory for the
 !                       yearly SMB vertical gradients
+!                       ('none' if no directory is to be specified,
+!                        'value' if constant value is to be used)
 
-#define dSMBdz_FILES     'none'
+#define dSMBdz_FILES 'none'
 !                       NetCDF files containing the
 !                       yearly SMB vertical gradients
 !                       (without final year number and .nc extension)
-!                       ('none' if no such files are to be specified)
+!                       ('none' if no files are to be specified,
+!                        value as string number [in (m/a ice equiv.)/m]
+!                        if dSMBdz_SUBDIR is set to 'value')
 
 #define TEMP_SMB_ANOM_TIME_MIN -9999
 !                       Minimum time of the yearly surface-temperature
