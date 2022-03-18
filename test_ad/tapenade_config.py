@@ -490,7 +490,7 @@ if __name__ == "__main__":
 		     dimension=args.dimension, perturbation=args.perturbation,z_co_ord=args.z_co_ord)
 
 	setup_grdchk(**{k: v for k, v in kwargs.items() if v is not None},
-        limited_or_full = 'limited',
+        limited_or_block_or_full = 'limited',
         tapenade_m_file = 'subroutines/tapenade/tapenade_m.F90',
         unit = '9999')
 
