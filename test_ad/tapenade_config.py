@@ -258,7 +258,9 @@ def setup_binomial_checkpointing(status = False, number_of_steps = 20,
 def setup_adjoint(ind_vars, header, domain, 
 	numCore_cpp_b_file = 'numCore_cpp_b.f90',
 	dimensions = [2], 
-	z_co_ords = [None]):
+	z_co_ords = [None],
+	output_vars = [None],
+	output_dims = [None]):
 	
 	if(domain == 'grl' or domain == 'ant'):
 		pass
@@ -332,6 +334,35 @@ def setup_adjoint(ind_vars, header, domain,
 							+ f'   close(unit={unit[1]})\n'
 
 						line = line_add + line
+
+					if (output_vars is not None and output_dims is not None):
+						for var_index, (output_var, dimension) in enumerate(zip(output_vars, output_dims), start = 1):
+							unit = [f'{var_index}9000']
+	
+							line_add = f'   open({unit[0]}, file=\'AdjointVals_{output_var}_\'//trim(RUNNAME)//\'.dat\',&\n' \
+								+ f'       form="FORMATTED", status="REPLACE")\n'
+							if(dimension >= 0):
+								line_add = f'   open({unit[0]}, file=\'AdjointVals_{output_var}_{dimension}_\'//trim(RUNNAME)//\'.dat\',&\n' \
+								+ f'       form="FORMATTED", status="REPLACE")\n'
+							line_add = line_add \
+								+ f'   do i = 0, {IMAX}\n' \
+								+ f'   do j = 0, {JMAX}\n'
+							
+							if (dimension == -1) :
+								line_add = line_add + f'   write ({unit[0]}, *) {output_var}(j,i)\n'
+							elif (dimension >= 0) :
+								line_add = line_add + f'   write ({unit[0]}, *) {output_var}({dimension},j,i)\n'
+							else:
+								raise ValueError("Wrong dimensions or z coord for output_var")
+								sys.exit(1)
+	
+							line_add = line_add \
+								+ f'   end do\n' \
+								+ f'   end do\n' \
+								+ f'   close(unit={unit[0]})\n'
+	
+							line = line_add + line
+	
 
 				new_file_lines.append(line)
 		
@@ -479,6 +510,9 @@ if __name__ == "__main__":
 	parser.add_argument("--travis", help="travis setup", action="store_true")
 	parser.add_argument("-dim", "--dimension", help="2D or 3D variable, default 2D", type=int)
 	parser.add_argument("-z", "--z_co_ord", help="z co-ordinate if 3D variable", type=int)
+	parser.add_argument('-ov','--output_vars', nargs='+', help='List the fields you want to output')
+	parser.add_argument('-od', '--output_dims', nargs='+', help='List the z-coord of output vars, -1 if 2D')
+	
 
 	args = parser.parse_args()
 	
@@ -519,8 +553,11 @@ if __name__ == "__main__":
 
 	compile_code(**{k: v for k, v in kwargs.items() if v is not None}, clean = True)	
 
+	if args.output_dims is not None:
+		args.output_dims = [int(x) for x in args.output_dims]	
 	kwargs = dict(ind_vars = [args.ind_var], header=args.header, domain=args.domain,
-		     dimensions = [args.dimension], z_co_ords = [args.z_co_ord])
+		     dimensions = [args.dimension], z_co_ords = [args.z_co_ord],
+		     output_vars = args.output_vars, output_dims = args.output_dims)
 
 	setup_adjoint(**{k: v for k, v in kwargs.items() if (v is not None and v != [None])},
         	     numCore_cpp_b_file = 'numCore_cpp_b.f90')
