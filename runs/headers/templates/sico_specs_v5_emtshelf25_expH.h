@@ -11,7 +11,7 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2022-02-03'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2022-03-18'
 !                      Date of last change
 
 !-------- Domain --------
@@ -412,16 +412,26 @@
 !                         3 : Initial values from previous
 !                             simulation
 
-#define LAND_OCEAN_TRANSITION_WIDTH 10.0d0
-!                         Transition width between land and ocean (in km)
-!                         for the relaxed lithosphere surface
+#define ZS_PRESENT_FILE   'eismint_shelf_25_E_transition10_topo.nc'
+!                             Name of the file containing the present-day
+!                             ice-surface topography
 
-#define OCEAN_DIRECTION 1
-!                         Ocean direction:
-!                         1 : Eastward (+x direction)
-!                         2 : Westward (-x direction)
-!                         3 : Northward (+y direction)
-!                         4 : Southward (-y direction)
+#define ZB_PRESENT_FILE   'eismint_shelf_25_E_transition10_topo.nc'
+!                             Name of the file containing the present-day
+!                             ice-base topography (only for ANF_DAT==1)
+
+#define ZL_PRESENT_FILE   'eismint_shelf_25_E_transition10_topo.nc'
+!                             Name of the file containing the present-day
+!                             lithosphere-surface topography
+!                             (only for ANF_DAT==1)
+
+#define ZL0_FILE          'eismint_shelf_25_E_transition10_topo.nc'
+!                             Name of the file containing the topography
+!                             of the relaxed lithosphere surface
+
+#define MASK_PRESENT_FILE 'eismint_shelf_25_E_transition10_topo.nc'
+!                             Name of the file containing the present-day
+!                             ice-land-ocean mask
 
 #define MASK_REGION_FILE 'none'
 !                             Name of the file containing the region mask
