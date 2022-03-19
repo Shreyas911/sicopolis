@@ -11,23 +11,23 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2022-02-03'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2022-03-19'
 !                      Date of last change
 
 !-------- Domain --------
 
-#define EMTP2SGE
+#define EISMINT
 !                 Simulated domain:
-!                   ANT      - Antarctica
-!                   ASF      - Austfonna
-!                   EMTP2SGE - EISMINT Phase 2 Simplified Geometry Experiment
-!                   GRL      - Greenland
-!                   NHEM     - Northern hemisphere
-!                   SCAND    - Scandinavia
-!                   TIBET    - Tibet
-!                   NMARS    - North polar cap of Mars
-!                   SMARS    - South polar cap of Mars
-!                   XYZ      - Various domains
+!                   ANT     - Antarctica
+!                   ASF     - Austfonna
+!                   EISMINT - EISMINT (Phase 2 SGE and modifications)
+!                   GRL     - Greenland
+!                   NHEM    - Northern hemisphere
+!                   SCAND   - Scandinavia
+!                   TIBET   - Tibet
+!                   NMARS   - North polar cap of Mars
+!                   SMARS   - South polar cap of Mars
+!                   XYZ     - Various domains
 
 !-------- Physical parameter file --------
 
@@ -44,22 +44,21 @@
 !                         2 : Geographical coordinates (longitude/latitude)
 !                             [not allowed for this application]
 
-#define X0 0.0d0
+#define X0 -750.0d0
 !                       x coordinate (in km) of the origin point (i,j) = (0,0),
 !                       for GRID==0 or GRID==1
 
-#define Y0 0.0d0
+#define Y0 -750.0d0
 !                       y coordinate (in km) of the origin point (i,j) = (0,0),
 !                       for GRID==0 or GRID==1
 
 #define DX 25.0d0
 !                       Horizontal grid spacing in km, for GRID==0
 !                       or GRID==1
-!                       (  5 km requires IMAX=300 and JMAX=300,
-!                         10 km requires IMAX=150 and JMAX=150,
-!                         25 km requires IMAX= 60 and JMAX= 60,
-!                         75 km requires IMAX= 20 and JMAX= 20,
-!                        250 km requires IMAX=  6 and JMAX=  6)
+!                       ( 5 km requires IMAX=300 and JMAX=300,
+!                        10 km requires IMAX=150 and JMAX=150,
+!                        25 km requires IMAX= 60 and JMAX= 60,
+!                        75 km requires IMAX= 20 and JMAX= 20)
 
 #define IMAX 60
 !                       IMAX+1: number of grid points in x-direction
@@ -227,7 +226,6 @@
 !                         1 : Ice extent strictly restricted to land area
 !                         2 : Formation of marine ice possible
 !                         3 : Formation of marine ice and ice shelves possible
-!                             [not allowed for this application]
 
 #define MARINE_ICE_FORMATION 1
 !                         1 : No special mechanism for the formation of marine ice
@@ -412,6 +410,27 @@
 !                         3 : Initial values from previous
 !                             simulation
 
+#define ZS_PRESENT_FILE   'emtp2sge25_topo.nc'
+!                             Name of the file containing the present-day
+!                             ice-surface topography
+
+#define ZB_PRESENT_FILE   'emtp2sge25_topo.nc'
+!                             Name of the file containing the present-day
+!                             ice-base topography (only for ANF_DAT==1)
+
+#define ZL_PRESENT_FILE   'emtp2sge25_topo.nc'
+!                             Name of the file containing the present-day
+!                             lithosphere-surface topography
+!                             (only for ANF_DAT==1)
+
+#define ZL0_FILE          'emtp2sge25_topo.nc'
+!                             Name of the file containing the topography
+!                             of the relaxed lithosphere surface
+
+#define MASK_PRESENT_FILE 'emtp2sge25_topo.nc'
+!                             Name of the file containing the present-day
+!                             ice-land-ocean mask
+
 #define MASK_REGION_FILE 'none'
 !                             Name of the file containing the region mask
 !                             ('none' if no file is to be defined)
@@ -565,8 +584,6 @@
 
 #define TEMP_MIN -1.0d+01   /* in deg C    , for SURFACE_FORCING==1 */
 #define S_T       0.0d+00   /* in K/km     , for SURFACE_FORCING==1 */
-#define X_HAT     7.5d+02   /* in km       , for SURFACE_FORCING==1 */
-#define Y_HAT     7.5d+02   /* in km       , for SURFACE_FORCING==1 */
 #define B_MAX     3.0d-01   /* in m/a      , for SURFACE_FORCING==1 */
 #define S_B       1.0d-02   /* in m/(a*km) , for SURFACE_FORCING==1 */
 #define ELD       1.1d+11   /* in km       , for SURFACE_FORCING==1 */
@@ -733,6 +750,62 @@
 #define Q_GEO 42.0d0
 !                       Geothermal heat flux (in mW/m2)
 !                       (only for Q_GEO_MOD==1)
+
+!-------- Basal melting at the marine ice front --------
+
+#define MARINE_ICE_BASAL_MELTING 1
+!                        Basal melting rate at the marine ice front:
+!                        1 : Computed by the usual energy jump condition
+!                            for grounded ice
+!                        2 : Prescribed by QBM_MARINE
+!                        3 : Weighed average of grounded ice melting (computed)
+!                            and marine ice melting (prescribed by QBM_MARINE)
+
+#define QBM_MARINE 0.0d0
+!                        Basal melting rate at the marine ice front,
+!                        in m/a water equiv. (for MARINE_ICE_BASAL_MELTING==2,3)
+
+!-------- Basal melting for floating ice (only for MARGIN==3) --------
+
+#define FLOATING_ICE_BASAL_MELTING 1
+!                       Basal melting rate for floating ice:
+!                       1 : Constant values for the continental shelf
+!                           and the abyssal ocean, respectively
+!                       4 : Parameterization as a function of the
+!                           thermal forcing
+!                           (ocean temperature minus ice shelf basal
+!                           temperature)
+
+#define QBM_FLOAT_1 0.0d0
+!                       Basal melting rate for the continental shelf,
+!                       in m/a water equiv.
+!                       (for FLOATING_ICE_BASAL_MELTING==1)
+
+#define QBM_FLOAT_3 10.0d0
+!                       Basal melting rate for the abyssal ocean,
+!                       in m/a water equiv.
+
+#define Z_ABYSS -1.11d+11
+!                       Threshold seabed elevation separating
+!                       the continental shelf from the abyssal ocean, in m
+
+#define H_W_0 0.0d0
+!                       Threshold water column thickness below which
+!                       basal melting is reduced, in m
+!                       (0.0d0 -> no reduction)
+
+#define TEMP_OCEAN -1.8d0
+!                       Ambient ocean water temperature, in degC
+!                       (for FLOATING_ICE_BASAL_MELTING==4)
+
+#define OMEGA_QBM 5.0d0
+!                       Sensitivity of basal melting to thermal forcing,
+!                       in m/[a*degC^alpha] water equiv.
+!                       (for FLOATING_ICE_BASAL_MELTING==4)
+
+#define ALPHA_QBM 1.0d0
+!                       Exponent alpha of the thermal forcing
+!                       (for FLOATING_ICE_BASAL_MELTING==4)
 
 !-------- Data output --------
 
