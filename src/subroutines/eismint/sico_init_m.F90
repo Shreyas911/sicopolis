@@ -136,9 +136,9 @@ ch_domain_short = 'ant'
 ch_domain_long  = 'Austfonna'
 ch_domain_short = 'asf'
 
-#elif (defined(EMTP2SGE))
-ch_domain_long  = 'EISMINT Phase 2 Simplified Geometry Experiment'
-ch_domain_short = 'emtp2sge'
+#elif (defined(EISMINT))
+ch_domain_long  = 'EISMINT'
+ch_domain_short = 'eismint'
 
 #elif (defined(GRL))
 ch_domain_long  = 'Greenland'
@@ -210,8 +210,6 @@ call ice_mat_eqs_pars(RF, R_T, KAPPA, C, -190, 10)
 
 temp_min  = TEMP_MIN                         ! deg C
 s_t       = S_T       *1.0e-03_dp            ! K/km -> K/m
-x_hat     = X_HAT     *1.0e+03_dp            ! km -> m
-y_hat     = Y_HAT     *1.0e+03_dp            ! km -> m
 b_max     = B_MAX     /year2sec              ! m/a -> m/s
 s_b       = S_B       *1.0e-03_dp/year2sec   ! m/(a*km) -> 1/s
 eld       = ELD       *1.0e+03_dp            ! km -> m
@@ -812,8 +810,6 @@ write(10, fmt=trim(fmt2)) 'SURFACE_FORCING = ', SURFACE_FORCING
 #if (!defined(SURFACE_FORCING) || SURFACE_FORCING==1)
 write(10, fmt=trim(fmt3)) 'temp_min =', TEMP_MIN
 write(10, fmt=trim(fmt3)) 's_t      =', S_T
-write(10, fmt=trim(fmt3)) 'x_hat    =', X_HAT
-write(10, fmt=trim(fmt3)) 'y_hat    =', Y_HAT
 write(10, fmt=trim(fmt3)) 'b_max    =', B_MAX
 write(10, fmt=trim(fmt3)) 's_b      =', S_B
 write(10, fmt=trim(fmt3)) 'eld      =', ELD
@@ -1482,18 +1478,18 @@ allocate(lambda_core(n_core), phi_core(n_core), &
          x_core(n_core), y_core(n_core), ch_core(n_core))
 
 ch_core(1)     = 'P1'
-lambda_core(1) =    0.0_dp  ! dummy
-phi_core(1)    =    0.0_dp  ! dummy
-x_core(1)      =  750.0_dp *1.0e+03_dp    ! Position of the central dome
-y_core(1)      =  750.0_dp *1.0e+03_dp    ! (750 km, 750 km),
-                                          ! conversion km -> m
+lambda_core(1) =   0.0_dp  ! dummy
+phi_core(1)    =   0.0_dp  ! dummy
+x_core(1)      =   0.0_dp *1.0e+03_dp    ! Position of the central dome
+y_core(1)      =   0.0_dp *1.0e+03_dp    ! (0 km, 0 km),
+                                         ! conversion km -> m
 
 ch_core(2)     = 'P2'
-lambda_core(2) =    0.0_dp  ! dummy
-phi_core(2)    =    0.0_dp  ! dummy
-x_core(2)      =  750.0_dp *1.0e+03_dp    ! Position halfway to the coast
-y_core(2)      = 1125.0_dp *1.0e+03_dp    ! (750 km, 1125 km),
-                                          ! conversion km -> m
+lambda_core(2) =   0.0_dp  ! dummy
+phi_core(2)    =   0.0_dp  ! dummy
+x_core(2)      =   0.0_dp *1.0e+03_dp    ! Position halfway to the coast
+y_core(2)      = 375.0_dp *1.0e+03_dp    ! (0 km, 375 km),
+                                         ! conversion km -> m
 
 filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'.core'
 

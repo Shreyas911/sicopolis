@@ -127,15 +127,10 @@ function run()
 
    #--------
 
-   # !!! WARNING: Uncommenting the following will overwrite any self-written
-   #              routines in sicopolis/src/subroutines/xyz !!!
-
    # NOTE: This simulation requires Lis and OpenMP.
    #       In order to run it, make sure that both LIS_FLAG and OPENMP_FLAG
    #       are set to "true" in sico_configs.sh.
 
-   ## cd $PWD/../src/subroutines/xyz ; $CP -f ./emtshelf/*90 ./ ; cd $OLDPWD
-   ## 
    ## OMP_NUM_THREADS=1; export OMP_NUM_THREADS
    ## #              (number of threads for the SSA solver using OpenMP)
    ## 

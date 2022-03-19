@@ -5660,7 +5660,7 @@ end if
       || defined(NHEM) \
       || defined(TIBET) \
       || defined(ASF) \
-      || defined(EMTP2SGE) \
+      || defined(EISMINT) \
       || defined(XYZ))   /* terrestrial ice sheet */
 
 rhosw_rho_ratio = RHO_SW/RHO
@@ -5707,7 +5707,7 @@ do j=0, JMAX
       || defined(NHEM) \
       || defined(TIBET) \
       || defined(ASF) \
-      || defined(EMTP2SGE) \
+      || defined(EISMINT) \
       || defined(XYZ))   /* terrestrial ice sheet */
 
          V_gr_redu = V_gr_redu &
@@ -5765,7 +5765,7 @@ end do
       || defined(NHEM) \
       || defined(TIBET) \
       || defined(ASF) \
-      || defined(EMTP2SGE) \
+      || defined(EISMINT) \
       || (defined(XYZ) && !defined(SHMARS)))   /* terrestrial ice sheet */
 
 A_surf = 3.61132e+14_dp   ! global ocean area, in m2
