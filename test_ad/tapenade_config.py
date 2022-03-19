@@ -255,12 +255,13 @@ def setup_binomial_checkpointing(status = False, number_of_steps = 20,
 		print(err)
 		sys.exit(1)
 
-def setup_adjoint(ind_vars, header, domain, 
+def setup_adjoint(ind_vars, header, domain, ckp_status,
 	numCore_cpp_b_file = 'numCore_cpp_b.f90',
+	sico_main_loop_m_cpp_b_file = 'sico_main_loop_m_cpp_b.f90',
 	dimensions = [2], 
 	z_co_ords = [None],
-	output_vars = [None],
-	output_dims = [None]):
+	output_vars = [], output_iters = [], output_dims = [],
+	output_adj_vars = [], output_adj_iters = [], output_adj_dims = []):
 	
 	if(domain == 'grl' or domain == 'ant'):
 		pass
@@ -270,7 +271,7 @@ def setup_adjoint(ind_vars, header, domain,
 	IMAX, JMAX, KCMAX, KTMAX = get_imax_jmax_kcmax_ktmax()
 	try :
 	
-		with open('numCore_cpp_b.f90') as f:
+		with open(numCore_cpp_b_file) as f:
 			
 			file_lines = f.readlines()
 			new_file_lines = []
@@ -300,9 +301,9 @@ def setup_adjoint(ind_vars, header, domain,
 
 						unit = [f'{var_index}000', f'{var_index}001']
 
-						line_add = f'   open({unit[0]}, file=\'AdjointVals_{ind_var}_\'//trim(RUNNAME)//\'_limited.dat\',&\n' \
+						line_add = f'   open({unit[0]}, file=\'AdjointVals_{ind_var}b_\'//trim(RUNNAME)//\'_limited.dat\',&\n' \
 							+ f'       form="FORMATTED", status="REPLACE")\n' \
-							+ f'   open({unit[1]}, file=\'AdjointVals_{ind_var}_\'//trim(RUNNAME)//\'.dat\',&\n' \
+							+ f'   open({unit[1]}, file=\'AdjointVals_{ind_var}b_\'//trim(RUNNAME)//\'.dat\',&\n' \
 							+ f'       form="FORMATTED", status="REPLACE")\n' \
 							+ f'   do p = 1, points\n' \
 							+ f'   i = ipoints(p)\n' \
@@ -335,15 +336,44 @@ def setup_adjoint(ind_vars, header, domain,
 
 						line = line_add + line
 
-					if (output_vars is not None and output_dims is not None):
-						for var_index, (output_var, dimension) in enumerate(zip(output_vars, output_dims), start = 1):
-							unit = [f'{var_index}9000']
+				new_file_lines.append(line)
+		
+		with open(numCore_cpp_b_file, "w") as f:
+			f.write(''.join(new_file_lines))
+
+	except FileNotFoundError :
+		print(f'{numCore_cpp_b_file} not found.')
+		sys.exit(1)
+	except Exception as err:
+		print("Some problem with adjoint setup.")
+		print(err)
+		sys.exit(1)
+
+	try :
 	
-							line_add = f'   open({unit[0]}, file=\'AdjointVals_{output_var}_\'//trim(RUNNAME)//\'.dat\',&\n' \
-								+ f'       form="FORMATTED", status="REPLACE")\n'
+		with open(sico_main_loop_m_cpp_b_file) as f:
+			
+			file_lines = f.readlines()
+			new_file_lines = []
+			first_instance = False
+			for line in file_lines:
+				if (output_vars and output_dims and output_iters and ckp_status is True and first_instance is False):
+					if('itercount = itercount + 1' in line):
+						first_instance = True	
+						for var_index, (output_var, dimension, iteration) in enumerate(zip(output_vars, output_dims, output_iters), start = 1):
+							if iteration == -1: iteration = 'itercount_max'
+							unit = [f'{var_index}9000']
+							line_add = f'   if (itercount .EQ. {iteration}) THEN\n'
+
 							if(dimension >= 0):
-								line_add = f'   open({unit[0]}, file=\'AdjointVals_{output_var}_{dimension}_\'//trim(RUNNAME)//\'.dat\',&\n' \
+								line_add = line_add \
+								+ f'   open({unit[0]}, file=\'AdjointVals_{output_var}_{dimension}_iter_{iteration}_\'//trim(RUNNAME)//\'.dat\',&\n' \
 								+ f'       form="FORMATTED", status="REPLACE")\n'
+							else:
+								line_add = line_add \
+								+ f'   open({unit[0]}, file=\'AdjointVals_{output_var}_iter_{iteration}_\'//trim(RUNNAME)//\'.dat\',&\n' \
+								+ f'       form="FORMATTED", status="REPLACE")\n'
+							
 							line_add = line_add \
 								+ f'   do i = 0, {IMAX}\n' \
 								+ f'   do j = 0, {JMAX}\n'
@@ -359,21 +389,125 @@ def setup_adjoint(ind_vars, header, domain,
 							line_add = line_add \
 								+ f'   end do\n' \
 								+ f'   end do\n' \
-								+ f'   close(unit={unit[0]})\n'
+								+ f'   close(unit={unit[0]})\n' \
+								+ f'   end if\n'
 	
 							line = line_add + line
 	
+				
+				elif (output_vars and output_dims and output_iters and ckp_status is False and first_instance is False):
+					if('END DO main_loop' in line):
+						first_instance = True	
+						for var_index, (output_var, dimension, iteration) in enumerate(zip(output_vars, output_dims, output_iters), start = 1):
+							if iteration == -1: iteration = 'itercount_max'
+							unit = [f'{var_index}9000']
+							line_add = f'   if (itercount .EQ. {iteration}) THEN\n'
 
-				new_file_lines.append(line)
+							if(dimension >= 0):
+								line_add = line_add \
+								+ f'   open({unit[0]}, file=\'AdjointVals_{output_var}_{dimension}_iter_{iteration}_\'//trim(RUNNAME)//\'.dat\',&\n' \
+								+ f'       form="FORMATTED", status="REPLACE")\n'
+							else:
+								line_add = line_add \
+								+ f'   open({unit[0]}, file=\'AdjointVals_{output_var}_iter_{iteration}_\'//trim(RUNNAME)//\'.dat\',&\n' \
+								+ f'       form="FORMATTED", status="REPLACE")\n'
+
+							line_add = line_add \
+								+ f'   do i = 0, {IMAX}\n' \
+								+ f'   do j = 0, {JMAX}\n'
+							
+							if (dimension == -1) :
+								line_add = line_add + f'   write ({unit[0]}, *) {output_var}(j,i)\n'
+							elif (dimension >= 0) :
+								line_add = line_add + f'   write ({unit[0]}, *) {output_var}({dimension},j,i)\n'
+							else:
+								raise ValueError("Wrong dimensions or z coord for output_var")
+								sys.exit(1)
+	
+							line_add = line_add \
+								+ f'   end do\n' \
+								+ f'   end do\n' \
+								+ f'   close(unit={unit[0]})\n' \
+								+ f'   end if\n'
+	
+							line = line_add + line
+				else :
+					 
+					pass
+
+				new_file_lines.append(line)				
 		
-		with open('numCore_cpp_b.f90', "w") as f:
+		with open(sico_main_loop_m_cpp_b_file, "w") as f:
 			f.write(''.join(new_file_lines))
 
+
 	except FileNotFoundError :
-		print(f'{numCore_cpp_b_file} not found.')
+		print(f'{sico_main_loop_m_cpp_b_file} not found.')
 		sys.exit(1)
 	except Exception as err:
 		print("Some problem with adjoint setup.")
+		print(err)
+		sys.exit(1)
+
+	try :
+	
+		with open(sico_main_loop_m_cpp_b_file) as f:
+			
+			file_lines = f.readlines()
+			new_file_lines = []
+			first_instance = False
+			skip_line = False
+			print(output_adj_vars, output_adj_dims, output_adj_iters, first_instance)
+			for line in file_lines:
+				if (output_adj_vars and output_adj_dims and output_adj_iters and first_instance is False):
+					if('BOUNDARY_B' in line):
+						skip_line = True
+					elif skip_line is True:
+						first_instance = True
+						for var_index, (output_var, dimension, iteration) in enumerate(zip(output_adj_vars, output_adj_dims, output_adj_iters), start = 1):
+							unit = [f'{var_index}8000']
+							line_add = f'   if (itercount .EQ. {iteration}) THEN\n'
+							if(dimension >= 0):
+								line_add = line_add \
+								+ f'   open({unit[0]}, file=\'AdjointVals_{output_var}b_{dimension}_iter_{iteration}_\'//trim(RUNNAME)//\'.dat\',&\n' \
+								+ f'       form="FORMATTED", status="REPLACE")\n'
+							else:
+								line_add = line_add \
+								+ f'   open({unit[0]}, file=\'AdjointVals_{output_var}b_iter_{iteration}_\'//trim(RUNNAME)//\'.dat\',&\n' \
+								+ f'       form="FORMATTED", status="REPLACE")\n'
+							
+							line_add = line_add \
+								+ f'   do i = 0, {IMAX}\n' \
+								+ f'   do j = 0, {JMAX}\n'
+							
+							if (dimension == -1) :
+								line_add = line_add + f'   write ({unit[0]}, *) {output_var}b(j,i)\n'
+							elif (dimension >= 0) :
+								line_add = line_add + f'   write ({unit[0]}, *) {output_var}b({dimension},j,i)\n'
+							else:
+								raise ValueError("Wrong dimensions or z coord for output_varb")
+								sys.exit(1)
+	
+							line_add = line_add \
+								+ f'   end do\n' \
+								+ f'   end do\n' \
+								+ f'   close(unit={unit[0]})\n' \
+								+ f'   end if\n'
+	
+							line = line + line_add
+
+					else: pass	
+				new_file_lines.append(line)				
+		
+		with open(sico_main_loop_m_cpp_b_file, "w") as f:
+			f.write(''.join(new_file_lines))
+
+
+	except FileNotFoundError :
+		print(f'{sico_main_loop_m_cpp_b_file} not found.')
+		sys.exit(1)
+	except Exception as err:
+		print("Some problem with adjoint setup lol.")
 		print(err)
 		sys.exit(1)
 
@@ -512,7 +646,11 @@ if __name__ == "__main__":
 	parser.add_argument("-z", "--z_co_ord", help="z co-ordinate if 3D variable", type=int)
 	parser.add_argument('-ov','--output_vars', nargs='+', help='List the fields you want to output')
 	parser.add_argument('-od', '--output_dims', nargs='+', help='List the z-coord of output vars, -1 if 2D')
-	
+	parser.add_argument('-oi', '--output_iters', nargs='+', help='List the iter num of output vars, -1 if itercount_max')
+	parser.add_argument('-oav','--output_adj_vars', nargs='+', help='List the adjoint fields you want to output')
+	parser.add_argument('-oad', '--output_adj_dims', nargs='+', help='List the z-coord of adjoint output vars, -1 if 2D')
+	parser.add_argument('-oai', '--output_adj_iters', nargs='+', help='List the iter num of adjoint output vars, -1 if itercount_max')
+
 
 	args = parser.parse_args()
 	
@@ -536,8 +674,8 @@ if __name__ == "__main__":
 	compile_code(**{k: v for k, v in kwargs.items() if v is not None}, clean = True)	
 	print(f'grdchk compilation complete for {args.header}.')
 
-	run_executable('grdchk')
-	print(f'grdchk execution complete for {args.header}.')
+	#	run_executable('grdchk')
+	#	print(f'grdchk execution complete for {args.header}.')
 
 	if args.checkpoint:	
 		setup_binomial_checkpointing(status = True, number_of_steps = args.checkpoint)
@@ -553,11 +691,23 @@ if __name__ == "__main__":
 
 	compile_code(**{k: v for k, v in kwargs.items() if v is not None}, clean = True)	
 
-	if args.output_dims is not None:
+	if args.output_dims is not None and args.output_iters is not None:
 		args.output_dims = [int(x) for x in args.output_dims]	
+		args.output_iters = [int(x) for x in args.output_iters]
+	if args.output_adj_dims is not None and args.output_adj_iters is not None:
+		args.output_adj_dims = [int(x) for x in args.output_adj_dims]	
+		args.output_adj_iters = [int(x) for x in args.output_adj_iters]
+
+
+	if args.checkpoint:
+		ckp_status = True
+	else: 
+		ckp_status = False
 	kwargs = dict(ind_vars = [args.ind_var], header=args.header, domain=args.domain,
 		     dimensions = [args.dimension], z_co_ords = [args.z_co_ord],
-		     output_vars = args.output_vars, output_dims = args.output_dims)
+		     output_vars = args.output_vars, output_dims = args.output_dims, output_iters = args.output_iters,
+		     output_adj_vars = args.output_adj_vars, output_adj_dims = args.output_adj_dims, output_adj_iters = args.output_adj_iters,
+		     ckp_status = ckp_status)
 
 	setup_adjoint(**{k: v for k, v in kwargs.items() if (v is not None and v != [None])},
         	     numCore_cpp_b_file = 'numCore_cpp_b.f90')
@@ -573,27 +723,27 @@ if __name__ == "__main__":
 	
 	print(f'adjoint compilation complete for {args.header}.')
 	
-	run_executable('adjoint')
-	print(f'adjoint execution complete for {args.header}.')
-
-	validate_FD_AD(f'GradientVals_{args.ind_var}_{args.perturbation:.2E}_{args.header}_limited.dat', f'AdjointVals_{args.ind_var}_{args.header}_limited.dat')
-
-	kwargs = dict(ind_var = args.ind_var, header=args.header, domain=args.domain,
-        		dimension = args.dimension, z_co_ord = args.z_co_ord)
-		
-	setup_forward(**{k: v for k, v in kwargs.items() if (v is not None and v != [None])},
-        		tapenade_m_tlm_file = 'subroutines/tapenade/tapenade_m.F90')
-
-	if args.travis:
-		kwargs = dict(mode='forward', header=args.header, domain=args.domain, 
-			dep_var = args.dep_var, ind_vars = args.ind_var, travis_ci='TRAVIS_CI=yes')
-	else:
-		kwargs = dict(mode='forward', header=args.header, domain=args.domain,
-			dep_var = args.dep_var, ind_vars = args.ind_var)
-
-	compile_code(**{k: v for k, v in kwargs.items() if v is not None}, clean = True) 
-	print(f'TLM compilation complete for {args.header}.')
-	
-	run_executable('forward')
-	print(f'TLM execution complete for {args.header}.')
-	validate_FD_AD(f'GradientVals_{args.ind_var}_{args.perturbation:.2E}_{args.header}_limited.dat', f'ForwardVals_{args.ind_var}_{args.header}_limited.dat')
+	#	run_executable('adjoint')
+	#	print(f'adjoint execution complete for {args.header}.')
+	#
+	#	validate_FD_AD(f'GradientVals_{args.ind_var}_{args.perturbation:.2E}_{args.header}_limited.dat', f'AdjointVals_{args.ind_var}_{args.header}_limited.dat')
+	#
+	#	kwargs = dict(ind_var = args.ind_var, header=args.header, domain=args.domain,
+	#        		dimension = args.dimension, z_co_ord = args.z_co_ord)
+	#		
+	#	setup_forward(**{k: v for k, v in kwargs.items() if (v is not None and v != [None])},
+	#        		tapenade_m_tlm_file = 'subroutines/tapenade/tapenade_m.F90')
+	#
+	#	if args.travis:
+	#		kwargs = dict(mode='forward', header=args.header, domain=args.domain, 
+	#			dep_var = args.dep_var, ind_vars = args.ind_var, travis_ci='TRAVIS_CI=yes')
+	#	else:
+	#		kwargs = dict(mode='forward', header=args.header, domain=args.domain,
+	#			dep_var = args.dep_var, ind_vars = args.ind_var)
+	#
+	#	compile_code(**{k: v for k, v in kwargs.items() if v is not None}, clean = True) 
+	#	print(f'TLM compilation complete for {args.header}.')
+	#	
+	#	run_executable('forward')
+	#	print(f'TLM execution complete for {args.header}.')
+	#	validate_FD_AD(f'GradientVals_{args.ind_var}_{args.perturbation:.2E}_{args.header}_limited.dat', f'ForwardVals_{args.ind_var}_{args.header}_limited.dat')
