@@ -64,15 +64,27 @@ contains
 
   rhosw_rho_ratio = RHO_SW/RHO
 
-!-------- Previously ice-free land point or sea point --------
+!-------- Previously ice-free land --------
 
-  if ( (mask(j,i) == 1).or.(mask(j,i) == 2) ) then
+  if (mask(j,i) == 1) then
 
-     if (zl(j,i) > z_sl(j,i)) then
-        mask_update_sea_level = 1   ! now ice-free land
+     if (zl(j,i) >= z_sl(j,i)) then
+        mask_update_sea_level = 1   ! now ice-free land (as before)
         return
      else
         mask_update_sea_level = 2   ! now sea point
+        return
+     end if
+
+!-------- Previously sea point --------
+
+  else if (mask(j,i) == 2) then
+
+     if (zl(j,i) <= z_sl(j,i)) then
+        mask_update_sea_level = 2   ! now sea point (as before)
+        return
+     else
+        mask_update_sea_level = 1   ! now ice-free land
         return
      end if
 
