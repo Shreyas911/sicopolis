@@ -4,7 +4,7 @@
 !
 !> @file
 !!
-!! Declarations of global variables for SICOPOLIS (for the EMTP2SGE domain).
+!! Declarations of global variables for SICOPOLIS (for the EISMINT domain).
 !!
 !! @section Copyright
 !!
@@ -30,7 +30,7 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
-!> Declarations of global variables for SICOPOLIS (for the EMTP2SGE domain).
+!> Declarations of global variables for SICOPOLIS (for the EISMINT domain).
 !<------------------------------------------------------------------------------
 module sico_vars_m
 
@@ -44,10 +44,6 @@ save
    real(dp) :: temp_min
 !> s_t: Gradient of surface temperature change with horizontal distance
    real(dp) :: s_t
-!> x_hat: Coordinate xi (= x) of the centre of the model domain
-   real(dp) :: x_hat
-!> y_hat: Coordinate eta (= y) of the centre of the model domain
-   real(dp) :: y_hat
 !> b_max: Maximum accumulation rate
    real(dp) :: b_max
 !> s_b: Gradient of accumulation rate change with horizontal distance

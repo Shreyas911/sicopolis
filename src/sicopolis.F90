@@ -5,7 +5,7 @@
 !
 #define       MODEL_SICOPOLIS
 #define       VERSION '5-dev'
-#define       DATE    '2022-03-01'
+#define       DATE    '2022-03-19'
 !
 !> @mainpage
 !!
@@ -156,8 +156,8 @@
 #include "subroutines/ant/sico_vars_m.F90"
 #elif (defined(ASF))
 #include "subroutines/asf/sico_vars_m.F90"
-#elif (defined(EMTP2SGE))
-#include "subroutines/emtp2sge/sico_vars_m.F90"
+#elif (defined(EISMINT))
+#include "subroutines/eismint/sico_vars_m.F90"
 #elif (defined(GRL))
 #include "subroutines/grl/sico_vars_m.F90"
 #elif (defined(NHEM))
@@ -248,8 +248,8 @@
 #include "subroutines/ant/boundary_m.F90"
 #elif (defined(ASF))
 #include "subroutines/asf/boundary_m.F90"
-#elif (defined(EMTP2SGE))
-#include "subroutines/emtp2sge/boundary_m.F90"
+#elif (defined(EISMINT))
+#include "subroutines/eismint/boundary_m.F90"
 #elif (defined(GRL))
 #include "subroutines/grl/boundary_m.F90"
 #elif (defined(NHEM))
@@ -273,8 +273,8 @@
 #include "subroutines/ant/sico_init_m.F90"
 #elif (defined(ASF))
 #include "subroutines/asf/sico_init_m.F90"
-#elif (defined(EMTP2SGE))
-#include "subroutines/emtp2sge/sico_init_m.F90"
+#elif (defined(EISMINT))
+#include "subroutines/eismint/sico_init_m.F90"
 #elif (defined(GRL))
 #include "subroutines/grl/sico_init_m.F90"
 #elif (defined(NHEM))

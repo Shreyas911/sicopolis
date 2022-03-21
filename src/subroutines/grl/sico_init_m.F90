@@ -196,9 +196,9 @@ ch_domain_short = 'ant'
 ch_domain_long  = 'Austfonna'
 ch_domain_short = 'asf'
 
-#elif (defined(EMTP2SGE))
-ch_domain_long  = 'EISMINT Phase 2 Simplified Geometry Experiment'
-ch_domain_short = 'emtp2sge'
+#elif (defined(EISMINT))
+ch_domain_long  = 'EISMINT'
+ch_domain_short = 'eismint'
 
 #elif (defined(GRL))
 ch_domain_long  = 'Greenland'

@@ -136,9 +136,9 @@ ch_domain_short = 'ant'
 ch_domain_long  = 'Austfonna'
 ch_domain_short = 'asf'
 
-#elif (defined(EMTP2SGE))
-ch_domain_long  = 'EISMINT Phase 2 Simplified Geometry Experiment'
-ch_domain_short = 'emtp2sge'
+#elif (defined(EISMINT))
+ch_domain_long  = 'EISMINT'
+ch_domain_short = 'eismint'
 
 #elif (defined(GRL))
 ch_domain_long  = 'Greenland'
@@ -210,8 +210,6 @@ call ice_mat_eqs_pars(RF, R_T, KAPPA, C, -190, 10)
 
 temp_min  = TEMP_MIN                         ! deg C
 s_t       = S_T       *1.0e-03_dp            ! K/km -> K/m
-x_hat     = X_HAT     *1.0e+03_dp            ! km -> m
-y_hat     = Y_HAT     *1.0e+03_dp            ! km -> m
 b_max     = B_MAX     /year2sec              ! m/a -> m/s
 s_b       = S_B       *1.0e-03_dp/year2sec   ! m/(a*km) -> 1/s
 eld       = ELD       *1.0e+03_dp            ! km -> m
@@ -599,9 +597,9 @@ write(10, fmt=trim(fmt3)) 'a =', aa
 write(10, fmt=trim(fmt1)) ' '
 
 #if (GRID==0 || GRID==1)
-write(10, fmt=trim(fmt3)) 'x0      =', X0
-write(10, fmt=trim(fmt3)) 'y0      =', Y0
-write(10, fmt=trim(fmt3)) 'dx      =', DX
+write(10, fmt=trim(fmt3)) 'x0 =', X0
+write(10, fmt=trim(fmt3)) 'y0 =', Y0
+write(10, fmt=trim(fmt3)) 'dx =', DX
 #elif (GRID==2)
 write(10, fmt=trim(fmt3)) 'dlambda =', DLAMBDA
 write(10, fmt=trim(fmt3)) 'dphi    =', DPHI
@@ -613,16 +611,134 @@ write(10, fmt=trim(fmt3)) 'time_init  =', time_init0
 write(10, fmt=trim(fmt3)) 'time_end   =', time_end0
 write(10, fmt=trim(fmt3)) 'dtime      =', dtime0
 write(10, fmt=trim(fmt3)) 'dtime_temp =', dtime_temp0
+#if (REBOUND==2)
+write(10, fmt=trim(fmt3)) 'dtime_wss  =', dtime_wss0
+#endif
+write(10, fmt=trim(fmt1)) ' '
+
+write(10, fmt=trim(fmt2)) 'DYNAMICS = ', DYNAMICS
+#if (DYNAMICS==2 && defined(HYB_MODE))
+write(10, fmt=trim(fmt2)) 'HYB_MODE = ', HYB_MODE
+#endif
+#if ((DYNAMICS==1 && MARGIN==3) || DYNAMICS==2)
+#if (defined(LIS_OPTS))
+write(10, fmt=trim(fmt1)) 'lis_opts = '//LIS_OPTS
+#endif
+#if (defined(TOL_ITER_SSA))
+write(10, fmt=trim(fmt3)) 'tol_iter_ssa =', TOL_ITER_SSA
+#endif
+#if (defined(N_ITER_SSA))
+write(10, fmt=trim(fmt2)) 'n_iter_ssa = ', N_ITER_SSA
+#endif
+#if (defined(ITER_INIT_SSA))
+write(10, fmt=trim(fmt2)) 'iter_init_ssa = ', ITER_INIT_SSA
+#endif
+#if (defined(VISC_INIT_SSA))
+write(10, fmt=trim(fmt3)) 'visc_init_ssa =', VISC_INIT_SSA
+#endif
+#if (defined(N_VISC_SMOOTH))
+write(10, fmt=trim(fmt2)) 'n_visc_smooth = ', N_VISC_SMOOTH
+#endif
+#if (defined(VISC_SMOOTH_DIFF))
+write(10, fmt=trim(fmt3)) 'visc_smooth_diff =', VISC_SMOOTH_DIFF
+#endif
+#if (defined(RELAX_FACT_SSA))
+write(10, fmt=trim(fmt3)) 'relax_fact_ssa =', RELAX_FACT_SSA
+#endif
+#endif
+#if (DYNAMICS==2 && HYB_MODE==0 && defined(RATIO_SL_THRESH))
+write(10, fmt=trim(fmt3)) 'ratio_sl_thresh =', RATIO_SL_THRESH
+#endif
+#if (DYNAMICS==2 && HYB_MODE==0 && defined(SSTA_SIA_WEIGH_FCT))
+write(10, fmt=trim(fmt2)) 'SSTA_SIA_WEIGH_FCT = ', SSTA_SIA_WEIGH_FCT
+#endif
+#if (DYNAMICS==2 && HYB_MODE==1 && defined(HYB_REF_SPEED))
+write(10, fmt=trim(fmt3)) 'hyb_ref_speed =', HYB_REF_SPEED
+#endif
+write(10, fmt=trim(fmt1)) ' '
+
+write(10, fmt=trim(fmt2)) 'CALCMOD = ', CALCMOD
+#if (CALCMOD==-1 && defined(TEMP_CONST))
+write(10, fmt=trim(fmt3)) 'TEMP_CONST =', TEMP_CONST
+#endif
+#if (CALCMOD==-1 && defined(AGE_CONST))
+write(10, fmt=trim(fmt3)) 'AGE_CONST =', AGE_CONST
+#endif
+#if (CALCMOD==1 && defined(CTS_MELTING_FREEZING))
+write(10, fmt=trim(fmt2)) 'CTS_MELTING_FREEZING = ', CTS_MELTING_FREEZING
+#endif
+write(10, fmt=trim(fmt1)) ' '
+
+write(10, fmt=trim(fmt2)) 'MARGIN = ', MARGIN
+#if (MARGIN==2)
+write(10, fmt=trim(fmt2)) 'MARINE_ICE_FORMATION = ', MARINE_ICE_FORMATION
+write(10, fmt=trim(fmt2)) 'MARINE_ICE_CALVING   = ', MARINE_ICE_CALVING
+#if (MARINE_ICE_CALVING==2 || MARINE_ICE_CALVING==3)
+write(10, fmt=trim(fmt3)) 'z_mar =', Z_MAR
+#elif (MARINE_ICE_CALVING==4 || MARINE_ICE_CALVING==5 \
+       || MARINE_ICE_CALVING==6 || MARINE_ICE_CALVING==7)
+write(10, fmt=trim(fmt3)) 'fact_z_mar =', FACT_Z_MAR
+#elif (MARINE_ICE_FORMATION==2 && MARINE_ICE_CALVING==9)
+write(10, fmt=trim(fmt3)) 'calv_uw_coeff =', CALV_UW_COEFF
+write(10, fmt=trim(fmt3)) 'r1_calv_uw    =', R1_CALV_UW
+write(10, fmt=trim(fmt3)) 'r2_calv_uw    =', R2_CALV_UW
+#endif
+#elif (MARGIN==3)
+write(10, fmt=trim(fmt2)) 'ICE_SHELF_CALVING = ', ICE_SHELF_CALVING
+#if (ICE_SHELF_CALVING==2)
+write(10, fmt=trim(fmt3)) 'H_calv =', H_CALV
+#endif
+#endif
+write(10, fmt=trim(fmt1)) ' '
+
+write(10, fmt=trim(fmt2)) 'FLOW_LAW = ', FLOW_LAW
+write(10, fmt=trim(fmt2)) 'FIN_VISC = ', FIN_VISC
+#if (FLOW_LAW==2)
+write(10, fmt=trim(fmt3)) 'gr_size =', GR_SIZE
+#endif
+#if (FIN_VISC==2)
+write(10, fmt=trim(fmt3)) 'sigma_res =', SIGMA_RES
+#endif
+write(10, fmt=trim(fmt1)) ' '
+
+write(10, fmt=trim(fmt2)) 'ENHMOD = ', ENHMOD
+#if (ENHMOD==1 || ENHMOD==2 || ENHMOD==3)
+write(10, fmt=trim(fmt3)) 'enh_fact =', ENH_FACT
+#endif
+#if (ENHMOD==2 || ENHMOD==3)
+write(10, fmt=trim(fmt3)) 'enh_intg =', ENH_INTG
+#endif
+#if (ENHMOD==2)
+write(10, fmt=trim(fmt3)) 'age_trans =', AGE_TRANS_0
+#endif
+#if (ENHMOD==3)
+write(10, fmt=trim(fmt3)) 'date_trans1 =', DATE_TRANS1_0
+write(10, fmt=trim(fmt3)) 'date_trans2 =', DATE_TRANS2_0
+write(10, fmt=trim(fmt3)) 'date_trans3 =', DATE_TRANS3_0
+#endif
+#if (ENHMOD==4 || ENHMOD==5)
+write(10, fmt=trim(fmt3)) 'enh_compr =', ENH_COMPR
+write(10, fmt=trim(fmt3)) 'enh_shear =', ENH_SHEAR
+#endif
+#if (DYNAMICS==2 && defined(ENH_STREAM))
+if (ENH_STREAM >= 0.0_dp) &
+   write(10, fmt=trim(fmt3)) 'enh_stream =', ENH_STREAM
+#endif
+#if ((ENHMOD==1 || ENHMOD==2 || ENHMOD==3 || ENHMOD==4) && MARGIN==3)
+write(10, fmt=trim(fmt3)) 'enh_shelf =', ENH_SHELF
+#endif
 write(10, fmt=trim(fmt1)) ' '
 
 write(10, fmt=trim(fmt2)) 'ANF_DAT = ', ANF_DAT
-#if (defined(LAND_OCEAN_TRANSITION_WIDTH))
-write(10, fmt=trim(fmt3)) 'land_ocean_transition_width =', &
-                           LAND_OCEAN_TRANSITION_WIDTH
+write(10, fmt=trim(fmt1)) 'zs_present file = '//ZS_PRESENT_FILE
+#if (ANF_DAT==1)
+#if (defined(ZB_PRESENT_FILE))
+write(10, fmt=trim(fmt1)) 'zb_present file = '//ZB_PRESENT_FILE
 #endif
-#if (defined(OCEAN_DIRECTION))
-write(10, fmt=trim(fmt2)) 'OCEAN_DIRECTION = ', OCEAN_DIRECTION
+write(10, fmt=trim(fmt1)) 'zl_present file = '//ZL_PRESENT_FILE
 #endif
+write(10, fmt=trim(fmt1)) 'zl0 file = '//ZL0_FILE
+write(10, fmt=trim(fmt1)) 'mask_present file = '//MASK_PRESENT_FILE
 #if (defined(MASK_REGION_FILE))
 if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
    write(10, fmt=trim(fmt1)) 'mask_region file = '//MASK_REGION_FILE
@@ -636,9 +752,6 @@ write(10, fmt=trim(fmt2)) 'TEMP_INIT = ', TEMP_INIT
 write(10, fmt=trim(fmt1)) 'Initial-value file = '//ANFDATNAME
 write(10, fmt=trim(fmt1)) 'Path to initial-value file = '//ANF_DAT_PATH
 #endif
-write(10, fmt=trim(fmt1)) ' '
-
-write(10, fmt=trim(fmt1)) 'Physical-parameter file = '//PHYS_PARA_FILE
 write(10, fmt=trim(fmt1)) ' '
 
 #if (defined(THK_EVOL))
@@ -661,15 +774,34 @@ write(10, fmt=trim(fmt3)) 'H_isol_max =', H_ISOL_MAX
 #endif
 
 #if (CALCTHK==2 || CALCTHK==3 || CALCTHK==5 || CALCTHK==6)
-write(10, fmt=trim(fmt3))  'ovi_weight   =', OVI_WEIGHT
+write(10, fmt=trim(fmt3))  'ovi_weight =', OVI_WEIGHT
 #if (CALCTHK==2 || CALCTHK==5)
-write(10, fmt=trim(fmt3))  'omega_sor    =', OMEGA_SOR
+write(10, fmt=trim(fmt3))  'omega_sor =', OMEGA_SOR
 #if (ITER_MAX_SOR>0)
 write(10, fmt=trim(fmt2)) 'iter_max_sor = ', ITER_MAX_SOR
 #endif
 #endif
 #endif
+write(10, fmt=trim(fmt1)) ' '
 
+write(10, fmt=trim(fmt2)) 'ADV_HOR  = ', ADV_HOR
+write(10, fmt=trim(fmt2)) 'ADV_VERT = ', ADV_VERT
+write(10, fmt=trim(fmt2)) 'TOPOGRAD = ', TOPOGRAD
+#if (MARGIN==3 && defined(GL_SURF_GRAD))
+write(10, fmt=trim(fmt2)) 'GL_SURF_GRAD = ', GL_SURF_GRAD
+#endif
+write(10, fmt=trim(fmt1)) ' '
+
+write(10, fmt=trim(fmt2)) 'TSURFACE = ', TSURFACE
+#if (TSURFACE==1)
+write(10, fmt=trim(fmt3)) 'delta_ts0 =', DELTA_TS0
+#elif (TSURFACE==3)
+write(10, fmt=trim(fmt3)) 'sine_amplit =', SINE_AMPLIT
+write(10, fmt=trim(fmt3)) 'sine_period =', SINE_PERIOD
+#elif (TSURFACE==4)
+write(10, fmt=trim(fmt1)) 'GRIP file = '//GRIP_TEMP_FILE
+write(10, fmt=trim(fmt3)) 'grip_temp_fact =', GRIP_TEMP_FACT
+#endif
 write(10, fmt=trim(fmt1)) ' '
 
 #if (defined(SURFACE_FORCING))
@@ -678,58 +810,25 @@ write(10, fmt=trim(fmt2)) 'SURFACE_FORCING = ', SURFACE_FORCING
 #if (!defined(SURFACE_FORCING) || SURFACE_FORCING==1)
 write(10, fmt=trim(fmt3)) 'temp_min =', TEMP_MIN
 write(10, fmt=trim(fmt3)) 's_t      =', S_T
-write(10, fmt=trim(fmt3)) 'x_hat    =', X_HAT
-write(10, fmt=trim(fmt3)) 'y_hat    =', Y_HAT
 write(10, fmt=trim(fmt3)) 'b_max    =', B_MAX
 write(10, fmt=trim(fmt3)) 's_b      =', S_B
 write(10, fmt=trim(fmt3)) 'eld      =', ELD
 #elif (SURFACE_FORCING==2)
-write(10, fmt=trim(fmt3)) 'temp_0   =', TEMP_0
-write(10, fmt=trim(fmt3)) 'gamma_t  =', GAMMA_T
-write(10, fmt=trim(fmt3)) 's_0      =', S_0
-write(10, fmt=trim(fmt3)) 'm_0      =', M_0
-write(10, fmt=trim(fmt3)) 'ela      =', ELA
+write(10, fmt=trim(fmt3)) 'temp_0  =', TEMP_0
+write(10, fmt=trim(fmt3)) 'gamma_t =', GAMMA_T
+write(10, fmt=trim(fmt3)) 's_0     =', S_0
+write(10, fmt=trim(fmt3)) 'm_0     =', M_0
+write(10, fmt=trim(fmt3)) 'ela     =', ELA
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
-#if (TSURFACE==1)
-write(10, fmt=trim(fmt3)) 'delta_ts0      =', DELTA_TS0
-#elif (TSURFACE==3)
-write(10, fmt=trim(fmt3)) 'sine_amplit    =', SINE_AMPLIT
-write(10, fmt=trim(fmt3)) 'sine_period    =', SINE_PERIOD
-#elif (TSURFACE==4)
-write(10, fmt=trim(fmt1)) 'GRIP file      = '//GRIP_TEMP_FILE
-write(10, fmt=trim(fmt3)) 'grip_temp_fact =', GRIP_TEMP_FACT
-#endif
-
-write(10, fmt=trim(fmt2)) 'SEA_LEVEL  = ', SEA_LEVEL
+write(10, fmt=trim(fmt2)) 'SEA_LEVEL = ', SEA_LEVEL
 #if (SEA_LEVEL==1)
-write(10, fmt=trim(fmt3)) 'z_sl0          =', Z_SL0
+write(10, fmt=trim(fmt3)) 'z_sl0 =', Z_SL0
 #elif (SEA_LEVEL==3)
 write(10, fmt=trim(fmt1)) 'sea-level file = '//SEA_LEVEL_FILE
 #endif
 write(10, fmt=trim(fmt1)) ' '
-
-#if (MARGIN==2)
-#if (MARINE_ICE_CALVING==2 || MARINE_ICE_CALVING==3)
-write(10, fmt=trim(fmt3)) 'z_mar          =', Z_MAR
-write(10, fmt=trim(fmt1)) ' '
-#elif (MARINE_ICE_CALVING==4 || MARINE_ICE_CALVING==5 \
-       || MARINE_ICE_CALVING==6 || MARINE_ICE_CALVING==7)
-write(10, fmt=trim(fmt3)) 'fact_z_mar     =', FACT_Z_MAR
-write(10, fmt=trim(fmt1)) ' '
-#elif (MARINE_ICE_FORMATION==2 && MARINE_ICE_CALVING==9)
-write(10, fmt=trim(fmt3)) 'calv_uw_coeff  =', CALV_UW_COEFF
-write(10, fmt=trim(fmt3)) 'r1_calv_uw     =', R1_CALV_UW
-write(10, fmt=trim(fmt3)) 'r2_calv_uw     =', R2_CALV_UW
-write(10, fmt=trim(fmt1)) ' '
-#endif
-#elif (MARGIN==3)
-#if (ICE_SHELF_CALVING==2)
-write(10, fmt=trim(fmt3)) 'H_calv          =', H_CALV
-write(10, fmt=trim(fmt1)) ' '
-#endif
-#endif
 
 #if (defined(BASAL_HYDROLOGY))
 write(10, fmt=trim(fmt2)) 'BASAL_HYDROLOGY = ', BASAL_HYDROLOGY
@@ -796,21 +895,23 @@ write(10, fmt=trim(fmt3)) 'red_pres_limit_fact =', RED_PRES_LIMIT_FACT
        && defined(HYDRO_SLIDE_SAT_FCT) \
        && defined(C_HW_SLIDE) && defined(HW0_SLIDE))
 write(10, fmt=trim(fmt2)) 'HYDRO_SLIDE_SAT_FCT = ', HYDRO_SLIDE_SAT_FCT
-write(10, fmt=trim(fmt3)) 'c_Hw_slide  =', C_HW_SLIDE
-write(10, fmt=trim(fmt3)) 'Hw0_slide   =', HW0_SLIDE
+write(10, fmt=trim(fmt3)) 'c_Hw_slide =', C_HW_SLIDE
+write(10, fmt=trim(fmt3)) 'Hw0_slide  =', HW0_SLIDE
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
 write(10, fmt=trim(fmt2)) 'Q_GEO_MOD = ', Q_GEO_MOD
 #if (Q_GEO_MOD==1)
 write(10, fmt=trim(fmt3)) 'q_geo =', Q_GEO
+#elif (Q_GEO_MOD==2)
+write(10, fmt=trim(fmt1)) 'q_geo file = '//Q_GEO_FILE
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
 #if (defined(MARINE_ICE_BASAL_MELTING))
 write(10, fmt=trim(fmt2)) 'MARINE_ICE_BASAL_MELTING = ', MARINE_ICE_BASAL_MELTING
 #if (MARINE_ICE_BASAL_MELTING==2 || MARINE_ICE_BASAL_MELTING==3)
-write(10, fmt=trim(fmt3)) 'qbm_marine               =', QBM_MARINE
+write(10, fmt=trim(fmt3)) 'qbm_marine =', QBM_MARINE
 #endif
 write(10, fmt=trim(fmt1)) ' '
 #endif
@@ -831,14 +932,14 @@ write(10, fmt=trim(fmt3)) 'H_w_0 =', H_W_0
 write(10, fmt=trim(fmt1)) ' '
 #endif
 
-write(10, fmt=trim(fmt2)) 'REBOUND       = ', REBOUND
+write(10, fmt=trim(fmt2)) 'REBOUND = ', REBOUND
 #if (REBOUND==1)
-write(10, fmt=trim(fmt3)) 'frac_llra     =', FRAC_LLRA
+write(10, fmt=trim(fmt3)) 'frac_llra =', FRAC_LLRA
 #endif
 #if (REBOUND==1 || REBOUND==2)
-write(10, fmt=trim(fmt2)) 'TIME_LAG_MOD  = ', TIME_LAG_MOD
+write(10, fmt=trim(fmt2)) 'TIME_LAG_MOD = ', TIME_LAG_MOD
 #if (TIME_LAG_MOD==1)
-write(10, fmt=trim(fmt3)) 'time_lag      =', TIME_LAG
+write(10, fmt=trim(fmt3)) 'time_lag =', TIME_LAG
 #elif (TIME_LAG_MOD==2)
 write(10, fmt=trim(fmt1)) 'time_lag_file = '//TIME_LAG_FILE
 #else
@@ -847,9 +948,9 @@ call error(errormsg)
 #endif
 #endif
 #if (REBOUND==2)
-write(10, fmt=trim(fmt2)) 'FLEX_RIG_MOD  = ', FLEX_RIG_MOD
+write(10, fmt=trim(fmt2)) 'FLEX_RIG_MOD = ', FLEX_RIG_MOD
 #if (FLEX_RIG_MOD==1)
-write(10, fmt=trim(fmt3)) 'flex_rig      =', FLEX_RIG
+write(10, fmt=trim(fmt3)) 'flex_rig =', FLEX_RIG
 #elif (FLEX_RIG_MOD==2)
 write(10, fmt=trim(fmt1)) 'flex_rig_file = '//FLEX_RIG_FILE
 #else
@@ -857,116 +958,7 @@ errormsg = ' >>> sico_init: FLEX_RIG_MOD must be either 1 or 2!'
 call error(errormsg)
 #endif
 #endif
-write(10, fmt=trim(fmt2)) 'Q_LITHO       = ', Q_LITHO
-write(10, fmt=trim(fmt1)) ' '
-
-#if (FLOW_LAW==2)
-write(10, fmt=trim(fmt3)) 'gr_size   =', GR_SIZE
-write(10, fmt=trim(fmt1)) ' '
-#endif
-#if (FIN_VISC==2)
-write(10, fmt=trim(fmt3)) 'sigma_res =', SIGMA_RES
-write(10, fmt=trim(fmt1)) ' '
-#endif
-
-write(10, fmt=trim(fmt2)) 'ENHMOD = ', ENHMOD
-#if (ENHMOD==1 || ENHMOD==2 || ENHMOD==3)
-write(10, fmt=trim(fmt3)) 'enh_fact    =', ENH_FACT
-#endif
-#if (ENHMOD==2 || ENHMOD==3)
-write(10, fmt=trim(fmt3)) 'enh_intg    =', ENH_INTG
-#endif
-#if (ENHMOD==2)
-write(10, fmt=trim(fmt3)) 'age_trans   =', AGE_TRANS_0
-#endif
-#if (ENHMOD==3)
-write(10, fmt=trim(fmt3)) 'date_trans1 =', DATE_TRANS1_0
-write(10, fmt=trim(fmt3)) 'date_trans2 =', DATE_TRANS2_0
-write(10, fmt=trim(fmt3)) 'date_trans3 =', DATE_TRANS3_0
-#endif
-#if (ENHMOD==4 || ENHMOD==5)
-write(10, fmt=trim(fmt3)) 'enh_compr   =', ENH_COMPR
-write(10, fmt=trim(fmt3)) 'enh_shear   =', ENH_SHEAR
-#endif
-#if (DYNAMICS==2 && defined(ENH_STREAM))
-if (ENH_STREAM >= 0.0_dp) &
-   write(10, fmt=trim(fmt3)) 'enh_stream =', ENH_STREAM
-#endif
-#if ((ENHMOD==1 || ENHMOD==2 || ENHMOD==3 || ENHMOD==4) && MARGIN==3)
-write(10, fmt=trim(fmt3)) 'enh_shelf   =', ENH_SHELF
-#endif
-write(10, fmt=trim(fmt1)) ' '
-
-write(10, fmt=trim(fmt2)) 'DYNAMICS = ', DYNAMICS
-#if (DYNAMICS==2 && defined(HYB_MODE))
-write(10, fmt=trim(fmt2)) 'HYB_MODE = ', HYB_MODE
-#endif
-#if ((DYNAMICS==1 && MARGIN==3) || DYNAMICS==2)
-#if (defined(LIS_OPTS))
-write(10, fmt=trim(fmt1)) 'lis_opts = '//LIS_OPTS
-#endif
-#if (defined(TOL_ITER_SSA))
-write(10, fmt=trim(fmt3)) 'tol_iter_ssa =', TOL_ITER_SSA
-#endif
-#if (defined(N_ITER_SSA))
-write(10, fmt=trim(fmt2)) 'n_iter_ssa = ', N_ITER_SSA
-#endif
-#if (defined(ITER_INIT_SSA))
-write(10, fmt=trim(fmt2)) 'iter_init_ssa = ', ITER_INIT_SSA
-#endif
-#if (defined(VISC_INIT_SSA))
-write(10, fmt=trim(fmt3)) 'visc_init_ssa =', VISC_INIT_SSA
-#endif
-#if (defined(N_VISC_SMOOTH))
-write(10, fmt=trim(fmt2)) 'n_visc_smooth = ', N_VISC_SMOOTH
-#endif
-#if (defined(VISC_SMOOTH_DIFF))
-write(10, fmt=trim(fmt3)) 'visc_smooth_diff =', VISC_SMOOTH_DIFF
-#endif
-#if (defined(RELAX_FACT_SSA))
-write(10, fmt=trim(fmt3)) 'relax_fact_ssa =', RELAX_FACT_SSA
-#endif
-#endif
-#if (DYNAMICS==2 && HYB_MODE==0 && defined(RATIO_SL_THRESH))
-write(10, fmt=trim(fmt3)) 'ratio_sl_thresh =', RATIO_SL_THRESH
-#endif
-#if (DYNAMICS==2 && HYB_MODE==0 && defined(SSTA_SIA_WEIGH_FCT))
-write(10, fmt=trim(fmt2)) 'SSTA_SIA_WEIGH_FCT = ', SSTA_SIA_WEIGH_FCT
-#endif
-#if (DYNAMICS==2 && HYB_MODE==1 && defined(HYB_REF_SPEED))
-write(10, fmt=trim(fmt3)) 'hyb_ref_speed =', HYB_REF_SPEED
-#endif
-write(10, fmt=trim(fmt1)) ' '
-
-write(10, fmt=trim(fmt2)) 'CALCMOD    = ', CALCMOD
-#if (CALCMOD==-1 && defined(TEMP_CONST))
-write(10, fmt=trim(fmt3)) 'TEMP_CONST =', TEMP_CONST
-#endif
-#if (CALCMOD==-1 && defined(AGE_CONST))
-write(10, fmt=trim(fmt3)) 'AGE_CONST  =', AGE_CONST
-#endif
-#if (CALCMOD==1 && defined(CTS_MELTING_FREEZING))
-write(10, fmt=trim(fmt2)) 'CTS_MELTING_FREEZING = ', CTS_MELTING_FREEZING
-#endif
-write(10, fmt=trim(fmt2)) 'FLOW_LAW   = ', FLOW_LAW
-write(10, fmt=trim(fmt2)) 'FIN_VISC   = ', FIN_VISC
-write(10, fmt=trim(fmt2)) 'MARGIN     = ', MARGIN
-#if (MARGIN==2)
-write(10, fmt=trim(fmt2)) 'MARINE_ICE_FORMATION = ', MARINE_ICE_FORMATION
-write(10, fmt=trim(fmt2)) 'MARINE_ICE_CALVING   = ', MARINE_ICE_CALVING
-#elif (MARGIN==3)
-write(10, fmt=trim(fmt2)) 'ICE_SHELF_CALVING = ', ICE_SHELF_CALVING
-#endif
-write(10, fmt=trim(fmt2)) 'ADV_HOR    = ', ADV_HOR
-write(10, fmt=trim(fmt2)) 'ADV_VERT   = ', ADV_VERT
-write(10, fmt=trim(fmt2)) 'TOPOGRAD   = ', TOPOGRAD
-#if (MARGIN==3 && defined(GL_SURF_GRAD))
-write(10, fmt=trim(fmt2)) 'GL_SURF_GRAD = ', GL_SURF_GRAD
-#endif
-write(10, fmt=trim(fmt2)) 'TSURFACE   = ', TSURFACE
-#if (defined(MB_ACCOUNT))
-write(10, fmt=trim(fmt2)) 'MB_ACCOUNT = ', MB_ACCOUNT
-#endif
+write(10, fmt=trim(fmt2)) 'Q_LITHO = ', Q_LITHO
 write(10, fmt=trim(fmt1)) ' '
 
 write(10, fmt=trim(fmt3)) 'numdiff_H_t =', NUMDIFF_H_T
@@ -989,24 +981,24 @@ write(10, fmt=trim(fmt3)) 'age_diff    =', AGEDIFF
 write(10, fmt=trim(fmt1)) ' '
 
 #if (defined(OUT_TIMES))
-write(10, fmt=trim(fmt2)) 'OUT_TIMES   = ', OUT_TIMES
+write(10, fmt=trim(fmt2)) 'OUT_TIMES = ', OUT_TIMES
 #endif
 #if (defined(OUTPUT_INIT))
 write(10, fmt=trim(fmt2)) 'OUTPUT_INIT = ', OUTPUT_INIT
 #endif
-write(10, fmt=trim(fmt2)) 'OUTPUT      = ', OUTPUT
+write(10, fmt=trim(fmt2)) 'OUTPUT = ', OUTPUT
 #if (OUTPUT==1 || OUTPUT==3)
-write(10, fmt=trim(fmt3))  'dtime_out   =' , dtime_out0
+write(10, fmt=trim(fmt3))  'dtime_out =' , dtime_out0
 #endif
-write(10, fmt=trim(fmt3))  'dtime_ser   =' , dtime_ser0
+write(10, fmt=trim(fmt3))  'dtime_ser =' , dtime_ser0
 #if (OUTPUT==1 || OUTPUT==2)
-write(10, fmt=trim(fmt2)) 'ERGDAT      = ', ERGDAT
+write(10, fmt=trim(fmt2)) 'ERGDAT = ', ERGDAT
 #endif
 #if (defined(OUTPUT_FLUX_VARS))
 write(10, fmt=trim(fmt2)) 'OUTPUT_FLUX_VARS = ', OUTPUT_FLUX_VARS
 #endif
 #if (OUTPUT==2 || OUTPUT==3)
-write(10, fmt=trim(fmt2)) 'n_output    = ', n_output
+write(10, fmt=trim(fmt2)) 'n_output = ', n_output
 do n=1, n_output
    if (n==1) then
       write(10, fmt=trim(fmt3))  'time_output =' , time_output0(n)
@@ -1486,18 +1478,18 @@ allocate(lambda_core(n_core), phi_core(n_core), &
          x_core(n_core), y_core(n_core), ch_core(n_core))
 
 ch_core(1)     = 'P1'
-lambda_core(1) =    0.0_dp  ! dummy
-phi_core(1)    =    0.0_dp  ! dummy
-x_core(1)      =  750.0_dp *1.0e+03_dp    ! Position of the central dome
-y_core(1)      =  750.0_dp *1.0e+03_dp    ! (750 km, 750 km),
-                                          ! conversion km -> m
+lambda_core(1) =   0.0_dp  ! dummy
+phi_core(1)    =   0.0_dp  ! dummy
+x_core(1)      =   0.0_dp *1.0e+03_dp    ! Position of the central dome
+y_core(1)      =   0.0_dp *1.0e+03_dp    ! (0 km, 0 km),
+                                         ! conversion km -> m
 
 ch_core(2)     = 'P2'
-lambda_core(2) =    0.0_dp  ! dummy
-phi_core(2)    =    0.0_dp  ! dummy
-x_core(2)      =  750.0_dp *1.0e+03_dp    ! Position halfway to the coast
-y_core(2)      = 1125.0_dp *1.0e+03_dp    ! (750 km, 1125 km),
-                                          ! conversion km -> m
+lambda_core(2) =   0.0_dp  ! dummy
+phi_core(2)    =   0.0_dp  ! dummy
+x_core(2)      =   0.0_dp *1.0e+03_dp    ! Position halfway to the coast
+y_core(2)      = 375.0_dp *1.0e+03_dp    ! (0 km, 375 km),
+                                         ! conversion km -> m
 
 filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'.core'
 
@@ -1647,48 +1639,29 @@ real(dp), intent(out) :: dxi, deta
 integer(i4b) :: i, j, n
 real(dp)     :: xi0, eta0
 
-integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_aux
-real(dp)    , dimension(0:JMAX,0:IMAX) :: zl0_aux
-real(dp)                               :: half_width, zl0_diff
-
 character(len=256) :: filename_with_path
 
 real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 
-real(dp), parameter :: zl0_ocean = -2000.0_dp
-real(dp), parameter :: epss      =     0.01_dp
+!-------- Read topography --------
 
-!-------- Set topography --------
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                     trim(ZL0_FILE)
 
-#if (!defined(LAND_OCEAN_TRANSITION_WIDTH))
+call read_2d_input(filename_with_path, &
+                   ch_var_name='zl0', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-write(6, fmt='(a)') ' >>> topography2: LAND_OCEAN_TRANSITION_WIDTH not defined.'
-write(6, fmt='(a)') '                  Value 0 assumed by default!'
-write(6, fmt='(a)') ' '
+zl0 = field2d_aux
 
-half_width = 0.0_dp
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                     trim(MASK_PRESENT_FILE)
 
-#else
+call read_2d_input(filename_with_path, &
+                   ch_var_name='mask', n_var_type=3, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-half_width = 0.5_dp*abs(LAND_OCEAN_TRANSITION_WIDTH) *1000.0_dp   ! km -> m
-
-#endif
-
-zl0 = 10.0_dp
-
-zl0(0,:)    = zl0_ocean
-zl0(JMAX,:) = zl0_ocean
-
-zl0(:,0)    = zl0_ocean
-zl0(:,IMAX) = zl0_ocean
-
-mask = 1
-
-mask(0,:)    = 2
-mask(JMAX,:) = 2
-
-mask(:,0)    = 2
-mask(:,IMAX) = 2
+mask = nint(field2d_aux)
 
 !-------- Further stuff --------
 
@@ -1703,126 +1676,6 @@ eta0 = Y0 *1000.0_dp   ! km -> m
 #elif (GRID==2)
 
 errormsg = ' >>> topography2: GRID==2 not allowed for this application!'
-call error(errormsg)
-
-#endif
-
-do i=0, IMAX
-   xi(i)  = xi0  + real(i,dp)*dxi
-end do
-
-do j=0, JMAX
-   eta(j) = eta0 + real(j,dp)*deta
-end do
-
-do i=1, IMAX-1
-do j=1, JMAX-1
-
-   if ( (xi(i) >= (1150.0e+03_dp+half_width-epss)) &
-        .and.(eta(j) >= (625.0e+03_dp+half_width-epss)) &
-        .and.(eta(j) <= (875.0e+03_dp-half_width+epss)) ) then
-
-      mask(j,i) = 2
-      zl0(j,i)   = zl0_ocean
-
-   end if
-
-end do
-end do
-
-if (half_width > epss) then
-
-   zl0_diff = 0.1_dp
-
-   zl0_aux = zl0
-
-   do n=1, 1000
-
-      do i=1, IMAX-1
-      do j=1, JMAX-1
-
-         if ( ( .not.( (xi(i) >= (1150.0e+03_dp+half_width-epss)) &
-                       .and.(eta(j) >= (625.0e+03_dp+half_width-epss)) &
-                       .and.(eta(j) <= (875.0e+03_dp-half_width+epss)) ) ) &
-              .and. &
-              ( (xi(i) >= (1150.0e+03_dp-half_width-epss)) &
-                .and.(eta(j) >= (625.0e+03_dp-half_width-epss)) &
-                .and.(eta(j) <= (875.0e+03_dp+half_width+epss)) ) ) then
-
-            mask(j,i) = 2
-
-            zl0_aux(j,i) = (1.0_dp-4.0_dp*zl0_diff)*zl0(j,i) &
-                           + zl0_diff * ( (zl0(j,i+1)+zl0(j,i-1)) &
-                                         +(zl0(j+1,i)+zl0(j-1,i)) )
-               ! Solving the diffusion equation
-
-         end if
-
-      end do
-      end do
-
-      zl0 = zl0_aux
-
-   end do
-
-end if
-
-!   ------ Ocean direction
-
-#if (!defined(OCEAN_DIRECTION))
-
-write(6, fmt='(a)') ' >>> topography2: OCEAN_DIRECTION not defined.'
-write(6, fmt='(a)') '                  Value 1 (eastward = +x direction)'
-write(6, fmt='(a)') '                  assumed by default!'
-write(6, fmt='(a)') ' '
-
-#elif (OCEAN_DIRECTION==1)
-
-!     ---- Eastward (+x direction)
-
-!!! continue (nothing to be done)
-
-#elif (OCEAN_DIRECTION==2)
-
-!     ---- Westward (-x direction)
-
-do i=0, IMAX
-do j=0, JMAX
-   mask_aux(j,i) = mask(j,IMAX-i)
-   zl0_aux(j,i)   = zl0(j,IMAX-i)
-end do
-end do
-
-mask = mask_aux
-zl0   = zl0_aux
-
-#elif (OCEAN_DIRECTION==3)
-
-!     ---- Northward (+y direction)
-
-mask = transpose(mask)
-zl0   = transpose(zl0)
-
-#elif (OCEAN_DIRECTION==4)
-
-!     ---- Southward (-y direction)
-
-mask = transpose(mask)
-zl0   = transpose(zl0)
-
-do i=0, IMAX
-do j=0, JMAX
-   mask_aux(j,i) = mask(JMAX-j,i)
-   zl0_aux(j,i)   = zl0(JMAX-j,i)
-end do
-end do
-
-mask = mask_aux
-zl0   = zl0_aux
-
-#else
-
-errormsg = ' >>> topography2: OCEAN_DIRECTION must be 1, 2, 3, or 4!'
 call error(errormsg)
 
 #endif
@@ -1846,6 +1699,9 @@ do j=0, JMAX
 #endif
       zl(j,i) = zl0(j,i)
    end if
+
+   xi(i)  = xi0  + real(i,dp)*dxi
+   eta(j) = eta0 + real(j,dp)*deta
 
    zm(j,i) = zb(j,i)
    n_cts(j,i) = -1
@@ -1966,43 +1822,24 @@ real(dp),          intent(out) :: dxi, deta
 
 integer(i4b) :: i, j, n
 
-real(dp), dimension(0:JMAX,0:IMAX) :: zl0_aux
-real(dp)                           :: half_width, zl0_diff
-
 character(len=256) :: filename_with_path
 
 real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
-
-real(dp), parameter :: zl0_ocean = -2000.0_dp
-real(dp), parameter :: epss      =     0.01_dp
 
 !-------- Read data from time-slice file of previous simulation --------
 
 call read_tms_nc(anfdatname)
 
-!-------- Set topography of the relaxed bedrock --------
+!-------- Read topography of the relaxed bedrock --------
 
-#if (!defined(LAND_OCEAN_TRANSITION_WIDTH))
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                     trim(ZL0_FILE)
 
-write(6, fmt='(a)') ' >>> topography3: LAND_OCEAN_TRANSITION_WIDTH not defined.'
-write(6, fmt='(a)') '                  Value 0 assumed by default!'
-write(6, fmt='(a)') ' '
+call read_2d_input(filename_with_path, &
+                   ch_var_name='zl0', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
 
-half_width = 0.0_dp
-
-#else
-
-half_width = 0.5_dp*abs(LAND_OCEAN_TRANSITION_WIDTH) *1000.0_dp   ! km -> m
-
-#endif
-
-zl0 = 10.0_dp
-
-zl0(0,:)    = zl0_ocean
-zl0(JMAX,:) = zl0_ocean
-
-zl0(:,0)    = zl0_ocean
-zl0(:,IMAX) = zl0_ocean
+zl0 = field2d_aux
 
 !-------- Further stuff --------
 
@@ -2014,109 +1851,6 @@ deta = DX *1000.0_dp   ! km -> m
 #elif (GRID==2)
 
 errormsg = ' >>> topography3: GRID==2 not allowed for this application!'
-call error(errormsg)
-
-#endif
-
-do i=1, IMAX-1
-do j=1, JMAX-1
-
-   if ( (xi(i) >= (1150.0e+03_dp+half_width-epss)) &
-        .and.(eta(j) >= (625.0e+03_dp+half_width-epss)) &
-        .and.(eta(j) <= (875.0e+03_dp-half_width+epss)) ) then
-
-      zl0(j,i)   = zl0_ocean
-
-   end if
-
-end do
-end do
-
-if (half_width > epss) then
-
-   zl0_diff = 0.1_dp
-
-   zl0_aux = zl0
-
-   do n=1, 1000
-
-      do i=1, IMAX-1
-      do j=1, JMAX-1
-
-         if ( ( .not.( (xi(i) >= (1150.0e+03_dp+half_width-epss)) &
-                       .and.(eta(j) >= (625.0e+03_dp+half_width-epss)) &
-                       .and.(eta(j) <= (875.0e+03_dp-half_width+epss)) ) ) &
-              .and. &
-              ( (xi(i) >= (1150.0e+03_dp-half_width-epss)) &
-                .and.(eta(j) >= (625.0e+03_dp-half_width-epss)) &
-                .and.(eta(j) <= (875.0e+03_dp+half_width+epss)) ) ) then
-
-            zl0_aux(j,i) = (1.0_dp-4.0_dp*zl0_diff)*zl0(j,i) &
-                           + zl0_diff * ( (zl0(j,i+1)+zl0(j,i-1)) &
-                                         +(zl0(j+1,i)+zl0(j-1,i)) )
-               ! Solving the diffusion equation
-
-         end if
-
-      end do
-      end do
-
-      zl0 = zl0_aux
-
-   end do
-
-end if
-
-!   ------ Ocean direction
-
-#if (!defined(OCEAN_DIRECTION))
-
-write(6, fmt='(a)') ' >>> topography3: OCEAN_DIRECTION not defined.'
-write(6, fmt='(a)') '                  Value 1 (eastward = +x direction)'
-write(6, fmt='(a)') '                  assumed by default!'
-write(6, fmt='(a)') ' '
-
-#elif (OCEAN_DIRECTION==1)
-
-!     ---- Eastward (+x direction)
-
-!!! continue (nothing to be done)
-
-#elif (OCEAN_DIRECTION==2)
-
-!     ---- Westward (-x direction)
-
-do i=0, IMAX
-do j=0, JMAX
-   zl0_aux(j,i) = zl0(j,IMAX-i)
-end do
-end do
-
-zl0 = zl0_aux
-
-#elif (OCEAN_DIRECTION==3)
-
-!     ---- Northward (+y direction)
-
-zl0 = transpose(zl0)
-
-#elif (OCEAN_DIRECTION==4)
-
-!     ---- Southward (-y direction)
-
-zl0 = transpose(zl0)
-
-do i=0, IMAX
-do j=0, JMAX
-   zl0_aux(j,i) = zl0(JMAX-j,i)
-end do
-end do
-
-zl0 = zl0_aux
-
-#else
-
-errormsg = ' >>> topography3: OCEAN_DIRECTION must be 1, 2, 3, or 4!'
 call error(errormsg)
 
 #endif

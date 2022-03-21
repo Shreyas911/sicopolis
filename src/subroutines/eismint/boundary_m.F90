@@ -299,7 +299,7 @@ end do
 
 do i=0, IMAX
 do j=0, JMAX
-   dist(j,i) = sqrt( (xi(i)-x_hat)**2 + (eta(j)-y_hat)**2 )
+   dist(j,i) = sqrt( (xi(i))**2 + (eta(j))**2 )
 end do
 end do
 

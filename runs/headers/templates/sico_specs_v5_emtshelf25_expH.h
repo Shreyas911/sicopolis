@@ -11,25 +11,23 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2022-02-03'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2022-03-19'
 !                      Date of last change
 
 !-------- Domain --------
 
-#define XYZ
+#define EISMINT
 !                 Simulated domain:
-!                   ANT      - Antarctica
-!                   ASF      - Austfonna
-!                   EMTP2SGE - EISMINT Phase 2 Simplified Geometry Experiment
-!                   GRL      - Greenland
-!                   NHEM     - Northern hemisphere
-!                   SCAND    - Scandinavia
-!                   TIBET    - Tibet
-!                   NMARS    - North polar cap of Mars
-!                   SMARS    - South polar cap of Mars
-!                   XYZ      - Various domains
-
-#define EMTSHELF    /* EISMINT-Shelf domain (under XYZ) */
+!                   ANT     - Antarctica
+!                   ASF     - Austfonna
+!                   EISMINT - EISMINT (Phase 2 SGE and modifications)
+!                   GRL     - Greenland
+!                   NHEM    - Northern hemisphere
+!                   SCAND   - Scandinavia
+!                   TIBET   - Tibet
+!                   NMARS   - North polar cap of Mars
+!                   SMARS   - South polar cap of Mars
+!                   XYZ     - Various domains
 
 !-------- Physical parameter file --------
 
@@ -46,11 +44,11 @@
 !                         2 : Geographical coordinates (longitude/latitude)
 !                             [not allowed for this application]
 
-#define X0 0.0d0
+#define X0 -750.0d0
 !                       x coordinate (in km) of the origin point (i,j) = (0,0),
 !                       for GRID==0 or GRID==1
 
-#define Y0 0.0d0
+#define Y0 -750.0d0
 !                       y coordinate (in km) of the origin point (i,j) = (0,0),
 !                       for GRID==0 or GRID==1
 
@@ -412,16 +410,26 @@
 !                         3 : Initial values from previous
 !                             simulation
 
-#define LAND_OCEAN_TRANSITION_WIDTH 10.0d0
-!                         Transition width between land and ocean (in km)
-!                         for the relaxed lithosphere surface
+#define ZS_PRESENT_FILE   'eismint_shelf_25_E_transition10_topo.nc'
+!                             Name of the file containing the present-day
+!                             ice-surface topography
 
-#define OCEAN_DIRECTION 1
-!                         Ocean direction:
-!                         1 : Eastward (+x direction)
-!                         2 : Westward (-x direction)
-!                         3 : Northward (+y direction)
-!                         4 : Southward (-y direction)
+#define ZB_PRESENT_FILE   'eismint_shelf_25_E_transition10_topo.nc'
+!                             Name of the file containing the present-day
+!                             ice-base topography (only for ANF_DAT==1)
+
+#define ZL_PRESENT_FILE   'eismint_shelf_25_E_transition10_topo.nc'
+!                             Name of the file containing the present-day
+!                             lithosphere-surface topography
+!                             (only for ANF_DAT==1)
+
+#define ZL0_FILE          'eismint_shelf_25_E_transition10_topo.nc'
+!                             Name of the file containing the topography
+!                             of the relaxed lithosphere surface
+
+#define MASK_PRESENT_FILE 'eismint_shelf_25_E_transition10_topo.nc'
+!                             Name of the file containing the present-day
+!                             ice-land-ocean mask
 
 #define MASK_REGION_FILE 'none'
 !                             Name of the file containing the region mask
@@ -576,8 +584,6 @@
 
 #define TEMP_MIN -3.5d+01   /* in deg C    , for SURFACE_FORCING==1 */
 #define S_T       1.67d-02  /* in K/km     , for SURFACE_FORCING==1 */
-#define X_HAT     7.5d+02   /* in km       , for SURFACE_FORCING==1 */
-#define Y_HAT     7.5d+02   /* in km       , for SURFACE_FORCING==1 */
 #define B_MAX     5.0d-01   /* in m/a      , for SURFACE_FORCING==1 */
 #define S_B       1.0d-02   /* in m/(a*km) , for SURFACE_FORCING==1 */
 #define ELD       4.5d+02   /* in km       , for SURFACE_FORCING==1 */

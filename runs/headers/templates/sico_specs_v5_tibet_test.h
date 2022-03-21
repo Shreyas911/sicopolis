@@ -11,23 +11,23 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2022-02-03'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2022-03-19'
 !                      Date of last change
 
 !-------- Domain --------
 
 #define TIBET
 !                 Simulated domain:
-!                   ANT      - Antarctica
-!                   ASF      - Austfonna
-!                   EMTP2SGE - EISMINT Phase 2 Simplified Geometry Experiment
-!                   GRL      - Greenland
-!                   NHEM     - Northern hemisphere
-!                   SCAND    - Scandinavia
-!                   TIBET    - Tibet
-!                   NMARS    - North polar cap of Mars
-!                   SMARS    - South polar cap of Mars
-!                   XYZ      - Various domains
+!                   ANT     - Antarctica
+!                   ASF     - Austfonna
+!                   EISMINT - EISMINT (Phase 2 SGE and modifications)
+!                   GRL     - Greenland
+!                   NHEM    - Northern hemisphere
+!                   SCAND   - Scandinavia
+!                   TIBET   - Tibet
+!                   NMARS   - North polar cap of Mars
+!                   SMARS   - South polar cap of Mars
+!                   XYZ     - Various domains
 
 !-------- Physical parameter file --------
 

@@ -1631,7 +1631,7 @@ contains
   n_phys_para = 14 + 5 + 5 + 3*201
 #elif (defined(ASF))
   n_phys_para = 14 + 5 + 5 + 3*201
-#elif (defined(EMTP2SGE))
+#elif (defined(EISMINT))
   n_phys_para = 14 + 5 + 5 + 3*201
 #elif (defined(GRL))
   n_phys_para = 14 + 5 + 8 + 3*201
@@ -1647,8 +1647,6 @@ contains
   n_phys_para = 16 + 5     + 3*201
 #elif (defined(XYZ))
 #if (defined(HEINO))      /* under XYZ */
-  n_phys_para = 14 + 5 + 5 + 3*201
-#elif (defined(EMTSHELF)) /* under XYZ */
   n_phys_para = 14 + 5 + 5 + 3*201
 #elif (defined(MOCHO))    /* under XYZ */
   n_phys_para = 14 + 5 + 5 + 3*201

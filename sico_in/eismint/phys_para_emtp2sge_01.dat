@@ -1,4 +1,4 @@
-%-------- Physical parameters for EISMINT Phase 2 SGE --------
+%-------- Physical parameters for EISMINT --------
 %
 % Format:
 % Quantity    = Value....... [% Comment]
@@ -64,8 +64,8 @@
   PHI0        = 1.239184d+00
 %       Standard parallel +71 deg (71 deg N) in rad
 %
-  LAMBDA0     = -0.7679449d+00
-%       Reference longitude -44 deg (44 deg W) in rad
+  LAMBDA0     = 0.0d+00
+%       Reference longitude 0 deg (0 deg E) in rad
 %
 %-------- Degree-day model --------
 %
