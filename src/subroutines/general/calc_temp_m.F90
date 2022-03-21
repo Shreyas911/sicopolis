@@ -206,7 +206,7 @@ do j=1, JMAX-1   ! skipping domain margins
          zm_new(j,i)  = zb(j,i)
          H_c_new(j,i) = H_c(j,i)
          H_t_new(j,i) = H_t(j,i)
-
+         !$AD NOCHECKPOINT
          call calc_temp1(at1, at2_1, at2_2, at3_1, at3_2, &
            at4_1, at4_2, at5, at6, at7, atr1, acb1, acb2, &
            acb3, acb4, alb1, ai1, ai2, &
@@ -218,7 +218,7 @@ do j=1, JMAX-1   ! skipping domain margins
          if (temp_c_new(0,j,i) > temp_c_m(0,j,i)) then
 
             n_cts_new(j,i) = 0
-
+            !$AD NOCHECKPOINT
             call calc_temp2(at1, at2_1, at2_2, at3_1, at3_2, &
                  at4_1, at4_2, at5, at6, at7, atr1, alb1, &
                  ai1, ai2, &
@@ -240,7 +240,7 @@ do j=1, JMAX-1   ! skipping domain margins
             H_c_new(j,i) = H_c(j,i)-0.001_dp
             H_t_new(j,i) = H_t(j,i)+0.001_dp
 !                 ! CTS preliminarily positioned 1 mm above ice base --------
-
+            !$AD NOCHECKPOINT
             call calc_temp3(at1, at2_1, at2_2, at3_1, at3_2, &
                  at4_1, at4_2, at5, at6, at7, atr1, &
                  am1, am2, alb1, &
@@ -248,7 +248,7 @@ do j=1, JMAX-1   ! skipping domain margins
                  ai1, ai2, ai3, dzeta_t, &
                  dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
                  i, j)
-
+            !$AD NOCHECKPOINT
             call shift_cts_upward(at1, at2_1, at2_2, at3_1, at3_2, &
               at4_1, at4_2, at5, at6, at7, atr1, am1, am2, alb1, &
               aw1, aw2, aw3, aw4, aw5, aw7, aw8, aw9, aqtld, &
@@ -266,7 +266,7 @@ do j=1, JMAX-1   ! skipping domain margins
          zm_new(j,i)  = zb(j,i)
          H_c_new(j,i) = H_c(j,i)
          H_t_new(j,i) = H_t(j,i)
-
+         !$AD NOCHECKPOINT
          call calc_temp2(at1, at2_1, at2_2, at3_1, at3_2, &
               at4_1, at4_2, at5, at6, at7, atr1, alb1, &
               ai1, ai2, &
@@ -278,7 +278,7 @@ do j=1, JMAX-1   ! skipping domain margins
          if ( (temp_c_new(1,j,i)-temp_c_new(0,j,i)) <  (am1*H_c(j,i)) ) then
 
             n_cts_new(j,i) = -1
-
+            !$AD NOCHECKPOINT
             call calc_temp1(at1, at2_1, at2_2, at3_1, at3_2, &
                  at4_1, at4_2, at5, at6, at7, atr1, acb1, acb2, &
                  acb3, acb4, alb1, ai1, ai2, &
@@ -288,7 +288,7 @@ do j=1, JMAX-1   ! skipping domain margins
             if (temp_c_new(0,j,i) >= temp_c_m(0,j,i)) then
 
                n_cts_new(j,i) = 0
-
+               !$AD NOCHECKPOINT
                call calc_temp2(at1, at2_1, at2_2, at3_1, at3_2, &
                     at4_1, at4_2, at5, at6, at7, atr1, alb1, &
                     ai1, ai2, &
@@ -312,7 +312,7 @@ do j=1, JMAX-1   ! skipping domain margins
             H_c_new(j,i) = H_c(j,i)-0.001_dp
             H_t_new(j,i) = H_t(j,i)+0.001_dp
 !                 ! CTS preliminarily positioned 1 mm above ice base --------
-
+            !$AD NOCHECKPOINT
             call calc_temp3(at1, at2_1, at2_2, at3_1, at3_2, &
                  at4_1, at4_2, at5, at6, at7, atr1, &
                  am1, am2, alb1, &
@@ -320,7 +320,7 @@ do j=1, JMAX-1   ! skipping domain margins
                  ai1, ai2, ai3, dzeta_t, &
                  dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
                  i, j)
-
+            !$AD NOCHECKPOINT
             call shift_cts_upward(at1, at2_1, at2_2, at3_1, at3_2, &
               at4_1, at4_2, at5, at6, at7, atr1, am1, am2, alb1, &
               aw1, aw2, aw3, aw4, aw5, aw7, aw8, aw9, aqtld, &
@@ -338,7 +338,7 @@ do j=1, JMAX-1   ! skipping domain margins
          zm_new(j,i)  = zm(j,i)
          H_c_new(j,i) = H_c(j,i)
          H_t_new(j,i) = H_t(j,i)
-
+         !$AD NOCHECKPOINT
          call calc_temp3(at1, at2_1, at2_2, at3_1, at3_2, &
                  at4_1, at4_2, at5, at6, at7, atr1, &
                  am1, am2, alb1, &
@@ -349,6 +349,7 @@ do j=1, JMAX-1   ! skipping domain margins
 
          if ( (temp_c_new(0,j,i)-(-BETA*H_c_new(j,i))) > 0.0_dp ) &
          then
+            !$AD NOCHECKPOINT
             call shift_cts_upward(at1, at2_1, at2_2, at3_1, at3_2, &
               at4_1, at4_2, at5, at6, at7, atr1, am1, am2, alb1, &
               aw1, aw2, aw3, aw4, aw5, aw7, aw8, aw9, aqtld, &
@@ -356,6 +357,7 @@ do j=1, JMAX-1   ! skipping domain margins
               dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
               i, j)
          else
+            !$AD NOCHECKPOINT
             call shift_cts_downward(at1, at2_1, at2_2, at3_1, at3_2, &
               at4_1, at4_2, at5, at6, at7, atr1, am1, am2, alb1, &
               aw1, aw2, aw3, aw4, aw5, aw7, aw8, aw9, aqtld, &
@@ -374,7 +376,7 @@ do j=1, JMAX-1   ! skipping domain margins
       zm_new(j,i)  = zb(j,i)
       H_c_new(j,i) = H_c(j,i) + H_t(j,i)
       H_t_new(j,i) = 0.0_dp
-
+      !$AD NOCHECKPOINT
       call calc_temp_ssa(at1, at2_1, at2_2, at3_1, at3_2, &
            at4_1, at4_2, at5, at6, at7, atr1, alb1, &
            ai1, ai2, &
@@ -397,7 +399,7 @@ do j=1, JMAX-1   ! skipping domain margins
       zm_new(j,i)  = zb(j,i)
       H_c_new(j,i) = H_c(j,i)
       H_t_new(j,i) = H_t(j,i)
-
+      !$AD NOCHECKPOINT
       call calc_temp_r(atr1, alb1, i, j)
 
 endif
