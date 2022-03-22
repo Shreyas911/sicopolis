@@ -465,6 +465,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 					elif skip_line is True:
 						first_instance = True
 						for var_index, (output_var, dimension, iteration) in enumerate(zip(output_adj_vars, output_adj_dims, output_adj_iters), start = 1):
+							if iteration == -1: iteration = 'itercount_max'
 							unit = [f'{var_index}8000']
 							line_add = f'   if (itercount .EQ. {iteration}) THEN\n'
 							if(dimension >= 0):
