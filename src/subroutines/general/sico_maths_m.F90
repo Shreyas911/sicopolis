@@ -8,7 +8,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2022 Ralf Greve
+!! Copyright 2009-2022 Ralf Greve, Shreyas Suni Gaikwad
 !!
 !! @section License
 !!
@@ -240,33 +240,36 @@ contains
 !<------------------------------------------------------------------------------
 #if defined(ALLOW_TAPENADE)
 #include "lisf.h"
-subroutine sico_lis_solver(nmax, nnz, &
-                           lgs_a_ptr, lgs_a_index, &
-                           lgs_a_value, lgs_b_value, lgs_x_value)
+  subroutine sico_lis_solver(nmax, nnz, &
+                             lgs_a_ptr, lgs_a_index, &
+                             lgs_a_value, lgs_b_value, lgs_x_value)
 
-implicit none
+  implicit none
 
-integer(i4b)                                 :: ierr
-integer(i4b)                                 :: iter
-integer(i4b)                                 :: nc, nr
-integer(i4b),                     intent(in) :: nmax
-integer(i4b),                     intent(in) :: nnz
-integer(i4b), dimension(nmax+1),  intent(in) :: lgs_a_ptr
-integer(i4b), dimension(nnz),  intent(in)    :: lgs_a_index
+  integer(i4b)                                 :: ierr
+  integer(i4b)                                 :: iter
+  integer(i4b)                                 :: nc, nr
+  integer(i4b),                     intent(in) :: nmax
+  integer(i4b),                     intent(in) :: nnz
+  integer(i4b), dimension(nmax+1),  intent(in) :: lgs_a_ptr
+  integer(i4b), dimension(nnz),  intent(in)    :: lgs_a_index
 
-LIS_MATRIX                                   :: lgs_a
-LIS_VECTOR                                   :: lgs_b
-LIS_VECTOR                                   :: lgs_x
-LIS_SOLVER                                   :: solver
+  LIS_MATRIX                                   :: lgs_a
+  LIS_VECTOR                                   :: lgs_b
+  LIS_VECTOR                                   :: lgs_x
+  LIS_SOLVER                                   :: solver
 
-real(dp),     dimension(nnz),  intent(in)    :: lgs_a_value
-real(dp),     dimension(nmax),    intent(in) :: lgs_b_value
-real(dp),     dimension(nmax), intent(inout) :: lgs_x_value
+  real(dp),     dimension(nnz),  intent(in)    :: lgs_a_value
+  real(dp),     dimension(nmax),    intent(in) :: lgs_b_value
+  real(dp),     dimension(nmax), intent(inout) :: lgs_x_value
 
-character(len=256)                           :: ch_solver_set_option
+  character(len=256)                           :: ch_solver_set_option
 
-!  ------ Settings for Lis
-end subroutine sico_lis_solver
+  end subroutine sico_lis_solver
+
 #endif
+
+!-------------------------------------------------------------------------------
+
 end module sico_maths_m
 !

@@ -16,12 +16,11 @@ my_*
 /tools/*/*.h
 
 /src/*.h
-/src/*.mod
+/src/*.py
+/src/*.sh
 /src/*.dat
 /src/driver*
 /src/pop_push/
-/src/*.f90
-/src/*.F90
 /src/*.msg
 /src/html/
 /src/*.gcda
