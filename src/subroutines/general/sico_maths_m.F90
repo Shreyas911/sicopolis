@@ -8,7 +8,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2022 Ralf Greve, Shreyas Suni Gaikwad
+!! Copyright 2009-2022 Ralf Greve, Shreyas Sunil Gaikwad
 !!
 !! @section License
 !!
