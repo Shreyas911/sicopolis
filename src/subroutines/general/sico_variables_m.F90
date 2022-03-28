@@ -953,10 +953,6 @@ save
 #if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE)) /* Tapenade */
 !> fc: scalar cost function
    real(dp) :: fc
-!> objf_test: cost function
-   real(dp) :: objf_test
-!> mult_test: cost function
-   real(dp) :: mult_test
 #if (defined(AGE_COST))
 !> Note: for the age cost, CALCMOD!=1 is recommended because
 !  the gridded ages of the GRL ice sheet are only 25 z-levels.

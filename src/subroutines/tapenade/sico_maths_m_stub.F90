@@ -8,7 +8,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2017-2022 Liz Curry-Logan, Sri Hari Krishna Narayanan
+!! Copyright 2009-2022 Ralf Greve, Shreyas Sunil Gaikwad, Liz Curry-Logan
 !!
 !! @section License
 !!
@@ -30,7 +30,7 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
-!> Several mathematical tools used by SICOPOLIS.
+!> Stub file for linear solvers in sico_maths_m module.
 !<------------------------------------------------------------------------------
 module sico_maths_m
 
@@ -38,10 +38,8 @@ use sico_types_m
 
 #if (CALCTHK!=3  && CALCTHK!=4 && CALCTHK!=6 )
   public :: sor_sprs, tri_sle, my_erfc
-  !public :: sor_sprs, tri_sle, bilinint, my_erfc
 #else  
   public :: tri_sle, my_erfc, sico_lis_solver
-  !public :: tri_sle, bilinint, my_erfc, sico_lis_solver
 #endif
 #if (CALCTHK!=3 && CALCTHK!=4 && CALCTHK!=6 )
   interface sor_sprs
@@ -61,7 +59,6 @@ use sico_types_m
   end interface
 
 #if (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
-!#if (CALCTHK==3 || CALCTHK==4 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
   interface sico_lis_solver
      module procedure sico_lis_solver_stub
   end interface

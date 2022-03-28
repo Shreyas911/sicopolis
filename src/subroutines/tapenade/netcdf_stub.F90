@@ -1,6 +1,6 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !
-!  Module :  n c _ c h e c k _ m
+!  Module :  n e t c d f _ s t u b
 !
 !> @file
 !!
@@ -8,7 +8,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2019 Ralf Greve
+!! Copyright 2009-2022 Ralf Greve, Shreyas Sunil Gaikwad
 !!
 !! @section License
 !!
@@ -30,7 +30,7 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
-!> NetCDF error capturing.
+!> Stub file for NetCDF subroutines for SICOPOLIS-AD v2.
 !<------------------------------------------------------------------------------
 module netcdf
 

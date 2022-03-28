@@ -105,9 +105,7 @@ subroutines/general/calc_bas_melt_m.F90\
 subroutines/general/calc_thk_water_bas_m.F90\
 subroutines/grl/boundary_m.F90\
 subroutines/ant/boundary_m.F90\
-subroutines/general/sico_main_loop_m.F90\
-subroutines/tapenade/sico_main_loop_wrapper_m.F90\
-subroutines/tapenade/sico_main_loop_iter_m.F90
+subroutines/general/sico_main_loop_m.F90
 
 SRC_SICO_COST=\
 subroutines/tapenade/ctrl_m.F90

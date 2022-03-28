@@ -1,11 +1,61 @@
+#!/usr/bin/env python  
+#
+# Copyright (c) 2022, Shreyas Sunil Gaikwad
+
+# All rights reserved.
+
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+
+# 1. Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+
+# 2. Redistributions in binary form must reproduce the above copyright
+# notice, this list of conditions and the following disclaimer in the
+# documentation and/or other materials provided with the distribution.
+
+# 3. Neither the name of the copyright holder nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
+# /**********************************************************************/
+# /*! \file  
+#
+#  \brief Deal with metadata in some data files during the preprocessing
+#         step for SICOPOLIS-AD v2.
+# */
+# /**********************************************************************/
+
+
+
 import numpy as np
 import sys
 import argparse
 import os
 import re
 
+
+### Deal with metadata for TSURFACE==4 case
 def TSURFACE_4(sico_specs_file, sico_variables_file):
 
+	'''
+	sico_specs_file: Location of the header file
+	sico_variables_file: Location of the sico_variables_m.F90 file
+	'''
 
 	try:
 		with open(sico_specs_file) as f:
@@ -104,9 +154,13 @@ def TSURFACE_4(sico_specs_file, sico_variables_file):
 	else:
 		return None
 
-
+### Deal with metadata for SEA_LEVEL==3 case
 def SEA_LEVEL_3(sico_specs_file, sico_variables_file):
 
+	'''
+	sico_specs_file: Location of the header file
+	sico_variables_file: Location of the sico_variables_m.F90 file
+	'''
 
 	try:
 		with open(sico_specs_file) as f:
@@ -207,7 +261,9 @@ def SEA_LEVEL_3(sico_specs_file, sico_variables_file):
 
 if __name__ == '__main__':
 
-	
+	## Example Usage from src/ dir -
+	## python subroutines/tapenade/deal_with_metadata.py -SS ../runs/headers/sico_specs_${HEADER}.h -SV subroutines/general/sico_variables_m.F90
+
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-SV", "--sico_variables", help="name of sico variables file", type=str, required=True)
 	parser.add_argument("-SS", "--sico_specs", help="name of sico specs file", type=str, required=True)

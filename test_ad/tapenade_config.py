@@ -457,7 +457,6 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 			new_file_lines = []
 			first_instance = False
 			skip_line = False
-			print(output_adj_vars, output_adj_dims, output_adj_iters, first_instance)
 			for line in file_lines:
 				if (output_adj_vars and output_adj_dims and output_adj_iters and first_instance is False):
 					if('BOUNDARY_B' in line):

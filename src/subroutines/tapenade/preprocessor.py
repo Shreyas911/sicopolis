@@ -43,11 +43,8 @@
 
 import re
 import argparse
-#import importlib
 import os.path
 import sys
-#from annotation import processIface
-#from ifacedefs import ifaces
 
 indep_str="""
 !#ifdef ALLOW_TAPENADE
@@ -72,9 +69,6 @@ indep_str="""
 
 cost_str="""
 !#if (defined(ALLOW_COST))
-call ctrl_init
-call cost_independent_init
-call cost_dependent_init
 !#endif
 """
 

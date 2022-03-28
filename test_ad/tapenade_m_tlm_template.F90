@@ -1,6 +1,6 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !
-!  Module :  o p e n a d _ m
+!  Module :  t a p e n a d e _ m
 !
 !> @file
 !!
@@ -8,7 +8,8 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2017-2021 Liz Curry-Logan, Sri Hari Krishna Narayanan,
+!! Copyright 2017-2022 Shreyas Sunil Gaikwad,
+!!                     Liz Curry-Logan, Sri Hari Krishna Narayanan,
 !!                     Patrick Heimbach, Ralf Greve
 !!
 !! @section License
@@ -50,9 +51,9 @@ module tapenade_m
 contains
 
 !-------------------------------------------------------------------------------
-!> Adjoint master is the main tool by which sicopolis.F90 invokes the adjoint
-!! code. Its job is to figure out what mode of the adjoint code is being invoked
-!! and run the appropriate subroutine. 
+!> Adjoint master is the main tool by which sicopolis.F90 invokes the
+!! adjoint/tlm code. Its job is to figure out what mode of the adjoint code is
+!! being invoked and run the appropriate subroutine. 
 !<------------------------------------------------------------------------------
 #ifdef ALLOW_TAPENADE
   subroutine adjoint_master
@@ -156,8 +157,7 @@ use sico_variables_m_diff
    use sico_main_loop_m
    use sico_end_m
    
-   use ctrl_m, only: ctrl_init, cost_independent_init, cost_dependent_init, &
-                     cost_final
+   use ctrl_m
    
    implicit none
    
@@ -224,7 +224,6 @@ use sico_variables_m_diff
 
           !-------- One complete forward run 
             call deldirs
-            call cost_dependent_init
         
             call sico_init(delta_ts, glac_index, &
                  mean_accum, &
