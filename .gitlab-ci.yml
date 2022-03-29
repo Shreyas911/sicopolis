@@ -1,0 +1,15 @@
+stages:
+        - build
+        - test
+
+print_1:
+        stage: build
+        script:
+                - echo "Building"
+        artifacts:
+                paths:
+
+print_2:
+        stage: test
+        script:
+                - echo "Testing"
