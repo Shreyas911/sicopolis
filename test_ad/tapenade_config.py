@@ -750,19 +750,124 @@ def validate_FD_AD(grdchk_file, ad_file, tolerance = 0.1):
 	else:
 		print("Validated successfully.")
 
-
-if __name__ == "__main__":
+def simulation(mode, header, domain, 
+              ind_var, dep_var,
+	      limited_or_block_or_full = 'limited',
+	      ind_var_dim = 2, ind_var_z_co_ord = None,
+	      perturbation = 1.e-3,
+	      tapenade_m_file = 'subroutines/tapenade/tapenade_m.F90',
+	      run_executable_auto = 'False',
+	      unit = '9999',
+	      block_imin = None, block_imax = None, block_jmin = None, block_jmax = None,
+	      output_vars = [], output_iters = [], output_dims = [],
+	      output_adj_vars = [], output_adj_iters = [], output_adj_dims = [],
+	      ckp_status = False, ckp_num = 10,
+	      numCore_cpp_b_file = 'numCore_cpp_b.f90',
+	      sico_main_loop_m_cpp_b_file = 'sico_main_loop_m_cpp_b.f90'):
 
 	try:
 	
-		# Change the current working Directory
 		os.chdir("../src/")
 		print("Directory changed to ", os.getcwd())
 	
 	except OSError:
 		print("Can't change the Current Working Directory")
 		sys.exit(1)
+
+	copy_file(f'../runs/headers/sico_specs_{header}.h', 'sico_specs.h')
+
+	if ind_var_dim == 3 and ind_var_z_co_ord is None:
+		raise Exception ("Wrong input arguments for dimension")
+		sys.exit(1)
+
+
+	if mode == 'grdchk':
 	
+		setup_grdchk(ind_var = ind_var, header = header, domain = domain,
+	        dimension = ind_var_dim,
+	        z_co_ord = ind_var_z_co_ord,
+	        perturbation = perturbation,
+	        limited_or_block_or_full = limited_or_block_or_full,
+	        block_imin = block_imin, block_imax = block_imax, block_jmin = block_jmin, block_jmax = block_jmax,
+	        tapenade_m_file = tapenade_m_file,
+	        unit = unit)
+	
+		compile_code(mode = mode, header = header, domain = domain,
+	        clean = True, dep_var=dep_var, ind_vars = ind_var)
+	
+		print(f'grdchk compilation complete for {header}.')
+	
+		if run_executable_auto is True:
+			run_executable('grdchk')
+			print(f'grdchk execution complete for {header}.')
+	
+	elif mode == 'adjoint':
+
+		if ckp_status is True:	
+			setup_binomial_checkpointing(status = True, number_of_steps = ckp_num)
+		else: 
+			setup_binomial_checkpointing(status = False)
+	
+		compile_code(mode = mode, header = header, domain = domain,
+                clean = True, dep_var=dep_var, ind_vars = ind_var)	
+	
+		if output_dims is not None and output_iters is not None:
+			output_dims = [int(x) for x in output_dims]	
+			output_iters = [int(x) for x in output_iters]
+		if output_adj_dims is not None and output_adj_iters is not None:
+			output_adj_dims = [int(x) for x in output_adj_dims]	
+			output_adj_iters = [int(x) for x in output_adj_iters]
+
+		kwargs = dict(ind_vars = [args.ind_var], header=args.header, domain=args.domain,
+			     dimensions = [args.dimension], z_co_ords = [args.z_co_ord],
+			     output_vars = args.output_vars, output_dims = args.output_dims, output_iters = args.output_iters,
+			     output_adj_vars = args.output_adj_vars, output_adj_dims = args.output_adj_dims, output_adj_iters = args.output_adj_iters,
+			     ckp_status = ckp_status)
+	
+		setup_adjoint(ind_vars = ind_var, header = header, domain = domain, ckp_status = ckp_status,
+		             numCore_cpp_b_file = numCore_cpp_b_file,
+                             sico_main_loop_m_cpp_b_file = sico_main_loop_m_cpp_b_file,
+        	             dimensions = [ind_var_dim],
+       		             z_co_ords = [ind_var_z_co_ord],
+        	             output_vars = output_vars, output_iters = output_iters, output_dims = output_dims,
+       		             output_adj_vars = output_adj_vars, output_adj_iters = output_adj_iters, output_adj_dims = output_adj_dims)
+
+		compile_code(mode = mode, header = header, domain = domain,
+                clean = False, dep_var=dep_var, ind_vars = ind_var)
+		
+		print(f'adjoint compilation complete for {header}.')
+		
+		if run_executable_auto is True:
+			run_executable('adjoint')
+			print(f'adjoint execution complete for {header}.')
+
+	elif mode == 'forward':
+
+		setup_forward(ind_var = ind_var, header = header, domain = domain,
+	                     dimension = ind_var_dim,
+			     z_co_ord = ind_var_z_co_ord, limited_or_block_or_full = limited_or_block_or_full,
+			     block_imin = block_imin, block_imax = block_imax, block_jmin = block_jmin, block_jmax = block_jmax,
+			     tapenade_m_file = tapenade_m_file,
+			     unit = unit)
+
+		compile_code(mode = mode, header = header, domain = domain,
+			    clean = True, dep_var=dep_var, ind_vars = ind_var)
+
+		print(f'TLM compilation complete for {header}.')
+
+		if run_executable_auto is True:
+			run_executable('forward')
+			print(f'TLM execution complete for {header}.')
+	
+	
+
+	else:
+		raise ValueError("Incorrect simulation mode")
+		sys.exit(1)
+
+if __name__ == "__main__":
+
+
 	parser = argparse.ArgumentParser()
 
 	parser.add_argument("-head", "--header", help="name of header file", type=str, required=True)
@@ -772,7 +877,7 @@ if __name__ == "__main__":
 	parser.add_argument("-delta", "--perturbation", help="value of perturbation for grdchk", type=float, required=True)
 	parser.add_argument("-ckp", "--checkpoint", help="number of steps in checkpointing", type=int)
 	parser.add_argument("--travis", help="travis setup", action="store_true")
-	parser.add_argument("-dim", "--dimension", help="2D or 3D variable, default 2D", type=int)
+	parser.add_argument("-dim", "--dimension", help="2D or 3D independent variable, default 2D", type=int)
 	parser.add_argument("-z", "--z_co_ord", help="z co-ordinate if 3D variable", type=int)
 	parser.add_argument('-ov','--output_vars', nargs='+', help='List the fields you want to output')
 	parser.add_argument('-od', '--output_dims', nargs='+', help='List the z-coord of output vars, -1 if 2D')
@@ -781,101 +886,24 @@ if __name__ == "__main__":
 	parser.add_argument('-oad', '--output_adj_dims', nargs='+', help='List the z-coord of adjoint output vars, -1 if 2D')
 	parser.add_argument('-oai', '--output_adj_iters', nargs='+', help='List the iter num of adjoint output vars, -1 if itercount_max')
 
-
 	args = parser.parse_args()
 	
-	if args.dimension == 3 and args.z_co_ord is None:
-		raise Exception ("Wrong input arguments for dimension")
-		sys.exit(1)
 
-	copy_file(f'../runs/headers/sico_specs_{args.header}.h', 'sico_specs.h')
+	if args.checkpoint:
+		ckp_status = True
 
-	#	kwargs = dict(ind_var=args.ind_var, header=args.header, domain=args.domain,
-	#		     dimension=args.dimension, perturbation=args.perturbation,z_co_ord=args.z_co_ord)
-	#
-	#	setup_grdchk(**{k: v for k, v in kwargs.items() if v is not None},
-	#        limited_or_block_or_full = 'limited',
-	#        tapenade_m_file = 'subroutines/tapenade/tapenade_m.F90',
-	#        unit = '9999')
-	#
-	#	if args.travis:
-	#		kwargs = dict(mode='grdchk', header=args.header, domain=args.domain, travis_ci='TRAVIS_CI=yes')
-	#	else:
-	#		kwargs = dict(mode='grdchk', header=args.header, domain=args.domain)
-	#
-	#	compile_code(**{k: v for k, v in kwargs.items() if v is not None}, clean = True)	
-	#	print(f'grdchk compilation complete for {args.header}.')
-	#
-	#	run_executable('grdchk')
-	#	print(f'grdchk execution complete for {args.header}.')
-	#
-	#	if args.checkpoint:	
-	#		setup_binomial_checkpointing(status = True, number_of_steps = args.checkpoint)
-	#	else: 
-	#		setup_binomial_checkpointing(status = False)
-	#
-	#	if args.travis:
-	#		kwargs = dict(mode='adjoint', header=args.header, domain=args.domain, 
-	#			     dep_var = args.dep_var, ind_vars = args.ind_var, travis_ci='TRAVIS_CI=yes')
-	#	else:
-	#		kwargs = dict(mode='adjoint', header=args.header, domain=args.domain,
-	#			     dep_var = args.dep_var, ind_vars = args.ind_var)
-	#
-	#	compile_code(**{k: v for k, v in kwargs.items() if v is not None}, clean = True)	
-	#
-	#	if args.output_dims is not None and args.output_iters is not None:
-	#		args.output_dims = [int(x) for x in args.output_dims]	
-	#		args.output_iters = [int(x) for x in args.output_iters]
-	#	if args.output_adj_dims is not None and args.output_adj_iters is not None:
-	#		args.output_adj_dims = [int(x) for x in args.output_adj_dims]	
-	#		args.output_adj_iters = [int(x) for x in args.output_adj_iters]
-	#
-	#
-	#	if args.checkpoint:
-	#		ckp_status = True
-	#	else: 
-	#		ckp_status = False
-	#	kwargs = dict(ind_vars = [args.ind_var], header=args.header, domain=args.domain,
-	#		     dimensions = [args.dimension], z_co_ords = [args.z_co_ord],
-	#		     output_vars = args.output_vars, output_dims = args.output_dims, output_iters = args.output_iters,
-	#		     output_adj_vars = args.output_adj_vars, output_adj_dims = args.output_adj_dims, output_adj_iters = args.output_adj_iters,
-	#		     ckp_status = ckp_status)
-	#
-	#	setup_adjoint(**{k: v for k, v in kwargs.items() if (v is not None and v != [None])},
-	#        	     numCore_cpp_b_file = 'numCore_cpp_b.f90')
-	#
-	#	if args.travis:
-	#		kwargs = dict(mode='adjoint', header=args.header, domain=args.domain, 
-	#			     dep_var = args.dep_var, ind_vars = args.ind_var, travis_ci='TRAVIS_CI=yes')
-	#	else:
-	#		kwargs = dict(mode='adjoint', header=args.header, domain=args.domain,
-	#			     dep_var = args.dep_var, ind_vars = args.ind_var)
-	#
-	#	compile_code(**{k: v for k, v in kwargs.items() if v is not None}, clean = False)
-	#	
-	#	print(f'adjoint compilation complete for {args.header}.')
-	#	
-	#	run_executable('adjoint')
-	#	print(f'adjoint execution complete for {args.header}.')
-	#
-	#	validate_FD_AD(f'GradientVals_{args.ind_var}_{args.perturbation:.2E}_{args.header}_limited.dat', f'AdjointVals_{args.ind_var}b_{args.header}_limited.dat')
+	if not args.dimension:
+		args.dimension = 2
 
-	kwargs = dict(ind_var = args.ind_var, header=args.header, domain=args.domain,
-        		dimension = args.dimension, z_co_ord = args.z_co_ord)
-		
-	setup_forward(**{k: v for k, v in kwargs.items() if (v is not None and v != [None])},
-        		tapenade_m_file = 'subroutines/tapenade/tapenade_m.F90')
-
-	if args.travis:
-		kwargs = dict(mode='forward', header=args.header, domain=args.domain, 
-			dep_var = args.dep_var, ind_vars = args.ind_var, travis_ci='TRAVIS_CI=yes')
-	else:
-		kwargs = dict(mode='forward', header=args.header, domain=args.domain,
-			dep_var = args.dep_var, ind_vars = args.ind_var)
-
-	compile_code(**{k: v for k, v in kwargs.items() if v is not None}, clean = True) 
-	print(f'TLM compilation complete for {args.header}.')
+	for mode in ['grdchk', 'adjoint', 'forward']:
 	
-	run_executable('forward')
-	print(f'TLM execution complete for {args.header}.')
-	validate_FD_AD(f'GradientVals_{args.ind_var}_{args.perturbation:.2E}_{args.header}_limited.dat', f'ForwardVals_{args.ind_var}_{args.header}_limited.dat')
+		simulation(mode = mode, header = args.header, domain = args.domain, 
+	              ind_var = args.ind_var, dep_var = args.dep_var,
+		      limited_or_block_or_full = 'limited',
+		      ind_var_dim = args.dimension, ind_var_z_co_ord = args.z_co_ord,
+		      perturbation = args.perturbation,
+		      run_executable_auto = True,
+		      output_vars = args.output_vars, output_iters = args.output_iters, output_dims = args.output_dims,
+		      output_adj_vars = args.output_adj_vars, output_adj_iters = args.output_adj_iters, output_adj_dims = args.output_adj_dims,
+		      ckp_status = True, ckp_num = args.checkpoint)	
+	
