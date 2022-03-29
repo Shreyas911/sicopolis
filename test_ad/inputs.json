@@ -1,0 +1,81 @@
+{
+    "json": "inputs.json",
+    "header": "v5_grl20_ss25ka",
+    "domain": "grl",
+    "dep_var": "fc",
+    "ind_var": "H",
+    "perturbation": 0.001,
+    "checkpoint": 4,
+    "travis": false,
+    "dimension": null,
+    "z_co_ord": null,
+    "output_vars": [
+        "H",
+        "vx_c",
+        "vy_c",
+        "H",
+        "vx_c",
+        "vy_c",
+        "H",
+        "vx_c",
+        "vy_c",
+        "H",
+        "vx_c",
+        "vy_c"
+    ],
+    "output_dims": [
+        -1,
+        40,
+        40,
+        -1,
+        40,
+        40,
+        -1,
+        40,
+        40
+    ],
+    "output_iters": [
+        "-1",
+        "-1",
+        "-1",
+        "1",
+        "1",
+        "1",
+        "2",
+        "2",
+        "2"
+    ],
+    "output_adj_vars": [
+        "H",
+        "H",
+        "H",
+        "vx_c",
+        "vx_c",
+        "vx_c",
+        "vy_c",
+        "vy_c",
+        "vy_c"
+    ],
+    "output_adj_dims": [
+        "-1",
+        "-1",
+        "-1",
+        "40",
+        "40",
+        "40",
+        "40",
+        "40",
+        "40"
+    ],
+    "output_adj_iters": [
+        "1",
+        "2",
+        "-1",
+        "1",
+        "2",
+        "-1",
+        "1",
+        "2",
+        "-1"
+    ]
+}

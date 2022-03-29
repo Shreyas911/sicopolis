@@ -3,6 +3,7 @@ import sys
 import subprocess
 import argparse
 import numpy as np
+import json
 
 def modify_file(filename, ref_string, new_string,
 		replace_or_append_or_prepend, 
@@ -894,13 +895,17 @@ def simulation(mode, header, domain,
 if __name__ == "__main__":
 
 
-	parser = argparse.ArgumentParser()
+	### Command line arguments overwrite json arguments
 
-	parser.add_argument("-head", "--header", help="name of header file", type=str, required=True)
-	parser.add_argument("-dom", "--domain", help="short name of domain, either grl or ant", type = str, required=True)
-	parser.add_argument("-dv", "--dep_var", help="name of dependent variable", type=str, required=True)
-	parser.add_argument("-iv", "--ind_var", help="name of independent variable", type=str, required=True)
-	parser.add_argument("-delta", "--perturbation", help="value of perturbation for grdchk", type=float, required=True)
+	# argparse.SUPPRESS ensures that empty arguments are not included in dict, and thus do not overwrite json file
+	parser = argparse.ArgumentParser(argument_default=argparse.SUPPRESS)
+
+	parser.add_argument("-jsf", "--json", help="name of json data file", type=str)
+	parser.add_argument("-head", "--header", help="name of header file", type=str)
+	parser.add_argument("-dom", "--domain", help="short name of domain, either grl or ant", type = str)
+	parser.add_argument("-dv", "--dep_var", help="name of dependent variable", type=str)
+	parser.add_argument("-iv", "--ind_var", help="name of independent variable", type=str)
+	parser.add_argument("-delta", "--perturbation", help="value of perturbation for grdchk", type=float)
 	parser.add_argument("-ckp", "--checkpoint", help="number of steps in checkpointing", type=int)
 	parser.add_argument("--travis", help="travis setup", action="store_true")
 	parser.add_argument("-dim", "--dimension", help="2D or 3D independent variable, default 2D", type=int)
@@ -913,7 +918,18 @@ if __name__ == "__main__":
 	parser.add_argument('-oai', '--output_adj_iters', nargs='+', help='List the iter num of adjoint output vars, -1 if itercount_max')
 
 	args = parser.parse_args()
+
+	with open(args.json, 'r') as j:
+		json_dict = json.loads(j.read())
+
+	# Convert Namespace to dict
+	args_dict = vars(args)
 	
+	# Update json dict with command line arguments
+	json_dict.update(args_dict)
+
+	# Convert updated json dict back to args Namespace
+	args = argparse.Namespace(**json_dict)
 
 	if args.checkpoint:
 		ckp_status = True
