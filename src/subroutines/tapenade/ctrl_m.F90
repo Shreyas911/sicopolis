@@ -56,6 +56,8 @@ contains
   character(len=100), intent(out) :: runname
   
   !-------- Calculate the difference between the modeled and 'observed' ages:
+fc = 0.0
+
 #ifdef AGE_COST
 
 #if (CALCMOD!=1)

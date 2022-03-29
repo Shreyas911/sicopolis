@@ -4,12 +4,92 @@ import subprocess
 import argparse
 import numpy as np
 
-def compile_code(mode, header, domain, 
-	clean = True,
-	travis_ci ='', dep_var=None, ind_vars = None):
+def modify_file(filename, ref_string, new_string,
+		replace_or_append_or_prepend, 
+		instance_number = 0, 
+		instance_all = False,
+		skip_line = False):
 
-	if (mode == 'adjoint' and (dep_var is None or ind_vars is None)):
-		raise TypeError('Adjoint mode but dep_var or ind_vars not specified.')
+	'''
+	Purpose - Modifies file using given options
+
+	Variables - 
+	filename - Name of file
+	ref_string - Reference string to search within file
+	new_string - String to modify ref_string with
+	instance_number - Which instance of the ref_string to modify, starting from 0
+	instance_all - Modify all instances if True
+	skip_line - Skip one line after match with ref_string, only use for append option
+	'''
+	
+	try :
+		new_file_lines = []
+
+		with open(filename) as f:
+
+			file_lines = f.readlines()
+			current_instance = -1
+			skippy = False # A cute name for a temporary boolean
+			for line in file_lines:
+				
+				if(skip_line is False and ref_string in line):
+					current_instance = current_instance + 1
+					
+					if((current_instance == instance_number or instance_all is True) and replace_or_append_or_prepend == 'replace'):
+						line = new_string
+					elif((current_instance == instance_number or instance_all is True) and replace_or_append_or_prepend == 'append'):
+						line = line + new_string
+					elif((current_instance == instance_number or instance_all is True) and replace_or_append_or_prepend == 'prepend'):
+						line = new_string + line
+					else:
+						pass
+
+				if(skippy is True):
+					current_instance = current_instance + 1
+					if(current_instance == instance_number or instance_all is True):
+						line = line + new_string
+					skippy = False
+	
+				if(skip_line is True and ref_string in line and replace_or_append_or_prepend == 'append'):
+					skippy = True
+								
+
+				new_file_lines.append(line)
+	
+		with open(filename, "w") as f:
+			f.write(''.join(new_file_lines))
+
+	except FileNotFoundError : 
+		print(f'{filename} does not exist')
+		sys.exit(1)
+
+	except Exception as err :
+		print(f'Some error in modifying file {filename}.')
+		print(err)
+		sys.exit(1)
+
+def compile_code(mode, header, domain, 
+	clean = True, travis_ci ='', dep_var=None, ind_vars = None):
+
+
+	'''
+	Purpose - Compiles code using MakefileTapenade and the given options
+
+	Variables:
+	mode - Can be grdchk or adjoint or forward
+	clean - If True, runs the terminal command - make -f MakefileTapenade clean
+	dep_var - Specify dependent variable (generally fc)
+	ind_vars - Specify independent variables (H, vx_c, vy_c, q_geo, etc.)
+	'''
+
+	if (mode == 'adjoint' and (dep_var is not None or ind_vars is not None)):
+		pass
+	elif (mode == 'forward' and (dep_var is not None or ind_vars is not None)):
+		pass
+	elif (mode == 'grdchk'):
+		pass
+	else:
+		raise TypeError('Incorrect options specified for compile_code.')
 
 	try :
 		
@@ -41,6 +121,13 @@ def compile_code(mode, header, domain,
 		sys.exit(1)
 
 def run_executable(mode):
+	
+	'''
+	Purpose - Runs the executable after compilation
+
+	Variables:
+	mode - Can be grdchk or adjoint or forward
+	'''
 
 	try :
 
@@ -57,30 +144,14 @@ def run_executable(mode):
 		print(error)
 		sys.exit(1)
 
-def get_imax_jmax(specs_file='sico_specs.h'):
-	
-	try :
-	
-		with open(specs_file) as f:
-			file_lines = f.readlines()
-			for line in file_lines:
-				if ('#define IMAX' in line):
-					IMAX = [int(s) for s in line.split() if s.isdigit()]
-				if ('#define JMAX' in line):
-					JMAX = [int(s) for s in line.split() if s.isdigit()]
-		return IMAX[0], JMAX[0]
-
-	except FileNotFoundError :
-		print(f'{specs_file} does not exist')
-		sys.exit(1)
-
-	except Exception as err :
-		print('Some error in getting IMAX and JMAX.')
-		print(err)
-		sys.exit(1)
-
 def get_imax_jmax_kcmax_ktmax(specs_file='sico_specs.h'):
 	
+	'''
+	Purpose - Get IMAX, JMAX, KCMAX, KTMAX from header file
+
+	Variables:
+	specs_file - Location of header file
+	'''
 	try :
 	
 		with open(specs_file) as f:
@@ -108,15 +179,22 @@ def get_imax_jmax_kcmax_ktmax(specs_file='sico_specs.h'):
 		print(err)
 		sys.exit(1)
 
-def copy_tapenade_m_template(template_file = '../test_ad/tapenade_m_adjoint_template.F90', 
+def copy_file(original_file = '../test_ad/tapenade_m_adjoint_template.F90', 
 			destination_file = 'subroutines/tapenade/tapenade_m.F90'):
 
+	'''
+	Purpose - Copy file from source to destination
+
+	Variables -
+	original_file - Location of original file
+	destination_file - Location where to copy the file
+	'''
 	try :
 		process = subprocess.run (
-			['cp', template_file, destination_file])
+			['cp', original_file, destination_file])
 
 	except subprocess.CalledProcessError as error :
-		print("Some issue with copying template tapenade_m file")
+		print(f"Some issue with copying file {original_file} to {destination_file}.")
 		print(error)			
 		sys.exit(1)
 	
@@ -129,131 +207,176 @@ def setup_grdchk(ind_var, header, domain,
 	tapenade_m_file = 'subroutines/tapenade/tapenade_m.F90',
 	unit = '9999'):
 
-	copy_tapenade_m_template()
+	'''
+	Purpose - Sets up everything correctly for compilation of grdchk run
+
+	Variables:
+	ind_var - Independent variable
+	header - Name of header, for example v5_grl20_ss25ka
+	domain - grl or ant
+	dimension - dimension of variable being perturbed
+	z_co_ord - If 3D variable give z co-ordinate
+	perturbation - Amount of perturbation, generally 0.001 or 0.05
+	limited_or_block_or_full - If limited, checks only 5 points, 
+				   block runs for a block on the grid, 
+				   full runs on entire grid	
+	block_imin, block_imax, block_jmin, block_jmax - Specify limits of block if needed
+	tapenade_m_file - Location of tapenade_m file
+	unit - The unit to be used in FORTRAN-90 code while opening and closing the output file
+	'''
+
+	copy_file(original_file = '../test_ad/tapenade_m_adjoint_template.F90',
+		  destination_file = 'subroutines/tapenade/tapenade_m.F90')
 
 	IMAX, JMAX, KCMAX, KTMAX = get_imax_jmax_kcmax_ktmax()
 
-	try :
+	if(limited_or_block_or_full == 'full'):
 
-		new_file_lines = []
-		with open(tapenade_m_file) as f:
-			file_lines = f.readlines()
+		ref_string = '!@ python_automated_grdchk limited_or_block_or_full @'
+		new_string = f"""   
+		   do i = 0, {IMAX}
+		   do j = 0, {JMAX}
+		"""
+		modify_file(tapenade_m_file, ref_string, new_string,
+			   replace_or_append_or_prepend = 'replace',
+			   instance_number = 0)	
+
+		ref_string = 'i = ipoints(p)'
+		new_string = ''
+		modify_file(tapenade_m_file, ref_string, new_string,
+			   replace_or_append_or_prepend = 'replace',
+			   instance_number = 0)	
 	
-			for line in file_lines:
+		ref_string = 'j = jpoints(p)'
+		new_string = ''
+		modify_file(tapenade_m_file, ref_string, new_string,
+			   replace_or_append_or_prepend = 'replace',
+			   instance_number = 0)	
 
-				if(limited_or_block_or_full == 'full'):
-					if('!@ python_automated_grdchk limited_or_block_or_full @' in line) :
-						line = f'   do i = 0, {IMAX}\n' \
-							+ f'   do j = 0, {JMAX}\n'
-
-					if('i = ipoints(p)' in line) :
-						line = ''
-					
-					if('j = jpoints(p)' in line) :
-						line = ''	
-			
-					if('close loop over points' in line) : 
-						line = line + '   end do\n'
-
-				if(limited_or_block_or_full == 'block'):
-					if (float(block_imin).is_integer() and float(block_imax).is_integer() and float(block_jmin).is_integer() and float(block_jmax).is_integer()):
-						if('!@ python_automated_grdchk limited_or_block_or_full @' in line) :
-							line = f'   do i = {block_imin}, {block_imax}\n' \
-								+ f'   do j = {block_jmin}, {block_jmax}\n'
+		ref_string = 'close loop over points'
+		new_string = """
+		   end do
+		"""
+		modify_file(tapenade_m_file, ref_string, new_string,
+			   replace_or_append_or_prepend = 'append',
+			   instance_number = 0)	
 	
-						if('i = ipoints(p)' in line) :
-							line = ''
-						
-						if('j = jpoints(p)' in line) :
-							line = ''	
-				
-						if('close loop over points' in line) : 
-							line = line + '   end do\n'
+	elif(limited_or_block_or_full == 'block'
+	   and float(block_imin).is_integer() 
+	   and float(block_imax).is_integer()
+	   and float(block_jmin).is_integer() 
+	   and float(block_jmax).is_integer()):
 
-					else:
-						raise ValueError("Something wrong with block bounds in GRDCHK")
-						sys.exit(1)						
+		ref_string = '!@ python_automated_grdchk limited_or_block_or_full @'
+		new_string = f"""   
+		   do i = {block_imin}, {block_imax}
+		   do j = {block_jmin}, {block_jmax}
+		"""
+		modify_file(tapenade_m_file, ref_string, new_string,
+			   replace_or_append_or_prepend = 'replace',
+			   instance_number = 0)	
 
-					
-				if ('!@ python_automated_grdchk @' in line):
-					
-					if (dimension == 2) :
-						line = line \
-							+ f'            orig_val = {ind_var}(j,i)\n' \
-							+ f'            {ind_var}(j,i) = orig_val * perturbation\n'
-					elif(dimension == 3 and z_co_ord is not None and z_co_ord < KCMAX):
-						line = line \
-							+ f'            orig_val = {ind_var}({z_co_ord},j,i)\n' \
-							+ f'            {ind_var}({z_co_ord},j,i) = orig_val * perturbation\n'
-
-					else:
-						raise ValueError ("Something wrong with dimension in grdchk")
-						sys.exit(1)
-						
-				if ('!@ python_automated_grdchk IO begin @' in line):
-					line = line \
-						+ f'   open({unit}, ' \
-						+ f'file=\'GradientVals_{ind_var}_{perturbation:.2E}_\'//trim(RUNNAME)//\'_{limited_or_block_or_full}.dat\',&' \
-						+ f'\n       form="FORMATTED", status="REPLACE")' 
-
-				if ('!@ python_automated_grdchk IO write @' in line):
-					line = line + f'          write({unit}, fmt=\'(f40.20)\') gfd\n'
-
-				if ('!@ python_automated_grdchk IO end @' in line):
-					line = line + f'   close(unit={unit})\n'
-
-				if ('real(dp)                          :: orig_val, perturb_val' in line):
-					line = f'   real(dp)                          :: orig_val, perturb_val = {perturbation}\n'
-
-				new_file_lines.append(line)
+		ref_string = 'i = ipoints(p)'
+		new_string = ''
+		modify_file(tapenade_m_file, ref_string, new_string,
+			   replace_or_append_or_prepend = 'replace',
+			   instance_number = 0)	
 	
-		with open(tapenade_m_file, "w") as f:
-			f.write(''.join(new_file_lines))
+		ref_string = 'j = jpoints(p)'
+		new_string = ''
+		modify_file(tapenade_m_file, ref_string, new_string,
+			   replace_or_append_or_prepend = 'replace',
+			   instance_number = 0)	
 
-	except FileNotFoundError :
-		print(f'{tapenade_m_file} not found.')
+		ref_string = 'close loop over points'
+		new_string = """
+		   end do
+		"""
+		modify_file(tapenade_m_file, ref_string, new_string,
+			   replace_or_append_or_prepend = 'append',
+			   instance_number = 0)	
+	
+	elif(limited_or_block_or_full == 'limited'):
+		pass
+
+	else:
+		print("Wrong options may have been used in grdchk setup.")
 		sys.exit(1)
 
-	except Exception as err:
-		print("Some problem with grdchk setup.")	
-		print(err)
+	ref_string = '!@ python_automated_grdchk @'
+	if (dimension == 2) :
+		new_string = f"""
+		            orig_val = {ind_var}(j,i)
+	                    {ind_var}(j,i) = orig_val * perturbation
+		"""
+	elif(dimension == 3 and z_co_ord is not None and z_co_ord < KCMAX):
+		new_string = f"""
+		            orig_val = {ind_var}({z_co_ord},j,i)
+	                    {ind_var}({z_co_ord},j,i) = orig_val * perturbation
+		"""
+	else: 
+		raise ValueError ("Something wrong with dimension in grdchk")
 		sys.exit(1)
+
+	modify_file(tapenade_m_file, ref_string, new_string,
+		   replace_or_append_or_prepend = 'append',
+	           instance_number = 0)	
+	
+	ref_string = '!@ python_automated_grdchk IO begin @'
+	new_string = f'''
+	   open({unit},&
+	   file=\'GradientVals_{ind_var}_{perturbation:.2E}_\'//trim(RUNNAME)//\'_{limited_or_block_or_full}.dat\',&
+	   form="FORMATTED", status="REPLACE")
+	'''
+	modify_file(tapenade_m_file, ref_string, new_string,
+		   replace_or_append_or_prepend = 'append',
+	           instance_number = 0)	
+	
+	ref_string = '!@ python_automated_grdchk IO write @'
+	new_string = f'          write({unit}, fmt=\'(f40.20)\') gfd\n'
+	modify_file(tapenade_m_file, ref_string, new_string,
+		   replace_or_append_or_prepend = 'append',
+	           instance_number = 0)	
+	
+	ref_string = '!@ python_automated_grdchk IO end @'
+	new_string = f'   close(unit={unit})\n'
+	modify_file(tapenade_m_file, ref_string, new_string,
+		   replace_or_append_or_prepend = 'append',
+	           instance_number = 0)	
+	
+	ref_string = 'real(dp)                          :: orig_val, perturb_val' 
+	new_string = f'   real(dp)                          :: orig_val, perturb_val = {perturbation}\n'
+	modify_file(tapenade_m_file, ref_string, new_string,
+		   replace_or_append_or_prepend = 'replace',
+	           instance_number = 0)	
 
 def setup_binomial_checkpointing(status = False, number_of_steps = 20, 
 	loop_file = 'subroutines/general/sico_main_loop_m.F90'):
  
-	try:
-
-		new_file_lines = []
-
-		with open(loop_file, "r") as f:	
-
-			file_lines = f.readlines()
-
-			for line in file_lines:
-				if status is True:
-					if('BINOMIAL-CKP' in line):
-						line = f'  !$AD BINOMIAL-CKP itercount_max+1 {number_of_steps} 1\n'
-				elif status is False:
-					if('BINOMIAL-CKP' in line):
-						line = f'  !$NO AD BINOMIAL-CKP itercount_max+1 {number_of_steps} 1\n'
-					
-				else:
-					raise ValueError('Incorrect status for checkpointing.')
-		
-				new_file_lines.append(line)
-			
-		with open(loop_file, "w") as f:
-			f.write(''.join(new_file_lines))
-
-	except FileNotFoundError :
-		print(f'{loop_file} not found.')
-		sys.exit(1)
+	'''
+	Purpose - Set up sico_main_loop_m.F90 file for binomial checkpointing
 	
-	except Exception as err:
-		print("Some problem with binomial checkpointing setup.")	
-		print(err)
-		sys.exit(1)
+	Variables: 
+	status - If True, setup binomial checkpointing
+	number_of_steps - Number of checkpointing steps
+	loop_file - Location of sico_main_loop_m.F90 file
+	'''
+
+	if status is True:
+		modify_file(loop_file, 
+		   'BINOMIAL-CKP', 
+		   f'  !$AD BINOMIAL-CKP itercount_max+1 {number_of_steps} 1\n',
+		   replace_or_append_or_prepend = 'replace',
+	           instance_number = 0)	
+
+	elif status is False: 
+		modify_file(loop_file, 
+		   'BINOMIAL-CKP', 
+		   f'  !$NO AD BINOMIAL-CKP itercount_max+1 {number_of_steps} 1\n',
+		   replace_or_append_or_prepend = 'replace',
+	           instance_number = 0)	
+
+	else: raise ValueError('Incorrect status for checkpointing.')
 
 def setup_adjoint(ind_vars, header, domain, ckp_status,
 	numCore_cpp_b_file = 'numCore_cpp_b.f90',
@@ -262,356 +385,362 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 	z_co_ords = [None],
 	output_vars = [], output_iters = [], output_dims = [],
 	output_adj_vars = [], output_adj_iters = [], output_adj_dims = []):
-	
+
+	'''
+	Purpose - Sets up everything correctly for compilation of adjoint run
+
+	Variables:
+	ind_var - Independent variable
+	header - Name of header, for example v5_grl20_ss25ka
+	domain - grl or ant
+	ckp_status - True if binomial checkpointing is used, else False
+	numCore_cpp_b_file - Location of numCore_cpp_b.f90 file
+	sico_main_loop_m_cpp_b_file - Location of sico_main_loop_m_cpp_b.f90 file
+	dimensions - List of dimensions of independent vars
+	z_co_ords - List of z co-ordinate for 3D vars
+	output_vars - List of normal variables to output
+	output_iters - List of iter number to output the normal variables
+	output_dims - List of z co-ordinates for normal variables that we output
+	output_adj_vars - List of adjoint variables to output
+	output_adj_iters - List of iter number to output the adjoint variables
+	output_adj_dims - List of z co-ordinates for adjoint variables that we output
+	'''
+
+
 	if(domain == 'grl' or domain == 'ant'):
 		pass
 	else:
 		raise ValueError('Wrong Domain')
 
+
 	IMAX, JMAX, KCMAX, KTMAX = get_imax_jmax_kcmax_ktmax()
-	try :
+
+	ref_string = 'CHARACTER(len=100) :: runname'
+	if(domain == 'grl'):
+		new_string = f'''
+		   INTEGER(i4b) :: i, j, p
+		   INTEGER(i4b), parameter :: points = 5
+		   INTEGER(i4b), DIMENSION(points) :: ipoints, jpoints
+		   DO p = 1, points
+		   ipoints(p) = int(real({IMAX}/2))
+		   jpoints(p) = int(real({JMAX}/5)) + (p-1) * points
+		   END DO
+		'''
+	elif(domain == 'ant'):
+		new_string = f'''
+		   INTEGER(i4b) :: i, j, p
+		   INTEGER(i4b), parameter :: points = 5
+		   INTEGER(i4b), DIMENSION(points) :: ipoints, jpoints
+		   DO p = 1, points
+		   ipoints(p) = int(real({IMAX}/3)) + int(real((.85-.33)*{IMAX}/points)) * (p -1)
+		   jpoints(p) = int(real({JMAX}/2))
+		   END DO
+		'''
+
+	modify_file(numCore_cpp_b_file, ref_string, new_string, 
+		   replace_or_append_or_prepend = 'append',
+	           instance_all = True)	
+
+	ref_string = 'CALL SICO_INIT_B'
+	new_string = ''
+	for var_index, (ind_var, dimension, z_co_ord) in enumerate(zip(ind_vars, dimensions, z_co_ords), start = 1):
+
+		unit = [f'{var_index}000', f'{var_index}001']
+
+
+		if(dimension == 2):
+			new_string = new_string + f'''
+			   open({unit[0]}, file=\'AdjointVals_{ind_var}b_\'//trim(RUNNAME)//\'_limited.dat\',&
+			       form="FORMATTED", status="REPLACE")
+			   open({unit[1]}, file=\'AdjointVals_{ind_var}b_\'//trim(RUNNAME)//\'.dat\',&
+			       form="FORMATTED", status="REPLACE")
+			   do p = 1, points
+			   i = ipoints(p)
+			   j = jpoints(p)
+			   write ({unit[0]}, *) {ind_var}b(j,i)
+			   end do
+			   close(unit={unit[0]})
+			   do i = 0, {IMAX}
+			   do j = 0, {JMAX}
+			   write ({unit[1]}, *) {ind_var}b(j,i)
+			   end do
+			   end do
+			   close(unit={unit[1]})
+			'''
+		elif(dimension == 3 and z_co_ord is not None):
+			new_string = new_string + f'''
+			   open({unit[0]}, file=\'AdjointVals_{ind_var}b_\'//trim(RUNNAME)//\'_limited.dat\',&
+			       form="FORMATTED", status="REPLACE")
+			   open({unit[1]}, file=\'AdjointVals_{ind_var}b_\'//trim(RUNNAME)//\'.dat\',&
+			       form="FORMATTED", status="REPLACE")
+			   do p = 1, points
+			   i = ipoints(p)
+			   j = jpoints(p)
+			   write ({unit[0]}, *) {ind_var}b({z_co_ord},j,i)
+			   end do
+			   close(unit={unit[0]})
+			   do i = 0, {IMAX}
+			   do j = 0, {JMAX}
+			   write ({unit[1]}, *) {ind_var}b({z_co_ord},j,i)
+			   end do
+			   end do
+			   close(unit={unit[1]})
+			'''
+		else :	
+			raise ValueError("Wrong dimensions or z coord for adjoint")
+			sys.exit(1)
+
+
+	modify_file(numCore_cpp_b_file, ref_string, new_string, 
+		   replace_or_append_or_prepend = 'prepend',
+	           instance_all = True)	
+
+	if (ckp_status is True):
+		ref_string = 'itercount = itercount + 1'
+	elif (ckp_status is False):
+		ref_string = 'END DO main_loop'
+	else: 
+		raise ValueError("Wrong ckp_status for adjoint")
+		sys.exit(1)
 	
-		with open(numCore_cpp_b_file) as f:
+	if (output_vars and output_dims and output_iters):	
+		new_string = ''
+		for var_index, (output_var, dimension, iteration) in enumerate(zip(output_vars, output_dims, output_iters), start = 1):
+			if iteration == -1: iteration = 'itercount_max'
+			unit = [f'{var_index}9000']
 			
-			file_lines = f.readlines()
-			new_file_lines = []
-			
-			for line in file_lines:
-				if ('CHARACTER(len=100) :: runname' in line):
-					line = line \
-						+ f'   INTEGER(i4b) :: i, j, p\n' \
-						+ f'   INTEGER(i4b), parameter :: points = 5\n' \
-						+ f'   INTEGER(i4b), DIMENSION(points) :: ipoints, jpoints\n' \
-						+ f'   DO p = 1, points\n'
-							
-					if(domain == 'grl'):
-						line = line \
-							+ f'   ipoints(p) = int(real({IMAX}/2))\n' \
-							+ f'   jpoints(p) = int(real({JMAX}/5)) + (p-1) * points\n'
+			if dimension >= 0:
+				new_string = new_string + f'''
+				   if (itercount .EQ. {iteration}) THEN
+				   open({unit[0]}, file=\'AdjointVals_{output_var}_{dimension}_iter_{iteration}_\'//trim(RUNNAME)//\'.dat\',&
+				       form="FORMATTED", status="REPLACE")
+				   do i = 0, {IMAX}
+				   do j = 0, {JMAX}
+				   write ({unit[0]}, *) {output_var}({dimension},j,i)
+				   end do
+				   end do
+				   close(unit={unit[0]})
+				   end if
+				'''
+	
+			elif dimension == -1:
+				new_string = new_string + f'''
+				   if (itercount .EQ. {iteration}) THEN
+				      open({unit[0]}, file=\'AdjointVals_{output_var}_iter_{iteration}_\'//trim(RUNNAME)//\'.dat\',&
+				       form="FORMATTED", status="REPLACE")
+				   do i = 0, {IMAX}
+				   do j = 0, {JMAX}
+				   write ({unit[0]}, *) {output_var}(j,i)
+				   end do
+				   end do
+				   close(unit={unit[0]})
+				   end if
+				'''
 		
-					elif(domain == 'ant'):
-						line = line \
-							+ f'   ipoints(p) = int(real({IMAX}/3)) + int(real((.85-.33)*{IMAX}/points)) * (p -1)\n' \
-							+ f'   jpoints(p) = int(real({JMAX}/2))\n'
-					
-					line = line + f'   END DO\n'
-												
-				if ('CALL SICO_INIT_B' in line):
-					for var_index, (ind_var, dimension, z_co_ord) in enumerate(zip(ind_vars, dimensions, z_co_ords), start = 1):
+			else:
+				raise ValueError("Wrong dimensions or z coord for output_var")
+				sys.exit(1)
+	else: pass
 
-						unit = [f'{var_index}000', f'{var_index}001']
+	modify_file(sico_main_loop_m_cpp_b_file, ref_string, new_string, 
+		   replace_or_append_or_prepend = 'prepend',
+	           instance_number = 0)	
 
-						line_add = f'   open({unit[0]}, file=\'AdjointVals_{ind_var}b_\'//trim(RUNNAME)//\'_limited.dat\',&\n' \
-							+ f'       form="FORMATTED", status="REPLACE")\n' \
-							+ f'   open({unit[1]}, file=\'AdjointVals_{ind_var}b_\'//trim(RUNNAME)//\'.dat\',&\n' \
-							+ f'       form="FORMATTED", status="REPLACE")\n' \
-							+ f'   do p = 1, points\n' \
-							+ f'   i = ipoints(p)\n' \
-							+ f'   j = jpoints(p)\n'
-						if (dimension == 2) :
-							line_add = line_add + f'   write ({unit[0]}, *) {ind_var}b(j,i)\n'
-						elif (dimension == 3 and z_co_ord is not None) :
-							line_add = line_add + f'   write ({unit[0]}, *) {ind_var}b({z_co_ord},j,i)\n'
-						else :
-							raise ValueError("Wrong dimensions or z coord for adjoint")
-							sys.exit(1)
+	ref_string = 'BOUNDARY_B'
 
-						line_add = line_add \
-							+ f'   end do\n' \
-							+ f'   close(unit={unit[0]})\n' \
-							+ f'   do i = 0, {IMAX}\n' \
-							+ f'   do j = 0, {JMAX}\n'
-						if (dimension == 2) :
-							line_add = line_add + f'   write ({unit[1]}, *) {ind_var}b(j,i)\n'
-						elif (dimension == 3 and z_co_ord is not None) :
-							line_add = line_add + f'   write ({unit[1]}, *) {ind_var}b({z_co_ord},j,i)\n'
-						else:
-							raise ValueError("Wrong dimensions or z coord for adjoint")
-							sys.exit(1)
+	if (output_adj_vars and output_adj_dims and output_adj_iters):
+		new_string = ''
+		for var_index, (output_var, dimension, iteration) in enumerate(zip(output_adj_vars, output_adj_dims, output_adj_iters), start = 1):
+			if iteration == -1: iteration = 'itercount_max'
+			unit = [f'{var_index}8000']
 
-						line_add = line_add \
-							+ f'   end do\n' \
-							+ f'   end do\n' \
-							+ f'   close(unit={unit[1]})\n'
-
-						line = line_add + line
-
-				new_file_lines.append(line)
-		
-		with open(numCore_cpp_b_file, "w") as f:
-			f.write(''.join(new_file_lines))
-
-	except FileNotFoundError :
-		print(f'{numCore_cpp_b_file} not found.')
-		sys.exit(1)
-	except Exception as err:
-		print("Some problem with adjoint setup.")
-		print(err)
-		sys.exit(1)
-
-	try :
+			if dimension >= 0:
+				new_string = new_string + f'''
+				   if (itercount .EQ. {iteration}) THEN
+				   open({unit[0]}, file=\'AdjointVals_{output_var}b_{dimension}_iter_{iteration}_\'//trim(RUNNAME)//\'.dat\',&
+				       form="FORMATTED", status="REPLACE")
+				   do i = 0, {IMAX}
+				   do j = 0, {JMAX}
+				   write ({unit[0]}, *) {output_var}b({dimension},j,i)
+				   end do
+				   end do
+				   close(unit={unit[0]})
+				   end if	
+				'''
+			elif dimension == -1:
+				new_string = new_string + f'''
+				   if (itercount .EQ. {iteration}) THEN
+				   open({unit[0]}, file=\'AdjointVals_{output_var}b_iter_{iteration}_\'//trim(RUNNAME)//\'.dat\',&
+				       form="FORMATTED", status="REPLACE")
+				   do i = 0, {IMAX}
+				   do j = 0, {JMAX}
+				   write ({unit[0]}, *) {output_var}b(j,i)
+				   end do
+				   end do
+				   close(unit={unit[0]})
+				   end if	
+				'''
 	
-		with open(sico_main_loop_m_cpp_b_file) as f:
-			
-			file_lines = f.readlines()
-			new_file_lines = []
-			first_instance = False
-			for line in file_lines:
-				if (output_vars and output_dims and output_iters and ckp_status is True and first_instance is False):
-					if('itercount = itercount + 1' in line):
-						first_instance = True	
-						for var_index, (output_var, dimension, iteration) in enumerate(zip(output_vars, output_dims, output_iters), start = 1):
-							if iteration == -1: iteration = 'itercount_max'
-							unit = [f'{var_index}9000']
-							line_add = f'   if (itercount .EQ. {iteration}) THEN\n'
+			else:
+				raise ValueError("Wrong dimensions or z coord for output_varb")
+				sys.exit(1)
 
-							if(dimension >= 0):
-								line_add = line_add \
-								+ f'   open({unit[0]}, file=\'AdjointVals_{output_var}_{dimension}_iter_{iteration}_\'//trim(RUNNAME)//\'.dat\',&\n' \
-								+ f'       form="FORMATTED", status="REPLACE")\n'
-							else:
-								line_add = line_add \
-								+ f'   open({unit[0]}, file=\'AdjointVals_{output_var}_iter_{iteration}_\'//trim(RUNNAME)//\'.dat\',&\n' \
-								+ f'       form="FORMATTED", status="REPLACE")\n'
-							
-							line_add = line_add \
-								+ f'   do i = 0, {IMAX}\n' \
-								+ f'   do j = 0, {JMAX}\n'
-							
-							if (dimension == -1) :
-								line_add = line_add + f'   write ({unit[0]}, *) {output_var}(j,i)\n'
-							elif (dimension >= 0) :
-								line_add = line_add + f'   write ({unit[0]}, *) {output_var}({dimension},j,i)\n'
-							else:
-								raise ValueError("Wrong dimensions or z coord for output_var")
-								sys.exit(1)
-	
-							line_add = line_add \
-								+ f'   end do\n' \
-								+ f'   end do\n' \
-								+ f'   close(unit={unit[0]})\n' \
-								+ f'   end if\n'
-	
-							line = line_add + line
-	
-				
-				elif (output_vars and output_dims and output_iters and ckp_status is False and first_instance is False):
-					if('END DO main_loop' in line):
-						first_instance = True	
-						for var_index, (output_var, dimension, iteration) in enumerate(zip(output_vars, output_dims, output_iters), start = 1):
-							if iteration == -1: iteration = 'itercount_max'
-							unit = [f'{var_index}9000']
-							line_add = f'   if (itercount .EQ. {iteration}) THEN\n'
-
-							if(dimension >= 0):
-								line_add = line_add \
-								+ f'   open({unit[0]}, file=\'AdjointVals_{output_var}_{dimension}_iter_{iteration}_\'//trim(RUNNAME)//\'.dat\',&\n' \
-								+ f'       form="FORMATTED", status="REPLACE")\n'
-							else:
-								line_add = line_add \
-								+ f'   open({unit[0]}, file=\'AdjointVals_{output_var}_iter_{iteration}_\'//trim(RUNNAME)//\'.dat\',&\n' \
-								+ f'       form="FORMATTED", status="REPLACE")\n'
-
-							line_add = line_add \
-								+ f'   do i = 0, {IMAX}\n' \
-								+ f'   do j = 0, {JMAX}\n'
-							
-							if (dimension == -1) :
-								line_add = line_add + f'   write ({unit[0]}, *) {output_var}(j,i)\n'
-							elif (dimension >= 0) :
-								line_add = line_add + f'   write ({unit[0]}, *) {output_var}({dimension},j,i)\n'
-							else:
-								raise ValueError("Wrong dimensions or z coord for output_var")
-								sys.exit(1)
-	
-							line_add = line_add \
-								+ f'   end do\n' \
-								+ f'   end do\n' \
-								+ f'   close(unit={unit[0]})\n' \
-								+ f'   end if\n'
-	
-							line = line_add + line
-				else :
-					 
-					pass
-
-				new_file_lines.append(line)				
-		
-		with open(sico_main_loop_m_cpp_b_file, "w") as f:
-			f.write(''.join(new_file_lines))
-
-
-	except FileNotFoundError :
-		print(f'{sico_main_loop_m_cpp_b_file} not found.')
-		sys.exit(1)
-	except Exception as err:
-		print("Some problem with adjoint setup.")
-		print(err)
-		sys.exit(1)
-
-	try :
-	
-		with open(sico_main_loop_m_cpp_b_file) as f:
-			
-			file_lines = f.readlines()
-			new_file_lines = []
-			first_instance = False
-			skip_line = False
-			for line in file_lines:
-				if (output_adj_vars and output_adj_dims and output_adj_iters and first_instance is False):
-					if('BOUNDARY_B' in line):
-						skip_line = True
-					elif skip_line is True:
-						first_instance = True
-						for var_index, (output_var, dimension, iteration) in enumerate(zip(output_adj_vars, output_adj_dims, output_adj_iters), start = 1):
-							if iteration == -1: iteration = 'itercount_max'
-							unit = [f'{var_index}8000']
-							line_add = f'   if (itercount .EQ. {iteration}) THEN\n'
-							if(dimension >= 0):
-								line_add = line_add \
-								+ f'   open({unit[0]}, file=\'AdjointVals_{output_var}b_{dimension}_iter_{iteration}_\'//trim(RUNNAME)//\'.dat\',&\n' \
-								+ f'       form="FORMATTED", status="REPLACE")\n'
-							else:
-								line_add = line_add \
-								+ f'   open({unit[0]}, file=\'AdjointVals_{output_var}b_iter_{iteration}_\'//trim(RUNNAME)//\'.dat\',&\n' \
-								+ f'       form="FORMATTED", status="REPLACE")\n'
-							
-							line_add = line_add \
-								+ f'   do i = 0, {IMAX}\n' \
-								+ f'   do j = 0, {JMAX}\n'
-							
-							if (dimension == -1) :
-								line_add = line_add + f'   write ({unit[0]}, *) {output_var}b(j,i)\n'
-							elif (dimension >= 0) :
-								line_add = line_add + f'   write ({unit[0]}, *) {output_var}b({dimension},j,i)\n'
-							else:
-								raise ValueError("Wrong dimensions or z coord for output_varb")
-								sys.exit(1)
-	
-							line_add = line_add \
-								+ f'   end do\n' \
-								+ f'   end do\n' \
-								+ f'   close(unit={unit[0]})\n' \
-								+ f'   end if\n'
-	
-							line = line + line_add
-
-					else: pass	
-				new_file_lines.append(line)				
-		
-		with open(sico_main_loop_m_cpp_b_file, "w") as f:
-			f.write(''.join(new_file_lines))
-
-
-	except FileNotFoundError :
-		print(f'{sico_main_loop_m_cpp_b_file} not found.')
-		sys.exit(1)
-	except Exception as err:
-		print("Some problem with adjoint setup lol.")
-		print(err)
-		sys.exit(1)
+	modify_file(sico_main_loop_m_cpp_b_file, ref_string, new_string,
+	           replace_or_append_or_prepend = 'append',
+		   instance_number = 0, skip_line = True)
 
 def setup_forward(ind_var, header, domain,
 	dimension = 2, 
 	z_co_ord = None, limited_or_block_or_full = 'limited',
 	block_imin = None, block_imax = None, block_jmin = None, block_jmax = None,
-	tapenade_m_tlm_file = 'subroutines/tapenade/tapenade_m.F90',
+	tapenade_m_file = 'subroutines/tapenade/tapenade_m.F90',
         unit = '99999'):
 	
+
+	'''
+	Purpose - Setup tlm run for compilation
+	
+	Variables:
+	ind_var - Independent variable
+	header - Name of header, for example v5_grl20_ss25ka
+	domain - grl or ant
+	dimension - dimension of variable being perturbed
+	z_co_ord - If 3D variable give z co-ordinate
+	limited_or_block_or_full - If limited, checks only 5 points, 
+				   block runs for a block on the grid, 
+				   full runs on entire grid	
+	block_imin, block_imax, block_jmin, block_jmax - Specify limits of block if needed
+	tapenade_m_file - Location of tapenade_m file
+	unit - The unit to be used in FORTRAN-90 code while opening and closing the output file
+
+	'''
+
 	if(domain == 'grl' or domain == 'ant'):
 		pass
 	else:
 		raise ValueError('Wrong Domain')
 
-	copy_tapenade_m_template(template_file = '../test_ad/tapenade_m_tlm_template.F90',
-                        	destination_file = tapenade_m_tlm_file)
+	copy_file(original_file = '../test_ad/tapenade_m_tlm_template.F90',
+                  destination_file = tapenade_m_file)
 
 	IMAX, JMAX, KCMAX, KTMAX = get_imax_jmax_kcmax_ktmax()
 
-	try :
-	
-		with open(tapenade_m_tlm_file) as f:
-			
-			file_lines = f.readlines()
-			new_file_lines = []
-			
-			for line in file_lines:
+	if limited_or_block_or_full == 'full':
+		ref_string = '!@ python_automated_tlm limited_or_block_or_full @'
+		new_string = f'''
+		   do i = 0, {IMAX}
+		   do j = 0, {JMAX}
+		'''
+		modify_file(tapenade_m_file, ref_string, new_string,
+			   replace_or_append_or_prepend = 'replace',
+			   instance_number = 0)	
 
+		modify_file(tapenade_m_file, 
+			   'i = ipoints(p)', '',
+			   replace_or_append_or_prepend = 'replace',
+			   instance_number = 0)	
+		
+		modify_file(tapenade_m_file, 
+			   'j = jpoints(p)', '',
+			   replace_or_append_or_prepend = 'replace',
+			   instance_number = 0)	
 
-				if(limited_or_block_or_full == 'full'):
-					if('!@ python_automated_tlm limited_or_block_or_full @' in line) :
-						line = f'   do i = 0, {IMAX}\n' \
-							+ f'   do j = 0, {JMAX}\n'
+		modify_file(tapenade_m_file, 
+			   'close loop over points', '   end do\n',
+			   replace_or_append_or_prepend = 'append',
+			   instance_number = 0)	
 
-					if('i = ipoints(p)' in line) :
-						line = ''
-					
-					if('j = jpoints(p)' in line) :
-						line = ''	
-			
-					if('close loop over points' in line) : 
-						line = line + '   end do\n'
+	elif (limited_or_block_or_full == 'block'
+	     and float(block_imin).is_integer() 
+	     and float(block_imax).is_integer() 
+	     and float(block_jmin).is_integer() 
+	     and float(block_jmax).is_integer()):
+		ref_string = '!@ python_automated_tlm limited_or_block_or_full @'
+		new_string = f'''
+		   do i = {block_imin}, {block_imax}
+		   do j = {block_jmin}, {block_jmax}
+		'''
 
-				if(limited_or_block_or_full == 'block'):
-					if (float(block_imin).is_integer() and float(block_imax).is_integer() and float(block_jmin).is_integer() and float(block_jmax).is_integer()):
-						if('!@ python_automated_tlm limited_or_block_or_full @' in line) :
-							line = f'   do i = {block_imin}, {block_imax}\n' \
-								+ f'   do j = {block_jmin}, {block_jmax}\n'
-	
-						if('i = ipoints(p)' in line) :
-							line = ''
-						
-						if('j = jpoints(p)' in line) :
-							line = ''	
-				
-						if('close loop over points' in line) : 
-							line = line + '   end do\n'
+		modify_file(tapenade_m_file, ref_string, new_string,
+			   replace_or_append_or_prepend = 'replace',
+			   instance_number = 0)	
 
-					else:
-						raise ValueError("Something wrong with block bounds in TLM")
-						sys.exit(1)						
-					
-				if ('!@ python_automated_tlm dep_vard @' in line):
-					
-					if (dimension == 2) :
-						line = line \
-							+ f'            {ind_var}d = 0.0\n' \
-							+ f'            {ind_var}d(j,i) = 1.0\n'
-					elif (dimension == 3 and z_co_ord is not None and z_co_ord < KCMAX):
-						line = line \
-							+ f'            {ind_var}d = 0.0\n' \
-							+ f'            {ind_var}d({z_co_ord},j,i) = 1.0\n'
+		modify_file(tapenade_m_file, 
+			   'i = ipoints(p)', '',
+			   replace_or_append_or_prepend = 'replace',
+			   instance_number = 0)	
+		
+		modify_file(tapenade_m_file, 
+			   'j = jpoints(p)', '',
+			   replace_or_append_or_prepend = 'replace',
+			   instance_number = 0)	
 
-					else:
-						raise ValueError ("Something wrong with dimension in TLM")
-						sys.exit(1)
-						
-				if ('!@ python_automated_tlm IO begin @' in line):
-					line = line \
-						+ f'   open({unit}, ' \
-						+ f'file=\'ForwardVals_{ind_var}_\'//trim(RUNNAME)//\'_{limited_or_block_or_full}.dat\',&' \
-						+ f'\n       form="FORMATTED", status="REPLACE")' 
+		modify_file(tapenade_m_file, 
+			   'close loop over points', '   end do\n',
+			   replace_or_append_or_prepend = 'append',
+			   instance_number = 0)	
 
-				if ('!@ python_automated_tlm IO write @' in line):
-					line = line + f'          write({unit}, fmt=\'(f40.20)\') fcd\n'
+	elif(limited_or_block_or_full == 'limited'):
+		pass
 
-				if ('!@ python_automated_tlm IO end @' in line):
-					line = line + f'   close(unit={unit})\n'
-
-				new_file_lines.append(line)
-
-		with open(tapenade_m_tlm_file, "w") as f:
-			f.write(''.join(new_file_lines))
-
-	except FileNotFoundError :
-		print(f'{tapenade_m_tlm_file} not found.')
+	else:
+		print("Wrong options may have been used in TLM setup.")
 		sys.exit(1)
-	except Exception as err:
-		print("Some problem with TLM setup.")
-		print(err)
+
+	ref_string = '!@ python_automated_tlm dep_vard @'
+
+	if (dimension == 2) :
+		new_string = f'''
+		            {ind_var}d = 0.0
+		            {ind_var}d(j,i) = 1.0
+		'''
+	elif (dimension == 3 and z_co_ord is not None and z_co_ord < KCMAX):
+		new_string = f'''
+		            {ind_var}d = 0.0
+		            {ind_var}d({z_co_ord},j,i) = 1.0
+		'''
+	else:
+		raise ValueError ("Something wrong with dimension in TLM")
 		sys.exit(1)
+	
+	modify_file(tapenade_m_file, 
+		   ref_string, new_string,
+		   replace_or_append_or_prepend = 'append',
+		   instance_number = 0)	
+
+	ref_string = '!@ python_automated_tlm IO begin @'
+	new_string = f'''
+	   open({unit}, file=\'ForwardVals_{ind_var}_\'//trim(RUNNAME)//\'_{limited_or_block_or_full}.dat\',&
+	       form="FORMATTED", status="REPLACE")
+	'''
+	modify_file(tapenade_m_file, 
+		   ref_string, new_string,
+		   replace_or_append_or_prepend = 'append',
+		   instance_number = 0)	
+
+	modify_file(tapenade_m_file, 
+		   '!@ python_automated_tlm IO write @',
+		   f'          write({unit}, fmt=\'(f40.20)\') fcd\n',
+		   replace_or_append_or_prepend = 'append',
+		   instance_number = 0)	
+
+	modify_file(tapenade_m_file, 
+		   '!@ python_automated_tlm IO end @',
+		   f'   close(unit={unit})\n',
+		   replace_or_append_or_prepend = 'append',
+		   instance_number = 0)	
 
 def validate_FD_AD(grdchk_file, ad_file, tolerance = 0.1):
+
+	'''
+	Purpose - Validate adjoint/tlm output with grdchk output
+
+	Variables:
+	grdchk_file - Location of grdchk output data
+	ad_file - Location of tlm/adjoint output data
+	tolerance - Acceptable relative tolerance for discrepancies
+	'''
+
 	grdchk_data = np.loadtxt(grdchk_file, dtype = float)
 	ad_data = np.loadtxt(ad_file, dtype = float)
 	
@@ -620,6 +749,7 @@ def validate_FD_AD(grdchk_file, ad_file, tolerance = 0.1):
 		sys.exit(1)
 	else:
 		print("Validated successfully.")
+
 
 if __name__ == "__main__":
 
@@ -658,92 +788,94 @@ if __name__ == "__main__":
 		raise Exception ("Wrong input arguments for dimension")
 		sys.exit(1)
 
-	kwargs = dict(ind_var=args.ind_var, header=args.header, domain=args.domain,
-		     dimension=args.dimension, perturbation=args.perturbation,z_co_ord=args.z_co_ord)
+	copy_file(f'../runs/headers/sico_specs_{args.header}.h', 'sico_specs.h')
 
-	setup_grdchk(**{k: v for k, v in kwargs.items() if v is not None},
-        limited_or_block_or_full = 'limited',
-        tapenade_m_file = 'subroutines/tapenade/tapenade_m.F90',
-        unit = '9999')
-
-	if args.travis:
-		kwargs = dict(mode='grdchk', header=args.header, domain=args.domain, travis_ci='TRAVIS_CI=yes')
-	else:
-		kwargs = dict(mode='grdchk', header=args.header, domain=args.domain)
-
-	compile_code(**{k: v for k, v in kwargs.items() if v is not None}, clean = True)	
-	print(f'grdchk compilation complete for {args.header}.')
-
+	#	kwargs = dict(ind_var=args.ind_var, header=args.header, domain=args.domain,
+	#		     dimension=args.dimension, perturbation=args.perturbation,z_co_ord=args.z_co_ord)
+	#
+	#	setup_grdchk(**{k: v for k, v in kwargs.items() if v is not None},
+	#        limited_or_block_or_full = 'limited',
+	#        tapenade_m_file = 'subroutines/tapenade/tapenade_m.F90',
+	#        unit = '9999')
+	#
+	#	if args.travis:
+	#		kwargs = dict(mode='grdchk', header=args.header, domain=args.domain, travis_ci='TRAVIS_CI=yes')
+	#	else:
+	#		kwargs = dict(mode='grdchk', header=args.header, domain=args.domain)
+	#
+	#	compile_code(**{k: v for k, v in kwargs.items() if v is not None}, clean = True)	
+	#	print(f'grdchk compilation complete for {args.header}.')
+	#
 	#	run_executable('grdchk')
 	#	print(f'grdchk execution complete for {args.header}.')
-
-	if args.checkpoint:	
-		setup_binomial_checkpointing(status = True, number_of_steps = args.checkpoint)
-	else: 
-		setup_binomial_checkpointing(status = False)
-
-	if args.travis:
-		kwargs = dict(mode='adjoint', header=args.header, domain=args.domain, 
-			     dep_var = args.dep_var, ind_vars = args.ind_var, travis_ci='TRAVIS_CI=yes')
-	else:
-		kwargs = dict(mode='adjoint', header=args.header, domain=args.domain,
-			     dep_var = args.dep_var, ind_vars = args.ind_var)
-
-	compile_code(**{k: v for k, v in kwargs.items() if v is not None}, clean = True)	
-
-	if args.output_dims is not None and args.output_iters is not None:
-		args.output_dims = [int(x) for x in args.output_dims]	
-		args.output_iters = [int(x) for x in args.output_iters]
-	if args.output_adj_dims is not None and args.output_adj_iters is not None:
-		args.output_adj_dims = [int(x) for x in args.output_adj_dims]	
-		args.output_adj_iters = [int(x) for x in args.output_adj_iters]
-
-
-	if args.checkpoint:
-		ckp_status = True
-	else: 
-		ckp_status = False
-	kwargs = dict(ind_vars = [args.ind_var], header=args.header, domain=args.domain,
-		     dimensions = [args.dimension], z_co_ords = [args.z_co_ord],
-		     output_vars = args.output_vars, output_dims = args.output_dims, output_iters = args.output_iters,
-		     output_adj_vars = args.output_adj_vars, output_adj_dims = args.output_adj_dims, output_adj_iters = args.output_adj_iters,
-		     ckp_status = ckp_status)
-
-	setup_adjoint(**{k: v for k, v in kwargs.items() if (v is not None and v != [None])},
-        	     numCore_cpp_b_file = 'numCore_cpp_b.f90')
-
-	if args.travis:
-		kwargs = dict(mode='adjoint', header=args.header, domain=args.domain, 
-			     dep_var = args.dep_var, ind_vars = args.ind_var, travis_ci='TRAVIS_CI=yes')
-	else:
-		kwargs = dict(mode='adjoint', header=args.header, domain=args.domain,
-			     dep_var = args.dep_var, ind_vars = args.ind_var)
-
-	compile_code(**{k: v for k, v in kwargs.items() if v is not None}, clean = False)
-	
-	print(f'adjoint compilation complete for {args.header}.')
-	
+	#
+	#	if args.checkpoint:	
+	#		setup_binomial_checkpointing(status = True, number_of_steps = args.checkpoint)
+	#	else: 
+	#		setup_binomial_checkpointing(status = False)
+	#
+	#	if args.travis:
+	#		kwargs = dict(mode='adjoint', header=args.header, domain=args.domain, 
+	#			     dep_var = args.dep_var, ind_vars = args.ind_var, travis_ci='TRAVIS_CI=yes')
+	#	else:
+	#		kwargs = dict(mode='adjoint', header=args.header, domain=args.domain,
+	#			     dep_var = args.dep_var, ind_vars = args.ind_var)
+	#
+	#	compile_code(**{k: v for k, v in kwargs.items() if v is not None}, clean = True)	
+	#
+	#	if args.output_dims is not None and args.output_iters is not None:
+	#		args.output_dims = [int(x) for x in args.output_dims]	
+	#		args.output_iters = [int(x) for x in args.output_iters]
+	#	if args.output_adj_dims is not None and args.output_adj_iters is not None:
+	#		args.output_adj_dims = [int(x) for x in args.output_adj_dims]	
+	#		args.output_adj_iters = [int(x) for x in args.output_adj_iters]
+	#
+	#
+	#	if args.checkpoint:
+	#		ckp_status = True
+	#	else: 
+	#		ckp_status = False
+	#	kwargs = dict(ind_vars = [args.ind_var], header=args.header, domain=args.domain,
+	#		     dimensions = [args.dimension], z_co_ords = [args.z_co_ord],
+	#		     output_vars = args.output_vars, output_dims = args.output_dims, output_iters = args.output_iters,
+	#		     output_adj_vars = args.output_adj_vars, output_adj_dims = args.output_adj_dims, output_adj_iters = args.output_adj_iters,
+	#		     ckp_status = ckp_status)
+	#
+	#	setup_adjoint(**{k: v for k, v in kwargs.items() if (v is not None and v != [None])},
+	#        	     numCore_cpp_b_file = 'numCore_cpp_b.f90')
+	#
+	#	if args.travis:
+	#		kwargs = dict(mode='adjoint', header=args.header, domain=args.domain, 
+	#			     dep_var = args.dep_var, ind_vars = args.ind_var, travis_ci='TRAVIS_CI=yes')
+	#	else:
+	#		kwargs = dict(mode='adjoint', header=args.header, domain=args.domain,
+	#			     dep_var = args.dep_var, ind_vars = args.ind_var)
+	#
+	#	compile_code(**{k: v for k, v in kwargs.items() if v is not None}, clean = False)
+	#	
+	#	print(f'adjoint compilation complete for {args.header}.')
+	#	
 	#	run_executable('adjoint')
 	#	print(f'adjoint execution complete for {args.header}.')
 	#
-	#	validate_FD_AD(f'GradientVals_{args.ind_var}_{args.perturbation:.2E}_{args.header}_limited.dat', f'AdjointVals_{args.ind_var}_{args.header}_limited.dat')
-	#
-	#	kwargs = dict(ind_var = args.ind_var, header=args.header, domain=args.domain,
-	#        		dimension = args.dimension, z_co_ord = args.z_co_ord)
-	#		
-	#	setup_forward(**{k: v for k, v in kwargs.items() if (v is not None and v != [None])},
-	#        		tapenade_m_tlm_file = 'subroutines/tapenade/tapenade_m.F90')
-	#
-	#	if args.travis:
-	#		kwargs = dict(mode='forward', header=args.header, domain=args.domain, 
-	#			dep_var = args.dep_var, ind_vars = args.ind_var, travis_ci='TRAVIS_CI=yes')
-	#	else:
-	#		kwargs = dict(mode='forward', header=args.header, domain=args.domain,
-	#			dep_var = args.dep_var, ind_vars = args.ind_var)
-	#
-	#	compile_code(**{k: v for k, v in kwargs.items() if v is not None}, clean = True) 
-	#	print(f'TLM compilation complete for {args.header}.')
-	#	
-	#	run_executable('forward')
-	#	print(f'TLM execution complete for {args.header}.')
-	#	validate_FD_AD(f'GradientVals_{args.ind_var}_{args.perturbation:.2E}_{args.header}_limited.dat', f'ForwardVals_{args.ind_var}_{args.header}_limited.dat')
+	#	validate_FD_AD(f'GradientVals_{args.ind_var}_{args.perturbation:.2E}_{args.header}_limited.dat', f'AdjointVals_{args.ind_var}b_{args.header}_limited.dat')
+
+	kwargs = dict(ind_var = args.ind_var, header=args.header, domain=args.domain,
+        		dimension = args.dimension, z_co_ord = args.z_co_ord)
+		
+	setup_forward(**{k: v for k, v in kwargs.items() if (v is not None and v != [None])},
+        		tapenade_m_file = 'subroutines/tapenade/tapenade_m.F90')
+
+	if args.travis:
+		kwargs = dict(mode='forward', header=args.header, domain=args.domain, 
+			dep_var = args.dep_var, ind_vars = args.ind_var, travis_ci='TRAVIS_CI=yes')
+	else:
+		kwargs = dict(mode='forward', header=args.header, domain=args.domain,
+			dep_var = args.dep_var, ind_vars = args.ind_var)
+
+	compile_code(**{k: v for k, v in kwargs.items() if v is not None}, clean = True) 
+	print(f'TLM compilation complete for {args.header}.')
+	
+	run_executable('forward')
+	print(f'TLM execution complete for {args.header}.')
+	validate_FD_AD(f'GradientVals_{args.ind_var}_{args.perturbation:.2E}_{args.header}_limited.dat', f'ForwardVals_{args.ind_var}_{args.header}_limited.dat')

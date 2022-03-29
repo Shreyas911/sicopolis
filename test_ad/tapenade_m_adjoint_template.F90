@@ -162,7 +162,7 @@ call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
 
    
    !-------- Loop over points
-   do p = 1, points !@ python_automated_grdchk limited_or_full @
+   do p = 1, points !@ python_automated_grdchk limited_or_block_or_full @
      i = ipoints(p)
      j = jpoints(p)
 

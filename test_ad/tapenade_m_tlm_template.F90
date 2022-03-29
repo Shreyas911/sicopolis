@@ -108,9 +108,6 @@ use sico_variables_m_diff
      i = ipoints(p)
      j = jpoints(p)
 
-  CALL CTRL_INIT()
-  CALL COST_INDEPENDENT_INIT()
-  CALL COST_DEPENDENT_INIT()
   CALL SICO_INIT_D(delta_ts, glac_index, mean_accum, dtime, dtime_temp, &
 &            dtime_wss, dtime_out, dtime_ser, time, time_init, time_end&
 &            , time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, z_mar&

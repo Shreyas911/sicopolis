@@ -1,6 +1,6 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !
-!  Module :  o p e n a d _ m
+!  Module :  t a p e n a d e _ m
 !
 !> @file
 !!
@@ -8,7 +8,8 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2017-2021 Liz Curry-Logan, Sri Hari Krishna Narayanan,
+!! Copyright 2017-2022 Shreyas Sunil Gaikwad,
+!!                     Liz Curry-Logan, Sri Hari Krishna Narayanan,
 !!                     Patrick Heimbach, Ralf Greve
 !!
 !! @section License
@@ -50,9 +51,9 @@ module tapenade_m
 contains
 
 !-------------------------------------------------------------------------------
-!> Adjoint master is the main tool by which sicopolis.F90 invokes the adjoint
-!! code. Its job is to figure out what mode of the adjoint code is being invoked
-!! and run the appropriate subroutine. 
+!> Adjoint master is the main tool by which sicopolis.F90 invokes the
+!! adjoint/tlm code. Its job is to figure out what mode of the adjoint code is
+!! being invoked and run the appropriate subroutine. 
 !<------------------------------------------------------------------------------
 #ifdef ALLOW_TAPENADE
   subroutine adjoint_master
@@ -65,6 +66,11 @@ use sico_variables_m_diff
   use enth_temp_omega_m_diff
   use sico_init_m_diff
   use globals_diff
+  USE CTRL_M_DIFF
+  USE SICO_TYPES_M
+  USE SICO_VARS_M
+  USE SICO_MAIN_LOOP_M_DIFF
+  USE SICO_END_M_DIFF
 
   implicit none
   integer(i4b)                               :: ndat2d, ndat3d
@@ -79,11 +85,61 @@ use sico_variables_m_diff
                                                 dzeta_t, dzeta_r
   real(dp)                                   :: z_mar
   character(len=100)                         :: runname
-fcb = 1.
-call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
-& dtime_temp, dtime_wss, dtime_out, dtime_ser, time, time_init, time_end&
-& , time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-& z_mar, ndat2d, ndat3d, n_output, runname)
+  integer(i4b), parameter                    :: points = 5
+  integer(i4b), dimension(points)            :: ipoints, jpoints
+  integer(i4b)                               :: i, j, p
+   !-------- Test points along spines of the ice sheets
+   do p = 1, points
+#if (defined(GRL))
+      ipoints(p) = int(real(IMAX/2))
+      jpoints(p) = int(real(JMAX/5)) + (p-1) * points
+#elif (defined(ANT))
+      ipoints(p) = int(real(IMAX/3)) + int(real((.85-.33)*IMAX/points)) * (p - 1)
+      jpoints(p) = int(real(JMAX/2))
+#endif
+   end do
+
+!@ python_automated_tlm IO begin @
+
+	   open(99999, file='ForwardVals_H_'//trim(RUNNAME)//'_limited.dat',&
+	       form="FORMATTED", status="REPLACE")
+	
+
+
+   !-------- Loop over points
+   do p = 1, points !@ python_automated_tlm limited_or_block_or_full @
+     i = ipoints(p)
+     j = jpoints(p)
+
+  CALL SICO_INIT_D(delta_ts, glac_index, mean_accum, dtime, dtime_temp, &
+&            dtime_wss, dtime_out, dtime_ser, time, time_init, time_end&
+&            , time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, z_mar&
+&            , ndat2d, ndat3d, n_output, runname)
+
+!@ python_automated_tlm dep_vard @
+
+		            Hd = 0.0
+		            Hd(j,i) = 1.0
+		
+!-------- Main loop --------
+  CALL SICO_MAIN_LOOP_D(delta_ts, glac_index, mean_accum, dtime, &
+&                 dtime_temp, dtime_wss, dtime_out, dtime_ser, time, &
+&                 time_init, time_end, time_output, dxi, deta, dzeta_c, &
+&                 dzeta_t, dzeta_r, z_mar, ndat2d, ndat3d, n_output, &
+&                 runname)
+  CALL COST_FINAL_D(runname)
+     
+  CALL SICO_END()
+
+!@ python_automated_tlm IO write @
+          write(99999, fmt='(f40.20)') fcd
+
+   end do ! (close loop over points)
+
+
+!@ python_automated_tlm IO end @
+   close(unit=99999)
+
   end subroutine adjoint_master
 #endif
 
@@ -193,8 +249,6 @@ call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
 
                 
             !@ python_automated_grdchk @
-            orig_val = H(j,i)
-            H(j,i) = orig_val * perturbation
 
  
             ! -- H_c
