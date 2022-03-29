@@ -765,6 +765,32 @@ def simulation(mode, header, domain,
 	      numCore_cpp_b_file = 'numCore_cpp_b.f90',
 	      sico_main_loop_m_cpp_b_file = 'sico_main_loop_m_cpp_b.f90'):
 
+	'''
+	Purpose - Sets up everything correctly for compilation of adjoint run
+
+	Variables:
+	ind_var - Independent variable
+	header - Name of header, for example v5_grl20_ss25ka
+	domain - grl or ant
+	ind_var_z_co_ord = z_co_ord of independent var / vars (plural for adjoints only in the future)
+	ind_var_dim - dimension of independent var / vars (plural for adjoints only in the future)
+	perturbation - perturbation for finite difference check
+	run_executable_auto - Automatically runs compiled code if True
+	unit - File unit number inside FORTRA-90 code
+	output_vars - List of normal variables to output
+	output_iters - List of iter number to output the normal variables
+	output_dims - List of z co-ordinates for normal variables that we output
+	output_adj_vars - List of adjoint variables to output
+	output_adj_iters - List of iter number to output the adjoint variables
+	output_adj_dims - List of z co-ordinates for adjoint variables that we output
+        ckp_status - True if binomial checkpointing is used, else False
+	ckp_num - Number of checkpointing steps
+	tapenade_m_file - Location of tapenade_m.F90
+        numCore_cpp_b_file - Location of numCore_cpp_b.f90 file
+        sico_main_loop_m_cpp_b_file - Location of sico_main_loop_m_cpp_b.f90 file
+	'''
+
+
 	try:
 	
 		os.chdir("../src/")
