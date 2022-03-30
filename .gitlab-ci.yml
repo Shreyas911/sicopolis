@@ -3,6 +3,8 @@ stages:
         - test
 
 print_1:
+        tags:
+                - ci
         stage: build
         script:
                 - echo "Building"
@@ -10,6 +12,8 @@ print_1:
                 paths:
 
 print_2:
+        tags:
+                - ci
         stage: test
         script:
                 - echo "Testing"
