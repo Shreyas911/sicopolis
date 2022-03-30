@@ -413,7 +413,6 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 	else:
 		raise ValueError('Wrong Domain')
 
-
 	IMAX, JMAX, KCMAX, KTMAX = get_imax_jmax_kcmax_ktmax()
 
 	ref_string = 'CHARACTER(len=100) :: runname'
@@ -444,6 +443,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 
 	ref_string = 'CALL SICO_INIT_B'
 	new_string = ''
+
 	for var_index, (ind_var, dimension, z_co_ord) in enumerate(zip(ind_vars, dimensions, z_co_ords), start = 1):
 
 		unit = [f'{var_index}000', f'{var_index}001']
@@ -490,7 +490,6 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 		else :	
 			raise ValueError("Wrong dimensions or z coord for adjoint")
 			sys.exit(1)
-
 
 	modify_file(numCore_cpp_b_file, ref_string, new_string, 
 		   replace_or_append_or_prepend = 'prepend',
@@ -541,11 +540,12 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 			else:
 				raise ValueError("Wrong dimensions or z coord for output_var")
 				sys.exit(1)
-	else: pass
 
-	modify_file(sico_main_loop_m_cpp_b_file, ref_string, new_string, 
+		modify_file(sico_main_loop_m_cpp_b_file, ref_string, new_string, 
 		   replace_or_append_or_prepend = 'prepend',
 	           instance_number = 0)	
+
+	else: pass
 
 	ref_string = 'BOUNDARY_B'
 
@@ -586,7 +586,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 				raise ValueError("Wrong dimensions or z coord for output_varb")
 				sys.exit(1)
 
-	modify_file(sico_main_loop_m_cpp_b_file, ref_string, new_string,
+		modify_file(sico_main_loop_m_cpp_b_file, ref_string, new_string,
 	           replace_or_append_or_prepend = 'append',
 		   instance_number = 0, skip_line = True)
 
@@ -834,7 +834,10 @@ def simulation(mode, header, domain,
 			setup_binomial_checkpointing(status = True, number_of_steps = ckp_num)
 		else: 
 			setup_binomial_checkpointing(status = False)
-	
+
+		copy_file(original_file = '../test_ad/tapenade_m_adjoint_template.F90',
+		  destination_file = 'subroutines/tapenade/tapenade_m.F90')
+
 		compile_code(mode = mode, header = header, domain = domain,
                 clean = True, dep_var=dep_var, ind_vars = ind_var)	
 	
@@ -919,23 +922,39 @@ if __name__ == "__main__":
 
 	args = parser.parse_args()
 
-	with open(args.json, 'r') as j:
-		json_dict = json.loads(j.read())
+	### hasattr only correctly works for Python 3
+	if hasattr(args, 'json'):
+		try:
+			with open(args.json, 'r') as j:
+				json_dict = json.loads(j.read())
+			
+				# Convert Namespace to dict
+				args_dict = vars(args)
+				
+				# Update json dict with command line arguments
+				json_dict.update(args_dict)
+			
+				# Convert updated json dict back to args Namespace
+				args = argparse.Namespace(**json_dict)
+		except:
+			raise Exception('Some issue with reading json file')
+			sys.exit(1)
 
-	# Convert Namespace to dict
-	args_dict = vars(args)
-	
-	# Update json dict with command line arguments
-	json_dict.update(args_dict)
-
-	# Convert updated json dict back to args Namespace
-	args = argparse.Namespace(**json_dict)
-
-	if args.checkpoint:
+	ckp_status = False
+	if hasattr(args, 'checkpoint'):
 		ckp_status = True
 
-	if not args.dimension:
+	if not hasattr(args, 'dimension'):
 		args.dimension = 2
+
+	list_attrs = ['json', 'header', 'domain', 'ind_var', 'dep_var',
+		      'dimension', 'z_co_ord', 'perturbation', 'output_vars',
+		      'output_iters', 'output_dims', 'output_adj_vars', 
+                      'output_adj_iters', 'output_adj_dims', 'checkpoint']
+
+	for attr in list_attrs:
+		if not hasattr(args, attr):
+			setattr(args, attr, None)
 
 	for mode in ['grdchk', 'adjoint', 'forward']:
 	
@@ -947,5 +966,5 @@ if __name__ == "__main__":
 		      run_executable_auto = True,
 		      output_vars = args.output_vars, output_iters = args.output_iters, output_dims = args.output_dims,
 		      output_adj_vars = args.output_adj_vars, output_adj_iters = args.output_adj_iters, output_adj_dims = args.output_adj_dims,
-		      ckp_status = True, ckp_num = args.checkpoint)	
+		      ckp_status = ckp_status, ckp_num = args.checkpoint)	
 	

@@ -15,7 +15,7 @@ ifndef DOMAIN_SHORT
 DOMAIN_SHORT=grl
 endif
 
-DISC_AND_GRL := $(shell python subroutines/tapenade/check_GRL_DISC.py -f ../runs/headers/sico_specs_${HEADER}.h)
+DISC_AND_GRL := $(shell python3 subroutines/tapenade/check_GRL_DISC.py -f ../runs/headers/sico_specs_${HEADER}.h)
 ### PRINT STATEMENT TO CHECK VARIABLE ###
 ifeq ($(DISC_AND_GRL),0)
 $(info DISC_AND_GRL is $(DISC_AND_GRL))
@@ -39,10 +39,17 @@ ifndef NETCDF_FORTRAN_DIR
 NETCDF_FORTRAN_DIR=/opt/ohpc/pub/libs/gnu/openmpi/netcdf-fortran/4.4.4
 endif
 
+### Multiple if statements here since for CI, we define the individual flags separately.
+### Note - If you have direct access to netcdf.mod and libnetcdff.so in different directories, you'd have to set the flags manually.
+### As mentioned, see CI yml file to understand more.
+ifndef NETCDF_F90_FLAG
+ifndef LIB_NETCDF_F90_FLAG
 ifdef NETCDF_FORTRAN_DIR
 LIB_NETCDF_F90=${NETCDF_FORTRAN_DIR}/lib/libnetcdff.so
 LIB_NETCDF_F90_FLAG=-L${NETCDF_FORTRAN_DIR}/lib -lnetcdff
 NETCDF_F90_FLAG=-I${NETCDF_FORTRAN_DIR}/include/
+endif
+endif
 endif
 
 ifndef GCOV
@@ -485,7 +492,7 @@ numCore.f90: numCore.F90
 	sed -i 's/__NL__/\n/g' $@
 
 numCore.F90: sicopolis.F90
-	python subroutines/tapenade/preprocessor.py sicopolis.F90
+	python3 subroutines/tapenade/preprocessor.py sicopolis.F90
 
 RUN=$(HEADER)
 INDIR=../sico_in
@@ -522,7 +529,7 @@ subroutines/tapenade/tapenade_m.o: subroutines/tapenade/tapenade_m.F90
 	${F90C} -DALLOW_TAPENADE ${LISFLAG} -I./ ${F90FLAGS} -o $@ -c $<
 
 sico_variables_m_cpp.f90: subroutines/general/sico_variables_m.F90
-	python subroutines/tapenade/deal_with_metadata.py -SS ../runs/headers/sico_specs_${HEADER}.h -SV subroutines/general/sico_variables_m.F90
+	python3 subroutines/tapenade/deal_with_metadata.py -SS ../runs/headers/sico_specs_${HEADER}.h -SV subroutines/general/sico_variables_m.F90
 	$(CPPCMD_FILES) > dummy.f90
 	cat dummy.f90 > $@
 	sed -i 's/__NL__/\n/g' $@
