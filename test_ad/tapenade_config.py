@@ -848,13 +848,7 @@ def simulation(mode, header, domain,
 			output_adj_dims = [int(x) for x in output_adj_dims]	
 			output_adj_iters = [int(x) for x in output_adj_iters]
 
-		kwargs = dict(ind_vars = [args.ind_var], header=args.header, domain=args.domain,
-			     dimensions = [args.dimension], z_co_ords = [args.z_co_ord],
-			     output_vars = args.output_vars, output_dims = args.output_dims, output_iters = args.output_iters,
-			     output_adj_vars = args.output_adj_vars, output_adj_dims = args.output_adj_dims, output_adj_iters = args.output_adj_iters,
-			     ckp_status = ckp_status)
-	
-		setup_adjoint(ind_vars = ind_var, header = header, domain = domain, ckp_status = ckp_status,
+		setup_adjoint(ind_vars = [ind_var], header = header, domain = domain, ckp_status = ckp_status,
 		             numCore_cpp_b_file = numCore_cpp_b_file,
                              sico_main_loop_m_cpp_b_file = sico_main_loop_m_cpp_b_file,
         	             dimensions = [ind_var_dim],
