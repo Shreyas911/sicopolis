@@ -61,8 +61,10 @@ real(dp),     intent(in) :: dtime, dxi, deta
 
 integer(i4b) :: i, j
 real(dp) :: tldt_inv(0:JMAX,0:IMAX)
+real(dp) :: time_ratio_1(0:JMAX,0:IMAX), time_ratio_2(0:JMAX,0:IMAX)
+real(dp) :: load_ice_water(0:JMAX,0:IMAX)
 real(dp) :: dtime_inv
-real(dp) :: rho_rhoa_ratio, rhosw_rhoa_ratio
+real(dp) :: rho_g, rhosw_g, rhoa_g_inv
 real(dp) :: time_dimless
 real(dp) :: target_topo_tau_factor, target_topo_tau
 
@@ -71,13 +73,63 @@ real(dp) :: target_topo_tau_factor, target_topo_tau
 do i=0, IMAX
 do j=0, JMAX
    tldt_inv(j,i) = 1.0_dp/(time_lag_asth(j,i)+dtime)
+   time_ratio_1(j,i) = tldt_inv(j,i) * time_lag_asth(j,i)
+   time_ratio_2(j,i) = tldt_inv(j,i) * dtime
 end do
 end do
 
-rho_rhoa_ratio   = RHO/RHO_A
-rhosw_rhoa_ratio = RHO_SW/RHO_A
+rho_g      = RHO*G
+rhosw_g    = RHO_SW*G
+rhoa_g_inv = 1.0_dp/(RHO_A*G)
 
 dtime_inv = 1.0_dp/dtime
+
+!-------- Load due to ice and sea water --------
+
+#if (REBOUND==0)
+
+load_ice_water = 0.0_dp   ! not needed, thus not computed
+
+#elif (REBOUND==1 || REBOUND==2)
+
+do i=0, IMAX
+do j=0, JMAX
+
+   if (mask(j,i) <= 1) then   ! grounded ice or ice-free land
+
+      load_ice_water(j,i) = rho_g * H(j,i)
+
+   else   ! (mask(j,i) >= 2, floating ice or ocean)
+
+      load_ice_water(j,i) = rhosw_g * z_sl(j,i)
+                   ! Water load relative to the present sea-level stand (0 m)
+                   ! -> can be positive or negative
+
+   end if
+
+end do
+end do
+
+#endif
+
+!-------- Steady-state displacement of the lithosphere (wss) --------
+
+#if (REBOUND==0)
+
+wss = 0.0_dp
+
+#elif (REBOUND==1)
+
+wss = FRAC_LLRA * ( load_ice_water * rhoa_g_inv )
+
+#elif (REBOUND==2)
+
+if ((mod(itercount, iter_wss)==0).or.(itercount==1)) then
+   write(6, fmt='(10x,a)') 'Computation of wss (EL)'
+   call calc_el(load_ice_water, dxi, deta)
+end if
+
+#endif
 
 !-------- Computation of zl_new and its time derivative --------
 
@@ -90,45 +142,12 @@ do j=0, JMAX
 end do
 end do
 
-#elif (REBOUND==1)
+#elif (REBOUND==1 || REBOUND==2)
 
 do i=0, IMAX
 do j=0, JMAX
-
-   if (mask(j,i) <= 1) then   ! grounded ice or ice-free land
-
-      zl_new(j,i) = tldt_inv(j,i)*( time_lag_asth(j,i)*zl(j,i) &
-                    + dtime*(zl0(j,i) &
-                             -FRAC_LLRA*rho_rhoa_ratio*H(j,i)) )
-
-   else   ! (mask(j,i) >= 2)
-
-      zl_new(j,i) = tldt_inv(j,i)*( time_lag_asth(j,i)*zl(j,i) &
-                    + dtime*(zl0(j,i) &
-                             -FRAC_LLRA*rhosw_rhoa_ratio*z_sl(j,i)) )
-
-                   ! Water load relative to the present sea-level stand (0 m)
-                   ! -> can be positive or negative
-
-   end if
-
-   dzl_dtau(j,i) = (zl_new(j,i)-zl(j,i))*dtime_inv
-
-end do
-end do
-
-#elif (REBOUND==2)
-
-if ((mod(itercount, iter_wss)==0).or.(itercount==1)) then
-   write(6, fmt='(10x,a)') 'Computation of wss'
-   call calc_elra(dxi, deta)   ! Update of the steady-state displacement
-                               ! of the lithosphere (wss)
-end if
-
-do i=0, IMAX
-do j=0, JMAX
-   zl_new(j,i) = tldt_inv(j,i) &
-                 * ( time_lag_asth(j,i)*zl(j,i) + dtime*(zl0(j,i)-wss(j,i)) )
+   zl_new(j,i)   = time_ratio_1(j,i)*zl(j,i) &
+                      + time_ratio_2(j,i)*(zl0(j,i)-wss(j,i))
    dzl_dtau(j,i) = (zl_new(j,i)-zl(j,i))*dtime_inv
 end do
 end do
@@ -206,7 +225,7 @@ end subroutine calc_gia
 !> Computation of the isostatic steady-state displacement of the lithosphere
 !! (wss) for the ELRA model.
 !<------------------------------------------------------------------------------
-subroutine calc_elra(dxi, deta)
+subroutine calc_el(load_ice_water, dxi, deta)
 
 #if defined(ALLOW_OPENAD) /* OpenAD */
   use ctrl_m, only: myfloor
@@ -214,12 +233,13 @@ subroutine calc_elra(dxi, deta)
 
 implicit none
 
-real(dp), intent(in) :: dxi, deta
+real(dp), intent(in), dimension(0:JMAX,0:IMAX) :: load_ice_water
+real(dp), intent(in)                           :: dxi, deta
 
 integer(i4b) :: i, j, ir, jr, il, jl, n
 integer(i4b) :: ir_max, jr_max, min_imax_jmax
 integer(i4b) :: il_begin, il_end, jl_begin, jl_end
-real(dp)                              :: rho_g, rho_sw_g, rho_a_g_inv
+real(dp)                              :: rhoa_g_inv
 real(dp)                              :: dxi_inv, deta_inv
 real(dp)                              :: kei_r_incr_inv
 real(dp), dimension(0:JMAX,0:IMAX)    :: l_r, l_r_inv, fac_wss
@@ -237,9 +257,7 @@ real(dp), parameter :: r_infl = 8.0_dp
 
 !-------- Initialisations --------
 
-rho_g       = RHO*G
-rho_sw_g    = RHO_SW*G
-rho_a_g_inv = 1.0_dp/(RHO_A*G)
+rhoa_g_inv = 1.0_dp/(RHO_A*G)
 
 dxi_inv   = 1.0_dp/dxi
 deta_inv  = 1.0_dp/deta
@@ -248,7 +266,7 @@ kei_r_incr_inv = 1.0_dp/kei_r_incr
 
 do i=0, IMAX
 do j=0, JMAX
-   l_r(j,i)     = (flex_rig_lith(j,i)*rho_a_g_inv)**0.25_dp
+   l_r(j,i)     = (flex_rig_lith(j,i)*rhoa_g_inv)**0.25_dp
    l_r_inv(j,i) = 1.0_dp/l_r(j,i)
    fac_wss(j,i) = l_r(j,i)*l_r(j,i)/(2.0_dp*pi*flex_rig_lith(j,i))
 end do
@@ -299,14 +317,10 @@ do jl=jl_begin, jl_end
    i = min(max(il, 0), IMAX)
    j = min(max(jl, 0), JMAX)
 
-   if (mask(j,i)==0) then
-      f_0(jl,il) = rho_g * cell_area(j,i) * H(j,i)
-   else if (mask(j,i)==1) then
+   if ((mask(j,i)==0).or.(mask(j,i)>=2)) then
+      f_0(jl,il) = load_ice_water(j,i) * cell_area(j,i)
+   else   ! (mask(j,i)==1)
       f_0(jl,il) = 0.0_dp
-   else   ! (mask(j,i)>=2)
-      f_0(jl,il) = rho_sw_g * cell_area(j,i) * z_sl(j,i)
-                   ! Water load relative to the present sea-level stand (0 m)
-                   ! -> can be positive or negative
    end if
 
 end do
@@ -346,7 +360,7 @@ end do
 deallocate (f_0)
 #endif /* Normal */
 
-end subroutine calc_elra
+end subroutine calc_el
 
 !-------------------------------------------------------------------------------
 !> Generation of an isostatically relaxed lithosphere surface topography
@@ -367,7 +381,6 @@ integer(i4b)                       :: i, j, m, n, i_f, j_f, n_filter
 integer(i4b)                       :: ios
 real(dp), dimension(0:JMAX,0:IMAX) :: zl0_raw, zl0_smoothed
 real(dp)                           :: dx
-real(dp)                           :: rho_ratio
 real(dp)                           :: filter_width, sigma_filter
 real(dp)                           :: dist, weigh, sum_weigh
 character(len=  8)                 :: ch_resolution
@@ -391,29 +404,13 @@ call error(errormsg)
 
 !-------- Computation of the raw (unsmoothed) topography --------
 
-rho_ratio = RHO/RHO_A
-
 #if (REBOUND==0)
 
 zl0_raw = zl   ! rigid lithosphere
 
-#elif (REBOUND==1)
+#elif (REBOUND==1 || REBOUND==2)
 
-do i=0, IMAX
-do j=0, JMAX
-
-   if (mask(j,i) == 0) then
-      zl0_raw(j,i) = zl(j,i) + rho_ratio*H(j,i)
-   else
-      zl0_raw(j,i) = zl(j,i)
-   end if            ! local lithosphere
-   
-end do
-end do
-
-#elif (REBOUND==2)
-
-zl0_raw = zl + wss   ! elastic lithosphere
+zl0_raw = zl + wss   ! local or elastic lithosphere
 
 #else
 
