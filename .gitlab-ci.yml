@@ -1,19 +1,23 @@
+default:
+        image: shreyas911/sicopolis_ad_v2:v1.3
+
 stages:
-        - build
         - test
 
-print_1:
-        tags:
-                - ci
-        stage: build
-        script:
-                - echo "Building"
-        artifacts:
-                paths:
-
-print_2:
-        tags:
-                - ci
+tests:
         stage: test
+        before_script:
+               - export NETCDF_F90_FLAG=-I/usr/lib64/gfortran/modules
+               - export LISDIR=/lis-2.0.30/installation
+               - export LIB_NETCDF_F90_FLAG='-L/usr/lib64 -lnetcdff'
+               - export TAPENADE_HOME=/builds/shreyasg911/gitlab-ci-docker/test_ad/tapenade_3.16
+               - export PATH=$PATH:$TAPENADE_HOME/bin
+               - source $HOME/.bashrc
         script:
-                - echo "Testing"
+               - ./get_input_files.sh
+               - cd test_ad
+               - cp sico_specs_v5_ant40_ss25ka.h ../runs/headers
+               - cp sico_specs_v5_grl20_ss25ka.h ../runs/headers
+               - cp sico_specs_v5_ant64_b2_future09_ctrl.h ../runs/headers
+               - cp -r pop_push ../src/
+               - pytest tests.py
