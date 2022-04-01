@@ -13,6 +13,7 @@ tests:
                - export TAPENADE_HOME=/builds/shreyasg911/sicopolis/test_ad/tapenade_3.16
                - export PATH=$PATH:$TAPENADE_HOME/bin
                - pwd
+               - ls -a ./*
                - echo $PATH
                - echo $TAPENADE_HOME
                - source $HOME/.bashrc
