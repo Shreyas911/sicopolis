@@ -24,4 +24,4 @@ tests:
                - cp sico_specs_v5_grl20_ss25ka.h ../runs/headers
                - cp sico_specs_v5_ant64_b2_future09_ctrl.h ../runs/headers
                - cp -r pop_push ../src/
-               - pytest tests.py::test_v5_grl20_ss25ka_q_geo
+               - pytest tests.py
