@@ -112,7 +112,8 @@ end do
 
 #endif
 
-!-------- Steady-state displacement of the lithosphere (wss) --------
+!-------- Steady-state displacement of the lithosphere
+!                              (wss, positive downward) --------
 
 #if (REBOUND==0)
 
@@ -207,11 +208,9 @@ call make_zl0()
 
 errormsg = ' >>> calc_gia: Routine make_zl0 successfully completed,' &
          //         end_of_line &
-         //'        isostatically relaxed lithosphere' &
+         //'        isostatically relaxed lithosphere topography' &
          //         end_of_line &
-         //'        topography written on file' &
-         //         end_of_line &
-         //'        (in directory specified by OUT_PATH).' &
+         //'        written on file (in output directory of this run).' &
          //         end_of_line &
          //'        Execution of SICOPOLIS stopped.'
 call error(errormsg)   ! actually not an error,
@@ -223,7 +222,7 @@ end subroutine calc_gia
 
 !-------------------------------------------------------------------------------
 !> Computation of the isostatic steady-state displacement of the lithosphere
-!! (wss) for the ELRA model.
+!! for the elastic-lithosphere (EL) model.
 !<------------------------------------------------------------------------------
 subroutine calc_el(load_ice_water, dxi, deta)
 
@@ -326,8 +325,7 @@ do jl=jl_begin, jl_end
 end do
 end do
 
-!-------- Computation of the steady-state displacement of the lithosphere
-!         (wss, positive downward) --------
+!-------- Steady-state displacement of the lithosphere --------
 
 do i=0, IMAX
 do j=0, JMAX
@@ -375,6 +373,9 @@ subroutine make_zl0()
   use ctrl_m, only: myceiling 
 #endif /* OpenAD */
 
+  use netcdf
+  use nc_check_m
+
 implicit none
 
 integer(i4b)                       :: i, j, m, n, i_f, j_f, n_filter
@@ -386,6 +387,14 @@ real(dp)                           :: dist, weigh, sum_weigh
 character(len=  8)                 :: ch_resolution
 character(len= 64)                 :: ch_model
 character(len=256)                 :: filename, filename_with_path
+
+real(sp), dimension(0:IMAX,0:JMAX) :: zl0_conv
+
+integer(i4b) :: ncid, ncv
+integer(i4b) :: ncd, nc1d, nc2d(2)
+integer(i4b) :: nc1cor_i(1), nc1cor_j(1), nc2cor_ij(2)
+integer(i4b) :: nc1cnt_i(1), nc1cnt_j(1), nc2cnt_ij(2)
+character(len=64), parameter :: thisroutine = 'make_zl0'
 
 !-------- Checking of the grid --------
 
@@ -472,7 +481,7 @@ do j=0, JMAX
 end do
 end do
 
-!-------- Writing on file --------
+!-------- Writing on ASCII file --------
 
 if ( abs(dx-nint(dx)) < eps ) then
    write(ch_resolution, fmt='(i8)') nint(dx)
@@ -499,7 +508,7 @@ filename_with_path = trim(OUT_PATH)//'/'//trim(filename)
 open(23, iostat=ios, file=trim(filename_with_path), recl=rcl1, status='replace')
 
 if (ios /= 0) then
-   errormsg = ' >>> make_zl0: Error when opening the new zl0 file!'
+   errormsg = ' >>> make_zl0: Error when opening the new zl0 ASCII file!'
    call error(errormsg)
 end if
 
@@ -528,6 +537,112 @@ do j=JMAX, 0, -1
 end do
 
 close(23, status='keep')
+
+!-------- Writing on NetCDF file --------
+
+!  ------ Open NetCDF file
+
+filename           = trim(ch_domain_short)//'_'//trim(ch_resolution)
+filename           = trim(filename)//'_zl0_'//trim(ch_model)//'.nc'
+filename_with_path = trim(OUT_PATH)//'/'//trim(filename)
+
+ios = nf90_create(trim(filename_with_path), NF90_NOCLOBBER, ncid)
+
+if (ios /= nf90_noerr) then
+   errormsg = ' >>> make_zl0: Error when opening the new zl0 NetCDF file!'
+   call error(errormsg)
+end if
+
+!  ------ Definition of the dimensions
+
+call check( nf90_def_dim(ncid, 'x', IMAX+1, ncd), thisroutine )
+call check( nf90_def_dim(ncid, 'y', JMAX+1, ncd), thisroutine )
+
+!  ------ Definition of the variables
+
+!    ---- x (= xi)
+
+call check( nf90_inq_dimid(ncid, 'x', nc1d), thisroutine )
+call check( nf90_def_var(ncid, 'x', NF90_DOUBLE, nc1d, ncv), thisroutine )
+call check( nf90_put_att(ncid, ncv, 'units', 'm'), thisroutine )
+call check( nf90_put_att(ncid, ncv, &
+                         'standard_name', 'projection_x_coordinate'), &
+            thisroutine )
+call check( nf90_put_att(ncid, ncv, &
+                         'long_name', 'x-coordinate of the grid point i'), &
+            thisroutine )
+call check( nf90_put_att(ncid, ncv, 'axis', 'x'), thisroutine )
+
+!    ---- y (= eta)
+
+call check( nf90_inq_dimid(ncid, 'y', nc1d), thisroutine )
+call check( nf90_def_var(ncid, 'y', NF90_DOUBLE, nc1d, ncv), thisroutine )
+call check( nf90_put_att(ncid, ncv, 'units', 'm'), thisroutine )
+call check( nf90_put_att(ncid, ncv, &
+                         'standard_name', 'projection_y_coordinate'), &
+            thisroutine )
+call check( nf90_put_att(ncid, ncv, &
+                         'long_name', 'y-coordinate of the grid point j'), &
+            thisroutine )
+call check( nf90_put_att(ncid, ncv, 'axis', 'y'), thisroutine )
+
+!    ---- zl0
+
+call check( nf90_inq_dimid(ncid, 'x', nc2d(1)), thisroutine )
+call check( nf90_inq_dimid(ncid, 'y', nc2d(2)), thisroutine )
+call check( nf90_def_var(ncid, 'zl0', NF90_FLOAT, nc2d, ncv), thisroutine )
+call check( nf90_put_att(ncid, ncv, 'units', 'm'), thisroutine )
+call check( nf90_put_att(ncid, ncv, &
+               'standard_name', &
+               'isostatically_relaxed_bedrock_altitude'), &
+            thisroutine )
+call check( nf90_put_att(ncid, ncv, &
+               'long_name', &
+               'Topography of the isostatically relaxed lithosphere surface'), &
+            thisroutine )
+
+!    ---- End of definitions
+
+call check( nf90_enddef(ncid), thisroutine )
+
+!  ------ Writing variables on file
+
+nc1cor_i = (/ 1 /)
+nc1cnt_i = (/ IMAX+1 /)
+
+nc1cor_j = (/ 1 /)
+nc1cnt_j = (/ JMAX+1 /)
+
+nc2cor_ij = (/ 1, 1 /)
+nc2cnt_ij = (/ IMAX+1, JMAX+1 /)
+
+call check( nf90_inq_varid(ncid, 'x', ncv), thisroutine )
+call check( nf90_put_var(ncid, ncv, xi, &
+                         start=nc1cor_i, count=nc1cnt_i), &
+            thisroutine )
+
+call check( nf90_inq_varid(ncid, 'y', ncv), thisroutine )
+call check( nf90_put_var(ncid, ncv, eta, &
+                         start=nc1cor_j, count=nc1cnt_j), &
+            thisroutine )
+
+do i=0, IMAX
+do j=0, JMAX
+   zl0_conv(i,j) = real(zl0_smoothed(j,i),sp)
+end do
+end do
+
+call check( nf90_inq_varid(ncid, 'zl0', ncv), &
+            thisroutine )
+call check( nf90_put_var(ncid, ncv, zl0_conv, &
+                         start=nc2cor_ij, count=nc2cnt_ij), &
+            thisroutine )
+
+!  ------ Closing of NetCDF file
+
+call check( nf90_sync(ncid), thisroutine )
+
+call check( nf90_close(ncid), thisroutine )
 
 end subroutine make_zl0
 
