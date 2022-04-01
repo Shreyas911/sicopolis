@@ -22,7 +22,7 @@ Welcome to SICOPOLIS-AD v2's user manual
    tapenade/tapenade
    sicopolis/sicopolis
    adjoints_theory/adjoints_theory
-   runnning/running
+   running/running
    utilities/utilities
    acknowledgements/acknowledgements
    references/references
