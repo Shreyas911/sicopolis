@@ -10,7 +10,7 @@ tests:
                - export NETCDF_F90_FLAG=-I/usr/lib64/gfortran/modules
                - export LISDIR=/lis-2.0.30/installation
                - export LIB_NETCDF_F90_FLAG='-L/usr/lib64 -lnetcdff'
-               - export TAPENADE_HOME=/builds/shreyasg911/gitlab-ci-docker/test_ad/tapenade_3.16
+               - export TAPENADE_HOME=/builds/shreyasg911/sicopolis/test_ad/tapenade_3.16
                - export PATH=$PATH:$TAPENADE_HOME/bin
                - echo $PATH
                - echo $TAPENADE_HOME
