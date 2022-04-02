@@ -14,7 +14,7 @@ Welcome to SICOPOLIS-AD v2's user manual
    Shreyas Sunil Gaikwad, Ralf Greve, Laurent Hascoet, Sri Hari Krishna Narayanan, Liz Curry-Logan, Patrick Heimbach
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
    :caption: Contents:
    :numbered: 5
 
@@ -22,6 +22,7 @@ Welcome to SICOPOLIS-AD v2's user manual
    tapenade/tapenade
    sicopolis/sicopolis
    adjoints_theory/adjoints_theory
+   tutorials/tutorials
    running/running
    utilities/utilities
    acknowledgements/acknowledgements
