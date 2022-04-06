@@ -1,5 +1,0 @@
-.. _references:
-
-References
-**********
-
