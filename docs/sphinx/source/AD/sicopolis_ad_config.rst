@@ -18,7 +18,7 @@ Git
 LIS
 ---
 
-Install LIS as explained in the Quick Start Manual. The following commands might be helpful, they are written for the latest version at the time ofwriting.
+Install LIS as explained in the Quick Start Manual. The following commands might be helpful, they are written for the latest version at the time of writing.
 
 ::
 

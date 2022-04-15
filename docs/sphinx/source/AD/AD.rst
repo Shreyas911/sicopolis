@@ -8,8 +8,8 @@ Contributors
 
 Shreyas Sunil Gaikwad, Laurent Hascoet, Sri Hari Krishna Narayanan, Liz Curry-Logan, Ralf Greve, Patrick Heimbach
 
-Introduction
-============
+Introduction and features
+=========================
 
 Configuration
 =============
@@ -25,8 +25,8 @@ Theory and tutorials
    adjoints_theory
    tutorials
 
-Running SICOPOLIS-AD v2
-=======================
+SICOPOLIS-AD v2
+===============
 
 .. toctree::
    running
