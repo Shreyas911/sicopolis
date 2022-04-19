@@ -191,3 +191,20 @@ More details can be found `here <http://www.sicopolis.net/>`__.
 
 Initial configuration
 ===================== 
+
+In addition to the steps above, the following steps need to be performed from the root of the repository- 
+
+* Copy template header files from ``runs/headers/templates`` to ``runs/headers``.
+
+::
+
+    ./copy_templates.sh
+
+* Get the input files needed for both Greenland and Antarctica.
+
+::
+
+    ./get_input_files.sh
+
+* Locate the file ``sico_environment.sh`` in the directory ``sicopolis/runs``, open it with a text editor, and replace the "Default" entry for ``SICO_INSTITUTION`` by the name of your institution (max. 256 characters).
+

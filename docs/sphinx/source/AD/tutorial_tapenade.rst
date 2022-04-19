@@ -197,7 +197,7 @@ The code for the finite differences can be found in the :ref:`t2_Driver`.
 Tangent Linear model
 ====================
 
-The tangent linear model is described in detail in :doc:`The Mathematics of Adjoints <adjoints_theory>` and :doc:`Tutorial 1 <tutorial_self_ad>`.
+The tangent linear model is described in detail in :doc:`Tutorial 1 <tutorial_self_ad>`. Another excellent resource is the `MITgcm documentation <https://mitgcm.readthedocs.io/en/latest/autodiff/autodiff.html#some-basic-algebra>`__.
 
 Generating Tangent Linear model code using Tapenade
 ---------------------------------------------------
@@ -426,7 +426,7 @@ This generates 2 files -
 Adjoint Model
 =============
 
-The adjoint model is described in detail in :doc:`The Mathematics of Adjoints <adjoints_theory>` and :doc:`Tutorial 1 <tutorial_self_ad>`.
+The adjoint model is described in detail in :doc:`Tutorial 1 <tutorial_self_ad>`. Another excellent resource is the `MITgcm documentation <https://mitgcm.readthedocs.io/en/latest/autodiff/autodiff.html#some-basic-algebra>`__.
 
 Generating Adjoint model code using Tapenade
 --------------------------------------------
