@@ -1,4 +1,4 @@
-all: drivergrdchk_cov drivergrdchk driveradjoint driverforward cov
+all: drivergrdchk_cov drivergrdchk driveradjoint driverforward cov drivernormal
 
 ifndef F90C
 F90C=gfortran
@@ -65,6 +65,10 @@ CFLAGS_COV= --coverage -fprofile-arcs -ftest-coverage -O0 -g
 
 F90FLAGS= -O3 -g -DRUN_SPECS_HEADER=\"sico_specs.h\" -mcmodel=medium -fno-range-check -ffpe-trap=invalid,zero 
 CFLAGS= -O3 -g
+
+IN_PATH_NORMAL=../sico_in
+OUT_PATH_NORMAL=../sico_out/N_${HEADER}
+DEFINE_FLAGS_NORMAL= -DALLOW_NORMAL -DIN_PATH=\"${IN_PATH_NORMAL}\" -DOUT_PATH=\"${OUT_PATH_NORMAL}\" -DNETCDF=1
 
 IN_PATH_GRDCHK=../sico_in
 OUT_PATH_GRDCHK=../sico_out/GRDCHK_${HEADER}
@@ -499,6 +503,12 @@ INDIR=../sico_in
 RESDIR=../sico_out/$(HEADER)
 sico_specs.h: ../runs/headers/sico_specs_$(HEADER).h
 	cp $^ sico_specs.h
+
+drivernormal: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_COST) $(SRC)
+	sed -i 's/&__NL__//g' sico_specs.h
+	${F90C} -I./ -ffree-line-length-none ${F90FLAGS} ${DEFINE_FLAGS_NORMAL} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
+	${F90C} -ffree-line-length-none ${F90FLAGS} -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
+
 
 drivergrdchk: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_COST) $(SRC)
 	sed -i 's/&__NL__//g' sico_specs.h

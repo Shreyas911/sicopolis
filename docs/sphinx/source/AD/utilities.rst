@@ -58,6 +58,37 @@ Automation using Python scripts
  
 The Python functions get updated frequently, therfore the sections that follow are only supposed to serve as a basic guideline on what is possible using these scripts. With very little modifications, these scripts can be used to serve other purposes too.
 
+Automated Normal Mode
+---------------------
+
+To run the SICOPOLIS code normally (within the AD context, this is generally used to evaluate the cost function ``fc`` during calibration),
+
+1. Remove the old output file that ``SICOPOLIS`` generates.
+
+.. code-block:: python
+
+   process = subprocess.run (['rm', '-r', f'../sico_out/N_{header}'])
+
+2. Compile the code
+
+.. code-block:: python
+
+   compile_code(mode = 'normal', header = header, domain = domain,
+                clean = True, dep_var=dep_var, ind_vars = ind_var)
+
+3. Run the executable
+
+.. code-block:: python
+
+   run_executable('normal')
+
+All of the above steps are bundled within the ``simulation`` function, which can be run as follows -
+
+.. code-block:: python
+
+   simulation(mode = 'normal', header = header, domain = domain,
+                      run_executable_auto = True)
+
 Automated Finite Differences
 ----------------------------
 
