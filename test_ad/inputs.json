@@ -7,7 +7,7 @@
     "perturbation": 0.001,
     "checkpoint": 4,
     "travis": false,
-    "dimension": null,
+    "dimension": 2,
     "z_co_ord": null,
     "output_vars": [
         "H",

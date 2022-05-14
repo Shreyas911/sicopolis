@@ -208,3 +208,10 @@ In addition to the steps above, the following steps need to be performed from th
 
 * Locate the file ``sico_environment.sh`` in the directory ``sicopolis/runs``, open it with a text editor, and replace the "Default" entry for ``SICO_INSTITUTION`` by the name of your institution (max. 256 characters).
 
+* Ensure that the Tapenade files are stored in ``src/pop_push``. The simplest way to do it is to copy the version available in ``test_ad/pop_push``.
+
+::
+
+    cp -r test_ad/pop_push src/
+
+    

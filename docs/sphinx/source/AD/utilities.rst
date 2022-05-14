@@ -330,7 +330,7 @@ A sample ``inputs.json`` file is provided here that acts as a "header" file for 
        "perturbation": 0.001,
        "checkpoint": 4,
        "travis": false,
-       "dimension": null,
+       "dimension": 2,
        "z_co_ord": null,
        "output_vars": ["H", "vx_c", "vy_c", "H", "vx_c", "vy_c", "H", "vx_c", "vy_c", "H", "vx_c", "vy_c"],
        "output_dims": [-1, 40, 40, -1, 40, 40, -1, 40, 40],
