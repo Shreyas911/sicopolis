@@ -950,7 +950,7 @@ save
 !> end_of_line: End-of-line string
    character, parameter :: end_of_line = char(10)
 
-#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE)) /* Tapenade */
+#if (defined(ALLOW_NORMAL) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE)) /* Tapenade */
 !> fc: scalar cost function
    real(dp) :: fc
 #if (defined(AGE_COST))
