@@ -1818,8 +1818,8 @@ file='subroutines/tapenade/BedMachine_thickness_10km.dat', status='old')
     open(unit=93, &
 file='subroutines/tapenade/BedMachine_err_thickness_10km.dat', status='old')
 
-       do i=0,JMAX
-          do j=0,IMAX
+       do i=0,IMAX
+          do j=0,JMAX
              read(92, *) H_BedMachine_data(j,i)
              read(93, *) H_unc_BedMachine_data(j,i)
           end do
