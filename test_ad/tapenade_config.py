@@ -70,7 +70,7 @@ def modify_file(filename, ref_string, new_string,
 		sys.exit(1)
 
 def compile_code(mode, header, domain, 
-	clean = True, travis_ci ='', dep_var=None, ind_vars = None):
+	clean = True, dep_var=None, ind_vars = None):
 
 
 	'''
@@ -104,8 +104,7 @@ def compile_code(mode, header, domain,
 			f'HEADER={header} '
 			f'DOMAIN_SHORT={domain} '
 			f'DEP_VAR={dep_var} '
-			f'IND_VARS={ind_vars} '
-			f'{travis_ci}', 
+			f'IND_VARS={ind_vars} ', 
 			shell = True, 
 			check = True)
 
@@ -762,7 +761,7 @@ def simulation(mode, header, domain,
 	      block_imin = None, block_imax = None, block_jmin = None, block_jmax = None,
 	      output_vars = [], output_iters = [], output_dims = [],
 	      output_adj_vars = [], output_adj_iters = [], output_adj_dims = [],
-	      ckp_status = False, ckp_num = 10,
+	      ckp_status = False, ckp_num = 10, validation = True,
 	      numCore_cpp_b_file = 'numCore_cpp_b.f90',
 	      sico_main_loop_m_cpp_b_file = 'sico_main_loop_m_cpp_b.f90'):
 
@@ -865,6 +864,18 @@ def simulation(mode, header, domain,
 			run_executable('adjoint')
 			print(f'adjoint execution complete for {header}.')
 
+		if validation is True:
+			pert = f'{perturbation:.2e}'.upper()
+			grdchk_file = f'GradientVals_{ind_var}_{pert}_{header}_limited.dat'
+			adjoint_file = f'AdjointVals_{ind_var}b_{header}_limited.dat'
+
+			if os.path.exists(grdchk_file) is False:
+				raise FileNotFoundError (f'{grdchk_file} not found for validation')
+			if os.path.exists(adjoint_file) is False:
+				raise FileNotFoundError (f'{adjoint_file} not found for validation')
+
+			validate_FD_AD(grdchk_file, adjoint_file, tolerance = 0.1)
+
 	elif mode == 'forward':
 
 		setup_forward(ind_var = ind_var, header = header, domain = domain,
@@ -882,6 +893,18 @@ def simulation(mode, header, domain,
 		if run_executable_auto is True:
 			run_executable('forward')
 			print(f'TLM execution complete for {header}.')
+
+		if validation is True:
+			pert = f'{perturbation:.2e}'.upper()
+			grdchk_file = f'GradientVals_{ind_var}_{pert}_{header}_limited.dat'
+			tlm_file = f'ForwardVals_{ind_var}_{header}_limited.dat'
+
+			if os.path.exists(grdchk_file) is False:
+				raise FileNotFoundError (f'{grdchk_file} not found for validation')
+			if os.path.exists(tlm_file) is False:
+				raise FileNotFoundError (f'{tlm_file} not found for validation')
+
+			validate_FD_AD(grdchk_file, tlm_file, tolerance = 0.1)
 	
 	elif mode == 'normal':
 
@@ -917,7 +940,6 @@ if __name__ == "__main__":
 	parser.add_argument("-iv", "--ind_var", help="name of independent variable", type=str)
 	parser.add_argument("-delta", "--perturbation", help="value of perturbation for grdchk", type=float)
 	parser.add_argument("-ckp", "--checkpoint", help="number of steps in checkpointing", type=int)
-	parser.add_argument("--travis", help="travis setup", action="store_true")
 	parser.add_argument("-dim", "--dimension", help="2D or 3D independent variable, default 2D", type=int)
 	parser.add_argument("-z", "--z_co_ord", help="z co-ordinate if 3D variable", type=int)
 	parser.add_argument('-ov','--output_vars', nargs='+', help='List the fields you want to output')
@@ -926,6 +948,7 @@ if __name__ == "__main__":
 	parser.add_argument('-oav','--output_adj_vars', nargs='+', help='List the adjoint fields you want to output')
 	parser.add_argument('-oad', '--output_adj_dims', nargs='+', help='List the z-coord of adjoint output vars, -1 if 2D')
 	parser.add_argument('-oai', '--output_adj_iters', nargs='+', help='List the iter num of adjoint output vars, -1 if itercount_max')
+	parser.add_argument("--run", help="Run the executables?", action="store_true")
 
 	args = parser.parse_args()
 
@@ -951,13 +974,10 @@ if __name__ == "__main__":
 	if hasattr(args, 'checkpoint'):
 		ckp_status = True
 
-	if not hasattr(args, 'dimension'):
-		args.dimension = 2
-
 	list_attrs = ['json', 'header', 'domain', 'ind_var', 'dep_var',
 		      'dimension', 'z_co_ord', 'perturbation', 'output_vars',
 		      'output_iters', 'output_dims', 'output_adj_vars', 
-                      'output_adj_iters', 'output_adj_dims', 'checkpoint']
+                      'output_adj_iters', 'output_adj_dims', 'checkpoint', 'run']
 
 	for attr in list_attrs:
 		if not hasattr(args, attr):
@@ -970,7 +990,7 @@ if __name__ == "__main__":
 		      limited_or_block_or_full = 'limited',
 		      ind_var_dim = args.dimension, ind_var_z_co_ord = args.z_co_ord,
 		      perturbation = args.perturbation,
-		      run_executable_auto = True,
+		      run_executable_auto = args.run,
 		      output_vars = args.output_vars, output_iters = args.output_iters, output_dims = args.output_dims,
 		      output_adj_vars = args.output_adj_vars, output_adj_iters = args.output_adj_iters, output_adj_dims = args.output_adj_dims,
 		      ckp_status = ckp_status, ckp_num = args.checkpoint)	
