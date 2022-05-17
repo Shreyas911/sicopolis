@@ -1,6 +1,6 @@
 {
     "json": "inputs.json",
-    "header": "grl10_bm3_paleo17a",
+    "header": "v5_grl20_ss25ka",
     "domain": "grl",
     "dep_var": "fc",
     "ind_var": "H",
