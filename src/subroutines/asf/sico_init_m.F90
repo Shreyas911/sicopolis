@@ -54,8 +54,7 @@ subroutine sico_init(delta_ts, glac_index, &
                time, time_init, time_end, time_output, &
                dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
                z_mar, &
-               ndat2d, ndat3d, n_output, &
-               runname)
+               ndat2d, ndat3d, n_output)
 
   use compare_float_m
   use ice_material_properties_m, only : ice_mat_eqs_pars
@@ -90,9 +89,8 @@ real(dp),           intent(out) :: dtime, dtime_temp, dtime_wss, &
 real(dp),           intent(out) :: time, time_init, time_end, time_output(100)
 real(dp),           intent(out) :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
 real(dp),           intent(out) :: z_mar
-character(len=100), intent(out) :: runname
 
-integer(i4b)       :: i, j, kc, kt, kr, m, n, ir, jr
+integer(i4b)       :: i, j, kc, kt, kr, m, n, ir, jr, n1, n2
 integer(i4b)       :: ios
 integer(i4b)       :: ierr
 integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_ref
@@ -102,7 +100,7 @@ real(dp)           :: time_init0, time_end0
 real(dp)           :: time_output0(N_OUTPUT)
 #endif
 real(dp)           :: d_dummy
-character(len=100) :: anfdatname
+character(len=256) :: anfdatname
 character(len=256) :: filename_with_path
 character(len=256) :: shell_command
 character(len= 64) :: ch_var_name
@@ -464,8 +462,12 @@ end do
 
 !-------- Specification of current simulation --------
 
-runname    = RUNNAME
-anfdatname = ANFDATNAME
+n1 = len('sico_specs_')+1
+n2 = len(trim(RUN_SPECS_HEADER))-len('.h')
+run_name = trim(RUN_SPECS_HEADER)
+run_name = run_name(n1:n2)
+
+anfdatname = trim(ANFDATNAME)
 
 #if (defined(YEAR_ZERO))
 year_zero  = YEAR_ZERO
@@ -571,7 +573,7 @@ shell_command = trim(shell_command)//' '//'; fi'
 call system(trim(shell_command))
      ! Check whether directory OUT_PATH exists. If not, it is created.
 
-filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'.log'
+filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.log'
 
 open(10, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -1823,7 +1825,7 @@ call error(errormsg)
 
 !  ------ Time-series file for the ice sheet on the whole
 
-filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'.ser'
+filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.ser'
 
 open(12, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -1868,7 +1870,7 @@ end if
 
 n_core = 0   ! No boreholes defined
 
-filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'.core'
+filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.core'
 
 open(14, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -2412,7 +2414,7 @@ y_surf = phi_surf
 
 !---------open files for writing the different fields at these locations
 
-filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'_zb.dat'
+filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'_zb.dat'
 
 open(41, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -2427,7 +2429,7 @@ end if
    4001 format('%Time series of the bedrock for 163 surface points')
    4002 format('%------------------------------------------------')
 
-filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'_zs.dat'
+filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'_zs.dat'
 
 open(42, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -2441,7 +2443,7 @@ end if
 
    4011 format('%Time series of the surface for 163 surface points')
 
-filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'_accum.dat'
+filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'_accum.dat'
 
 open(43, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -2455,7 +2457,7 @@ end if
 
    4021 format('%Time series of the accumulation for 163 surface points')
 
-filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'_as_perp.dat'
+filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'_as_perp.dat'
 
 open(44, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -2469,7 +2471,7 @@ end if
 
    4031 format('%Time series of the as_perp for 163 surface points')
 
-filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'_snowfall.dat'
+filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'_snowfall.dat'
 
 open(45, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -2483,7 +2485,7 @@ end if
 
    4041 format('%Time series of the snowfall for 163 surface points')
 
-filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'_rainfall.dat'
+filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'_rainfall.dat'
 
 open(46, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -2497,7 +2499,7 @@ end if
 
    4051 format('%Time series of the rainfall for 163 surface points')
 
-filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'_runoff.dat'
+filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'_runoff.dat'
 
 open(47, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -2511,7 +2513,7 @@ end if
 
    4061 format('%Time series of the runoff for 163 surface points')
 
-filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'_vx_s.dat'
+filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'_vx_s.dat'
 
 open(48, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -2525,7 +2527,7 @@ end if
 
    4071 format('%Time series of the x-component of the horizontal surface velocity for 163 surface points')
 
-filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'_vy_s.dat'
+filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'_vy_s.dat'
 
 open(49, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -2539,7 +2541,7 @@ end if
 
    4081 format('%Time series of the y-component of the horizontal surface velocity for 163 surface points')
 
-filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'_vz_s.dat'
+filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'_vz_s.dat'
 
 open(50, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -2553,7 +2555,7 @@ end if
 
    4091 format('%Time series of the vertical surface velocity component for 163 surface points')
 
-filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'_vx_b.dat'
+filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'_vx_b.dat'
 
 open(51, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -2567,7 +2569,7 @@ end if
 
    4101 format('%Time series of the x-component of the horizontal basal velocity for 163 surface points')
 
-filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'_vy_b.dat'
+filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'_vy_b.dat'
 
 open(52, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -2581,7 +2583,7 @@ end if
 
    4111 format('%Time series of the y-component of the horizontal basal velocity for 163 surface points')
 
-filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'_vz_b.dat'
+filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'_vz_b.dat'
 
 open(53, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -2595,7 +2597,7 @@ end if
 
    4121 format('%Time series of the vertical basal velocity component for 163 surface points')
 
-filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'_temph_b.dat'
+filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'_temph_b.dat'
 
 open(54, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -2640,7 +2642,7 @@ end if
 #endif
 
    if (flag_init_output) &
-      call output1(runname, time_init, delta_ts, glac_index, &
+      call output1(time_init, delta_ts, glac_index, &
                    flag_3d_output, ndat2d, ndat3d)
 
 #elif (OUTPUT==2)
@@ -2656,7 +2658,7 @@ if (time_output(1) <= time_init+eps) then
    call error(errormsg)
 #endif
 
-   call output1(runname, time_init, delta_ts, glac_index, &
+   call output1(time_init, delta_ts, glac_index, &
                 flag_3d_output, ndat2d, ndat3d)
 
 end if
@@ -2666,14 +2668,14 @@ end if
    flag_3d_output = .false.
 
    if (flag_init_output) &
-      call output1(runname, time_init, delta_ts, glac_index, &
+      call output1(time_init, delta_ts, glac_index, &
                    flag_3d_output, ndat2d, ndat3d)
 
 if (time_output(1) <= time_init+eps) then
 
    flag_3d_output = .true.
 
-   call output1(runname, time_init, delta_ts, glac_index, &
+   call output1(time_init, delta_ts, glac_index, &
                 flag_3d_output, ndat2d, ndat3d)
 
 end if
@@ -3121,7 +3123,7 @@ subroutine topography3(dxi, deta, anfdatname)
 
 implicit none
 
-character(len=100), intent(in) :: anfdatname
+character(len=256), intent(in) :: anfdatname
 
 real(dp),          intent(out) :: dxi, deta
 

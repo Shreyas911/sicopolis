@@ -48,7 +48,6 @@ contains
                       dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
                       z_mar, &
                       ndat2d, ndat3d, n_output, &
-                      runname, &
                       itercount,iter_temp,iter_wss,iter_ser,&
                       iter_out,iter_output)
 
@@ -85,7 +84,6 @@ contains
                                        dtime_out, dtime_ser
   real(dp),           intent(in)    :: time_init, time_end, time_output(100)
   real(dp),           intent(in)    :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
-  character(len=100), intent(in)    :: runname
 
   integer(i4b),       intent(inout) :: ndat2d, ndat3d
   real(dp),           intent(inout) :: delta_ts, glac_index

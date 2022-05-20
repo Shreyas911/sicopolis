@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2022-01-03
+!! 2022-05-20
 !!
 !! @section Copyright
 !!
@@ -32,13 +32,6 @@
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS.  If not, see <http://www.gnu.org/licenses/>.
 !<
-!-------------------------------------------------------------------------------
-!
-!    To be executed with the bash script resolution_doubler.job:
-!      './resolution_doubler.job runname'
-!    where runname is the name of the simulation for which
-!    resolution doubling of time-slice output is to be performed.
-!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------- Inclusion of specification header --------
@@ -230,25 +223,28 @@ use resolution_doubler_vars
 
 implicit none
 
-integer(i4b) :: i, j
+integer(i4b) :: i, j, n1, n2
 integer(i4b) :: forcing_flag
-character(len=256) :: runname
+character(len=256) :: run_name
 character(len=  4) :: ergnum
 
-runname = RUNNAME
+n1 = len('sico_specs_')+1
+n2 = len(trim(RUN_SPECS_HEADER))-len('.h')
+run_name = trim(RUN_SPECS_HEADER)
+run_name = run_name(n1:n2)
 
-call read_nc(runname, ergnum, forcing_flag)
+call read_nc(run_name, ergnum, forcing_flag)
 
 call double_res_interpol
 
-call write_nc_double(runname, ergnum, forcing_flag)
+call write_nc_double(run_name, ergnum, forcing_flag)
 
 contains
 
 !-------------------------------------------------------------------------------
 !> Reading of data of time-slice files *.nc (NetCDF format).
 !<------------------------------------------------------------------------------
-subroutine read_nc(runname, ergnum, forcing_flag)
+subroutine read_nc(run_name, ergnum, forcing_flag)
 
 use resolution_doubler_types
 use resolution_doubler_vars
@@ -256,7 +252,7 @@ use netcdf
 
 implicit none
 
-character(len=256), intent(in)  :: runname
+character(len=256), intent(in)  :: run_name
 
 character(len=  4), intent(out) :: ergnum
 integer(i4b),       intent(out) :: forcing_flag
@@ -288,14 +284,14 @@ A_floating_erg = 0.0_dp
 !-------- Enter name of time-slice file --------
 
 write(6,'(1x,a)') ' '
-write(6,'(1x,a,a)') 'Name of run: ', trim(runname)
+write(6,'(1x,a,a)') 'Name of run: ', trim(run_name)
 write(6,'(1x,a)',advance='no') &
 'Number of time-slice file (with leading zeros, 4 digits) > '
 read (5,'(a)') ergnum
 
 !-------- Name of time-slice file --------
 
-filename = trim(runname)//trim(ergnum)//'.nc'
+filename = trim(run_name)//trim(ergnum)//'.nc'
 
 !-------- Reading of data from time-slice file --------
 
@@ -1787,7 +1783,7 @@ end subroutine double_res_interpol
 !-------------------------------------------------------------------------------
 !> Writing of double resolution data on NetCDF file.
 !<------------------------------------------------------------------------------
-subroutine write_nc_double(runname, ergnum, forcing_flag)
+subroutine write_nc_double(run_name, ergnum, forcing_flag)
 
 use resolution_doubler_types
 use resolution_doubler_vars
@@ -1796,7 +1792,7 @@ use netcdf
 implicit none
 
 integer(i4b),       intent(in) :: forcing_flag
-character(len=256), intent(in) :: runname
+character(len=256), intent(in) :: run_name
 character(len=  4), intent(in) :: ergnum
 
 integer(i4b) :: ios
@@ -1867,7 +1863,7 @@ coord_id(3) = 'zeta_c'; coord_id(4) = 'zeta_t'; coord_id(5) = 'zeta_r'
 
 write (6,'(/a)') ' Now opening new NetCDF file ...'
 
-filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'_dbl_'// &
+filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'_dbl_'// &
                      trim(ergnum)//'.nc'
 
 ios = nf90_create(trim(filename_with_path), NF90_NOCLOBBER, ncid)
@@ -1882,7 +1878,7 @@ end if
 !  ------ Global attributes
 
 buffer = 'Time-slice output no. '//trim(ergnum)//' '// &
-         'of simulation '//trim(runname)//' (doubled horizontal resolution)'
+         'of simulation '//trim(run_name)//' (doubled horizontal resolution)'
 call check( nf90_put_att(ncid, NF90_GLOBAL, 'title', trim(buffer)) )
 
 call set_ch_institution(buffer)
