@@ -4,14 +4,11 @@
 
 !-------- Basic settings --------
 
-#define RUNNAME 'v5_asf2_surge'
-!                      Name of simulation
-
 #define SICO_VERSION '5-dev'
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2022-03-19'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2022-05-20'
 !                      Date of last change
 
 !-------- Domain --------

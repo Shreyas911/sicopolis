@@ -194,12 +194,11 @@ contains
 !! commented out below) are certainly possible, and 
 !! recommended! 
 !<------------------------------------------------------------------------------
-  subroutine cost_final(runname)
+  subroutine cost_final()
   
   implicit none
   
-  integer(i4b) :: i, j, k, kc, kt, ios, KDATA 
-  character(len=100), intent(out) :: runname
+  integer(i4b) :: i, j, k, kc, kt, ios, KDATA
   
   !-------- Calculate the difference between the modeled and 'observed' ages:
 #ifdef AGE_COST
@@ -250,13 +249,13 @@ print *, '           AGE_COST simulations'
   !-------- Write final cost to a file:
   open(unit=97, iostat=ios, &
 #ifndef ALLOW_OPENAD
-       file=trim(OUT_PATH)//'/'//trim(runname)//'_COST.dat', &
+       file=trim(OUT_PATH)//'/'//trim(run_name)//'_COST.dat', &
 #else
        file='AD_COST', &
 #endif
        status='new')
   write(unit=97, fmt='(f26.6)') fc
-  write(unit=97, fmt='(2a)') 'Final cost, fc = ', runname
+  write(unit=97, fmt='(2a)') 'Final cost, fc = ', run_name
   close(unit=97)
   
   end subroutine cost_final

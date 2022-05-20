@@ -55,7 +55,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Writing of time-slice files in NetCDF format.
 !<------------------------------------------------------------------------------
-subroutine output1(runname, time, delta_ts, glac_index, &
+subroutine output1(time, delta_ts, glac_index, &
                    flag_3d_output, ndat2d, ndat3d, &
                    opt_flag_compute_flux_vars_only)
 
@@ -73,7 +73,6 @@ subroutine output1(runname, time, delta_ts, glac_index, &
 implicit none
 
 real(dp),           intent(in) :: time, delta_ts, glac_index
-character(len=100), intent(in) :: runname
 logical,            intent(in) :: flag_3d_output
 
 logical, optional,  intent(in) :: opt_flag_compute_flux_vars_only
@@ -325,9 +324,9 @@ endif
 write(ch_ndat, '(i0.4)') ndat
 
 if (flag_3d_output) then
-   filename = trim(runname)//ch_ndat//trim(filename_extension)
+   filename = trim(run_name)//ch_ndat//trim(filename_extension)
 else
-   filename = trim(runname)//'_2d_'//ch_ndat//trim(filename_extension)
+   filename = trim(run_name)//'_2d_'//ch_ndat//trim(filename_extension)
 end if
 
 filename_with_path = trim(OUT_PATH)//'/'//trim(filename)
@@ -356,7 +355,7 @@ end if
 !  ------ Global attributes
 
 buffer = 'Time-slice output no. '//ch_ndat//' of simulation ' &
-                                 //trim(runname)
+                                 //trim(run_name)
 call check( nf90_put_att(ncid, NF90_GLOBAL, 'title', trim(buffer)), &
             thisroutine )
 
@@ -4695,10 +4694,10 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !  ------ Open NetCDF file
 
       if (n==0) then
-         filename = trim(RUNNAME)//'_ser.nc'
+         filename = trim(run_name)//'_ser.nc'
       else
          write(ch2_aux, '(i0.2)') n
-         filename = trim(RUNNAME)//'_ser_region'//ch2_aux//'.nc'
+         filename = trim(run_name)//'_ser_region'//ch2_aux//'.nc'
       end if
 
       filename_with_path = trim(OUT_PATH)//'/'//trim(filename)
@@ -4716,7 +4715,7 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 
 !  ------ Global attributes
 
-      buffer = 'Time-series output of simulation '//trim(RUNNAME)
+      buffer = 'Time-series output of simulation '//trim(run_name)
       if (n>0) buffer = trim(buffer)//' (region '//ch2_aux//')'
       call check( nf90_put_att(ncid(n), NF90_GLOBAL, 'title', trim(buffer)), &
                   thisroutine )
@@ -6170,7 +6169,7 @@ if (n_core >= 1) then
 
 !  ------ Open NetCDF file
 
-      filename           = trim(RUNNAME)//'_core.nc'
+      filename           = trim(run_name)//'_core.nc'
       filename_with_path = trim(OUT_PATH)//'/'//trim(filename)
 
       ios = nf90_create(trim(filename_with_path), NF90_NOCLOBBER, ncid)
@@ -6187,7 +6186,7 @@ if (n_core >= 1) then
 !  ------ Global attributes
 
       buffer = 'Time-series output for the deep ice cores of simulation '// &
-               trim(RUNNAME)
+               trim(run_name)
       call check( nf90_put_att(ncid, NF90_GLOBAL, 'title', trim(buffer)), &
                   thisroutine )
 

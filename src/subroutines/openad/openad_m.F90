@@ -108,7 +108,6 @@ contains
    real(dp)           :: time, time_init, time_end, time_output(100)
    real(dp)           :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
    real(dp)           :: z_mar
-   character(len=100) :: runname
    
    !-------- Variable declarations needed for this routine specifically
    real(dp)                          :: orig_val, perturb_val = 5e-2
@@ -118,7 +117,7 @@ contains
    integer(i4b), parameter           :: points = 5
    integer(i4b), dimension(points)   :: ipoints, jpoints
    integer(i4b)                      :: i, j, p, d
-   character(len=100)                :: fname
+   character(len=256)                :: fname
    
    !-------- This array holds the direction of perturbations to follow:
    direction(1) = 0
@@ -141,9 +140,9 @@ contains
    end do
 
    !-------- Initialize output files 
-   open(99, file='GradientVals_'//trim(RUNNAME)//'.dat',&
+   open(99, file='GradientVals_'//trim(run_name)//'.dat',&
        form="FORMATTED", status="REPLACE")
-   open(98, file='CostVals_'//trim(RUNNAME)//'.dat',&
+   open(98, file='CostVals_'//trim(run_name)//'.dat',&
        form="FORMATTED", status="REPLACE")
    
    !-------- Loop over points
@@ -167,8 +166,7 @@ contains
                  time, time_init, time_end, time_output, &
                  dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
                  z_mar, &
-                 ndat2d, ndat3d, n_output, &
-                 runname)
+                 ndat2d, ndat3d, n_output)
 
             perturbation = 1 + direction(d) * perturb_val 
 
@@ -220,10 +218,9 @@ contains
                  time, time_init, time_end, time_output, &
                  dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
                  z_mar, &
-                 ndat2d, ndat3d, n_output, &
-                 runname)
+                 ndat2d, ndat3d, n_output)
           
-            call cost_final(runname)
+            call cost_final()
             call sico_end
        
             ! store cost
@@ -305,7 +302,6 @@ contains
   real(dp)                                   :: dxi, deta, dzeta_c, &
                                                 dzeta_t, dzeta_r
   real(dp)                                   :: z_mar
-  character(len=100)                         :: runname
 
   our_rev_mode%arg_store  = .false.
   our_rev_mode%arg_restore= .false.
@@ -325,8 +321,7 @@ contains
       time, time_init, time_end, time_output, &
       dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
       z_mar, &
-      ndat2d, ndat3d, n_output, &
-      runname)
+      ndat2d, ndat3d, n_output)
 
  call var_transfer&
       (mask, mask_old, mask_new, &
@@ -443,8 +438,7 @@ contains
       time, time_init, time_end, time_output, &
       dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
       z_mar, &
-      ndat2d, ndat3d, n_output, &
-      runname)
+      ndat2d, ndat3d, n_output)
 
       if(ISADJOINT) then
         our_rev_mode%tape=.FALSE.
@@ -455,9 +449,8 @@ contains
         time, time_init, time_end, time_output, &
         dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
         z_mar, &
-        ndat2d, ndat3d, n_output, &
-        runname)
-        call print_output(runname)
+        ndat2d, ndat3d, n_output)
+        call print_output()
         call oad_tape_delete()
       else 
         if(ISTAPE.eqv..true.) call oad_tape_delete()
@@ -1606,7 +1599,7 @@ contains
 !!  will be printed is zeros anyway. And again, write to
 !!  liz.curry.logan@gmail.com with error messages. 
 !!<------------------------------------------------------------------------------
-  subroutine print_output(runname) 
+  subroutine print_output()
 
   use OAD_active
   use oad_sico_variables_m
@@ -1616,7 +1609,6 @@ contains
   integer(i4b), parameter           :: points = 5
   integer(i4b), dimension(points)   :: ipoints, jpoints
   integer                           :: i, j, p
-  character(len=100), intent(out)   :: runname
  
 #if (!defined(ANT) && !defined(GRL))
   print *, "Adjoint mode only for Antarctica and Greenland right now."
