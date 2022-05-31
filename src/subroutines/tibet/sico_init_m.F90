@@ -242,6 +242,8 @@ call error(errormsg)
 !-------- Compatibility check of the horizontal resolution with the
 !         number of grid points --------
 
+#if (!defined(CHECK_RES_IMAX_JMAX) || CHECK_RES_IMAX_JMAX==1)
+
 #if (GRID==0 || GRID==1)
 
    errormsg = ' >>> sico_init: ' &
@@ -283,6 +285,15 @@ else
 end if
 
 #endif
+
+#else /* CHECK_RES_IMAX_JMAX==0 */
+
+write(6, fmt='(a)') ' >>> sico_init: CHECK_RES_IMAX_JMAX==0'
+write(6, fmt='(a)') '      -> compatibility check between horizontal resolution'
+write(6, fmt='(a)') '         and number of grid points not performed.'
+write(6, fmt='(a)') ' '
+
+#endif /* CHECK_RES_IMAX_JMAX */
 
 !-------- Compatibility check of the thermodynamics mode
 !         (cold vs. polythermal vs. enthalpy method)
@@ -610,6 +621,11 @@ write(10, fmt=trim(fmt3)) 'dlambda =', DLAMBDA
 write(10, fmt=trim(fmt3)) 'dphi    =', DPHI
 #endif
 write(10, fmt=trim(fmt1)) ' '
+
+#if (defined(CHECK_RES_IMAX_JMAX))
+write(10, fmt=trim(fmt2)) 'CHECK_RES_IMAX_JMAX = ', CHECK_RES_IMAX_JMAX
+write(10, fmt=trim(fmt1)) ' '
+#endif
 
 write(10, fmt=trim(fmt3)) 'year_zero  =', year_zero
 write(10, fmt=trim(fmt3)) 'time_init  =', time_init0
