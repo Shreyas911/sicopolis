@@ -4,14 +4,11 @@
 
 !-------- Basic settings --------
 
-#define RUNNAME 'v5_tibet_test'
-!                      Name of simulation
-
 #define SICO_VERSION '5-dev'
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2022-03-19'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2022-05-30'
 !                      Date of last change
 
 !-------- Domain --------
@@ -37,13 +34,13 @@
 !-------- Type of grid, spatial resolution --------
 
 #define GRID 2
-!                         0 : Cartesian coordinates in the stereographic plane
-!                             without distortion correction
-!                             [not allowed for this application]
-!                         1 : Cartesian coordinates in the stereographic plane
-!                             with distortion correction
-!                             [not allowed for this application]
-!                         2 : Geographical coordinates (longitude/latitude)
+!                       0 : Cartesian coordinates in the stereographic plane
+!                           without distortion correction
+!                           [not allowed for this application]
+!                       1 : Cartesian coordinates in the stereographic plane
+!                           with distortion correction
+!                           [not allowed for this application]
+!                       2 : Geographical coordinates (longitude/latitude)
 
 #define LAMBDA_0 65.0d0
 !                       x coordinate (longitude, in deg) of the origin point
@@ -91,6 +88,12 @@
 !                       Exponential stretch parameter of the non-equidistant
 !                       grid in z-direction in cold ice
 !                       (0.0d0 produces an equidistant grid)
+
+#define CHECK_RES_IMAX_JMAX 1
+!                       Compatibility check between horizontal resolution
+!                       and number of grid points:
+!                       0 : Not carried out
+!                       1 : Carried out
 
 !-------- Initial and final times, time steps --------
 

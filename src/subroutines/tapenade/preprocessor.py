@@ -73,7 +73,7 @@ cost_str="""
 """
 
 dep_str="""
-call cost_final(runname)
+call cost_final()
 call sico_end()
 
 !#ifdef ALLOW_TAPENADE

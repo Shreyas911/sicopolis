@@ -325,7 +325,7 @@ def setup_grdchk(ind_var, header, domain,
 	ref_string = '!@ python_automated_grdchk IO begin @'
 	new_string = f'''
 	   open({unit},&
-	   file=\'GradientVals_{ind_var}_{perturbation:.2E}_\'//trim(RUNNAME)//\'_{limited_or_block_or_full}.dat\',&
+	   file=\'GradientVals_{ind_var}_{perturbation:.2E}_{header}_{limited_or_block_or_full}.dat\',&
 	   form="FORMATTED", status="REPLACE")
 	'''
 	modify_file(tapenade_m_file, ref_string, new_string,
@@ -414,7 +414,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 
 	IMAX, JMAX, KCMAX, KTMAX = get_imax_jmax_kcmax_ktmax()
 
-	ref_string = 'CHARACTER(len=100) :: runname'
+	ref_string = 'REAL(dp) :: z_mar'
 	if(domain == 'grl'):
 		new_string = f'''
 		   INTEGER(i4b) :: i, j, p
@@ -450,9 +450,9 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 
 		if(dimension == 2):
 			new_string = new_string + f'''
-			   open({unit[0]}, file=\'AdjointVals_{ind_var}b_\'//trim(RUNNAME)//\'_limited.dat\',&
+			   open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_limited.dat\',&
 			       form="FORMATTED", status="REPLACE")
-			   open({unit[1]}, file=\'AdjointVals_{ind_var}b_\'//trim(RUNNAME)//\'.dat\',&
+			   open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}.dat\',&
 			       form="FORMATTED", status="REPLACE")
 			   do p = 1, points
 			   i = ipoints(p)
@@ -469,9 +469,9 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 			'''
 		elif(dimension == 3 and z_co_ord is not None):
 			new_string = new_string + f'''
-			   open({unit[0]}, file=\'AdjointVals_{ind_var}b_\'//trim(RUNNAME)//\'_limited.dat\',&
+			   open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_limited.dat\',&
 			       form="FORMATTED", status="REPLACE")
-			   open({unit[1]}, file=\'AdjointVals_{ind_var}b_\'//trim(RUNNAME)//\'.dat\',&
+			   open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}.dat\',&
 			       form="FORMATTED", status="REPLACE")
 			   do p = 1, points
 			   i = ipoints(p)
@@ -511,7 +511,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 			if dimension >= 0:
 				new_string = new_string + f'''
 				   if (itercount .EQ. {iteration}) THEN
-				   open({unit[0]}, file=\'AdjointVals_{output_var}_{dimension}_iter_{iteration}_\'//trim(RUNNAME)//\'.dat\',&
+				   open({unit[0]}, file=\'AdjointVals_{output_var}_{dimension}_iter_{iteration}_{header}.dat\',&
 				       form="FORMATTED", status="REPLACE")
 				   do i = 0, {IMAX}
 				   do j = 0, {JMAX}
@@ -525,7 +525,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 			elif dimension == -1:
 				new_string = new_string + f'''
 				   if (itercount .EQ. {iteration}) THEN
-				      open({unit[0]}, file=\'AdjointVals_{output_var}_iter_{iteration}_\'//trim(RUNNAME)//\'.dat\',&
+				      open({unit[0]}, file=\'AdjointVals_{output_var}_iter_{iteration}_{header}.dat\',&
 				       form="FORMATTED", status="REPLACE")
 				   do i = 0, {IMAX}
 				   do j = 0, {JMAX}
@@ -557,7 +557,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 			if dimension >= 0:
 				new_string = new_string + f'''
 				   if (itercount .EQ. {iteration}) THEN
-				   open({unit[0]}, file=\'AdjointVals_{output_var}b_{dimension}_iter_{iteration}_\'//trim(RUNNAME)//\'.dat\',&
+				   open({unit[0]}, file=\'AdjointVals_{output_var}b_{dimension}_iter_{iteration}_{header}.dat\',&
 				       form="FORMATTED", status="REPLACE")
 				   do i = 0, {IMAX}
 				   do j = 0, {JMAX}
@@ -570,7 +570,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 			elif dimension == -1:
 				new_string = new_string + f'''
 				   if (itercount .EQ. {iteration}) THEN
-				   open({unit[0]}, file=\'AdjointVals_{output_var}b_iter_{iteration}_\'//trim(RUNNAME)//\'.dat\',&
+				   open({unit[0]}, file=\'AdjointVals_{output_var}b_iter_{iteration}_{header}.dat\',&
 				       form="FORMATTED", status="REPLACE")
 				   do i = 0, {IMAX}
 				   do j = 0, {JMAX}
@@ -710,7 +710,7 @@ def setup_forward(ind_var, header, domain,
 
 	ref_string = '!@ python_automated_tlm IO begin @'
 	new_string = f'''
-	   open({unit}, file=\'ForwardVals_{ind_var}_\'//trim(RUNNAME)//\'_{limited_or_block_or_full}.dat\',&
+	   open({unit}, file=\'ForwardVals_{ind_var}_{header}_{limited_or_block_or_full}.dat\',&
 	       form="FORMATTED", status="REPLACE")
 	'''
 	modify_file(tapenade_m_file, 

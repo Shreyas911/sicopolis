@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2022-02-15
+!! 2022-05-20
 !!
 !! @section Copyright
 !!
@@ -79,10 +79,10 @@ use make_ismip_output_common
 
 implicit none
 
-integer(i4b)       :: i, j, n
+integer(i4b)       :: i, j, n, n1, n2
 integer(i4b)       :: n_variable_dim, n_variable_type
 integer(i4b)       :: ncid
-character(len=256) :: runname
+character(len=256) :: run_name
 character(len=  4) :: ergnum
 logical            :: flag_init_output
 
@@ -150,7 +150,10 @@ character(len= 64) :: mapping_ellipsoid_val
 
 write(6,'(a)') ' '
 
-runname = RUNNAME
+n1 = len('sico_specs_')+1
+n2 = len(trim(RUN_SPECS_HEADER))-len('.h')
+run_name = trim(RUN_SPECS_HEADER)
+run_name = run_name(n1:n2)
 
 #if (defined(OUTPUT_INIT))
 
@@ -212,7 +215,7 @@ do n_variable_type = 1, 2
 
       write(ergnum, '(i0.4)') n
 
-      call read_nc(runname, n_variable_dim, n_variable_type, ergnum, n, &
+      call read_nc(run_name, n_variable_dim, n_variable_type, ergnum, n, &
                 mapping_val, &
                 mapping_grid_mapping_name_val, &
                 mapping_ellipsoid_val, &
@@ -247,7 +250,7 @@ do n_variable_type = 1, 2
                 sftgif_val, sftgrf_val, sftflf_val)
 
       if (n==1) then   ! initialization only once
-         call init_ismip_netcdf(runname, n_variable_dim, n_variable_type, &
+         call init_ismip_netcdf(run_name, n_variable_dim, n_variable_type, &
                     mapping_grid_mapping_name_val, &
                     mapping_ellipsoid_val, &
                     mapping_semi_major_axis_val, &
@@ -261,7 +264,7 @@ do n_variable_type = 1, 2
                     ncid)
       end if
 
-      call write_ismip_netcdf(runname, n_variable_dim, n_variable_type, &
+      call write_ismip_netcdf(run_name, n_variable_dim, n_variable_type, &
                     n, ncid, mapping_val, &
                     year2sec_val, &
                     time_val, year_val, time_bnds_val, x_val, y_val, &
@@ -298,7 +301,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Reading and processing of data of the time-dependent NetCDF data.
 !<------------------------------------------------------------------------------
-subroutine read_nc(runname, n_variable_dim, n_variable_type, ergnum, n, &
+subroutine read_nc(run_name, n_variable_dim, n_variable_type, ergnum, n, &
                    mapping_r, &
                    mapping_grid_mapping_name_r, &
                    mapping_ellipsoid_r, &
@@ -337,7 +340,7 @@ use netcdf
 
 implicit none
 
-character(len=256), intent(in) :: runname
+character(len=256), intent(in) :: run_name
 character(len=  4), intent(in) :: ergnum
 integer(i4b),       intent(in) :: n_variable_dim, n_variable_type, n
 
@@ -457,11 +460,11 @@ real(dp), parameter :: year2day = 360.0_dp   ! 360_day calendar used
 if (n_variable_dim == 1) then
 
 #if ((OUTPUT==1 || OUTPUT==2) && ERGDAT==0)
-   filename = trim(runname)//'_2d_'//trim(ergnum)//'.nc'
+   filename = trim(run_name)//'_2d_'//trim(ergnum)//'.nc'
 #elif ((OUTPUT==1 || OUTPUT==2) && ERGDAT==1)
-   filename = trim(runname)//trim(ergnum)//'.nc'
+   filename = trim(run_name)//trim(ergnum)//'.nc'
 #elif (OUTPUT==3)
-   filename = trim(runname)//'_2d_'//trim(ergnum)//'.nc'
+   filename = trim(run_name)//'_2d_'//trim(ergnum)//'.nc'
 #else
    write(6,'(/a)') ' >>> read_nc: File name cannot be determined!'
    stop
@@ -471,7 +474,7 @@ write(6,'(a)') ' Now reading '//trim(filename)//' ...'
 
 else if (n_variable_dim == 2) then
 
-   filename = trim(runname)//'_ser.nc'
+   filename = trim(run_name)//'_ser.nc'
 
    write(6,'(a,i0,a)') ' Now reading ' &
                         //trim(filename)//', record no. ', n, ' ...'
@@ -1007,7 +1010,7 @@ end subroutine read_nc
 !-------------------------------------------------------------------------------
 !> Initialization of ISMIP6 NetCDF file.
 !<------------------------------------------------------------------------------
-subroutine init_ismip_netcdf(runname, n_variable_dim, n_variable_type, &
+subroutine init_ismip_netcdf(run_name, n_variable_dim, n_variable_type, &
                    mapping_grid_mapping_name_val, &
                    mapping_ellipsoid_val, &
                    mapping_semi_major_axis_val, &
@@ -1036,7 +1039,7 @@ real(dp),           intent(in) :: mapping_false_E_val
 real(dp),           intent(in) :: mapping_false_N_val
 character(len= 64), intent(in) :: mapping_grid_mapping_name_val
 character(len= 64), intent(in) :: mapping_ellipsoid_val
-character(len=256), intent(in) :: runname
+character(len=256), intent(in) :: run_name
 
 integer(i4b),      intent(out) :: ncid   ! ID of the NetCDF file
 
@@ -1077,13 +1080,13 @@ stop ' >>> init_ismip_netcdf: TIME_UNIT must be either 1 or 2!'
 !-------- Open NetCDF file --------
 
 if ((n_variable_dim == 1).and.(n_variable_type == 1)) then
-   filename = trim(runname)//'_ismip6_'//ch_time_unit//'_st_2d.nc'
+   filename = trim(run_name)//'_ismip6_'//ch_time_unit//'_st_2d.nc'
 else if ((n_variable_dim == 1).and.(n_variable_type == 2)) then
-   filename = trim(runname)//'_ismip6_'//ch_time_unit//'_fl_2d.nc'
+   filename = trim(run_name)//'_ismip6_'//ch_time_unit//'_fl_2d.nc'
 else if ((n_variable_dim == 2).and.(n_variable_type == 1)) then
-   filename = trim(runname)//'_ismip6_'//ch_time_unit//'_st_scalar.nc'
+   filename = trim(run_name)//'_ismip6_'//ch_time_unit//'_st_scalar.nc'
 else if ((n_variable_dim == 2).and.(n_variable_type == 2)) then
-   filename = trim(runname)//'_ismip6_'//ch_time_unit//'_fl_scalar.nc'
+   filename = trim(run_name)//'_ismip6_'//ch_time_unit//'_fl_scalar.nc'
 end if
 
 write(6,'(a)') ' Now creating new NetCDF file '//trim(filename)//' ...'
@@ -1100,7 +1103,7 @@ end if
 
 !-------- Global attributes --------
 
-buffer = 'ISMIP6 output of simulation '//trim(runname)
+buffer = 'ISMIP6 output of simulation '//trim(run_name)
 call check( nf90_put_att(ncid, NF90_GLOBAL, 'title', trim(buffer)) )
 
 call set_ch_institution(buffer)
@@ -2018,7 +2021,7 @@ end subroutine init_ismip_netcdf
 !-------------------------------------------------------------------------------
 !> Writing of ISMIP6 NetCDF file.
 !<------------------------------------------------------------------------------
-subroutine write_ismip_netcdf(runname, n_variable_dim, n_variable_type, &
+subroutine write_ismip_netcdf(run_name, n_variable_dim, n_variable_type, &
                     n, ncid, mapping_aux, &
                     year2sec_aux, &
                     time_aux, year_aux, time_bnds_val, x_val, y_val, &
@@ -2047,7 +2050,7 @@ use netcdf
 
 implicit none
 
-character(len=256), intent(in) :: runname
+character(len=256), intent(in) :: run_name
 integer(i4b),       intent(in) :: n_variable_dim, n_variable_type, n
 integer(i4b),       intent(in) :: ncid   ! ID of the NetCDF file
 integer(i4b),       intent(in) :: mapping_aux

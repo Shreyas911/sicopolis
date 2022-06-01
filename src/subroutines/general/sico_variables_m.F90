@@ -754,6 +754,9 @@ save
 !>            [ = signed year CE (AD) ]
    real(dp) :: year_zero
 
+!> run_name: Name of simulation
+   character(len=256) :: run_name
+
 !> ch_domain_long: Long name of the computational domain
    character(len=64) :: ch_domain_long
 !> ch_domain_short: Short name of the computational domain

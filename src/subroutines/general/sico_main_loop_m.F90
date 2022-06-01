@@ -58,8 +58,7 @@ contains
                       time, time_init, time_end, time_output, &
                       dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
                       z_mar, &
-                      ndat2d, ndat3d, n_output, &
-                      runname)
+                      ndat2d, ndat3d, n_output)
 !@ end tapenade_extract @
  
     use boundary_m
@@ -91,7 +90,6 @@ contains
                                        dtime_out, dtime_ser
   real(dp),           intent(in)    :: time_init, time_end, time_output(100)
   real(dp),           intent(in)    :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
-  character(len=100), intent(in)    :: runname
 #else
   integer(i4b),       intent(inout)    :: n_output
   real(dp),           intent(inout)    :: mean_accum
@@ -99,7 +97,6 @@ contains
                                           dtime_out, dtime_ser
   real(dp),           intent(inout)    :: time_init, time_end, time_output(100)
   real(dp),           intent(inout)    :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
-  character(len=100), intent(inout)    :: runname
 #endif  
   integer(i4b),       intent(inout) :: ndat2d, ndat3d
   real(dp),           intent(inout) :: delta_ts, glac_index
@@ -352,7 +349,7 @@ contains
      flag_3d_output = .true.
 #endif
   
-     call output1(runname, time, delta_ts, glac_index, &
+     call output1(time, delta_ts, glac_index, &
                   flag_3d_output, ndat2d, ndat3d)
 
      flag_output1 = .true.
@@ -369,7 +366,7 @@ contains
      flag_3d_output = .true.
 #endif
 
-     call output1(runname, time, delta_ts, glac_index, &
+     call output1(time, delta_ts, glac_index, &
                   flag_3d_output, ndat2d, ndat3d, &
                   opt_flag_compute_flux_vars_only=.true.)
 
@@ -391,7 +388,7 @@ contains
         flag_3d_output = .true.
 #endif
   
-        call output1(runname, time, delta_ts, glac_index, &
+        call output1(time, delta_ts, glac_index, &
                      flag_3d_output, ndat2d, ndat3d)
 
         flag_output1 = .true.
@@ -410,7 +407,7 @@ contains
      flag_3d_output = .true.
 #endif
 
-     call output1(runname, time, delta_ts, glac_index, &
+     call output1(time, delta_ts, glac_index, &
                   flag_3d_output, ndat2d, ndat3d, &
                   opt_flag_compute_flux_vars_only=.true.)
 
@@ -426,7 +423,7 @@ contains
   
      flag_3d_output = .false.
   
-     call output1(runname, time, delta_ts, glac_index, &
+     call output1(time, delta_ts, glac_index, &
                   flag_3d_output, ndat2d, ndat3d)
 
      flag_output1 = .true.
@@ -439,7 +436,7 @@ contains
 
      flag_3d_output = .false.
 
-     call output1(runname, time, delta_ts, glac_index, &
+     call output1(time, delta_ts, glac_index, &
                   flag_3d_output, ndat2d, ndat3d, &
                   opt_flag_compute_flux_vars_only=.true.)
 
@@ -453,7 +450,7 @@ contains
   
         flag_3d_output = .true.
   
-        call output1(runname, time, delta_ts, glac_index, &
+        call output1(time, delta_ts, glac_index, &
                      flag_3d_output, ndat2d, ndat3d)
   
      end if

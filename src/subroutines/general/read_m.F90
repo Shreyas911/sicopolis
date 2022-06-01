@@ -67,7 +67,7 @@ contains
 
   implicit none
 
-  character(len=100), intent(in)    :: filename
+  character(len=256), intent(in) :: filename
 
   logical, optional,  intent(in)    :: opt_flag_temp_age_only
   integer(i4b), optional, dimension(0:JMAX,0:IMAX), &
@@ -926,7 +926,7 @@ contains
 
   implicit none
 
-  character(len=100), intent(in) :: target_topo_dat_name
+  character(len=256), intent(in) :: target_topo_dat_name
 
 ! Return variables
 ! (defined as global variables in module sico_variables_m):

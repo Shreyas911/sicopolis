@@ -48,12 +48,11 @@ contains
 !!
 !! Other cost functions are certainly possible, and recommended! 
 !<------------------------------------------------------------------------------
-  subroutine cost_final(runname)
+  subroutine cost_final()
   
   implicit none
   
   integer(i4b) :: i, j, k, kc, kt, ios, KDATA 
-  character(len=100), intent(out) :: runname
   
   !-------- Calculate the difference between the modeled and 'observed' ages:
 fc = 0.0

@@ -316,7 +316,7 @@ contains
 
   implicit none
 
-  character(len=100), intent(in)    :: filename
+  character(len=256), intent(in) :: filename
 
   integer(i4b) :: i, j, kc, kt, kr
   real(dp)     :: temp_ice_base, temp_scale_factor

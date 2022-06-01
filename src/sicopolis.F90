@@ -5,7 +5,7 @@
 !
 #define       MODEL_SICOPOLIS
 #define       VERSION '5-dev'
-#define       DATE    '2022-04-01'
+#define       DATE    '2022-05-30'
 !
 !> @mainpage
 !!
@@ -354,10 +354,6 @@ program sicopolis
 !                      (in sigma-coordinate zeta_t)
 !  dzeta_r           : Grid spacing in z-direction in the bedrock (kr) domain
 !                      (in sigma-coordinate zeta_r)
-!  runname           : Name of simulation
-!  anfdatname        : Name of initial-value file
-!                      (only for ANF_DAT==3)
-!  datname           : Auxiliary string for generation of file names
 
 !-------- Declaration of variables --------
 
@@ -392,7 +388,6 @@ real(dp) :: time, time_init, time_end
 real(dp), dimension(100) :: time_output
 real(dp) :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
 real(dp) :: z_mar
-character(len=100) :: runname
 !tapenade sicopolis_independents_cost
 !@ end tapenade_extract @
 
@@ -411,8 +406,7 @@ call sico_init(delta_ts, glac_index, &
      time, time_init, time_end, time_output, &
      dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
      z_mar, &
-     ndat2d, ndat3d, n_output, &
-     runname)
+     ndat2d, ndat3d, n_output)
 
 !-------- Main loop --------
 
@@ -422,8 +416,7 @@ call sico_main_loop(delta_ts, glac_index, &
      time, time_init, time_end, time_output, &
      dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
      z_mar, &
-     ndat2d, ndat3d, n_output, &
-     runname)
+     ndat2d, ndat3d, n_output)
 
 !tapenade end subroutine sicopolis_tapenade
 

@@ -84,7 +84,6 @@ use sico_variables_m_diff
   real(dp)                                   :: dxi, deta, dzeta_c, &
                                                 dzeta_t, dzeta_r
   real(dp)                                   :: z_mar
-  character(len=100)                         :: runname
   integer(i4b), parameter                    :: points = 5
   integer(i4b), dimension(points)            :: ipoints, jpoints
   integer(i4b)                               :: i, j, p
@@ -101,7 +100,7 @@ use sico_variables_m_diff
 
 !@ python_automated_tlm IO begin @
 
-	   open(99999, file='ForwardVals_H_'//trim(RUNNAME)//'_limited.dat',&
+	   open(9999, file='ForwardVals_q_geo_v5_grl20_ss25ka_limited.dat',&
 	       form="FORMATTED", status="REPLACE")
 	
 
@@ -114,31 +113,30 @@ use sico_variables_m_diff
   CALL SICO_INIT_D(delta_ts, glac_index, mean_accum, dtime, dtime_temp, &
 &            dtime_wss, dtime_out, dtime_ser, time, time_init, time_end&
 &            , time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, z_mar&
-&            , ndat2d, ndat3d, n_output, runname)
+&            , ndat2d, ndat3d, n_output)
 
 !@ python_automated_tlm dep_vard @
 
-		            Hd = 0.0
-		            Hd(j,i) = 1.0
+		            q_geod = 0.0
+		            q_geod(j,i) = 1.0
 		
 !-------- Main loop --------
   CALL SICO_MAIN_LOOP_D(delta_ts, glac_index, mean_accum, dtime, &
 &                 dtime_temp, dtime_wss, dtime_out, dtime_ser, time, &
 &                 time_init, time_end, time_output, dxi, deta, dzeta_c, &
-&                 dzeta_t, dzeta_r, z_mar, ndat2d, ndat3d, n_output, &
-&                 runname)
-  CALL COST_FINAL_D(runname)
+&                 dzeta_t, dzeta_r, z_mar, ndat2d, ndat3d, n_output)
+  CALL COST_FINAL_D()
      
   CALL SICO_END()
 
 !@ python_automated_tlm IO write @
-          write(99999, fmt='(f40.20)') fcd
+          write(9999, fmt='(f40.20)') fcd
 
    end do ! (close loop over points)
 
 
 !@ python_automated_tlm IO end @
-   close(unit=99999)
+   close(unit=9999)
 
   end subroutine adjoint_master
 #endif
@@ -175,7 +173,6 @@ use sico_variables_m_diff
    real(dp)           :: time, time_init, time_end, time_output(100)
    real(dp)           :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
    real(dp)           :: z_mar
-   character(len=100) :: runname
    
    !-------- Variable declarations needed for this routine specifically
    real(dp)                          :: orig_val, perturb_val = 1.e-3
@@ -208,9 +205,9 @@ use sico_variables_m_diff
    end do
 
    !-------- Initialize output files 
-   open(99, file='GradientVals_'//trim(RUNNAME)//'.dat',&
+   open(99, file='GradientVals_'//trim(HEADER)//'.dat',&
        form="FORMATTED", status="REPLACE")
-   open(98, file='CostVals_'//trim(RUNNAME)//'.dat',&
+   open(98, file='CostVals_'//trim(HEADER)//'.dat',&
        form="FORMATTED", status="REPLACE")
 
 !@ python_automated_grdchk IO begin @
@@ -236,8 +233,7 @@ use sico_variables_m_diff
                  time, time_init, time_end, time_output, &
                  dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
                  z_mar, &
-                 ndat2d, ndat3d, n_output, &
-                 runname)
+                 ndat2d, ndat3d, n_output)
 
             perturbation = 1 + direction(d) * perturb_val 
 
@@ -293,10 +289,9 @@ use sico_variables_m_diff
                  time, time_init, time_end, time_output, &
                  dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
                  z_mar, &
-                 ndat2d, ndat3d, n_output, &
-                 runname)
+                 ndat2d, ndat3d, n_output)
           
-            call cost_final(runname)
+            call cost_final()
             call sico_end
        
             ! store cost

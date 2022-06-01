@@ -54,8 +54,7 @@ subroutine sico_init(delta_ts, glac_index, &
                time, time_init, time_end, time_output, &
                dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
                z_mar, &
-               ndat2d, ndat3d, n_output, &
-               runname)
+               ndat2d, ndat3d, n_output)
 
   use compare_float_m
   use ice_material_properties_m, only : ice_mat_eqs_pars
@@ -89,9 +88,8 @@ real(dp),           intent(out) :: dtime, dtime_temp, dtime_wss, &
 real(dp),           intent(out) :: time, time_init, time_end, time_output(100)
 real(dp),           intent(out) :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
 real(dp),           intent(out) :: z_mar
-character(len=100), intent(out) :: runname
 
-integer(i4b)       :: i, j, kc, kt, kr, m, n, ir, jr
+integer(i4b)       :: i, j, kc, kt, kr, m, n, ir, jr, n1, n2
 integer(i4b)       :: ios, ios1, ios2, ios3, ios4
 integer(i4b)       :: ierr
 real(dp)           :: dtime0, dtime_temp0, dtime_wss0, dtime_out0, dtime_ser0
@@ -100,7 +98,7 @@ real(dp)           :: time_init0, time_end0
 real(dp)           :: time_output0(N_OUTPUT)
 #endif
 real(dp)           :: d_dummy
-character(len=100) :: anfdatname, target_topo_dat_name
+character(len=256) :: anfdatname, target_topo_dat_name
 character(len=256) :: filename_with_path
 character(len=256) :: shell_command
 character          :: ch_dummy
@@ -384,6 +382,8 @@ call error(errormsg)
 !-------- Compatibility check of the horizontal resolution with the
 !         number of grid points and the position of the origin point --------
 
+#if (!defined(CHECK_RES_IMAX_JMAX) || CHECK_RES_IMAX_JMAX==1)
+
 #if (GRID==0)
 
 if (approx_equal(DX, 0.2_dp, eps_sp_dp)) then
@@ -446,6 +446,15 @@ errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
 call error(errormsg)
 
 #endif
+
+#else /* CHECK_RES_IMAX_JMAX==0 */
+
+write(6, fmt='(a)') ' >>> sico_init: CHECK_RES_IMAX_JMAX==0'
+write(6, fmt='(a)') '      -> compatibility check between horizontal resolution'
+write(6, fmt='(a)') '         and number of grid points not performed.'
+write(6, fmt='(a)') ' '
+
+#endif /* CHECK_RES_IMAX_JMAX */
 
 !-------- Compatibility check of the thermodynamics mode
 !         (cold vs. polythermal vs. enthalpy method)
@@ -599,8 +608,12 @@ end do
 
 !-------- Specification of current simulation --------
 
-runname    = RUNNAME
-anfdatname = ANFDATNAME
+n1 = len('sico_specs_')+1
+n2 = len(trim(RUN_SPECS_HEADER))-len('.h')
+run_name = trim(RUN_SPECS_HEADER)
+run_name = run_name(n1:n2)
+
+anfdatname = trim(ANFDATNAME)
 
 #if (defined(YEAR_ZERO))
 year_zero  = YEAR_ZERO
@@ -706,7 +719,7 @@ shell_command = trim(shell_command)//' '//'; fi'
 call system(trim(shell_command))
      ! Check whether directory OUT_PATH exists. If not, it is created.
 
-filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'.log'
+filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.log'
 
 open(10, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -741,6 +754,11 @@ write(10, fmt=trim(fmt3)) 'dlambda =', DLAMBDA
 write(10, fmt=trim(fmt3)) 'dphi    =', DPHI
 #endif
 write(10, fmt=trim(fmt1)) ' '
+
+#if (defined(CHECK_RES_IMAX_JMAX))
+write(10, fmt=trim(fmt2)) 'CHECK_RES_IMAX_JMAX = ', CHECK_RES_IMAX_JMAX
+write(10, fmt=trim(fmt1)) ' '
+#endif
 
 write(10, fmt=trim(fmt3)) 'year_zero  =', year_zero
 write(10, fmt=trim(fmt3)) 'time_init  =', time_init0
@@ -1720,7 +1738,7 @@ call error(errormsg)
 
 !  ------ Time-series file for the ice sheet on the whole
 
-filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'.ser'
+filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.ser'
 
 open(12, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -1746,7 +1764,7 @@ write(12,1103)
 
 n_core = 0   ! No boreholes defined
 
-filename_with_path = trim(OUT_PATH)//'/'//trim(runname)//'.core'
+filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.core'
 
 open(14, iostat=ios, file=trim(filename_with_path), status='new')
 
@@ -1788,7 +1806,7 @@ write(14,'(1x,a)') '---------------------'
 #endif
 
    if (flag_init_output) &
-      call output1(runname, time_init, delta_ts, glac_index, &
+      call output1(time_init, delta_ts, glac_index, &
                    flag_3d_output, ndat2d, ndat3d)
 
 #elif (OUTPUT==2)
@@ -1804,7 +1822,7 @@ if (time_output(1) <= time_init+eps) then
    call error(errormsg)
 #endif
 
-   call output1(runname, time_init, delta_ts, glac_index, &
+   call output1(time_init, delta_ts, glac_index, &
                 flag_3d_output, ndat2d, ndat3d)
 
 end if
@@ -1814,14 +1832,14 @@ end if
    flag_3d_output = .false.
 
    if (flag_init_output) &
-      call output1(runname, time_init, delta_ts, glac_index, &
+      call output1(time_init, delta_ts, glac_index, &
                    flag_3d_output, ndat2d, ndat3d)
 
 if (time_output(1) <= time_init+eps) then
 
    flag_3d_output = .true.
 
-   call output1(runname, time_init, delta_ts, glac_index, &
+   call output1(time_init, delta_ts, glac_index, &
                 flag_3d_output, ndat2d, ndat3d)
 
 end if
@@ -2258,7 +2276,7 @@ subroutine topography3(dxi, deta, anfdatname)
 
 implicit none
 
-character(len=100), intent(in) :: anfdatname
+character(len=256), intent(in) :: anfdatname
 
 real(dp),          intent(out) :: dxi, deta
 
