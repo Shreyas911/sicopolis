@@ -31,8 +31,10 @@ my_*
 !/src/subroutines/xyz/*/
 
 /sico_in/ant/*
+!/sico_in/ant/make_*
 !/sico_in/ant/phys_para*
 /sico_in/grl/*
+!/sico_in/grl/make_*
 !/sico_in/grl/phys_para*
 /sico_in/asf/*
 !/sico_in/asf/phys_para*
