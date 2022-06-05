@@ -8,12 +8,12 @@ SICOPOLIS-AD v2 runs almost independently of the setup for SICOPOLIS. It has its
 ::
 
     % make -f MakefileTapenade clean
-    % make -f MakefileTapenade driver{mode} HEADER={header} DOMAIN_SHORT={domain} DEP_VAR={dep_var} IND_VARS={ind_vars}
+    % make -f MakefileTapenade driver{mode} HEADER={header} DOMAIN_SHORT={domain} DEP_VAR={dep_var} IND_VARS={ind_vars} DISC_AND_GRL={disc_and_grl}
     #### Add I/O commands in the differentiated code if needed and recompile
-    % make -f MakefileTapenade driver{mode} HEADER={header} DOMAIN_SHORT={domain} DEP_VAR={dep_var} IND_VARS={ind_vars}
+    % make -f MakefileTapenade driver{mode} HEADER={header} DOMAIN_SHORT={domain} DEP_VAR={dep_var} IND_VARS={ind_vars} DISC_AND_GRL={disc_and_grl}
     % ./driver{mode}
 
-Here, ``{mode}`` refers to one of these options - ``normal, grdchk, adjoint, forward`` for normal (vanilla ``SICOPOLIS`` run), finite differences, adjoint and tangent linear mode respectively. ``{header}`` refers to the latter half of the name of the header file. If the header file is ``sico_specs_v5_grl20_ss25ka.h``, then the ``{header}`` is ``v5_grl20_ss25ka``. ``{domain}`` can either be ``grl`` or ``ant``, depending on Greenland or Antarctica. ``{dep_var}`` refers to the cost function / objective function. ``{ind_vars}`` is a list of independent variables for which we calculate the sensitivity of the objective function.
+Here, ``{mode}`` refers to one of these options - ``normal, grdchk, adjoint, forward`` for normal (vanilla ``SICOPOLIS`` run), finite differences, adjoint and tangent linear mode respectively. ``{header}`` refers to the latter half of the name of the header file. If the header file is ``sico_specs_v5_grl20_ss25ka.h``, then the ``{header}`` is ``v5_grl20_ss25ka``. ``{domain}`` can either be ``grl`` or ``ant``, depending on Greenland or Antarctica. ``{dep_var}`` refers to the cost function / objective function. ``{ind_vars}`` is a list of independent variables for which we calculate the sensitivity of the objective function. ``{disc_and_grl}`` is either 0 or 1. It is 1 if the ``DISC`` flag in the header file is greater than 0 and the domain is Greenland.
 
 The ``finite differences`` mode can only have one indpendent variable at a time, unlike the ``adjoint`` and ``forward`` modes.
 

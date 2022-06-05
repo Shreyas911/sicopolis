@@ -15,6 +15,7 @@ ifndef DOMAIN_SHORT
 DOMAIN_SHORT=grl
 endif
 
+ifndef DISC_AND_GRL
 DISC_AND_GRL := $(shell python3 subroutines/tapenade/check_GRL_DISC.py -f ../runs/headers/sico_specs_${HEADER}.h)
 ### PRINT STATEMENT TO CHECK VARIABLE ###
 ifeq ($(DISC_AND_GRL),0)
@@ -23,6 +24,7 @@ endif
 ifeq ($(DISC_AND_GRL),1)
 $(info DISC_AND_GRL is $(DISC_AND_GRL))
 $(info Domain is GRL, with discharge workers active.)
+endif
 endif
 
 ifndef LISDIR
