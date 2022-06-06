@@ -94,7 +94,7 @@ integer(i4b) :: ios
 real(dp), dimension(0:JMAX,0:IMAX) :: z_sl_old
 real(dp) :: z_sl_old_mean
 real(dp) :: z_sl_min, t1, t2, t3, t4, t5, t6
-real(dp) :: sec2year, time_in_years
+real(dp) :: time_in_years
 real(dp) :: rho_inv
 real(dp) :: time_gr, time_kl
 real(dp) :: z_sle_present, z_sle_help
@@ -170,7 +170,6 @@ integer(i4b) :: i_time_in_years
 real(dp)     :: temp_val
 #endif /* OpenAD */
 
-sec2year      = 1.0_dp/year2sec
 time_in_years = time*sec2year
 n_year_CE     = floor((time_in_years+YEAR_ZERO)+eps_sp_dp)
 

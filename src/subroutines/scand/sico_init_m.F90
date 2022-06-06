@@ -203,6 +203,16 @@ time_output = 0.0_dp
 
 !-------- Read physical parameters --------
 
+#if (defined(YEAR_SEC))
+year2sec = YEAR_SEC
+#else
+year2sec = 3.1556925445e+07_dp
+              ! IUPAC-IUGS year for epoch 2000.0
+              ! (Holden et al., 2011, PAC, doi:10.1351/PAC-REC-09-01-22)
+#endif
+
+sec2year = 1.0_dp/year2sec
+
 call read_phys_para()
 
 call ice_mat_eqs_pars(RF, R_T, KAPPA, C, -190, 10)
