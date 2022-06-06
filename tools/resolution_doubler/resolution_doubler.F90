@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2022-05-20
+!! 2022-06-06
 !!
 !! @section Copyright
 !!
@@ -359,7 +359,9 @@ call check( nf90_get_att(ncid, ncv, 'false_northing', mapping_false_N_erg) )
 if ( nf90_inq_varid(ncid, 'year2sec', ncv) == nf90_noerr ) then 
    call check( nf90_get_var(ncid, ncv, year2sec_erg) )
 else
-   year2sec_erg = 0.0_dp
+   year2sec_erg = 3.1556925445e+07_dp   ! default value
+                     ! IUPAC-IUGS year for epoch 2000.0
+                     ! (Holden et al., 2011, PAC, doi:10.1351/PAC-REC-09-01-22)
 end if
 
 call check( nf90_inq_varid(ncid, 'time', ncv) )

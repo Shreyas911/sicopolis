@@ -748,7 +748,10 @@ save
 !-------- Further quantities -------- 
 
 !> year2sec: 1 year (1 a) in seconds
-   real(dp), parameter :: year2sec = YEAR_SEC
+   real(dp) :: year2sec
+
+!> sec2year: 1 second in years
+   real(dp) :: sec2year
 
 !> year_zero: SICOPOLIS year zero in astronomical year numbering
 !>            [ = signed year CE (AD) ]

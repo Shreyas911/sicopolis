@@ -42,8 +42,6 @@ module output_m
 
   implicit none
 
-  real(dp), parameter :: sec2year = 1.0_dp/year2sec
-
   private
   public :: output1, output2, output4, borehole
 #if (defined(ASF))
