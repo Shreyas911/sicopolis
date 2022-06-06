@@ -8,7 +8,7 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2022-05-30'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2022-06-06'
 !                      Date of last change
 
 !-------- Domain --------
@@ -122,8 +122,11 @@
 !                       Time step (in a) for writing of data to
 !                       the time-series files
 
-#define YEAR_SEC 31556926.0d0
-!                       Conversion from years to seconds
+!!! #define YEAR_SEC 31556926.0d0
+!                       Conversion from years to seconds;
+!                       only required if supposed to be different from
+!                       the default value 1 a = 31556925.445 s
+!                       (IUPAC-IUGS year for epoch 2000.0)
 
 !-------- Ice sheet dynamics --------
 
