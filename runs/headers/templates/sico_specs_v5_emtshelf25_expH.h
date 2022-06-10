@@ -145,15 +145,15 @@
 !                         (see the Lis User Guide, www.ssisc.org/lis)
 !                         (for DYNAMICS==1 and MARGIN==3, or for DYNAMICS==2)
 
-#define TOL_ITER_SSA 0.1d0
+#define TOL_ITER_SSA 0.025d0
 !                         Tolerance for the nonlinear iterations of the SSA/SStA
 !                         (for DYNAMICS==1 and MARGIN==3, or for DYNAMICS==2).
 
-#define N_ITER_SSA 3
+#define N_ITER_SSA 25
 !                         Maximum number of nonlinear iterations of the SSA/SStA
 !                         (for DYNAMICS==1 and MARGIN==3, or for DYNAMICS==2).
 
-#define ITER_INIT_SSA 1
+#define ITER_INIT_SSA 2
 !                         Initial depth-integrated viscosity for the
 !                         nonlinear iterations of the SSA/SStA:
 !                         1 : Constant VISC_INIT_SSA times ice thickness

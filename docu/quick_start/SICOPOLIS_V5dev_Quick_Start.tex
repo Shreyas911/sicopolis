@@ -683,7 +683,7 @@ This framework allows creating new domains (Laurentide ice sheet, simple testing
 \\[-0.5ex]
 \hspace*{14.3mm}\verb+ sicopolis/src/subroutines/xyz/ +
 \\
-Then modify the routines according to your needs. Input files (topography etc.) must be placed in sicopolis/sico\_in/xyz and specified in the run-specification header file *.h as usual. The domain must be defined by the domain code `\#define XYZ' in the header file. If the new domain requires new global variables, they can be defined in the module sicopolis/src/subroutines/xyz/sico\_vars.F90.
+Then modify the routines according to your needs. Input files (topography etc.) must be placed in sicopolis/sico\_in/xyz and specified in the run-specification header file *.h as usual. The domain must be defined by the domain code `\#define XYZ' in the header file. For flexible testing, it is recommended to set the parameter CHECK\_RES\_IMAX\_JMAX (compatibility check between horizontal resolution and number of grid points) to 0. If the new domain requires new global variables, they can be defined in the module sicopolis/src/subroutines/xyz/sico\_vars.F90.
 
 The subroutines for ISMIP HEINO are available in sicopolis/src/subroutines/xyz/heino, and the input files are in sicopolis/sico\_in/xyz. If you copy the subroutines from sicopo\-lis/src/subroutines/xyz/heino to sicopolis/src/subroutines/xyz, you can run ISMIP HEINO experiments (e.g., the run v5\_heino50\_st for which a header file is available).
 
