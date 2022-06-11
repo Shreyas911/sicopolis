@@ -1405,13 +1405,13 @@ pi_inv       = 1.0_dp/pi
 #if (defined(N_ITER_SSA))
    iter_ssa_max = max(N_ITER_SSA, 1)   ! max. number of iterations
 #else
-   iter_ssa_max = 10                   ! default value
+   iter_ssa_max = 25                   ! default value
 #endif
 
 #if (defined(N_ITER_SSA_MIN))
    iter_ssa_min = max(N_ITER_SSA_MIN, 1)   ! min. number of iterations
 #else
-   iter_ssa_min = 1                        ! default value
+   iter_ssa_min = 2                        ! default value
 #endif
 
 if (iter_ssa_min > iter_ssa_max) then
