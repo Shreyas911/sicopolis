@@ -5,7 +5,7 @@
 !
 #define       MODEL_SICOPOLIS
 #define       VERSION '5-dev'
-#define       DATE    '2022-06-06'
+#define       DATE    '2022-06-11'
 !
 !> @mainpage
 !!
