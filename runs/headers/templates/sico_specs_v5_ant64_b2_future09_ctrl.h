@@ -8,7 +8,7 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2022-06-06'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2022-06-11'
 !                      Date of last change
 
 !-------- Domain --------
@@ -157,6 +157,10 @@
 
 #define N_ITER_SSA 25
 !                         Maximum number of nonlinear iterations of the SSA/SStA
+!                         (for DYNAMICS==1 and MARGIN==3, or for DYNAMICS==2).
+
+#define N_ITER_SSA_MIN 2
+!                         Minimum number of nonlinear iterations of the SSA/SStA
 !                         (for DYNAMICS==1 and MARGIN==3, or for DYNAMICS==2).
 
 #define ITER_INIT_SSA 2
