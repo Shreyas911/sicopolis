@@ -267,6 +267,16 @@ time_output = 0.0_dp
 
 !-------- Read physical parameters --------
 
+#if (defined(YEAR_SEC))
+year2sec = YEAR_SEC
+#else
+year2sec = 3.1556925445e+07_dp
+              ! IUPAC-IUGS year for epoch 2000.0
+              ! (Holden et al., 2011, PAC, doi:10.1351/PAC-REC-09-01-22)
+#endif
+
+sec2year = 1.0_dp/year2sec
+
 call read_phys_para()
 
 call ice_mat_eqs_pars(RF, R_T, KAPPA, C, -190, 10)
@@ -799,6 +809,9 @@ write(10, fmt=trim(fmt3)) 'tol_iter_ssa =', TOL_ITER_SSA
 #endif
 #if (defined(N_ITER_SSA))
 write(10, fmt=trim(fmt2)) 'n_iter_ssa = ', N_ITER_SSA
+#endif
+#if (defined(N_ITER_SSA_MIN))
+write(10, fmt=trim(fmt2)) 'n_iter_ssa_min = ', N_ITER_SSA_MIN
 #endif
 #if (defined(ITER_INIT_SSA))
 write(10, fmt=trim(fmt2)) 'iter_init_ssa = ', ITER_INIT_SSA
