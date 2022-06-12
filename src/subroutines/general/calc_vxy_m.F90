@@ -1373,7 +1373,7 @@ implicit none
 real(dp), intent(in) :: dxi, deta, dzeta_c, dzeta_t
 
 integer(i4b) :: i, j, kc, kt, m
-integer(i4b) :: iter_ssa
+integer(i4b) :: iter_ssa_min, iter_ssa_max
 real(dp), dimension(0:JMAX,0:IMAX) :: vx_m_prev, vy_m_prev
 real(dp) :: tol_ssa, rel_ssa
 real(dp) :: res_vxy_m_ssa_1, res_vxy_m_ssa_2, res_vxy_m_ssa
@@ -1399,14 +1399,25 @@ pi_inv       = 1.0_dp/pi
 #if (defined(TOL_ITER_SSA))
    tol_ssa = TOL_ITER_SSA   ! tolerance of iterations 
 #else
-   tol_ssa = 0.1_dp         ! default value
+   tol_ssa = 0.025_dp       ! default value
 #endif
 
 #if (defined(N_ITER_SSA))
-   iter_ssa = max(N_ITER_SSA, 1)   ! max. number of iterations
+   iter_ssa_max = max(N_ITER_SSA, 1)   ! max. number of iterations
 #else
-   iter_ssa = 3                    ! default value
+   iter_ssa_max = 25                   ! default value
 #endif
+
+#if (defined(N_ITER_SSA_MIN))
+   iter_ssa_min = max(N_ITER_SSA_MIN, 1)   ! min. number of iterations
+#else
+   iter_ssa_min = 2                        ! default value
+#endif
+
+if (iter_ssa_min > iter_ssa_max) then
+   errormsg = ' >>> calc_vxy_ssa: N_ITER_SSA_MIN > N_ITER_SSA_MAX not allowed!'
+   call error(errormsg)
+end if
 
 #if (defined(RELAX_FACT_SSA))
    rel_ssa = RELAX_FACT_SSA   ! relaxation factor
@@ -1431,7 +1442,9 @@ res_vxy_m_ssa = 1.11e+11_dp   ! initial, very large value of the residual
 
 m=0
 
-do while ((m < iter_ssa).and.(res_vxy_m_ssa > tol_ssa))
+do while ( (m < iter_ssa_min) &
+           .or. &
+           ((m < iter_ssa_max).and.(res_vxy_m_ssa > tol_ssa)) )
 
    m = m+1
 

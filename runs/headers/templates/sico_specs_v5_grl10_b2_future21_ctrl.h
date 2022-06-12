@@ -8,7 +8,7 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2022-06-06'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2022-06-11'
 !                      Date of last change
 
 !-------- Domain --------
@@ -157,15 +157,19 @@
 !                         (see the Lis User Guide, www.ssisc.org/lis)
 !                         (for DYNAMICS==1 and MARGIN==3, or for DYNAMICS==2)
 
-#define TOL_ITER_SSA 0.1d0
+#define TOL_ITER_SSA 0.025d0
 !                         Tolerance for the nonlinear iterations of the SSA/SStA
 !                         (for DYNAMICS==1 and MARGIN==3, or for DYNAMICS==2).
 
-#define N_ITER_SSA 3
+#define N_ITER_SSA 25
 !                         Maximum number of nonlinear iterations of the SSA/SStA
 !                         (for DYNAMICS==1 and MARGIN==3, or for DYNAMICS==2).
 
-#define ITER_INIT_SSA 1
+#define N_ITER_SSA_MIN 2
+!                         Minimum number of nonlinear iterations of the SSA/SStA
+!                         (for DYNAMICS==1 and MARGIN==3, or for DYNAMICS==2).
+
+#define ITER_INIT_SSA 2
 !                         Initial depth-integrated viscosity for the
 !                         nonlinear iterations of the SSA/SStA:
 !                         1 : Constant VISC_INIT_SSA times ice thickness

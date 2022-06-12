@@ -938,6 +938,9 @@ write(10, fmt=trim(fmt3)) 'tol_iter_ssa =', TOL_ITER_SSA
 #if (defined(N_ITER_SSA))
 write(10, fmt=trim(fmt2)) 'n_iter_ssa = ', N_ITER_SSA
 #endif
+#if (defined(N_ITER_SSA_MIN))
+write(10, fmt=trim(fmt2)) 'n_iter_ssa_min = ', N_ITER_SSA_MIN
+#endif
 #if (defined(ITER_INIT_SSA))
 write(10, fmt=trim(fmt2)) 'iter_init_ssa = ', ITER_INIT_SSA
 #endif
