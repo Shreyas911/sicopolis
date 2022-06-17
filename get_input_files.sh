@@ -5,7 +5,7 @@
 #   Downloading the input files for SICOPOLIS,
 #   copying them to the corresponding directories.
 #   
-#    - Ralf Greve, 2022-06-05.
+#    - Ralf Greve, 2022-06-14.
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #-------- Settings (to be customized) --------
@@ -36,7 +36,7 @@ MOCHO_FLAG=1     # Mocho-Choshuenco ice cap:
 #-------- Initialization --------
 
 # Zenodo repo:
-REPO_URL=https://zenodo.org/record/6614379/files
+REPO_URL=https://zenodo.org/record/6640514/files
 
 # Backup repo:
 # REPO_URL=http://wwwice.lowtem.hokudai.ac.jp/repo/sicopolis/sico_in
