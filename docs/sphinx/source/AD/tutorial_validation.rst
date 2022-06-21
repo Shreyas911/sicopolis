@@ -57,10 +57,9 @@ This run will generate the following files, which are used to plot the results b
 Results
 =======
 
-The results are shown in the plot below. The time taken for the individual runs is provided as well in the table below.
+The results are shown in the plot below. The table below shows a comparison of the time taken by various methods for gradient calculation to evaluate the gradient for a scalar objective function with respect to a 12,325-dimensional 2D field (20 km mesh) in a typical SICOPOLIS run. Model setup and I/O times are not included. The runs are performed on Intel Xeon CPU E5-2695 v3 nodes (2.30 GHz clock rate, 35.84 MB L3 cache, 63.3 GB memory), on the Sverdrup cluster.
 
-.. list-table:: Comparison of the time taken by various methods for gradient calculation to evaluate the gradient for a scalar objective function with respect to a 12,325-dimensional 2D field (20 km mesh) in a typical SICOPOLIS run. Model setup and I/O times are not included. The runs are performed on Intel Xeon CPU E5-2695 v3 nodes (2.30 GHz clock rate, 35.84 MB L3 cache, 63.3 GB memory).
-
+.. list-table::    
    :widths: 50 50
    :header-rows: 1
 
@@ -76,9 +75,7 @@ The results are shown in the plot below. The time taken for the individual runs 
 .. figure:: t3_validation.png
       :class: with-border
 
-   The upper row shows the sensitivities computed using the Adjoint, Tangent Linear mode, and Finite Differences respectively. The bottom run illustrates the relative error between (Adjoint, FD), (TLM, FD), and (Adjoint, TLM) respectively.
-
-
+Validation exercise for Adjoint/Tangent Linear (TLM) modes using the Finite Differences (FD) results for the sensitivity of ``fc`` with respect to ``q_geo``. The upper row shows the sensitivities computed using the Adjoint, Tangent Linear mode, and Finite Differences respectively. The bottom run illustrates the relative error between (Adjoint, FD), (TLM, FD), and (Adjoint, TLM) respectively.
 
 
 
