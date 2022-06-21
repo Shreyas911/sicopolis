@@ -5,7 +5,7 @@ Tutorial 3 : Validating results of SICOPOLIS adjoint and tangent linear mode wit
 
 In this tutorial, we will discuss how results we get from the adjoint and tangent linear modes (TLM) can be validated with a Finite Differences (FD) run. we use the header file ``v5_grl20_ss25ka`` provided as a reference template in SICOPOLIS. We shorten, however, the total time to 100 years, to keep the computational cost of the tangent linear and finite differences code reasonable. Our objective or cost function is the total volume of the ice sheet at the end of the run (``fc``). The sensitivity is evaluated with respect to the geothermal heat flux, ``q_geo``, a 12,325-dimensional field.
 
-There are two ways to accomplish this - using the Python utilities or manually performing all 3 runs separately. We will discuss only the first one here. The second one is easily accomplished as well - by compiling using the MakefileTapenade and adding I/O instructions as added by the Python scripts manually.
+There are two ways to accomplish this - using the Python utilities or manually performing all 3 runs separately. We will discuss only the first one here. The second one is easily accomplished as well - by compiling using the ``MakefileTapenade`` and adding I/O instructions as added by the Python scripts manually.
 
 As prerequisites, ensure you have set up everything correctly as described in the Configuration section for both SICOPOLIS and Tapenade. 
 
@@ -66,11 +66,11 @@ The results are shown in the plot below. The table below shows a comparison of t
    * - Gradient calculation method
      - Time (in seconds) for 20 km mesh
    * - Finite Differences
-     - :math:`$1.702 \times 10^5$`
+     - :math:`1.702 \times 10^5`
    * - Tangent Linear Model
-     - :math:`$8.591 \times 10^4$`
+     - :math:`8.591 \times 10^4`
    * - Adjoint Model
-     - :math:`$2.798 \times 10^1$`
+     - :math:`2.798 \times 10^1`
  
 .. figure:: t3_validation.png
       :class: with-border
