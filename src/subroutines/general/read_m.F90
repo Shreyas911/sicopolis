@@ -1811,12 +1811,29 @@ file='subroutines/tapenade/gridded_age_unc.dat', status='old')
   implicit none
 
     integer(i4b) :: i, j
+! path stores path with filename
+! assume you are in src directory when defining path
+    character(len=256) :: path 
 
 #if (defined(BEDMACHINE_COST)) 
-    open(unit=92, &
-file='subroutines/tapenade/BedMachine_thickness_10km.dat', status='old')
-    open(unit=93, &
-file='subroutines/tapenade/BedMachine_err_thickness_10km.dat', status='old')
+
+#if (defined(BEDMACHINE_PATH))
+  path = trim(BEDMACHINE_PATH)
+#else
+  errormsg = ' >>> read_tms_nc: BEDMACHINE_PATH must be defined!'
+  call error(errormsg)
+#endif
+
+open(unit=92, file=path, status='old')
+
+#if (defined(BEDMACHINE_UNC_PATH))
+  path = trim(BEDMACHINE_UNC_PATH)
+#else
+  errormsg = ' >>> read_tms_nc: BEDMACHINE_UNC_PATH must be defined!'
+  call error(errormsg)
+#endif
+
+open(unit=93, file=path, status='old')
 
        do i=0,IMAX
           do j=0,JMAX
@@ -1826,7 +1843,6 @@ file='subroutines/tapenade/BedMachine_err_thickness_10km.dat', status='old')
        end do
     close(unit=92)
     close(unit=93)
-
 
 #endif
   end subroutine read_BedMachine_data
