@@ -964,9 +964,12 @@ save
 !  the gridded ages of the GRL ice sheet are only 25 z-levels.
 !> age_data: array of gridded ages to be used in adjoint mode
    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: age_data
-!> age_unc: array of gridded ages to be used in adjoint mode
+!> age_unc: array of gridded uncertainty in ages to be used in adjoint mode
    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: age_unc
-!> acc_fact
+!> H_data: array of gridded ice thickness to be used in adjoint mode
+   real(dp), dimension(0:JMAX,0:IMAX) :: H_data
+!> H_unc: array of gridded uncertainty in ice thickness to be used in adjoint mode
+   real(dp), dimension(0:JMAX,0:IMAX) :: H_unc
 #endif /* No age cost used */
    real(dp), dimension(0:JMAX,0:IMAX) :: acc_fact
 #if (defined(BEDMACHINE_COST)) 

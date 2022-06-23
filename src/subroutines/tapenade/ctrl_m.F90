@@ -52,7 +52,7 @@ contains
   
   implicit none
   
-  integer(i4b) :: i, j, k, kc, kt, ios, KDATA 
+  integer(i4b) :: i, j, k, kc, kt, ios, KDATA
   
   !-------- Calculate the difference between the modeled and 'observed' ages:
 fc = 0.0
@@ -68,26 +68,29 @@ print *, '           AGE_COST simulations'
 #endif
  
   do k=0, KDATA 
-    do i=0, IMAX
-      do j=0, JMAX
+    do j=0, JMAX
+      do i=0, IMAX
 
         ! only counting points that are real in the data: 
-        if (  age_data(k,j,i).lt. 0.0       &
-         .and.age_unc(k,j,i) .lt. 0.0    ) then
+        if (  age_data(k,j,i) .ge. -0.5) then
 
-          fc = fc + &
-                      sqrt(((age_data(k,j,i) - age_c(k,j,i)))**2 &
-                      / ((age_unc(k,j,i))**2))
+          fc = fc + 1.e-20*((age_data(k,j,i) - age_c(k,j,i)))**2
 
         end if
+
       end do
+    end do
+  end do
+
+  do i=0, IMAX
+    do j=0, JMAX
+      fc = fc + 1.e-20*(H(j,i) - H_data(j,i))**2
     end do
   end do
 
 #elif defined(BEDMACHINE_COST)
     do i=0, IMAX
       do j=0, JMAX
-        !--- Other cost functions:
         fc = fc &
         + (H(j,i) - H_BedMachine_data(j,i))**2/H_unc_BedMachine_data(j,i)**2
       end do

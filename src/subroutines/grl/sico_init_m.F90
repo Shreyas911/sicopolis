@@ -84,7 +84,7 @@ subroutine sico_init(delta_ts, glac_index, &
                      read_2d_input, read_kei, read_phys_para
 
 #if (defined(ALLOW_NORMAL) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
-  use read_m, only : read_ad_data, read_BedMachine_data
+  use read_m, only : read_age_data, read_BedMachine_data
 #endif
 
   use boundary_m
@@ -2155,7 +2155,9 @@ H_w     = 0.0_dp
 #endif
 
 #if (defined(ALLOW_NORMAL) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
-  call read_ad_data()
+#if defined(AGE_COST)
+  call read_age_data()
+#endif
 #if defined(BEDMACHINE_COST)
   call read_BedMachine_data()
 #endif
