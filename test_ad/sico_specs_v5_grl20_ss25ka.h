@@ -28,7 +28,7 @@
 
 !-------- Physical parameter file --------
 
-#define PHYS_PARA_FILE 'phys_para_grl.dat'
+#define PHYS_PARA_FILE 'phys_para_grl.nc'
 !                       Name of the file containing the physical parameters
 
 !-------- Type of grid, spatial resolution --------
@@ -421,7 +421,7 @@
 !                         3 : Initial values from previous
 !                             simulation
 
-#define ZS_PRESENT_FILE   'grl_b2_20_woem_zs.dat'
+#define ZS_PRESENT_FILE   'grl_b2_20_woem_zs.nc'
 !                             Name of the file containing the present-day
 !                             ice-surface topography
 
@@ -429,16 +429,16 @@
 !                             Name of the file containing the present-day
 !                             ice-base topography (only for ANF_DAT==1)
 
-#define ZL_PRESENT_FILE   'grl_b2_20_woem_zl.dat'
+#define ZL_PRESENT_FILE   'grl_b2_20_woem_zl.nc'
 !                             Name of the file containing the present-day
 !                             lithosphere-surface topography
 !                             (only for ANF_DAT==1)
 
-#define ZL0_FILE          'grl_b2_20_woem_zl0_llra.dat'
+#define ZL0_FILE          'grl_b2_20_woem_zl0_llra.nc'
 !                             Name of the file containing the topography
 !                             of the relaxed lithosphere surface
 
-#define MASK_PRESENT_FILE 'grl_b2_20_woem_mask.dat'
+#define MASK_PRESENT_FILE 'grl_b2_20_woem_mask.nc'
 !                             Name of the file containing the present-day
 !                             ice-land-ocean mask
 
@@ -743,7 +743,7 @@
 !                       ('none' if no such file is to be specified)
 !                       (for ACCSURFACE<=5)
 
-#define PRECIP_MA_PRESENT_FILE 'grl_cc_20_prec.dat'
+#define PRECIP_MA_PRESENT_FILE 'grl_cc_20_prec.nc'
 !                       Name of the file containing the present-day
 !                       mean annual precipitation data
 !                       ('none' if no such file is to be specified)
@@ -754,7 +754,7 @@
 !                       PRECIP_PRESENT_FILE will be used,
 !                       while PRECIP_MA_PRESENT_FILE will be ignored.]
 
-#define PRECIP_ZS_REF_FILE 'grl_b2_20_woem_zs.dat'
+#define PRECIP_ZS_REF_FILE 'grl_b2_20_woem_zs.nc'
 !                       Name of the file containing the reference topography
 !                       for the data in
 !                       PRECIP_PRESENT_FILE or PRECIP_MA_PRESENT_FILE
@@ -1103,7 +1103,7 @@
 !                       Constant geothermal heat flux (for Q_GEO_MOD==1),
 !                       in mW/m2
 
-#define Q_GEO_FILE 'GHF_Greenland_Ver2.0_GridEPSG3413_20km.dat'
+#define Q_GEO_FILE 'GHF_Greenland_Ver2.0_GridEPSG3413_20km.nc'
 !                       Name of the file containing the spatially varying
 !                       geothermal heat flux (for Q_GEO_MOD==2)
 
