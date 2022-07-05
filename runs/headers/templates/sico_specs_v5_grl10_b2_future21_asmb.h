@@ -1127,7 +1127,7 @@
 !                       Constant geothermal heat flux (for Q_GEO_MOD==1),
 !                       in mW/m2
 
-#define Q_GEO_FILE 'GHF_Greenland_Ver2.0_GridEPSG3413_10km.dat'
+#define Q_GEO_FILE 'GHF_Greenland_Ver2.0_GridEPSG3413_10km.nc'
 !                       Name of the file containing the spatially varying
 !                       geothermal heat flux (for Q_GEO_MOD==2)
 
