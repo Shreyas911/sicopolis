@@ -1625,43 +1625,49 @@ contains
      close(n_unit, status='keep')
   end if
 
-!-------- Checking the number of read parameters --------
+!-------- Checking the number of read parameters (only for ASCII file) --------
 
   n_phys_para = 0   ! initialization value
 
+  if (.not.flag_nc) then   ! ASCII file
+
 #if (defined(ANT))
-  n_phys_para = 14 + 5 + 5 + 3*201
+     n_phys_para = 14 + 5 + 5 + 3*201
 #elif (defined(ASF))
-  n_phys_para = 14 + 5 + 5 + 3*201
+     n_phys_para = 14 + 5 + 5 + 3*201
 #elif (defined(EISMINT))
-  n_phys_para = 14 + 5 + 5 + 3*201
+     n_phys_para = 14 + 5 + 5 + 3*201
 #elif (defined(GRL))
-  n_phys_para = 14 + 5 + 8 + 3*201
+     n_phys_para = 14 + 5 + 8 + 3*201
 #elif (defined(NHEM))
-  n_phys_para = 14 + 5 + 5 + 3*201
+     n_phys_para = 14 + 5 + 5 + 3*201
 #elif (defined(SCAND))
-  n_phys_para = 14 + 5 + 5 + 3*201
+     n_phys_para = 14 + 5 + 5 + 3*201
 #elif (defined(TIBET))
-  n_phys_para = 14 + 5 + 5 + 3*201
+     n_phys_para = 14 + 5 + 5 + 3*201
 #elif (defined(NMARS))
-  n_phys_para = 16 + 5     + 3*201
+     n_phys_para = 16 + 5     + 3*201
 #elif (defined(SMARS))
-  n_phys_para = 16 + 5     + 3*201
+     n_phys_para = 16 + 5     + 3*201
 #elif (defined(XYZ))
-#if (defined(HEINO))      /* under XYZ */
-  n_phys_para = 14 + 5 + 5 + 3*201
-#elif (defined(MOCHO))    /* under XYZ */
-  n_phys_para = 14 + 5 + 5 + 3*201
+#if (defined(HEINO))   /* under XYZ */
+     n_phys_para = 14 + 5 + 5 + 3*201
+#elif (defined(MOCHO))   /* under XYZ */
+     n_phys_para = 14 + 5 + 5 + 3*201
 #elif (defined(NPI))   /* under XYZ */
-  n_phys_para = 14 + 5 + 5 + 3*201
+     n_phys_para = 14 + 5 + 5 + 3*201
 #elif (defined(SHMARS))   /* under XYZ */
-  n_phys_para = 14 + 5 + 5 + 3*201
+     n_phys_para = 14 + 5 + 5 + 3*201
+#else   /* default under XYZ */
+     n_phys_para = 14 + 5 + 5 + 3*201
 #endif
 #endif
 
-  if (n_cnt_phys_para /= n_phys_para) then
-     errormsg = ' >>> read_phys_para: Wrong number of read parameters!'
-     call error(errormsg)
+     if (n_cnt_phys_para /= n_phys_para) then
+        errormsg = ' >>> read_phys_para: Wrong number of read parameters!'
+        call error(errormsg)
+     end if
+
   end if
 
 !-------- Semi-minor axis from semi-major axis and inverse flattening --------
