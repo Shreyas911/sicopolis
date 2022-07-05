@@ -28,7 +28,7 @@
 
 !-------- Physical parameter file --------
 
-#define PHYS_PARA_FILE 'phys_para_grl.nc'
+#define PHYS_PARA_FILE 'phys_para_grl.dat'
 !                       Name of the file containing the physical parameters
 
 !-------- Type of grid, spatial resolution --------
