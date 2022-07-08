@@ -107,6 +107,7 @@ real(dp) :: insol_ma_90_now, insol_ma_90_present, &
 real(dp), dimension(0:JMAX,0:IMAX) :: dist
 real(dp) :: ave_data_i_kl, ave_data_i_gr
 real(dp) :: q_geo_chasm
+logical                           :: flag_in_domain
 logical, dimension(0:JMAX,0:IMAX) :: check_point
 logical, save                     :: firstcall = .true.
 
@@ -474,7 +475,8 @@ end do
 
 !-------- Surface air temperature !
 
-call borehole(zs, 0.0_dp, 0.0_dp, dxi, deta, 'grid', zs_90)
+call borehole(zs, 0.0_dp, 0.0_dp, dxi, deta, 'grid', &
+              zs_90, flag_in_domain)
                              ! zs_90: elevation of the north pole
 
 do i=0, IMAX
