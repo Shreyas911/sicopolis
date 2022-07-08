@@ -6006,6 +6006,7 @@ integer(i4b)       :: n_sync
 real(dp), save     :: time_add_offset_val
 character(len= 16) :: ch_date, ch_time, ch_zone
 character(len=256) :: filename, filename_with_path, buffer
+logical            :: flag_in_domain
 logical, save      :: grads_nc_tweaks
 
 integer(i4b), save :: counter = 0
@@ -6034,7 +6035,13 @@ if (n_core >= 1) then
 !  ------ Ice thickness
 
       field = H_c + H_t
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'grid', H_core(n))
+      call borehole(field, x_core(n), y_core(n), dxi, deta, 'grid', &
+                    H_core(n), flag_in_domain)
+
+      if ( (firstcall_output4).and.(.not.flag_in_domain) ) then
+         write(6, fmt='(a,i0,a)') &
+            ' >>> output4: WARNING: Borehole position ', n, ' out of domain!'
+      end if
 
 !  ------ Basal velocity
 
@@ -6044,7 +6051,8 @@ if (n_core >= 1) then
       end do
       end do
 
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_x', vx_b_core(n))
+      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_x', &
+                    vx_b_core(n), flag_in_domain)
 
       do i=0, IMAX
       do j=0, JMAX
@@ -6052,7 +6060,8 @@ if (n_core >= 1) then
       end do
       end do
 
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_y', vy_b_core(n))
+      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_y', &
+                    vy_b_core(n), flag_in_domain)
 
       vh_b_core(n) = sqrt(vx_b_core(n)**2+vy_b_core(n)**2)
 
@@ -6064,7 +6073,8 @@ if (n_core >= 1) then
       end do
       end do
 
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_x', vx_s_core(n))
+      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_x', &
+                    vx_s_core(n), flag_in_domain)
 
       do i=0, IMAX
       do j=0, JMAX
@@ -6072,7 +6082,8 @@ if (n_core >= 1) then
       end do
       end do
 
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_y', vy_s_core(n))
+      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_y', &
+                    vy_s_core(n), flag_in_domain)
 
       vh_s_core(n) = sqrt(vx_s_core(n)**2+vy_s_core(n)**2)
 
@@ -6084,7 +6095,8 @@ if (n_core >= 1) then
       end do
       end do
 
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'grid', temp_b_core(n))
+      call borehole(field, x_core(n), y_core(n), dxi, deta, 'grid', &
+                    temp_b_core(n), flag_in_domain)
 
 !  ------ Basal frictional heating
 
@@ -6094,7 +6106,8 @@ if (n_core >= 1) then
       end do
       end do
 
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_x', Rx_b_core(n))
+      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_x', &
+                    Rx_b_core(n), flag_in_domain)
 
       do i=0, IMAX
       do j=0, JMAX
@@ -6102,14 +6115,16 @@ if (n_core >= 1) then
       end do
       end do
 
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_y', Ry_b_core(n))
+      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_y', &
+                    Ry_b_core(n), flag_in_domain)
 
       R_b_core(n) = Rx_b_core(n) + Ry_b_core(n)
 
 !  ------ Basal mass balance
 
       field = -(Q_bm+Q_tld)   ! positive for supply, negative for loss
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'grid', bmb_core(n))
+      call borehole(field, x_core(n), y_core(n), dxi, deta, 'grid', &
+                    bmb_core(n), flag_in_domain)
 
    end do
 
@@ -6624,6 +6639,7 @@ real(dp), dimension(:), allocatable :: zl_surf, zs_surf, &
 		  vx_surf, vy_surf, vz_surf, &
                   vx_base, vy_base, vz_base, &
 		  temp_base_pmp
+logical :: flag_in_domain
 
 allocate(zl_surf(n_surf), zs_surf(n_surf), &
         accum_surf(n_surf), &
@@ -6640,80 +6656,78 @@ do n=1, n_surf
 !  ------ Bedrock elevation
 
    field = zl
-   call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', zl_surf(n))
+   call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                 zl_surf(n), flag_in_domain)
 
 !  ------ Surface elevation
 
    field = zs
-   call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', zs_surf(n))
-
+   call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                 zs_surf(n), flag_in_domain)
 
 !  ------ Accumulation
 
    field = accum
-   call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', accum_surf(n))
+   call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                 accum_surf(n), flag_in_domain)
 
 !  ------ Surface mass balance
 
    field = as_perp
-   call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', as_perp_surf(n))
+   call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                 as_perp_surf(n), flag_in_domain)
 
 !  ------ Snowfall
 
    field = snowfall
-   call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', snowfall_surf(n))
+   call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                 snowfall_surf(n), flag_in_domain)
 
 !  ------ Rainfall
 
    field = rainfall
-   call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', rainfall_surf(n))
+   call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                 rainfall_surf(n), flag_in_domain)
 
 !  ------ Runoff
 
    field = runoff
-   call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', runoff_surf(n))
+   call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                 runoff_surf(n), flag_in_domain)
 
 ! ------ Surface velocities
 
       field = vx_s_g
-      call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', vx_surf(n))
+      call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                    vx_surf(n), flag_in_domain)
 
       field = vy_s_g
-      call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', vy_surf(n))
+      call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                    vy_surf(n), flag_in_domain)
 
       field = vz_s
-      call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', vz_surf(n))
+      call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                    vz_surf(n), flag_in_domain)
 
 ! ------ Basal velocities
 
       field = vx_b_g
-      call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', vx_base(n))
+      call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                    vx_base(n), flag_in_domain)
 
       field = vy_b_g
-      call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', vy_base(n))
+      call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                    vy_base(n), flag_in_domain)
 
       field = vz_b
-      call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', vz_base(n))
+      call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                    vz_base(n), flag_in_domain)
 
 ! ------ Basal temperature relative to pressure melting point
 
       field = temph_b
-      call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', temp_base_pmp(n))
-
+      call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                    temp_base_pmp(n), flag_in_domain)
 
 end do
 
@@ -6823,7 +6837,8 @@ end subroutine output5
 !! position x_pos, y_pos by weighed averaging of the corresponding
 !! gridded 2-d field.
 !<------------------------------------------------------------------------------
-  subroutine borehole(field, x_pos, y_pos, dxi, deta, ch_grid, field_val)
+  subroutine borehole(field, x_pos, y_pos, dxi, deta, ch_grid, &
+                      field_val, flag_in_domain)
 
 #if !defined(ALLOW_OPENAD) /* Normal */
   use sico_maths_m, only : bilinint
@@ -6834,13 +6849,14 @@ end subroutine output5
   implicit none
 
   real(dp), dimension(0:JMAX,0:IMAX), intent(in) :: field
-  real(dp), intent(in) :: x_pos, y_pos, dxi, deta
-  character (len=*), intent(in) :: ch_grid
+  real(dp)                          , intent(in) :: x_pos, y_pos, dxi, deta
+  character (len=*)                 , intent(in) :: ch_grid
 
   real(dp), intent(out) :: field_val
+  logical , intent(out) :: flag_in_domain
 
   integer(i4b) :: i1, i2, j1, j2
-  real(dp) :: real_i, real_j
+  real(dp)     :: real_i, real_j
 
 !-------- Neighbour points --------
 
@@ -6866,28 +6882,27 @@ end subroutine output5
      j1 = j2 - 1
   end if
 
+  flag_in_domain = .true.
+
   if (ch_grid=='grid') then
                     ! field(j,i) defined on grid points
 
      if ((i1 < 0).or.(j1 < 0).or.(i2 > IMAX).or.(j2 > JMAX)) then
-        errormsg = ' >>> borehole: Borehole position out of domain!'
-        call error(errormsg)
+        flag_in_domain = .false.
      end if
 
   else if (ch_grid=='sg_x') then
                     ! field(j,i) defined on staggered grid in x direction
 
      if ((i1 < 0).or.(j1 < 0).or.(i2 > IMAX-1).or.(j2 > JMAX)) then
-        errormsg = ' >>> borehole: Borehole position out of domain!'
-        call error(errormsg)
+        flag_in_domain = .false.
      end if
 
   else if (ch_grid=='sg_y') then
                     ! field(j,i) defined on staggered grid in y direction
 
      if ((i1 < 0).or.(j1 < 0).or.(i2 > IMAX).or.(j2 > JMAX-1)) then
-        errormsg = ' >>> borehole: Borehole position out of domain!'
-        call error(errormsg)
+        flag_in_domain = .false.
      end if
 
   else
@@ -6899,15 +6914,23 @@ end subroutine output5
 
 !-------- Weighing of the four adjacent grid values --------
 
+  if (flag_in_domain) then
+
 #if !defined(ALLOW_OPENAD) /* Normal */
-  field_val = bilinint(real(i1,dp), real(i2,dp), real(j1,dp), real(j2,dp), &
-                       field(j1,i1), field(j2,i1), field(j1,i2), field(j2,i2), &
-                       real_i, real_j)
+     field_val = bilinint(real(i1,dp), real(i2,dp), real(j1,dp), real(j2,dp), &
+                      field(j1,i1), field(j2,i1), field(j1,i2), field(j2,i2), &
+                      real_i, real_j)
 #else /* OpenAD */
-  call bilinint(real(i1,dp), real(i2,dp), real(j1,dp), real(j2,dp), &
-                       field(j1,i1), field(j2,i1), field(j1,i2), field(j2,i2), &
-                       real_i, real_j, field_val)
+     call bilinint(real(i1,dp), real(i2,dp), real(j1,dp), real(j2,dp), &
+                   field(j1,i1), field(j2,i1), field(j1,i2), field(j2,i2), &
+                   real_i, real_j, field_val)
 #endif /* Normal vs. OpenAD */
+
+  else
+
+     field_val = 0.0_dp
+
+  end if
 
   end subroutine borehole
 
