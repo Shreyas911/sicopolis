@@ -240,6 +240,7 @@ real(sp), dimension(0:IMAX,0:JMAX,0:KTMAX) :: vx_t_conv, vy_t_conv, vz_t_conv, &
                                               enh_t_conv, strain_heating_t_conv
 real(sp), dimension(0:IMAX,0:JMAX,0:KRMAX) :: temp_r_conv
 
+integer(i4b) :: cmode
 integer(i4b) :: ncid, ncv
 !     ncid:      ID of the output file
 !     ncv:       Variable ID
@@ -341,7 +342,9 @@ coord_id(3) = 'zeta_c'; coord_id(4) = 'zeta_t'; coord_id(5) = 'zeta_r'
 
 !  ------ Open NetCDF file
 
-ios = nf90_create(trim(filename_with_path), NF90_NOCLOBBER, ncid)
+call set_cmode(cmode)
+
+ios = nf90_create(trim(filename_with_path), cmode, ncid)
 
 if (ios /= nf90_noerr) then
    errormsg = ' >>> output1: Error when opening a' &
@@ -4299,8 +4302,7 @@ if (firstcall_output1) firstcall_output1 = .false.
 end subroutine output1
 
 !-------------------------------------------------------------------------------
-!> Writing of time-series data on file in ASCII format
-!! (and optionally in NetCDF format).
+!> Writing of time-series data on file in ASCII and NetCDF format.
 !<------------------------------------------------------------------------------
 subroutine output2(time, dxi, deta, delta_ts, glac_index, &
                    opt_flag_compute_flux_vars_only)
@@ -4337,6 +4339,7 @@ real(dp) :: sum_area_sed
 logical :: flag_compute_flux_vars_only
 logical, dimension(0:JMAX,0:IMAX) :: flag_region
 
+integer(i4b)       :: cmode
 integer(i4b), dimension(0:99), save :: ncid
 integer(i4b)       :: ncd, ncv, nc1d
 integer(i4b)       :: nc1cor(1), nc1cnt(1)
@@ -4700,7 +4703,9 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 
       filename_with_path = trim(OUT_PATH)//'/'//trim(filename)
 
-      ios = nf90_create(trim(filename_with_path), NF90_NOCLOBBER, ncid(n))
+      call set_cmode(cmode)
+
+      ios = nf90_create(trim(filename_with_path), cmode, ncid(n))
 
       if (ios /= nf90_noerr) then
          errormsg = ' >>> output2: Error when opening the' &
@@ -5976,8 +5981,8 @@ mb_resid = Q_s + bmb_tot - calv_tot - dV_dt
 end subroutine scalar_variables
 
 !-------------------------------------------------------------------------------
-!> Writing of time-series data of the deep ice cores on file in ASCII format
-!! (and optionally in NetCDF format).
+!> Writing of time-series data of the deep ice cores on file in ASCII
+!! and NetCDF format.
 !<------------------------------------------------------------------------------
 subroutine output4(time, dxi, deta, delta_ts, glac_index)
 
@@ -5999,6 +6004,7 @@ real(dp), dimension(:), allocatable :: H_core, temp_b_core, &
                                        Rx_b_core, Ry_b_core, R_b_core, &
                                        bmb_core
 
+integer(i4b)       :: cmode
 integer(i4b), save :: ncid
 integer(i4b)       :: ncd, ncv, nc1d, nc2d(2)
 integer(i4b)       :: nc1cor(1), nc1cnt(1), nc2cor(2), nc2cnt(2)
@@ -6185,7 +6191,9 @@ if (n_core >= 1) then
       filename           = trim(run_name)//'_core.nc'
       filename_with_path = trim(OUT_PATH)//'/'//trim(filename)
 
-      ios = nf90_create(trim(filename_with_path), NF90_NOCLOBBER, ncid)
+      call set_cmode(cmode)
+
+      ios = nf90_create(trim(filename_with_path), cmode, ncid)
 
       if (ios /= nf90_noerr) then
          errormsg = ' >>> output4: Error when opening the' &
@@ -6933,6 +6941,27 @@ end subroutine output5
   end if
 
   end subroutine borehole
+
+!-------------------------------------------------------------------------------
+!> Set the creation mode for NetCDF files (variable cmode).
+!<------------------------------------------------------------------------------
+  subroutine set_cmode(cmode)
+
+  use netcdf
+
+  implicit none
+
+  integer(i4b), intent(out) :: cmode
+
+  character(len=16) :: ch_value
+
+  cmode = NF90_NOCLOBBER
+
+#if (NETCDF4_ENABLED==1)
+  cmode = NF90_NETCDF4
+#endif
+
+  end subroutine set_cmode
 
 !-------------------------------------------------------------------------------
 !> Set the value of the institution string ch_institution.
