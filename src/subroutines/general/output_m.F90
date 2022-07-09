@@ -241,6 +241,8 @@ real(sp), dimension(0:IMAX,0:JMAX,0:KTMAX) :: vx_t_conv, vy_t_conv, vz_t_conv, &
 real(sp), dimension(0:IMAX,0:JMAX,0:KRMAX) :: temp_r_conv
 
 integer(i4b) :: cmode
+integer(i4b) :: n_deflate_level
+logical      :: flag_shuffle
 integer(i4b) :: ncid, ncv
 !     ncid:      ID of the output file
 !     ncv:       Variable ID
@@ -342,7 +344,8 @@ coord_id(3) = 'zeta_c'; coord_id(4) = 'zeta_t'; coord_id(5) = 'zeta_r'
 
 !  ------ Open NetCDF file
 
-call set_cmode(cmode)
+call set_cmode(cmode, &
+               opt_deflate_level=n_deflate_level, opt_shuffle=flag_shuffle)
 
 ios = nf90_create(trim(filename_with_path), cmode, ncid)
 
@@ -6945,20 +6948,30 @@ end subroutine output5
 !-------------------------------------------------------------------------------
 !> Set the creation mode for NetCDF files (variable cmode).
 !<------------------------------------------------------------------------------
-  subroutine set_cmode(cmode)
+  subroutine set_cmode(cmode, opt_deflate_level, opt_shuffle)
 
   use netcdf
 
   implicit none
 
-  integer(i4b), intent(out) :: cmode
+  integer(i4b),           intent(out) :: cmode
+  integer(i4b), optional, intent(out) :: opt_deflate_level
+  logical,      optional, intent(out) :: opt_shuffle
 
   character(len=16) :: ch_value
 
   cmode = NF90_NOCLOBBER
 
+  if (present(opt_deflate_level)) opt_deflate_level = 0
+  if (present(opt_shuffle))       opt_shuffle       = .false.
+
 #if (NETCDF4_ENABLED==1)
+
   cmode = NF90_NETCDF4
+
+  if (present(opt_deflate_level)) opt_deflate_level = 1
+  if (present(opt_shuffle))       opt_shuffle       = .true.
+
 #endif
 
   end subroutine set_cmode
