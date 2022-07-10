@@ -8,7 +8,7 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2022-06-11'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2022-07-09'
 !                      Date of last change
 
 !-------- Domain --------
@@ -179,7 +179,7 @@
 !                         of the logarithm of the viscosity are carried out)
 !                         (for DYNAMICS==1 and MARGIN==3, or for DYNAMICS==2).
 
-#define VISC_SMOOTH_DIFF 0.0_dp
+#define VISC_SMOOTH_DIFF 0.0d0
 !                         Dimensionless diffusivity for the diffusive smoothing
 !                         of the depth-averaged viscosity of the SSA/SStA
 !                         (for DYNAMICS==1 and MARGIN==3, or for DYNAMICS==2).
@@ -820,6 +820,11 @@
 !                       (for FLOATING_ICE_BASAL_MELTING==4)
 
 !-------- Data output --------
+
+#define NETCDF4_ENABLED 0
+!                         NetCDF output format:
+!                         0 : NetCDF-3 classic
+!                         1 : NetCDF-4 (with compression)
 
 #define OUT_TIMES 1
 !                         Output of times in all files:

@@ -1025,6 +1025,9 @@ write(10, fmt=trim(fmt3)) 'age_diff    =', AGEDIFF
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
+#if (defined(NETCDF4_ENABLED))
+write(10, fmt=trim(fmt2)) 'NETCDF4_ENABLED = ', NETCDF4_ENABLED
+#endif
 #if (defined(OUT_TIMES))
 write(10, fmt=trim(fmt2)) 'OUT_TIMES = ', OUT_TIMES
 #endif
