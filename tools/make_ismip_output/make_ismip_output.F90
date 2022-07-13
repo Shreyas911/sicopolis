@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2022-06-06
+!! 2022-07-13
 !!
 !! @section Copyright
 !!
@@ -1049,6 +1049,9 @@ integer(i4b),      intent(out) :: ncid   ! ID of the NetCDF file
 
 integer(i4b) :: ios
 integer(i4b) :: n
+integer(i4b) :: cmode
+integer(i4b) :: n_deflate_level
+logical      :: flag_shuffle
 integer(i4b) :: ncv
 !     ncv:       Variable ID
 integer(i4b) :: ncd, nc1d, nc2d(2), nc3d(3)
@@ -1081,6 +1084,16 @@ ch_time_unit = 'a'
 stop ' >>> init_ismip_netcdf: TIME_UNIT must be either 1 or 2!'
 #endif
 
+#if (NETCDF4_ENABLED==1)
+  cmode           = NF90_NETCDF4
+  n_deflate_level = 1
+  flag_shuffle    = .true.
+#else
+  cmode           = NF90_NOCLOBBER
+  n_deflate_level = 0
+  flag_shuffle    = .false.
+#endif
+
 !-------- Open NetCDF file --------
 
 if ((n_variable_dim == 1).and.(n_variable_type == 1)) then
@@ -1097,7 +1110,7 @@ write(6,'(a)') ' Now creating new NetCDF file '//trim(filename)//' ...'
 
 filename_with_path = trim(OUT_PATH)//'/'//trim(filename)
 
-ios = nf90_create(trim(filename_with_path), NF90_NOCLOBBER, ncid)
+ios = nf90_create(trim(filename_with_path), cmode, ncid)
 
 if (ios /= nf90_noerr) then
    write(6,'(/a)') ' >>> init_ismip_netcdf:'
@@ -1183,6 +1196,7 @@ end if
 !  ------ year2sec
 
 call check( nf90_def_var(ncid, 'year2sec', NF90_DOUBLE, ncv) )
+
 buffer = 's a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'seconds_per_year'
@@ -1195,7 +1209,14 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 write(ch_year_ref, '(i0)') YEAR_REF
 
 call check( nf90_inq_dimid(ncid, 'time', nc1d) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'time', NF90_FLOAT, nc1d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'time', NF90_FLOAT, nc1d, ncv) )
+#endif
+
 if (n_variable_type == 2) &
    call check( nf90_put_att(ncid, ncv, 'bounds', 'time_bnds') )
 #if (TIME_UNIT==1)
@@ -1217,15 +1238,30 @@ call check( nf90_put_att(ncid, ncv, 'axis', 'T') )
 !  ------ Time_bnds
 
 if (n_variable_type == 2) then
+
    call check( nf90_inq_dimid(ncid, 'bnds', nc2d(1)) )
    call check( nf90_inq_dimid(ncid, 'time', nc2d(2)) )
+
+#if (NETCDF4_ENABLED==1)
+   call check( nf90_def_var(ncid, 'time_bnds', NF90_FLOAT, nc2d, ncv, &
+               deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
    call check( nf90_def_var(ncid, 'time_bnds', NF90_FLOAT, nc2d, ncv) )
+#endif
+
 end if
 
 !  ------ Time in years CE
 
 call check( nf90_inq_dimid(ncid, 'time', nc1d) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'year', NF90_FLOAT, nc1d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'year', NF90_FLOAT, nc1d, ncv) )
+#endif
+
 buffer = 'year CE'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'year'
@@ -1240,7 +1276,9 @@ if (n_variable_dim == 1) then
 !    ---- x
 
 call check( nf90_inq_dimid(ncid, 'x', nc1d) )
+
 call check( nf90_def_var(ncid, 'x', NF90_FLOAT, nc1d, ncv) )
+
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'projection_x_coordinate'
@@ -1252,7 +1290,9 @@ call check( nf90_put_att(ncid, ncv, 'axis', 'X') )
 !    ---- y
 
 call check( nf90_inq_dimid(ncid, 'y', nc1d) )
+
 call check( nf90_def_var(ncid, 'y', NF90_FLOAT, nc1d, ncv) )
+
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'projection_y_coordinate'
@@ -1265,7 +1305,14 @@ call check( nf90_put_att(ncid, ncv, 'axis', 'Y') )
 
 call check( nf90_inq_dimid(ncid, 'x', nc2d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc2d(2)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'lon', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'lon', NF90_FLOAT, nc2d, ncv) )
+#endif
+
 buffer = 'degrees_E'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'longitude'
@@ -1277,7 +1324,14 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 
 call check( nf90_inq_dimid(ncid, 'x', nc2d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc2d(2)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'lat', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'lat', NF90_FLOAT, nc2d, ncv) )
+#endif
+
 buffer = 'degrees_N'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'latitude'
@@ -1298,7 +1352,14 @@ if (n_variable_type == 1) then
 !      -- lim
 
 call check( nf90_inq_dimid(ncid, 'time', nc1d) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'lim', NF90_FLOAT, nc1d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'lim', NF90_FLOAT, nc1d, ncv) )
+#endif
+
 buffer = 'kg'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'land_ice_mass'
@@ -1309,7 +1370,14 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 !      -- limnsw
 
 call check( nf90_inq_dimid(ncid, 'time', nc1d) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'limnsw', NF90_FLOAT, nc1d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'limnsw', NF90_FLOAT, nc1d, ncv) )
+#endif
+
 buffer = 'kg'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'land_ice_mass_not_displacing_sea_water'
@@ -1320,7 +1388,14 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 !      -- iareagr
 
 call check( nf90_inq_dimid(ncid, 'time', nc1d) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'iareagr', NF90_FLOAT, nc1d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'iareagr', NF90_FLOAT, nc1d, ncv) )
+#endif
+
 buffer = 'm2'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'grounded_land_ice_area'
@@ -1331,7 +1406,14 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 !      -- iareafl
 
 call check( nf90_inq_dimid(ncid, 'time', nc1d) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'iareafl', NF90_FLOAT, nc1d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'iareafl', NF90_FLOAT, nc1d, ncv) )
+#endif
+
 buffer = 'm2'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'floating_ice_shelf_area'
@@ -1346,7 +1428,14 @@ else if (n_variable_type == 2) then
 !      -- dlimdt
 
 call check( nf90_inq_dimid(ncid, 'time', nc1d) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'dlimdt', NF90_FLOAT, nc1d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'dlimdt', NF90_FLOAT, nc1d, ncv) )
+#endif
+
 buffer = 'kg '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'tendency_of_land_ice_mass'
@@ -1357,7 +1446,14 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 !      -- tendacabf
 
 call check( nf90_inq_dimid(ncid, 'time', nc1d) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'tendacabf', NF90_FLOAT, nc1d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'tendacabf', NF90_FLOAT, nc1d, ncv) )
+#endif
+
 buffer = 'kg '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'tendency_of_land_ice_mass_due_to_surface_mass_balance'
@@ -1368,7 +1464,14 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 !      -- tendlibmassbf
 
 call check( nf90_inq_dimid(ncid, 'time', nc1d) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'tendlibmassbf', NF90_FLOAT, nc1d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'tendlibmassbf', NF90_FLOAT, nc1d, ncv) )
+#endif
+
 buffer = 'kg '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'tendency_of_land_ice_mass_due_to_basal_mass_balance'
@@ -1379,7 +1482,14 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 !      -- tendlibmassbffl
 
 call check( nf90_inq_dimid(ncid, 'time', nc1d) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'tendlibmassbffl', NF90_FLOAT, nc1d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'tendlibmassbffl', NF90_FLOAT, nc1d, ncv) )
+#endif
+
 buffer = 'kg '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'tendency_of_floating_ice_shelf_mass_due_to_basal_mass_balance'
@@ -1390,7 +1500,14 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 !      -- tendlicalvf
 
 call check( nf90_inq_dimid(ncid, 'time', nc1d) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'tendlicalvf', NF90_FLOAT, nc1d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'tendlicalvf', NF90_FLOAT, nc1d, ncv) )
+#endif
+
 buffer = 'kg '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'tendency_of_land_ice_mass_due_to_calving'
@@ -1401,7 +1518,14 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 !      -- tendlifmassbf
 
 call check( nf90_inq_dimid(ncid, 'time', nc1d) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'tendlifmassbf', NF90_FLOAT, nc1d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'tendlifmassbf', NF90_FLOAT, nc1d, ncv) )
+#endif
+
 buffer = 'kg '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'tendency_of_land_ice_mass_due_to_calving_and_ice_front_melting'
@@ -1412,7 +1536,14 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)) )
 !!! !      -- tendligroundf
 !!! 
 !!! call check( nf90_inq_dimid(ncid, 'time', nc1d) )
+!!!
+!!! #if (NETCDF4_ENABLED==1)
+!!! call check( nf90_def_var(ncid, 'tendligroundf', NF90_FLOAT, nc1d, ncv, &
+!!!             deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+!!! #else
 !!! call check( nf90_def_var(ncid, 'tendligroundf', NF90_FLOAT, nc1d, ncv) )
+!!! #endif
+!!!
 !!! buffer = 'kg '//ch_time_unit//'-1'
 !!! call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 !!! buffer = 'tendency_of_land_ice_mass_due_to_flux_at_grounding_line'
@@ -1437,7 +1568,14 @@ if (n_variable_type == 1) then
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'lithk', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'lithk', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'land_ice_thickness'
@@ -1455,7 +1593,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'orog', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'orog', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'surface_altitude'
@@ -1473,7 +1618,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'base', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'base', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'base_altitude'
@@ -1491,7 +1643,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'topg', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'topg', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'bedrock_altitude'
@@ -1509,7 +1668,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'xvelsurf', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'xvelsurf', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'm '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'land_ice_surface_x_velocity'
@@ -1527,7 +1693,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'yvelsurf', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'yvelsurf', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'm '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'land_ice_surface_y_velocity'
@@ -1545,7 +1718,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'zvelsurf', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'zvelsurf', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'm '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'land_ice_surface_upward_velocity'
@@ -1563,7 +1743,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'horvelsurf', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'horvelsurf', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'm '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'land_ice_surface_horizontal_velocity'
@@ -1581,7 +1768,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'xvelbase', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'xvelbase', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'm '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'land_ice_basal_x_velocity'
@@ -1599,7 +1793,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'yvelbase', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'yvelbase', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'm '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'land_ice_basal_y_velocity'
@@ -1617,7 +1818,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'zvelbase', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'zvelbase', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'm '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'land_ice_basal_upward_velocity'
@@ -1635,7 +1843,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'horvelbase', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'horvelbase', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'm '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'land_ice_basal_horizontal_velocity'
@@ -1653,7 +1868,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'xvelmean', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'xvelmean', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'm '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'land_ice_vertical_mean_x_velocity'
@@ -1671,7 +1893,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'yvelmean', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'yvelmean', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'm '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'land_ice_vertical_mean_y_velocity'
@@ -1689,7 +1918,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'horvelmean', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'horvelmean', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'm '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'land_ice_vertical_mean_horizontal_velocity'
@@ -1707,7 +1943,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'litemptop', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'litemptop', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'K'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'temperature_at_top_of_ice_sheet_model'
@@ -1725,7 +1968,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'litempbot', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'litempbot', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'K'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'temperature_at_base_of_ice_sheet_model'
@@ -1743,7 +1993,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'litempbotgr', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'litempbotgr', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'K'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'temperature_at_base_of_grounded_ice_sheet'
@@ -1761,7 +2018,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'litempbotfl', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'litempbotfl', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'K'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'temperature_at_base_of_floating_ice_shelf'
@@ -1779,7 +2043,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'strbasemag', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'strbasemag', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'Pa'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'land_ice_basal_drag'
@@ -1797,7 +2068,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'sftgif', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'sftgif', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = '1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'land_ice_area_fraction'
@@ -1815,7 +2093,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'sftgrf', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'sftgrf', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = '1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'grounded_ice_sheet_area_fraction'
@@ -1833,7 +2118,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'sftflf', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'sftflf', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = '1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'floating_ice_shelf_area_fraction'
@@ -1855,7 +2147,14 @@ else if (n_variable_type == 2) then
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'acabf', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'acabf', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'kg m-2 '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'land_ice_surface_specific_mass_balance_flux'
@@ -1873,7 +2172,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'libmassbf', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'libmassbf', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'kg m-2 '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'land_ice_basal_specific_mass_balance_flux'
@@ -1891,7 +2197,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'libmassbfgr', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'libmassbfgr', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'kg m-2 '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'grounded_ice_sheet_basal_specific_mass_balance_flux'
@@ -1909,7 +2222,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'libmassbffl', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'libmassbffl', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'kg m-2 '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'floating_ice_shelf_basal_specific_mass_balance_flux'
@@ -1927,7 +2247,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'hfgeoubed', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'hfgeoubed', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'W m-2'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'upward_geothermal_heat_flux_in_land_ice'
@@ -1945,7 +2272,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'dlithkdt', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'dlithkdt', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'm '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'tendency_of_land_ice_thickness'
@@ -1963,7 +2297,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'licalvf', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'licalvf', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'kg m-2 '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'land_ice_specific_mass_flux_due_to_calving'
@@ -1981,7 +2322,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'lifmassbf', NF90_FLOAT, nc3d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+#else
 call check( nf90_def_var(ncid, 'lifmassbf', NF90_FLOAT, nc3d, ncv) )
+#endif
+
 buffer = 'kg m-2 '//ch_time_unit//'-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 buffer = 'land_ice_specific_mass_flux_due_to_calving_and_ice_front_melting'
@@ -1999,7 +2347,14 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping') )
 !!! call check( nf90_inq_dimid(ncid, 'x', nc3d(1)) )
 !!! call check( nf90_inq_dimid(ncid, 'y', nc3d(2)) )
 !!! call check( nf90_inq_dimid(ncid, 'time', nc3d(3)) )
+!!!
+!!! #if (NETCDF4_ENABLED==1)
+!!! call check( nf90_def_var(ncid, 'ligroundf', NF90_FLOAT, nc3d, ncv, &
+!!!             deflate_level=n_deflate_level, shuffle=flag_shuffle) )
+!!! #else
 !!! call check( nf90_def_var(ncid, 'ligroundf', NF90_FLOAT, nc3d, ncv) )
+!!! #endif
+!!!
 !!! buffer = 'kg m-2 '//ch_time_unit//'-1'
 !!! call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)) )
 !!! buffer = 'land_ice_specific_mass_flux_at_grounding_line'
