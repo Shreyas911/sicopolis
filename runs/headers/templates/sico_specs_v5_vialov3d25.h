@@ -8,7 +8,7 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2022-07-09'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2022-07-15'
 !                      Date of last change
 
 !-------- Domain --------
@@ -500,6 +500,19 @@
 !                         0 : No evolution of the ice thickness, kept fixed on
 !                             the initial thickness
 !                         1 : Evolution of the ice thickness
+!                         2 : Evolution of the ice thickness, but between times
+!                             TIME_TARGET_TOPO_INIT0 and TIME_TARGET_TOPO_FINAL0
+!                             the ice topography (zs, zb, zl, H) is nudged
+!                             towards a prescribed target with the
+!                             relaxation time smoothly decreasing from
+!                             TARGET_TOPO_TAU0 to zero.
+!                         3 : Evolution of the ice thickness, but
+!                             the ice topography (zs, zb, zl, H) is nugded
+!                             towards a prescribed target with the
+!                             constant relaxation time TARGET_TOPO_TAU0.
+!                         4 : Evolution of the ice thickness,
+!                             but maximum ice extent is constrained by the
+!                             prescribed mask MASK_MAXEXTENT_FILE.
 
 #define OCEAN_CONNECTIVITY 1
 !                         0 : Ocean connectivity not enforced.
@@ -508,6 +521,27 @@
 #define H_ISOL_MAX 1000.0d0
 !                             Maximum thickness of isolated ice points (in m)
 !                             (if set to 0.0d0, isolated ice points are killed).
+
+#define TIME_TARGET_TOPO_INIT0 0.0d0
+!                             Initial time for nudging towards target topography
+!                             (in a; only for THK_EVOL==2)
+
+#define TIME_TARGET_TOPO_FINAL0 0.0d0
+!                             Final time for nudging towards target topography
+!                             (in a; only for THK_EVOL==2)
+
+#define TARGET_TOPO_TAU0 100.0d0
+!                             Relaxation time for
+!                             nudging towards target topography
+!                             (in a;
+!                              only for THK_EVOL==2, 3)
+
+#define TARGET_TOPO_DAT_NAME 'none'
+!                             Target-topography file
+!                             (only for THK_EVOL==2, 3)
+
+#define MASK_MAXEXTENT_FILE 'none'
+!                             Maximum ice extent mask file (only for THK_EVOL==4)
 
 #define CALCTHK 2
 !                         Solution of the ice-thickness equation:
