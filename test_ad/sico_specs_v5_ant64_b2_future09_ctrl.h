@@ -8,23 +8,23 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2022-01-03'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2022-07-09'
 !                      Date of last change
 
 !-------- Domain --------
 
 #define ANT
 !                 Simulated domain:
-!                   ANT      - Antarctica
-!                   ASF      - Austfonna
-!                   EMTP2SGE - EISMINT Phase 2 Simplified Geometry Experiment
-!                   GRL      - Greenland
-!                   NHEM     - Northern hemisphere
-!                   SCAND    - Scandinavia
-!                   TIBET    - Tibet
-!                   NMARS    - North polar cap of Mars
-!                   SMARS    - South polar cap of Mars
-!                   XYZ      - Various domains
+!                   ANT     - Antarctica
+!                   ASF     - Austfonna
+!                   EISMINT - EISMINT (Phase 2 SGE and modifications)
+!                   GRL     - Greenland
+!                   NHEM    - Northern hemisphere
+!                   SCAND   - Scandinavia
+!                   TIBET   - Tibet
+!                   NMARS   - North polar cap of Mars
+!                   SMARS   - South polar cap of Mars
+!                   XYZ     - Various domains
 
 !-------- Physical parameter file --------
 
@@ -34,12 +34,12 @@
 !-------- Type of grid, spatial resolution --------
 
 #define GRID 0
-!                         0 : Cartesian coordinates in the stereographic plane
-!                             without distortion correction
-!                         1 : Cartesian coordinates in the stereographic plane
-!                             with distortion correction
-!                         2 : Geographical coordinates (longitude/latitude)
-!                             [not allowed for this application]
+!                       0 : Cartesian coordinates in the stereographic plane
+!                           without distortion correction
+!                       1 : Cartesian coordinates in the stereographic plane
+!                           with distortion correction
+!                       2 : Geographical coordinates (longitude/latitude)
+!                           [not allowed for this application]
 
 #define X0 -3040.0d0
 !                       x coordinate (in km) of the origin point (i,j) = (0,0),
@@ -85,6 +85,12 @@
 !                       grid in z-direction in cold ice
 !                       (0.0d0 produces an equidistant grid)
 
+#define CHECK_RES_IMAX_JMAX 1
+!                       Compatibility check between horizontal resolution
+!                       and number of grid points:
+!                       0 : Not carried out
+!                       1 : Carried out
+
 !-------- Initial and final times, time steps --------
 
 #define YEAR_ZERO 1990.0d0
@@ -96,7 +102,7 @@
 #define TIME_INIT0 0.0d0
 !                       Initial time of simulation (in a)
 
-#define TIME_END0 100.0d0
+#define TIME_END0 40.0d0
 !                       Final time of simulation (in a)
 
 #define DTIME0 2.0d0
@@ -116,8 +122,11 @@
 !                       Time step (in a) for writing of data to
 !                       the time-series files
 
-#define YEAR_SEC 31556926.0d0
-!                       Conversion from years to seconds
+!!! #define YEAR_SEC 31556926.0d0
+!                       Conversion from years to seconds;
+!                       only required if supposed to be different from
+!                       the default value 1 a = 31556925.445 s
+!                       (IUPAC-IUGS year for epoch 2000.0)
 
 !-------- Ice sheet dynamics --------
 
@@ -142,15 +151,19 @@
 !                         (see the Lis User Guide, www.ssisc.org/lis)
 !                         (for DYNAMICS==1 and MARGIN==3, or for DYNAMICS==2)
 
-#define TOL_ITER_SSA 0.1d0
+#define TOL_ITER_SSA 0.025d0
 !                         Tolerance for the nonlinear iterations of the SSA/SStA
 !                         (for DYNAMICS==1 and MARGIN==3, or for DYNAMICS==2).
 
-#define N_ITER_SSA 3
+#define N_ITER_SSA 25
 !                         Maximum number of nonlinear iterations of the SSA/SStA
 !                         (for DYNAMICS==1 and MARGIN==3, or for DYNAMICS==2).
 
-#define ITER_INIT_SSA 1
+#define N_ITER_SSA_MIN 2
+!                         Minimum number of nonlinear iterations of the SSA/SStA
+!                         (for DYNAMICS==1 and MARGIN==3, or for DYNAMICS==2).
+
+#define ITER_INIT_SSA 2
 !                         Initial depth-integrated viscosity for the
 !                         nonlinear iterations of the SSA/SStA:
 !                         1 : Constant VISC_INIT_SSA times ice thickness
@@ -172,7 +185,7 @@
 !                         of the logarithm of the viscosity are carried out)
 !                         (for DYNAMICS==1 and MARGIN==3, or for DYNAMICS==2).
 
-#define VISC_SMOOTH_DIFF 0.0_dp
+#define VISC_SMOOTH_DIFF 0.0d0
 !                         Dimensionless diffusivity for the diffusive smoothing
 !                         of the depth-averaged viscosity of the SSA/SStA
 !                         (for DYNAMICS==1 and MARGIN==3, or for DYNAMICS==2).
@@ -843,46 +856,57 @@
 #define TEMP_SMB_ANOM_DIR 'none'
 !                       Directory for the
 !                       yearly surface-temperature and SMB anomalies
+!                       ('none' if no directory is to be specified)
 
 #define TEMP_ANOM_SUBDIR 'none'
 !                       Subdirectory for the
 !                       yearly surface-temperature anomalies
+!                       ('none' if no directory is to be specified)
 
-#define TEMP_ANOM_FILES  'none'
+#define TEMP_ANOM_FILES 'none'
 !                       NetCDF files containing the
 !                       yearly surface-temperature anomalies
 !                       (without final year number and .nc extension)
-!                       ('none' if no such files are to be specified)
+!                       ('none' if no files are to be specified)
 
-#define dTEMPdz_SUBDIR   'none'
+#define dTEMPdz_SUBDIR 'none'
 !                       Subdirectory for the
 !                       yearly surface-temperature vertical gradients
+!                       ('none' if no directory is to be specified,
+!                        'value' if constant value is to be used)
 
-#define dTEMPdz_FILES    'none'
+#define dTEMPdz_FILES 'none'
 !                       NetCDF files containing the
 !                       yearly surface-temperature vertical gradients
 !                       (without final year number and .nc extension)
-!                       ('none' if no such files are to be specified)
+!                       ('none' if no files are to be specified,
+!                        value as string number [in K/m]
+!                        if dTEMPdz_SUBDIR is set to 'value')
 
-#define SMB_ANOM_SUBDIR  'none'
+#define SMB_ANOM_SUBDIR 'none'
 !                       Subdirectory for the
 !                       yearly SMB anomalies
+!                       ('none' if no directory is to be specified)
 
-#define SMB_ANOM_FILES   'none'
+#define SMB_ANOM_FILES 'none'
 !                       NetCDF files containing the
 !                       yearly SMB anomalies
 !                       (without final year number and .nc extension)
-!                       ('none' if no such files are to be specified)
+!                       ('none' if no files are to be specified)
 
-#define dSMBdz_SUBDIR    'none'
+#define dSMBdz_SUBDIR 'none'
 !                       Subdirectory for the
 !                       yearly SMB vertical gradients
+!                       ('none' if no directory is to be specified,
+!                        'value' if constant value is to be used)
 
-#define dSMBdz_FILES     'none'
+#define dSMBdz_FILES 'none'
 !                       NetCDF files containing the
 !                       yearly SMB vertical gradients
 !                       (without final year number and .nc extension)
-!                       ('none' if no such files are to be specified)
+!                       ('none' if no files are to be specified,
+!                        value as string number [in (m/a ice equiv.)/m]
+!                        if dSMBdz_SUBDIR is set to 'value')
 
 #define TEMP_SMB_ANOM_TIME_MIN -9999
 !                       Minimum time of the yearly surface-temperature
@@ -1204,6 +1228,11 @@
 
 !-------- Data output --------
 
+#define NETCDF4_ENABLED 0
+!                         NetCDF output format:
+!                         0 : NetCDF-3 classic
+!                         1 : NetCDF-4 (with compression)
+
 #define OUT_TIMES 1
 !                         Output of times in all files:
 !                         1 : In SICOPOLIS years
@@ -1213,7 +1242,7 @@
 
 #define OUTPUT_INIT 0
 !                         Output of initial conditions
-!                         in time-slice files '.erg' or '.nc'
+!                         in time-slice files '.nc'
 !                         (for prescribed output time step, OUTPUT==1,3)
 !                         and in time-series files '.ser' and '.core':
 !                         0 : Initial conditions are not written to
@@ -1223,15 +1252,15 @@
 
 #define OUTPUT 3
 !                         1 : Writing of time-slice data in files
-!                             '.erg' or '.nc' with prescribed time step
+!                             '.nc' with prescribed time step
 !                         2 : Writing of time-slice data in files
-!                             '.erg' or '.nc' at arbitrarily specified times
+!                             '.nc' at arbitrarily specified times
 !                         3 : Writing of time-slice data (only 2-d fields) in
-!                             files '.erg' or '.nc' with prescribed time step
+!                             files '.nc' with prescribed time step
 !                             plus
 !                             writing of time-slice data
 !                             (full set of 2-d and 3-d fields) in files
-!                             '.erg' or '.nc' at arbitrarily specified times
+!                             '.nc' at arbitrarily specified times
 
 #define ERGDAT 1
 !                         0 : Only 2-d fields written as time-slice data
