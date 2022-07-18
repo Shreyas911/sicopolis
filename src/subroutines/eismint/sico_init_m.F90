@@ -818,6 +818,24 @@ write(10, fmt=trim(fmt2)) 'OCEAN_CONNECTIVITY = ', OCEAN_CONNECTIVITY
 write(10, fmt=trim(fmt3)) 'H_isol_max =', H_ISOL_MAX
 #endif
 
+#if (THK_EVOL==2)
+write(10, fmt=trim(fmt3)) 'time_target_topo_init  =', TIME_TARGET_TOPO_INIT0
+write(10, fmt=trim(fmt3)) 'time_target_topo_final =', TIME_TARGET_TOPO_FINAL0
+write(10, fmt=trim(fmt3)) 'target_topo_tau_0 =', TARGET_TOPO_TAU0
+write(10, fmt=trim(fmt1)) 'Target-topography file = '//TARGET_TOPO_DAT_NAME
+write(10, fmt=trim(fmt1)) 'Path to target-topography file = '//TARGET_TOPO_PATH
+#endif
+
+#if (THK_EVOL==3)
+write(10, fmt=trim(fmt3)) 'target_topo_tau_0 =', TARGET_TOPO_TAU0
+write(10, fmt=trim(fmt1)) 'Target-topography file = '//TARGET_TOPO_DAT_NAME
+write(10, fmt=trim(fmt1)) 'Path to target-topography file = '//TARGET_TOPO_PATH
+#endif
+
+#if (THK_EVOL==4)
+write(10, fmt=trim(fmt1)) 'Maximum ice extent mask file = '//MASK_MAXEXTENT_FILE
+#endif
+
 #if (CALCTHK==2 || CALCTHK==3 || CALCTHK==5 || CALCTHK==6)
 write(10, fmt=trim(fmt3))  'ovi_weight =', OVI_WEIGHT
 #if (CALCTHK==2 || CALCTHK==5)
@@ -1025,6 +1043,9 @@ write(10, fmt=trim(fmt3)) 'age_diff    =', AGEDIFF
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
+#if (defined(NETCDF4_ENABLED))
+write(10, fmt=trim(fmt2)) 'NETCDF4_ENABLED = ', NETCDF4_ENABLED
+#endif
 #if (defined(OUT_TIMES))
 write(10, fmt=trim(fmt2)) 'OUT_TIMES = ', OUT_TIMES
 #endif
@@ -1092,6 +1113,16 @@ if (.not.approx_integer_multiple(dtime_out, dtime, eps_sp_dp)) then
 end if
 #endif
 
+#if (THK_EVOL==2)
+time_target_topo_init  = TIME_TARGET_TOPO_INIT0 *year2sec   ! a --> s
+time_target_topo_final = TIME_TARGET_TOPO_FINAL0*year2sec   ! a --> s
+target_topo_tau_0 = TARGET_TOPO_TAU0 *year2sec   ! a --> s
+#endif
+
+#if (THK_EVOL==3)
+target_topo_tau_0 = TARGET_TOPO_TAU0 *year2sec   ! a --> s
+#endif
+
 time = time_init
 
 !-------- Read file defining the regions for the sliding laws --------
@@ -1117,6 +1148,43 @@ n_slide_region = nint(field2d_aux)
 
 mean_accum = MEAN_ACCUM*(1.0e-03_dp/year2sec)*(RHO_W/RHO)
 !                      ! mm/a water equiv. --> m/s ice equiv.
+
+
+
+!-------- Reading of the prescribed target topography --------
+
+#if (THK_EVOL==2 || THK_EVOL==3)
+
+target_topo_dat_name = trim(TARGET_TOPO_DAT_NAME)
+
+call read_target_topo_nc(target_topo_dat_name)
+
+#endif
+
+!-------- Reading of the maximum ice extent mask --------
+
+#if (THK_EVOL==4)
+
+#if (GRID==0 || GRID==1)
+
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                     trim(MASK_MAXEXTENT_FILE)
+
+call read_2d_input(filename_with_path, &
+                   ch_var_name='mask_maxextent', &
+                   n_var_type=3, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
+
+mask_maxextent = nint(field2d_aux)
+
+#elif (GRID==2)
+
+errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
+call error(errormsg)
+
+#endif
+
+#endif
 
 !-------- Read data for delta_ts --------
 
@@ -1523,18 +1591,16 @@ allocate(lambda_core(n_core), phi_core(n_core), &
          x_core(n_core), y_core(n_core), ch_core(n_core))
 
 ch_core(1)     = 'P1'
-lambda_core(1) =   0.0_dp  ! dummy
-phi_core(1)    =   0.0_dp  ! dummy
-x_core(1)      =   0.0_dp *1.0e+03_dp    ! Position of the central dome
-y_core(1)      =   0.0_dp *1.0e+03_dp    ! (0 km, 0 km),
-                                         ! conversion km -> m
+lambda_core(1) = 0.0_dp   ! dummy
+phi_core(1)    = 0.0_dp   ! dummy
+x_core(1)      = 0.5_dp*xi(0) +0.5_dp*xi(IMAX)    ! Position of the centre
+y_core(1)      = 0.5_dp*eta(0)+0.5_dp*eta(JMAX)   ! of the domain
 
 ch_core(2)     = 'P2'
-lambda_core(2) =   0.0_dp  ! dummy
-phi_core(2)    =   0.0_dp  ! dummy
-x_core(2)      =   0.0_dp *1.0e+03_dp    ! Position halfway to the coast
-y_core(2)      = 375.0_dp *1.0e+03_dp    ! (0 km, 375 km),
-                                         ! conversion km -> m
+lambda_core(2) = 0.0_dp   ! dummy
+phi_core(2)    = 0.0_dp   ! dummy
+x_core(2)      = 0.25_dp*xi(0) +0.75_dp*xi(IMAX)    ! Position halfway to the
+y_core(2)      = 0.5_dp *eta(0)+0.5_dp *eta(JMAX)   ! right margin of the domain
 
 filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.core'
 

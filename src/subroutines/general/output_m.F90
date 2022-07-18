@@ -240,6 +240,9 @@ real(sp), dimension(0:IMAX,0:JMAX,0:KTMAX) :: vx_t_conv, vy_t_conv, vz_t_conv, &
                                               enh_t_conv, strain_heating_t_conv
 real(sp), dimension(0:IMAX,0:JMAX,0:KRMAX) :: temp_r_conv
 
+integer(i4b) :: cmode
+integer(i4b) :: n_deflate_level
+logical      :: flag_shuffle
 integer(i4b) :: ncid, ncv
 !     ncid:      ID of the output file
 !     ncv:       Variable ID
@@ -341,7 +344,9 @@ coord_id(3) = 'zeta_c'; coord_id(4) = 'zeta_t'; coord_id(5) = 'zeta_r'
 
 !  ------ Open NetCDF file
 
-ios = nf90_create(trim(filename_with_path), NF90_NOCLOBBER, ncid)
+call set_cmode(cmode, n_deflate_level, flag_shuffle)
+
+ios = nf90_create(trim(filename_with_path), cmode, ncid)
 
 if (ios /= nf90_noerr) then
    errormsg = ' >>> output1: Error when opening a' &
@@ -389,6 +394,7 @@ call check( nf90_def_dim(ncid, trim(coord_id(5)), KRMAX+1, ncd), thisroutine )
 !    ---- mapping
 
 call check( nf90_def_var(ncid, 'mapping', NF90_BYTE, ncv), thisroutine ) 
+
 #if (GRID==0 || GRID==1)
 buffer = 'polar_stereographic'
 call check( nf90_put_att(ncid, ncv, 'grid_mapping_name', trim(buffer)), &
@@ -455,6 +461,7 @@ call check( nf90_put_att(ncid, ncv, 'false_northing', 0.0_dp), &
 
 call check( nf90_def_var(ncid, 'year2sec', NF90_DOUBLE, ncv), &
             thisroutine )
+
 buffer = 's a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -469,6 +476,7 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
 
 call check( nf90_def_var(ncid, 'time', NF90_DOUBLE, ncv), &
             thisroutine )
+
 buffer = 'a'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -485,6 +493,7 @@ if ((forcing_flag == 1).or.(forcing_flag == 3)) then
 
    call check( nf90_def_var(ncid, 'delta_ts', NF90_DOUBLE, ncv), &
                thisroutine )
+
    buffer = 'degC'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                thisroutine )
@@ -501,6 +510,7 @@ else if (forcing_flag == 2) then
 
    call check( nf90_def_var(ncid, 'glac_index', NF90_DOUBLE, ncv), &
                thisroutine )
+
    buffer = '1'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                thisroutine )
@@ -517,6 +527,7 @@ end if
 
 call check( nf90_def_var(ncid, 'z_sl_mean', NF90_DOUBLE, ncv), &
             thisroutine )
+
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -531,6 +542,7 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
 
 call check( nf90_def_var(ncid, 'V_tot', NF90_DOUBLE, ncv), &
             thisroutine )
+
 buffer = 'm3'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -545,6 +557,7 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
 
 call check( nf90_def_var(ncid, 'V_af', NF90_DOUBLE, ncv), &
             thisroutine )
+
 buffer = 'm3'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -559,6 +572,7 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
 
 call check( nf90_def_var(ncid, 'A_grounded', NF90_DOUBLE, ncv), &
             thisroutine )
+
 buffer = 'm2'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -573,6 +587,7 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
 
 call check( nf90_def_var(ncid, 'A_floating', NF90_DOUBLE, ncv), &
             thisroutine )
+
 buffer = 'm2'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -587,8 +602,10 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc1d), &
             thisroutine )
+
 call check( nf90_def_var(ncid, 'x', NF90_DOUBLE, nc1d, ncv), &
             thisroutine )
+
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -605,8 +622,10 @@ call check( nf90_put_att(ncid, ncv, 'axis', 'x'), &
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc1d), &
             thisroutine )
+
 call check( nf90_def_var(ncid, 'y', NF90_DOUBLE, nc1d, ncv), &
             thisroutine )
+
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -623,8 +642,10 @@ call check( nf90_put_att(ncid, ncv, 'axis', 'y'), &
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(3)), nc1d), &
             thisroutine )
+
 call check( nf90_def_var(ncid, 'sigma_level_c', NF90_DOUBLE, nc1d, ncv), &
             thisroutine )
+
 buffer = 'up'
 call check( nf90_put_att(ncid, ncv, 'positive', trim(buffer)), &
             thisroutine )
@@ -639,8 +660,10 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(4)), nc1d), &
             thisroutine )
+
 call check( nf90_def_var(ncid, 'sigma_level_t', NF90_DOUBLE, nc1d, ncv), &
             thisroutine )
+
 buffer = 'up'
 call check( nf90_put_att(ncid, ncv, 'positive', trim(buffer)), &
             thisroutine )
@@ -655,8 +678,10 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(5)), nc1d), &
             thisroutine )
+
 call check( nf90_def_var(ncid, 'sigma_level_r', NF90_DOUBLE, nc1d, ncv), &
             thisroutine )
+
 buffer = 'up'
 call check( nf90_put_att(ncid, ncv, 'positive', trim(buffer)), &
             thisroutine )
@@ -673,8 +698,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'lon', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'lon', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'degrees_E'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -691,8 +724,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'lat', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'lat', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'degrees_N'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -709,8 +750,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'lambda', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'lambda', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'rad'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -729,8 +778,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'phi', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'phi', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'rad'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -749,8 +806,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'cell_area', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'cell_area', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm2'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -769,8 +834,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'temp_maat', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'temp_maat', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'degC'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -789,8 +862,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'temp_s', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'temp_s', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'degC'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -809,8 +890,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'prec', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'prec', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -829,8 +918,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'snowfall', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'snowfall', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -849,8 +946,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'rainfall', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'rainfall', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -869,8 +974,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'pdd', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'pdd', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'degC a'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -889,8 +1002,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'as_perp', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'as_perp', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -909,8 +1030,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'as_perp_apl', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'as_perp_apl', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -929,8 +1058,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'smb_corr', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'smb_corr', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -949,8 +1086,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'mb_source_apl', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'mb_source_apl', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -969,8 +1114,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'runoff', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'runoff', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -989,8 +1142,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'runoff_apl', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'runoff_apl', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1009,8 +1170,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'z_sl', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'z_sl', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1029,8 +1198,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'Q_b_tot', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'Q_b_tot', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1049,8 +1226,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'Q_b_apl', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'Q_b_apl', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1069,8 +1254,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'calving', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'calving', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1089,8 +1282,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'calving_apl', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'calving_apl', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1111,8 +1312,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'dis_perp', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'dis_perp', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1131,8 +1340,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'cst_dist', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'cst_dist', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'km'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1151,8 +1368,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'cos_grad_tc', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'cos_grad_tc', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = '1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1171,8 +1396,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'mask_mar', NF90_BYTE, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'mask_mar', NF90_BYTE, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'marginal_ring_mask'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
             thisroutine )
@@ -1197,8 +1430,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'q_geo', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'q_geo', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'W m-2'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1217,8 +1458,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'mask', NF90_BYTE, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'mask', NF90_BYTE, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'ice_land_sea_mask'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
             thisroutine )
@@ -1243,8 +1492,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'mask_old', NF90_BYTE, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'mask_old', NF90_BYTE, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'ice_land_sea_mask_old'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
             thisroutine )
@@ -1269,8 +1526,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'mask_ablation_type', NF90_BYTE, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'mask_ablation_type', NF90_BYTE, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'mask_indicating_ablation_type'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
             thisroutine )
@@ -1298,8 +1563,16 @@ if (maxval(mask_region) > 0) then
                thisroutine )
    call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+   call check( nf90_def_var(ncid, 'mask_region', NF90_INT, nc2d, ncv, &
+               deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+               thisroutine )
+#else
    call check( nf90_def_var(ncid, 'mask_region', NF90_INT, nc2d, ncv), &
                thisroutine )
+#endif
+
    buffer = 'mask_region'
    call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
                thisroutine )
@@ -1326,8 +1599,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'n_cts', NF90_BYTE, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'n_cts', NF90_BYTE, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'polythermal_condition_mask'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
             thisroutine )
@@ -1351,8 +1632,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'kc_cts', NF90_INT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'kc_cts', NF90_INT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'CTS_position_grid_index'
 call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
             thisroutine )
@@ -1368,8 +1657,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'zs', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'zs', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1388,8 +1685,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'zm', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'zm', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1408,8 +1713,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'zb', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'zb', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1428,8 +1741,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'zl', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'zl', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1448,8 +1769,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'zl0', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'zl0', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1468,8 +1797,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'H_cold', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'H_cold', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1488,8 +1825,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'H_temp', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'H_temp', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1508,8 +1853,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'H', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'H', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1526,6 +1879,7 @@ call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
 
 call check( nf90_def_var(ncid, 'H_R', NF90_FLOAT, ncv), &
             thisroutine )
+
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1542,8 +1896,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'Q_bm', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'Q_bm', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1562,8 +1924,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'Q_tld', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'Q_tld', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1582,8 +1952,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'am_perp', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'am_perp', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1602,8 +1980,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'qx', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'qx', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm2 a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1625,8 +2011,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'qy', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'qy', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm2 a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1648,8 +2042,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'vx_m_sia', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'vx_m_sia', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1671,8 +2073,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'vy_m_sia', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'vy_m_sia', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1694,8 +2104,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'vx_m_ssa', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'vx_m_ssa', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1717,8 +2135,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'vy_m_ssa', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'vy_m_ssa', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1740,8 +2166,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'dzs_dt', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'dzs_dt', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1760,8 +2194,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'dzm_dt', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'dzm_dt', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1780,8 +2222,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'dzb_dt', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'dzb_dt', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1800,8 +2250,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'dzl_dt', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'dzl_dt', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1820,8 +2278,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'dH_c_dt', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'dH_c_dt', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1840,8 +2306,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'dH_t_dt', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'dH_t_dt', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1860,8 +2334,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'dH_dt', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'dH_dt', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1880,8 +2362,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'vx_b_g', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'vx_b_g', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1900,8 +2390,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'vy_b_g', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'vy_b_g', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1920,8 +2418,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'vz_b', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'vz_b', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1940,8 +2446,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'vh_b', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'vh_b', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1960,8 +2474,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'vx_s_g', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'vx_s_g', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -1980,8 +2502,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'vy_s_g', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'vy_s_g', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2000,8 +2530,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'vz_s', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'vz_s', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2020,8 +2558,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'vh_s', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'vh_s', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2040,8 +2586,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'vx_m_g', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'vx_m_g', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2060,8 +2614,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'vy_m_g', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'vy_m_g', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2080,8 +2642,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'vh_m', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'vh_m', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2100,8 +2670,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'temp_b', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'temp_b', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'degC'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2120,8 +2698,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'temph_b', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'temph_b', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'degC'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2140,8 +2726,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'tau_dr', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'tau_dr', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'Pa'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2160,8 +2754,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'tau_b', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'tau_b', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'Pa'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2180,8 +2782,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'p_b_w', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'p_b_w', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'Pa'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2200,8 +2810,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'q_w', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'q_w', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm2 a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2220,8 +2838,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'q_w_x', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'q_w_x', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm2 a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2240,8 +2866,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'q_w_y', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'q_w_y', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm2 a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2260,8 +2894,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'H_w', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'H_w', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2280,8 +2922,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'q_gl_g', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'q_gl_g', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'm2 a-1'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2300,8 +2950,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'ratio_sl_x', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'ratio_sl_x', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = '-'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2321,8 +2979,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'ratio_sl_y', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'ratio_sl_y', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = '-'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2342,8 +3008,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'ratio_sl', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'ratio_sl', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = '-'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2362,8 +3036,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'flag_shelfy_stream_x', NF90_BYTE, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'flag_shelfy_stream_x', NF90_BYTE, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = '-'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
         thisroutine )
@@ -2382,8 +3064,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'flag_shelfy_stream_y', NF90_BYTE, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'flag_shelfy_stream_y', NF90_BYTE, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = '-'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2402,8 +3092,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'flag_shelfy_stream', NF90_BYTE, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'flag_shelfy_stream', NF90_BYTE, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = '-'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2422,8 +3120,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'flag_grounding_line_1', NF90_BYTE, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'flag_grounding_line_1', NF90_BYTE, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = '-'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2442,8 +3148,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'flag_grounding_line_2', NF90_BYTE, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'flag_grounding_line_2', NF90_BYTE, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = '-'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2462,8 +3176,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'flag_calving_front_1', NF90_BYTE, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'flag_calving_front_1', NF90_BYTE, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = '-'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2482,8 +3204,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'flag_calving_front_2', NF90_BYTE, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'flag_calving_front_2', NF90_BYTE, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = '-'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2502,8 +3232,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'flag_grounded_front_a_1', NF90_BYTE, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'flag_grounded_front_a_1', NF90_BYTE, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = '-'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2522,8 +3260,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'flag_grounded_front_a_2', NF90_BYTE, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'flag_grounded_front_a_2', NF90_BYTE, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = '-'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2542,8 +3288,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'flag_grounded_front_b_1', NF90_BYTE, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'flag_grounded_front_b_1', NF90_BYTE, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = '-'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2562,8 +3316,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'flag_grounded_front_b_2', NF90_BYTE, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'flag_grounded_front_b_2', NF90_BYTE, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = '-'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2582,8 +3344,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'vis_ave_g', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'vis_ave_g', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'Pa s'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2602,8 +3372,16 @@ call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
             thisroutine )
 call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
             thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'vis_int_g', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
 call check( nf90_def_var(ncid, 'vis_int_g', NF90_FLOAT, nc2d, ncv), &
             thisroutine )
+#endif
+
 buffer = 'Pa s m'
 call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2626,8 +3404,16 @@ if (flag_3d_output) then
                thisroutine )
    call check( nf90_inq_dimid(ncid, trim(coord_id(3)), nc3d(3)), &
                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+   call check( nf90_def_var(ncid, 'vx_c', NF90_FLOAT, nc3d, ncv, &
+               deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+               thisroutine )
+#else
    call check( nf90_def_var(ncid, 'vx_c', NF90_FLOAT, nc3d, ncv), &
                thisroutine )
+#endif
+
    buffer = 'm a-1'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                thisroutine )
@@ -2651,8 +3437,16 @@ if (flag_3d_output) then
                thisroutine )
    call check( nf90_inq_dimid(ncid, trim(coord_id(3)), nc3d(3)), &
                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+   call check( nf90_def_var(ncid, 'vy_c', NF90_FLOAT, nc3d, ncv, &
+               deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+               thisroutine )
+#else
    call check( nf90_def_var(ncid, 'vy_c', NF90_FLOAT, nc3d, ncv), &
                thisroutine )
+#endif
+
    buffer = 'm a-1'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                thisroutine )
@@ -2676,8 +3470,16 @@ if (flag_3d_output) then
                thisroutine )
    call check( nf90_inq_dimid(ncid, trim(coord_id(3)), nc3d(3)), &
                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+   call check( nf90_def_var(ncid, 'vz_c', NF90_FLOAT, nc3d, ncv, &
+               deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+               thisroutine )
+#else
    call check( nf90_def_var(ncid, 'vz_c', NF90_FLOAT, nc3d, ncv), &
                thisroutine )
+#endif
+
    buffer = 'm a-1'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                thisroutine )
@@ -2701,8 +3503,16 @@ if (flag_3d_output) then
                thisroutine )
    call check( nf90_inq_dimid(ncid, trim(coord_id(4)), nc3d(3)), &
                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+   call check( nf90_def_var(ncid, 'vx_t', NF90_FLOAT, nc3d, ncv, &
+               deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+               thisroutine )
+#else
    call check( nf90_def_var(ncid, 'vx_t', NF90_FLOAT, nc3d, ncv), &
                thisroutine )
+#endif
+
    buffer = 'm a-1'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                thisroutine )
@@ -2726,8 +3536,16 @@ if (flag_3d_output) then
                thisroutine )
    call check( nf90_inq_dimid(ncid, trim(coord_id(4)), nc3d(3)), &
                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+   call check( nf90_def_var(ncid, 'vy_t', NF90_FLOAT, nc3d, ncv, &
+               deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+               thisroutine )
+#else
    call check( nf90_def_var(ncid, 'vy_t', NF90_FLOAT, nc3d, ncv), &
                thisroutine )
+#endif
+
    buffer = 'm a-1'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
             thisroutine )
@@ -2751,8 +3569,16 @@ if (flag_3d_output) then
                thisroutine )
    call check( nf90_inq_dimid(ncid, trim(coord_id(4)), nc3d(3)), &
                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+   call check( nf90_def_var(ncid, 'vz_t', NF90_FLOAT, nc3d, ncv, &
+               deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+               thisroutine )
+#else
    call check( nf90_def_var(ncid, 'vz_t', NF90_FLOAT, nc3d, ncv), &
                thisroutine )
+#endif
+
    buffer = 'm a-1'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                thisroutine )
@@ -2776,8 +3602,16 @@ if (flag_3d_output) then
                thisroutine )
    call check( nf90_inq_dimid(ncid, trim(coord_id(3)), nc3d(3)), &
                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+   call check( nf90_def_var(ncid, 'temp_c', NF90_FLOAT, nc3d, ncv, &
+               deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+               thisroutine )
+#else
    call check( nf90_def_var(ncid, 'temp_c', NF90_FLOAT, nc3d, ncv), &
                thisroutine )
+#endif
+
    buffer = 'degC'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                thisroutine )
@@ -2798,8 +3632,16 @@ if (flag_3d_output) then
                thisroutine )
    call check( nf90_inq_dimid(ncid, trim(coord_id(4)), nc3d(3)), &
                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+   call check( nf90_def_var(ncid, 'omega_t', NF90_FLOAT, nc3d, ncv, &
+               deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+               thisroutine )
+#else
    call check( nf90_def_var(ncid, 'omega_t', NF90_FLOAT, nc3d, ncv), &
                thisroutine )
+#endif
+
    buffer = '1'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                thisroutine )
@@ -2820,8 +3662,16 @@ if (flag_3d_output) then
                thisroutine )
    call check( nf90_inq_dimid(ncid, trim(coord_id(5)), nc3d(3)), &
                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+   call check( nf90_def_var(ncid, 'temp_r', NF90_FLOAT, nc3d, ncv, &
+               deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+               thisroutine )
+#else
    call check( nf90_def_var(ncid, 'temp_r', NF90_FLOAT, nc3d, ncv), &
                thisroutine )
+#endif
+
    buffer = 'degC'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                thisroutine )
@@ -2842,8 +3692,16 @@ if (flag_3d_output) then
                thisroutine )
    call check( nf90_inq_dimid(ncid, trim(coord_id(3)), nc3d(3)), &
                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+   call check( nf90_def_var(ncid, 'enth_c', NF90_FLOAT, nc3d, ncv, &
+               deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+               thisroutine )
+#else
    call check( nf90_def_var(ncid, 'enth_c', NF90_FLOAT, nc3d, ncv), &
                thisroutine )
+#endif
+
    buffer = 'J kg-1'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                thisroutine )
@@ -2864,8 +3722,16 @@ if (flag_3d_output) then
                thisroutine )
    call check( nf90_inq_dimid(ncid, trim(coord_id(4)), nc3d(3)), &
                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+   call check( nf90_def_var(ncid, 'enth_t', NF90_FLOAT, nc3d, ncv, &
+               deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+               thisroutine )
+#else
    call check( nf90_def_var(ncid, 'enth_t', NF90_FLOAT, nc3d, ncv), &
                thisroutine )
+#endif
+
    buffer = 'J kg-1'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                thisroutine )
@@ -2886,8 +3752,16 @@ if (flag_3d_output) then
                thisroutine )
    call check( nf90_inq_dimid(ncid, trim(coord_id(3)), nc3d(3)), &
                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+   call check( nf90_def_var(ncid, 'omega_c', NF90_FLOAT, nc3d, ncv, &
+               deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+               thisroutine )
+#else
    call check( nf90_def_var(ncid, 'omega_c', NF90_FLOAT, nc3d, ncv), &
                thisroutine )
+#endif
+
    buffer = '1'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                thisroutine )
@@ -2908,8 +3782,16 @@ if (flag_3d_output) then
                thisroutine )
    call check( nf90_inq_dimid(ncid, trim(coord_id(3)), nc3d(3)), &
                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+   call check( nf90_def_var(ncid, 'enh_c', NF90_FLOAT, nc3d, ncv, &
+               deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+               thisroutine )
+#else
    call check( nf90_def_var(ncid, 'enh_c', NF90_FLOAT, nc3d, ncv), &
                thisroutine )
+#endif
+
    buffer = '1'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                thisroutine )
@@ -2930,8 +3812,16 @@ if (flag_3d_output) then
                thisroutine )
    call check( nf90_inq_dimid(ncid, trim(coord_id(4)), nc3d(3)), &
                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+   call check( nf90_def_var(ncid, 'enh_t', NF90_FLOAT, nc3d, ncv, &
+               deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+               thisroutine )
+#else
    call check( nf90_def_var(ncid, 'enh_t', NF90_FLOAT, nc3d, ncv), &
                thisroutine )
+#endif
+
    buffer = '1'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                thisroutine )
@@ -2952,8 +3842,16 @@ if (flag_3d_output) then
                thisroutine )
    call check( nf90_inq_dimid(ncid, trim(coord_id(3)), nc3d(3)), &
                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+   call check( nf90_def_var(ncid, 'strain_heating_c', NF90_FLOAT, nc3d, ncv, &
+               deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+               thisroutine )
+#else
    call check( nf90_def_var(ncid, 'strain_heating_c', NF90_FLOAT, nc3d, ncv), &
                thisroutine )
+#endif
+
    buffer = 'W kg-1'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                thisroutine )
@@ -2974,8 +3872,16 @@ if (flag_3d_output) then
                thisroutine )
    call check( nf90_inq_dimid(ncid, trim(coord_id(4)), nc3d(3)), &
                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+   call check( nf90_def_var(ncid, 'strain_heating_t', NF90_FLOAT, nc3d, ncv, &
+               deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+               thisroutine )
+#else
    call check( nf90_def_var(ncid, 'strain_heating_t', NF90_FLOAT, nc3d, ncv), &
                thisroutine )
+#endif
+
    buffer = 'W kg-1'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                thisroutine )
@@ -2996,8 +3902,16 @@ if (flag_3d_output) then
                thisroutine )
    call check( nf90_inq_dimid(ncid, trim(coord_id(3)), nc3d(3)), &
                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+   call check( nf90_def_var(ncid, 'age_c', NF90_FLOAT, nc3d, ncv, &
+               deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+               thisroutine )
+#else
    call check( nf90_def_var(ncid, 'age_c', NF90_FLOAT, nc3d, ncv), &
                thisroutine )
+#endif
+
    buffer = 'a'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                thisroutine )
@@ -3018,8 +3932,16 @@ if (flag_3d_output) then
                thisroutine )
    call check( nf90_inq_dimid(ncid, trim(coord_id(4)), nc3d(3)), &
                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+   call check( nf90_def_var(ncid, 'age_t', NF90_FLOAT, nc3d, ncv, &
+               deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+               thisroutine )
+#else
    call check( nf90_def_var(ncid, 'age_t', NF90_FLOAT, nc3d, ncv), &
                thisroutine )
+#endif
+
    buffer = 'a'
    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                thisroutine )
@@ -4299,8 +5221,7 @@ if (firstcall_output1) firstcall_output1 = .false.
 end subroutine output1
 
 !-------------------------------------------------------------------------------
-!> Writing of time-series data on file in ASCII format
-!! (and optionally in NetCDF format).
+!> Writing of time-series data on file in ASCII and NetCDF format.
 !<------------------------------------------------------------------------------
 subroutine output2(time, dxi, deta, delta_ts, glac_index, &
                    opt_flag_compute_flux_vars_only)
@@ -4337,6 +5258,9 @@ real(dp) :: sum_area_sed
 logical :: flag_compute_flux_vars_only
 logical, dimension(0:JMAX,0:IMAX) :: flag_region
 
+integer(i4b)       :: cmode
+integer(i4b)       :: n_deflate_level
+logical            :: flag_shuffle
 integer(i4b), dimension(0:99), save :: ncid
 integer(i4b)       :: ncd, ncv, nc1d
 integer(i4b)       :: nc1cor(1), nc1cnt(1)
@@ -4700,7 +5624,9 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 
       filename_with_path = trim(OUT_PATH)//'/'//trim(filename)
 
-      ios = nf90_create(trim(filename_with_path), NF90_NOCLOBBER, ncid(n))
+      call set_cmode(cmode, n_deflate_level, flag_shuffle)
+
+      ios = nf90_create(trim(filename_with_path), cmode, ncid(n))
 
       if (ios /= nf90_noerr) then
          errormsg = ' >>> output2: Error when opening the' &
@@ -4755,8 +5681,10 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- x
 
          call check( nf90_inq_dimid(ncid(n), 'x', nc1d), thisroutine )
+
          call check( nf90_def_var(ncid(n), 'x', NF90_FLOAT, nc1d, ncv), &
                      thisroutine )
+
          buffer = 'm'
          call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                      thisroutine )
@@ -4771,8 +5699,10 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- y
 
          call check( nf90_inq_dimid(ncid(n), 'y', nc1d), thisroutine )
+
          call check( nf90_def_var(ncid(n), 'y', NF90_FLOAT, nc1d, ncv), &
                      thisroutine )
+
          buffer = 'm'
          call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                      thisroutine )
@@ -4790,6 +5720,7 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 
       call check( nf90_def_var(ncid(n), 'year2sec', NF90_DOUBLE, ncv), &
                thisroutine )
+
       buffer = 's a-1'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -4803,8 +5734,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- Time
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 't', NF90_DOUBLE, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 't', NF90_DOUBLE, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'a'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -4821,8 +5760,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- Time offset
 
          call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+         call check( nf90_def_var(ncid(n), 't_add_offset', NF90_DOUBLE, nc1d, ncv, &
+                     deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                     thisroutine )
+#else
          call check( nf90_def_var(ncid(n), 't_add_offset', NF90_DOUBLE, nc1d, ncv), &
                      thisroutine )
+#endif
+
          buffer = 'a'
          call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                      thisroutine )
@@ -4842,8 +5789,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- delta_ts
 
          call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+         call check( nf90_def_var(ncid(n), 'delta_ts', NF90_FLOAT, nc1d, ncv, &
+                     deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                     thisroutine )
+#else
          call check( nf90_def_var(ncid(n), 'delta_ts', NF90_FLOAT, nc1d, ncv), &
                      thisroutine )
+#endif
+
          buffer = 'degC'
          call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                      thisroutine )
@@ -4859,8 +5814,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- glac_index
 
          call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+         call check( nf90_def_var(ncid(n), 'glac_index', NF90_FLOAT, nc1d, ncv, &
+                     deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                     thisroutine )
+#else
          call check( nf90_def_var(ncid(n), 'glac_index', NF90_FLOAT, nc1d, ncv), &
                      thisroutine )
+#endif
+
          buffer = '1'
          call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                      thisroutine )
@@ -4876,8 +5839,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- z_sl_mean
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'z_sl_mean', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'z_sl_mean', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -4891,8 +5862,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- V_tot
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'V_tot', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'V_tot', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm3'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -4906,8 +5885,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- V_grounded
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'V_grounded', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'V_grounded', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm3'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -4921,8 +5908,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- V_floating
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'V_floating', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'V_floating', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm3'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -4936,8 +5931,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- A_tot
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'A_tot', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'A_tot', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm2'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -4951,8 +5954,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- A_grounded
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'A_grounded', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'A_grounded', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm2'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -4966,8 +5977,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- A_floating
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'A_floating', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'A_floating', NF90_FLOAT, nc1d, ncv), &
-               thisroutine )
+                  thisroutine )
+#endif
+
       buffer = 'm2'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -4981,8 +6000,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- V_af
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'V_af', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'V_af', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm3'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -4996,8 +6023,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- V_sle
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'V_sle', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'V_sle', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm SLE'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -5011,8 +6046,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- V_temp
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'V_temp', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'V_temp', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm3'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -5026,8 +6069,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- A_temp
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'A_temp', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'A_temp', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm2'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -5041,8 +6092,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- Q_s
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'Q_s', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'Q_s', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm3 ice equiv. a-1'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -5056,8 +6115,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- precip_tot
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'precip_tot', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'precip_tot', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm3 ice equiv. a-1'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -5071,8 +6138,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- runoff_tot
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'runoff_tot', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'runoff_tot', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm3 ice equiv. a-1'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -5086,8 +6161,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- bmb_tot
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'bmb_tot', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'bmb_tot', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm3 ice equiv. a-1'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -5103,8 +6186,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- bmb_gr_tot
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'bmb_gr_tot', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'bmb_gr_tot', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm3 ice equiv. a-1'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -5118,8 +6209,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- bmb_fl_tot
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'bmb_fl_tot', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'bmb_fl_tot', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm3 ice equiv. a-1'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -5135,8 +6234,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- Q_b
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'Q_b', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'Q_b', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm3 ice equiv. a-1'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -5150,8 +6257,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- Q_temp
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'Q_temp', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'Q_temp', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm3 ice equiv. a-1'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -5165,8 +6280,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- calv_tot
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'calv_tot', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'calv_tot', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm3 ice equiv. a-1'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -5182,8 +6305,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- disc_lsc
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'disc_lsc', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'disc_lsc', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm3 ice equiv. a-1'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -5197,8 +6328,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- disc_ssc
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'disc_ssc', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'disc_ssc', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm3 ice equiv. a-1'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -5212,8 +6351,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- dT_glann
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'dT_glann', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'dT_glann', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'degC'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -5227,8 +6374,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- dT_sub
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'dT_sub', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'dT_sub', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'degC'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -5244,8 +6399,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- dV_dt
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'dV_dt', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'dV_dt', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm3 a-1'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -5261,8 +6424,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- mb_resid
 
          call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+         call check( nf90_def_var(ncid(n), 'mb_resid', NF90_FLOAT, nc1d, ncv, &
+                     deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                     thisroutine )
+#else
          call check( nf90_def_var(ncid(n), 'mb_resid', NF90_FLOAT, nc1d, ncv), &
                      thisroutine )
+#endif
+
          buffer = 'm3 ice equiv. a-1'
          call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                      thisroutine )
@@ -5276,8 +6447,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- mb_mis
 
          call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+         call check( nf90_def_var(ncid(n), 'mb_mis', NF90_FLOAT, nc1d, ncv, &
+                     deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                     thisroutine )
+#else
          call check( nf90_def_var(ncid(n), 'mb_mis', NF90_FLOAT, nc1d, ncv), &
                      thisroutine )
+#endif
+
          buffer = 'm3 ice equiv. a-1'
          call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                      thisroutine )
@@ -5293,8 +6472,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- mbp
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'mbp', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'mbp', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = '1'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -5308,8 +6495,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- H_max
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'H_max', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'H_max', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -5323,8 +6518,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- H_t_max
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'H_t_max', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'H_t_max', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -5338,8 +6541,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- zs_max
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'zs_max', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'zs_max', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -5353,8 +6564,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- vs_max
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'vs_max', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'vs_max', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm a-1'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -5368,8 +6587,16 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 !    ---- Tbh_max
 
       call check( nf90_inq_dimid(ncid(n), 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid(n), 'Tbh_max', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid(n), 'Tbh_max', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'degC'
       call check( nf90_put_att(ncid(n), ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -5976,8 +7203,8 @@ mb_resid = Q_s + bmb_tot - calv_tot - dV_dt
 end subroutine scalar_variables
 
 !-------------------------------------------------------------------------------
-!> Writing of time-series data of the deep ice cores on file in ASCII format
-!! (and optionally in NetCDF format).
+!> Writing of time-series data of the deep ice cores on file in ASCII
+!! and NetCDF format.
 !<------------------------------------------------------------------------------
 subroutine output4(time, dxi, deta, delta_ts, glac_index)
 
@@ -6001,6 +7228,9 @@ real(dp), dimension(:), allocatable :: H_core, temp_b_core, &
 #if defined(ALLOW_TAPENADE)
 real(dp), dimension(:), allocatable :: arg1
 #endif
+integer(i4b)       :: cmode
+integer(i4b)       :: n_deflate_level
+logical            :: flag_shuffle
 integer(i4b), save :: ncid
 integer(i4b)       :: ncd, ncv, nc1d, nc2d(2)
 integer(i4b)       :: nc1cor(1), nc1cnt(1), nc2cor(2), nc2cnt(2)
@@ -6008,6 +7238,7 @@ integer(i4b)       :: n_sync
 real(dp), save     :: time_add_offset_val
 character(len= 16) :: ch_date, ch_time, ch_zone
 character(len=256) :: filename, filename_with_path, buffer
+logical            :: flag_in_domain
 logical, save      :: grads_nc_tweaks
 
 integer(i4b), save :: counter = 0
@@ -6038,7 +7269,13 @@ if (n_core >= 1) then
 !  ------ Ice thickness
 
       field = H_c + H_t
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'grid', H_core(n))
+      call borehole(field, x_core(n), y_core(n), dxi, deta, 'grid', &
+                    H_core(n), flag_in_domain)
+
+      if ( (firstcall_output4).and.(.not.flag_in_domain) ) then
+         write(6, fmt='(a,i0,a)') &
+            ' >>> output4: WARNING: Borehole position ', n, ' out of domain!'
+      end if
 
 !  ------ Basal velocity
 
@@ -6048,7 +7285,8 @@ if (n_core >= 1) then
       end do
       end do
 
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_x', vx_b_core(n))
+      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_x', &
+                    vx_b_core(n), flag_in_domain)
 
       do i=0, IMAX
       do j=0, JMAX
@@ -6056,7 +7294,8 @@ if (n_core >= 1) then
       end do
       end do
 
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_y', vy_b_core(n))
+      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_y', &
+                    vy_b_core(n), flag_in_domain)
 
       vh_b_core(n) = sqrt(vx_b_core(n)**2+vy_b_core(n)**2)
 
@@ -6068,7 +7307,8 @@ if (n_core >= 1) then
       end do
       end do
 
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_x', vx_s_core(n))
+      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_x', &
+                    vx_s_core(n), flag_in_domain)
 
       do i=0, IMAX
       do j=0, JMAX
@@ -6076,7 +7316,8 @@ if (n_core >= 1) then
       end do
       end do
 
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_y', vy_s_core(n))
+      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_y', &
+                    vy_s_core(n), flag_in_domain)
 
       vh_s_core(n) = sqrt(vx_s_core(n)**2+vy_s_core(n)**2)
 
@@ -6088,7 +7329,8 @@ if (n_core >= 1) then
       end do
       end do
 
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'grid', temp_b_core(n))
+      call borehole(field, x_core(n), y_core(n), dxi, deta, 'grid', &
+                    temp_b_core(n), flag_in_domain)
 
 !  ------ Basal frictional heating
 
@@ -6098,7 +7340,8 @@ if (n_core >= 1) then
       end do
       end do
 
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_x', Rx_b_core(n))
+      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_x', &
+                    Rx_b_core(n), flag_in_domain)
 
       do i=0, IMAX
       do j=0, JMAX
@@ -6106,14 +7349,16 @@ if (n_core >= 1) then
       end do
       end do
 
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_y', Ry_b_core(n))
+      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_y', &
+                    Ry_b_core(n), flag_in_domain)
 
       R_b_core(n) = Rx_b_core(n) + Ry_b_core(n)
 
 !  ------ Basal mass balance
 
       field = -(Q_bm+Q_tld)   ! positive for supply, negative for loss
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'grid', bmb_core(n))
+      call borehole(field, x_core(n), y_core(n), dxi, deta, 'grid', &
+                    bmb_core(n), flag_in_domain)
 
    end do
 
@@ -6174,7 +7419,9 @@ if (n_core >= 1) then
       filename           = trim(run_name)//'_core.nc'
       filename_with_path = trim(OUT_PATH)//'/'//trim(filename)
 
-      ios = nf90_create(trim(filename_with_path), NF90_NOCLOBBER, ncid)
+      call set_cmode(cmode, n_deflate_level, flag_shuffle)
+
+      ios = nf90_create(trim(filename_with_path), cmode, ncid)
 
       if (ios /= nf90_noerr) then
          errormsg = ' >>> output4: Error when opening the' &
@@ -6231,8 +7478,10 @@ if (n_core >= 1) then
 !    ---- x
 
          call check( nf90_inq_dimid(ncid, 'x', nc1d), thisroutine )
+
          call check( nf90_def_var(ncid, 'x', NF90_FLOAT, nc1d, ncv), &
                      thisroutine )
+
          buffer = 'm'
          call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                      thisroutine )
@@ -6247,8 +7496,10 @@ if (n_core >= 1) then
 !    ---- y
 
          call check( nf90_inq_dimid(ncid, 'y', nc1d), thisroutine )
+
          call check( nf90_def_var(ncid, 'y', NF90_FLOAT, nc1d, ncv), &
                      thisroutine )
+
          buffer = 'm'
          call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                      thisroutine )
@@ -6266,6 +7517,7 @@ if (n_core >= 1) then
 
       call check( nf90_def_var(ncid, 'year2sec', NF90_DOUBLE, ncv), &
                thisroutine )
+
       buffer = 's a-1'
       call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -6279,8 +7531,16 @@ if (n_core >= 1) then
 !    ---- Time
 
       call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid, 't', NF90_DOUBLE, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid, 't', NF90_DOUBLE, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'a'
       call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -6297,9 +7557,18 @@ if (n_core >= 1) then
 !    ---- Time offset
 
          call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+         call check( nf90_def_var(ncid, 't_add_offset', &
+                                  NF90_DOUBLE, nc1d, ncv, &
+                     deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                     thisroutine )
+#else
          call check( nf90_def_var(ncid, 't_add_offset', &
                                   NF90_DOUBLE, nc1d, ncv), &
                      thisroutine )
+#endif
+
          buffer = 'a'
          call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                      thisroutine )
@@ -6317,8 +7586,10 @@ if (n_core >= 1) then
 !    ---- Ice core number
 
       call check( nf90_inq_dimid(ncid, 'n', nc1d), thisroutine )
+
       call check( nf90_def_var(ncid, 'n', NF90_DOUBLE, nc1d, ncv), &
                   thisroutine )
+
       buffer = '1'
       call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -6339,8 +7610,16 @@ if (n_core >= 1) then
 !    ---- delta_ts
 
          call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+         call check( nf90_def_var(ncid, 'delta_ts', NF90_FLOAT, nc1d, ncv, &
+                     deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                     thisroutine )
+#else
          call check( nf90_def_var(ncid, 'delta_ts', NF90_FLOAT, nc1d, ncv), &
                      thisroutine )
+#endif
+
          buffer = 'degC'
          call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                      thisroutine )
@@ -6356,8 +7635,16 @@ if (n_core >= 1) then
 !    ---- glac_index
 
          call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+         call check( nf90_def_var(ncid, 'glac_index', NF90_FLOAT, nc1d, ncv, &
+                     deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                     thisroutine )
+#else
          call check( nf90_def_var(ncid, 'glac_index', NF90_FLOAT, nc1d, ncv), &
                      thisroutine )
+#endif
+
          buffer = '1'
          call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                      thisroutine )
@@ -6373,8 +7660,16 @@ if (n_core >= 1) then
 !    ---- z_sl_mean
 
       call check( nf90_inq_dimid(ncid, 't', nc1d), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid, 'z_sl_mean', NF90_FLOAT, nc1d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid, 'z_sl_mean', NF90_FLOAT, nc1d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm'
       call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -6389,8 +7684,16 @@ if (n_core >= 1) then
 
       call check( nf90_inq_dimid(ncid, 'n', nc2d(1)), thisroutine )
       call check( nf90_inq_dimid(ncid, 't', nc2d(2)), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid, 'H_core', NF90_FLOAT, nc2d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid, 'H_core', NF90_FLOAT, nc2d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm'
       call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -6405,8 +7708,16 @@ if (n_core >= 1) then
 
       call check( nf90_inq_dimid(ncid, 'n', nc2d(1)), thisroutine )
       call check( nf90_inq_dimid(ncid, 't', nc2d(2)), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid, 'vh_b_core', NF90_FLOAT, nc2d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid, 'vh_b_core', NF90_FLOAT, nc2d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm a-1'
       call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -6421,8 +7732,16 @@ if (n_core >= 1) then
 
       call check( nf90_inq_dimid(ncid, 'n', nc2d(1)), thisroutine )
       call check( nf90_inq_dimid(ncid, 't', nc2d(2)), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid, 'vh_s_core', NF90_FLOAT, nc2d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid, 'vh_s_core', NF90_FLOAT, nc2d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm a-1'
       call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -6437,8 +7756,16 @@ if (n_core >= 1) then
 
       call check( nf90_inq_dimid(ncid, 'n', nc2d(1)), thisroutine )
       call check( nf90_inq_dimid(ncid, 't', nc2d(2)), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid, 'temp_b_core', NF90_FLOAT, nc2d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid, 'temp_b_core', NF90_FLOAT, nc2d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'degC'
       call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -6453,8 +7780,16 @@ if (n_core >= 1) then
 
       call check( nf90_inq_dimid(ncid, 'n', nc2d(1)), thisroutine )
       call check( nf90_inq_dimid(ncid, 't', nc2d(2)), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid, 'R_b_core', NF90_FLOAT, nc2d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid, 'R_b_core', NF90_FLOAT, nc2d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'W m-2'
       call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -6469,8 +7804,16 @@ if (n_core >= 1) then
 
       call check( nf90_inq_dimid(ncid, 'n', nc2d(1)), thisroutine )
       call check( nf90_inq_dimid(ncid, 't', nc2d(2)), thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid, 'bmb_core', NF90_FLOAT, nc2d, ncv, &
+                  deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                  thisroutine )
+#else
       call check( nf90_def_var(ncid, 'bmb_core', NF90_FLOAT, nc2d, ncv), &
                   thisroutine )
+#endif
+
       buffer = 'm ice equiv. a-1'
       call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                   thisroutine )
@@ -6658,6 +8001,7 @@ real(dp), dimension(:), allocatable :: zl_surf, zs_surf, &
 		  vx_surf, vy_surf, vz_surf, &
                   vx_base, vy_base, vz_base, &
 		  temp_base_pmp
+logical :: flag_in_domain
 
 allocate(zl_surf(n_surf), zs_surf(n_surf), &
         accum_surf(n_surf), &
@@ -6674,80 +8018,78 @@ do n=1, n_surf
 !  ------ Bedrock elevation
 
    field = zl
-   call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', zl_surf(n))
+   call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                 zl_surf(n), flag_in_domain)
 
 !  ------ Surface elevation
 
    field = zs
-   call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', zs_surf(n))
-
+   call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                 zs_surf(n), flag_in_domain)
 
 !  ------ Accumulation
 
    field = accum
-   call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', accum_surf(n))
+   call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                 accum_surf(n), flag_in_domain)
 
 !  ------ Surface mass balance
 
    field = as_perp
-   call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', as_perp_surf(n))
+   call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                 as_perp_surf(n), flag_in_domain)
 
 !  ------ Snowfall
 
    field = snowfall
-   call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', snowfall_surf(n))
+   call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                 snowfall_surf(n), flag_in_domain)
 
 !  ------ Rainfall
 
    field = rainfall
-   call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', rainfall_surf(n))
+   call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                 rainfall_surf(n), flag_in_domain)
 
 !  ------ Runoff
 
    field = runoff
-   call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', runoff_surf(n))
+   call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                 runoff_surf(n), flag_in_domain)
 
 ! ------ Surface velocities
 
       field = vx_s_g
-      call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', vx_surf(n))
+      call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                    vx_surf(n), flag_in_domain)
 
       field = vy_s_g
-      call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', vy_surf(n))
+      call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                    vy_surf(n), flag_in_domain)
 
       field = vz_s
-      call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', vz_surf(n))
+      call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                    vz_surf(n), flag_in_domain)
 
 ! ------ Basal velocities
 
       field = vx_b_g
-      call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', vx_base(n))
+      call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                    vx_base(n), flag_in_domain)
 
       field = vy_b_g
-      call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', vy_base(n))
+      call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                    vy_base(n), flag_in_domain)
 
       field = vz_b
-      call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', vz_base(n))
+      call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                    vz_base(n), flag_in_domain)
 
 ! ------ Basal temperature relative to pressure melting point
 
       field = temph_b
-      call borehole(field, x_surf(n), y_surf(n), dxi, deta, &
-	'grid', temp_base_pmp(n))
-
+      call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                    temp_base_pmp(n), flag_in_domain)
 
 end do
 
@@ -6857,7 +8199,8 @@ end subroutine output5
 !! position x_pos, y_pos by weighed averaging of the corresponding
 !! gridded 2-d field.
 !<------------------------------------------------------------------------------
-  subroutine borehole(field, x_pos, y_pos, dxi, deta, ch_grid, field_val)
+  subroutine borehole(field, x_pos, y_pos, dxi, deta, ch_grid, &
+                      field_val, flag_in_domain)
 
 #if !defined(ALLOW_TAPENADE) /* Normal */
   use sico_maths_m, only : bilinint
@@ -6868,13 +8211,14 @@ end subroutine output5
   implicit none
 
   real(dp), dimension(0:JMAX,0:IMAX), intent(in) :: field
-  real(dp), intent(in) :: x_pos, y_pos, dxi, deta
-  character (len=*), intent(in) :: ch_grid
+  real(dp)                          , intent(in) :: x_pos, y_pos, dxi, deta
+  character (len=*)                 , intent(in) :: ch_grid
 
   real(dp), intent(out) :: field_val
+  logical , intent(out) :: flag_in_domain
 
   integer(i4b) :: i1, i2, j1, j2
-  real(dp) :: real_i, real_j
+  real(dp)     :: real_i, real_j
 
 !-------- Neighbour points --------
 
@@ -6900,28 +8244,27 @@ end subroutine output5
      j1 = j2 - 1
   end if
 
+  flag_in_domain = .true.
+
   if (ch_grid=='grid') then
                     ! field(j,i) defined on grid points
 
      if ((i1 < 0).or.(j1 < 0).or.(i2 > IMAX).or.(j2 > JMAX)) then
-        errormsg = ' >>> borehole: Borehole position out of domain!'
-        call error(errormsg)
+        flag_in_domain = .false.
      end if
 
   else if (ch_grid=='sg_x') then
                     ! field(j,i) defined on staggered grid in x direction
 
      if ((i1 < 0).or.(j1 < 0).or.(i2 > IMAX-1).or.(j2 > JMAX)) then
-        errormsg = ' >>> borehole: Borehole position out of domain!'
-        call error(errormsg)
+        flag_in_domain = .false.
      end if
 
   else if (ch_grid=='sg_y') then
                     ! field(j,i) defined on staggered grid in y direction
 
      if ((i1 < 0).or.(j1 < 0).or.(i2 > IMAX).or.(j2 > JMAX-1)) then
-        errormsg = ' >>> borehole: Borehole position out of domain!'
-        call error(errormsg)
+        flag_in_domain = .false.
      end if
 
   else
@@ -6933,10 +8276,48 @@ end subroutine output5
 
 !-------- Weighing of the four adjacent grid values --------
 
-  field_val = bilinint(real(i1,dp), real(i2,dp), real(j1,dp), real(j2,dp), &
-                       field(j1,i1), field(j2,i1), field(j1,i2), field(j2,i2), &
-                       real_i, real_j)
+  if (flag_in_domain) then
+
+     field_val = bilinint(real(i1,dp), real(i2,dp), real(j1,dp), real(j2,dp), &
+                      field(j1,i1), field(j2,i1), field(j1,i2), field(j2,i2), &
+                      real_i, real_j)
+
+  else
+
+     field_val = 0.0_dp
+
+  end if
+
   end subroutine borehole
+
+!-------------------------------------------------------------------------------
+!> Set the creation mode and compression type for NetCDF files.
+!<------------------------------------------------------------------------------
+  subroutine set_cmode(cmode, n_deflate_level, flag_shuffle)
+
+  use netcdf
+
+  implicit none
+
+  integer(i4b), intent(out) :: cmode
+  integer(i4b), intent(out) :: n_deflate_level
+  logical,      intent(out) :: flag_shuffle
+
+#if (NETCDF4_ENABLED==1)
+
+  cmode           = NF90_NETCDF4
+  n_deflate_level = 1
+  flag_shuffle    = .true.
+
+#else
+
+  cmode           = NF90_NOCLOBBER
+  n_deflate_level = 0
+  flag_shuffle    = .false.
+
+#endif
+
+  end subroutine set_cmode
 
 !-------------------------------------------------------------------------------
 !> Set the value of the institution string ch_institution.
