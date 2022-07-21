@@ -9,7 +9,7 @@ How to create the Doxygen documentation
    revision number  
    (execute `./rev_id.sh` in the runs directory to find out).  
    Search for "/home/username/Documents/sicopolis/src", and replace
-   this by the actual path of the src directory. 
+   this by the actual path of the src directory.
 
 3. Execute the command
    `doxygen my_doxygen1.8.1-config.txt`
