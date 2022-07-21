@@ -4,7 +4,7 @@
 
 !-------- Basic settings --------
 
-#define SICO_VERSION '5-dev'
+#define SICO_VERSION '5.3'
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
