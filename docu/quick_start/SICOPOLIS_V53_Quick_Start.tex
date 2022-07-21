@@ -22,7 +22,7 @@
 \usepackage{hyperxmp}
 \hypersetup{
     pdfauthor={Ralf Greve},
-    pdftitle={SICOPOLIS V5-dev - Quick Start Manual},
+    pdftitle={SICOPOLIS V5.3 - Quick Start Manual},
     pdfsubject={Ice sheet model},
     pdfkeywords={Ice sheet, Model, Modelling, %
                  Open source, Free software, SICOPOLIS},
@@ -53,7 +53,7 @@
 \rule{0mm}{15mm}
 
 \begin{huge}
-  \textbf{SICOPOLIS V5-dev\\[-0.5ex]
+  \textbf{SICOPOLIS V5.3\\[-0.5ex]
           -- Quick Start Manual --}\\[-0.5ex]
 \end{huge}
 
@@ -72,7 +72,9 @@
 
 \vfill
 
-\begin{large}\today\end{large}
+% \begin{large}\today\end{large}
+
+\begin{large}July 21, 2022\end{large}
 
 \end{center}
 
@@ -133,23 +135,23 @@ So far, the GNU GCC (gfortran) and Intel Fortran (ifort) compilers are supported
 
 \begin{itemize}
 
-\item \textbf{Using Git}
+\item \textbf{Option 1: Tarball from the Zenodo archive}
 
-The Git repository of SICOPOLIS is kindly hosted by the GitLab system of the Alfred Wegener Institute for Polar and Marine Research (AWI) in Bremerhaven, Germany. Front page: https://gitlab.awi.de/sicopolis/sicopolis/\,.
+Download the gzipped tar archive sicopolis\_v53.tgz from Zenodo
+\\
+(https://doi.org/10.5281/zenodo.6872648).
 
-Cloning the latest develop revision:
+Unpack the archive: \verb+tar -x -v -z -f sicopolis_v53.tgz+
 
-% \begin{small}
-\hspace*{1.5em}\verb+git clone --branch develop \+
+\item \textbf{Option 2: Using Git}
+
+\hspace*{1.5em}\verb+git clone --depth 1 --branch v5.3 \+
 \\[-1ex]
 \hspace*{3.65em}\verb+https://gitlab.awi.de/sicopolis/sicopolis.git+
-% \end{small}
-
-(Cloning with SSH instead of HTTPS is also available. See the above GitLab front page link for details.)
-
-You should then have a new directory ``sicopolis'' that contains the entire program package.
 
 \end{itemize}
+
+Either way, you should have a new directory ``sicopolis'' that contains the entire program package.
 
 % \begin{spacing}{1.2}
 
@@ -736,7 +738,7 @@ v5\_ant64\_b2\_future09\_ctrl        &  $100\;\mathrm{ a}$\hspace*{1.47em}
                                      & $2\,/\,10\;\mathrm{ a}^{\dagger}$\hspace*{0.6em}
                                      &  6&$1\;\mathrm{sec}$ \\ \hline
 \end{tabular}
-\caption{Model times, time steps and computing (CPU) times for the EISMINT, Greenland and Antarctica simulations contained in the script multi\_sico\_1.sh, run with SICOPOLIS V5-dev (revision develop\_239\_rv5.2-122-g9c909c3) and the Intel Fortran Compiler 19.1 for Linux (optimization options -xHOST -O3 -no-prec-div) on a 12-Core Intel Xeon Gold 6256 (3.6~GHz) PC under openSUSE Leap 15.4.
+\caption{Model times, time steps and computing (CPU) times for the EISMINT, Greenland and Antarctica simulations contained in the script multi\_sico\_1.sh, run with SICOPOLIS V5.3 and the Intel Fortran Compiler 19.1 for Linux (optimization options -xHOST -O3 -no-prec-div) on a 12-Core Intel Xeon Gold 6256 (3.6~GHz) PC under openSUSE Leap 15.4.
 \protect\\
 {}$^\dagger$: If one value is given, this is the common dynamic (velocity, ice thickness) and thermodynamic (temperature, water content, age) time step. If two values are given (marked by the dagger ($^\dagger$) symbol), the first one is the dynamic, the second one the thermodynamic time step.
 \protect\\
