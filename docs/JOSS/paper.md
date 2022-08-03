@@ -121,7 +121,7 @@ The results show good agreement between all three modes used to evaluate this se
 
 | Gradient calculation method | Time (in seconds) for 16 km mesh |
 | :-------------------------: | :------------------------------: |
-| Finite Differences | $2.468 \times 10^5$ |
+| Finite Differences | $1.645 \times 10^5$ |
 | Tangent Linear Model | $2.140 \times 10^4$ |
 | Adjoint Model | $2.113 \times 10^1$ | 
 

@@ -555,8 +555,8 @@ a Creative Commons Attribution 4.0 International License (CC BY
         <tr>
           <td align="center">Finite Differences</td>
           <td align="center"><inline-formula><alternatives>
-          <tex-math><![CDATA[2.468 \times 10^5]]></tex-math>
-          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>2.468</mml:mn><mml:mo>×</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>5</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula></td>
+          <tex-math><![CDATA[1.645 \times 10^5]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>1.645</mml:mn><mml:mo>×</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>5</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula></td>
         </tr>
         <tr>
           <td align="center">Tangent Linear Model</td>
