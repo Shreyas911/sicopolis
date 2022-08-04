@@ -516,20 +516,22 @@ a Creative Commons Attribution 4.0 International License (CC BY
   <p>The results show good agreement between all three modes used to
   evaluate this sensitivity. The error is less than
   <inline-formula><alternatives>
-  <tex-math><![CDATA[2\%]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>2</mml:mn><mml:mi>%</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  <tex-math><![CDATA[4.5\%]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>4.5</mml:mn><mml:mi>%</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
   between AD-generated (adjoint/tangent linear codes) and finite
-  differences at all points with “significant” gradient values,
+  differences at all but one points with “significant” gradient values,
   i.e. within 4 orders of magnitude of the maximum absolute value of the
-  gradient. The relative error between the AD-generated adjoint and
-  tangent linear models is less than <inline-formula><alternatives>
-  <tex-math><![CDATA[0.0025\%]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>0.0025</mml:mn><mml:mi>%</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  finite differences gradient. The relative error between the
+  AD-generated adjoint and tangent linear models is less than
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[0.004\%]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>0.004</mml:mn><mml:mi>%</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
   at all points with values within 4 orders of magnitude of the maximum
-  absolute value of the gradient. However, the adjoint model is much
-  faster than the other two, as shown in Table 1, because the number of
-  evaluations of the tangent linear model and finite differences scales
-  linearly with the parameter dimension (~<inline-formula><alternatives>
+  absolute value of the finite differences gradient. However, the
+  adjoint model is much faster than the other two, as shown in Table 1,
+  because the number of evaluations of the tangent linear model and
+  finite differences scales linearly with the parameter dimension
+  (~<inline-formula><alternatives>
   <tex-math><![CDATA[\mathcal{O}(N)]]></tex-math>
   <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>𝒪</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>N</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>),
   unlike the adjoint. Thus, the discrepancy will be even larger if a
