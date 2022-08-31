@@ -95,7 +95,7 @@ contains
 
 #if !defined(ALLOW_OPENAD) /* Normal */
 
-  where ( (mask == 0).and.(H < rhosw_rho_ratio*H_sea) )
+  where ( (mask == 0).and.(H < rhosw_rho_ratio*H_sea+H0_float) )
      calv_uw_ice = calv_uw_coeff * H**r1_calv_uw * H_sea**r2_calv_uw
   elsewhere
      calv_uw_ice = 0.0_dp
