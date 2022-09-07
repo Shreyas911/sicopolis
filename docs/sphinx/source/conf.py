@@ -30,7 +30,7 @@ author = 'Ralf Greve, Shreyas Sunil Gaikwad, Sri Hari Krishna Narayanan, Laurent
 extensions = ['nbsphinx', 'IPython.sphinxext.ipython_console_highlighting',
               'IPython.sphinxext.ipython_directive', 'sphinx.ext.intersphinx', 'sphinxcontrib.bibtex']
 
-bibtex_bibfiles = ['papers.bib']
+bibtex_bibfiles = ['AD/papers.bib']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
