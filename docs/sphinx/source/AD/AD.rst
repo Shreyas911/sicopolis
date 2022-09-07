@@ -78,6 +78,9 @@ Papers
 
    .. rubric:: papers
 
+.. bibliography::
+      :all:
+
 Acknowledgements
 ================
 
