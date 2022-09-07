@@ -194,21 +194,21 @@ Initial configuration
 
 In addition to the steps above, the following steps need to be performed from the root of the repository- 
 
-* Copy template header files from ``runs/headers/templates`` to ``runs/headers``.
+* Copy template header files from ``runs/headers/templates`` to ``runs/headers`` so that SICOPOLIS can read one of these header files for the simulations desired by the user.
 
 ::
 
     ./copy_templates.sh
 
-* Get the input files needed for both Greenland and Antarctica.
+* Get the input files needed for both Greenland and Antarctica. These files are data files stored on a server and needed for various inputs such as geothermal heat flux, physical parameters, height of the ice base and lithosphere, precipitation, definition of regions for heterogenous basal sliding, etc. 
 
 ::
 
     ./get_input_files.sh
 
-* Locate the file ``sico_environment.sh`` in the directory ``sicopolis/runs``, open it with a text editor, and replace the "Default" entry for ``SICO_INSTITUTION`` by the name of your institution (max. 256 characters).
+* Locate the file ``sico_environment.sh`` in the directory ``sicopolis/runs``, open it with a text editor, and replace the "Default" entry for ``SICO_INSTITUTION`` by the name of your institution (max. 256 characters). This is just for bookkeping purposes.
 
-* Ensure that the Tapenade files are stored in ``src/pop_push``. The simplest way to do it is to copy the version available in ``test_ad/pop_push``.
+* Ensure that the Tapenade files are stored in ``src/pop_push``. This makes the Tapenade subroutines accessible to the compiler. The simplest way to do it is to copy the version available in ``test_ad/pop_push``.
 
 ::
 

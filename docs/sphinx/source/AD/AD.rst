@@ -1,17 +1,27 @@
 .. _AD:
 
-SICOPOLIS-AD v2
-***************
+Using Automatic Differentiation
+*******************************
 
 Contributors
 ============
 
-Shreyas Sunil Gaikwad, Laurent Hascoet, Sri Hari Krishna Narayanan, Liz Curry-Logan, Ralf Greve, Patrick Heimbach
+* Shreyas Sunil Gaikwad - Principal developer and maintainer of SICOPOLIS-AD v2
+
+* Laurent Hascoet - Developer of the open-source AD tool Tapenade
+
+* Sri Hari Krishna Narayanan - Provided guidance on application of AD tools for both SICOPOLIS-AD v1 and SICOPOLIS-AD v2
+
+* Liz Curry-Logan - Principal developer of SICOPOLIS-AD v1
+
+* Ralf Greve - Developer of the SICOPOLIS ice sheet model
+
+* Patrick Heimbach - PI of the NSF-supported project that funds this initiative
 
 Introduction and features
 =========================
 
-Previously, OpenAD have been used to get the adjoint of the SICOPOLIS code (`Logan et. al, 2020 <https://gmd.copernicus.org/articles/13/1845/2020/>`__). Our implementation has the following advantages over the previous implementation - 
+Previously, OpenAD have been used to get the adjoint of the SICOPOLIS code (`Logan et. al, 2020 <https://gmd.copernicus.org/articles/13/1845/2020/>`__). The current implementation with Tapenade (SICOPOLIS-AD v2) has the following advantages over the previous implementation - 
 
 1. It is up-to-date with the latest SICOPOLIS code
 
@@ -31,8 +41,10 @@ Previously, OpenAD have been used to get the adjoint of the SICOPOLIS code (`Log
 
 8. We have provided convenient Python scripts to make I/O with the differentiated variables easier.
 
-Configuration
-=============
+
+
+Installation
+============
 
 .. toctree::
    :maxdepth: 2
@@ -57,5 +69,19 @@ SICOPOLIS-AD v2
    running
    utilities
 
+Papers
+======
+
+.. _references:
+
+.. only:: html
+
+   .. rubric:: papers
+
+.. bibliography::
+      :all:
+
 Acknowledgements
 ================
+
+This work was supported in part by the Applied Mathematics activity within the U.S. Department of Energy, Office of Science, Advanced Scientific Computing Research Program, under contract number DE-AC02-06CH11357, and by National Science Foundation OPP/P2C2 grant #1903596.
