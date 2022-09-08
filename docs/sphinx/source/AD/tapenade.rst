@@ -8,8 +8,8 @@ plus a request for differentiation. TAPENADE builds and returns the differentiat
 
 .. _build_tapenade:
 
-Building TAPENADE
-=================
+Building TAPENADE (latest 3.16)
+===============================
 
 While the SICOPOLIS source files are prepared to generate adjoint sensitivities, they will not be able to do so without an operable installation of Tapenade. Fortunately the Tapenade installation procedure is straight forward.
 

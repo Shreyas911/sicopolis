@@ -10,15 +10,36 @@ Prerequisites for SICOPOLIS
 
 The official `SICOPOLIS Quick Start Manual <http://www.sicopolis.net/docu/SICOPOLIS_V5dev_Quick_Start.pdf>`__ is generally excellent to get started with SICOPOLIS. However, we will mention some steps here since using the Automatic Differentiation (AD) capabilities with Tapenade requires a slightly modified setup.
 
-The satisfaction of the following prerequisites is highly recommended. Details can differ from the `SICOPOLIS Quick Start Manual <http://www.sicopolis.net/docu/SICOPOLIS_V5dev_Quick_Start.pdf>`__, since there are multiple ways to do things. We detail one of them here.
+The satisfaction of the following prerequisites is highly recommended to access all the features of the code. Details can differ from the `SICOPOLIS Quick Start Manual <http://www.sicopolis.net/docu/SICOPOLIS_V5dev_Quick_Start.pdf>`__, since there are multiple ways to do things. We detail one of them here.
+
+GNU GCC Compiler (gfortran)
+---------------------------
+
+We have tested for gfortran v5.4.0, any newer version should work just as well.
 
 Git
 ---
 
-LIS
----
+The Git repository of SICOPOLIS is kindly hosted by the GitLab system of the Alfred Wegener Institute for Polar and Marine Research (AWI) in Bremerhaven, Germany. Front page `here <https://gitlab.awi.de/sicopolis/sicopolis/>`__ .
 
-Install LIS as explained in the Quick Start Manual. The following commands might be helpful, they are written for the latest version at the time of writing.
+Cloning the latest develop or ad revision:
+
+::
+        git clone --branch develop \
+        https://gitlab.awi.de/sicopolis/sicopolis.git
+
+::
+        git clone --branch ad \
+        https://gitlab.awi.de/sicopolis/sicopolis.git
+
+(Cloning with SSH instead of HTTPS is also available. See the above GitLab front page link for details.)
+
+You should then have a new directory ``sicopolis`` that contains the entire program package.
+
+LIS (1.4.43 or newer)
+---------------------
+
+LIS installation is mandatory to use shallow shelf/shelfy stream dynamics in simulations. Install LIS as explained in the Quick Start Manual. The following commands might be helpful, they are written for the latest version at the time of writing.
 
 ::
 
@@ -53,10 +74,10 @@ For AD purposes, we compile the code using the ``src/MakefileTapenade`` makefile
 4. ``LISFLAG`` - This flag declares directories to be searched for LIS ``#include`` header file ``lisf.h``, as well as defines the ``BUILD_LIS`` as a macro with value 1. By default in ``src/MakefileTapenade``, it is ``-DBUILD_LIS -I${LISDIR}/include/``. If you follow the original instructions to install LIS, this should work, else one can set it manually within ``src/MakefileTapenade``.
 
 
-NetCDF
-------
+NetCDF (3.6.x or newer)
+-----------------------
 
-Install NetCDF as explained in the Quick Start Manual. In some cases, for example while working on a shared server which uses a module manager or Docker container, thing have to be set up differently. ``src/MakefileTapenade`` needs either the ``NETCDF_FORTRAN_DIR`` macro set or both ``NETCDF_F90_FLAG`` and ``LIB_NETCDF_F90_FLAG`` set (see code snippet from ``src/MakefileTapenade`` here).
+NetCDF installation is mandatory since it is a powerful library with widespread use for I/O with a machine-independent data format. Install NetCDF as explained in the Quick Start Manual. In some cases, for example while working on a shared server which uses a module manager or Docker container, thing have to be set up differently. ``src/MakefileTapenade`` needs either the ``NETCDF_FORTRAN_DIR`` macro set or both ``NETCDF_F90_FLAG`` and ``LIB_NETCDF_F90_FLAG`` set (see code snippet from ``src/MakefileTapenade`` here).
 
 ::
 
@@ -166,11 +187,13 @@ You can also confirm that the files ``/usr/lib64/libnetcdff.so*`` and ``/usr/lib
 
 The Quick Start manual, and these two cases should help cover most of the issues with the installation of NetCDF.
 
-Unix-like system (e.g., Linux)
-------------------------------
+Unix-like system
+----------------
 
-Building SICOPOLIS
-==================
+A Unix-like system, e.g. Linux (Ubuntu, CentOS, Fedora, Redhat, etc.), MacOS is required to run both SICOPOLIS and SICOPOLIS-AD v2.
+
+Building SICOPOLIS (latest v5.3)
+================================
 
 The Git repository of SICOPOLIS is kindly hosted by the GitLab system of the `Alfred Wegener Institute for Polar and Marine Research (AWI) <http://www.awi.de/>`__ in Bremerhaven, Germany. 
 
@@ -185,7 +208,7 @@ The Git repository of SICOPOLIS is kindly hosted by the GitLab system of the `Al
 
 Cloning with SSH instead of HTTPS is also available. See the above GitLab link for details.
 
-* Tagged versions of SICOPOLIS (latest: v5.2, 2021-06-11) can be accessed from the `archive <http://www.sicopolis.net/archive/>`__.
+* Tagged versions of SICOPOLIS (latest: v5.3, 2021-06-11) can be accessed from the `archive <http://www.sicopolis.net/archive/>`__.
 
 More details can be found `here <http://www.sicopolis.net/>`__.
 

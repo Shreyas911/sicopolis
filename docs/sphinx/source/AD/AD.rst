@@ -41,10 +41,24 @@ Previously, OpenAD have been used to get the adjoint of the SICOPOLIS code (`Log
 
 8. We have provided convenient Python scripts to make I/O with the differentiated variables easier.
 
+In addition we also have the following previously available features - 
 
+1. The adjoint mode is available, like before along with the capability to do Finite Differences validation of the gradient computed using the adjoint mode.
+
+The code has the following capabilities or possible applications - 
+
+1. Paleoclimatic inversions using the adjoint generated gradients as part of a model calibration exercise.
+
+2. Uncertainty Quantification of calibrated parameters by leveraging the new tangent linear mode and adjoint mode.
+
+3. Sensitivity analysis of various quantities of interest (QoI) to state parameters.
+
+4. Optimal Experimental Design - where should sensors be placed such that the newly collected data optimally informs our uncertain parameters.
 
 Installation
 ============
+
+SICOPOLIS-AD v2 requires the installation of Tapenade as well as SICOPOLIS. It is mandatory to install the external libraries such as NetCDF, LIS to access the full functionality of the code, as well as git, to be able to clone and contribute to the repository.
 
 .. toctree::
    :maxdepth: 2
@@ -58,6 +72,7 @@ Theory and tutorials
 .. toctree::
    :maxdepth: 2
 
+   theory
    tutorials
 
 SICOPOLIS-AD v2
@@ -76,7 +91,7 @@ Papers
 
 .. only:: html
 
-   .. rubric:: papers
+   .. rubric:: Papers
 
 .. bibliography::
       :all:
