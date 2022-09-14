@@ -65,7 +65,7 @@ SICOPOLIS-AD v2 requires the installation of Tapenade as well as SICOPOLIS. It i
 
    tapenade
    sicopolis_ad_config
-   SICOPOLIS_V5dev_Quick_Start.rst
+   SICOPOLIS_V5dev_Quick_Start
 
 Theory and tutorials
 ====================
