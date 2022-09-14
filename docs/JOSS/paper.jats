@@ -415,8 +415,8 @@ a Creative Commons Attribution 4.0 International License (CC BY
           <p><ext-link ext-link-type="uri" xlink:href="https://sicopolis.readthedocs.io/en/latest/AD/tutorial_tapenade.html">Tutorial
           2</ext-link> describes the use of Tapenade to get the
           sensitivities in the case of a simple, but realistic mountain
-          glacier model, based on
-          (<xref alt="Oerlemans1981?" rid="ref-Oerlemans1981" ref-type="bibr"><bold>Oerlemans1981?</bold></xref>)
+          glacier model, based on Oerlemans
+          (<xref alt="1981" rid="ref-Oerlemans1981" ref-type="bibr">1981</xref>)
           (see also Van der Veen
           (<xref alt="2013" rid="ref-van2013fundamentals" ref-type="bibr">2013</xref>)).
           It also explains how the user can get a smaller memory
@@ -773,6 +773,22 @@ a Creative Commons Attribution 4.0 International License (CC BY
       <pub-id pub-id-type="doi">10.1080/10556789208805505</pub-id>
       <fpage>35</fpage>
       <lpage>54</lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-Oerlemans1981">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Oerlemans</surname><given-names>J.</given-names></name>
+      </person-group>
+      <article-title>Some basic experiments with a vertically-integrated ice sheet model</article-title>
+      <source>Tellus</source>
+      <year iso-8601-date="1981">1981</year>
+      <volume>33</volume>
+      <issue>1</issue>
+      <uri>https://onlinelibrary.wiley.com/doi/abs/10.1111/j.2153-3490.1981.tb01726.x</uri>
+      <pub-id pub-id-type="doi">https://doi.org/10.1111/j.2153-3490.1981.tb01726.x</pub-id>
+      <fpage>1</fpage>
+      <lpage>11</lpage>
     </element-citation>
   </ref>
 </ref-list>
