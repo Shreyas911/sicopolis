@@ -137,3 +137,26 @@ Files and directories in SICOPOLIS
 
   * Tools to help with forward modeling, eg - ``resolution_doubler`` , ``make_ismip_output`` , etc.
 
+  1. Program ``make_ismip_output``
+
+     * Generating ISMIP output (see http://tinyurl.com/clic-ismip6) from the NetCDF time-slice files produced by SICOPOLIS
+
+     * For simulation run ``./tools.sh -p make_ismip_output -m run_name``
+
+     * For further options, try ``./tools.sh -h``
+
+  2. Program ``resolution_doubler``
+
+     * Doubling the horizontal resolution of a NetCDF time-slice output file produced by SICOPOLIS
+
+     * For simulation run name, to be executed by ``./tools.sh -p resolution_doubler -m run_name`` 
+
+     * For further options, try ``./tools.sh -h`` 
+
+     * For example, run ``v5_grl10_b2_paleo21`` (10 km resolution) requires the resolution doubled output of run ``v5_grl20_b2_paleo21`` (20 km resolution) for :math:`t=-9 \mathrm{ka}` as initial condition. In order to create it, execute the resolution doubler for run ``v5_grl20_b2_paleo21`` (i.e., with the option ``-m v5_grl20_b2_paleo21``) and enter 
+
+       * Number of time-slice file (with leading zeros, 4 digits) :math:`> 0004` 
+
+     * This will convert the original time-slice file ``v5_grl20_b2_paleo210004.nc`` to the resolution-doubled file ``v5_grl20_b2_paleo21_dbl_0004.nc`` that serves as initial conditions for run ``v5_grl10_b2_paleo21`` .
+
+
