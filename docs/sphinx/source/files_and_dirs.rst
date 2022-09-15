@@ -11,14 +11,14 @@ Files and directories in SICOPOLIS
 
   3. Shell scripts (bash) ``multi_sico_1.sh`` and ``multi_sico_2.sh`` for running multiple simulations by repeated calls of ``sico.sh``.
 
-  4. Subdirectory ``headers``: specification files ``sico_specs_{run_name}.h ({run_name}: name of run) for a number of computationally rather inexpensive test runs.
+  4. Subdirectory ``headers``: specification files ``sico_specs_{run_name}.h`` ({run_name}: name of run) for a number of computationally rather inexpensive test runs.
 
      * ``v5_vialov3d25``
 
        * 3-d version of the 2-d Vialov profile
        * SIA, resolution 25 km, :math:`t=0\ldots{}100\,\mathrm{ka}`.
        * Similar to the EISMINT Phase 1 fixed-margin experiment
-       * \citep{huybrechts_etal_1996}, but without thermodynamics. Instead, isothermal conditions with :math:`T=-10^{\circ}`C everywhere are assumed.
+       * \citep{huybrechts_etal_1996}, but without thermodynamics. Instead, isothermal conditions with :math:`T=-10^{\circ}` C everywhere are assumed.
 
      * ``v5_emtp2sge25_expA``
 
