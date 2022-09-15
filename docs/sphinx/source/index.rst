@@ -18,4 +18,5 @@ Welcome to SICOPOLIS's user manual
    :caption: Contents:
    :numbered: 5
 
+   files_and_dirs
    AD/AD
