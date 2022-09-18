@@ -139,8 +139,8 @@ a Creative Commons Attribution 4.0 International License (CC BY
 <kwd>SICOPOLIS-AD</kwd>
 <kwd>Fortran</kwd>
 <kwd>Automatic Differentiation</kwd>
-<kwd>Ice sheet inverse modeling</kwd>
-<kwd>Data assimilation under uncertainty</kwd>
+<kwd>Inverse modeling</kwd>
+<kwd>Data assimilation</kwd>
 </kwd-group>
 </article-meta>
 </front>
@@ -150,96 +150,53 @@ a Creative Commons Attribution 4.0 International License (CC BY
   <p>We present a new framework for generating derivative code, i.e.,
   tangent linear, adjoint, or Hessian models, of the open-source
   SImulation COde for POLythermal Ice Sheets
-  (<monospace>SICOPOLIS</monospace>). These derivative operators are
-  powerful computational engines to efficiently compute comprehensive
-  gradients or sensitivities of scalar-valued model output, including
-  least-squares model-data misfits or important quantities of interest,
-  to high-dimensional model inputs (such as model initial conditions,
-  parameter fields, or boundary conditions). The new version 2
-  (<monospace>SICOPOLIS-AD v2</monospace>) framework is based on the
-  source-to-source automatic differentiation (AD) tool
-  <monospace>Tapenade</monospace> which has recently been open-sourced.
-  The switch from a previous AD tool (<monospace>OpenAD</monospace>)
-  used in SICOPOLIS-AD version 1 to <monospace>Tapenade</monospace>
-  overcomes several limitations outlined here. In addition, we provide
-  several convenient support tools and workflows for code generation,
-  validation, and data analysis. They include GitLab’s Continuous
-  Integration feature for code validation, python scripts that support
-  model configuration, invoking AD, code compilation, and model
-  execution. A new documentation and several tutorials help users to get
-  started. The framework is integrated with the SICOPOLIS model’s main
-  trunk and is freely available along with Tapenade.</p>
+  (<ext-link ext-link-type="uri" xlink:href="https://gitlab.awi.de/sicopolis/sicopolis/-/tree/master"><monospace>SICOPOLIS</monospace></ext-link>).
+  These derivative operators are powerful computational engines to
+  efficiently compute comprehensive gradients or sensitivities of
+  scalar-valued model output, including least-squares model-data misfits
+  or important quantities of interest, to high-dimensional model inputs
+  (such as model initial conditions, parameter fields, or boundary
+  conditions). The new version 2
+  (<ext-link ext-link-type="uri" xlink:href="https://gitlab.awi.de/sicopolis/sicopolis/-/tree/ad"><monospace>SICOPOLIS-AD v2</monospace></ext-link>)
+  framework is based on the source-to-source automatic differentiation
+  (AD) tool
+  <ext-link ext-link-type="uri" xlink:href="https://tapenade.gitlabpages.inria.fr/userdoc/build/html/tapenade/faq.html"><monospace>Tapenade</monospace></ext-link>
+  which has recently been open-sourced. The switch from a previous AD
+  tool (<monospace>OpenAD</monospace>) used in SICOPOLIS-AD version 1 to
+  <monospace>Tapenade</monospace> overcomes several limitations outlined
+  here. The framework is integrated with the SICOPOLIS model’s main
+  trunk and is freely available.</p>
 </sec>
 <sec id="statement-of-need">
   <title>Statement of need</title>
-  <p>Ice sheets are grounded ice masses of continental size, with an
-  area greater than <inline-formula><alternatives>
-  <tex-math><![CDATA[50,000 \text{km}^2]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>50</mml:mn><mml:mo>,</mml:mo><mml:mn>000</mml:mn><mml:msup><mml:mtext mathvariant="normal">km</mml:mtext><mml:mn>2</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>.
-  The two contemporary ice sheets, Greenland and Antarctica, are dynamic
-  entities whose evolution is governed by a set of nonlinear partial
-  differential equations (PDEs) that describe the conservation of mass,
-  momentum, and energy, as well as constitutive laws for the material
-  properties of ice. In general, these equations cannot be solved
-  analytically but must be solved numerically. Ice sheet models are a
-  computer representation of these PDEs. They require as input
+  <p>The two contemporary ice sheets, Greenland and Antarctica, are
+  dynamic entities whose evolution is governed by a set of nonlinear
+  partial differential equations (PDEs) that describe the conservation
+  of mass, momentum, and energy, as well as constitutive laws for the
+  material properties of ice. In general, these equations cannot be
+  solved analytically but must be solved numerically. Ice sheet models
+  are a computer representation of these PDEs. They require as input
   parameters (i) initial conditions of the state of the ice sheet, (ii)
-  surface boundary conditions, such as temperature and precipitation,
-  (iii) basal boundary conditions, such as bed topography and geothermal
-  flux, and (iv) model parametric uncertainties, such as basal friction
-  or flow law parameter. Despite recent advances in numerical modeling
-  of ice sheets, the effects of ad-hoc initialization and the
-  uncertainties in these independent input parameters propagate to the
-  model’s output, in particular to quantities of interest (QoI), such as
-  future projections of sea-level rise, which is of economic and
-  societal importance
+  surface boundary conditions, such as precipitation, (iii) basal
+  boundary conditions, such as geothermal flux, and (iv) model
+  parameters, such as flow law parameters. Despite advances in numerical
+  modeling of ice sheets, the effects of ad-hoc initialization and the
+  uncertainties in these independent input parameters propagate to
+  quantities of interest (QoI), such as future projections of sea-level
+  rise, which is of economic and societal importance
   (<xref alt="Schinko et al., 2020" rid="ref-Schinko_2020" ref-type="bibr">Schinko
-  et al., 2020</xref>).</p>
-  <p>Understanding a system’s response to perturbations in its input is
-  at the heart of scientific analysis and understanding. It is thus
-  desirable to evaluate the sensitivities of our QoI to these
-  independent input variables. In the context of ice sheet modeling,
-  sensitivities of model-data misfits or other quantities of interest
-  are a key ingredient for performing model calibration, state
-  estimation, or uncertainty quantification, all of which ultimately
-  guide the improvement of model simulations through PDE-constrained
-  gradient-based optimization. Posterior uncertainties around the
-  optimal set of input variables can be quantified by characterizing
-  them as probability density functions. An approximate approach to
-  efficiently completing such a task requires the set of dominant
-  eigenvalues and eigenvectors of the prior-preconditioned linearized
-  misfit Hessian matrix. Both the gradient and the eigen-characteristics
-  of the Hessian can be evaluated in a matrix-free manner using
-  automatic differentiation (AD) generated adjoint and tangent linear
-  codes.</p>
-  <p>The conventional approach for calculating system sensitivities
-  consists of perturbing each component (e.g., spatially discretized
-  elements of a field) of each input parameter one at a time and
-  evaluating the change in the QoI. For a high dimensional parameter
-  space, the cost of this brute force method is prohibitive, since it
-  requires <inline-formula><alternatives>
-  <tex-math><![CDATA[\mathcal{O}(N)]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>𝒪</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>N</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
-  nonlinear forward model evaluations, where
-  <inline-formula><alternatives>
-  <tex-math><![CDATA[N]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>N</mml:mi></mml:math></alternatives></inline-formula>
-  is the dimension of the input parameter space. A more efficient method
-  is to develop an adjoint model, which flows in the reverse sense to
-  our forward model and evaluates the sensitivities for the entire
-  parameter space in a single model run. While the code for the adjoint
-  model can be written manually, this approach becomes cumbersome for a
-  large system of equations. Furthermore, this method suffers from the
-  limitation of having to update the adjoint code manually every time
-  the forward code is updated, which is error-prone and
-  time-consuming.</p>
-  <p>Instead, <monospace>SICOPOLIS-AD v2</monospace> leverages the
-  recently open-sourced automatic differentiation (AD) tool
-  <monospace>Tapenade</monospace>
+  et al., 2020</xref>). It is thus desirable to evaluate the
+  sensitivities of our QoI to these independent input variables.</p>
+  <p>In the context of ice sheet modeling, sensitivities of model-data
+  misfits or other QoI are a key ingredient for performing model
+  calibration, state estimation, or uncertainty quantification (UQ),
+  which guide the improvement of model simulations through
+  PDE-constrained gradient-based optimization.</p>
+  <p><monospace>SICOPOLIS-AD v2</monospace> leverages the recently
+  open-sourced AD tool <monospace>Tapenade</monospace>
   (<xref alt="Hascoet &amp; Pascual, 2013" rid="ref-hascoetTAP" ref-type="bibr">Hascoet
   &amp; Pascual, 2013</xref>) to generate code for the adjoint model of
-  the open-source ice sheet model, SImulation COde for POLythermal Ice
-  Sheets, or <monospace>SICOPOLIS</monospace>
+  the open-source ice sheet model, <monospace>SICOPOLIS</monospace>
   (<xref alt="Greve, 1997" rid="ref-greve1997application" ref-type="bibr">Greve,
   1997</xref>;
   <xref alt="Greve et al., 2011" rid="ref-greve2011initial" ref-type="bibr">Greve
@@ -251,96 +208,37 @@ a Creative Commons Attribution 4.0 International License (CC BY
   <tex-math><![CDATA[\mathcal{O}(N)]]></tex-math>
   <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>𝒪</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>N</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
   forward model evaluations. Empirically, one adjoint model evaluation
-  is about 5-10 times as expensive as a forward model run (this number
-  depends on the specific checkpointing scheme employed to recompute
-  variables required to evaluate nonlinear or control flow expressions).
-  Thus, the adjoint computation is highly efficient for calculating
-  sensitivities when <inline-formula><alternatives>
+  is about 5-10 times as expensive as a forward model run. The adjoint
+  computation is highly efficient for calculating sensitivities when
+  <inline-formula><alternatives>
   <tex-math><![CDATA[N]]></tex-math>
   <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>N</mml:mi></mml:math></alternatives></inline-formula>
-  is large (in our case, <inline-formula><alternatives>
-  <tex-math><![CDATA[N \sim 10^4-10^5]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>N</mml:mi><mml:mo>∼</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>4</mml:mn></mml:msup><mml:mo>−</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>5</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>).</p>
-  <p>Finally, the functionality to generate a tangent linear version of
-  the forward model is also included, which was not available in
-  <monospace>SICOPOLIS-AD v1</monospace>. This is valuable for
-  uncertainty quantification (UQ) of the inferred parameters, as well as
-  uncertainty propagation to QoIs. It can also be used to verify the
-  results of the adjoint model.</p>
-  <p>Let us assume a set of independent parameters
-  <inline-formula><alternatives>
-  <tex-math><![CDATA[\mathbf{x} \in \mathbb{R}^N]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo>∈</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:mi>N</mml:mi></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>
-  and dependent scalar-valued output QoI <inline-formula><alternatives>
-  <tex-math><![CDATA[\mathcal{J} \in \mathbb{R}]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>𝒥</mml:mi></mml:mstyle><mml:mo>∈</mml:mo><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle></mml:mrow></mml:math></alternatives></inline-formula>
-  (also known as the cost function or objective function), which depends
-  on another variable <inline-formula><alternatives>
-  <tex-math><![CDATA[\mathbf{y} \in \mathbb{R}^M]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐲</mml:mi></mml:mstyle><mml:mo>∈</mml:mo><mml:msup><mml:mstyle mathvariant="double-struck"><mml:mi>ℝ</mml:mi></mml:mstyle><mml:mi>M</mml:mi></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>.
-  Mathematically, <inline-formula><alternatives>
-  <tex-math><![CDATA[\mathcal{J} = \mathcal{J}(\mathbf{y}), \text{where } \mathbf{y} = A(\mathbf{x})]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>𝒥</mml:mi></mml:mstyle><mml:mo>=</mml:mo><mml:mstyle mathvariant="script"><mml:mi>𝒥</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐲</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:mrow><mml:mtext mathvariant="normal">where </mml:mtext><mml:mspace width="0.333em"></mml:mspace></mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐲</mml:mi></mml:mstyle><mml:mo>=</mml:mo><mml:mi>A</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>.
-  Here, <inline-formula><alternatives>
-  <tex-math><![CDATA[A]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>A</mml:mi></mml:math></alternatives></inline-formula>
-  is our nonlinear forward model, represented by the
-  <monospace>SICOPOLIS</monospace> code. The tangent linear model is
-  given by the Jacobian matrix of operator
-  <inline-formula><alternatives>
-  <tex-math><![CDATA[A]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>A</mml:mi></mml:math></alternatives></inline-formula>,
-  <inline-formula><alternatives>
-  <tex-math><![CDATA[\mathbf{B}(\mathbf{x})]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="bold"><mml:mi>𝐁</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>,
-  such that <inline-formula><alternatives>
-  <tex-math><![CDATA[d\mathbf{y} = \mathbf{B}(\mathbf{x}) \, d\mathbf{x}]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>d</mml:mi><mml:mstyle mathvariant="bold"><mml:mi>𝐲</mml:mi></mml:mstyle><mml:mo>=</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐁</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mspace width="0.167em"></mml:mspace><mml:mi>d</mml:mi><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle></mml:mrow></mml:math></alternatives></inline-formula>.
-  This matrix is implicitly represented by the
-  <monospace>Tapenade</monospace> generated tangent linear code acting
-  on vector <inline-formula><alternatives>
-  <tex-math><![CDATA[d\mathbf{x}]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>d</mml:mi><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle></mml:mrow></mml:math></alternatives></inline-formula>.
-  The sensitivity of <inline-formula><alternatives>
-  <tex-math><![CDATA[\mathcal{J(\mathbf{y}(\mathbf{x}))}]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="script"><mml:mi>𝒥</mml:mi><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐲</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mstyle></mml:math></alternatives></inline-formula>
-  to <inline-formula><alternatives>
-  <tex-math><![CDATA[\mathbf{x}]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle></mml:math></alternatives></inline-formula>
-  can be shown to be <inline-formula><alternatives>
-  <tex-math><![CDATA[\nabla_{\mathbf{x}} \mathcal{J}^T = \mathbf{B}^T (\mathbf{x}) \, \nabla_{\mathbf{y}} \mathcal{J}^T]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>∇</mml:mi><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle></mml:msub><mml:msup><mml:mstyle mathvariant="script"><mml:mi>𝒥</mml:mi></mml:mstyle><mml:mi>T</mml:mi></mml:msup><mml:mo>=</mml:mo><mml:msup><mml:mstyle mathvariant="bold"><mml:mi>𝐁</mml:mi></mml:mstyle><mml:mi>T</mml:mi></mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mspace width="0.167em"></mml:mspace><mml:msub><mml:mi>∇</mml:mi><mml:mstyle mathvariant="bold"><mml:mi>𝐲</mml:mi></mml:mstyle></mml:msub><mml:msup><mml:mstyle mathvariant="script"><mml:mi>𝒥</mml:mi></mml:mstyle><mml:mi>T</mml:mi></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>
-  (for example Errico
-  (<xref alt="1997" rid="ref-WhatIsanAdjointModel" ref-type="bibr">1997</xref>)).
-  Here, <inline-formula><alternatives>
-  <tex-math><![CDATA[\mathbf{B}^T (\mathbf{x})]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mstyle mathvariant="bold"><mml:mi>𝐁</mml:mi></mml:mstyle><mml:mi>T</mml:mi></mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mstyle mathvariant="bold"><mml:mi>𝐱</mml:mi></mml:mstyle><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
-  is the linear adjoint operator, whose action is implicitly represented
-  by the <monospace>Tapenade</monospace> generated adjoint code. This is
-  explained in greater detail in
-  <ext-link ext-link-type="uri" xlink:href="https://sicopolis.readthedocs.io/en/latest/AD/tutorial_self_ad.html">Tutorial
-  1</ext-link>.</p>
+  is large (typically, <inline-formula><alternatives>
+  <tex-math><![CDATA[N \sim 10^4-10^6]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>N</mml:mi><mml:mo>∼</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>4</mml:mn></mml:msup><mml:mo>−</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>6</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>).</p>
+  <p>The functionality to generate a tangent linear version of the
+  forward model is also included, which was not available in
+  <monospace>SICOPOLIS-AD v1</monospace>. This is valuable for UQ of the
+  inferred parameters, as well as uncertainty propagation to QoIs. It
+  can also be used to verify the results of the adjoint model.</p>
 </sec>
 <sec id="target-audience">
   <title>Target Audience</title>
   <p>This package is intended as a resource that enables sensitivity
   analysis, model calibration, and uncertainty quantification of a
-  continent-scale ice sheet model. Since the numerical discretization
-  scheme in SICOPOLIS is finite differences and it employs the shallow
-  ice approximation, it is relatively less computationally expensive
-  than the models solving the full Stokes equations using the modern
-  finite element methods. This makes it suitable for simulations over
-  long time scales, i.e. paleoclimate simulations. Its coding structure
-  is modular and amenable to AD source transformation. Thus, our package
-  is also intended to serve as a guide for future work in the
-  application of open-source AD tools for physics-based simulation codes
-  written in <monospace>Fortran</monospace>.</p>
+  continent-scale ice sheet model. Our package is also intended to serve
+  as a guide for future work in the application of open-source AD tools
+  for physics-based simulation codes written in
+  <monospace>Fortran</monospace>.</p>
 </sec>
 <sec id="features">
   <title>Features</title>
-  <p>Source transformation AD tools such as the commercial tool
-  <monospace>TAF</monospace> and the open-source tool
-  <monospace>OpenAD</monospace> have been used previously with
+  <p>AD tools such as the commercial <monospace>TAF</monospace>
+  (<xref alt="Giering &amp; Kaminski, 1999" rid="ref-giering_kaminski" ref-type="bibr">Giering
+  &amp; Kaminski, 1999</xref>) and the open-source
+  <monospace>OpenAD</monospace>
+  (<xref alt="Utke et al., 2008" rid="ref-openad" ref-type="bibr">Utke
+  et al., 2008</xref>) have been used previously with
   <monospace>SICOPOLIS</monospace>
   (<xref alt="Heimbach &amp; Bugnion, 2009" rid="ref-heimbach2009greenland" ref-type="bibr">Heimbach
   &amp; Bugnion, 2009</xref>;
@@ -366,131 +264,60 @@ a Creative Commons Attribution 4.0 International License (CC BY
       introduced.</p>
     </list-item>
     <list-item>
-      <p>The AD-generated codes can accept inputs in the
+      <p>The AD-generated codes can accept
       <ext-link ext-link-type="uri" xlink:href="https://www.unidata.ucar.edu/software/netcdf/">NetCDF</ext-link>
-      format.</p>
+      inputs.</p>
     </list-item>
     <list-item>
-      <p>The external Library of Iterative Solvers for Linear Systems
-      (<ext-link ext-link-type="uri" xlink:href="https://www.ssisc.org/lis/index.en.html">LIS</ext-link>),
+      <p>The external library
+      <ext-link ext-link-type="uri" xlink:href="https://www.ssisc.org/lis/index.en.html">LIS</ext-link>,
       its tangent linear code, and adjoint code are correctly
       incorporated which can improve the simulation of Antarctic ice
       shelves and Greenland outlet glaciers.</p>
     </list-item>
     <list-item>
       <p><ext-link ext-link-type="uri" xlink:href="https://docs.gitlab.com/ee/ci/">Gitlab-CI</ext-link>,
-      a customized
+      a
       <ext-link ext-link-type="uri" xlink:href="https://www.docker.com/">Docker</ext-link>,
       and the
       <ext-link ext-link-type="uri" xlink:href="https://docs.pytest.org/en/7.1.x/">pytest</ext-link>
       framework are leveraged for Continuous Integration (CI) to track
-      changes in the trunk that change the output or “break” the
-      AD-based code generation.</p>
+      changes in the trunk that “break” the AD-based code
+      generation.</p>
     </list-item>
     <list-item>
       <p>The entire code is parsed by <monospace>Tapenade</monospace>,
-      including the initialization subroutines, thus preventing
-      cumbersome manual maintenance of subroutines to initialize the
-      adjoint runs.</p>
+      preventing cumbersome manual maintenance of subroutines to
+      initialize the adjoint runs.</p>
     </list-item>
     <list-item>
-      <p>Convenient and easy-to-use Python scripts are provided for
-      quick setup of the compilation, I/O, and execution processes based
-      on the metadata the user provides in a <monospace>JSON</monospace>
-      file.</p>
+      <p>Python scripts are provided for quick setup of the compilation,
+      I/O, and execution processes based on user-provided metadata.</p>
     </list-item>
     <list-item>
-      <p>The entire setup is
+      <p>The setup is
       <ext-link ext-link-type="uri" xlink:href="https://sicopolis.readthedocs.io/en/latest/AD/AD.html">well-documented</ext-link>,
       along with tutorials.</p>
-      <list list-type="bullet">
-        <list-item>
-          <p><ext-link ext-link-type="uri" xlink:href="https://sicopolis.readthedocs.io/en/latest/AD/tutorial_self_ad.html">Tutorial
-          1</ext-link> is an exercise in writing an adjoint code by
-          hand, in Python. This can be helpful for users looking to
-          delve deeper into AD-generated codes and for debugging
-          purposes.</p>
-        </list-item>
-        <list-item>
-          <p><ext-link ext-link-type="uri" xlink:href="https://sicopolis.readthedocs.io/en/latest/AD/tutorial_tapenade.html">Tutorial
-          2</ext-link> describes the use of Tapenade to get the
-          sensitivities in the case of a simple, but realistic mountain
-          glacier model, based on Oerlemans
-          (<xref alt="1981" rid="ref-Oerlemans1981" ref-type="bibr">1981</xref>)
-          (see also Van der Veen
-          (<xref alt="2013" rid="ref-van2013fundamentals" ref-type="bibr">2013</xref>)).
-          It also explains how the user can get a smaller memory
-          footprint, which is beneficial for very large systems, by
-          using binomial checkpointing
-          (<xref alt="Griewank, 1992" rid="ref-checkpointing" ref-type="bibr">Griewank,
-          1992</xref>). A smaller memory footprint, however, comes at a
-          higher computation cost.</p>
-        </list-item>
-        <list-item>
-          <p><ext-link ext-link-type="uri" xlink:href="https://sicopolis.readthedocs.io/en/latest/AD/tutorial_tapenade.html">Tutorial
-          3</ext-link> is a simple validation exercise for the adjoint
-          and tangent linear values using finite differences computed
-          with SICOPOLIS. We use the header file
-          <monospace>v5_grl16_bm4_ss25ka</monospace>, which is one of
-          the regression tests provided with the standard
-          <monospace>SICOPOLIS</monospace> distribution. It describes a
-          steady state run for Greenland Ice Sheet with modern climate
-          conditions. We evaluate the sensitivity of the total ice
-          volume to time-invariant geothermal flux. This is also
-          discussed in the example below.</p>
-        </list-item>
-      </list>
     </list-item>
   </list>
 </sec>
 <sec id="software-requirements-and-external-usage">
   <title>Software requirements and external usage</title>
-  <p><monospace>SICOPOLIS-AD v2</monospace> is built on top of the
-  <monospace>SICOPOLIS</monospace> ice sheet model, an open-source code
-  written in <monospace>Fortran</monospace>. It uses
-  <monospace>Tapenade</monospace>, a recently open-sourced AD tool, to
-  differentiate this code. Therefore, all the prerequisites of using
-  <monospace>SICOPOLIS</monospace> and <monospace>Tapenade</monospace>
-  need to be satisfied, and both need to be installed correctly. A
-  Python installation is needed to use the convenient automation
-  functions in <monospace>test_ad/tapenade_config.py</monospace>.</p>
-</sec>
-<sec id="implementation">
-  <title>Implementation</title>
-  <p>The code for <monospace>SICOPOLIS-AD v2</monospace> is kept mostly
-  independent from the base <monospace>SICOPOLIS</monospace> code,
-  allowing non-AD users to avoid it completely. All of the AD-related
-  support routines and data files can be found in
-  <monospace>src/subroutines/tapenade</monospace>. Similarly, all
-  utilities and testing files for AD simulations are stored in the
-  <monospace>test_ad</monospace> directory. A separate Makefile is
-  provided for AD purposes -
-  <monospace>src/MakefileTapenade</monospace>.</p>
-  <p><monospace>SICOPOLIS-AD v2</monospace> can be run directly by
-  interacting with the Makefile and the <monospace>Fortran</monospace>
-  code. The user has to prepare a suitable header file for the base
-  <monospace>SICOPOLIS</monospace> code and add a few more preprocessing
-  directives to run the adjoint code with the same header file. This
-  header file, along with a set of dependent and independent variables,
-  is given to the Makefile. The Makefile executes the workflow for
-  differentiating and compiling the code depending on the mode selected
-  by the user (tangent linear, adjoint, finite differences, code
-  coverage evaluation). The user must then insert the I/O statements in
-  the Tapenade-generated code depending on what they wish to analyze.
-  This is followed by recompilation and execution of the code.</p>
-  <p>Alternatively, the user can use the functions in
-  <monospace>test_ad/tapenade_config.py</monospace> to automatically
-  customize the setup. These functions are written for automated
-  sensitivity studies. They can be easily modified to serve other
-  purposes such as model calibration and UQ.</p>
+  <p><monospace>SICOPOLIS-AD v2</monospace> is built on top of the ice
+  sheet model <monospace>SICOPOLIS</monospace> and uses
+  <monospace>Tapenade</monospace> to differentiate this model. All the
+  prerequisites of using <monospace>SICOPOLIS</monospace> and
+  <monospace>Tapenade</monospace> need to be satisfied. A Python
+  installation is needed to use the automation tools.</p>
 </sec>
 <sec id="example">
   <title>Example</title>
-  <p>To illustrate the use of our tool using a simple example, we use
-  the header file <monospace>v5_grl16_bm4_ss25ka</monospace> provided as
-  a reference template in <monospace>SICOPOLIS</monospace>. It describes
-  a steady state run for Greenland Ice Sheet with modern climate
-  conditions. We shorten the total integration time to 100 simulated
+  <p>We illustrate the use of our tool with the example of a steady
+  state simulation of the Greenland ice sheet under modern climate
+  conditions. The corresponding SICOPOLIS configuration header file,
+  <monospace>v5_grl16_bm4_ss25ka</monospace>, is provided as a reference
+  template in the standard <monospace>SICOPOLIS</monospace>
+  distribution. We shorten the total integration time to 100 simulated
   years to keep the computational cost of the tangent linear and finite
   differences reasonable. Our QoI (i.e., dependent variable) is the
   total volume of the ice sheet at the end of the run
@@ -519,7 +346,7 @@ a Creative Commons Attribution 4.0 International License (CC BY
   <tex-math><![CDATA[4.5\%]]></tex-math>
   <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>4.5</mml:mn><mml:mi>%</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
   between AD-generated (adjoint/tangent linear codes) and finite
-  differences at all but one points with “significant” gradient values,
+  differences at all but one point with “significant” gradient values,
   i.e. within 4 orders of magnitude of the maximum absolute value of the
   finite differences gradient. The relative error between the
   AD-generated adjoint and tangent linear models is less than
@@ -529,22 +356,18 @@ a Creative Commons Attribution 4.0 International License (CC BY
   at all points with values within 4 orders of magnitude of the maximum
   absolute value of the finite differences gradient. However, the
   adjoint model is much faster than the other two, as shown in Table 1,
-  because the number of evaluations of the tangent linear model and
-  finite differences scales linearly with the parameter dimension
-  (~<inline-formula><alternatives>
+  because the number of evaluations of the latter two scales linearly
+  with the parameter dimension (~<inline-formula><alternatives>
   <tex-math><![CDATA[\mathcal{O}(N)]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>𝒪</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>N</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>),
-  unlike the adjoint. Thus, the discrepancy will be even larger if a
-  finer mesh is used.</p>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mstyle mathvariant="script"><mml:mi>𝒪</mml:mi></mml:mstyle><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>N</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>).
+  The discrepancy will be even larger if a finer mesh is used.</p>
   <table-wrap>
     <caption>
-      <p>Comparison of the time taken by various methods for gradient
-      calculation to evaluate the gradient for a scalar objective
-      function with respect to a 19,186-dimensional 2D field (16 km
-      mesh) in a typical SICOPOLIS run. Model initialization and I/O
-      times are not included. The runs are performed on Intel Xeon CPU
-      E5-2695 v3 nodes (2.30 GHz clock rate, 35.84 MB L3 cache, 63.3 GB
-      memory).</p>
+      <p>Comparison of the time taken by various methods to evaluate the
+      gradient for a scalar objective function with respect to a
+      19,186-dimensional 2D field (16 km mesh) in a typical SICOPOLIS
+      run. The runs are performed on Intel Xeon CPU E5-2695 v3 nodes
+      (2.30 GHz clock rate, 35.84 MB L3 cache, 63.3 GB memory).</p>
     </caption>
     <table>
       <thead>
@@ -578,11 +401,10 @@ a Creative Commons Attribution 4.0 International License (CC BY
 </sec>
 <sec id="acknowledgements">
   <title>Acknowledgements</title>
-  <p>This work was supported in part by the Applied Mathematics activity
-  within the U.S. Department of Energy, Office of Science, Advanced
-  Scientific Computing Research Program, under contract number
-  DE-AC02-06CH11357, and by National Science Foundation OPP/P2C2 grant
-  #1903596.</p>
+  <p>This work was supported by the Applied Mathematics activity within
+  the U.S. Department of Energy, Office of Science, Advanced Scientific
+  Computing Research Program, under contract number DE-AC02-06CH11357,
+  and by National Science Foundation OPP/P2C2 grant #1903596.</p>
 </sec>
 <sec id="copyright">
   <title>Copyright</title>
@@ -710,24 +532,6 @@ a Creative Commons Attribution 4.0 International License (CC BY
       <lpage>80</lpage>
     </element-citation>
   </ref>
-  <ref id="ref-WhatIsanAdjointModel">
-    <element-citation publication-type="article-journal">
-      <person-group person-group-type="author">
-        <name><surname>Errico</surname><given-names>Ronald M.</given-names></name>
-      </person-group>
-      <article-title>What is an adjoint model?</article-title>
-      <source>Bulletin of the American Meteorological Society</source>
-      <publisher-name>American Meteorological Society</publisher-name>
-      <publisher-loc>Boston MA, USA</publisher-loc>
-      <year iso-8601-date="1997">1997</year>
-      <volume>78</volume>
-      <issue>11</issue>
-      <uri>https://journals.ametsoc.org/view/journals/bams/78/11/1520-0477_1997_078_2577_wiaam_2_0_co_2.xml</uri>
-      <pub-id pub-id-type="doi">10.1175/1520-0477(1997)078&lt;2577:WIAAM&gt;2.0.CO;2</pub-id>
-      <fpage>2577 </fpage>
-      <lpage> 2592</lpage>
-    </element-citation>
-  </ref>
   <ref id="ref-hascoetTAP">
     <element-citation publication-type="article-journal">
       <person-group person-group-type="author">
@@ -744,51 +548,43 @@ a Creative Commons Attribution 4.0 International License (CC BY
       <pub-id pub-id-type="doi">10.1145/2450153.2450158</pub-id>
     </element-citation>
   </ref>
-  <ref id="ref-van2013fundamentals">
-    <element-citation publication-type="book">
-      <person-group person-group-type="author">
-        <name><surname>Van der Veen</surname><given-names>Cornelis J</given-names></name>
-      </person-group>
-      <source>Fundamentals of glacier dynamics</source>
-      <publisher-name>CRC press</publisher-name>
-      <year iso-8601-date="2013">2013</year>
-      <pub-id pub-id-type="doi">10.3189/2014JoG13J214</pub-id>
-    </element-citation>
-  </ref>
-  <ref id="ref-checkpointing">
+  <ref id="ref-giering_kaminski">
     <element-citation publication-type="article-journal">
       <person-group person-group-type="author">
-        <name><surname>Griewank</surname><given-names>Andreas</given-names></name>
+        <name><surname>Giering</surname><given-names>Ralf</given-names></name>
+        <name><surname>Kaminski</surname><given-names>Thomas</given-names></name>
       </person-group>
-      <article-title>Achieving logarithmic growth of temporal and spatial complexity in reverse automatic differentiation</article-title>
-      <source>Optimization Methods and Software</source>
-      <publisher-name>Taylor &amp; Francis</publisher-name>
-      <year iso-8601-date="1992">1992</year>
-      <volume>1</volume>
-      <issue>1</issue>
-      <uri> 
-              https://doi.org/10.1080/10556789208805505
-          
-      </uri>
-      <pub-id pub-id-type="doi">10.1080/10556789208805505</pub-id>
-      <fpage>35</fpage>
-      <lpage>54</lpage>
+      <article-title>Recipes for adjoint code construction. ACM trans. Math. software</article-title>
+      <source>ACM Transactions on Mathematical Software</source>
+      <year iso-8601-date="1999-08">1999</year><month>08</month>
+      <volume>24</volume>
+      <pub-id pub-id-type="doi">10.1145/293686.293695</pub-id>
+      <fpage></fpage>
+      <lpage></lpage>
     </element-citation>
   </ref>
-  <ref id="ref-Oerlemans1981">
+  <ref id="ref-openad">
     <element-citation publication-type="article-journal">
       <person-group person-group-type="author">
-        <name><surname>Oerlemans</surname><given-names>J.</given-names></name>
+        <name><surname>Utke</surname><given-names>Jean</given-names></name>
+        <name><surname>Naumann</surname><given-names>Uwe</given-names></name>
+        <name><surname>Fagan</surname><given-names>Mike</given-names></name>
+        <name><surname>Tallent</surname><given-names>Nathan</given-names></name>
+        <name><surname>Strout</surname><given-names>Michelle</given-names></name>
+        <name><surname>Heimbach</surname><given-names>Patrick</given-names></name>
+        <name><surname>Hill</surname><given-names>Chris</given-names></name>
+        <name><surname>Wunsch</surname><given-names>Carl</given-names></name>
       </person-group>
-      <article-title>Some basic experiments with a vertically-integrated ice sheet model</article-title>
-      <source>Tellus</source>
-      <year iso-8601-date="1981">1981</year>
-      <volume>33</volume>
-      <issue>1</issue>
-      <uri>https://onlinelibrary.wiley.com/doi/abs/10.1111/j.2153-3490.1981.tb01726.x</uri>
-      <pub-id pub-id-type="doi">https://doi.org/10.1111/j.2153-3490.1981.tb01726.x</pub-id>
-      <fpage>1</fpage>
-      <lpage>11</lpage>
+      <article-title>OpenAD/f: A modular open-source tool for automatic differentiation of fortran codes</article-title>
+      <source>ACM Trans. Math. Softw.</source>
+      <publisher-name>Association for Computing Machinery</publisher-name>
+      <publisher-loc>New York, NY, USA</publisher-loc>
+      <year iso-8601-date="2008-07">2008</year><month>07</month>
+      <volume>34</volume>
+      <issue>4</issue>
+      <issn>0098-3500</issn>
+      <uri>https://doi.org/10.1145/1377596.1377598</uri>
+      <pub-id pub-id-type="doi">10.1145/1377596.1377598</pub-id>
     </element-citation>
   </ref>
 </ref-list>
