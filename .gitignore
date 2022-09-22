@@ -60,3 +60,5 @@ my_*
 !/docu/doxygen/html/.keep
 /docu/doxygen/latex/*
 !/docu/doxygen/latex/.keep
+
+**/.DS_Store
