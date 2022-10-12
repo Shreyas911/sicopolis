@@ -8,7 +8,7 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2022-07-09'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2022-10-12'
 !                      Date of last change
 
 !-------- Domain --------
@@ -1190,9 +1190,9 @@
 !-------- Data output --------
 
 #define NETCDF4_ENABLED 0
-!                         NetCDF output format:
+!                         NetCDF format for time-slice output:
 !                         0 : NetCDF-3 classic
-!                         1 : NetCDF-4 (with compression)
+!                         1 : NetCDF-4 classic (with compression)
 
 #define OUT_TIMES 1
 !                         Output of times in all files:
