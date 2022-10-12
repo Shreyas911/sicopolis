@@ -8277,7 +8277,7 @@ end subroutine output5
 
 #if (NETCDF4_ENABLED==1)
 
-  cmode           = NF90_NETCDF4
+  cmode           = ior(NF90_NETCDF4, NF90_CLASSIC_MODEL)
   n_deflate_level = 1
   flag_shuffle    = .true.
 
