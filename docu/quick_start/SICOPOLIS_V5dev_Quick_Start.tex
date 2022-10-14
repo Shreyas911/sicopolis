@@ -236,7 +236,7 @@ $\longrightarrow$ EISMINT Phase~2 Simplified Geometry Experiment A,
 \phantom{$\longrightarrow$} polythermal two-layer scheme (POLY) \citep{greve_blatter_2016}.
 
 \item
-Run v5\_grl16\_bm4\_ss25ka
+Run v5\_grl16\_bm5\_ss25ka
 \\
 $\longrightarrow$ Greenland ice sheet, SIA, resolution 16~km,
 \\
@@ -432,9 +432,9 @@ Directory that contains a copy of the GNU General Public License (version~3).
 
 \begin{enumerate}
 
-\item For example, to run simulation v5\_grl16\_bm4\_ss25ka, use the script sico.sh:
+\item For example, to run simulation v5\_grl16\_bm5\_ss25ka, use the script sico.sh:
 \\
-\hspace*{10mm}\verb+(./sico.sh -m v5_grl16_bm4_ss25ka) >out_001.dat 2>&1 &+
+\hspace*{10mm}\verb+(./sico.sh -m v5_grl16_bm5_ss25ka) >out_001.dat 2>&1 &+
 \\
 (from directory sicopolis/runs, bash required). Accordingly for the other simulations.
 \\
@@ -518,7 +518,7 @@ Vostok (xxx=Vo), Dome A (xxx=DA), Dome C (xxx=DC), Dome F (xxx=DF), Kohnen (xxx=
 
 Complete set of fields (topography, velocity, temperature etc., written in NetCDF (*.nc) format) for selected time slices defined in specifications file.
 
-For example, simulation v5\_grl16\_bm4\_ss25ka produces three files v5\_grl16\_bm4\_\-ss25ka0001.nc, v5\_grl16\_bm4\_ss25ka0002.nc and v5\_grl16\_bm4\_ss25ka0003.nc, which correspond to $t=0$, 10\,ka and 25\,ka, respectively.
+For example, simulation v5\_grl16\_bm5\_ss25ka produces three files v5\_grl16\_bm5\_\-ss25ka0001.nc, v5\_grl16\_bm5\_ss25ka0002.nc and v5\_grl16\_bm5\_ss25ka0003.nc, which correspond to $t=0$, 10\,ka and 25\,ka, respectively.
 
 \end{itemize}
 
@@ -529,11 +529,11 @@ For example, simulation v5\_grl16\_bm4\_ss25ka produces three files v5\_grl16\_b
 \section{Plotting}
 \label{sect_plotting}
 
-The output described in Sect.~\ref{sect_output} can be visualized with any plotting tool at the user's preference. Ncview (http://meteora.ucsd.edu/$\sim${}pierce/ncview\_home\_page.html) is a very nice browser for NetCDF files to get a quick and easy look. For more sophisticated plots, one possibility is to use MATLAB, which has an extensive library for NetCDF files (https://www.mathworks.com/help/matlab/network-common-data-form.html). For instance, the following script plots the final surface topography of the Greenland simulation v5\_grl16\_bm4\_ss25ka (credit: Mathieu Morlighem, University of California Irvine).
+The output described in Sect.~\ref{sect_output} can be visualized with any plotting tool at the user's preference. Ncview (http://meteora.ucsd.edu/$\sim${}pierce/ncview\_home\_page.html) is a very nice browser for NetCDF files to get a quick and easy look. For more sophisticated plots, one possibility is to use MATLAB, which has an extensive library for NetCDF files (https://www.mathworks.com/help/matlab/network-common-data-form.html). For instance, the following script plots the final surface topography of the Greenland simulation v5\_grl16\_bm5\_ss25ka (credit: Mathieu Morlighem, University of California Irvine).
 
 \vspace*{2ex}
 
-\noindent\hspace*{5mm}\verb+filename = 'v5_grl16_bm4_ss25ka0003.nc';+
+\noindent\hspace*{5mm}\verb+filename = 'v5_grl16_bm5_ss25ka0003.nc';+
 \\[-0.5ex]
 \hspace*{5mm}\verb+x = ncread(filename,'x');+
 \\[-0.5ex]
@@ -705,7 +705,7 @@ v5\_vialov3d25                       &  $100\;\mathrm{ka}$\hspace*{1.0em}
 v5\_emtp2sge25\_expA                 &  $200\;\mathrm{ka}$\hspace*{1.0em}
                                      &   $20\;\mathrm{ a}$\hspace*{1.0em}
                                      &  3&$9\;\mathrm{min}$ \\
-v5\_grl16\_bm4\_ss25ka               &   $25\;\mathrm{ka}$\hspace*{1.0em}
+v5\_grl16\_bm5\_ss25ka               &   $25\;\mathrm{ka}$\hspace*{1.0em}
                                      &    $5\;\mathrm{ a}$\hspace*{1.0em}
                                      &  9&$7\;\mathrm{min}$ \\
 v5\_ant40\_b2\_ss25ka                &   $25\;\mathrm{ka}$\hspace*{1.0em}
