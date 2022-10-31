@@ -147,16 +147,22 @@ a Creative Commons Attribution 4.0 International License (CC BY
 <body>
 <sec id="summary">
   <title>Summary</title>
-  <p>We present a new framework for generating derivative code, i.e.,
-  tangent linear, adjoint, or Hessian models, of the open-source
-  SImulation COde for POLythermal Ice Sheets
-  (<ext-link ext-link-type="uri" xlink:href="https://gitlab.awi.de/sicopolis/sicopolis/-/tree/master"><monospace>SICOPOLIS</monospace></ext-link>).
-  These derivative operators are powerful computational engines to
-  efficiently compute comprehensive gradients or sensitivities of
-  scalar-valued model output, including least-squares model-data misfits
-  or important quantities of interest, to high-dimensional model inputs
-  (such as model initial conditions, parameter fields, or boundary
-  conditions). The new version 2
+  <p>SImulation COde for POLythermal Ice Sheets
+  (<ext-link ext-link-type="uri" xlink:href="https://gitlab.awi.de/sicopolis/sicopolis/-/tree/master"><monospace>SICOPOLIS</monospace></ext-link>)
+  is an open-source, 3D dynamic/thermodynamic model that simulates the
+  evolution of large ice sheets and ice caps. SICOPOLIS has been
+  developed continuously and applied to problems of past, present, and
+  future glaciation of Greenland, Antarctica, and others. It uses the
+  finite differences discretization on a staggered Arakawa C grid and
+  employs the shallow ice and shallow shelf approximations, making it
+  suitable for paleoclimatic simulations. We present a new framework for
+  generating derivative code, i.e., tangent linear, adjoint, or Hessian
+  models, of SICOPOLIS. These derivative operators are powerful
+  computational engines to efficiently compute comprehensive gradients
+  or sensitivities of scalar-valued model output, including
+  least-squares model-data misfits or important quantities of interest,
+  to high-dimensional model inputs (such as model initial conditions,
+  parameter fields, or boundary conditions). The new version 2
   (<ext-link ext-link-type="uri" xlink:href="https://gitlab.awi.de/sicopolis/sicopolis/-/tree/ad"><monospace>SICOPOLIS-AD v2</monospace></ext-link>)
   framework is based on the source-to-source automatic differentiation
   (AD) tool
@@ -230,6 +236,70 @@ a Creative Commons Attribution 4.0 International License (CC BY
   as a guide for future work in the application of open-source AD tools
   for physics-based simulation codes written in
   <monospace>Fortran</monospace>.</p>
+</sec>
+<sec id="state-of-the-field">
+  <title>State of the field</title>
+  <p><monospace>SICOPOLIS</monospace> is among the early
+  thermo-mechanical models to simulate contemporary and paleo
+  continental-scale ice sheets
+  (<xref alt="Greve, 1997" rid="ref-greve1997application" ref-type="bibr">Greve,
+  1997</xref>). Like similar models developed at the time, including
+  Glimmer and its successor, the Community Ice Sheet Model
+  (<monospace>CISM</monospace>)
+  (<xref alt="Rutt et al., 2009" rid="ref-httpsU003AU002FU002Fdoi.orgU002F10.1029U002F2008JF001015" ref-type="bibr">Rutt
+  et al., 2009</xref>), <monospace>GRISLI</monospace>
+  (<xref alt="Ritz et al., 1996" rid="ref-Ritz1996" ref-type="bibr">Ritz
+  et al., 1996</xref>), the model by Huybrechts
+  (<xref alt="1990" rid="ref-huybrechts19903" ref-type="bibr">1990</xref>),
+  or by Pollard &amp; DeConto
+  (<xref alt="2009" rid="ref-pollard2009" ref-type="bibr">2009</xref>),
+  <monospace>SICOPOLIS</monospace> has been based (until recently) on
+  the so-called shallow ice approximation to simplify the Cauchy stress
+  tensor in the momentum conservation equation, implemented on a
+  regular, finite-difference mesh. See Hindmarsh
+  (<xref alt="2004" rid="ref-httpsU003AU002FU002Fdoi.orgU002F10.1029U002F2003JF000065" ref-type="bibr">2004</xref>)
+  for other approximations commonly employed in ice sheet models. This
+  approximation enabled the efficient computation of ice sheet evolution
+  over long, glacial/deglacial cycles.</p>
+  <p>The last decade has seen substantial advances in continental-scale
+  ice sheet modeling, with the development of several new ice sheet
+  models (some of which are on unstructured grids using finite element
+  methods), notably the Ice Sheet System Model
+  <monospace>ISSM</monospace>
+  (<xref alt="Larour et al., 2012" rid="ref-httpsU003AU002FU002Fdoi.orgU002F10.1029U002F2011JF002140" ref-type="bibr">Larour
+  et al., 2012</xref>), the Parallel Ice Sheet Model
+  <monospace>PISM</monospace>
+  (<xref alt="Bueler et al., 2007" rid="ref-bueler_brown_lingle_2007" ref-type="bibr">Bueler
+  et al., 2007</xref>), Elmer/Ice
+  (<xref alt="Gagliardini et al., 2013" rid="ref-gmd-6-1299-2013" ref-type="bibr">Gagliardini
+  et al., 2013</xref>), or the MPAS-Albany Land Ice
+  <monospace>MALI</monospace>
+  (<xref alt="Hoffman et al., 2018" rid="ref-gmd-11-3747-2018" ref-type="bibr">Hoffman
+  et al., 2018</xref>). While designed to capture the evolution of
+  short-term, fast-flowing, or fast-changing outlet glaciers via
+  horizontal stress contributions, these models have so far found little
+  application in paleo-ice sheet simulations due to their extensive
+  computational costs. A compilation of the suite of ice sheet models
+  used for the latest Ice Sheet Model Intercomparison Project, Phase 6
+  (<monospace>ISMIP6</monospace>) in support of the IPCC’s Sixth
+  Assessment Report is available in Payne et al.
+  (<xref alt="2021" rid="ref-httpsU003AU002FU002Fdoi.orgU002F10.1029U002F2020GL091741" ref-type="bibr">2021</xref>)
+  and Nowicki et al.
+  (<xref alt="2016" rid="ref-gmd-9-4521-2016" ref-type="bibr">2016</xref>).</p>
+  <p>Relevant to this paper, of all the time-evolving models listed,
+  apart from <monospace>SICOPOLIS-AD</monospace>
+  (<xref alt="Heimbach &amp; Bugnion, 2009" rid="ref-heimbach2009greenland" ref-type="bibr">Heimbach
+  &amp; Bugnion, 2009</xref>;
+  <xref alt="Logan et al., 2020" rid="ref-gmd-13-1845-2020" ref-type="bibr">Logan
+  et al., 2020</xref>), only the <monospace>ISSM</monospace> model and
+  variants thereof possess adjoint model codes which have been
+  generated, in part, using automatic differentiation
+  (<xref alt="Hascoët &amp; Morlighem, 2018" rid="ref-doiU003A10.1080U002F10556788.2017.1396600" ref-type="bibr">Hascoët
+  &amp; Morlighem, 2018</xref>;
+  <xref alt="Larour et al., 2014" rid="ref-tc-8-2335-2014" ref-type="bibr">Larour
+  et al., 2014</xref>). Multi-centennial and longer integrations with
+  the adjoint model have so far been conducted only with
+  <monospace>SICOPOLIS-AD</monospace>.</p>
 </sec>
 <sec id="features">
   <title>Features</title>
@@ -312,11 +382,11 @@ a Creative Commons Attribution 4.0 International License (CC BY
 </sec>
 <sec id="example">
   <title>Example</title>
-  <p>We illustrate the use of our tool with the example of a steady
-  state simulation of the Greenland ice sheet under modern climate
-  conditions. The corresponding SICOPOLIS configuration header file,
-  <monospace>v5_grl16_bm4_ss25ka</monospace>, is provided as a reference
-  template in the standard <monospace>SICOPOLIS</monospace>
+  <p>We illustrate the use of our tool with the example of a
+  steady-state simulation of the Greenland ice sheet under modern
+  climate conditions. The corresponding SICOPOLIS configuration header
+  file, <monospace>v5_grl16_bm4_ss25ka</monospace>, is provided as a
+  reference template in the standard <monospace>SICOPOLIS</monospace>
   distribution. We shorten the total integration time to 100 simulated
   years to keep the computational cost of the tangent linear and finite
   differences reasonable. Our QoI (i.e., dependent variable) is the
@@ -585,6 +655,316 @@ a Creative Commons Attribution 4.0 International License (CC BY
       <issn>0098-3500</issn>
       <uri>https://doi.org/10.1145/1377596.1377598</uri>
       <pub-id pub-id-type="doi">10.1145/1377596.1377598</pub-id>
+    </element-citation>
+  </ref>
+  <ref id="ref-bueler_brown_lingle_2007">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Bueler</surname><given-names>Ed</given-names></name>
+        <name><surname>Brown</surname><given-names>Jed</given-names></name>
+        <name><surname>Lingle</surname><given-names>Craig</given-names></name>
+      </person-group>
+      <article-title>Exact solutions to the thermomechanically coupled shallow-ice approximation: Effective tools for verification</article-title>
+      <source>Journal of Glaciology</source>
+      <publisher-name>Cambridge University Press</publisher-name>
+      <year iso-8601-date="2007">2007</year>
+      <volume>53</volume>
+      <issue>182</issue>
+      <pub-id pub-id-type="doi">10.3189/002214307783258396</pub-id>
+      <fpage>499</fpage>
+      <lpage>516</lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-gmd-6-1299-2013">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Gagliardini</surname><given-names>O.</given-names></name>
+        <name><surname>Zwinger</surname><given-names>T.</given-names></name>
+        <name><surname>Gillet-Chaulet</surname><given-names>F.</given-names></name>
+        <name><surname>Durand</surname><given-names>G.</given-names></name>
+        <name><surname>Favier</surname><given-names>L.</given-names></name>
+        <name><surname>Fleurian</surname><given-names>B. de</given-names></name>
+        <name><surname>Greve</surname><given-names>R.</given-names></name>
+        <name><surname>Malinen</surname><given-names>M.</given-names></name>
+        <name><surname>Martı́n</surname><given-names>C.</given-names></name>
+        <name><surname>Råback</surname><given-names>P.</given-names></name>
+        <name><surname>Ruokolainen</surname><given-names>J.</given-names></name>
+        <name><surname>Sacchettini</surname><given-names>M.</given-names></name>
+        <name><surname>Schäfer</surname><given-names>M.</given-names></name>
+        <name><surname>Seddik</surname><given-names>H.</given-names></name>
+        <name><surname>Thies</surname><given-names>J.</given-names></name>
+      </person-group>
+      <article-title>Capabilities and performance of elmer/ice, a new-generation ice sheet model</article-title>
+      <source>Geoscientific Model Development</source>
+      <year iso-8601-date="2013">2013</year>
+      <volume>6</volume>
+      <issue>4</issue>
+      <uri>https://gmd.copernicus.org/articles/6/1299/2013/</uri>
+      <pub-id pub-id-type="doi">10.5194/gmd-6-1299-2013</pub-id>
+      <fpage>1299</fpage>
+      <lpage>1318</lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-doiU003A10.1080U002F10556788.2017.1396600">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Hascoët</surname><given-names>L.</given-names></name>
+        <name><surname>Morlighem</surname><given-names>M.</given-names></name>
+      </person-group>
+      <article-title>Source-to-source adjoint algorithmic differentiation of an ice sheet model written in c</article-title>
+      <source>Optimization Methods and Software</source>
+      <publisher-name>Taylor &amp; Francis</publisher-name>
+      <year iso-8601-date="2018">2018</year>
+      <volume>33</volume>
+      <issue>4-6</issue>
+      <uri> 
+              https://doi.org/10.1080/10556788.2017.1396600
+      </uri>
+      <pub-id pub-id-type="doi">10.1080/10556788.2017.1396600</pub-id>
+      <fpage>829</fpage>
+      <lpage>843</lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-httpsU003AU002FU002Fdoi.orgU002F10.1029U002F2003JF000065">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Hindmarsh</surname><given-names>R. C. A.</given-names></name>
+      </person-group>
+      <article-title>A numerical comparison of approximations to the stokes equations used in ice sheet and glacier modeling</article-title>
+      <source>Journal of Geophysical Research: Earth Surface</source>
+      <year iso-8601-date="2004">2004</year>
+      <volume>109</volume>
+      <issue>F1</issue>
+      <uri>https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2003JF000065</uri>
+      <pub-id pub-id-type="doi">https://doi.org/10.1029/2003JF000065</pub-id>
+      <fpage></fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-gmd-11-3747-2018">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Hoffman</surname><given-names>M. J.</given-names></name>
+        <name><surname>Perego</surname><given-names>M.</given-names></name>
+        <name><surname>Price</surname><given-names>S. F.</given-names></name>
+        <name><surname>Lipscomb</surname><given-names>W. H.</given-names></name>
+        <name><surname>Zhang</surname><given-names>T.</given-names></name>
+        <name><surname>Jacobsen</surname><given-names>D.</given-names></name>
+        <name><surname>Tezaur</surname><given-names>I.</given-names></name>
+        <name><surname>Salinger</surname><given-names>A. G.</given-names></name>
+        <name><surname>Tuminaro</surname><given-names>R.</given-names></name>
+        <name><surname>Bertagna</surname><given-names>L.</given-names></name>
+      </person-group>
+      <article-title>MPAS-albany land ice (MALI): A variable-resolution ice sheet model for earth system modeling using voronoi grids</article-title>
+      <source>Geoscientific Model Development</source>
+      <year iso-8601-date="2018">2018</year>
+      <volume>11</volume>
+      <issue>9</issue>
+      <uri>https://gmd.copernicus.org/articles/11/3747/2018/</uri>
+      <pub-id pub-id-type="doi">10.5194/gmd-11-3747-2018</pub-id>
+      <fpage>3747</fpage>
+      <lpage>3780</lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-httpsU003AU002FU002Fdoi.orgU002F10.1029U002F2011JF002140">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Larour</surname><given-names>E.</given-names></name>
+        <name><surname>Seroussi</surname><given-names>H.</given-names></name>
+        <name><surname>Morlighem</surname><given-names>M.</given-names></name>
+        <name><surname>Rignot</surname><given-names>E.</given-names></name>
+      </person-group>
+      <article-title>Continental scale, high order, high spatial resolution, ice sheet modeling using the ice sheet system model (ISSM)</article-title>
+      <source>Journal of Geophysical Research: Earth Surface</source>
+      <year iso-8601-date="2012">2012</year>
+      <volume>117</volume>
+      <issue>F1</issue>
+      <uri>https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2011JF002140</uri>
+      <pub-id pub-id-type="doi">https://doi.org/10.1029/2011JF002140</pub-id>
+      <fpage></fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-tc-8-2335-2014">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Larour</surname><given-names>E.</given-names></name>
+        <name><surname>Utke</surname><given-names>J.</given-names></name>
+        <name><surname>Csatho</surname><given-names>B.</given-names></name>
+        <name><surname>Schenk</surname><given-names>A.</given-names></name>
+        <name><surname>Seroussi</surname><given-names>H.</given-names></name>
+        <name><surname>Morlighem</surname><given-names>M.</given-names></name>
+        <name><surname>Rignot</surname><given-names>E.</given-names></name>
+        <name><surname>Schlegel</surname><given-names>N.</given-names></name>
+        <name><surname>Khazendar</surname><given-names>A.</given-names></name>
+      </person-group>
+      <article-title>Inferred basal friction and surface mass balance of the northeast greenland ice stream using data assimilation of ICESat (ice cloud and land elevation satellite) surface altimetry and ISSM (ice sheet system model)</article-title>
+      <source>The Cryosphere</source>
+      <year iso-8601-date="2014">2014</year>
+      <volume>8</volume>
+      <issue>6</issue>
+      <uri>https://tc.copernicus.org/articles/8/2335/2014/</uri>
+      <pub-id pub-id-type="doi">10.5194/tc-8-2335-2014</pub-id>
+      <fpage>2335</fpage>
+      <lpage>2351</lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-gmd-9-4521-2016">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Nowicki</surname><given-names>S. M. J.</given-names></name>
+        <name><surname>Payne</surname><given-names>A.</given-names></name>
+        <name><surname>Larour</surname><given-names>E.</given-names></name>
+        <name><surname>Seroussi</surname><given-names>H.</given-names></name>
+        <name><surname>Goelzer</surname><given-names>H.</given-names></name>
+        <name><surname>Lipscomb</surname><given-names>W.</given-names></name>
+        <name><surname>Gregory</surname><given-names>J.</given-names></name>
+        <name><surname>Abe-Ouchi</surname><given-names>A.</given-names></name>
+        <name><surname>Shepherd</surname><given-names>A.</given-names></name>
+      </person-group>
+      <article-title>Ice sheet model intercomparison project (ISMIP6) contribution to CMIP6</article-title>
+      <source>Geoscientific Model Development</source>
+      <year iso-8601-date="2016">2016</year>
+      <volume>9</volume>
+      <issue>12</issue>
+      <uri>https://gmd.copernicus.org/articles/9/4521/2016/</uri>
+      <pub-id pub-id-type="doi">10.5194/gmd-9-4521-2016</pub-id>
+      <fpage>4521</fpage>
+      <lpage>4545</lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-httpsU003AU002FU002Fdoi.orgU002F10.1029U002F2020GL091741">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Payne</surname><given-names>Antony J.</given-names></name>
+        <name><surname>Nowicki</surname><given-names>Sophie</given-names></name>
+        <name><surname>Abe-Ouchi</surname><given-names>Ayako</given-names></name>
+        <name><surname>Agosta</surname><given-names>Cécile</given-names></name>
+        <name><surname>Alexander</surname><given-names>Patrick</given-names></name>
+        <name><surname>Albrecht</surname><given-names>Torsten</given-names></name>
+        <name><surname>Asay-Davis</surname><given-names>Xylar</given-names></name>
+        <name><surname>Aschwanden</surname><given-names>Andy</given-names></name>
+        <name><surname>Barthel</surname><given-names>Alice</given-names></name>
+        <name><surname>Bracegirdle</surname><given-names>Thomas J.</given-names></name>
+        <name><surname>Calov</surname><given-names>Reinhard</given-names></name>
+        <name><surname>Chambers</surname><given-names>Christopher</given-names></name>
+        <name><surname>Choi</surname><given-names>Youngmin</given-names></name>
+        <name><surname>Cullather</surname><given-names>Richard</given-names></name>
+        <name><surname>Cuzzone</surname><given-names>Joshua</given-names></name>
+        <name><surname>Dumas</surname><given-names>Christophe</given-names></name>
+        <name><surname>Edwards</surname><given-names>Tamsin L.</given-names></name>
+        <name><surname>Felikson</surname><given-names>Denis</given-names></name>
+        <name><surname>Fettweis</surname><given-names>Xavier</given-names></name>
+        <name><surname>Galton-Fenzi</surname><given-names>Benjamin K.</given-names></name>
+        <name><surname>Goelzer</surname><given-names>Heiko</given-names></name>
+        <name><surname>Gladstone</surname><given-names>Rupert</given-names></name>
+        <name><surname>Golledge</surname><given-names>Nicholas R.</given-names></name>
+        <name><surname>Gregory</surname><given-names>Jonathan M.</given-names></name>
+        <name><surname>Greve</surname><given-names>Ralf</given-names></name>
+        <name><surname>Hattermann</surname><given-names>Tore</given-names></name>
+        <name><surname>Hoffman</surname><given-names>Matthew J.</given-names></name>
+        <name><surname>Humbert</surname><given-names>Angelika</given-names></name>
+        <name><surname>Huybrechts</surname><given-names>Philippe</given-names></name>
+        <name><surname>Jourdain</surname><given-names>Nicolas C.</given-names></name>
+        <name><surname>Kleiner</surname><given-names>Thomas</given-names></name>
+        <name><surname>Munneke</surname><given-names>Peter Kuipers</given-names></name>
+        <name><surname>Larour</surname><given-names>Eric</given-names></name>
+        <name><surname>Le clec’h</surname><given-names>Sebastien</given-names></name>
+        <name><surname>Lee</surname><given-names>Victoria</given-names></name>
+        <name><surname>Leguy</surname><given-names>Gunter</given-names></name>
+        <name><surname>Lipscomb</surname><given-names>William H.</given-names></name>
+        <name><surname>Little</surname><given-names>Christopher M.</given-names></name>
+        <name><surname>Lowry</surname><given-names>Daniel P.</given-names></name>
+        <name><surname>Morlighem</surname><given-names>Mathieu</given-names></name>
+        <name><surname>Nias</surname><given-names>Isabel</given-names></name>
+        <name><surname>Pattyn</surname><given-names>Frank</given-names></name>
+        <name><surname>Pelle</surname><given-names>Tyler</given-names></name>
+        <name><surname>Price</surname><given-names>Stephen F.</given-names></name>
+        <name><surname>Quiquet</surname><given-names>Aurélien</given-names></name>
+        <name><surname>Reese</surname><given-names>Ronja</given-names></name>
+        <name><surname>Rückamp</surname><given-names>Martin</given-names></name>
+        <name><surname>Schlegel</surname><given-names>Nicole-Jeanne</given-names></name>
+        <name><surname>Seroussi</surname><given-names>Hélène</given-names></name>
+        <name><surname>Shepherd</surname><given-names>Andrew</given-names></name>
+        <name><surname>Simon</surname><given-names>Erika</given-names></name>
+        <name><surname>Slater</surname><given-names>Donald</given-names></name>
+        <name><surname>Smith</surname><given-names>Robin S.</given-names></name>
+        <name><surname>Straneo</surname><given-names>Fiammetta</given-names></name>
+        <name><surname>Sun</surname><given-names>Sainan</given-names></name>
+        <name><surname>Tarasov</surname><given-names>Lev</given-names></name>
+        <name><surname>Trusel</surname><given-names>Luke D.</given-names></name>
+        <name><surname>Van Breedam</surname><given-names>Jonas</given-names></name>
+        <name><surname>Wal</surname><given-names>Roderik van de</given-names></name>
+        <name><surname>Broeke</surname><given-names>Michiel van den</given-names></name>
+        <name><surname>Winkelmann</surname><given-names>Ricarda</given-names></name>
+        <name><surname>Zhao</surname><given-names>Chen</given-names></name>
+        <name><surname>Zhang</surname><given-names>Tong</given-names></name>
+        <name><surname>Zwinger</surname><given-names>Thomas</given-names></name>
+      </person-group>
+      <article-title>Future sea level change under coupled model intercomparison project phase 5 and phase 6 scenarios from the greenland and antarctic ice sheets</article-title>
+      <source>Geophysical Research Letters</source>
+      <year iso-8601-date="2021">2021</year>
+      <volume>48</volume>
+      <issue>16</issue>
+      <uri>https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2020GL091741</uri>
+      <pub-id pub-id-type="doi">https://doi.org/10.1029/2020GL091741</pub-id>
+      <fpage>e2020GL091741</fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-Ritz1996">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Ritz</surname><given-names>C.</given-names></name>
+        <name><surname>Fabre</surname><given-names>A.</given-names></name>
+        <name><surname>Letréguilly</surname><given-names>A.</given-names></name>
+      </person-group>
+      <year iso-8601-date="1996">1996</year>
+      <pub-id pub-id-type="doi">https://doi.org/10.1007/s003820050149</pub-id>
+    </element-citation>
+  </ref>
+  <ref id="ref-httpsU003AU002FU002Fdoi.orgU002F10.1029U002F2008JF001015">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Rutt</surname><given-names>I. C.</given-names></name>
+        <name><surname>Hagdorn</surname><given-names>M.</given-names></name>
+        <name><surname>Hulton</surname><given-names>N. R. J.</given-names></name>
+        <name><surname>Payne</surname><given-names>A. J.</given-names></name>
+      </person-group>
+      <article-title>The glimmer community ice sheet model</article-title>
+      <source>Journal of Geophysical Research: Earth Surface</source>
+      <year iso-8601-date="2009">2009</year>
+      <volume>114</volume>
+      <issue>F2</issue>
+      <uri>https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2008JF001015</uri>
+      <pub-id pub-id-type="doi">https://doi.org/10.1029/2008JF001015</pub-id>
+      <fpage></fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-huybrechts19903">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Huybrechts</surname><given-names>Philippe</given-names></name>
+      </person-group>
+      <article-title>A 3-d model for the antarctic ice sheet: A sensitivity study on the glacial-interglacial contrast</article-title>
+      <source>Climate Dynamics</source>
+      <publisher-name>Springer</publisher-name>
+      <year iso-8601-date="1990">1990</year>
+      <volume>5</volume>
+      <issue>2</issue>
+      <fpage>79</fpage>
+      <lpage>92</lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-pollard2009">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Pollard</surname><given-names>D.</given-names></name>
+        <name><surname>DeConto</surname><given-names>R.</given-names></name>
+      </person-group>
+      <year iso-8601-date="2009">2009</year>
+      <pub-id pub-id-type="doi">https://doi.org/10.1038/nature07809</pub-id>
     </element-citation>
   </ref>
 </ref-list>
