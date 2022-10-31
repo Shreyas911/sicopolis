@@ -31,7 +31,7 @@ Files and directories in SICOPOLIS
 
        * The thermodynamics solver for this run is the one-layer melting-CTS enthalpy scheme (ENTM), while all other runs employ the polythermal two-layer scheme (POLY) \citep{greve_blatter_2016}.
 
-     * ``v5_grl16_bm4_ss25ka``
+     * ``v5_grl16_bm5_ss25ka``
 
        * Greenland ice sheet, SIA, resolution 16 km, short steady-state run (:math:`t=0\ldots{}25\,\mathrm{ka}`) for modern climate conditions (unpublished).
 
