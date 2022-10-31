@@ -15,7 +15,7 @@ The satisfaction of the following prerequisites is highly recommended to access 
 GNU GCC Compiler (gfortran)
 ---------------------------
 
-We have tested for gfortran v5.4.0, any newer version should work just as well.
+We have tested the software on gfortran v5.4.0, v7.2.0 and v8.5.0, any intermediate versions should work just as well.
 
 Git
 ---
@@ -192,8 +192,8 @@ Unix-like system
 
 A Unix-like system, e.g. Linux (Ubuntu, CentOS, Fedora, Redhat, etc.), MacOS is required to run both SICOPOLIS and SICOPOLIS-AD v2.
 
-Building SICOPOLIS (latest v5.3)
-================================
+Setting up SICOPOLIS (latest v5.3)
+==================================
 
 The Git repository of SICOPOLIS is kindly hosted by the GitLab system of the `Alfred Wegener Institute for Polar and Marine Research (AWI) <http://www.awi.de/>`__ in Bremerhaven, Germany. 
 
@@ -212,18 +212,20 @@ Cloning with SSH instead of HTTPS is also available. See the above GitLab link f
 
 More details can be found `here <http://www.sicopolis.net/>`__.
 
+SICOPOLIS and SICOPOLIS-AD v2 applications are built using a configuration header file in ``runs/headers``. A typical user setup involves copying over example configuration files from ``runs/headers/templates`` (see below), and suitably modifying one of them for custom runs.
+
 Initial configuration
 ===================== 
 
 In addition to the steps above, the following steps need to be performed from the root of the repository- 
 
-* Copy template header files from ``runs/headers/templates`` to ``runs/headers`` so that SICOPOLIS can read one of these header files for the simulations desired by the user.
+* Copy template header files from ``runs/headers/templates`` to ``runs/headers`` so that SICOPOLIS can read one of these header files for the simulations desired by the user. Also, one can modify them suitably for their own custom simulations. The original files are always stored in ``runs/headers/templates`` for reference. Run the following command from the root directory of the repository.
 
 ::
 
     ./copy_templates.sh
 
-* Get the input files needed for both Greenland and Antarctica. These files are data files stored on a server and needed for various inputs such as geothermal heat flux, physical parameters, height of the ice base and lithosphere, precipitation, definition of regions for heterogenous basal sliding, etc. 
+* Get the input data files needed for both Greenland and Antarctica. These files are stored on a server and needed for various inputs such as geothermal heat flux, physical parameters, height of the ice base and lithosphere, precipitation, definition of regions for heterogenous basal sliding, etc. Run the following command from the root directory of the repository.
 
 ::
 
@@ -231,10 +233,10 @@ In addition to the steps above, the following steps need to be performed from th
 
 * Locate the file ``sico_environment.sh`` in the directory ``sicopolis/runs``, open it with a text editor, and replace the "Default" entry for ``SICO_INSTITUTION`` by the name of your institution (max. 256 characters). This is just for bookkeping purposes.
 
-* Ensure that the Tapenade files are stored in ``src/pop_push``. This makes the Tapenade subroutines accessible to the compiler. The simplest way to do it is to copy the version available in ``test_ad/pop_push``.
+* Ensure that the Tapenade files are stored in ``src/pop_push``. This makes the Tapenade subroutines accessible to the compiler. The simplest way to do it is to copy the version available in ``test_ad/pop_push``. Run the following command from the root directory of the repository.
 
 ::
 
     cp -r test_ad/pop_push src/
 
-    
+Now, you are ready to use SICOPOLIS-AD v2, as described in :ref:`Running SICOPOLIS-AD v2 <running>`!    

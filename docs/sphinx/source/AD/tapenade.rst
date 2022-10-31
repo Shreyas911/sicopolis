@@ -20,14 +20,14 @@ Prerequisites for Linux or Mac OS X
 
 Before installing Tapenade, you must check that an up-to-date Java Runtime Environment is installed. Tapenade will not run with older Java Runtime Environment.
 
+**NOTE**: Alternatively, a Tapenade version that works correctly with SICOPOLIS-AD v2 is always available in the ``test_ad/tapenade_supported`` directory.
+
 Steps for Linux or Mac OS X
 ---------------------------
 
 1. Read `the Tapenade license. <https://tapenade.gitlabpages.inria.fr/userdoc/build/html/LICENSE.html>`__
 
 2. Download `tapenade_3.16.tar <http://www-sop.inria.fr/ecuador/tapenade/distrib/tapenade_3.16.tar>`__ into your chosen installation directory *install_dir*.
-
-**NOTE**: Alternatively, a Tapenade version that works correctly with SICOPOLIS-AD v2 is always available in the ``test_ad/tapenade_3.16`` directory.
 
 3. Go to your chosen installation directory *install_dir*, and extract Tapenade from the tar file :
 
@@ -51,7 +51,7 @@ Steps for Windows
 
 2. Download `tapenade_3.16.zip <http://www-sop.inria.fr/ecuador/tapenade/distrib/tapenade_3.16.zip>`__ into your chosen installation directory *install_dir*.
 
-**NOTE**: Alternatively, a Tapenade version that works correctly with SICOPOLIS-AD v2 is always available in the ``test_ad/tapenade_3.16`` directory.
+**NOTE**: Alternatively, a Tapenade version that works correctly with SICOPOLIS-AD v2 is always available in the ``test_ad/tapenade_supported`` directory.
 
 3. Go to your chosen installation directory *install_dir*, and extract Tapenade from the zip file.
 
