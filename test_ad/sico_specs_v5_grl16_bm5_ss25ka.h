@@ -8,7 +8,7 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2022-07-09'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2022-10-12'
 !                      Date of last change
 
 !-------- Domain --------
@@ -434,24 +434,24 @@
 !                         3 : Initial values from previous
 !                             simulation
 
-#define ZS_PRESENT_FILE   'grl_bm4_16_topo.nc'
+#define ZS_PRESENT_FILE   'grl_bm5_16_topo.nc'
 !                             Name of the file containing the present-day
 !                             ice-surface topography
 
-#define ZB_PRESENT_FILE   'grl_bm4_16_topo.nc'
+#define ZB_PRESENT_FILE   'grl_bm5_16_topo.nc'
 !                             Name of the file containing the present-day
 !                             ice-base topography (only for ANF_DAT==1)
 
-#define ZL_PRESENT_FILE   'grl_bm4_16_topo.nc'
+#define ZL_PRESENT_FILE   'grl_bm5_16_topo.nc'
 !                             Name of the file containing the present-day
 !                             lithosphere-surface topography
 !                             (only for ANF_DAT==1)
 
-#define ZL0_FILE          'grl_bm4_16_zl0_llra.nc'
+#define ZL0_FILE          'grl_bm5_16_zl0_llra.nc'
 !                             Name of the file containing the topography
 !                             of the relaxed lithosphere surface
 
-#define MASK_PRESENT_FILE 'grl_bm4_16_topo.nc'
+#define MASK_PRESENT_FILE 'grl_bm5_16_topo.nc'
 !                             Name of the file containing the present-day
 !                             ice-land-ocean mask
 
@@ -767,7 +767,7 @@
 !                       PRECIP_PRESENT_FILE will be used,
 !                       while PRECIP_MA_PRESENT_FILE will be ignored.]
 
-#define PRECIP_ZS_REF_FILE 'grl_bm4_16_topo.nc'
+#define PRECIP_ZS_REF_FILE 'grl_bm5_16_topo.nc'
 !                       Name of the file containing the reference topography
 !                       for the data in
 !                       PRECIP_PRESENT_FILE or PRECIP_MA_PRESENT_FILE
@@ -1190,9 +1190,9 @@
 !-------- Data output --------
 
 #define NETCDF4_ENABLED 0
-!                         NetCDF output format:
+!                         NetCDF format for time-slice output:
 !                         0 : NetCDF-3 classic
-!                         1 : NetCDF-4 (with compression)
+!                         1 : NetCDF-4 classic (with compression)
 
 #define OUT_TIMES 1
 !                         Output of times in all files:
