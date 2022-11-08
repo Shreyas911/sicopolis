@@ -5,7 +5,7 @@
 #   Downloading the input files for SICOPOLIS,
 #   copying them to the corresponding directories.
 #   
-#    - Ralf Greve, 2022-10-14.
+#    - Ralf Greve, 2022-11-08.
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #-------- Settings (to be customized) --------
@@ -100,12 +100,12 @@ echo; echo "Copying files:"
 
 for domain in ${domains}; do
    echo; echo "  ${domain} ..."
-   $MV -f ${domain}/* ${SICOPOLIS_HOME}/${SICOPOLIS_INPUT}/${domain}/
+   $MV -f ${domain}/* "${SICOPOLIS_HOME}/${SICOPOLIS_INPUT}/${domain}/"
 done
 
 for domain in ${domains_xyz}; do
    echo; echo "  ${domain} ..."
-   $MV -f ${domain}/* ${SICOPOLIS_HOME}/${SICOPOLIS_INPUT}/xyz/
+   $MV -f ${domain}/* "${SICOPOLIS_HOME}/${SICOPOLIS_INPUT}/xyz/"
 done
 
 #-------- Clean-up --------
