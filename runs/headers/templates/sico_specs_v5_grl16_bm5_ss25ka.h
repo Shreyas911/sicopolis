@@ -434,24 +434,24 @@
 !                         3 : Initial values from previous
 !                             simulation
 
-#define ZS_PRESENT_FILE   'grl_bm4_16_topo.nc'
+#define ZS_PRESENT_FILE   'grl_bm5_16_topo.nc'
 !                             Name of the file containing the present-day
 !                             ice-surface topography
 
-#define ZB_PRESENT_FILE   'grl_bm4_16_topo.nc'
+#define ZB_PRESENT_FILE   'grl_bm5_16_topo.nc'
 !                             Name of the file containing the present-day
 !                             ice-base topography (only for ANF_DAT==1)
 
-#define ZL_PRESENT_FILE   'grl_bm4_16_topo.nc'
+#define ZL_PRESENT_FILE   'grl_bm5_16_topo.nc'
 !                             Name of the file containing the present-day
 !                             lithosphere-surface topography
 !                             (only for ANF_DAT==1)
 
-#define ZL0_FILE          'grl_bm4_16_zl0_llra.nc'
+#define ZL0_FILE          'grl_bm5_16_zl0_llra.nc'
 !                             Name of the file containing the topography
 !                             of the relaxed lithosphere surface
 
-#define MASK_PRESENT_FILE 'grl_bm4_16_topo.nc'
+#define MASK_PRESENT_FILE 'grl_bm5_16_topo.nc'
 !                             Name of the file containing the present-day
 !                             ice-land-ocean mask
 
@@ -767,7 +767,7 @@
 !                       PRECIP_PRESENT_FILE will be used,
 !                       while PRECIP_MA_PRESENT_FILE will be ignored.]
 
-#define PRECIP_ZS_REF_FILE 'grl_bm4_16_topo.nc'
+#define PRECIP_ZS_REF_FILE 'grl_bm5_16_topo.nc'
 !                       Name of the file containing the reference topography
 !                       for the data in
 !                       PRECIP_PRESENT_FILE or PRECIP_MA_PRESENT_FILE

@@ -5,7 +5,7 @@
 #   Downloading the input files for SICOPOLIS,
 #   copying them to the corresponding directories.
 #   
-#    - Ralf Greve, 2022-06-30.
+#    - Ralf Greve, 2022-11-08.
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #-------- Settings (to be customized) --------
@@ -36,7 +36,7 @@ MOCHO_FLAG=1     # Mocho-Choshuenco ice cap:
 #-------- Initialization --------
 
 # Zenodo repo:
-REPO_URL=https://zenodo.org/record/6782657/files
+REPO_URL=https://zenodo.org/record/7197105/files
 
 # Backup repo:
 # REPO_URL=http://wwwice.lowtem.hokudai.ac.jp/repo/sicopolis/sico_in
@@ -100,12 +100,12 @@ echo; echo "Copying files:"
 
 for domain in ${domains}; do
    echo; echo "  ${domain} ..."
-   $MV -f ${domain}/* ${SICOPOLIS_HOME}/${SICOPOLIS_INPUT}/${domain}/
+   $MV -f ${domain}/* "${SICOPOLIS_HOME}/${SICOPOLIS_INPUT}/${domain}/"
 done
 
 for domain in ${domains_xyz}; do
    echo; echo "  ${domain} ..."
-   $MV -f ${domain}/* ${SICOPOLIS_HOME}/${SICOPOLIS_INPUT}/xyz/
+   $MV -f ${domain}/* "${SICOPOLIS_HOME}/${SICOPOLIS_INPUT}/xyz/"
 done
 
 #-------- Clean-up --------
