@@ -385,7 +385,7 @@ a Creative Commons Attribution 4.0 International License (CC BY
   <p>We illustrate the use of our tool with the example of a
   steady-state simulation of the Greenland ice sheet under modern
   climate conditions. The corresponding SICOPOLIS configuration header
-  file, <monospace>v5_grl16_bm4_ss25ka</monospace>, is provided as a
+  file, <monospace>v5_grl16_bm5_ss25ka</monospace>, is provided as a
   reference template in the standard <monospace>SICOPOLIS</monospace>
   distribution. We shorten the total integration time to 100 simulated
   years to keep the computational cost of the tangent linear and finite
@@ -450,20 +450,18 @@ a Creative Commons Attribution 4.0 International License (CC BY
         <tr>
           <td align="center">Finite Differences</td>
           <td align="center"><inline-formula><alternatives>
-          <tex-math><![CDATA[1.645 \times 10^5]]></tex-math>
-          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>1.645</mml:mn><mml:mo>×</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>5</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula></td>
+          <tex-math><![CDATA[1.640 \times 10^5]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>1.640</mml:mn><mml:mo>×</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>5</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula></td>
         </tr>
         <tr>
           <td align="center">Tangent Linear Model</td>
           <td align="center"><inline-formula><alternatives>
-          <tex-math><![CDATA[2.140 \times 10^4]]></tex-math>
-          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>2.140</mml:mn><mml:mo>×</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>4</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula></td>
+          <tex-math><![CDATA[9.793 \times 10^4]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>9.793</mml:mn><mml:mo>×</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>4</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula></td>
         </tr>
         <tr>
           <td align="center">Adjoint Model</td>
-          <td align="center"><inline-formula><alternatives>
-          <tex-math><![CDATA[2.113 \times 10^1]]></tex-math>
-          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>2.113</mml:mn><mml:mo>×</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>1</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula></td>
+          <td align="center">$ 2.214 ^1$</td>
         </tr>
       </tbody>
     </table>

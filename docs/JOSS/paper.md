@@ -101,7 +101,7 @@ AD tools such as the commercial `TAF` [@giering_kaminski] and the open-source `O
 
 # Example 
 
-We illustrate the use of our tool with the example of a steady-state simulation of the Greenland ice sheet under modern climate conditions. The corresponding SICOPOLIS configuration header file, `v5_grl16_bm4_ss25ka`, is provided as a reference template in the standard `SICOPOLIS` distribution. We shorten the total integration time to 100 simulated years to keep the computational cost of the tangent linear and finite differences reasonable. Our QoI (i.e., dependent variable) is the total volume of the ice sheet at the end of the run (`fc`). The sensitivity is evaluated with respect to the geothermal heat flux, `q_geo` (independent variable), a 19,186-dimensional field. The results are shown in Figure 1. 
+We illustrate the use of our tool with the example of a steady-state simulation of the Greenland ice sheet under modern climate conditions. The corresponding SICOPOLIS configuration header file, `v5_grl16_bm5_ss25ka`, is provided as a reference template in the standard `SICOPOLIS` distribution. We shorten the total integration time to 100 simulated years to keep the computational cost of the tangent linear and finite differences reasonable. Our QoI (i.e., dependent variable) is the total volume of the ice sheet at the end of the run (`fc`). The sensitivity is evaluated with respect to the geothermal heat flux, `q_geo` (independent variable), a 19,186-dimensional field. The results are shown in Figure 1. 
 
 ![Validation exercise for adjoint (ADM) and tangent linear (TLM) models using the finite differences (FD) results for the sensitivity of `fc` with respect to `q_geo`. The upper row shows the sensitivities computed using the adjoint model (reverse-mode AD), tangent linear (forward-mode AD), and finite differences, respectively. The bottom run illustrates the relative error between (ADM, FD), (TLM, FD), and (ADM, TLM) respectively. For the bottom row, note that the values of relative error are only shown for points where the value of the gradient is "significant", i.e. within 4 orders of magnitude of the maximum absolute value of the gradient. \label{fig:fig1}](Figure_1.png)
 
@@ -109,9 +109,9 @@ The results show good agreement between all three modes used to evaluate this se
 
 | Gradient calculation method | Time (in seconds) for 16 km mesh |
 | :-------------------------: | :------------------------------: |
-| Finite Differences | $1.645 \times 10^5$ |
-| Tangent Linear Model | $2.140 \times 10^4$ |
-| Adjoint Model | $2.113 \times 10^1$ | 
+| Finite Differences | $1.640 \times 10^5$ |
+| Tangent Linear Model | $9.793 \times 10^4$ |
+| Adjoint Model | $ 2.214 \times 10^1$ | 
 
 : Comparison of the time taken by various methods to evaluate the gradient for a scalar objective function with respect to a 19,186-dimensional 2D field (16 km mesh) in a typical SICOPOLIS run. The runs are performed on Intel Xeon CPU E5-2695 v3 nodes (2.30 GHz clock rate, 35.84 MB L3 cache, 63.3 GB memory).
 
