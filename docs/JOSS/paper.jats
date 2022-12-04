@@ -413,16 +413,16 @@ a Creative Commons Attribution 4.0 International License (CC BY
   <p>The results show good agreement between all three modes used to
   evaluate this sensitivity. The error is less than
   <inline-formula><alternatives>
-  <tex-math><![CDATA[4.5\%]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>4.5</mml:mn><mml:mi>%</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  <tex-math><![CDATA[6\%]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>6</mml:mn><mml:mi>%</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
   between AD-generated (adjoint/tangent linear codes) and finite
   differences at all but one point with “significant” gradient values,
   i.e. within 4 orders of magnitude of the maximum absolute value of the
   finite differences gradient. The relative error between the
   AD-generated adjoint and tangent linear models is less than
   <inline-formula><alternatives>
-  <tex-math><![CDATA[0.004\%]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>0.004</mml:mn><mml:mi>%</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  <tex-math><![CDATA[0.002\%]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>0.002</mml:mn><mml:mi>%</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
   at all points with values within 4 orders of magnitude of the maximum
   absolute value of the finite differences gradient. However, the
   adjoint model is much faster than the other two, as shown in Table 1,
