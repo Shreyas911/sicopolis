@@ -145,10 +145,10 @@
 #include "lisf.h"
 #endif
 #endif /* Normal */
+!@ end tapenade_extract @
 
 !-------- Include modules --------
 
-!@ end tapenade_extract @
 #if !defined(ALLOW_TAPENADE) /* Normal */
 #include "subroutines/general/sico_types_m.F90"
 #endif /* Normal */
