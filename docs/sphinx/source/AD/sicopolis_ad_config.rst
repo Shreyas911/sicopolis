@@ -15,7 +15,7 @@ The satisfaction of the following prerequisites is highly recommended to access 
 GNU GCC Compiler (gfortran+gcc) or Intel Compiler (ifort+icc)
 -------------------------------------------------------------
 
-We have tested the software on gfortran/gcc v5.4.0, v7.2.0 and v8.5.0, any intermediate versions should work just as well. We have also tested the software on ifort/icc v18.0.0.
+We have tested the software on gfortran/gcc v5.4.0, v7.2.0 and v8.5.0, any intermediate versions should work just as well. We have also tested the software on ifort/icc v18.0.0 (however, it should be noted that we have not tested the external LIS solver with Intel compilers).
 
 Git
 ---
