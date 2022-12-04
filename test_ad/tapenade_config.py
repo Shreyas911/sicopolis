@@ -70,7 +70,8 @@ def modify_file(filename, ref_string, new_string,
 		sys.exit(1)
 
 def compile_code(mode, header, domain, 
-	clean = True, dep_var=None, ind_vars = None):
+	clean = True, dep_var=None, ind_vars = None,
+	f90c = 'gfortran', cc = 'gcc'):
 
 
 	'''
@@ -81,6 +82,8 @@ def compile_code(mode, header, domain,
 	clean - If True, runs the terminal command - make -f MakefileTapenade clean
 	dep_var - Specify dependent variable (generally fc)
 	ind_vars - Specify independent variables (H, vx_c, vy_c, q_geo, etc.)
+	cc - C compiler
+	f90c - F90 compiler
 	'''
 
 	if (mode == 'adjoint' and (dep_var is not None or ind_vars is not None)):
@@ -104,7 +107,9 @@ def compile_code(mode, header, domain,
 			f'HEADER={header} '
 			f'DOMAIN_SHORT={domain} '
 			f'DEP_VAR={dep_var} '
-			f'IND_VARS={ind_vars} ', 
+			f'IND_VARS={ind_vars} '
+			f'CC={cc} '
+			f'F90C={f90c} ',
 			shell = True, 
 			check = True)
 
@@ -116,6 +121,8 @@ def compile_code(mode, header, domain,
 		print(f'DOMAIN-{domain}')
 		print(f'DEP_VAR-{dep_var}')
 		print(f'IND_VARS-{ind_vars}')
+		print(f'CC-{cc}')
+		print(f'F90C-{f90c}')
 		print(f'Error with compilation:')
 		print(error)
 		sys.exit(1)
@@ -594,7 +601,7 @@ def setup_forward(ind_var, header, domain,
 	z_co_ord = None, limited_or_block_or_full = 'limited',
 	block_imin = None, block_imax = None, block_jmin = None, block_jmax = None,
 	tapenade_m_file = 'subroutines/tapenade/tapenade_m.F90',
-        unit = '99999'):
+	unit = '99999'):
 	
 
 	'''
@@ -621,7 +628,7 @@ def setup_forward(ind_var, header, domain,
 		raise ValueError('Wrong Domain')
 
 	copy_file(original_file = '../test_ad/tapenade_m_tlm_template.F90',
-                  destination_file = tapenade_m_file)
+		  destination_file = tapenade_m_file)
 
 	IMAX, JMAX, KCMAX, KTMAX = get_imax_jmax_kcmax_ktmax()
 
@@ -751,7 +758,7 @@ def validate_FD_AD(grdchk_file, ad_file, tolerance = 0.1):
 		print("Validated successfully.")
 
 def simulation(mode, header, domain, 
-              ind_var, dep_var,
+	      ind_var, dep_var,
 	      limited_or_block_or_full = 'limited',
 	      ind_var_dim = 2, ind_var_z_co_ord = None,
 	      perturbation = 1.e-3,
@@ -763,7 +770,8 @@ def simulation(mode, header, domain,
 	      output_adj_vars = [], output_adj_iters = [], output_adj_dims = [],
 	      ckp_status = False, ckp_num = 10, validation = True,
 	      numCore_cpp_b_file = 'numCore_cpp_b.f90',
-	      sico_main_loop_m_cpp_b_file = 'sico_main_loop_m_cpp_b.f90'):
+	      sico_main_loop_m_cpp_b_file = 'sico_main_loop_m_cpp_b.f90',
+	      f90c = 'gfortran', cc = 'gcc'):
 
 	'''
 	Purpose - Sets up everything correctly for compilation of adjoint run
@@ -783,11 +791,13 @@ def simulation(mode, header, domain,
 	output_adj_vars - List of adjoint variables to output
 	output_adj_iters - List of iter number to output the adjoint variables
 	output_adj_dims - List of z co-ordinates for adjoint variables that we output
-        ckp_status - True if binomial checkpointing is used, else False
+	ckp_status - True if binomial checkpointing is used, else False
 	ckp_num - Number of checkpointing steps
 	tapenade_m_file - Location of tapenade_m.F90
-        numCore_cpp_b_file - Location of numCore_cpp_b.f90 file
-        sico_main_loop_m_cpp_b_file - Location of sico_main_loop_m_cpp_b.f90 file
+	numCore_cpp_b_file - Location of numCore_cpp_b.f90 file
+	sico_main_loop_m_cpp_b_file - Location of sico_main_loop_m_cpp_b.f90 file
+	cc - C compiler
+	f90c - F90 compiler
 	'''
 
 
@@ -819,7 +829,8 @@ def simulation(mode, header, domain,
 	        unit = unit)
 	
 		compile_code(mode = mode, header = header, domain = domain,
-	        clean = True, dep_var=dep_var, ind_vars = ind_var)
+			    clean = True, dep_var=dep_var, ind_vars = ind_var,
+			    f90c = f90c, cc = cc)
 	
 		print(f'grdchk compilation complete for {header}.')
 	
@@ -838,7 +849,8 @@ def simulation(mode, header, domain,
 		  destination_file = 'subroutines/tapenade/tapenade_m.F90')
 
 		compile_code(mode = mode, header = header, domain = domain,
-                clean = True, dep_var=dep_var, ind_vars = ind_var)	
+			    clean = True, dep_var=dep_var, ind_vars = ind_var,
+			    f90c = f90c, cc = cc)	
 	
 		if output_dims is not None and output_iters is not None:
 			output_dims = [int(x) for x in output_dims]	
@@ -848,15 +860,16 @@ def simulation(mode, header, domain,
 			output_adj_iters = [int(x) for x in output_adj_iters]
 
 		setup_adjoint(ind_vars = [ind_var], header = header, domain = domain, ckp_status = ckp_status,
-		             numCore_cpp_b_file = numCore_cpp_b_file,
-                             sico_main_loop_m_cpp_b_file = sico_main_loop_m_cpp_b_file,
-        	             dimensions = [ind_var_dim],
-       		             z_co_ords = [ind_var_z_co_ord],
-        	             output_vars = output_vars, output_iters = output_iters, output_dims = output_dims,
-       		             output_adj_vars = output_adj_vars, output_adj_iters = output_adj_iters, output_adj_dims = output_adj_dims)
+			     numCore_cpp_b_file = numCore_cpp_b_file,
+			     sico_main_loop_m_cpp_b_file = sico_main_loop_m_cpp_b_file,
+			     dimensions = [ind_var_dim],
+			     z_co_ords = [ind_var_z_co_ord],
+			     output_vars = output_vars, output_iters = output_iters, output_dims = output_dims,
+			     output_adj_vars = output_adj_vars, output_adj_iters = output_adj_iters, output_adj_dims = output_adj_dims)
 
 		compile_code(mode = mode, header = header, domain = domain,
-                clean = False, dep_var=dep_var, ind_vars = ind_var)
+			    clean = False, dep_var=dep_var, ind_vars = ind_var,
+			    f90c = f90c, cc = cc)
 		
 		print(f'adjoint compilation complete for {header}.')
 		
@@ -879,14 +892,15 @@ def simulation(mode, header, domain,
 	elif mode == 'forward':
 
 		setup_forward(ind_var = ind_var, header = header, domain = domain,
-	                     dimension = ind_var_dim,
+			     dimension = ind_var_dim,
 			     z_co_ord = ind_var_z_co_ord, limited_or_block_or_full = limited_or_block_or_full,
 			     block_imin = block_imin, block_imax = block_imax, block_jmin = block_jmin, block_jmax = block_jmax,
 			     tapenade_m_file = tapenade_m_file,
 			     unit = unit)
 
 		compile_code(mode = mode, header = header, domain = domain,
-			    clean = True, dep_var=dep_var, ind_vars = ind_var)
+			     clean = True, dep_var=dep_var, ind_vars = ind_var,
+			     f90c = f90c, cc = cc)
 
 		print(f'TLM compilation complete for {header}.')
 
@@ -911,9 +925,10 @@ def simulation(mode, header, domain,
 		### The name here should match the output directory in MakefileTapenade
 
 		process = subprocess.run (
-                                ['rm', '-r', f'../sico_out/N_{header}'])
+			     ['rm', '-r', f'../sico_out/N_{header}'])
 		compile_code(mode = mode, header = header, domain = domain,
-                clean = True, dep_var=dep_var, ind_vars = ind_var)
+			     clean = True, dep_var=dep_var, ind_vars = ind_var,
+			     f90c = f90c, cc = cc)
 		
 		print(f'normal compilation complete for {header}.')
 		
@@ -948,7 +963,9 @@ if __name__ == "__main__":
 	parser.add_argument('-oav','--output_adj_vars', nargs='+', help='List the adjoint fields you want to output')
 	parser.add_argument('-oad', '--output_adj_dims', nargs='+', help='List the z-coord of adjoint output vars, -1 if 2D')
 	parser.add_argument('-oai', '--output_adj_iters', nargs='+', help='List the iter num of adjoint output vars, -1 if itercount_max')
-	parser.add_argument("--run", help="Run the executables?", action="store_true")
+	parser.add_argument("-run", help="Run the executables?", action="store_true")
+	parser.add_argument("-cc", '--c_compiler', help="C compiler", type=str)
+	parser.add_argument("-f90c", '--f90_compiler', help="F90 compiler", type=str)
 
 	args = parser.parse_args()
 
@@ -977,7 +994,8 @@ if __name__ == "__main__":
 	list_attrs = ['json', 'header', 'domain', 'ind_var', 'dep_var',
 		      'dimension', 'z_co_ord', 'perturbation', 'output_vars',
 		      'output_iters', 'output_dims', 'output_adj_vars', 
-                      'output_adj_iters', 'output_adj_dims', 'checkpoint', 'run']
+		      'output_adj_iters', 'output_adj_dims', 'checkpoint', 'run',
+		      'c_compiler', 'f90_compiler']
 
 	for attr in list_attrs:
 		if not hasattr(args, attr):
@@ -986,12 +1004,12 @@ if __name__ == "__main__":
 	for mode in ['normal', 'grdchk', 'adjoint', 'forward']:
 
 		simulation(mode = mode, header = args.header, domain = args.domain, 
-	              ind_var = args.ind_var, dep_var = args.dep_var,
+		      ind_var = args.ind_var, dep_var = args.dep_var,
 		      limited_or_block_or_full = 'limited',
 		      ind_var_dim = args.dimension, ind_var_z_co_ord = args.z_co_ord,
 		      perturbation = args.perturbation,
 		      run_executable_auto = args.run,
 		      output_vars = args.output_vars, output_iters = args.output_iters, output_dims = args.output_dims,
 		      output_adj_vars = args.output_adj_vars, output_adj_iters = args.output_adj_iters, output_adj_dims = args.output_adj_dims,
-		      ckp_status = ckp_status, ckp_num = args.checkpoint)	
-	
+		      ckp_status = ckp_status, ckp_num = args.checkpoint,
+		      cc = args.c_compiler, f90c = args.f90_compiler)

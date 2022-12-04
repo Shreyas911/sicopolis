@@ -12,10 +12,10 @@ The official `SICOPOLIS Quick Start Manual <http://www.sicopolis.net/docu/SICOPO
 
 The satisfaction of the following prerequisites is highly recommended to access all the features of the code. Details can differ from the `SICOPOLIS Quick Start Manual <http://www.sicopolis.net/docu/SICOPOLIS_V5dev_Quick_Start.pdf>`__, since there are multiple ways to do things. We detail one of them here.
 
-GNU GCC Compiler (gfortran)
----------------------------
+GNU GCC Compiler (gfortran+gcc) or Intel Compiler (ifort+icc)
+-------------------------------------------------------------
 
-We have tested the software on gfortran v5.4.0, v7.2.0 and v8.5.0, any intermediate versions should work just as well.
+We have tested the software on gfortran/gcc v5.4.0, v7.2.0 and v8.5.0, any intermediate versions should work just as well. We have also tested the software on ifort/icc v18.0.0.
 
 Git
 ---

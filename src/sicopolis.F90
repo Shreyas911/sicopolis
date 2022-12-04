@@ -148,8 +148,10 @@
 
 !-------- Include modules --------
 
-#include "subroutines/general/sico_types_m.F90"
 !@ end tapenade_extract @
+#if !defined(ALLOW_TAPENADE) /* Normal */
+#include "subroutines/general/sico_types_m.F90"
+#endif /* Normal */
 #include "subroutines/general/sico_variables_m.F90"
 !@ begin tapenade_extract @
 #if (defined(ANT))

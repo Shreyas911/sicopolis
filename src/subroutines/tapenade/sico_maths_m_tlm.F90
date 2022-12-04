@@ -467,29 +467,6 @@ call SOR_SPRS(lgs_a_value, lgs_a_index, lgs_a_diag_index, &
     IF (x .LT. 0.0_dp) retval = 2.0_dp - retval
   END SUBROUTINE MY_ERFC_STUB
 
-!-------------------------------------------------------------------------------
-  SUBROUTINE MY_ERFC(x, retval)
-    IMPLICIT NONE
-    REAL(dp), INTENT(IN) :: x
-    REAL(dp), INTENT(OUT) :: retval
-    REAL(dp) :: t, z
-    INTRINSIC ABS
-    INTRINSIC EXP
-    REAL(dp) :: arg1
-    IF (x .GE. 0.) THEN
-      z = x
-    ELSE
-      z = -x
-    END IF
-    t = 1.0_dp/(1.0_dp+0.5_dp*z)
-    arg1 = -(z*z) - 1.26551223_dp + t*(1.00002368_dp+t*(0.37409196_dp+t*&
-&     (0.09678418_dp+t*(-0.18628806_dp+t*(0.27886807_dp+t*(-&
-&     1.13520398_dp+t*(1.48851587_dp+t*(-0.82215223_dp+t*0.17087277_dp))&
-&     ))))))
-    retval = t*EXP(arg1)
-    IF (x .LT. 0.0_dp) retval = 2.0_dp - retval
-  END SUBROUTINE MY_ERFC
-
 #if  defined(BUILD_LIS) && (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
 !#if  (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
 !-------------------------------------------------------------------------------
