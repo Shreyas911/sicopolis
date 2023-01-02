@@ -22,8 +22,14 @@ Before installing Tapenade, you must check that an up-to-date Java Runtime Envir
 
 **NOTE**: Alternatively, a Tapenade version that works correctly with SICOPOLIS-AD v2 is always available in the ``test_ad/tapenade_supported`` directory.
 
-Steps for Linux or Mac OS X
----------------------------
+Steps for Mac OS
+----------------
+
+Tapenade 3.16 distribution does not contain a fortranParser executable for MacOS. It uses a docker image from `here <https://gitlab.inria.fr/tapenade/tapenade>`__. You need docker on your Mac to run the Tapenade distribution with Fortran programs. Details on how to build fortranParser is `here <https://tapenade.gitlabpages.inria.fr/tapenade/docs/html/src/frontf/README.html?highlight=mac>`__. You may also build Tapenade on your Mac from the `gitlab repository <https://tapenade.gitlabpages.inria.fr/tapenade/docs/html/distrib/README.html>`__.
+
+
+Steps for Linux
+---------------
 
 1. Read `the Tapenade license. <https://tapenade.gitlabpages.inria.fr/userdoc/build/html/LICENSE.html>`__
 
