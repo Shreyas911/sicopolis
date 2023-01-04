@@ -9,7 +9,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2022 Reinhard Calov, Ralf Greve
+!! Copyright 2009-2023 Reinhard Calov, Ralf Greve
 !!
 !! @section License
 !!
