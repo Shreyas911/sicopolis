@@ -9,7 +9,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2022 Ralf Greve, Roland Warner
+!! Copyright 2009-2023 Ralf Greve, Roland Warner
 !!
 !! @section License
 !!
