@@ -9,7 +9,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2013-2022 Ralf Greve, Heinz Blatter
+!! Copyright 2013-2023 Ralf Greve, Heinz Blatter
 !!
 !! @section License
 !!

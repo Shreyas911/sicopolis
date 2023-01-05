@@ -5,7 +5,7 @@
 !
 #define       MODEL_SICOPOLIS
 #define       VERSION '5-dev'
-#define       DATE    '2022-10-12'
+#define       DATE    '2023-01-03'
 !
 !> @mainpage
 !!
@@ -81,8 +81,8 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2022 Ralf Greve\n
-!! (with contributions by Jorge Bernales, Sebastian Beyer, Heinz Blatter,
+!! Copyright 2009-2023 SICOPOLIS Authors\n
+!! (Ralf Greve, Jorge Bernales, Sebastian Beyer, Heinz Blatter,
 !! Reinhard Calov, Thorben Dunse, Eduardo Flandez, Ben Galton-Fenzi,
 !! Thomas Goelles, Bjoern Grieger, Philipp Hancke, Patrick Heimbach,
 !! Nina Kirchner, Thomas Kleiner, Sascha Knell, Anne Le Brocq, Liz Curry-Logan,
@@ -111,7 +111,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2022 Ralf Greve
+!! Copyright 2009-2023 SICOPOLIS Authors
 !!
 !! @section License
 !!
