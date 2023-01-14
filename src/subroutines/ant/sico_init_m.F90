@@ -1175,6 +1175,9 @@ do n=2, n_slide_regions
 end do
 #endif
 
+#if (defined(C_SLIDE_FILTER_WIDTH))
+write(10, fmt=trim(fmt3)) 'c_slide_filter_width =', C_SLIDE_FILTER_WIDTH
+#endif
 #if (defined(TIME_RAMP_UP_SLIDE))
 write(10, fmt=trim(fmt3)) 'time_ramp_up_slide =', TIME_RAMP_UP_SLIDE
 #endif
@@ -2416,6 +2419,7 @@ end do
 
 call calc_temp_melt()
 call flag_update_gf_gl_cf()
+call calc_vxy_b_init()
 call calc_dzs_dxy_aux(dxi, deta)
 
 #if (DYNAMICS==1 || DYNAMICS==2)
