@@ -222,6 +222,7 @@ real(sp), dimension(0:IMAX,0:JMAX) :: lambda_conv, phi_conv, &
             vx_b_g_conv, vy_b_g_conv, vz_b_conv, vh_b_conv, &
             vx_s_g_conv, vy_s_g_conv, vz_s_conv, vh_s_conv, &
             vx_m_g_conv, vy_m_g_conv,            vh_m_conv, &
+            c_slide_conv, &
             temp_b_conv, temph_b_conv, &
             tau_dr_conv, tau_b_conv, &
             p_b_w_conv, q_w_conv, q_w_x_conv, q_w_y_conv, H_w_conv, &
@@ -2664,6 +2665,34 @@ call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
 call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
             thisroutine )
 
+!    ---- c_slide
+
+call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
+            thisroutine )
+call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
+            thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+call check( nf90_def_var(ncid, 'c_slide', NF90_FLOAT, nc2d, ncv, &
+            deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+            thisroutine )
+#else
+call check( nf90_def_var(ncid, 'c_slide', NF90_FLOAT, nc2d, ncv), &
+            thisroutine )
+#endif
+
+buffer = 'm a-1 Pa-(p-q)'
+call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
+            thisroutine )
+buffer = 'land_ice_base_sliding_coefficient'
+call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
+            thisroutine )
+buffer = 'Basal sliding coefficient'
+call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
+            thisroutine )
+call check( nf90_put_att(ncid, ncv, 'grid_mapping', 'mapping'), &
+            thisroutine )
+
 !    ---- temp_b
 
 call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
@@ -4430,6 +4459,7 @@ do j=0, JMAX
    vx_m_g_conv(i,j)    = real(vx_m_g(j,i)*year2sec,sp)
    vy_m_g_conv(i,j)    = real(vy_m_g(j,i)*year2sec,sp)
    vh_m_conv(i,j)      = sqrt( vx_m_g_conv(i,j)**2 + vy_m_g_conv(i,j)**2 )
+   c_slide_conv(i,j)   = real(c_slide(j,i)*year2sec,sp)
    temp_b_conv(i,j)    = real(temp_b(j,i),sp)
    temph_b_conv(i,j)   = real(temph_b(j,i),sp)
    tau_dr_conv(i,j)    = real(tau_dr(j,i),sp)
@@ -4962,6 +4992,11 @@ call check( nf90_put_var(ncid, ncv, vy_m_g_conv, &
 
 call check( nf90_inq_varid(ncid, 'vh_m', ncv), thisroutine )
 call check( nf90_put_var(ncid, ncv, vh_m_conv, &
+                         start=nc2cor_ij, count=nc2cnt_ij), &
+            thisroutine )
+
+call check( nf90_inq_varid(ncid, 'c_slide', ncv), thisroutine )
+call check( nf90_put_var(ncid, ncv, c_slide_conv, &
                          start=nc2cor_ij, count=nc2cnt_ij), &
             thisroutine )
 
