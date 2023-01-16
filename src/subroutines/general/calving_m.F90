@@ -55,6 +55,7 @@ contains
   real(dp)                           :: year_sec_inv
   real(dp)                           :: rhosw_rho_ratio
   real(dp)                           :: calv_uw_coeff, r1_calv_uw, r2_calv_uw
+  real(dp)                           :: H0_float
   real(dp), dimension(0:JMAX,0:IMAX) :: H_sea, calv_uw_ice
   integer(i4b)                       :: i, j
 
@@ -93,9 +94,11 @@ contains
 
 !-------- Calving of "underwater ice" --------
 
+  H0_float = 0.0_dp   ! so far not assigned any other value
+
 #if !defined(ALLOW_OPENAD) /* Normal */
 
-  where ( (mask == 0).and.(H < rhosw_rho_ratio*H_sea+H0_float) )
+  where ( (mask == 0).and.(H < rhosw_rho_ratio*H_sea + H0_float) )
      calv_uw_ice = calv_uw_coeff * H**r1_calv_uw * H_sea**r2_calv_uw
   elsewhere
      calv_uw_ice = 0.0_dp
@@ -105,7 +108,7 @@ contains
 
   do i=0, IMAX
   do j=0, JMAX
-     if ( (mask(j,i) == 0) .and. (H(j,i) < rhosw_rho_ratio*H_sea(j,i)) ) then
+     if ( (mask(j,i) == 0) .and. (H(j,i) < rhosw_rho_ratio*H_sea(j,i) + H0_float) ) then
         calv_uw_ice(j,i) = calv_uw_coeff * H(j,i)**r1_calv_uw * H_sea(j,i)**r2_calv_uw
      else
         calv_uw_ice(j,i) = 0.0_dp
