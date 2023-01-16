@@ -44,10 +44,148 @@ module calc_vxy_m
   real(dp), dimension(0:JMAX,0:IMAX), save :: dzs_dx_aux, dzs_dy_aux
 
   private
-  public :: calc_dzs_dxy_aux, &
+  public :: calc_vxy_b_init, calc_dzs_dxy_aux, &
             calc_vxy_b_sia, calc_vxy_sia, calc_vxy_static, calc_vxy_ssa
 
 contains
+
+!-------------------------------------------------------------------------------
+!> Initializations for the basal horizontal velocity vx_b, vy_b.
+!<------------------------------------------------------------------------------
+subroutine calc_vxy_b_init()
+
+implicit none
+
+integer(i4b) :: i, j, m, n
+integer(i4b) :: n_slide_regions
+integer(i4b) :: i_f, j_f, n_filter
+
+#if (!defined(N_SLIDE_REGIONS) || N_SLIDE_REGIONS<=1)
+integer(i4b) :: p_weert_aux(1)
+integer(i4b) :: q_weert_aux(1)
+real(dp) :: c_slide_aux(1)
+real(dp) :: gamma_slide_aux(1)
+real(dp) :: gamma_slide_inv_aux(1)
+#else
+integer(i4b) :: p_weert_aux(N_SLIDE_REGIONS)
+integer(i4b) :: q_weert_aux(N_SLIDE_REGIONS)
+real(dp) :: c_slide_aux(N_SLIDE_REGIONS)
+real(dp) :: gamma_slide_aux(N_SLIDE_REGIONS)
+real(dp) :: gamma_slide_inv_aux(N_SLIDE_REGIONS)
+#endif
+
+real(dp) :: dx
+real(dp) :: filter_width, sigma_filter
+real(dp) :: dist, weigh, sum_weigh
+real(dp), dimension(0:JMAX,0:IMAX) :: c_slide_smoothed
+
+!-------- Sliding-law coefficients --------
+
+#if (!defined(N_SLIDE_REGIONS) || N_SLIDE_REGIONS<=1)
+n_slide_regions = 1
+#else
+n_slide_regions = N_SLIDE_REGIONS
+#endif
+
+p_weert_aux = P_WEERT
+q_weert_aux = Q_WEERT
+c_slide_aux = C_SLIDE
+gamma_slide_aux = GAMMA_SLIDE
+
+do n=1, n_slide_regions
+   gamma_slide_inv_aux(n) = 1.0_dp/max(gamma_slide_aux(n), eps)
+end do
+
+do i=0, IMAX
+do j=0, JMAX
+   if ( (n_slide_region(j,i) >= 1) &
+        .and. &
+        (n_slide_region(j,i) <= n_slide_regions) ) then
+      p_weert(j,i)         = p_weert_aux(n_slide_region(j,i))
+      q_weert(j,i)         = q_weert_aux(n_slide_region(j,i))
+      c_slide_init(j,i)    = c_slide_aux(n_slide_region(j,i))*sec2year
+      gamma_slide_inv(j,i) = gamma_slide_inv_aux(n_slide_region(j,i))
+      sub_melt_flag(j,i)   = (gamma_slide_aux(n_slide_region(j,i)) >= eps)
+   else
+      errormsg = ' >>> calc_vxy_b_init: ' &
+                    //'Region number out of allowed range!'
+      call error(errormsg)
+   end if
+end do
+end do
+
+do i=0, IMAX
+do j=0, JMAX
+   p_weert_inv(j,i) = 1.0_dp/max(real(p_weert(j,i),dp), eps)
+end do
+end do
+
+!  ------ Smoothing the coefficient c_slide_init by a Gaussian filter
+!         (only meaningful if the exponents p_weert and q_weert are constant!)
+
+#if (defined(C_SLIDE_FILTER_WIDTH))
+
+filter_width = real(C_SLIDE_FILTER_WIDTH, dp)
+                   ! filter width (half span of filtered area), in km
+
+if (filter_width > eps_sp_dp) then
+
+#if (GRID==0 || GRID==1)
+   dx = real(DX, dp)   ! horizontal grid spacing (in km)
+#else
+   dx = 0.0_dp   ! dummy value
+   errormsg = ' >>> calc_vxy_b_init: ' &
+           // 'Smoothing of c_slide_init only implemented for GRID 0 or 1!'
+   call error(errormsg)
+#endif
+
+   sigma_filter = filter_width/dx   ! half span of filtered area,
+                                    ! in grid points
+
+   n_filter = ceiling(2.0_dp*sigma_filter)
+   n_filter = max(n_filter, 5)
+
+   c_slide_smoothed = 0.0_dp
+
+   do i=0, IMAX
+   do j=0, JMAX
+
+      sum_weigh = 0.0_dp
+
+      do m=-n_filter, n_filter
+      do n=-n_filter, n_filter
+
+         i_f = i+m
+         j_f = j+n
+
+         if (i_f <    0) i_f =    0
+         if (i_f > IMAX) i_f = IMAX
+
+         if (j_f <    0) j_f =    0
+         if (j_f > JMAX) j_f = JMAX
+
+         dist      = sqrt(real(m,dp)**2+real(n,dp)**2)
+         weigh     = exp(-(dist/sigma_filter)**2)
+         sum_weigh = sum_weigh + weigh
+
+         c_slide_smoothed(j,i) = c_slide_smoothed(j,i) &
+                                    + weigh*c_slide_init(j_f,i_f)
+
+      end do
+      end do
+
+      c_slide_smoothed(j,i) = c_slide_smoothed(j,i)/sum_weigh
+
+   end do
+   end do
+
+   c_slide_init = c_slide_smoothed
+
+end if
+
+#endif
+
+end subroutine calc_vxy_b_init
 
 !-------------------------------------------------------------------------------
 !> Computation of the auxiliary surface gradients dzs_dx_aux, dzs_dy_aux
@@ -248,78 +386,23 @@ implicit none
 
 real(dp), intent(in) :: time
 
-integer(i4b) :: i, j, n, n_slide_regions
-#if (!defined(N_SLIDE_REGIONS) || N_SLIDE_REGIONS<=1)
-integer(i4b) :: p_weert_aux(1)
-integer(i4b) :: q_weert_aux(1)
-real(dp) :: c_slide_aux(1)
-real(dp) :: gamma_slide_aux(1)
-real(dp) :: gamma_slide_inv_aux(1)
-#else
-integer(i4b) :: p_weert_aux(N_SLIDE_REGIONS)
-integer(i4b) :: q_weert_aux(N_SLIDE_REGIONS)
-real(dp) :: c_slide_aux(N_SLIDE_REGIONS)
-real(dp) :: gamma_slide_aux(N_SLIDE_REGIONS)
-real(dp) :: gamma_slide_inv_aux(N_SLIDE_REGIONS)
-#endif
-real(dp), dimension(0:JMAX,0:IMAX) :: gamma_slide_inv
+integer(i4b) :: i, j
 real(dp), dimension(0:JMAX,0:IMAX) :: p_b_red_lim
 real(dp) :: cvxy1, cvxy1a, cvxy1b, ctau1, ctau1a, ctau1b
 real(dp) :: temp_diff
 real(dp) :: c_Hw_slide, Hw0_slide, Hw0_slide_inv, ratio_Hw_slide
 real(dp) :: vh_max, vh_max_inv
-real(dp) :: year_sec_inv, time_in_years
+real(dp) :: time_in_years
 real(dp) :: ramp_up_factor
 real(dp) :: zs_grad_sq
-logical, dimension(0:JMAX,0:IMAX) :: sub_melt_flag
 
-year_sec_inv  = 1.0_dp/year2sec
-time_in_years = time*year_sec_inv
-
-!-------- Sliding-law coefficients --------
-
-#if (!defined(N_SLIDE_REGIONS) || N_SLIDE_REGIONS<=1)
-n_slide_regions = 1
-#else
-n_slide_regions = N_SLIDE_REGIONS
-#endif
-
-p_weert_aux = P_WEERT
-q_weert_aux = Q_WEERT
-c_slide_aux = C_SLIDE
-gamma_slide_aux = GAMMA_SLIDE
-
-do n=1, n_slide_regions
-   gamma_slide_inv_aux(n) = 1.0_dp/max(gamma_slide_aux(n), eps)
-end do
-
-do i=0, IMAX
-do j=0, JMAX
-   if ( (n_slide_region(j,i) >= 1) &
-        .and. &
-        (n_slide_region(j,i) <= n_slide_regions) ) then
-      p_weert(j,i)         = p_weert_aux(n_slide_region(j,i))
-      q_weert(j,i)         = q_weert_aux(n_slide_region(j,i))
-      c_slide(j,i)         = c_slide_aux(n_slide_region(j,i))*year_sec_inv
-      gamma_slide_inv(j,i) = gamma_slide_inv_aux(n_slide_region(j,i))
-      sub_melt_flag(j,i)   = (gamma_slide_aux(n_slide_region(j,i)) >= eps)
-   else
-      errormsg = ' >>> calc_vxy_b_sia: ' &
-                    //'Region number out of allowed range!'
-      call error(errormsg)
-   end if
-end do
-end do
-
-do i=0, IMAX
-do j=0, JMAX
-   p_weert_inv(j,i) = 1.0_dp/max(real(p_weert(j,i),dp), eps)
-end do
-end do
+time_in_years = time*sec2year
 
 !  ------ Ramping up basal sliding
 
 ramp_up_factor = 1.0_dp
+
+c_slide = c_slide_init
 
 #if (defined(TIME_RAMP_UP_SLIDE))
 
@@ -1387,10 +1470,9 @@ real(dp) :: qx_gl_g, qy_gl_g
 logical, dimension(0:JMAX,0:IMAX) :: flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y
 real(dp) :: v_ref, v_ref_sq_inv
 real(dp) :: v_b_sq
-real(dp) :: year_sec_inv, pi_inv
+real(dp) :: pi_inv
 
-year_sec_inv = 1.0_dp/year2sec
-pi_inv       = 1.0_dp/pi
+pi_inv   = 1.0_dp/pi
 
 #if (MARGIN==3 || DYNAMICS==2)
 
@@ -1560,9 +1642,9 @@ ratio_help         = 1.11e+11_dp   ! dummy value
 
 #if (HYB_MODE==1)
 #if (defined(HYB_REF_SPEED))
-v_ref = real(HYB_REF_SPEED,dp)*year_sec_inv
+v_ref = real(HYB_REF_SPEED,dp)*sec2year
 #else
-v_ref = 30.0_dp*year_sec_inv   ! default value
+v_ref = 30.0_dp*sec2year   ! default value
 #endif
 v_ref_sq_inv = 1.0_dp/(v_ref*v_ref)
 #else
