@@ -8,7 +8,7 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2022-10-12'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2023-01-14'
 !                      Date of last change
 
 !-------- Domain --------
@@ -827,6 +827,13 @@
 !                       Sliding coefficient, in m/[a*Pa^(p-q)]
 !                       (N_SLIDE_REGIONS separate values).
 !                       Set to 0.0d0 for no-slip conditions.
+
+#define C_SLIDE_FILTER_WIDTH 0.0d0
+!                       Filtering width (spatial smoothing by Gaussian filter)
+!                       for the sliding coefficient, in km.
+!                       Set to 0.0d0 for no smoothing.
+!                       Values > 0 only make sense
+!                       for constant Weertman exponents p and q!
 
 #define GAMMA_SLIDE (/ 0.2d0, 0.2d0 /)
 !                       Sub-melt sliding coefficient, in K

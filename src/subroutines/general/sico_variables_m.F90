@@ -285,6 +285,12 @@ save
    real(dp), dimension(0:JMAX,0:IMAX) :: p_weert_inv
 !> c_slide(j,i): Basal sliding coefficient
    real(dp), dimension(0:JMAX,0:IMAX) :: c_slide
+!> c_slide_init(j,i): Initial basal sliding coefficient
+   real(dp), dimension(0:JMAX,0:IMAX) :: c_slide_init
+!> gamma_slide_inv(j,i): Inverse of the sub-melt-sliding parameter
+   real(dp), dimension(0:JMAX,0:IMAX) :: gamma_slide_inv
+!> sub_melt_flag(j,i): Flag for presence of sub-melt sliding
+   logical, dimension(0:JMAX,0:IMAX) :: sub_melt_flag
 !> d_help_b(j,i): Auxiliary quantity for the computation of vx_b and vy_b
    real(dp), dimension(0:JMAX,0:IMAX) :: d_help_b
 !> c_drag(j,i): Auxiliary quantity for the computation of the basal drag
