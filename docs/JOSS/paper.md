@@ -111,7 +111,7 @@ The results show good agreement between all three modes used to evaluate this se
 | :-------------------------: | :------------------------------: |
 | Finite Differences | $1.640 \times 10^5$ |
 | Tangent Linear Model | $9.793 \times 10^4$ |
-| Adjoint Model | $ 2.214 \times 10^1$ | 
+| Adjoint Model | $2.214 \times 10^1$ | 
 
 : Comparison of the time taken by various methods to evaluate the gradient for a scalar objective function with respect to a 19,186-dimensional 2D field (16 km mesh) in a typical SICOPOLIS run. The runs are performed on Intel Xeon CPU E5-2695 v3 nodes (2.30 GHz clock rate, 35.84 MB L3 cache, 63.3 GB memory).
 
