@@ -73,6 +73,7 @@ For AD purposes, we compile the code using the ``src/MakefileTapenade`` makefile
 
 4. ``LISFLAG`` - This flag declares directories to be searched for LIS ``#include`` header file ``lisf.h``, as well as defines the ``BUILD_LIS`` as a macro with value 1. By default in ``src/MakefileTapenade``, it is ``-DBUILD_LIS -I${LISDIR}/include/``. If you follow the original instructions to install LIS, this should work, else one can set it manually within ``src/MakefileTapenade``.
 
+**NOTE**: Some users have reported needing to extend their ``LD_LIBRARY_PATH`` with the location of ``${LISDIR}/lib`` in order to find ``liblis.so.0``.
 
 NetCDF (3.6.x or newer)
 -----------------------
