@@ -461,7 +461,9 @@ a Creative Commons Attribution 4.0 International License (CC BY
         </tr>
         <tr>
           <td align="center">Adjoint Model</td>
-          <td align="center">$ 2.214 ^1$</td>
+          <td align="center"><inline-formula><alternatives>
+          <tex-math><![CDATA[2.214 \times 10^1]]></tex-math>
+          <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mn>2.214</mml:mn><mml:mo>×</mml:mo><mml:msup><mml:mn>10</mml:mn><mml:mn>1</mml:mn></mml:msup></mml:mrow></mml:math></alternatives></inline-formula></td>
         </tr>
       </tbody>
     </table>
