@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2023-01-03
+!! 2023-02-08
 !!
 !! @section Copyright
 !!
@@ -1085,7 +1085,7 @@ stop ' >>> init_ismip_netcdf: TIME_UNIT must be either 1 or 2!'
 #endif
 
 #if (NETCDF4_ENABLED==1)
-  cmode           = NF90_NETCDF4
+  cmode           = ior(NF90_NETCDF4, NF90_CLASSIC_MODEL)
   n_deflate_level = 1
   flag_shuffle    = .true.
 #else
