@@ -736,7 +736,7 @@ a Creative Commons Attribution 4.0 International License (CC BY
       <volume>109</volume>
       <issue>F1</issue>
       <uri>https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2003JF000065</uri>
-      <pub-id pub-id-type="doi">https://doi.org/10.1029/2003JF000065</pub-id>
+      <pub-id pub-id-type="doi">10.1029/2003JF000065</pub-id>
       <fpage></fpage>
       <lpage></lpage>
     </element-citation>
@@ -780,7 +780,7 @@ a Creative Commons Attribution 4.0 International License (CC BY
       <volume>117</volume>
       <issue>F1</issue>
       <uri>https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2011JF002140</uri>
-      <pub-id pub-id-type="doi">https://doi.org/10.1029/2011JF002140</pub-id>
+      <pub-id pub-id-type="doi">10.1029/2011JF002140</pub-id>
       <fpage></fpage>
       <lpage></lpage>
     </element-citation>
@@ -907,7 +907,7 @@ a Creative Commons Attribution 4.0 International License (CC BY
       <volume>48</volume>
       <issue>16</issue>
       <uri>https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2020GL091741</uri>
-      <pub-id pub-id-type="doi">https://doi.org/10.1029/2020GL091741</pub-id>
+      <pub-id pub-id-type="doi">10.1029/2020GL091741</pub-id>
       <fpage>e2020GL091741</fpage>
       <lpage></lpage>
     </element-citation>
@@ -920,7 +920,7 @@ a Creative Commons Attribution 4.0 International License (CC BY
         <name><surname>Letréguilly</surname><given-names>A.</given-names></name>
       </person-group>
       <year iso-8601-date="1996">1996</year>
-      <pub-id pub-id-type="doi">https://doi.org/10.1007/s003820050149</pub-id>
+      <pub-id pub-id-type="doi">10.1007/s003820050149</pub-id>
     </element-citation>
   </ref>
   <ref id="ref-httpsU003AU002FU002Fdoi.orgU002F10.1029U002F2008JF001015">
@@ -937,7 +937,7 @@ a Creative Commons Attribution 4.0 International License (CC BY
       <volume>114</volume>
       <issue>F2</issue>
       <uri>https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2008JF001015</uri>
-      <pub-id pub-id-type="doi">https://doi.org/10.1029/2008JF001015</pub-id>
+      <pub-id pub-id-type="doi">10.1029/2008JF001015</pub-id>
       <fpage></fpage>
       <lpage></lpage>
     </element-citation>
@@ -953,6 +953,7 @@ a Creative Commons Attribution 4.0 International License (CC BY
       <year iso-8601-date="1990">1990</year>
       <volume>5</volume>
       <issue>2</issue>
+      <pub-id pub-id-type="doi">10.1007/BF00207423</pub-id>
       <fpage>79</fpage>
       <lpage>92</lpage>
     </element-citation>
@@ -964,7 +965,7 @@ a Creative Commons Attribution 4.0 International License (CC BY
         <name><surname>DeConto</surname><given-names>R.</given-names></name>
       </person-group>
       <year iso-8601-date="2009">2009</year>
-      <pub-id pub-id-type="doi">https://doi.org/10.1038/nature07809</pub-id>
+      <pub-id pub-id-type="doi">10.1038/nature07809</pub-id>
     </element-citation>
   </ref>
 </ref-list>
