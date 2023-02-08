@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2023-01-03
+!! 2023-02-08
 !!
 !! @section Copyright
 !!
@@ -1863,7 +1863,7 @@ coord_id(1) = 'x'; coord_id(2) = 'y'
 coord_id(3) = 'zeta_c'; coord_id(4) = 'zeta_t'; coord_id(5) = 'zeta_r'
 
 #if (NETCDF4_ENABLED==1)
-  cmode           = NF90_NETCDF4
+  cmode           = ior(NF90_NETCDF4, NF90_CLASSIC_MODEL)
   n_deflate_level = 1
   flag_shuffle    = .true.
 #else
