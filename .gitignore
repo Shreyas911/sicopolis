@@ -62,3 +62,5 @@ my_*
 !/docu/doxygen/latex/.keep
 
 **/.DS_Store
+
+/test_ad/pop_push/*.gch
