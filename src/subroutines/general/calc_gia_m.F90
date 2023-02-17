@@ -226,9 +226,9 @@ end subroutine calc_gia
 !<------------------------------------------------------------------------------
 subroutine calc_el(load_ice_water, dxi, deta)
 
-#if defined(ALLOW_OPENAD) /* OpenAD */
+#if defined(ALLOW_TAPENADE) /* Tapenade */
   use ctrl_m, only: myfloor
-#endif /* OpenAD */
+#endif /* Tapenade */
 
 implicit none
 
@@ -244,11 +244,11 @@ real(dp)                              :: kei_r_incr_inv
 real(dp), dimension(0:JMAX,0:IMAX)    :: l_r, l_r_inv, fac_wss
 real(dp)                              :: ra_max
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 real(dp), allocatable, dimension(:,:) :: f_0
-#else /* OpenAD */
+#else /* Tapenade */
 real(dp), dimension(-JMAX:2*JMAX,-IMAX:2*IMAX) :: f_0
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 real(dp), parameter :: r_infl = 8.0_dp
                        ! Radius of non-locality influence of the elastic
@@ -273,13 +273,13 @@ end do
 
 ra_max  = r_infl*maxval(l_r)   ! Radius of non-locality influence (in m)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 ir_max = floor(ra_max*dxi_inv)
 jr_max = floor(ra_max*deta_inv)
          ! Radius of non-locality influence (in grid points)
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 call myfloor(ra_max*dxi_inv, ir_max)
 call myfloor(ra_max*deta_inv, jr_max)
@@ -292,7 +292,7 @@ if (jr_max.gt.JMAX) then
   write(*,*) "ERROR: unhandled case jr_max greater than JMAX for f_0 dimensions"
 end if
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 min_imax_jmax = min(IMAX, JMAX)
 ir_max        = min(ir_max, min_imax_jmax)
@@ -306,7 +306,7 @@ jl_end   = jr_max+JMAX
 
 !-------- Ice/water load --------
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 allocate(f_0(jl_begin:jl_end, il_begin:il_end))
 #endif /* Normal */
 
@@ -354,7 +354,7 @@ do j=0, JMAX
 end do
 end do
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 deallocate (f_0)
 #endif /* Normal */
 
@@ -369,9 +369,9 @@ end subroutine calc_el
 !<------------------------------------------------------------------------------
 subroutine make_zl0()
 
-#if defined(ALLOW_OPENAD) /* OpenAD */
+#if defined(ALLOW_TAPENADE) /* Tapenade */
   use ctrl_m, only: myceiling 
-#endif /* OpenAD */
+#endif /* Tapenade */
 
   use netcdf
   use nc_check_m
@@ -440,11 +440,11 @@ call error(errormsg)
 sigma_filter = filter_width/dx   ! half span of filtered area,
                                  ! in grid points
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 n_filter = ceiling(2.0_dp*sigma_filter)
-#else /* OpenAD */
+#else /* Tapenade */
 call myceiling(2.0_dp*sigma_filter, n_filter)
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 n_filter = max(n_filter, 5)
 
@@ -489,7 +489,7 @@ else
    write(ch_resolution, fmt='(f8.2)') dx
 end if
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 ch_resolution = adjustl(ch_resolution)
 #endif /* Normal */
 

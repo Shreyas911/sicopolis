@@ -38,11 +38,13 @@ module calc_vxy_m
   use sico_variables_m
   use sico_vars_m
   use error_m
-
+#if defined(ALLOW_TAPENADE)
+  use globals
+#endif
   implicit none
-
+#if !defined(ALLOW_TAPENADE)
   real(dp), dimension(0:JMAX,0:IMAX), save :: dzs_dx_aux, dzs_dy_aux
-
+#endif
   private
   public :: calc_vxy_b_init, calc_dzs_dxy_aux, &
             calc_vxy_b_sia, calc_vxy_sia, calc_vxy_static, calc_vxy_ssa
@@ -507,11 +509,11 @@ do j=0, JMAX
 
       zs_grad_sq = dzs_dxi_g(j,i)**2+dzs_deta_g(j,i)**2
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
       tau_dr(j,i) = p_b(j,i)*sqrt(zs_grad_sq)
 
-#else /* OpenAD: guarding against non-differentiable sqrt(0) */
+#else /* Tapenade: guarding against non-differentiable sqrt(0) */
 
       if (zs_grad_sq > 0) then
          tau_dr(j,i) = p_b(j,i)*sqrt(zs_grad_sq)
@@ -519,7 +521,7 @@ do j=0, JMAX
          tau_dr(j,i) = 0.0_dp
       end if
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
       tau_b(j,i) = tau_dr(j,i)
                    ! for hybrid dynamics or floating ice,
@@ -699,7 +701,7 @@ end do
 vh_max     = max(VH_MAX, eps_dp)/year2sec
 vh_max_inv = 1.0_dp/vh_max
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 call velocity_limiter_gradual(vx_b, vh_max, vh_max_inv)
 call velocity_limiter_gradual(vy_b, vh_max, vh_max_inv)
@@ -707,7 +709,7 @@ call velocity_limiter_gradual(vy_b, vh_max, vh_max_inv)
 call velocity_limiter_gradual(vx_b_g, vh_max, vh_max_inv)
 call velocity_limiter_gradual(vy_b_g, vh_max, vh_max_inv)
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 do i=0, IMAX
 do j=0, JMAX
@@ -721,7 +723,7 @@ do j=0, JMAX
 end do
 end do
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 !-------- Discard basal velocities for HYB_MODE==[1,2] --------
 
@@ -866,12 +868,12 @@ do j=0, JMAX
 
    do kc=0, KCMAX
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
       sigma_c(kc,j,i) = ctxyz1(kc,j,i) &
                         *sqrt(dzs_dxi_g(j,i)**2+dzs_deta_g(j,i)**2)
 
-#else /* OpenAD: guarding against non-differentiable sqrt(0) */
+#else /* Tapenade: guarding against non-differentiable sqrt(0) */
 
       if ( (dzs_dxi_g(j,i)**2+dzs_deta_g(j,i)**2) > 0 ) then
          sigma_c(kc,j,i) = ctxyz1(kc,j,i) &
@@ -880,19 +882,19 @@ do j=0, JMAX
          sigma_c(kc,j,i) = 0.0_dp 
       end if
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
    end do
 
    do kt=0, KTMAX
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
       sigma_t(kt,j,i) = sigma_c(0,j,i) &
                         + ctxyz2(kt,j,i) &
                           *sqrt(dzs_dxi_g(j,i)**2+dzs_deta_g(j,i)**2)
 
-#else /* OpenAD: guarding against non-differentiable sqrt(0) */
+#else /* Tapenade: guarding against non-differentiable sqrt(0) */
 
       if ( (dzs_dxi_g(j,i)**2+dzs_deta_g(j,i)**2) > 0 ) then
          sigma_t(kt,j,i) = sigma_c(0,j,i) &
@@ -902,7 +904,7 @@ do j=0, JMAX
          sigma_t(kt,j,i) = sigma_c(0,j,i) 
       end if 
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
    end do
 
@@ -1130,7 +1132,7 @@ end do
 vh_max     = max(VH_MAX, eps_dp)/year2sec
 vh_max_inv = 1.0_dp/vh_max
 
-#if !defined (ALLOW_OPENAD) /* Normal */
+#if !defined (ALLOW_TAPENADE) /* Normal */
 
 call velocity_limiter_gradual(vx_s_g, vh_max, vh_max_inv)
 call velocity_limiter_gradual(vy_s_g, vh_max, vh_max_inv)
@@ -1140,7 +1142,7 @@ call velocity_limiter_gradual(vy_t, vh_max, vh_max_inv)
 call velocity_limiter_gradual(vx_c, vh_max, vh_max_inv)
 call velocity_limiter_gradual(vy_c, vh_max, vh_max_inv)
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 do i=0, IMAX
 do j=0, JMAX
@@ -1161,7 +1163,7 @@ do j=0, JMAX
 end do
 end do
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 !-------- Computation of h_diff
 !         (defined on the grid points (i,j)) --------
@@ -1571,12 +1573,12 @@ do while ( (m < iter_ssa_min) &
    call calc_vxy_ssa_matrix(dxi, deta, &
                             flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
    call velocity_limiter_gradual(vx_m_ssa, vh_max, vh_max_inv)
    call velocity_limiter_gradual(vy_m_ssa, vh_max, vh_max_inv)
 
-#else /* OpenAD */
+#else /* Tapenade */
 
    do i=0, IMAX
    do j=0, JMAX
@@ -1585,7 +1587,7 @@ do while ( (m < iter_ssa_min) &
    end do
    end do
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 !  ------ Relaxation scheme
 
@@ -2049,11 +2051,11 @@ do j=1, JMAX-1
       v_b_sq =   (0.5_dp*(vx_b_g(j,i)+vx_b_g(j,i-1)))**2  &
                + (0.5_dp*(vy_b_g(j,i)+vy_b_g(j-1,i)))**2
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
       tau_b(j,i) = c_drag(j,i) * sqrt(v_b_sq)**p_weert_inv(j,i)
 
-#else /* OpenAD: guarding against non-differentiable sqrt(0) */
+#else /* Tapenade: guarding against non-differentiable sqrt(0) */
 
       if (v_b_sq > 0) then
          tau_b(j,i) = c_drag(j,i) * sqrt(v_b_sq)**p_weert_inv(j,i)
@@ -2061,7 +2063,7 @@ do j=1, JMAX-1
          tau_b(j,i) = 0.0_dp
       end if
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
    end if
 
@@ -2078,11 +2080,11 @@ do j=1, JMAX-1
       qx_gl_g = 0.5_dp*(qx(j,i)+qx(j,i-1))
       qy_gl_g = 0.5_dp*(qy(j,i)+qy(j-1,i))
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
       q_gl_g(j,i) = sqrt(qx_gl_g*qx_gl_g+qy_gl_g*qy_gl_g)
 
-#else /* OpenAD: guarding against non-differentiable sqrt(0) */
+#else /* Tapenade: guarding against non-differentiable sqrt(0) */
 
       if ( (qx_gl_g*qx_gl_g+qy_gl_g*qy_gl_g) > 0 ) then
          q_gl_g(j,i) = sqrt(qx_gl_g*qx_gl_g+qy_gl_g*qy_gl_g)
@@ -2090,7 +2092,7 @@ do j=1, JMAX-1
          q_gl_g(j,i) = 0.0_dp 
       end if
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
    end if
 
@@ -2114,9 +2116,9 @@ subroutine calc_vxy_ssa_matrix(dxi, deta, &
                                flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y)
 
 #if (MARGIN==3 || DYNAMICS==2) 
-#if defined(ALLOW_OPENAD) /* OpenAD */
+#if defined(ALLOW_TAPENADE) /* Tapenade */
 use sico_maths_m
-#endif /* OpenAD */
+#endif /* Tapenade */
 #endif
 
 implicit none
@@ -2136,7 +2138,7 @@ character(len=256) :: ch_solver_set_option
 
 #if (MARGIN==3 || DYNAMICS==2)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 LIS_INTEGER :: ierr
 LIS_INTEGER :: nc, nr
@@ -2150,7 +2152,7 @@ LIS_INTEGER, parameter                 :: n_sprs = 20*(IMAX+1)*(JMAX+1)
 LIS_INTEGER, allocatable, dimension(:) :: lgs_a_ptr, lgs_a_index
 LIS_SCALAR,  allocatable, dimension(:) :: lgs_a_value, lgs_b_value, lgs_x_value
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 integer(i4b) :: ierr
 integer(i4b) :: nc, nr
@@ -2164,7 +2166,7 @@ real(dp), dimension(n_sprs)             :: lgs_a_index
 integer(i4b), dimension(n_sprs)         :: lgs_a_index_pass
 real(dp), dimension(nmax)               :: lgs_b_value, lgs_x_value
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 !-------- Abbreviations --------
 
@@ -2239,17 +2241,17 @@ end do
 !-------- Assembly of the system of linear equations
 !                         (matrix storage: compressed sparse row CSR) --------
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 allocate(lgs_a_value(n_sprs), lgs_a_index(n_sprs), lgs_a_ptr(nmax+1))
 allocate(lgs_b_value(nmax), lgs_x_value(nmax))
 #endif /* Normal */
 
 lgs_a_value = 0.0_dp
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 lgs_a_index = 0
-#else /* OpenAD */
+#else /* Tapenade */
 lgs_a_index = 0.0_dp
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 lgs_a_ptr   = 0
 
 lgs_b_value = 0.0_dp
@@ -3306,7 +3308,7 @@ end do
 
 !-------- Settings for Lis --------
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 call lis_matrix_create(LIS_COMM_WORLD, lgs_a, ierr)
 call lis_vector_create(LIS_COMM_WORLD, lgs_b, ierr)
@@ -3362,14 +3364,14 @@ call lis_vector_destroy(lgs_b, ierr)
 call lis_vector_destroy(lgs_x, ierr)
 call lis_solver_destroy(solver, ierr)
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 lgs_a_index_pass = int(lgs_a_index)
 call sico_lis_solver(nmax, n_sprs, &
                            lgs_a_ptr, lgs_a_index_pass, &
                            lgs_a_value, lgs_b_value, lgs_x_value)
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 do n=1, nmax-1, 2
 
@@ -3384,7 +3386,7 @@ do n=1, nmax-1, 2
 
 end do
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 deallocate(lgs_a_value, lgs_a_index, lgs_a_ptr)
 deallocate(lgs_b_value, lgs_x_value)
 #endif /* Normal */
@@ -3490,14 +3492,14 @@ do j=0, JMAX
                     *( (vy_m_ssa(j,i+1)+vy_m_ssa(j-1,i+1)) &
                       -(vy_m_ssa(j,i-1)+vy_m_ssa(j-1,i-1)) )
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
       de_ssa(j,i) = sqrt( dvx_dxi*dvx_dxi &
                         + dvy_deta*dvy_deta &
                         + dvx_dxi*dvy_deta &
                         + 0.25_dp*(dvx_deta+dvy_dxi)*(dvx_deta+dvy_dxi) )
 
-#else /* OpenAD: guarding against non-differentiable sqrt(0) */
+#else /* Tapenade: guarding against non-differentiable sqrt(0) */
 
       if ( ( dvx_dxi*dvx_dxi &
            + dvy_deta*dvy_deta &
@@ -3511,7 +3513,7 @@ do j=0, JMAX
          de_ssa(j,i) = 0.0_dp 
       end if
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 !  ------ Term abbreviations
 
@@ -3687,8 +3689,11 @@ end subroutine calc_vis_ssa
 !> Gradual limitation of computed horizontal velocities to the interval
 !! [-vel_max, vel_max].
 !<------------------------------------------------------------------------------
+#if !defined(ALLOW_TAPENADE)
 elemental subroutine velocity_limiter_gradual(velocity, vel_max, vel_max_inv)
-
+#else
+subroutine velocity_limiter_gradual(velocity, vel_max, vel_max_inv)
+#endif
 implicit none
 
 real(dp), intent(in)    :: vel_max, vel_max_inv

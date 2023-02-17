@@ -85,7 +85,7 @@
 !! (Ralf Greve, Jorge Bernales, Sebastian Beyer, Heinz Blatter,
 !! Reinhard Calov, Thorben Dunse, Eduardo Flandez, Ben Galton-Fenzi,
 !! Thomas Goelles, Bjoern Grieger, Philipp Hancke, Patrick Heimbach,
-!! Nina Kirchner, Thomas Kleiner, Sascha Knell, Anne Le Brocq, Liz Curry Logan,
+!! Nina Kirchner, Thomas Kleiner, Sascha Knell, Anne Le Brocq, Liz Curry-Logan,
 !! Sri Hari Krishna Narayanan, Alex Robinson, Fuyuki Saito, Tatsuru Sato,
 !! Marius Schaefer, Matthias Scheiter, Oliver J. Stenzel, Malte Thoma,
 !! Roland Warner)
@@ -131,7 +131,7 @@
 !! along with SICOPOLIS. If not, see <http://www.gnu.org/licenses/>.
 !<
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-!@ begin openad_extract @
+!@ begin tapenade_extract @
 
 !-------- Include run specification header --------
 
@@ -140,17 +140,20 @@
 !-------- Include header for the Library of Iterative Solvers Lis
 !                                               (only if required) --------
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 #if (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
 #include "lisf.h"
 #endif
 #endif /* Normal */
+!@ end tapenade_extract @
 
 !-------- Include modules --------
 
+#if !defined(ALLOW_TAPENADE) /* Normal */
 #include "subroutines/general/sico_types_m.F90"
+#endif /* Normal */
 #include "subroutines/general/sico_variables_m.F90"
-
+!@ begin tapenade_extract @
 #if (defined(ANT))
 #include "subroutines/ant/sico_vars_m.F90"
 #elif (defined(ASF))
@@ -172,25 +175,25 @@
 #elif (defined(XYZ))
 #include "subroutines/xyz/sico_vars_m.F90"
 #endif
-
+!@ end tapenade_extract @
 #include "subroutines/general/error_m.F90"
 
-#if (defined(ALLOW_GRDCHK) || defined(ALLOW_OPENAD)) /* OpenAD */
-#include "subroutines/openad/ctrl_m.F90"
-#endif /* OpenAD */
+#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE)) /* Tapenade */
+#include "subroutines/tapenade/ctrl_m.F90"
+#endif /* Tapenade */
 
 #include "subroutines/general/ice_material_properties_m.F90"
 #include "subroutines/general/stereo_proj_m.F90"
 #include "subroutines/general/metric_m.F90"
 
-#if (!defined(ALLOW_OPENAD) || defined(ALLOW_OPENAD_DIFFERENTIATE)) /* Normal */
+#if (!defined(ALLOW_TAPENADE) || defined(ALLOW_TAPENADE_DIFFERENTIATE)) /* Normal */
 #include "subroutines/general/sico_maths_m.F90"
 #endif /* Normal */
-
-#if !defined(ALLOW_OPENAD) /* Normal */
+!@ begin openad_extract @
+#if !defined(ALLOW_TAPENADE) /* Normal */
 #include "subroutines/general/compare_float_m.F90"
 #endif /* Normal */
-
+!@ end openad_extract @
 #include "subroutines/general/nc_check_m.F90"
 
 #include "subroutines/general/read_m.F90"
@@ -198,7 +201,7 @@
 #include "subroutines/general/mask_update_sea_level_m.F90"
 #include "subroutines/general/flag_update_gf_gl_cf_m.F90"
 #include "subroutines/general/pdd_m.F90"
-
+!@ begin openad_extract @
 #if (MARGIN==2 || MARGIN==3)
 #include "subroutines/general/calving_m.F90"
 #endif
@@ -208,7 +211,7 @@
 #include "subroutines/grl/discharge_workers_m.F90"
 #endif
 #endif
-
+!@ end openad_extract @
 #include "subroutines/general/calc_enhance_m.F90"
 
 #include "subroutines/general/calc_vxy_m.F90"
@@ -226,7 +229,7 @@
 #elif (CALCMOD==2 || CALCMOD==3)
 #include "subroutines/general/calc_temp_enth_m.F90"
 #endif
-
+!@ begin openad_extract @
 #if (BASAL_HYDROLOGY==1)
 #include "subroutines/general/hydro_m.F90"
 #endif
@@ -234,14 +237,12 @@
 #if (defined(NMARS) || defined(SMARS))
 #include "subroutines/general/mars_instemp_m.f90"
 #endif
-
+!@ end openad_extract @
 #include "subroutines/general/calc_temp_melt_bas_m.F90"
 #include "subroutines/general/calc_bas_melt_m.F90"
 #include "subroutines/general/calc_thk_water_bas_m.F90"
 
-#if !defined(ALLOW_OPENAD) /* Normal */
 #include "subroutines/general/output_m.F90"
-#endif /* Normal */
 
 #if (defined(ANT))
 #include "subroutines/ant/boundary_m.F90"
@@ -265,7 +266,7 @@
 #include "subroutines/xyz/boundary_m.F90"
 #endif
 
-!@ end openad_extract @
+!@ end tapenade_extract @
 
 #include "subroutines/general/init_temp_water_age_m.F90"
 #if (defined(ANT))
@@ -290,21 +291,13 @@
 #include "subroutines/xyz/sico_init_m.F90"
 #endif
 
-!@ begin openad_extract @
-
-#if defined(ALLOW_OPENAD) /* OpenAD */
-#include "subroutines/openad/sico_main_loop_iter_m.F90"
-#include "subroutines/openad/sico_main_loop_wrapper_m.F90"
-#endif /* OpenAD */
-
 #include "subroutines/general/sico_main_loop_m.F90"
 #include "subroutines/general/sico_end_m.F90"
 
-!@ end openad_extract @
 
-#if (defined(ALLOW_GRDCHK) || defined(ALLOW_OPENAD)) /* OpenAD */
-#include "subroutines/openad/openad_m.F90"
-#endif /* OpenAD */
+#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE)) /* Tapenade */
+#include "subroutines/tapenade/tapenade_m.F90"
+#endif /* Tapenade */
 !-------------------------------------------------------------------------------
 !> Main program of SICOPOLIS.
 !<------------------------------------------------------------------------------
@@ -366,32 +359,28 @@ program sicopolis
 
 !-------- Declaration of variables --------
 
-!@ begin openad_extract @
-!openad begin subroutine sicopolis_openad
+!@ begin tapenade_extract @
+!tapenade begin subroutine sicopolis_tapenade
 use sico_types_m
 use sico_variables_m
 use sico_vars_m
-!@ end openad_extract @
 
 use sico_init_m
-!@ begin openad_extract @
 use sico_main_loop_m
 use sico_end_m
-!@ end openad_extract @
+!@ end tapenade_extract @
 
-#if defined(ALLOW_GRDCHK) /* OpenAD */
-use openad_m, only: adjoint_master, grdchk_main
-#endif /* OpenAD */
+#if defined(ALLOW_GRDCHK) /* Tapenade */
+use tapenade_m, only: grdchk_main
+#endif /* Tapenade */
 
-#if defined(ALLOW_OPENAD) /* OpenAD */
-use OAD_tape
-use OAD_rev
-use openad_m, only: adjoint_master
-#endif /* OpenAD */
+#if defined(ALLOW_TAPENADE) /* Tapenade */
+use tapenade_m, only: adjoint_master
+#endif /* Tapenade */
 
 implicit none
 
-!@ begin openad_extract @
+!@ begin tapenade_extract @
 integer(i4b) :: ndat2d, ndat3d
 integer(i4b) :: n_output
 real(dp) :: delta_ts, glac_index
@@ -401,18 +390,18 @@ real(dp) :: time, time_init, time_end
 real(dp), dimension(100) :: time_output
 real(dp) :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
 real(dp) :: z_mar
-!openad sicopolis_independents_cost
-!@ end openad_extract @
+!tapenade sicopolis_independents_cost
+!@ end tapenade_extract @
 
-#if defined(ALLOW_OPENAD) /* OpenAD */
+#if defined(ALLOW_TAPENADE) /* Tapenade */
 integer(i4b) :: mode
 character(len=32) :: arg
 logical :: ISPLAIN, ISTAPE, ISADJOINT
-#endif /* OpenAD */
+#endif /* Tapenade */
 
-#if (!defined(ALLOW_GRDCHK) && !defined(ALLOW_OPENAD)) /* Normal */
+#if (!defined(ALLOW_GRDCHK) && !defined(ALLOW_TAPENADE)) /* Normal */
 !-------- Initialisations --------
-
+!@ begin tapenade_extract @
 call sico_init(delta_ts, glac_index, &
      mean_accum, &
      dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
@@ -421,7 +410,6 @@ call sico_init(delta_ts, glac_index, &
      z_mar, &
      ndat2d, ndat3d, n_output)
 
-!@ begin openad_extract @
 !-------- Main loop --------
 
 call sico_main_loop(delta_ts, glac_index, &
@@ -432,20 +420,23 @@ call sico_main_loop(delta_ts, glac_index, &
      z_mar, &
      ndat2d, ndat3d, n_output)
 
-!openad end subroutine sicopolis_openad
+!tapenade end subroutine sicopolis_tapenade
 
-!@ end openad_extract @
+!@ end tapenade_extract @
 !-------- Endings --------
 
 call sico_end()
 
 !-------- End of program --------
 
-#else /* OpenAD */
-
+#else /* Tapenade */
+#if (defined(ALLOW_GRDCHK))
+call grdchk_main
+#endif
+#if (defined(ALLOW_TAPENADE))
 call adjoint_master
-
-#endif /* Normal vs. OpenAD */
+#endif
+#endif /* Normal vs. Tapenade */
 
 end program sicopolis
 

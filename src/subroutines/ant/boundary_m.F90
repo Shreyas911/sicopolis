@@ -67,10 +67,10 @@ subroutine boundary(time, dtime, dxi, deta, &
   use mask_update_sea_level_m
   use pdd_m
 
-#if defined(ALLOW_OPENAD) /* OpenAD */
+#if defined(ALLOW_TAPENADE) /* Tapenade */
   use ctrl_m, only: myfloor, myceiling
   use sico_maths_m
-#endif /* OpenAD */
+#endif /* Tapenade */
 
 implicit none
 
@@ -164,10 +164,10 @@ real(dp), parameter :: &
 
 character(len=64), parameter :: thisroutine = 'boundary'
 
-#if defined(ALLOW_OPENAD) /* OpenAD */
+#if defined(ALLOW_TAPENADE) /* Tapenade */
 integer(i4b) :: i_time_in_years
 real(dp)     :: temp_val
-#endif /* OpenAD */
+#endif /* Tapenade */
 
 time_in_years = time*sec2year
 n_year_CE     = floor((time_in_years+YEAR_ZERO)+eps_sp_dp)
@@ -204,7 +204,7 @@ if (time_in_years < real(grip_time_min,dp)) then
    delta_ts = griptemp(0)
 else if (time_in_years < real(grip_time_max,dp)) then
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
    i_kl = floor(((time_in_years) &
           -real(grip_time_min,dp))/real(grip_time_stp,dp))
    i_kl = max(i_kl, 0)
@@ -212,7 +212,7 @@ else if (time_in_years < real(grip_time_max,dp)) then
    i_gr = ceiling(((time_in_years) &
           -real(grip_time_min,dp))/real(grip_time_stp,dp))
    i_gr = min(i_gr, ndata_grip)
-#else /* OpenAD */
+#else /* Tapenade */
    call myfloor((((time_in_years) &
           -real(grip_time_min,dp))/real(grip_time_stp,dp)), i_kl)
    i_kl = max(i_kl, 0)
@@ -220,7 +220,7 @@ else if (time_in_years < real(grip_time_max,dp)) then
    call myceiling((((time_in_years) &
           -real(grip_time_min,dp))/real(grip_time_stp,dp)), i_gr)
    i_gr = min(i_gr, ndata_grip)
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
    if (i_kl == i_gr) then
 
@@ -253,7 +253,7 @@ if (time_in_years < real(gi_time_min,dp)) then
    glac_index = glacial_index(0)
 else if (time_in_years < real(gi_time_max,dp)) then
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
    i_kl = floor(((time_in_years) &
           -real(gi_time_min,dp))/real(gi_time_stp,dp))
    i_kl = max(i_kl, 0)
@@ -261,7 +261,7 @@ else if (time_in_years < real(gi_time_max,dp)) then
    i_gr = ceiling(((time_in_years) &
           -real(gi_time_min,dp))/real(gi_time_stp,dp))
    i_gr = min(i_gr, ndata_gi)
-#else /* OpenAD */
+#else /* Tapenade */
    call myfloor((((time_in_years) &
           -real(gi_time_min,dp))/real(gi_time_stp,dp)),i_kl)
    i_kl = max(i_kl, 0)
@@ -269,7 +269,7 @@ else if (time_in_years < real(gi_time_max,dp)) then
    call myceiling((((time_in_years) &
           -real(gi_time_min,dp))/real(gi_time_stp,dp)),i_gr)
    i_gr = min(i_gr, ndata_gi)
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
    if (i_kl == i_gr) then
 
@@ -561,7 +561,7 @@ if (time_in_years < real(specmap_time_min,dp)) then
    z_sl = specmap_zsl(0)
 else if (time_in_years < real(specmap_time_max,dp)) then
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
    i_kl = floor(((time_in_years) &
           -real(specmap_time_min,dp))/real(specmap_time_stp,dp))
    i_kl = max(i_kl, 0)
@@ -569,7 +569,7 @@ else if (time_in_years < real(specmap_time_max,dp)) then
    i_gr = ceiling(((time_in_years) &
           -real(specmap_time_min,dp))/real(specmap_time_stp,dp))
    i_gr = min(i_gr, ndata_specmap)
-#else /* OpenAD */
+#else /* Tapenade */
    call myfloor((((time_in_years) &
           -real(specmap_time_min,dp))/real(specmap_time_stp,dp)),i_kl)
    i_kl = max(i_kl, 0)
@@ -577,7 +577,7 @@ else if (time_in_years < real(specmap_time_max,dp)) then
    call myceiling((((time_in_years) &
           -real(specmap_time_min,dp))/real(specmap_time_stp,dp)),i_gr)
    i_gr = min(i_gr, ndata_specmap)
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
    if (i_kl == i_gr) then
 
@@ -1056,13 +1056,13 @@ do j=0, JMAX
 
 #elif (SOLID_PRECIP==3)   /* Huybrechts and de Wolde (1999) */
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
       frac_solid = 1.0_dp &
                    - 0.5_dp*erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat)
-#else /* OpenAD */
+#else /* Tapenade */
       call my_erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat, temp_val)
       frac_solid = 1.0_dp - 0.5_dp*temp_val
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 #endif
 
@@ -1198,18 +1198,18 @@ smb_corr_prescribed = smb_corr_in
 
 #if (defined(INITMIP_SMB_ANOM_FILE))   /* Correction for ISMIP InitMIP */
 
-#if defined(ALLOW_OPENAD) /* OpenAD */
+#if defined(ALLOW_TAPENADE) /* Tapenade */
 call myfloor(time_in_years, i_time_in_years)
-#endif /* OpenAD */
+#endif /* Tapenade */
 
 if ((time_in_years > 0.0_dp).and.(time_in_years <= 40.0_dp)) then
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
    smb_corr_prescribed = smb_corr_prescribed &
                               + 0.025_dp*floor(time_in_years) * smb_anom_initmip
-#else /* OpenAD */
+#else /* Tapenade */
    smb_corr_prescribed = smb_corr_prescribed &
                               + 0.025_dp*(i_time_in_years) * smb_anom_initmip
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 else if (time_in_years > 40.0_dp) then
    smb_corr_prescribed = smb_corr_prescribed &
                               + smb_anom_initmip
@@ -1229,7 +1229,7 @@ runoff = runoff + runoff_prescribed
 !         including empirical firn-warming correction due to
 !         refreezing meltwater when superimposed ice is formed
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 #if (TSURFACE<=5)
 
@@ -1248,7 +1248,7 @@ temp_s = temp_ma
 where (temp_s > -0.001_dp) temp_s = -0.001_dp
                             ! Cut-off of positive air temperatures
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 #if (TSURFACE<=5)
 
@@ -1276,7 +1276,7 @@ do j=0, JMAX
 end do
 end do
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 !-------- Calving --------
 

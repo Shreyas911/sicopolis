@@ -43,8 +43,8 @@ module read_m
   public :: read_tms_nc, read_target_topo_nc, &
             read_2d_input, read_phys_para, read_kei
 
-#if (defined(ALLOW_GRDCHK) || defined(ALLOW_OPENAD))
-  public :: read_ad_data
+#if (defined(ALLOW_NORMAL) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
+  public :: read_age_data, read_BedMachine_data
 #endif
 
 contains
@@ -945,9 +945,9 @@ contains
 
   character(len=64), parameter :: thisroutine = 'read_target_topo_nc'
 
-#if defined(ALLOW_OPENAD) /* OpenAD */
+#if defined(ALLOW_TAPENADE) /* Tapenade */
   integer(i4b) :: i, j
-#endif /* OpenAD */
+#endif /* Tapenade */
 
 !-------- Read target-topography data
 !         (from a time-slice file of a previous simulation) --------
@@ -999,13 +999,13 @@ contains
 
 !-------- Convert data to double precision --------
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   mask_target = transpose(mask_conv)
   zs_target    = real(transpose(zs_conv),dp)
   zb_target    = real(transpose(zb_conv),dp)
   zl_target    = real(transpose(zl_conv),dp)
   H_target     = real(transpose(H_conv) ,dp)
-#else /* OpenAD */
+#else /* Tapenade */
   do i=0, IMAX
   do j=0, JMAX
      mask_target(j,i) = mask_conv(i,j)
@@ -1015,7 +1015,7 @@ contains
      H_target(j,i)     = real(H_conv(i,j) ,dp)
   end do
   end do
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
   end subroutine read_target_topo_nc
 
@@ -1183,11 +1183,11 @@ contains
 
   filename_with_path = trim(IN_PATH)//'/general/kei.dat'
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   open(unit=11, iostat=ios, file=trim(filename_with_path), status='old')
-#else /* OpenAD */
+#else /* Tapenade */
   open(unit=11, iostat=ios, file=trim(filename_with_path))
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
   if (ios /= 0) then
      errormsg = ' >>> read_kei: Error when opening the kei file!'
@@ -1280,11 +1280,11 @@ contains
 
   else   ! ASCII file
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
      open(n_unit, iostat=ios, file=trim(filename_aux), status='old')
-#else /* OpenAD */
+#else /* Tapenade */
      open(n_unit, iostat=ios, file=trim(filename_aux))
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
      if (ios /= 0) then
         errormsg = ' >>> read_phys_para: Error when opening the phys_para file!'
@@ -1693,12 +1693,12 @@ contains
 
   character :: check
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
   integer             :: i0
   character(len=1024) :: txt
 
-#else /* OpenAD */
+#else /* Tapenade */
 
   character                   :: ch_dummy
   character(len=*), parameter :: fmt1='(a)', fmt3='(15x)'
@@ -1706,7 +1706,7 @@ contains
 
   first_read = .true.
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
   n_cnt_phys_para = n_cnt_phys_para + 1
 
@@ -1714,7 +1714,7 @@ contains
 
   do while (check == '%')
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
      read(unit=n_unit, fmt='(a)') txt
 
@@ -1725,7 +1725,7 @@ contains
         read(txt(i0:), *) para
      end if
 
-#else /* OpenAD: cannot differentiate through index function */
+#else /* Tapenade: cannot differentiate through index function */
 
      if (first_read) then
         read(unit=n_unit, fmt=trim(fmt1), advance='no') check
@@ -1740,17 +1740,17 @@ contains
         read(unit=n_unit, fmt=*) para
      end if
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
   end do
 
   end subroutine read_phys_para_value
 
-#if (defined(ALLOW_GRDCHK) || defined(ALLOW_OPENAD))
+#if (defined(ALLOW_NORMAL) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
 !-------------------------------------------------------------------------------
 !> Reading in of adjoint related data (only set up for ages right now).
 !<------------------------------------------------------------------------------
-  subroutine read_ad_data()
+  subroutine read_age_data()
 
   use sico_variables_m
   use sico_vars_m
@@ -1759,6 +1759,9 @@ contains
 
     integer(i4b) :: ios, i, j, k, kc, kt, KDATA
     logical      :: debug = .true.
+! path stores path with filename
+! assume you are in src directory when defining path
+    character(len=256) :: path 
 
 #if (defined(AGE_COST)) /* Only designed for AGE_COST right now */
 ! Warning: code below is not robust against
@@ -1769,49 +1772,124 @@ contains
     KDATA = KCMAX + KTMAX
 #endif
 
-    ! Note: the last lines of these files
-    ! correspond to the surface of the ice sheet:
-    open(unit=90, iostat=ios, &
-file='subroutines/openad/gridded_age_obs.dat', status='old')
-    open(unit=91, iostat=ios, &
-file='subroutines/openad/gridded_age_unc.dat', status='old')
-    do k=0,KDATA
+#if (defined(AGE_DATA_PATH))
+  path = trim(AGE_DATA_PATH)
+#else
+  errormsg = ' >>> read_tms_nc: AGE_DATA_PATH must be defined!'
+  call error(errormsg)
+#endif
+
+open(unit=1092, file=path, status='old')
+
+! Some issues need to be sorted with age_unc data first
+
+!#if (defined(AGE_UNC_PATH))
+!  path = trim(AGE_UNC_PATH)
+!#else
+!  errormsg = ' >>> read_tms_nc: AGE_UNC_PATH must be defined!'
+!  call error(errormsg)
+!#endif
+
+!open(unit=1093, file=path, status='old')
+
+#if (defined(H_DATA_PATH))
+  path = trim(H_DATA_PATH)
+#else
+  errormsg = ' >>> read_tms_nc: H_DATA_PATH must be defined!'
+  call error(errormsg)
+#endif
+
+open(unit=1094, file=path, status='old')
+
+! Age layer data only has H_data, but not H_unc
+! Will have to consider using BedMachine data for H_unc
+
+!#if (defined(H_UNC_PATH))
+!  path = trim(H_UNC_PATH)
+!#else
+!  errormsg = ' >>> read_tms_nc: H_UNC_PATH must be defined!'
+!  call error(errormsg)
+!#endif
+
+!open(unit=1095, file=path, status='old')
+
+    do i=0,IMAX
        do j=0,JMAX
-          do i=0,IMAX
-!write(6, fmt='(a,i3,a,i3,a,i3,a)', advance="no") '(', k, ',', j, ',', i, ') '
-             if (i.lt.IMAX) then
-             read(unit=90, fmt='(es11.4)', advance="no") age_data(k,j,i)
-             read(unit=91, fmt='(es11.4)', advance="no") age_unc(k,j,i)
-             else ! do a carriage return
-             read(unit=90, fmt='(es11.4)'              ) age_data(k,j,i)
-             read(unit=91, fmt='(es11.4)'              ) age_unc(k,j,i)
-             end if
-          end do
-!write(6, fmt='(a)') ' '
+          read(1094, *) H_data(j,i)
+          !read(1095, *) H_unc(j,i)
        end do
     end do
-    close(unit=90)
-    close(unit=91)
+
+    do k=0,KDATA
+       do i=0,IMAX
+          do j=0,JMAX
+             read(1092, *) age_data(k,j,i)
+             !read(1093, *) age_unc(k,j,i)
+          end do
+       end do
+    end do
 
     ! ages yr --> s
     do k=0,KDATA
        do j=0,JMAX
           do i=0,IMAX
                 age_data(k,j,i) = age_data(k,j,i) * year2sec
-                age_unc(k,j,i)  = age_unc(k,j,i)  * year2sec
-            if (debug) then ! cheat the FDS by making initial ages = to data
-                age_c    (k,j,i) = age_data(k,j,i)
-                age_c_new(k,j,i) = age_data(k,j,i)
-            end if
+                !age_unc(k,j,i)  = age_unc(k,j,i)  * year2sec
           end do
        end do
     end do
+    close(unit=1092)
+    !close(unit=1093)
+    close(unit=1094)
+    !close(unit=1095)
+#endif
 
-#endif /* Only designed for AGE_COST right now */
+  end subroutine read_age_data
 
-  end subroutine read_ad_data
+  subroutine read_BedMachine_data()
 
-#endif /* inclusion of OpenAD only routine */
+  use sico_variables_m
+  use sico_vars_m
+
+  implicit none
+
+    integer(i4b) :: i, j
+! path stores path with filename
+! assume you are in src directory when defining path
+    character(len=256) :: path 
+
+#if (defined(BEDMACHINE_COST)) 
+
+#if (defined(BEDMACHINE_PATH))
+  path = trim(BEDMACHINE_PATH)
+#else
+  errormsg = ' >>> read_tms_nc: BEDMACHINE_PATH must be defined!'
+  call error(errormsg)
+#endif
+
+open(unit=92, file=path, status='old')
+
+#if (defined(BEDMACHINE_UNC_PATH))
+  path = trim(BEDMACHINE_UNC_PATH)
+#else
+  errormsg = ' >>> read_tms_nc: BEDMACHINE_UNC_PATH must be defined!'
+  call error(errormsg)
+#endif
+
+open(unit=93, file=path, status='old')
+
+       do i=0,IMAX
+          do j=0,JMAX
+             read(92, *) H_BedMachine_data(j,i)
+             read(93, *) H_unc_BedMachine_data(j,i)
+          end do
+       end do
+    close(unit=92)
+    close(unit=93)
+
+#endif
+  end subroutine read_BedMachine_data
+#endif /* inclusion of Tapenade only routine */
 
 !-------------------------------------------------------------------------------
 

@@ -38,6 +38,9 @@ module sico_main_loop_m
   use sico_variables_m
   use sico_vars_m
   use error_m
+#if defined(ALLOW_TAPENADE)
+  use globals
+#endif
   
   implicit none
  
@@ -48,7 +51,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Main routine of sico_main_loop_m: Main loop of SICOPOLIS.
 !<------------------------------------------------------------------------------
-!@ begin openad_extract @
+!@ begin tapenade_extract @
   subroutine sico_main_loop(delta_ts, glac_index, &
                       mean_accum, &
                       dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
@@ -56,7 +59,7 @@ contains
                       dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
                       z_mar, &
                       ndat2d, ndat3d, n_output)
-!@ end openad_extract @
+!@ end tapenade_extract @
  
     use boundary_m
   
@@ -76,15 +79,11 @@ contains
     use calc_temp_melt_bas_m
     use calc_bas_melt_m
     use calc_thk_water_bas_m
-#if !defined(ALLOW_OPENAD) /* Normal */
     use output_m
-#else /* OpenAD */
-    use sico_main_loop_wrapper_m
-#endif /* Normal vs. OpenAD */
  
   implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   integer(i4b),       intent(in)    :: n_output
   real(dp),           intent(in)    :: mean_accum
   real(dp),           intent(in)    :: dtime, dtime_temp, dtime_wss, &
@@ -129,8 +128,8 @@ contains
      iter_output(n) = nint((time_output(n)-time_init)/dtime)
   end do
 #endif
-  
-#if !defined(ALLOW_OPENAD) /* Normal */
+
+  !$NO AD BINOMIAL-CKP itercount_max+1 20 1
   main_loop : do itercount=1, itercount_max
   
   write(unit=6, fmt='(2x,i0)') itercount
@@ -335,7 +334,7 @@ contains
   call calc_thk_water_bas()
   
   !-------- Data output --------
-  
+#if !(defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
   !  ------ Time-slice data
   
 #if (OUTPUT==1)
@@ -485,23 +484,10 @@ contains
 
 #endif
 
+#endif   /* !ALLOW_GRDCHK & !ALLOW_TAPENADE */
   end do main_loop   ! End of main loop (time integration)
 
-#else /* OpenAD */
-
-  call sico_main_loop_wrapper(delta_ts, glac_index, &
-                      mean_accum, &
-                      dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
-                      time, time_init, time_end, time_output, &
-                      dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-                      z_mar, &
-                      ndat2d, ndat3d, n_output, &
-                      itercount_max,iter_temp,iter_wss,iter_ser,&
-                      iter_out,iter_output)
-
-#endif /* Normal vs. OpenAD */
-  
-  end subroutine sico_main_loop
+    end subroutine sico_main_loop
 !-------------------------------------------------------------------------------
   
 end module sico_main_loop_m

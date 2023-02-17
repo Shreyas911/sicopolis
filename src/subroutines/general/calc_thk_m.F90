@@ -50,7 +50,7 @@ module calc_thk_m
                          ! single precision is a good choice
                          ! for the ice-thickness epsilon
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   private
 #endif
   public :: calc_thk_init
@@ -67,9 +67,9 @@ subroutine calc_thk_init()
 
 implicit none
 
-#if defined(ALLOW_OPENAD) /* OpenAD */
+#if defined(ALLOW_TAPENADE) /* Tapenade */
 integer(i4b) :: i, j
-#endif /* OpenAD */
+#endif /* Tapenade */
 
 #if (defined(CALCZS))
   errormsg = ' >>> calc_thk_init: Replace CALCZS by CALCTHK in header file!'
@@ -89,7 +89,7 @@ dzb_dtau = dzl_dtau
 
 #elif (MARGIN==3)   /* grounded and floating ice */
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 where (mask <= 1)   ! grounded ice or ice-free land
    zb_new   = zl_new
@@ -99,7 +99,7 @@ elsewhere   ! (mask >= 2; ocean or floating ice)
    dzb_dtau = 0.0_dp   ! will be overwritten later
 end where
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 do i=0, IMAX
 do j=0, JMAX
@@ -113,7 +113,7 @@ do j=0, JMAX
 end do
 end do
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 #else
 
@@ -239,11 +239,11 @@ end subroutine calc_thk_sia_expl
 !<------------------------------------------------------------------------------
 subroutine calc_thk_sia_impl(time, dtime, dxi, deta, z_mar, mean_accum)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 use sico_maths_m, only : sor_sprs
-#else /* OpenAD */
+#else /* Tapenade */
 use sico_maths_m
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 #if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
   use calving_m
@@ -268,13 +268,13 @@ integer(i4b)                            :: nc, nr
 integer(i4b), parameter                 :: nmax   =    (IMAX+1)*(JMAX+1)
 integer(i4b), parameter                 :: n_sprs = 10*(IMAX+1)*(JMAX+1)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), allocatable, dimension(:) :: lgs_a_ptr, lgs_a_index
 integer(i4b), allocatable, dimension(:) :: lgs_a_diag_index
 integer(i4b), allocatable, dimension(:) :: lgs_a_index_trim
 real(dp),     allocatable, dimension(:) :: lgs_a_value, lgs_b_value, lgs_x_value
 real(dp),     allocatable, dimension(:) :: lgs_a_value_trim
-#else /* OpenAD */
+#else /* Tapenade */
 real(dp),             dimension(n_sprs) :: lgs_a_index
 integer(i4b),         dimension(nmax+1) :: lgs_a_ptr
 integer(i4b),           dimension(nmax) :: lgs_a_diag_index
@@ -283,13 +283,13 @@ real(dp),             dimension(n_sprs) :: lgs_a_value
 real(dp),               dimension(nmax) :: lgs_b_value
 real(dp),               dimension(nmax) :: lgs_x_value
 real(dp),             dimension(n_sprs) :: lgs_a_value_trim
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 real(dp)                                :: eps_sor
 
 #elif (CALCTHK==3)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 LIS_INTEGER                            :: ierr
 LIS_INTEGER                            :: iter
 LIS_INTEGER                            :: nc, nr
@@ -302,7 +302,7 @@ LIS_VECTOR                             :: lgs_b, lgs_x
 LIS_SCALAR,  allocatable, dimension(:) :: lgs_a_value, lgs_b_value, lgs_x_value
 LIS_SOLVER                             :: solver
 character(len=256)                     :: ch_solver_set_option
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b)                            :: nc, nr
 integer(i4b), parameter                 :: nmax   =    (IMAX+1)*(JMAX+1)
 integer(i4b), parameter                 :: n_sprs = 10*(IMAX+1)*(JMAX+1)
@@ -314,7 +314,7 @@ real(dp),             dimension(n_sprs) :: lgs_a_value
 real(dp),               dimension(nmax) :: lgs_b_value
 real(dp),               dimension(nmax) :: lgs_x_value
 real(dp),             dimension(n_sprs) :: lgs_a_value_trim
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 #endif
 
@@ -345,17 +345,17 @@ end do
 
 #if (CALCTHK==2 || CALCTHK==3)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 allocate(lgs_a_value(n_sprs), lgs_a_index(n_sprs), lgs_a_ptr(nmax+1))
 allocate(lgs_a_diag_index(nmax), lgs_b_value(nmax), lgs_x_value(nmax))
 #endif /* Normal */
 
 lgs_a_value = 0.0_dp
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 lgs_a_index = 0
-#else /* OpenAD */
+#else /* Tapenade */
 lgs_a_index = 0.0_dp
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 lgs_a_ptr   = 0
 
 lgs_b_value = 0.0_dp
@@ -455,20 +455,20 @@ call error(errormsg)
 
 !  ------ Solution with the built-in SOR solver
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 allocate(lgs_a_value_trim(nnz), lgs_a_index_trim(nnz))
 #endif /* Normal */
 
 do k=1, nnz   ! relocate matrix to trimmed arrays
    lgs_a_value_trim(k) = lgs_a_value(k)
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
    lgs_a_index_trim(k) = lgs_a_index(k)
-#else /* OpenAD */
+#else /* Tapenade */
    lgs_a_index_trim(k) = int(lgs_a_index(k))
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 end do
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 deallocate(lgs_a_value, lgs_a_index)
 #endif /* Normal */
 
@@ -478,9 +478,6 @@ call sor_sprs(lgs_a_value_trim, &
               lgs_a_index_trim, lgs_a_diag_index, lgs_a_ptr, &
               lgs_b_value, &
               nnz, nmax, &
-#if defined(ALLOW_OPENAD) /* OpenAD */
-              n_sprs, &
-#endif /* OpenAD */
               OMEGA_SOR, eps_sor, lgs_x_value, ierr)
 
 do nr=1, nmax
@@ -489,14 +486,14 @@ do nr=1, nmax
    zs_new(j,i) = lgs_x_value(nr)
 end do
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 deallocate(lgs_a_value_trim, lgs_a_index_trim, lgs_a_ptr)
 deallocate(lgs_a_diag_index, lgs_b_value, lgs_x_value)
 #endif /* Normal */
 
 #elif (CALCTHK==3)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   
   !  ------ Settings for Lis
   
@@ -555,7 +552,7 @@ deallocate(lgs_a_diag_index, lgs_b_value, lgs_x_value)
   deallocate(lgs_a_value, lgs_a_index, lgs_a_ptr)
   deallocate(lgs_a_diag_index, lgs_b_value, lgs_x_value)
   
-#else /* OpenAD */
+#else /* Tapenade */
 
   do k=1, nnz   ! relocate matrix to trimmed arrays
      lgs_a_value_trim(k) = lgs_a_value(k)
@@ -572,7 +569,7 @@ deallocate(lgs_a_diag_index, lgs_b_value, lgs_x_value)
      zs_new(j,i) = lgs_x_value(nr)
   end do
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 #endif
 
@@ -684,7 +681,7 @@ end do
 
 !-------- Solution of the explicit scheme --------
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 where (flag_inner_point)   ! inner point
 
@@ -699,7 +696,7 @@ elsewhere
    H_new = 0.0_dp   ! zero-thickness boundary condition
 end where
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 do i=0, IMAX
 do j=0, JMAX
@@ -720,7 +717,7 @@ do j=0, JMAX
 end do
 end do
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 !-------- Applying the source term --------
 
@@ -743,15 +740,15 @@ end subroutine calc_thk_expl
 !<------------------------------------------------------------------------------
 subroutine calc_thk_impl(time, dtime, dxi, deta, z_mar, mean_accum)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 #if (CALCTHK==5)
 use sico_maths_m, only : sor_sprs
 #elif (CALCTHK==6)
 use sico_maths_m, only : sor_sprs, sico_lis_solver
 #endif
-#else /* OpenAD */
+#else /* Tapenade */
 use sico_maths_m
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 #if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
   use calving_m
@@ -779,13 +776,13 @@ integer(i4b)                            :: nc, nr
 integer(i4b), parameter                 :: nmax   =    (IMAX+1)*(JMAX+1)
 integer(i4b), parameter                 :: n_sprs = 10*(IMAX+1)*(JMAX+1)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), allocatable, dimension(:) :: lgs_a_ptr, lgs_a_index
 integer(i4b), allocatable, dimension(:) :: lgs_a_diag_index
 integer(i4b), allocatable, dimension(:) :: lgs_a_index_trim
 real(dp),     allocatable, dimension(:) :: lgs_a_value, lgs_b_value, lgs_x_value
 real(dp),     allocatable, dimension(:) :: lgs_a_value_trim
-#else /* OpenAD */
+#else /* Tapenade */
 real(dp),             dimension(n_sprs) :: lgs_a_index
 integer(i4b),         dimension(nmax+1) :: lgs_a_ptr
 integer(i4b),           dimension(nmax) :: lgs_a_diag_index
@@ -794,13 +791,13 @@ real(dp),             dimension(n_sprs) :: lgs_a_value
 real(dp),               dimension(nmax) :: lgs_b_value
 real(dp),               dimension(nmax) :: lgs_x_value
 real(dp),             dimension(n_sprs) :: lgs_a_value_trim
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 real(dp)                                :: eps_sor
 
 #elif (CALCTHK==6)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 LIS_INTEGER                            :: ierr
 LIS_INTEGER                            :: iter
 LIS_INTEGER                            :: nc, nr
@@ -813,7 +810,7 @@ LIS_VECTOR                             :: lgs_b, lgs_x
 LIS_SCALAR,  allocatable, dimension(:) :: lgs_a_value, lgs_b_value, lgs_x_value
 LIS_SOLVER                             :: solver
 character(len=256)                     :: ch_solver_set_option
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b)                            :: nc, nr
 integer(i4b), parameter                 :: nmax   =    (IMAX+1)*(JMAX+1)
 integer(i4b), parameter                 :: n_sprs = 10*(IMAX+1)*(JMAX+1)
@@ -825,7 +822,7 @@ real(dp),             dimension(n_sprs) :: lgs_a_value
 real(dp),               dimension(nmax) :: lgs_b_value
 real(dp),               dimension(nmax) :: lgs_x_value
 real(dp),             dimension(n_sprs) :: lgs_a_value_trim
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 #endif
 
@@ -899,17 +896,17 @@ end do
 
 #if (CALCTHK==5 || CALCTHK==6)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 allocate(lgs_a_value(n_sprs), lgs_a_index(n_sprs), lgs_a_ptr(nmax+1))
 allocate(lgs_a_diag_index(nmax), lgs_b_value(nmax), lgs_x_value(nmax))
 #endif /* Normal */
 
 lgs_a_value = 0.0_dp
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 lgs_a_index = 0
-#else /* OpenAD */
+#else /* Tapenade */
 lgs_a_index = 0.0_dp
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 lgs_a_ptr   = 0
 
 lgs_b_value = 0.0_dp
@@ -1011,20 +1008,20 @@ call error(errormsg)
 
 !  ------ Solution with the built-in SOR solver
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 allocate(lgs_a_value_trim(nnz), lgs_a_index_trim(nnz))
 #endif /* Normal */
 
 do k=1, nnz   ! relocate matrix to trimmed arrays
    lgs_a_value_trim(k) = lgs_a_value(k)
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
    lgs_a_index_trim(k) = lgs_a_index(k)
-#else /* OpenAD */
+#else /* Tapenade */
    lgs_a_index_trim(k) = int(lgs_a_index(k))
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 end do
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 deallocate(lgs_a_value, lgs_a_index)
 #endif /* Normal */
 
@@ -1034,9 +1031,6 @@ call sor_sprs(lgs_a_value_trim, &
               lgs_a_index_trim, lgs_a_diag_index, lgs_a_ptr, &
               lgs_b_value, &
               nnz, nmax, &
-#if defined(ALLOW_OPENAD) /* OpenAD */
-              n_sprs, &
-#endif /* OpenAD */
               OMEGA_SOR, eps_sor, lgs_x_value, ierr)
 
 do nr=1, nmax
@@ -1045,14 +1039,14 @@ do nr=1, nmax
    H_new(j,i) = lgs_x_value(nr)
 end do
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 deallocate(lgs_a_value_trim, lgs_a_index_trim, lgs_a_ptr)
 deallocate(lgs_a_diag_index, lgs_b_value, lgs_x_value)
 #endif /* Normal */
 
 #elif (CALCTHK==6)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 !  ------ Settings for Lis
 
@@ -1111,15 +1105,15 @@ end do
 deallocate(lgs_a_value, lgs_a_index, lgs_a_ptr)
 deallocate(lgs_a_diag_index, lgs_b_value, lgs_x_value)
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 do k=1, nnz   ! relocate matrix to trimmed arrays
    lgs_a_value_trim(k) = lgs_a_value(k)
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
    lgs_a_index_trim(k) = lgs_a_index(k)
-#else /* OpenAD */
+#else /* Tapenade */
    lgs_a_index_trim(k) = int(lgs_a_index(k))
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 end do
 call sico_lis_solver(nmax, nnz, &
                            lgs_a_ptr, lgs_a_index_trim, &
@@ -1130,7 +1124,7 @@ do nr=1, nmax
    H_new(j,i) = lgs_x_value(nr)
 end do
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 #endif
 
@@ -1246,9 +1240,9 @@ end subroutine apply_mb_source
   real(dp)                           :: target_topo_tau_factor, target_topo_tau
   real(dp)                           :: dtime_inv
 
-#if defined(ALLOW_OPENAD) /* OpenAD */
+#if defined(ALLOW_TAPENADE) /* Tapenade */
   integer(i4b) :: i, j
-#endif /* OpenAD */
+#endif /* Tapenade */
 
 !-------- Saving computed H_new before any adjustments --------
 
@@ -1256,11 +1250,11 @@ end subroutine apply_mb_source
 
 !-------- Correct negative thickness values --------
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
   where (H_new < 0.0_dp) H_new = 0.0_dp
 
-#else /* OpenAD */
+#else /* Tapenade */
 
   do i=0, IMAX  
   do j=0, JMAX 
@@ -1270,7 +1264,7 @@ end subroutine apply_mb_source
   end do
   end do
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 !-------- Further adjustments --------
 
@@ -1331,12 +1325,12 @@ end subroutine apply_mb_source
 
 !  ------ Maximum ice extent constrained by prescribed mask
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
   where (mask_maxextent == 0) &   ! not allowed to glaciate
      H_new = 0.0_dp
 
-#else /* OpenAD */
+#else /* Tapenade */
 
   do i=0, IMAX
   do j=0, JMAX
@@ -1346,7 +1340,7 @@ end subroutine apply_mb_source
   end do
   end do
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 #else
 
@@ -1923,7 +1917,7 @@ end do
 
 #if (ICE_SHELF_CALVING==2)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 do
 
@@ -1955,7 +1949,7 @@ do
 
 end do
 
-#else /* OpenAD */
+#else /* Tapenade */
 
    flag_calving_event   = .true.
 
@@ -1987,7 +1981,7 @@ do while (flag_calving_event)
 
 end do
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 #elif (ICE_SHELF_CALVING==3)
 
@@ -2202,7 +2196,7 @@ do while (flag_change)
    end do
    end do
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
    mask_connect_diff = abs(mask_connect-mask_connect_save)
 
@@ -2212,7 +2206,7 @@ do while (flag_change)
       flag_change = .false.
    end if
 
-#else /* OpenAD */
+#else /* Tapenade */
 
    flag_change = .false.
 
@@ -2223,17 +2217,17 @@ do while (flag_change)
    end do
    end do
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 end do
 
 !-------- Reset disconnected "ocean islands" to ice-free land --------
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 where ((mask == 2).and.(mask_connect == 0)) mask = 1
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 do i=0, IMAX
 do j=0, JMAX
@@ -2242,7 +2236,7 @@ do j=0, JMAX
 end do
 end do
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 end subroutine ocean_connect
 

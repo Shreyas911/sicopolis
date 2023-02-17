@@ -721,7 +721,7 @@ save
 !> epsi: Very small number
    real(dp), parameter :: epsi = 1.0e-12_dp
 
-#if (!defined(ALLOW_GRDCHK) && !defined(ALLOW_OPENAD)) /* Normal */
+#if (!defined(ALLOW_GRDCHK) && !defined(ALLOW_TAPENADE)) /* Normal */
 
 !> eps_sp: Small number to single-precision accuracy
    real(sp), parameter :: eps_sp = epsilon(1.0_sp)
@@ -730,7 +730,7 @@ save
 !> eps_dp: Small number to double-precision accuracy
    real(dp), parameter :: eps_dp = epsilon(1.0_dp)
 
-#else /* OpenAD */
+#else /* Tapenade */
 
    !myepsilon_sp was computed using the code below. 4 is the value of sp
    !real(4) :: y = 1.0
@@ -749,7 +749,7 @@ save
    real(dp), parameter :: myepsilon_dp  = 2.2204460492503131E-016
    real(dp), parameter :: eps_dp = myepsilon_dp
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 !-------- Further quantities -------- 
 
@@ -778,7 +778,7 @@ save
 !>               3: forcing by time-dependent surface temperature
 !>                  and precipitation data.
    integer(i4b) :: forcing_flag
-
+#if !defined(ALLOW_TAPENADE)
 !> n_core: Number of positions to be considered in the time-series file
 !>         for deep boreholes
    integer(i4b) :: n_core
@@ -792,7 +792,22 @@ save
    real(dp), dimension(:), allocatable :: y_core
 !> ch_core(n): Names of the prescribed borehole positions
    character(len=16), dimension(:), allocatable :: ch_core
-
+#else
+!> n_core: Number of positions to be considered in the time-series file
+!>         for deep boreholes
+   integer(i4b), parameter :: n_core = 7
+!> lambda_core(n): Geographical longitude of the prescribed borehole positions
+   real(dp), dimension(n_core) :: lambda_core
+!> phi_core(n): Geographical latitude of the prescribed borehole positions
+   real(dp), dimension(n_core) :: phi_core
+!> x_core(n): Coordinate xi (= x) of the prescribed borehole positions
+   real(dp), dimension(n_core) :: x_core
+!> y_core(n): Coordinate eta (= y) of the prescribed borehole positions
+   real(dp), dimension(n_core) :: y_core
+!> ch_core(n): Names of the prescribed borehole positions
+   character(len=16), dimension(n_core) :: ch_core
+#endif
+#if !defined(ALLOW_TAPENADE)
 !> grip_time_min: Minimum time of the data values for the
 !>                surface temperature anomaly
    integer(i4b) :: grip_time_min
@@ -806,7 +821,37 @@ save
    integer(i4b) :: ndata_grip
 !> griptemp(n): Data values for the surface temperature anomaly
    real(dp), dimension(:), allocatable :: griptemp
-
+#else
+#if (TSURFACE!=4)
+!> grip_time_min: Minimum time of the data values for the
+!>                surface temperature anomaly
+   integer(i4b) :: grip_time_min
+!> grip_time_stp: Time step of the data values for the
+!>                surface temperature anomaly
+   integer(i4b) :: grip_time_stp
+!> grip_time_max: Maximum time of the data values for the
+!>                surface temperature anomaly
+   integer(i4b) :: grip_time_max
+!> ndata_grip: Number of data values for the surface temperature anomaly
+   integer(i4b) :: ndata_grip
+!> griptemp(n): Data values for the surface temperature anomaly
+   real(dp), dimension(:), allocatable :: griptemp
+#else
+!> grip_time_min: Minimum time of the data values for the
+!>                surface temperature anomaly
+   integer(i4b) :: grip_time_min = -139990 !@ python_automated_metadata GRIP_TIME_MIN @ 
+!> grip_time_stp: Time step of the data values for the
+!>                surface temperature anomaly
+   integer(i4b) :: grip_time_stp = 1 !@ python_automated_metadata GRIP_TIME_STP @ 
+!> grip_time_max: Maximum time of the data values for the
+!>                surface temperature anomaly
+   integer(i4b) :: grip_time_max = 3 !@ python_automated_metadata GRIP_TIME_MAX @ 
+!> ndata_grip: Number of data values for the surface temperature anomaly
+   integer(i4b), parameter :: ndata_grip = 139993 !@ python_automated_metadata NDATA_GRIP @ 
+!> griptemp(n): Data values for the surface temperature anomaly
+   real(dp), dimension(0:ndata_grip) :: griptemp
+#endif
+#endif
 !> gi_time_min: Minimum time of the data values for the glacial index
    integer(i4b) :: gi_time_min
 !> gi_time_stp: Time step of the data values for the glacial index
@@ -817,7 +862,7 @@ save
    integer(i4b) :: ndata_gi
 !> glacial_index(n): Data values for the glacial index
    real(dp), dimension(:), allocatable :: glacial_index
-
+#if !defined(ALLOW_TAPENADE)
 !> specmap_time_min: Minimum time of the data values for the sea level
    integer(i4b) :: specmap_time_min
 !> specmap_time_stp: Time step of the data values for the sea level
@@ -828,7 +873,31 @@ save
    integer(i4b) :: ndata_specmap
 !> specmap_zsl(n): Data values for the sea level
    real(dp), dimension(:), allocatable :: specmap_zsl
-
+#else
+#if (SEA_LEVEL!=3)
+!> specmap_time_min: Minimum time of the data values for the sea level
+   integer(i4b) :: specmap_time_min
+!> specmap_time_stp: Time step of the data values for the sea level
+   integer(i4b) :: specmap_time_stp
+!> specmap_time_max: Maximum time of the data values for the sea level
+   integer(i4b) :: specmap_time_max
+!> ndata_specmap: Number of data values for the sea level
+   integer(i4b) :: ndata_specmap
+!> specmap_zsl(n): Data values for the sea level
+   real(dp), dimension(:), allocatable :: specmap_zsl
+#else
+!> specmap_time_min: Minimum time of the data values for the sea level
+   integer(i4b) :: specmap_time_min = -124000 !@ python_automated_metadata SPECMAP_TIME_MIN @ 
+!> specmap_time_stp: Time step of the data values for the sea level
+   integer(i4b) :: specmap_time_stp = 1000 !@ python_automated_metadata SPECMAP_TIME_STP @ 
+!> specmap_time_max: Maximum time of the data values for the sea level
+   integer(i4b) :: specmap_time_max = 0 !@ python_automated_metadata SPECMAP_TIME_MAX @ 
+!> ndata_specmap: Number of data values for the sea level
+   integer(i4b), parameter :: ndata_specmap = 124 !@ python_automated_metadata NDATA_SPECMAP @ 
+!> specmap_zsl(n): Data values for the sea level
+   real(dp), dimension(0:ndata_specmap) :: specmap_zsl
+#endif
+#endif
 !> time_target_topo_init: Initial time for target-topography adjustment
    real(dp) :: time_target_topo_init
 !> time_target_topo_final: Final time for target-topography adjustment
@@ -893,24 +962,27 @@ save
 !> end_of_line: End-of-line string
    character, parameter :: end_of_line = char(10)
 
-#if (defined(ALLOW_GRDCHK) || defined(ALLOW_OPENAD)) /* OpenAD */
+#if (defined(ALLOW_NORMAL) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE)) /* Tapenade */
 !> fc: scalar cost function
    real(dp) :: fc
-!> objf_test: cost function
-   real(dp) :: objf_test
-!> mult_test: cost function
-   real(dp) :: mult_test
 #if (defined(AGE_COST))
 !> Note: for the age cost, CALCMOD!=1 is recommended because
 !  the gridded ages of the GRL ice sheet are only 25 z-levels.
 !> age_data: array of gridded ages to be used in adjoint mode
    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: age_data
-!> age_unc: array of gridded ages to be used in adjoint mode
+!> age_unc: array of gridded uncertainty in ages to be used in adjoint mode
    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: age_unc
-!> acc_fact
+!> H_data: array of gridded ice thickness to be used in adjoint mode
+   real(dp), dimension(0:JMAX,0:IMAX) :: H_data
+!> H_unc: array of gridded uncertainty in ice thickness to be used in adjoint mode
+   real(dp), dimension(0:JMAX,0:IMAX) :: H_unc
 #endif /* No age cost used */
    real(dp), dimension(0:JMAX,0:IMAX) :: acc_fact
-#endif /* OpenAD */
+#if (defined(BEDMACHINE_COST)) 
+   real(dp), dimension(0:JMAX,0:IMAX) :: H_BedMachine_data
+   real(dp), dimension(0:JMAX,0:IMAX) :: H_unc_BedMachine_data
+#endif
+#endif /* Tapenade */
 
 end module sico_variables_m
 !

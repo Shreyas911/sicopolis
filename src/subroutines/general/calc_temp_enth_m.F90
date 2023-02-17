@@ -185,7 +185,7 @@ do j=1, JMAX-1   ! skipping domain margins
          zm_new(j,i)     = zb(j,i)
          H_c_new(j,i)    = H_c(j,i)
          H_t_new(j,i)    = 0.0_dp
-
+         !$AD NOCHECKPOINT
          call calc_temp_enth_1(at1, at2_1, at2_2, at3_1, at3_2, &
                                at4_1, at4_2, at5, at6, at7, &
                                atr1, acb1, acb2, acb3, acb4, alb1, &
@@ -200,7 +200,7 @@ do j=1, JMAX-1   ! skipping domain margins
 
             n_cts_new(j,i)  = 0
             kc_cts_new(j,i) = 0
-
+            !$AD NOCHECKPOINT
             call calc_temp_enth_2(at1, at2_1, at2_2, at3_1, at3_2, &
                                   at4_1, at4_2, at5, at6, at7, atr1, alb1, &
                                   ai1, ai2, aqtlde, am3, &
@@ -219,7 +219,7 @@ do j=1, JMAX-1   ! skipping domain margins
          zm_new(j,i)     = zb(j,i)
          H_c_new(j,i)    = H_c(j,i)
          H_t_new(j,i)    = H_t(j,i)
-
+         !$AD NOCHECKPOINT
          call calc_temp_enth_2(at1, at2_1, at2_2, at3_1, at3_2, &
                                at4_1, at4_2, at5, at6, at7, atr1, alb1, &
                                ai1, ai2, aqtlde, am3, &
@@ -233,7 +233,7 @@ do j=1, JMAX-1   ! skipping domain margins
 
             n_cts_new(j,i)  = -1
             kc_cts_new(j,i) =  0
-
+            !$AD NOCHECKPOINT
             call calc_temp_enth_1(at1, at2_1, at2_2, at3_1, at3_2, &
                                   at4_1, at4_2, at5, at6, at7, &
                                   atr1, acb1, acb2, acb3, acb4, alb1, &
@@ -246,7 +246,7 @@ do j=1, JMAX-1   ! skipping domain margins
 
                n_cts_new(j,i)  = 0
                kc_cts_new(j,i) = 0
-
+               !$AD NOCHECKPOINT
                call calc_temp_enth_2(at1, at2_1, at2_2, at3_1, at3_2, &
                                      at4_1, at4_2, at5, at6, at7, atr1, alb1, &
                                      ai1, ai2, aqtlde, am3, &
@@ -269,7 +269,7 @@ do j=1, JMAX-1   ! skipping domain margins
       zm_new(j,i)     = zb(j,i)
       H_c_new(j,i)    = H_c(j,i)
       H_t_new(j,i)    = 0.0_dp
-
+      !$AD NOCHECKPOINT
       call calc_temp_enth_ssa(at1, at2_1, at2_2, at3_1, at3_2, &
                               at4_1, at4_2, at5, at6, at7, atr1, alb1, &
                               ai1, ai2, &
@@ -297,7 +297,7 @@ do j=1, JMAX-1   ! skipping domain margins
       zm_new(j,i)     = zb(j,i)
       H_c_new(j,i)    = H_c(j,i)
       H_t_new(j,i)    = 0.0_dp
-
+      !$AD NOCHECKPOINT
       call calc_temp_enth_r(atr1, alb1, i, j)
 
    end if
@@ -697,21 +697,21 @@ subroutine calc_temp_enth_1(at1, at2_1, at2_2, at3_1, at3_2, &
                             dtime_temp_inv, &
                             i, j)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 use sico_maths_m, only : tri_sle
-#else /* OpenAD */
+#else /* Tapenade */
 use sico_maths_m
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 use enth_temp_omega_m, only : temp_fct_enth
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 real(dp), intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                         at3_1(0:KCMAX), at3_2(0:KCMAX), &
@@ -870,11 +870,11 @@ use ice_material_properties_m, only : ratefac_c_t, kappa_val, c_val, &
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 real(dp),     intent(in) :: at1(0:KCMAX), &
                             at2_1(0:KCMAX), at2_2(0:KCMAX), &
@@ -941,12 +941,12 @@ if (.not.flag_shelfy_stream(j,i)) then
 #if (DYNAMICS==2)
 else   ! flag_shelfy_stream(j,i) == .true.
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
    ccb3 = -c_drag(j,i) &
            * sqrt(vx_b_g(j,i)**2  &
                  +vy_b_g(j,i)**2) &
                            **(1.0_dp+p_weert_inv(j,i))
-#else /* OpenAD: guarding against undifferentiable sqrt(0) */
+#else /* Tapenade: guarding against undifferentiable sqrt(0) */
    if ((vx_b_g(j,i)**2+vy_b_g(j,i)**2) == 0) then
    ccb3 = 0.0_dp 
    else
@@ -955,7 +955,7 @@ else   ! flag_shelfy_stream(j,i) == .true.
                  +vy_b_g(j,i)**2) &
                            **(1.0_dp+p_weert_inv(j,i))
    end if
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
    ccb4 = 0.0_dp
 
 end if
@@ -1071,11 +1071,11 @@ subroutine calc_temp_enth_1_b(ctr1, clb1, i, j, &
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 real(dp),     intent(in) :: ctr1, clb1
 
@@ -1147,11 +1147,11 @@ use enth_temp_omega_m, only : enth_fct_temp_omega
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 real(dp),     intent(in) :: ct1(0:KCMAX), ct2(0:KCMAX), ct3(0:KCMAX), &
                             ct4(0:KCMAX), ce5(0:KCMAX), ce6(0:KCMAX), &
@@ -1293,11 +1293,11 @@ subroutine calc_temp_enth_1_d(ct1, ct2, ct3, ct4, ci1, ci2, &
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 real(dp),     intent(in) :: ct1(0:KCMAX), ct2(0:KCMAX), ct3(0:KCMAX), &
                             ct4(0:KCMAX), ci1(0:KCMAX), ci2(0:KCMAX)
@@ -1507,22 +1507,22 @@ subroutine calc_temp_enth_2(at1, at2_1, at2_2, at3_1, at3_2, &
                             dtime_temp_inv, &
                             i, j)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 use sico_maths_m, only : tri_sle
-#else /* OpenAD */
+#else /* Tapenade */
 use sico_maths_m
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 use enth_temp_omega_m, only : enth_fct_temp_omega, &
                               temp_fct_enth, omega_fct_enth
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 real(dp), intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                         at3_1(0:KCMAX), at3_2(0:KCMAX), &
@@ -1549,9 +1549,9 @@ real(dp) :: lgs_a0(0:KCMAX+KTMAX+KRMAX+IMAX+JMAX), &
 
 real(dp), parameter :: eps_omega=1.0e-12_dp
 
-#if defined(ALLOW_OPENAD) /* OpenAD */
+#if defined(ALLOW_TAPENADE) /* Tapenade */
 logical :: kcdone
-#endif /* OpenAD */
+#endif /* Tapenade */
 
 !-------- Check for boundary points --------
 
@@ -1625,7 +1625,7 @@ end do
 
 kc_cts_new(j,i) = 0
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 do kc=1, KCMAX-1
    if (omega_c_new(kc,j,i) > eps_omega) then
@@ -1635,7 +1635,7 @@ do kc=1, KCMAX-1
    end if
 end do
 
-#else /* OpenAD */
+#else /* Tapenade */
 
 kcdone = .false.
 
@@ -1649,7 +1649,7 @@ do kc=1, KCMAX-1
    end if 
 end do
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 !-------- Computation of the ice enthalpy
 !         (corrector step for the cold-ice domain only
@@ -1788,11 +1788,11 @@ subroutine calc_temp_enth_2_a1(at1, at2_1, at2_2, at3_1, at3_2, &
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 real(dp),     intent(in) :: at1(0:KCMAX), &
                             at2_1(0:KCMAX), at2_2(0:KCMAX), &
@@ -1922,11 +1922,11 @@ use ice_material_properties_m, only : ratefac_c_t, kappa_val, c_val, &
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 real(dp),     intent(in) :: at6(0:KCMAX), at7, ai2(0:KCMAX), am3(0:KCMAX)
 real(dp),     intent(in) :: temp_c_val(0:KCMAX), omega_c_val(0:KCMAX)
@@ -1998,11 +1998,11 @@ subroutine calc_temp_enth_2_b(ctr1, clb1, i, j, &
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 real(dp),     intent(in) :: ctr1, clb1
 
@@ -2073,11 +2073,11 @@ use enth_temp_omega_m, only : enth_fct_temp_omega
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 integer(i4b), intent(in) :: kcmin
 real(dp),     intent(in) :: ct1(0:KCMAX), ct2(0:KCMAX), ct3(0:KCMAX), &
@@ -2258,11 +2258,11 @@ subroutine calc_temp_enth_2_d(ct1, ct2, ct3, ct4, ci1, ci2, &
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 real(dp),     intent(in) :: ct1(0:KCMAX), ct2(0:KCMAX), ct3(0:KCMAX), &
                             ct4(0:KCMAX), ci1(0:KCMAX), ci2(0:KCMAX)
@@ -2467,21 +2467,21 @@ end subroutine calc_temp_enth_2_d
 !<------------------------------------------------------------------------------
 subroutine calc_temp_enth_r(atr1, alb1, i, j)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 use sico_maths_m, only : tri_sle
-#else /* OpenAD */
+#else /* Tapenade */
 use sico_maths_m
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 use enth_temp_omega_m, only : enth_fct_temp_omega
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 real(dp), intent(in) :: atr1, alb1
 
@@ -2579,22 +2579,22 @@ subroutine calc_temp_enth_ssa(at1, at2_1, at2_2, at3_1, at3_2, &
 
 use ice_material_properties_m, only : kappa_val, c_val, viscosity
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 use sico_maths_m, only : tri_sle
-#else /* OpenAD */
+#else /* Tapenade */
 use sico_maths_m
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 use enth_temp_omega_m, only : enth_fct_temp_omega, &
                               temp_fct_enth, omega_fct_enth
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 real(dp), intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                         at3_1(0:KCMAX), at3_2(0:KCMAX), &

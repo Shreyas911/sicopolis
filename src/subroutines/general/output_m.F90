@@ -7042,7 +7042,9 @@ real(dp), dimension(:), allocatable :: H_core, temp_b_core, &
                                        vx_s_core, vy_s_core, vh_s_core, &
                                        Rx_b_core, Ry_b_core, R_b_core, &
                                        bmb_core
-
+#if defined(ALLOW_TAPENADE)
+real(dp), dimension(:), allocatable :: arg1
+#endif
 integer(i4b)       :: cmode
 integer(i4b)       :: n_deflate_level
 logical            :: flag_shuffle
@@ -7070,7 +7072,9 @@ if (n_core >= 1) then
             vx_s_core(n_core), vy_s_core(n_core), vh_s_core(n_core), &
             Rx_b_core(n_core), Ry_b_core(n_core), R_b_core(n_core), &
             bmb_core(n_core))
-
+#if defined(ALLOW_TAPENADE)
+    allocate(arg1(n_core))
+#endif
 !-------- Determination of ice-core data --------
 
    do n=1, n_core
@@ -7652,6 +7656,7 @@ if (n_core >= 1) then
    call check( nf90_put_var(ncid, ncv, real(z_sl_mean,sp), &
                             start=nc1cor), thisroutine )
 
+#if !defined(ALLOW_TAPENADE)
    call check( nf90_inq_varid(ncid, 'H_core', ncv), thisroutine )
    call check( nf90_put_var(ncid, ncv, real(H_core,sp), &
                             start=nc2cor, count=nc2cnt), thisroutine )
@@ -7675,7 +7680,32 @@ if (n_core >= 1) then
    call check( nf90_inq_varid(ncid, 'bmb_core', ncv), thisroutine )
    call check( nf90_put_var(ncid, ncv, real(bmb_core,sp), &
                             start=nc2cor, count=nc2cnt), thisroutine )
-
+#else
+   call check( nf90_inq_varid(ncid, 'H_core', ncv), thisroutine )
+   arg1 = real(H_core,sp)
+   call check( nf90_put_var(ncid, ncv, arg1, &
+                            start=nc2cor, count=nc2cnt), thisroutine )
+   arg1 = real(vh_b_core,sp)
+   call check( nf90_inq_varid(ncid, 'vh_b_core', ncv), thisroutine )
+   call check( nf90_put_var(ncid, ncv, arg1, &
+                            start=nc2cor, count=nc2cnt), thisroutine )
+   arg1 = real(vh_s_core,sp)
+   call check( nf90_inq_varid(ncid, 'vh_s_core', ncv), thisroutine )
+   call check( nf90_put_var(ncid, ncv, arg1, &
+                            start=nc2cor, count=nc2cnt), thisroutine )
+   arg1 = real(temp_b_core,sp)
+   call check( nf90_inq_varid(ncid, 'temp_b_core', ncv), thisroutine )
+   call check( nf90_put_var(ncid, ncv, arg1, &
+                            start=nc2cor, count=nc2cnt), thisroutine )
+   arg1 = real(R_b_core,sp)
+   call check( nf90_inq_varid(ncid, 'R_b_core', ncv), thisroutine )
+   call check( nf90_put_var(ncid, ncv, arg1, &
+                            start=nc2cor, count=nc2cnt), thisroutine )
+   arg1 = real(bmb_core,sp)
+   call check( nf90_inq_varid(ncid, 'bmb_core', ncv), thisroutine )
+   call check( nf90_put_var(ncid, ncv, arg1, &
+                            start=nc2cor, count=nc2cnt), thisroutine )
+#endif
 !  ------ Syncing NetCDF file (every 100th time)
 
    n_sync = 100
@@ -7689,6 +7719,10 @@ if (n_core >= 1) then
               temp_b_core, &
               Rx_b_core, Ry_b_core, R_b_core, &
               bmb_core)
+
+#if defined(ALLOW_TAPENADE)
+    deallocate(arg1)
+#endif
 
 !!! else   ! (n_core == 0 -> do nothing)
 !!!
@@ -7922,11 +7956,11 @@ end subroutine output5
   subroutine borehole(field, x_pos, y_pos, dxi, deta, ch_grid, &
                       field_val, flag_in_domain)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   use sico_maths_m, only : bilinint
-#else /* OpenAD */
+#else /* Tapenade */
   use sico_maths_m
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
   implicit none
 
@@ -7998,15 +8032,9 @@ end subroutine output5
 
   if (flag_in_domain) then
 
-#if !defined(ALLOW_OPENAD) /* Normal */
      field_val = bilinint(real(i1,dp), real(i2,dp), real(j1,dp), real(j2,dp), &
                       field(j1,i1), field(j2,i1), field(j1,i2), field(j2,i2), &
                       real_i, real_j)
-#else /* OpenAD */
-     call bilinint(real(i1,dp), real(i2,dp), real(j1,dp), real(j2,dp), &
-                   field(j1,i1), field(j2,i1), field(j1,i2), field(j2,i2), &
-                   real_i, real_j, field_val)
-#endif /* Normal vs. OpenAD */
 
   else
 

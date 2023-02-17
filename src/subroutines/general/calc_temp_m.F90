@@ -41,7 +41,7 @@ module calc_temp_m
 
   implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
   private
 #endif /* Normal */
 
@@ -206,7 +206,7 @@ do j=1, JMAX-1   ! skipping domain margins
          zm_new(j,i)  = zb(j,i)
          H_c_new(j,i) = H_c(j,i)
          H_t_new(j,i) = H_t(j,i)
-
+         !$AD NOCHECKPOINT
          call calc_temp1(at1, at2_1, at2_2, at3_1, at3_2, &
            at4_1, at4_2, at5, at6, at7, atr1, acb1, acb2, &
            acb3, acb4, alb1, ai1, ai2, &
@@ -218,7 +218,7 @@ do j=1, JMAX-1   ! skipping domain margins
          if (temp_c_new(0,j,i) > temp_c_m(0,j,i)) then
 
             n_cts_new(j,i) = 0
-
+            !$AD NOCHECKPOINT
             call calc_temp2(at1, at2_1, at2_2, at3_1, at3_2, &
                  at4_1, at4_2, at5, at6, at7, atr1, alb1, &
                  ai1, ai2, &
@@ -240,7 +240,7 @@ do j=1, JMAX-1   ! skipping domain margins
             H_c_new(j,i) = H_c(j,i)-0.001_dp
             H_t_new(j,i) = H_t(j,i)+0.001_dp
 !                 ! CTS preliminarily positioned 1 mm above ice base --------
-
+            !$AD NOCHECKPOINT
             call calc_temp3(at1, at2_1, at2_2, at3_1, at3_2, &
                  at4_1, at4_2, at5, at6, at7, atr1, &
                  am1, am2, alb1, &
@@ -248,7 +248,7 @@ do j=1, JMAX-1   ! skipping domain margins
                  ai1, ai2, ai3, dzeta_t, &
                  dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
                  i, j)
-
+            !$AD NOCHECKPOINT
             call shift_cts_upward(at1, at2_1, at2_2, at3_1, at3_2, &
               at4_1, at4_2, at5, at6, at7, atr1, am1, am2, alb1, &
               aw1, aw2, aw3, aw4, aw5, aw7, aw8, aw9, aqtld, &
@@ -266,7 +266,7 @@ do j=1, JMAX-1   ! skipping domain margins
          zm_new(j,i)  = zb(j,i)
          H_c_new(j,i) = H_c(j,i)
          H_t_new(j,i) = H_t(j,i)
-
+         !$AD NOCHECKPOINT
          call calc_temp2(at1, at2_1, at2_2, at3_1, at3_2, &
               at4_1, at4_2, at5, at6, at7, atr1, alb1, &
               ai1, ai2, &
@@ -278,7 +278,7 @@ do j=1, JMAX-1   ! skipping domain margins
          if ( (temp_c_new(1,j,i)-temp_c_new(0,j,i)) <  (am1*H_c(j,i)) ) then
 
             n_cts_new(j,i) = -1
-
+            !$AD NOCHECKPOINT
             call calc_temp1(at1, at2_1, at2_2, at3_1, at3_2, &
                  at4_1, at4_2, at5, at6, at7, atr1, acb1, acb2, &
                  acb3, acb4, alb1, ai1, ai2, &
@@ -288,7 +288,7 @@ do j=1, JMAX-1   ! skipping domain margins
             if (temp_c_new(0,j,i) >= temp_c_m(0,j,i)) then
 
                n_cts_new(j,i) = 0
-
+               !$AD NOCHECKPOINT
                call calc_temp2(at1, at2_1, at2_2, at3_1, at3_2, &
                     at4_1, at4_2, at5, at6, at7, atr1, alb1, &
                     ai1, ai2, &
@@ -312,7 +312,7 @@ do j=1, JMAX-1   ! skipping domain margins
             H_c_new(j,i) = H_c(j,i)-0.001_dp
             H_t_new(j,i) = H_t(j,i)+0.001_dp
 !                 ! CTS preliminarily positioned 1 mm above ice base --------
-
+            !$AD NOCHECKPOINT
             call calc_temp3(at1, at2_1, at2_2, at3_1, at3_2, &
                  at4_1, at4_2, at5, at6, at7, atr1, &
                  am1, am2, alb1, &
@@ -320,7 +320,7 @@ do j=1, JMAX-1   ! skipping domain margins
                  ai1, ai2, ai3, dzeta_t, &
                  dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
                  i, j)
-
+            !$AD NOCHECKPOINT
             call shift_cts_upward(at1, at2_1, at2_2, at3_1, at3_2, &
               at4_1, at4_2, at5, at6, at7, atr1, am1, am2, alb1, &
               aw1, aw2, aw3, aw4, aw5, aw7, aw8, aw9, aqtld, &
@@ -338,7 +338,7 @@ do j=1, JMAX-1   ! skipping domain margins
          zm_new(j,i)  = zm(j,i)
          H_c_new(j,i) = H_c(j,i)
          H_t_new(j,i) = H_t(j,i)
-
+         !$AD NOCHECKPOINT
          call calc_temp3(at1, at2_1, at2_2, at3_1, at3_2, &
                  at4_1, at4_2, at5, at6, at7, atr1, &
                  am1, am2, alb1, &
@@ -349,6 +349,7 @@ do j=1, JMAX-1   ! skipping domain margins
 
          if ( (temp_c_new(0,j,i)-(-BETA*H_c_new(j,i))) > 0.0_dp ) &
          then
+            !$AD NOCHECKPOINT
             call shift_cts_upward(at1, at2_1, at2_2, at3_1, at3_2, &
               at4_1, at4_2, at5, at6, at7, atr1, am1, am2, alb1, &
               aw1, aw2, aw3, aw4, aw5, aw7, aw8, aw9, aqtld, &
@@ -356,6 +357,7 @@ do j=1, JMAX-1   ! skipping domain margins
               dtime_temp, dtt_2dxi, dtt_2deta, dtime_temp_inv, &
               i, j)
          else
+            !$AD NOCHECKPOINT
             call shift_cts_downward(at1, at2_1, at2_2, at3_1, at3_2, &
               at4_1, at4_2, at5, at6, at7, atr1, am1, am2, alb1, &
               aw1, aw2, aw3, aw4, aw5, aw7, aw8, aw9, aqtld, &
@@ -374,7 +376,7 @@ do j=1, JMAX-1   ! skipping domain margins
       zm_new(j,i)  = zb(j,i)
       H_c_new(j,i) = H_c(j,i) + H_t(j,i)
       H_t_new(j,i) = 0.0_dp
-
+      !$AD NOCHECKPOINT
       call calc_temp_ssa(at1, at2_1, at2_2, at3_1, at3_2, &
            at4_1, at4_2, at5, at6, at7, atr1, alb1, &
            ai1, ai2, &
@@ -397,7 +399,7 @@ do j=1, JMAX-1   ! skipping domain margins
       zm_new(j,i)  = zb(j,i)
       H_c_new(j,i) = H_c(j,i)
       H_t_new(j,i) = H_t(j,i)
-
+      !$AD NOCHECKPOINT
       call calc_temp_r(atr1, alb1, i, j)
 
 endif
@@ -1413,19 +1415,19 @@ subroutine calc_temp1(at1, at2_1, at2_2, at3_1, at3_2, &
 use ice_material_properties_m, only : ratefac_c, kappa_val, c_val, &
                                       creep, viscosity
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 use sico_maths_m, only : tri_sle
-#else /* OpenAD */
+#else /* Tapenade */
 use sico_maths_m
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in)    :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 real(dp), intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                         at3_1(0:KCMAX), at3_2(0:KCMAX), at4_1(0:KCMAX), &
                         at4_2(0:KCMAX), at5(0:KCMAX), at6(0:KCMAX), at7, &
@@ -1957,19 +1959,19 @@ subroutine calc_temp2(at1, at2_1, at2_2, at3_1, at3_2, &
 
 use ice_material_properties_m, only : ratefac_c, kappa_val, c_val, &
                                       creep, viscosity
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 use sico_maths_m, only : tri_sle
-#else /* OpenAD */
+#else /* Tapenade */
 use sico_maths_m
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in)    :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 real(dp), intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                         at3_1(0:KCMAX), at3_2(0:KCMAX), at4_1(0:KCMAX), &
                         at4_2(0:KCMAX), at5(0:KCMAX), at6(0:KCMAX), at7, &
@@ -2482,19 +2484,19 @@ subroutine calc_temp3(at1, at2_1, at2_2, at3_1, at3_2, &
 
 use ice_material_properties_m, only : ratefac_c, ratefac_t, kappa_val, c_val, &
                                       creep, viscosity
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 use sico_maths_m, only : tri_sle
-#else /* OpenAD */
+#else /* Tapenade */
 use sico_maths_m
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in)    :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 real(dp), intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                         at3_1(0:KCMAX), at3_2(0:KCMAX), at4_1(0:KCMAX), &
                         at4_2(0:KCMAX), at5(0:KCMAX), at6(0:KCMAX), at7, &
@@ -3501,19 +3503,19 @@ end subroutine calc_temp3
 !<------------------------------------------------------------------------------
 subroutine calc_temp_r(atr1, alb1, i, j)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 use sico_maths_m, only : tri_sle
-#else /* OpenAD */
+#else /* Tapenade */
 use sico_maths_m
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in)    :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 real(dp), intent(in) :: atr1, alb1
 
 integer(i4b) :: kc, kt, kr
@@ -3532,9 +3534,9 @@ clb1 = alb1*q_geo(j,i)
 !-------- Set up the equations for the bedrock temperature --------
 
 kr=0
-#if defined(ALLOW_OPENAD) /* OpenAD */
+#if defined(ALLOW_TAPENADE) /* Tapenade */
 lgs_a0(kr) = 0.0_dp
-#endif /* OpenAD */
+#endif /* Tapenade */
 lgs_a1(kr) = 1.0_dp
 lgs_a2(kr) = -1.0_dp
 lgs_b(kr)    = clb1
@@ -3606,11 +3608,11 @@ subroutine shift_cts_upward(at1, at2_1, at2_2, at3_1, at3_2, &
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in)    :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 real(dp),     intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                             at3_1(0:KCMAX), at3_2(0:KCMAX), at4_1(0:KCMAX), &
                             at4_2(0:KCMAX), at5(0:KCMAX), at6(0:KCMAX), at7, &
@@ -3700,11 +3702,11 @@ subroutine shift_cts_downward(at1, at2_1, at2_2, at3_1, at3_2, &
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in)    :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 real(dp),     intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                             at3_1(0:KCMAX), at3_2(0:KCMAX), at4_1(0:KCMAX), &
                             at4_2(0:KCMAX), at5(0:KCMAX), at6(0:KCMAX), at7, &
@@ -3869,19 +3871,19 @@ subroutine calc_temp_ssa(at1, at2_1, at2_2, at3_1, at3_2, &
 
 use ice_material_properties_m, only : kappa_val, c_val, viscosity
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 use sico_maths_m, only : tri_sle
-#else /* OpenAD */
+#else /* Tapenade */
 use sico_maths_m
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
 implicit none
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in)    :: i, j
-#else /* OpenAD */
+#else /* Tapenade */
 integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 real(dp), intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                         at3_1(0:KCMAX), at3_2(0:KCMAX), at4_1(0:KCMAX), &
                         at4_2(0:KCMAX), at5(0:KCMAX), at6(0:KCMAX), at7, &

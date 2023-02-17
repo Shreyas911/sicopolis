@@ -37,7 +37,7 @@ module sico_types_m
 implicit none
 save
 
-#if !defined(ALLOW_OPENAD)
+#if !defined(ALLOW_TAPENADE)
 
 ! integer, parameter :: i1b = selected_int_kind(2)   !< 1-byte integers
 integer, parameter :: i4b = selected_int_kind(9)   !< 4-byte integers

@@ -53,7 +53,7 @@ contains
 
   implicit none
 
-#if !defined(ALLOW_OPENAD)
+#if !defined(ALLOW_TAPENADE)
   integer(i4b), intent(in) :: i, j
 #else
   integer(i4b), intent(inout) :: i, j

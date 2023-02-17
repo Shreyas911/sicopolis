@@ -16,6 +16,16 @@ my_*
 /tools/*/*.h
 
 /src/*.h
+/src/*.py
+/src/*.sh
+/src/*.dat
+/src/driver*
+/src/pop_push/
+/src/*.msg
+/src/html/
+/src/*.gcda
+/src/*.gcno
+/src/*.info
 
 /src/subroutines/xyz/*
 !/src/subroutines/xyz/*/
@@ -53,3 +63,7 @@ my_*
 !/docu/doxygen/html/.keep
 /docu/doxygen/latex/*
 !/docu/doxygen/latex/.keep
+
+**/.DS_Store
+
+/test_ad/pop_push/*.gch
