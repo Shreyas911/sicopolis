@@ -5,7 +5,7 @@
 !
 #define       MODEL_SICOPOLIS
 #define       VERSION '5-dev'
-#define       DATE    '2023-01-14'
+#define       DATE    '2023-02-21'
 !
 !> @mainpage
 !!
@@ -83,12 +83,12 @@
 !!
 !! Copyright 2009-2023 SICOPOLIS Authors\n
 !! (Ralf Greve, Jorge Bernales, Sebastian Beyer, Heinz Blatter,
-!! Reinhard Calov, Thorben Dunse, Eduardo Flandez, Ben Galton-Fenzi,
-!! Thomas Goelles, Bjoern Grieger, Philipp Hancke, Patrick Heimbach,
-!! Nina Kirchner, Thomas Kleiner, Sascha Knell, Anne Le Brocq, Liz Curry-Logan,
-!! Sri Hari Krishna Narayanan, Alex Robinson, Fuyuki Saito, Tatsuru Sato,
-!! Marius Schaefer, Matthias Scheiter, Oliver J. Stenzel, Malte Thoma,
-!! Roland Warner)
+!! Reinhard Calov, Thorben Dunse, Eduardo Flandez, Shreyas Sunil Gaikwad,
+!! Ben Galton-Fenzi, Thomas Goelles, Bjoern Grieger, Philipp Hancke,
+!! Patrick Heimbach, Nina Kirchner, Thomas Kleiner, Sascha Knell,
+!! Anne Le Brocq, Liz Curry-Logan, Sri Hari Krishna Narayanan,
+!! Alex Robinson, Fuyuki Saito, Tatsuru Sato, Marius Schaefer,
+!! Matthias Scheiter, Oliver J. Stenzel, Malte Thoma, Roland Warner)
 !!
 !! @section License
 !!
