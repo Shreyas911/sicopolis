@@ -4,11 +4,11 @@
 !
 !> @file
 !!
-!! Several mathematical tools used by SICOPOLIS.
+!! Stub file for solvers in adjoint (reverse) mode of SICOPOLIS-AD v2.
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2022 Ralf Greve, Shreyas Sunil Gaikwad, Liz Curry-Logan
+!! Copyright 2009-2023 Shreyas Sunil Gaikwad, Liz Curry-Logan, Ralf Greve
 !!
 !! @section License
 !!
@@ -33,9 +33,12 @@
 !> Stub file for solvers in adjoint (reverse) mode of SICOPOLIS-AD v2.
 !<------------------------------------------------------------------------------
 MODULE SICO_MATHS_M_DIFF
+
   USE SICO_TYPES_M
+
   IMPLICIT NONE
   PUBLIC
+
   INTERFACE SOR_SPRS
       MODULE PROCEDURE SOR_SPRS_STUB
   END INTERFACE
@@ -655,4 +658,3 @@ incrbb = 0.
 
 END MODULE SICO_MATHS_M_DIFF
 !
-

@@ -4,12 +4,12 @@
 !
 !> @file
 !!
-!! A catch-all module for tapenade-related subroutines. 
+!! Catch-all module for tapenade-related subroutines.
 !!
 !! @section Copyright
 !!
-!! Copyright 2017-2022 Shreyas Sunil Gaikwad,
-!!                     Liz Curry-Logan, Sri Hari Krishna Narayanan,
+!! Copyright 2017-2023 Shreyas Sunil Gaikwad, Laurent Hascoet,
+!!                     Sri Hari Krishna Narayanan, Liz Curry-Logan,
 !!                     Patrick Heimbach, Ralf Greve
 !!
 !! @section License
@@ -32,7 +32,7 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
-!> Module for all tapenade-related subroutines 
+!> Catch-all module for tapenade-related subroutines.
 !<------------------------------------------------------------------------------
 module tapenade_m
 
