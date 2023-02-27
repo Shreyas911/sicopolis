@@ -32,7 +32,7 @@
 !-------------------------------------------------------------------------------
 !> Stub file for linear solvers in sico_maths_m module.
 !<------------------------------------------------------------------------------
-module sico_maths_m
+module sico_maths_m_stub
 
 use sico_types_m
 
