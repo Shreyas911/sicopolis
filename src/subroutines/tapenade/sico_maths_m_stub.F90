@@ -32,7 +32,7 @@
 !-------------------------------------------------------------------------------
 !> Stub file for linear solvers in sico_maths_m module.
 !<------------------------------------------------------------------------------
-module sico_maths_m_stub
+module sico_maths_m
 
 use sico_types_m
 
@@ -331,5 +331,5 @@ real(dp)                                        :: b_nr
 end subroutine sico_lis_solver_stub
 #endif
 
-end module sico_maths_m_stub
+end module sico_maths_m
 !
