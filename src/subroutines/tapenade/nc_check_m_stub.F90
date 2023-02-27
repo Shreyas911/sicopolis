@@ -4,11 +4,11 @@
 !
 !> @file
 !!
-!! NetCDF error capturing.
+!! Stub file for NetCDF error capturing.
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2022 Ralf Greve, Shreyas Sunil Gaikwad
+!! Copyright 2009-2023 Ralf Greve, Shreyas Sunil Gaikwad
 !!
 !! @section License
 !!
@@ -55,7 +55,6 @@ character(len=64)  :: ch_clrt
 character(len=256) :: errormsgg
 
 character, parameter :: ch_end_of_line = char(10)
-
 
 end subroutine check
 
