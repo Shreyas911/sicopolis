@@ -64,7 +64,7 @@ Potential Uses
 Contributors
 ------------
 
-Shreyas Gaikwad, Sri Hari Krishna Narayanan, Laurent Hascoet, Liz Curry-Logan, Ralf Greve, Patrick Heimbach
+Shreyas Gaikwad, Sri Hari Krishna Narayanan, Laurent Hascoet, Liz Curry Logan, Ralf Greve, Patrick Heimbach
 
 For contributions of each author, please check the documentation [here](https://sicopolis.readthedocs.io/en/latest/AD/AD.html#contributors).
 

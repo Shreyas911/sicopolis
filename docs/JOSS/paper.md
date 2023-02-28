@@ -18,7 +18,7 @@ authors:
   - name: Sri Hari Krishna Narayanan
     orcid: 0000-0003-0388-5943
     affiliation: 3
-  - name: Liz Curry-Logan
+  - name: Liz Curry Logan
     affiliation: 1
   - name: Ralf Greve
     orcid: 0000-0002-1341-4777

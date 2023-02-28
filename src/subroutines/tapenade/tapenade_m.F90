@@ -9,7 +9,7 @@
 !! @section Copyright
 !!
 !! Copyright 2017-2023 Shreyas Sunil Gaikwad, Laurent Hascoet,
-!!                     Sri Hari Krishna Narayanan, Liz Curry-Logan,
+!!                     Sri Hari Krishna Narayanan, Liz Curry Logan,
 !!                     Patrick Heimbach, Ralf Greve
 !!
 !! @section License
