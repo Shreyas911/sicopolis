@@ -263,44 +263,11 @@ contains
 
   end subroutine my_erfc_stub
 
-#ifdef ALLOW_TAPENADE   /* Tapenade version */
-!-------------------------------------------------------------------------------
-!> Computation of the complementary error function erfc(x) = 1-erf(x)
-!! with a fractional error everywhere less than 1.2 x 10^(-7)
-!! (formula by Press et al., 'Numerical Recipes in Fortran 77').
-!<------------------------------------------------------------------------------
-  subroutine my_erfc(x, retval)
-
-  implicit none
-
-  real(dp), intent(in)  :: x
-  real(dp), intent(out) :: retval
-
-  real(dp) :: t, z
-
-  z = abs(x)
-  t = 1.0_dp/(1.0_dp+0.5_dp*z)
-
-  retval = t * exp( -z*z     -1.26551223_dp &
-                     + t  * (  1.00002368_dp &
-                     + t  * (  0.37409196_dp &
-                     + t  * (  0.09678418_dp &
-                     + t  * ( -0.18628806_dp &
-                     + t  * (  0.27886807_dp &
-                     + t  * ( -1.13520398_dp &
-                     + t  * (  1.48851587_dp &
-                     + t  * ( -0.82215223_dp &
-                     + t  *    0.17087277_dp ) ) ) ) ) ) ) ) )
-
-  if (x < 0.0_dp) retval = 2.0_dp-retval
-
-  end subroutine my_erfc
-
-#endif /* Tapenade version */
-
 #if (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
 !-------------------------------------------------------------------------------
-!> Short description of sico_lis_solver_stub ...
+!> A stub or dummy subroutine for sico_lis_solver.
+!! Note that there are no actual calls to the LIS library since it is treated
+!! as a black box, and we only need this stub to be a placeholder.
 !<------------------------------------------------------------------------------
   subroutine sico_lis_solver_stub(nmax, nnz, &
                                   lgs_a_ptr, lgs_a_index, &

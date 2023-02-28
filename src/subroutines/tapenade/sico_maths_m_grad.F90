@@ -76,7 +76,10 @@ module sico_maths_m_diff
 contains
 
 !-------------------------------------------------------------------------------
-!> Short description of transpose_csr ...
+!> Subroutine to transpose matrix lgs_a for the SOR solver.
+!! [matrix storage: compressed sparse row CSR,
+!! represented by arrays lgs_a_value(values), lgs_a_index (indices)
+!! and lgs_a_ptr (pointers)].
 !<------------------------------------------------------------------------------
 subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
                          nnz, nmax, &
@@ -522,7 +525,10 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
 
 #if defined(BUILD_LIS) && (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
 !-------------------------------------------------------------------------------
-!> Short description of transpose_csr_no_diagonal ...
+!> Subroutine to transpose matrix lgs_a for the LIS solver.
+!! [matrix storage: compressed sparse row CSR,
+!! represented by arrays lgs_a_value(values), lgs_a_index (indices)
+!! and lgs_a_ptr (pointers)].
 !<------------------------------------------------------------------------------
   subroutine transpose_csr_no_diagonal(a_value, a_index, a_ptr, &
                                        nnz, nmax, &
@@ -568,7 +574,10 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
   end subroutine transpose_csr_no_diagonal
 
 !-------------------------------------------------------------------------------
-!> Short description of sico_lis_solver_stub ...
+!> LIS solver for a system of linear equations lgs_a*lgs_x=lgs_b
+!! [matrix storage: compressed sparse row CSR,
+!! represented by arrays lgs_a_value(values), lgs_a_index (indices)
+!! and lgs_a_ptr (pointers)].
 !<------------------------------------------------------------------------------
 #include "lisf.h"
   subroutine sico_lis_solver_stub(nmax, nnz, lgs_a_ptr, lgs_a_index, &
