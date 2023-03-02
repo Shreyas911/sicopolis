@@ -4,11 +4,11 @@
 !
 !> @file
 !!
-!! Several mathematical tools used by SICOPOLIS.
+!! Stub file for the mathematical tools in the sico_maths_m module.
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2022 Ralf Greve, Shreyas Sunil Gaikwad, Liz Curry-Logan
+!! Copyright 2009-2023 Shreyas Sunil Gaikwad, Liz Curry-Logan, Ralf Greve
 !!
 !! @section License
 !!
@@ -30,11 +30,11 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
-!> Stub file for linear solvers in sico_maths_m module.
+!> Stub file for the mathematical tools in the sico_maths_m module.
 !<------------------------------------------------------------------------------
 module sico_maths_m
 
-use sico_types_m
+  use sico_types_m
 
 #if (CALCTHK!=3  && CALCTHK!=4 && CALCTHK!=6 )
   public :: sor_sprs, tri_sle, my_erfc
@@ -66,39 +66,42 @@ use sico_types_m
 
 contains
 
+#if (CALCTHK!=3 && CALCTHK!=4 && CALCTHK!=6)
 !-------------------------------------------------------------------------------
 !> SOR solver for a system of linear equations lgs_a*lgs_x=lgs_b
 !! [matrix storage: compressed sparse row CSR,
 !! represented by arrays lgs_a_value(values), lgs_a_index (indices)
 !! and lgs_a_ptr (pointers)].
 !<------------------------------------------------------------------------------
-#if (CALCTHK!=3 && CALCTHK!=4 && CALCTHK!=6 )
-subroutine sor_sprs_stub(lgs_a_value, lgs_a_index, lgs_a_diag_index,&
-                    lgs_a_ptr, &
-                    lgs_b_value, &
-                    nnz, nmax,&
-                    omega, eps_sor, lgs_x_value, ierr)
+  subroutine sor_sprs_stub(lgs_a_value, lgs_a_index, lgs_a_diag_index, &
+                           lgs_a_ptr, &
+                           lgs_b_value, &
+                           nnz, nmax, &
+                           omega, eps_sor, lgs_x_value, ierr)
+
   implicit none
 
-  integer(i4b),                     intent(in) :: nnz, nmax
-  real(dp),                         intent(in) :: omega, eps_sor
-  integer(i4b), dimension(nmax+1),  intent(in) :: lgs_a_ptr
-  integer(i4b), dimension(nnz),     intent(in) :: lgs_a_index
-  integer(i4b), dimension(nmax),    intent(in) :: lgs_a_diag_index
-  real(dp),     dimension(nnz),     intent(in) :: lgs_a_value
-  real(dp),     dimension(nmax),    intent(in) :: lgs_b_value
+  integer(i4b), intent(in) :: nnz, nmax
+  real(dp),     intent(in) :: omega, eps_sor
 
-  integer(i4b),                    intent(out) :: ierr
-  real(dp),     dimension(nmax), intent(inout) :: lgs_x_value
+  integer(i4b), dimension(nmax+1), intent(in) :: lgs_a_ptr
+  integer(i4b), dimension(nnz),    intent(in) :: lgs_a_index
+  integer(i4b), dimension(nmax),   intent(in) :: lgs_a_diag_index
+  real(dp),     dimension(nnz),    intent(in) :: lgs_a_value
+  real(dp),     dimension(nmax),   intent(in) :: lgs_b_value
+
+  integer(i4b), intent(out) :: ierr
+
+  real(dp), dimension(nmax), intent(inout) :: lgs_x_value
 
   integer(i4b) :: iter
   integer(i4b) :: iter_max
   integer(i4b) :: nr, k
-  real(dp),           dimension(nmax) :: lgs_x_value_prev
-  real(dp)     :: temp1, temp2
-  logical      :: isnanflag1, isnanflag2, isnanflag3
-  real(dp)     :: b_nr
-  logical      :: flag_convergence
+  real(dp), dimension(nmax) :: lgs_x_value_prev
+  real(dp) :: temp1, temp2
+  logical  :: isnanflag1, isnanflag2, isnanflag3
+  real(dp) :: b_nr
+  logical  :: flag_convergence
 
 #if (ITER_MAX_SOR > 0)
   iter_max = ITER_MAX_SOR
@@ -125,6 +128,7 @@ subroutine sor_sprs_stub(lgs_a_value, lgs_a_index, lgs_a_diag_index,&
      end do
 
      flag_convergence = .true.
+
      do nr=1, nmax
         if (abs(lgs_x_value(nr)-lgs_x_value_prev(nr)) > eps_sor) then
            flag_convergence = .false.
@@ -143,26 +147,27 @@ subroutine sor_sprs_stub(lgs_a_value, lgs_a_index, lgs_a_diag_index,&
   write(6,'(10x,a,i0)') 'sor_sprs: iter = ', iter
   ierr = -1   ! convergence criterion not fulfilled
 
-end subroutine sor_sprs_stub
+  end subroutine sor_sprs_stub
+
 #endif
 
 !-------------------------------------------------------------------------------
 !> Solution of a system of linear equations Ax=b with tridiagonal matrix A.
-!! @param[in]  a0       a0(j) is element A_(j,j-1) of Matrix A
-!! @param[in]  a1       a1(j) is element A_(j,j)   of Matrix A
-!! @param[in]  a2       a2(j) is element A_(j,j+1) of Matrix A
-!! @param[in]  b        inhomogeneity vector
-!! @param[in]  nrows    size of matrix A (indices run from 0 (!!!) to nrows)
-!! @param[out] x        Solution vector.
 !<------------------------------------------------------------------------------
-subroutine tri_sle_stub(a0, a1, a2, x, b, nrows)
+  subroutine tri_sle_stub(a0, a1, a2, x, b, nrows)
 
   implicit none
 
-  integer(i4b),                 intent(in) :: nrows
-  real(dp), dimension(0:nrows), intent(in) :: a0, a1, a2, b
-
+  integer(i4b),                 intent(in)  :: nrows
+  real(dp), dimension(0:nrows), intent(in)  :: a0, a1, a2, b
   real(dp), dimension(0:nrows), intent(out) :: x
+
+     ! a0: a0(j) is element A_(j,j-1) of matrix A
+     ! a1: a1(j) is element A_(j,j)   of matrix A
+     ! a2: a2(j) is element A_(j,j+1) of matrix A
+     ! b: inhomogeneity vector
+     ! nrows: size of matrix A (indices run from 0 (!!!) to nrows)
+     ! x: solution vector
 
   integer(i4b) :: n
   real(dp), dimension(0:nrows) :: a0_aux, a1_aux, a2_aux, b_aux, x_aux
@@ -203,7 +208,7 @@ subroutine tri_sle_stub(a0, a1, a2, x, b, nrows)
   !           diagonal becoming zero. In this case it crashes even
   !           though the system may be solvable. Otherwise ok.
 
-end subroutine tri_sle_stub
+  end subroutine tri_sle_stub
 
 !-------------------------------------------------------------------------------
 !> Bilinear interpolation.
@@ -258,78 +263,64 @@ end subroutine tri_sle_stub
 
   end subroutine my_erfc_stub
 
+#if (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
 !-------------------------------------------------------------------------------
-#ifdef ALLOW_TAPENADE   /* OAD VERSION */
-  subroutine my_erfc(x, retval)
+!> A stub or dummy subroutine for sico_lis_solver.
+!! Note that there are no actual calls to the LIS library since it is treated
+!! as a black box, and we only need this stub to be a placeholder.
+!<------------------------------------------------------------------------------
+  subroutine sico_lis_solver_stub(nmax, nnz, &
+                                  lgs_a_ptr, lgs_a_index, &
+                                  lgs_a_value, lgs_b_value, lgs_x_value)
 
   implicit none
 
-  real(dp), intent(in)  :: x
-  real(dp), intent(out) :: retval
+  integer(i4b) :: ierr
+  integer(i4b) :: iter
+  integer(i4b) :: nc, nr
 
-  real(dp) :: t, z
+  integer(i4b), intent(in) :: nmax
+  integer(i4b), intent(in) :: nnz
 
-  z = abs(x)
-  t = 1.0_dp/(1.0_dp+0.5_dp*z)
+  integer(i4b), dimension(nmax+1), intent(in) :: lgs_a_ptr
+  integer(i4b), dimension(nnz),    intent(in) :: lgs_a_index
+  real(dp),     dimension(nnz),    intent(in) :: lgs_a_value
+  real(dp),     dimension(nmax),   intent(in) :: lgs_b_value
 
-  retval = t * exp( -z*z     -1.26551223_dp &
-                     + t  * (  1.00002368_dp &
-                     + t  * (  0.37409196_dp &
-                     + t  * (  0.09678418_dp &
-                     + t  * ( -0.18628806_dp &
-                     + t  * (  0.27886807_dp &
-                     + t  * ( -1.13520398_dp &
-                     + t  * (  1.48851587_dp &
-                     + t  * ( -0.82215223_dp &
-                     + t  *    0.17087277_dp ) ) ) ) ) ) ) ) )
-
-  if (x < 0.0_dp) retval = 2.0_dp-retval
-
-  end subroutine my_erfc
-#endif /* OAD VERSION */
-
-#if (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
-subroutine sico_lis_solver_stub(nmax, nnz, &
-                           lgs_a_ptr, lgs_a_index, &
-                           lgs_a_value, lgs_b_value, lgs_x_value)
-
-implicit none
-
-integer(i4b)                                 :: ierr
-integer(i4b)                                 :: iter
-integer(i4b)                                 :: nc, nr
-integer(i4b),                     intent(in) :: nmax
-integer(i4b),                     intent(in) :: nnz
-integer(i4b), dimension(nmax+1),  intent(in) :: lgs_a_ptr
-integer(i4b), dimension(nnz),  intent(in)    :: lgs_a_index
-real(dp),     dimension(nnz),  intent(in)    :: lgs_a_value
-real(dp),     dimension(nmax),    intent(in) :: lgs_b_value
 #if 0
-real(dp),     dimension(nmax), intent(in)    :: lgs_x_value
+  real(dp), dimension(nmax), intent(in)    :: lgs_x_value
 #else
-real(dp),     dimension(nmax), intent(inout) :: lgs_x_value
+  real(dp), dimension(nmax), intent(inout) :: lgs_x_value
 #endif
 
-character(len=256)                           :: ch_solver_set_option
+  character(len=256) :: ch_solver_set_option
 
-INTRINSIC SUM
-integer(i4b)                                 :: k
-real(dp)                                        :: b_nr
-     do nr=1, nmax
+  intrinsic sum
 
-        b_nr = 0.0_dp
+  integer(i4b) :: k
+  real(dp)     :: b_nr
 
-        do k=lgs_a_ptr(nr), lgs_a_ptr(nr+1)-1
-           b_nr = b_nr + lgs_a_value(k)*lgs_b_value(lgs_a_index(k))
-        end do
-        b_nr = b_nr + SUM(lgs_x_value)
+  do nr=1, nmax
 
-        lgs_x_value(nr) = lgs_x_value(nr)&
-                          -(b_nr-lgs_b_value(nr))
-        lgs_x_value(nr) = lgs_x_value(nr) + SUM(lgs_a_value) + SUM(lgs_b_value) + SUM(lgs_a_ptr)
+     b_nr = 0.0_dp
+
+     do k=lgs_a_ptr(nr), lgs_a_ptr(nr+1)-1
+        b_nr = b_nr + lgs_a_value(k)*lgs_b_value(lgs_a_index(k))
      end do
-end subroutine sico_lis_solver_stub
+     b_nr = b_nr + sum(lgs_x_value)
+
+     lgs_x_value(nr) = lgs_x_value(nr)&
+                       -(b_nr-lgs_b_value(nr))
+     lgs_x_value(nr) = lgs_x_value(nr) &
+                       + sum(lgs_a_value) + sum(lgs_b_value) + sum(lgs_a_ptr)
+
+  end do
+
+  end subroutine sico_lis_solver_stub
+
 #endif
 
-end module sico_maths_m_stub
+!-------------------------------------------------------------------------------
+
+end module sico_maths_m
 !

@@ -124,21 +124,21 @@ contains
 
 !-------------------------------------------------------------------------------
 !> Solution of a system of linear equations Ax=b with tridiagonal matrix A.
-!! @param[in]  a0       a0(j) is element A_(j,j-1) of Matrix A
-!! @param[in]  a1       a1(j) is element A_(j,j)   of Matrix A
-!! @param[in]  a2       a2(j) is element A_(j,j+1) of Matrix A
-!! @param[in]  b        inhomogeneity vector
-!! @param[in]  nrows    size of matrix A (indices run from 0 (!!!) to nrows)
-!! @param[out] x        Solution vector.
 !<------------------------------------------------------------------------------
   subroutine tri_sle(a0, a1, a2, x, b, nrows)
 
   implicit none
 
-  integer(i4b),                 intent(in) :: nrows
-  real(dp), dimension(0:nrows), intent(in) :: a0, a1, a2, b
-
+  integer(i4b),                 intent(in)  :: nrows
+  real(dp), dimension(0:nrows), intent(in)  :: a0, a1, a2, b
   real(dp), dimension(0:nrows), intent(out) :: x
+
+     ! a0: a0(j) is element A_(j,j-1) of matrix A
+     ! a1: a1(j) is element A_(j,j)   of matrix A
+     ! a2: a2(j) is element A_(j,j+1) of matrix A
+     ! b: inhomogeneity vector
+     ! nrows: size of matrix A (indices run from 0 (!!!) to nrows)
+     ! x: solution vector
 
   integer(i4b) :: n
   real(dp), dimension(0:nrows) :: a0_aux, a1_aux, a2_aux, b_aux, x_aux
@@ -234,12 +234,11 @@ contains
 
   end subroutine my_erfc
 
+#if defined(ALLOW_TAPENADE)
 !-------------------------------------------------------------------------------
-!> sico_lis_solver
-!! TAPENADE needs a definition of sico_lis_solver here.
+!> Definition of sico_lis_solver for Tapenade.
 !! The code does nothing because only a definition is needed.
 !<------------------------------------------------------------------------------
-#if defined(ALLOW_TAPENADE)
 #include "lisf.h"
   subroutine sico_lis_solver(nmax, nnz, &
                              lgs_a_ptr, lgs_a_index, &
@@ -247,24 +246,26 @@ contains
 
   implicit none
 
-  integer(i4b)                                 :: ierr
-  integer(i4b)                                 :: iter
-  integer(i4b)                                 :: nc, nr
-  integer(i4b),                     intent(in) :: nmax
-  integer(i4b),                     intent(in) :: nnz
-  integer(i4b), dimension(nmax+1),  intent(in) :: lgs_a_ptr
-  integer(i4b), dimension(nnz),  intent(in)    :: lgs_a_index
+  integer(i4b) :: ierr
+  integer(i4b) :: iter
+  integer(i4b) :: nc, nr
 
-  LIS_MATRIX                                   :: lgs_a
-  LIS_VECTOR                                   :: lgs_b
-  LIS_VECTOR                                   :: lgs_x
-  LIS_SOLVER                                   :: solver
+  integer(i4b), intent(in) :: nmax
+  integer(i4b), intent(in) :: nnz
 
-  real(dp),     dimension(nnz),  intent(in)    :: lgs_a_value
-  real(dp),     dimension(nmax),    intent(in) :: lgs_b_value
-  real(dp),     dimension(nmax), intent(inout) :: lgs_x_value
+  integer(i4b), dimension(nmax+1), intent(in) :: lgs_a_ptr
+  integer(i4b), dimension(nnz),    intent(in) :: lgs_a_index
 
-  character(len=256)                           :: ch_solver_set_option
+  LIS_MATRIX :: lgs_a
+  LIS_VECTOR :: lgs_b
+  LIS_VECTOR :: lgs_x
+  LIS_SOLVER :: solver
+
+  real(dp), dimension(nnz),  intent(in)    :: lgs_a_value
+  real(dp), dimension(nmax), intent(in)    :: lgs_b_value
+  real(dp), dimension(nmax), intent(inout) :: lgs_x_value
+
+  character(len=256) :: ch_solver_set_option
 
   end subroutine sico_lis_solver
 

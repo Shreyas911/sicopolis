@@ -4,11 +4,11 @@
 !
 !> @file
 !!
-!! NetCDF error capturing.
+!! Stub file for NetCDF subroutines for SICOPOLIS-AD v2.
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2022 Ralf Greve, Shreyas Sunil Gaikwad
+!! Copyright 2009-2023 Shreyas Sunil Gaikwad, Ralf Greve
 !!
 !! @section License
 !!
@@ -378,4 +378,6 @@ function nf90_def_var_ManyDims(ncid, name, xtype, dimids, varid)
   integer, intent(out) :: varid
   integer                            :: nf90_def_var_ManyDims
 end function nf90_def_var_ManyDims
+
 end module netcdf
+!

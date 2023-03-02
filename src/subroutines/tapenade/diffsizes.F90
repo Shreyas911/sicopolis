@@ -4,11 +4,11 @@
 !
 !> @file
 !!
-!! Several mathematical tools used by SICOPOLIS.
+!! A necessary module for TAPENADE.
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2022 Shreyas Sunil Gaikwad, Sri Hari Krishna Narayanan
+!! Copyright 2009-2023 Shreyas Sunil Gaikwad, Sri Hari Krishna Narayanan
 !!
 !! @section License
 !!
@@ -29,8 +29,13 @@
 !<
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-! A necessary module for TAPENADE
-      MODULE DIFFSIZES
-      Implicit None
-      integer, parameter :: nbdirsmax=16
-      END MODULE DIFFSIZES
+!-------------------------------------------------------------------------------
+!> A necessary module for TAPENADE.
+!<------------------------------------------------------------------------------
+module diffsizes
+
+  implicit none
+  integer, parameter :: nbdirsmax=16
+
+end module diffsizes
+!

@@ -1,9 +1,7 @@
 #!/usr/bin/env python  
 #
-# Copyright (c) 2015, Kshitij Kulshreshtha
-# Copyright (c) 2015, Sri Hari Krishna Narayanan
-
-# All rights reserved.
+# Copyright 2015 Kshitij Kulshreshtha
+# Copyright 2015 Sri Hari Krishna Narayanan
 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions

@@ -4,11 +4,11 @@
 !
 !> @file
 !!
-!! Several mathematical tools used by SICOPOLIS.
+!! Stub file for solvers in tangent linear (forward) mode of SICOPOLIS-AD v2.
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2022 Ralf Greve, Shreyas Sunil Gaikwad, Liz Curry-Logan
+!! Copyright 2009-2023 Shreyas Sunil Gaikwad, Liz Curry-Logan, Ralf Greve
 !!
 !! @section License
 !!
@@ -32,117 +32,122 @@
 !-------------------------------------------------------------------------------
 !> Stub file for solvers in tangent linear (forward) mode of SICOPOLIS-AD v2.
 !<------------------------------------------------------------------------------
-MODULE SICO_MATHS_M_DIFF
-  USE SICO_TYPES_M
-  IMPLICIT NONE
-  PUBLIC
-  INTERFACE TRI_SLE
-      MODULE PROCEDURE TRI_SLE_STUB
-  END INTERFACE
+module sico_maths_m_diff
 
-  INTERFACE TRI_SLE_D
-      MODULE PROCEDURE TRI_SLE_STUB_D
-  END INTERFACE
+  use sico_types_m
 
-  INTERFACE MY_ERFC
-      MODULE PROCEDURE MY_ERFC_STUB
-  END INTERFACE
+  implicit none
+  public
 
-  INTERFACE MY_ERFC_D
-      MODULE PROCEDURE MY_ERFC_STUB_D
-  END INTERFACE
+  interface tri_sle
+      module procedure tri_sle_stub
+  end interface
 
-  INTERFACE SOR_SPRS
-      MODULE PROCEDURE SOR_SPRS_STUB
-  END INTERFACE
+  interface tri_sle_d
+      module procedure tri_sle_stub_d
+  end interface
 
-  INTERFACE SOR_SPRS_D
-      MODULE PROCEDURE SOR_SPRS_STUB_D
-  END INTERFACE
+  interface my_erfc
+      module procedure my_erfc_stub
+  end interface
 
-#if  defined(BUILD_LIS) && (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
-  INTERFACE SICO_LIS_SOLVER
-      MODULE PROCEDURE SICO_LIS_SOLVER_STUB
-  END INTERFACE
+  interface my_erfc_d
+      module procedure my_erfc_stub_d
+  end interface
 
-  INTERFACE SICO_LIS_SOLVER_D
-      MODULE PROCEDURE SICO_LIS_SOLVER_STUB_D
-  END INTERFACE
+  interface sor_sprs
+      module procedure sor_sprs_stub
+  end interface
+
+  interface sor_sprs_d
+      module procedure sor_sprs_stub_d
+  end interface
+
+#if defined(BUILD_LIS) && (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
+  interface sico_lis_solver
+      module procedure sico_lis_solver_stub
+  end interface
+
+  interface sico_lis_solver_d
+      module procedure sico_lis_solver_stub_d
+  end interface
 #endif
 
-CONTAINS
-!  Differentiation of sor_sprs_stub in forward (tangent) mode:
-!   variations   of useful results: lgs_x_value
-!   with respect to varying inputs: lgs_b_value lgs_x_value lgs_a_value
+contains
 !-------------------------------------------------------------------------------
-!> SOR solver for a system of linear equations lgs_a*lgs_x=lgs_b
-!! [matrix storage: compressed sparse row CSR,
-!! represented by arrays lgs_a_value(values), lgs_a_index (indices)
-!! and lgs_a_ptr (pointers)].
+!> Differentiation of sor_sprs_stub in forward (tangent) mode:
+!! variations of useful results: lgs_x_value,
+!! with respect to varying inputs: lgs_b_value lgs_x_value lgs_a_value.
 !<------------------------------------------------------------------------------
-  SUBROUTINE SOR_SPRS_STUB_D(lgs_a_value, lgs_a_valued, lgs_a_index, &
-&   lgs_a_diag_index, lgs_a_ptr, lgs_b_value, lgs_b_valued, nnz, nmax, &
-&   omega, eps_sor, lgs_x_value, lgs_x_valued, ierr)
-
-    IMPLICIT NONE
-    INTEGER(i4b), INTENT(IN) :: nnz, nmax
-    REAL(dp), INTENT(IN) :: omega, eps_sor
-    INTEGER(i4b), DIMENSION(nmax+1), INTENT(IN) :: lgs_a_ptr
-    INTEGER(i4b), DIMENSION(nnz), INTENT(IN) :: lgs_a_index
-    INTEGER(i4b), DIMENSION(nmax), INTENT(IN) :: lgs_a_diag_index
-    REAL(dp), DIMENSION(nnz), INTENT(IN) :: lgs_a_value
-    REAL(dp), DIMENSION(nnz), INTENT(IN) :: lgs_a_valued
-    REAL(dp), DIMENSION(nmax), INTENT(IN) :: lgs_b_value
-    REAL(dp), DIMENSION(nmax), INTENT(IN) :: lgs_b_valued
-    INTEGER(i4b), INTENT(OUT) :: ierr
-    REAL(dp), DIMENSION(nmax), INTENT(INOUT) :: lgs_x_value
-    REAL(dp), DIMENSION(nmax), INTENT(INOUT) :: lgs_x_valued
-    INTEGER(i4b) :: nr, k
-    REAL(dp), DIMENSION(nmax) :: lgs_rhs_value
-
-call SOR_SPRS(lgs_a_value, lgs_a_index, lgs_a_diag_index, &
-&   lgs_a_ptr, lgs_b_value, nnz, nmax, omega, eps_sor, &
-&   lgs_x_value, ierr)
-
-do nr=1, nmax
-
-        lgs_rhs_value(nr) = lgs_b_valued(nr)
-
-        do k=lgs_a_ptr(nr), lgs_a_ptr(nr+1)-1
-
-                lgs_rhs_value(nr) = lgs_rhs_value(nr) - lgs_a_valued(k)*lgs_x_value(lgs_a_index(k))
-
-        end do
-
-end do
-
-call SOR_SPRS(lgs_a_value, lgs_a_index, lgs_a_diag_index, &
-&   lgs_a_ptr, lgs_rhs_value, nnz, nmax, omega, eps_sor/10000.0, &
-&   lgs_x_valued, ierr)
-  END SUBROUTINE SOR_SPRS_STUB_D
-
-!-------------------------------------------------------------------------------
-!> SOR solver for a system of linear equations lgs_a*lgs_x=lgs_b
-!! [matrix storage: compressed sparse row CSR,
-!! represented by arrays lgs_a_value(values), lgs_a_index (indices)
-!! and lgs_a_ptr (pointers)].
-!<------------------------------------------------------------------------------
-  SUBROUTINE SOR_SPRS_STUB(lgs_a_value, lgs_a_index, lgs_a_diag_index, &
-&   lgs_a_ptr, lgs_b_value, nnz, nmax, omega, eps_sor, &
-&   lgs_x_value, ierr)
+  subroutine sor_sprs_stub_d(lgs_a_value, lgs_a_valued, lgs_a_index, &
+                             lgs_a_diag_index, lgs_a_ptr, &
+                             lgs_b_value, lgs_b_valued, &
+                             nnz, nmax, &
+                             omega, eps_sor, lgs_x_value, lgs_x_valued, ierr)
 
   implicit none
 
-  integer(i4b),                     intent(in) :: nnz, nmax
-  real(dp),                         intent(in) :: omega, eps_sor
-  integer(i4b), dimension(nmax+1),  intent(in) :: lgs_a_ptr
-  integer(i4b), dimension(nnz),     intent(in) :: lgs_a_index
-  integer(i4b), dimension(nmax),    intent(in) :: lgs_a_diag_index
-  real(dp),     dimension(nnz),     intent(in) :: lgs_a_value
-  real(dp),     dimension(nmax),    intent(in) :: lgs_b_value
+  integer(i4b), intent(in) :: nnz, nmax
+  real(dp), intent(in) :: omega, eps_sor
+  integer(i4b), dimension(nmax+1), intent(in) :: lgs_a_ptr
+  integer(i4b), dimension(nnz), intent(in) :: lgs_a_index
+  integer(i4b), dimension(nmax), intent(in) :: lgs_a_diag_index
+  real(dp), dimension(nnz), intent(in) :: lgs_a_value
+  real(dp), dimension(nnz), intent(in) :: lgs_a_valued
+  real(dp), dimension(nmax), intent(in) :: lgs_b_value
+  real(dp), dimension(nmax), intent(in) :: lgs_b_valued
+  integer(i4b), intent(out) :: ierr
+  real(dp), dimension(nmax), intent(inout) :: lgs_x_value
+  real(dp), dimension(nmax), intent(inout) :: lgs_x_valued
+  integer(i4b) :: nr, k
+  real(dp), dimension(nmax) :: lgs_rhs_value
 
-  integer(i4b),                    intent(out) :: ierr
-  real(dp),     dimension(nmax), intent(inout) :: lgs_x_value
+  call sor_sprs(lgs_a_value, lgs_a_index, lgs_a_diag_index, &
+                lgs_a_ptr, lgs_b_value, nnz, nmax, omega, eps_sor, &
+                lgs_x_value, ierr)
+
+  do nr=1, nmax
+
+     lgs_rhs_value(nr) = lgs_b_valued(nr)
+
+     do k=lgs_a_ptr(nr), lgs_a_ptr(nr+1)-1
+        lgs_rhs_value(nr) = lgs_rhs_value(nr) &
+                            - lgs_a_valued(k)*lgs_x_value(lgs_a_index(k))
+     end do
+
+  end do
+
+  call sor_sprs(lgs_a_value, lgs_a_index, lgs_a_diag_index, &
+                lgs_a_ptr, lgs_rhs_value, nnz, nmax, omega, eps_sor/10000.0, &
+                lgs_x_valued, ierr)
+
+  end subroutine sor_sprs_stub_d
+
+!-------------------------------------------------------------------------------
+!> SOR solver for a system of linear equations lgs_a*lgs_x=lgs_b
+!! [matrix storage: compressed sparse row CSR,
+!! represented by arrays lgs_a_value(values), lgs_a_index (indices)
+!! and lgs_a_ptr (pointers)].
+!<------------------------------------------------------------------------------
+  subroutine sor_sprs_stub(lgs_a_value, lgs_a_index, lgs_a_diag_index, &
+                           lgs_a_ptr, lgs_b_value, &
+                           nnz, nmax, &
+                           omega, eps_sor, lgs_x_value, ierr)
+
+  implicit none
+
+  integer(i4b), intent(in) :: nnz, nmax
+  real(dp),     intent(in) :: omega, eps_sor
+
+  integer(i4b), dimension(nmax+1), intent(in) :: lgs_a_ptr
+  integer(i4b), dimension(nnz),    intent(in) :: lgs_a_index
+  integer(i4b), dimension(nmax),   intent(in) :: lgs_a_diag_index
+  real(dp),     dimension(nnz),    intent(in) :: lgs_a_value
+  real(dp),     dimension(nmax),   intent(in) :: lgs_b_value
+
+  integer(i4b), intent(out) :: ierr
+
+  real(dp), dimension(nmax), intent(inout) :: lgs_x_value
 
   integer(i4b) :: iter
   integer(i4b) :: iter_max
@@ -198,135 +203,62 @@ call SOR_SPRS(lgs_a_value, lgs_a_index, lgs_a_diag_index, &
   ierr = -1   ! convergence criterion not fulfilled
   deallocate(lgs_x_value_prev)
 
-  END SUBROUTINE SOR_SPRS_STUB
-
-
-!  Differentiation of tri_sle_stub in forward (tangent) mode:
-!   variations   of useful results: x b
-!   with respect to varying inputs: x a0 a1 a2 b
-!-------------------------------------------------------------------------------
-!> SOR solver for a system of linear equations lgs_a*lgs_x=lgs_b
-!! [matrix storage: compressed sparse row CSR,
-!! represented by arrays lgs_a_value(values), lgs_a_index (indices)
-!! and lgs_a_ptr (pointers)].
-!<------------------------------------------------------------------------------
-!-------------------------------------------------------------------------------
-!> Solution of a system of linear equations Ax=b with tridiagonal matrix A.
-!! @param[in]  a0       a0(j) is element A_(j,j-1) of Matrix A
-!! @param[in]  a1       a1(j) is element A_(j,j)   of Matrix A
-!! @param[in]  a2       a2(j) is element A_(j,j+1) of Matrix A
-!! @param[in]  b        inhomogeneity vector
-!! @param[in]  nrows    size of matrix A (indices run from 0 (!!!) to nrows)
-!! @param[out] x        Solution vector.
-!<------------------------------------------------------------------------------
-  SUBROUTINE TRI_SLE_STUB_D(a0, a0d, a1, a1d, a2, a2d, x, xd, b, bd, &
-&   nrows)
-!    IMPLICIT NONE
-!    INTEGER(i4b), INTENT(IN) :: nrows
-!    REAL(dp), DIMENSION(0:nrows), INTENT(IN) :: a0, a2
-!    REAL(dp), DIMENSION(0:nrows), INTENT(IN) :: a0d, a2d
-!    REAL(dp), DIMENSION(0:nrows), INTENT(INOUT) :: a1, b
-!    REAL(dp), DIMENSION(0:nrows), INTENT(INOUT) :: a1d, bd
-!    REAL(dp), DIMENSION(0:nrows), INTENT(OUT) :: x
-!    REAL(dp), DIMENSION(0:nrows), INTENT(OUT) :: xd
-!    REAL(dp), DIMENSION(0:nrows) :: help_x
-!    REAL(dp), DIMENSION(0:nrows) :: help_xd
-!    INTEGER(i4b) :: n
-!    REAL(dp) :: temp
-!    REAL(dp) :: temp0
-!!--------  Generate an upper triangular matrix
-!!                      ('obere Dreiecksmatrix') --------
-!!x(1) = a0(0) + a1(0) + a2(0) + b(0) 
-!!x(0) = x(1)
-!!b(0) = x(1)
-!!a1(0) = x(1)
-!    DO n=1,nrows
-!      temp = a0(n)*a2(n-1)/a1(n-1)
-!      a1d(n) = a1d(n) - (a2(n-1)*a0d(n)+a0(n)*a2d(n-1)-temp*a1d(n-1))/a1&
-!&       (n-1)
-!      a1(n) = a1(n) - temp
-!    END DO
-!    DO n=1,nrows
-!      temp = a0(n)*b(n-1)/a1(n-1)
-!      bd(n) = bd(n) - (b(n-1)*a0d(n)+a0(n)*bd(n-1)-temp*a1d(n-1))/a1(n-1&
-!&       )
-!      b(n) = b(n) - temp
-!    END DO
-!!         a0(n)  = 0.0_dp , not needed in the following, therefore
-!!                           not set
-!!-------- Iterative solution of the new system --------
-!!      x(nrows) = b(nrows)/a1(nrows)
-!!      do n=nrows-1, 0, -1
-!!         x(n) = (b(n)-a2(n)*x(n+1))/a1(n)
-!!      end do
-!    help_xd = 0.0_8
-!    temp = b(nrows)/a1(nrows)
-!    help_xd(0) = (bd(nrows)-temp*a1d(nrows))/a1(nrows)
-!    help_x(0) = temp
-!    DO n=1,nrows
-!      temp = b(nrows-n)/a1(nrows-n)
-!      temp0 = a2(nrows-n)*help_x(n-1)/a1(nrows-n)
-!      help_xd(n) = (bd(nrows-n)-temp*a1d(nrows-n))/a1(nrows-n) - (help_x&
-!&       (n-1)*a2d(nrows-n)+a2(nrows-n)*help_xd(n-1)-temp0*a1d(nrows-n))/&
-!&       a1(nrows-n)
-!      help_x(n) = temp - temp0
-!    END DO
-!    DO n=0,nrows
-!      xd(n) = help_xd(nrows-n)
-!      x(n) = help_x(nrows-n)
-!    END DO
-
-    IMPLICIT NONE
-    INTEGER(i4b), INTENT(IN) :: nrows
-    REAL(dp), DIMENSION(0:nrows), INTENT(IN) :: a0, a2
-    REAL(dp), DIMENSION(0:nrows), INTENT(IN) :: a0d, a2d
-    REAL(dp), DIMENSION(0:nrows), INTENT(INOUT) :: a1, b
-    REAL(dp), DIMENSION(0:nrows), INTENT(INOUT) :: a1d, bd
-    REAL(dp), DIMENSION(0:nrows), INTENT(OUT) :: x
-    REAL(dp), DIMENSION(0:nrows), INTENT(OUT) :: xd
-    INTEGER(i4b) :: n
-    REAL(dp), DIMENSION(0:nrows) :: rhs, a1copy
-    INTEGER(i4b) :: n1
-
-    do n1 = 0, nrows
-    a1copy(n1) = a1(n1)
-    end do
-
-    call tri_sle(a0, a1, a2, x, b, nrows)
-
-    rhs(0) = bd(0) - a1d(0)*x(0) - a2d(0)*x(1)
-    rhs(nrows) = bd(nrows) - a0d(nrows)*x(nrows-1) - a1d(nrows)*x(nrows)
-
-    DO n=1,nrows-1
-        rhs(n) = bd(n) - a0d(n)*x(n-1) - a1d(n)*x(n) - a2d(n)*x(n+1)
-    END DO
-
-    call tri_sle(a0, a1copy, a2, xd, rhs, nrows)
-  END SUBROUTINE TRI_SLE_STUB_D
+  end subroutine sor_sprs_stub
 
 !-------------------------------------------------------------------------------
-!> SOR solver for a system of linear equations lgs_a*lgs_x=lgs_b
-!! [matrix storage: compressed sparse row CSR,
-!! represented by arrays lgs_a_value(values), lgs_a_index (indices)
-!! and lgs_a_ptr (pointers)].
+!> Differentiation of tri_sle_stub in forward (tangent) mode:
+!! variations of useful results: x b,
+!! with respect to varying inputs: x a0 a1 a2 b.
 !<------------------------------------------------------------------------------
-!-------------------------------------------------------------------------------
-!> Solution of a system of linear equations Ax=b with tridiagonal matrix A.
-!! @param[in]  a0       a0(j) is element A_(j,j-1) of Matrix A
-!! @param[in]  a1       a1(j) is element A_(j,j)   of Matrix A
-!! @param[in]  a2       a2(j) is element A_(j,j+1) of Matrix A
-!! @param[in]  b        inhomogeneity vector
-!! @param[in]  nrows    size of matrix A (indices run from 0 (!!!) to nrows)
-!! @param[out] x        Solution vector.
-!<------------------------------------------------------------------------------
-  SUBROUTINE TRI_SLE_STUB(a0, a1, a2, x, b, nrows)
+  subroutine tri_sle_stub_d(a0, a0d, a1, a1d, a2, a2d, x, xd, b, bd, nrows)
 
   implicit none
 
-  integer(i4b),                 intent(in) :: nrows
-  real(dp), dimension(0:nrows), intent(in) :: a0, a1, a2, b
-
+  integer(i4b), intent(in) :: nrows
+  real(dp), dimension(0:nrows), intent(in) :: a0, a2
+  real(dp), dimension(0:nrows), intent(in) :: a0d, a2d
+  real(dp), dimension(0:nrows), intent(inout) :: a1, b
+  real(dp), dimension(0:nrows), intent(inout) :: a1d, bd
   real(dp), dimension(0:nrows), intent(out) :: x
+  real(dp), dimension(0:nrows), intent(out) :: xd
+  integer(i4b) :: n
+  real(dp), dimension(0:nrows) :: rhs, a1copy
+  integer(i4b) :: n1
+
+  do n1 = 0, nrows
+     a1copy(n1) = a1(n1)
+  end do
+
+  call tri_sle(a0, a1, a2, x, b, nrows)
+
+  rhs(0) = bd(0) - a1d(0)*x(0) - a2d(0)*x(1)
+  rhs(nrows) = bd(nrows) - a0d(nrows)*x(nrows-1) - a1d(nrows)*x(nrows)
+
+  do n=1,nrows-1
+     rhs(n) = bd(n) - a0d(n)*x(n-1) - a1d(n)*x(n) - a2d(n)*x(n+1)
+  end do
+
+  call tri_sle(a0, a1copy, a2, xd, rhs, nrows)
+
+  end subroutine tri_sle_stub_d
+
+!-------------------------------------------------------------------------------
+!> Solution of a system of linear equations Ax=b with tridiagonal matrix A.
+!<------------------------------------------------------------------------------
+  subroutine tri_sle_stub(a0, a1, a2, x, b, nrows)
+
+  implicit none
+
+  integer(i4b),                 intent(in)  :: nrows
+  real(dp), dimension(0:nrows), intent(in)  :: a0, a1, a2, b
+  real(dp), dimension(0:nrows), intent(out) :: x
+
+     ! a0: a0(j) is element A_(j,j-1) of matrix A
+     ! a1: a1(j) is element A_(j,j)   of matrix A
+     ! a2: a2(j) is element A_(j,j+1) of matrix A
+     ! b: inhomogeneity vector
+     ! nrows: size of matrix A (indices run from 0 (!!!) to nrows)
+     ! x: solution vector
 
   integer(i4b) :: n
   real(dp), dimension(0:nrows) :: a0_aux, a1_aux, a2_aux, b_aux, x_aux
@@ -367,7 +299,7 @@ call SOR_SPRS(lgs_a_value, lgs_a_index, lgs_a_diag_index, &
   !           diagonal becoming zero. In this case it crashes even
   !           though the system may be solvable. Otherwise ok.
 
-  END SUBROUTINE TRI_SLE_STUB
+  end subroutine tri_sle_stub
 
 !-------------------------------------------------------------------------------
 !> Bilinear interpolation.
@@ -389,252 +321,273 @@ call SOR_SPRS(lgs_a_value, lgs_a_index, lgs_a_diag_index, &
   bilinint = (I-t)*(I-u)*z11 + (I-t)*u*z12 + t*(I-u)*z21 + t*u*z22
 
   end function bilinint
-!  Differentiation of my_erfc_stub in forward (tangent) mode:
-!   variations   of useful results: retval
-!   with respect to varying inputs: x
+
 !-------------------------------------------------------------------------------
-!> Computation of the complementary error function erfc(x) = 1-erf(x)
-!! with a fractional error everywhere less than 1.2 x 10^(-7)
-!! (formula by Press et al., 'Numerical Recipes in Fortran 77').
+!> Differentiation of my_erfc_stub in forward (tangent) mode:
+!! variations of useful results: retval,
+!! with respect to varying inputs: x.
 !<------------------------------------------------------------------------------
-  SUBROUTINE MY_ERFC_STUB_D(x, xd, retval, retvald)
-    IMPLICIT NONE
-    REAL(dp), INTENT(IN) :: x
-    REAL(dp), INTENT(IN) :: xd
-    REAL(dp), INTENT(OUT) :: retval
-    REAL(dp), INTENT(OUT) :: retvald
-    REAL(dp) :: t, z
-    REAL(dp) :: td, zd
-    INTRINSIC ABS
-    INTRINSIC EXP
-    REAL(dp) :: arg1
-    REAL(dp) :: arg1d
-    REAL(dp) :: temp
-    REAL(dp) :: temp0
-    REAL(dp) :: temp1
-    REAL(dp) :: temp2
-    IF (x .GE. 0.) THEN
-      zd = xd
-      z = x
-    ELSE
-      zd = -xd
-      z = -x
-    END IF
-    temp = 1.0/(0.5_dp*z+1.0_dp)
-    td = -(temp*0.5_dp*zd/(0.5_dp*z+1.0_dp))
-    t = temp
-    temp = t*(0.17087277_dp*t-0.82215223_dp) + 1.48851587_dp
-    temp0 = t*temp - 1.13520398_dp
-    temp1 = t*(t*temp0+0.27886807_dp) - 0.18628806_dp
-    temp2 = t*(t*temp1+0.09678418_dp) + 0.37409196_dp
-    arg1d = (t*temp2+t*(temp2+t*(t*temp1+t*(temp1+t*(t*temp0+t*(temp0+t*&
-&     (temp+t*(0.17087277_dp*t+t*0.17087277_dp-0.82215223_dp)))+&
-&     0.27886807_dp))+0.09678418_dp))+1.00002368_dp)*td - 2*z*zd
-    arg1 = t*(t*temp2+1.00002368_dp) - z*z - 1.26551223_dp
-    temp2 = EXP(arg1)
-    retvald = temp2*td + t*EXP(arg1)*arg1d
-    retval = t*temp2
-    IF (x .LT. 0.0_dp) THEN
-      retvald = -retvald
-      retval = 2.0_dp - retval
-    END IF
-  END SUBROUTINE MY_ERFC_STUB_D
+  subroutine my_erfc_stub_d(x, xd, retval, retvald)
+
+  implicit none
+
+  real(dp), intent(in) :: x
+  real(dp), intent(in) :: xd
+  real(dp), intent(out) :: retval
+  real(dp), intent(out) :: retvald
+  real(dp) :: t, z
+  real(dp) :: td, zd
+
+  intrinsic abs
+  intrinsic exp
+
+  real(dp) :: arg1
+  real(dp) :: arg1d
+  real(dp) :: temp
+  real(dp) :: temp0
+  real(dp) :: temp1
+  real(dp) :: temp2
+
+  if (x >= 0.) then
+     zd = xd
+     z = x
+  else
+     zd = -xd
+     z = -x
+  end if
+
+  temp = 1.0/(0.5_dp*z+1.0_dp)
+  td = -(temp*0.5_dp*zd/(0.5_dp*z+1.0_dp))
+  t = temp
+  temp = t*(0.17087277_dp*t-0.82215223_dp) + 1.48851587_dp
+  temp0 = t*temp - 1.13520398_dp
+  temp1 = t*(t*temp0+0.27886807_dp) - 0.18628806_dp
+  temp2 = t*(t*temp1+0.09678418_dp) + 0.37409196_dp
+  arg1d = (t*temp2+t*(temp2+t*(t*temp1+t*(temp1+t*(t*temp0+t*(temp0+t* &
+          (temp+t*(0.17087277_dp*t+t*0.17087277_dp-0.82215223_dp)))+ &
+          0.27886807_dp))+0.09678418_dp))+1.00002368_dp)*td - 2*z*zd
+  arg1 = t*(t*temp2+1.00002368_dp) - z*z - 1.26551223_dp
+  temp2 = exp(arg1)
+  retvald = temp2*td + t*exp(arg1)*arg1d
+  retval = t*temp2
+
+  if (x < 0.0_dp) then
+     retvald = -retvald
+     retval = 2.0_dp - retval
+  end if
+
+  end subroutine my_erfc_stub_d
 
 !-------------------------------------------------------------------------------
 !> Computation of the complementary error function erfc(x) = 1-erf(x)
 !! with a fractional error everywhere less than 1.2 x 10^(-7)
 !! (formula by Press et al., 'Numerical Recipes in Fortran 77').
 !<------------------------------------------------------------------------------
-  SUBROUTINE MY_ERFC_STUB(x, retval)
-    IMPLICIT NONE
-    REAL(dp), INTENT(IN) :: x
-    REAL(dp), INTENT(OUT) :: retval
-    REAL(dp) :: t, z
-    INTRINSIC ABS
-    INTRINSIC EXP
-    REAL(dp) :: arg1
-    IF (x .GE. 0.) THEN
-      z = x
-    ELSE
-      z = -x
-    END IF
-    t = 1.0_dp/(1.0_dp+0.5_dp*z)
-    arg1 = -(z*z) - 1.26551223_dp + t*(1.00002368_dp+t*(0.37409196_dp+t*&
-&     (0.09678418_dp+t*(-0.18628806_dp+t*(0.27886807_dp+t*(-&
-&     1.13520398_dp+t*(1.48851587_dp+t*(-0.82215223_dp+t*0.17087277_dp))&
-&     ))))))
-    retval = t*EXP(arg1)
-    IF (x .LT. 0.0_dp) retval = 2.0_dp - retval
-  END SUBROUTINE MY_ERFC_STUB
+  subroutine my_erfc_stub(x, retval)
 
-#if  defined(BUILD_LIS) && (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
-!#if  (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
+  implicit none
+
+  real(dp), intent(in) :: x
+  real(dp), intent(out) :: retval
+  real(dp) :: t, z
+
+  intrinsic abs
+  intrinsic exp
+
+  real(dp) :: arg1
+
+  if (x >= 0.) then
+     z = x
+  else
+     z = -x
+  end if
+
+  t = 1.0_dp/(1.0_dp+0.5_dp*z)
+  arg1 = -(z*z) - 1.26551223_dp + t*(1.00002368_dp+t*(0.37409196_dp+t* &
+         (0.09678418_dp+t*(-0.18628806_dp+t*(0.27886807_dp+t*(- &
+         1.13520398_dp+t*(1.48851587_dp+t*(-0.82215223_dp+t*0.17087277_dp)) &
+         ))))))
+  retval = t*exp(arg1)
+  if (x < 0.0_dp) retval = 2.0_dp - retval
+
+  end subroutine my_erfc_stub
+
+#if defined(BUILD_LIS) && (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
 !-------------------------------------------------------------------------------
-!> Tapenade needs a template to help differentiate through the LIS solver when  
-!! it is used. This is substituted in for adjoint modes in Antarctica with 
-!! ice shelves.
+!> Template for Tapenade to help differentiate through the LIS solver.
 !<------------------------------------------------------------------------------
 #include "lisf.h"
-  SUBROUTINE SICO_LIS_SOLVER_STUB(nmax, nnz, lgs_a_ptr, lgs_a_index, &
-&   lgs_a_value, lgs_b_value, lgs_x_value)
-implicit none
+  subroutine sico_lis_solver_stub(nmax, nnz, lgs_a_ptr, lgs_a_index, &
+                                  lgs_a_value, lgs_b_value, lgs_x_value)
 
-integer(i4b)                                 :: ierr
-integer(i4b)                                 :: iter
-integer(i4b)                                 :: nc, nr
-integer(i4b),                     intent(in) :: nmax
-integer(i4b),                     intent(in) :: nnz
-integer(i4b), dimension(nmax+1),  intent(in) :: lgs_a_ptr
-integer(i4b), dimension(nnz),  intent(in)    :: lgs_a_index
+  implicit none
 
-LIS_MATRIX                                   :: lgs_a
-LIS_VECTOR                                   :: lgs_b
-LIS_VECTOR                                   :: lgs_x
-LIS_SOLVER                                   :: solver
+  integer(i4b) :: ierr
+  integer(i4b) :: iter
+  integer(i4b) :: nc, nr
 
-real(dp),     dimension(nnz),  intent(in)    :: lgs_a_value
-real(dp),     dimension(nmax),    intent(in) :: lgs_b_value
-real(dp),     dimension(nmax), intent(inout) :: lgs_x_value
+  integer(i4b), intent(in) :: nmax
+  integer(i4b), intent(in) :: nnz
 
-character(len=256)                           :: ch_solver_set_option
+  integer(i4b), dimension(nmax+1), intent(in) :: lgs_a_ptr
+  integer(i4b), dimension(nnz),    intent(in) :: lgs_a_index
+
+  LIS_MATRIX :: lgs_a
+  LIS_VECTOR :: lgs_b
+  LIS_VECTOR :: lgs_x
+  LIS_SOLVER :: solver
+
+  real(dp), dimension(nnz),  intent(in)    :: lgs_a_value
+  real(dp), dimension(nmax), intent(in)    :: lgs_b_value
+  real(dp), dimension(nmax), intent(inout) :: lgs_x_value
+
+  character(len=256) :: ch_solver_set_option
 
 !  ------ Settings for Lis
-!call lis_init_f(ierr)
-call lis_matrix_create(LIS_COMM_WORLD, lgs_a, ierr)
-call lis_vector_create(LIS_COMM_WORLD, lgs_b, ierr)
-call lis_vector_create(LIS_COMM_WORLD, lgs_x, ierr)
 
-call lis_matrix_set_size(lgs_a, 0, nmax, ierr)
-call lis_vector_set_size(lgs_b, 0, nmax, ierr)
-call lis_vector_set_size(lgs_x, 0, nmax, ierr)
+  call lis_matrix_create(LIS_COMM_WORLD, lgs_a, ierr)
+  call lis_vector_create(LIS_COMM_WORLD, lgs_b, ierr)
+  call lis_vector_create(LIS_COMM_WORLD, lgs_x, ierr)
 
-do nr=1, nmax
+  call lis_matrix_set_size(lgs_a, 0, nmax, ierr)
+  call lis_vector_set_size(lgs_b, 0, nmax, ierr)
+  call lis_vector_set_size(lgs_x, 0, nmax, ierr)
 
-   do nc=lgs_a_ptr(nr), lgs_a_ptr(nr+1)-1
-      call lis_matrix_set_value(LIS_INS_VALUE, nr, lgs_a_index(nc), &
-                                               lgs_a_value(nc), lgs_a, ierr)
-   end do
+  do nr=1, nmax
 
-   call lis_vector_set_value(LIS_INS_VALUE, nr, lgs_b_value(nr), lgs_b, ierr)
-   call lis_vector_set_value(LIS_INS_VALUE, nr, lgs_x_value(nr), lgs_x, ierr)
+     do nc=lgs_a_ptr(nr), lgs_a_ptr(nr+1)-1
+        call lis_matrix_set_value(LIS_INS_VALUE, nr, lgs_a_index(nc), &
+                                                 lgs_a_value(nc), lgs_a, ierr)
+     end do
 
-end do
+     call lis_vector_set_value(LIS_INS_VALUE, nr, lgs_b_value(nr), lgs_b, ierr)
+     call lis_vector_set_value(LIS_INS_VALUE, nr, lgs_x_value(nr), lgs_x, ierr)
 
-call lis_matrix_set_type(lgs_a, LIS_MATRIX_CSR, ierr)
-call lis_matrix_assemble(lgs_a, ierr)
+  end do
+
+  call lis_matrix_set_type(lgs_a, LIS_MATRIX_CSR, ierr)
+  call lis_matrix_assemble(lgs_a, ierr)
 
 !  ------ Solution with Lis
 
-call lis_solver_create(solver, ierr)
+  call lis_solver_create(solver, ierr)
 
 #if (defined(LIS_OPTS))
-    ch_solver_set_option = trim(LIS_OPTS)
+  ch_solver_set_option = trim(LIS_OPTS)
 #else
-    ch_solver_set_option = '-i bicgsafe -p jacobi '// &
-                           '-maxiter 2000 -tol 1.0e-18 -initx_zeros false'
+  ch_solver_set_option = '-i bicgsafe -p jacobi '// &
+                         '-maxiter 2000 -tol 1.0e-18 -initx_zeros false'
 #endif
 
-call lis_solver_set_option(trim(ch_solver_set_option), solver, ierr)
-call CHKERR(ierr)
+  call lis_solver_set_option(trim(ch_solver_set_option), solver, ierr)
+  call CHKERR(ierr)
 
-call lis_solve(lgs_a, lgs_b, lgs_x, solver, ierr)
-call CHKERR(ierr)
+  call lis_solve(lgs_a, lgs_b, lgs_x, solver, ierr)
+  call CHKERR(ierr)
 
-call lis_solver_get_iter(solver, iter, ierr)
-write(6,'(10x,a,i0)') 'calc_thk_sia_impl: iter = ', iter
+  call lis_solver_get_iter(solver, iter, ierr)
+  write(6,'(10x,a,i0)') 'calc_thk_sia_impl: iter = ', iter
 
-lgs_x_value = 0.0_dp
-call lis_vector_gather(lgs_x, lgs_x_value, ierr)
-call lis_matrix_destroy(lgs_a, ierr)
-call lis_vector_destroy(lgs_b, ierr)
-call lis_vector_destroy(lgs_x, ierr)
-call lis_solver_destroy(solver, ierr)
-!call lis_finalize_f(ierr)
-  END SUBROUTINE SICO_LIS_SOLVER_STUB
+  lgs_x_value = 0.0_dp
+  call lis_vector_gather(lgs_x, lgs_x_value, ierr)
+  call lis_matrix_destroy(lgs_a, ierr)
+  call lis_vector_destroy(lgs_b, ierr)
+  call lis_vector_destroy(lgs_x, ierr)
+  call lis_solver_destroy(solver, ierr)
 
-subroutine sico_lis_solver_stub_d(nmax, nnz, &
-                           lgs_a_ptr, lgs_a_index, &
-                           lgs_a_value, lgs_a_valued, lgs_b_value,& 
-                           lgs_b_valued, lgs_x_value, lgs_x_valued)
+  end subroutine sico_lis_solver_stub
 
-implicit none
+!-------------------------------------------------------------------------------
+!> Differentiation of sico_lis_solver_stub in forward (tangent) mode.
+!<------------------------------------------------------------------------------
+  subroutine sico_lis_solver_stub_d(nmax, nnz, &
+                                    lgs_a_ptr, lgs_a_index, &
+                                    lgs_a_value, lgs_a_valued, lgs_b_value, &
+                                    lgs_b_valued, lgs_x_value, lgs_x_valued)
 
-integer(i4b)                                 :: ierr
-integer(i4b)                                 :: nc, nr
-integer(i4b),                     intent(in) :: nmax
-integer(i4b),                     intent(in) :: nnz
-integer(i4b), dimension(nmax+1),  intent(in) :: lgs_a_ptr
-integer(i4b), dimension(nnz),  intent(in) :: lgs_a_index
+  implicit none
 
-real(dp),     dimension(nnz),  intent(in) :: lgs_a_value
-real(dp),     dimension(nmax),    intent(in) :: lgs_b_value
-real(dp),     dimension(nmax), intent(inout) :: lgs_x_value
+  integer(i4b) :: ierr
+  integer(i4b) :: nc, nr
 
-real(dp),     dimension(nnz),  intent(inout) :: lgs_a_valued
-real(dp),     dimension(nmax), intent(inout) :: lgs_b_valued
-real(dp),     dimension(nmax), intent(inout) :: lgs_x_valued
-real(dp),     dimension(nmax) :: rhs_value
+  integer(i4b), intent(in) :: nmax
+  integer(i4b), intent(in) :: nnz
 
-LIS_SCALAR                                   :: alpha = -1.0
-LIS_MATRIX                                   :: lgs_ad
-LIS_VECTOR                                   :: lgs_bd
-LIS_VECTOR                                   :: lgs_x
-LIS_VECTOR                                   :: rhs
+  integer(i4b), dimension(nmax+1), intent(in) :: lgs_a_ptr
+  integer(i4b), dimension(nnz),    intent(in) :: lgs_a_index
+
+  real(dp), dimension(nnz),  intent(in)    :: lgs_a_value
+  real(dp), dimension(nmax), intent(in)    :: lgs_b_value
+  real(dp), dimension(nmax), intent(inout) :: lgs_x_value
+
+  real(dp), dimension(nnz),  intent(inout) :: lgs_a_valued
+  real(dp), dimension(nmax), intent(inout) :: lgs_b_valued
+  real(dp), dimension(nmax), intent(inout) :: lgs_x_valued
+
+  real(dp), dimension(nmax) :: rhs_value
+
+  LIS_SCALAR :: alpha = -1.0
+  LIS_MATRIX :: lgs_ad
+  LIS_VECTOR :: lgs_bd
+  LIS_VECTOR :: lgs_x
+  LIS_VECTOR :: rhs
  
-call lis_init_f(ierr)
-call lis_matrix_create(LIS_COMM_WORLD, lgs_ad, ierr)
-call lis_vector_create(LIS_COMM_WORLD, lgs_bd, ierr)
-call lis_vector_create(LIS_COMM_WORLD, lgs_x, ierr)
-call lis_vector_create(LIS_COMM_WORLD, rhs, ierr)
+  call lis_init_f(ierr)
+  call lis_matrix_create(LIS_COMM_WORLD, lgs_ad, ierr)
+  call lis_vector_create(LIS_COMM_WORLD, lgs_bd, ierr)
+  call lis_vector_create(LIS_COMM_WORLD, lgs_x, ierr)
+  call lis_vector_create(LIS_COMM_WORLD, rhs, ierr)
 
-call lis_matrix_set_size(lgs_ad, 0, nmax, ierr)
-call lis_vector_set_size(lgs_bd, 0, nmax, ierr)
-call lis_vector_set_size(lgs_x, 0, nmax, ierr)
-call lis_vector_set_size(rhs, 0, nmax, ierr)
+  call lis_matrix_set_size(lgs_ad, 0, nmax, ierr)
+  call lis_vector_set_size(lgs_bd, 0, nmax, ierr)
+  call lis_vector_set_size(lgs_x, 0, nmax, ierr)
+  call lis_vector_set_size(rhs, 0, nmax, ierr)
 
+  do nr=1, nmax
 
-do nr=1, nmax
+     do nc=lgs_a_ptr(nr), lgs_a_ptr(nr+1)-1
+        call lis_matrix_set_value(LIS_INS_VALUE, nr, lgs_a_index(nc), &
+                                  lgs_a_valued(nc), lgs_ad, ierr)
+     end do
 
-   do nc=lgs_a_ptr(nr), lgs_a_ptr(nr+1)-1
-      call lis_matrix_set_value(LIS_INS_VALUE, nr, lgs_a_index(nc), &
-                               & lgs_a_valued(nc), lgs_ad, ierr)
-   end do
+     call lis_vector_set_value(LIS_INS_VALUE, &
+                               nr, lgs_b_valued(nr), lgs_bd, ierr)
 
-   call lis_vector_set_value(LIS_INS_VALUE, nr, lgs_b_valued(nr), lgs_bd, ierr)
+  end do
 
-end do
+  call lis_matrix_set_type(lgs_ad, LIS_MATRIX_CSR, ierr)
+  call lis_matrix_assemble(lgs_ad, ierr)
 
-call lis_matrix_set_type(lgs_ad, LIS_MATRIX_CSR, ierr)
-call lis_matrix_assemble(lgs_ad, ierr)
+  lgs_x_value = 0.0
+  call sico_lis_solver(nmax, nnz, &
+                       lgs_a_ptr, lgs_a_index, &
+                       lgs_a_value, lgs_b_value, lgs_x_value)
 
-lgs_x_value = 0.0
-call sico_lis_solver(nmax, nnz, &
-                    & lgs_a_ptr, lgs_a_index, &
-                    & lgs_a_value, lgs_b_value, lgs_x_value)
+  do nr=1, nmax
+     call lis_vector_set_value(LIS_INS_VALUE, nr, lgs_x_value(nr), lgs_x, ierr)
+  end do
 
-do nr=1, nmax
-   call lis_vector_set_value(LIS_INS_VALUE, nr, lgs_x_value(nr), lgs_x, ierr)
-end do
+  rhs_value = 0.0
+  call lis_matvec(lgs_ad, lgs_x, rhs, ierr) 
+  call lis_vector_xpay(lgs_bd, alpha, rhs, ierr)
+  call lis_vector_gather(rhs, rhs_value, ierr)
 
-rhs_value = 0.0
-call lis_matvec(lgs_ad, lgs_x, rhs, ierr) 
-call lis_vector_xpay(lgs_bd, alpha, rhs, ierr)
-call lis_vector_gather(rhs, rhs_value, ierr)
+  lgs_x_valued = 0.0
+  call sico_lis_solver(nmax, nnz, &
+                       lgs_a_ptr, lgs_a_index, &
+                       lgs_a_value, rhs_value, lgs_x_valued)
 
-lgs_x_valued = 0.0
-call sico_lis_solver(nmax, nnz, &
-                    & lgs_a_ptr, lgs_a_index, &
-                    & lgs_a_value, rhs_value, lgs_x_valued)
+  call lis_matrix_destroy(lgs_ad, ierr)
+  call lis_vector_destroy(lgs_bd, ierr)
+  call lis_vector_destroy(lgs_x, ierr)
+  call lis_vector_destroy(rhs, ierr)
+  call lis_finalize_f(ierr)
 
-call lis_matrix_destroy(lgs_ad, ierr)
-call lis_vector_destroy(lgs_bd, ierr)
-call lis_vector_destroy(lgs_x, ierr)
-call lis_vector_destroy(rhs, ierr)
-call lis_finalize_f(ierr)
-
-end subroutine sico_lis_solver_stub_d
+  end subroutine sico_lis_solver_stub_d
 
 #endif
-END MODULE SICO_MATHS_M_DIFF
-!
 
+!-------------------------------------------------------------------------------
+
+end module sico_maths_m_diff
+!

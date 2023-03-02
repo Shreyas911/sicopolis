@@ -117,10 +117,6 @@ The results show good agreement between all three modes used to evaluate this se
 
 # Acknowledgements
 
-This work was supported by the Applied Mathematics activity within the U.S. Department of Energy, Office of Science, Advanced Scientific Computing Research Program, under contract number DE-AC02-06CH11357, and by National Science Foundation OPP/P2C2 grant #1903596.  
-
-# Copyright
-
-The submitted manuscript has been created by UChicago Argonne, LLC, Operator of Argonne National Laboratory (`Argonne'). Argonne, a U.S. Department of Energy Office of Science laboratory, is operated under Contract No. DE-AC02-06CH11357. The U.S. Government retains for itself, and others acting on its behalf, a paid-up nonexclusive, irrevocable worldwide license in said article to reproduce, prepare derivative works, distribute copies to the public, and perform publicly and display publicly, by or on behalf of the Government.  The Department of Energy will provide public access to these results of federally sponsored research in accordance with the DOE Public Access Plan. [http://energy.gov/downloads/doe-public-access-plan](http://energy.gov/downloads/doe-public-access-plan).
+This work was supported by the Applied Mathematics activity within the U.S. Department of Energy, Office of Science, Advanced Scientific Computing Research Program, under contract number DE-AC02-06CH11357, by National Science Foundation OPP/P2C2 grant #1903596, by Japan Society for the Promotion of Science (JSPS) KAKENHI grant numbers JP17H06104 and JP17H06323, and by the Japanese Ministry of Education, Culture, Sports, Science and Technology (MEXT), Arctic Challenge for Sustainability project ArCS II (program grant number JPMXD1420318865).
 
 # References

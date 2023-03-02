@@ -4,11 +4,12 @@
 !
 !> @file
 !!
-!! Several mathematical tools used by SICOPOLIS.
+!! TAPENADE does not like the save statement and instead prefers the global
+!! variables to be declared in a separate file.
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2022 Ralf Greve, Shreyas Sunil Gaikwad, Liz Curry-Logan
+!! Copyright 2009-2023 Ralf Greve, Shreyas Sunil Gaikwad, Liz Curry-Logan
 !!
 !! @section License
 !!
@@ -30,9 +31,9 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
-!! TAPENADE does not like the save statement and instead prefers the global
+!> TAPENADE does not like the save statement and instead prefers the global
 !! variables to be declared in a separate file.
-!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!<++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 module globals
         
   use sico_types_m
@@ -61,10 +62,11 @@ module globals
   real(dp), public                            :: L_inv
   real(dp), public                            :: L_eto
 
-  logical                     :: firstcall = .true.
+  logical      :: firstcall = .true.
   integer(i4b) :: n_year_CE_aux_save = -9999 
 
   real(dp) :: enh_stream
   logical  :: flag_enh_stream
 
 end module globals
+!
