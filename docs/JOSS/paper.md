@@ -117,6 +117,6 @@ The results show good agreement between all three modes used to evaluate this se
 
 # Acknowledgements
 
-This work was supported by the Applied Mathematics activity within the U.S. Department of Energy, Office of Science, Advanced Scientific Computing Research Program, under contract number DE-AC02-06CH11357, and by National Science Foundation OPP/P2C2 grant #1903596.  
+This work was supported by the Applied Mathematics activity within the U.S. Department of Energy, Office of Science, Advanced Scientific Computing Research Program, under contract number DE-AC02-06CH11357, by National Science Foundation OPP/P2C2 grant #1903596, by Japan Society for the Promotion of Science (JSPS) KAKENHI grant numbers JP17H06104 and JP17H06323, and by the Japanese Ministry of Education, Culture, Sports, Science and Technology (MEXT), Arctic Challenge for Sustainability project ArCS II (program grant number JPMXD1420318865).
 
 # References
