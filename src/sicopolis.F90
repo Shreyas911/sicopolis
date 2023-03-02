@@ -5,7 +5,7 @@
 !
 #define       MODEL_SICOPOLIS
 #define       VERSION '5-dev'
-#define       DATE    '2023-02-24'
+#define       DATE    '2023-03-01'
 !
 !> @mainpage
 !!
@@ -131,6 +131,7 @@
 !! along with SICOPOLIS. If not, see <http://www.gnu.org/licenses/>.
 !<
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 !@ begin tapenade_extract @
 
 !-------- Include run specification header --------
@@ -145,6 +146,7 @@
 #include "lisf.h"
 #endif
 #endif /* Normal */
+
 !@ end tapenade_extract @
 
 !-------- Include modules --------
@@ -153,7 +155,9 @@
 #include "subroutines/general/sico_types_m.F90"
 #endif /* Normal */
 #include "subroutines/general/sico_variables_m.F90"
+
 !@ begin tapenade_extract @
+
 #if (defined(ANT))
 #include "subroutines/ant/sico_vars_m.F90"
 #elif (defined(ASF))
@@ -175,7 +179,9 @@
 #elif (defined(XYZ))
 #include "subroutines/xyz/sico_vars_m.F90"
 #endif
+
 !@ end tapenade_extract @
+
 #include "subroutines/general/error_m.F90"
 
 #if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE)) /* Tapenade */
@@ -186,14 +192,16 @@
 #include "subroutines/general/stereo_proj_m.F90"
 #include "subroutines/general/metric_m.F90"
 
-#if (!defined(ALLOW_TAPENADE) || defined(ALLOW_TAPENADE_DIFFERENTIATE)) /* Normal */
+#if (!defined(ALLOW_TAPENADE) \
+     || defined(ALLOW_TAPENADE_DIFFERENTIATE)) /* Normal */
 #include "subroutines/general/sico_maths_m.F90"
 #endif /* Normal */
-!@ begin openad_extract @
+
 #if !defined(ALLOW_TAPENADE) /* Normal */
 #include "subroutines/general/compare_float_m.F90"
 #endif /* Normal */
-!@ end openad_extract @
+
+
 #include "subroutines/general/nc_check_m.F90"
 
 #include "subroutines/general/read_m.F90"
@@ -201,7 +209,7 @@
 #include "subroutines/general/mask_update_sea_level_m.F90"
 #include "subroutines/general/flag_update_gf_gl_cf_m.F90"
 #include "subroutines/general/pdd_m.F90"
-!@ begin openad_extract @
+
 #if (MARGIN==2 || MARGIN==3)
 #include "subroutines/general/calving_m.F90"
 #endif
@@ -211,7 +219,7 @@
 #include "subroutines/grl/discharge_workers_m.F90"
 #endif
 #endif
-!@ end openad_extract @
+
 #include "subroutines/general/calc_enhance_m.F90"
 
 #include "subroutines/general/calc_vxy_m.F90"
@@ -229,7 +237,8 @@
 #elif (CALCMOD==2 || CALCMOD==3)
 #include "subroutines/general/calc_temp_enth_m.F90"
 #endif
-!@ begin openad_extract @
+
+
 #if (BASAL_HYDROLOGY==1)
 #include "subroutines/general/hydro_m.F90"
 #endif
@@ -237,7 +246,8 @@
 #if (defined(NMARS) || defined(SMARS))
 #include "subroutines/general/mars_instemp_m.f90"
 #endif
-!@ end openad_extract @
+
+
 #include "subroutines/general/calc_temp_melt_bas_m.F90"
 #include "subroutines/general/calc_bas_melt_m.F90"
 #include "subroutines/general/calc_thk_water_bas_m.F90"
@@ -266,8 +276,6 @@
 #include "subroutines/xyz/boundary_m.F90"
 #endif
 
-!@ end tapenade_extract @
-
 #include "subroutines/general/init_temp_water_age_m.F90"
 #if (defined(ANT))
 #include "subroutines/ant/sico_init_m.F90"
@@ -294,10 +302,10 @@
 #include "subroutines/general/sico_main_loop_m.F90"
 #include "subroutines/general/sico_end_m.F90"
 
-
 #if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE)) /* Tapenade */
 #include "subroutines/tapenade/tapenade_m.F90"
 #endif /* Tapenade */
+
 !-------------------------------------------------------------------------------
 !> Main program of SICOPOLIS.
 !<------------------------------------------------------------------------------
@@ -360,7 +368,9 @@ program sicopolis
 !-------- Declaration of variables --------
 
 !@ begin tapenade_extract @
+
 !tapenade begin subroutine sicopolis_tapenade
+
 use sico_types_m
 use sico_variables_m
 use sico_vars_m
@@ -368,6 +378,7 @@ use sico_vars_m
 use sico_init_m
 use sico_main_loop_m
 use sico_end_m
+
 !@ end tapenade_extract @
 
 #if defined(ALLOW_GRDCHK) /* Tapenade */
@@ -381,6 +392,7 @@ use tapenade_m, only: adjoint_master
 implicit none
 
 !@ begin tapenade_extract @
+
 integer(i4b) :: ndat2d, ndat3d
 integer(i4b) :: n_output
 real(dp) :: delta_ts, glac_index
@@ -390,7 +402,9 @@ real(dp) :: time, time_init, time_end
 real(dp), dimension(100) :: time_output
 real(dp) :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
 real(dp) :: z_mar
+
 !tapenade sicopolis_independents_cost
+
 !@ end tapenade_extract @
 
 #if defined(ALLOW_TAPENADE) /* Tapenade */
@@ -400,8 +414,11 @@ logical :: ISPLAIN, ISTAPE, ISADJOINT
 #endif /* Tapenade */
 
 #if (!defined(ALLOW_GRDCHK) && !defined(ALLOW_TAPENADE)) /* Normal */
+
 !-------- Initialisations --------
+
 !@ begin tapenade_extract @
+
 call sico_init(delta_ts, glac_index, &
      mean_accum, &
      dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
@@ -423,6 +440,7 @@ call sico_main_loop(delta_ts, glac_index, &
 !tapenade end subroutine sicopolis_tapenade
 
 !@ end tapenade_extract @
+
 !-------- Endings --------
 
 call sico_end()
