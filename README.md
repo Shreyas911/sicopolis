@@ -1,5 +1,5 @@
 [![Documentation Status](https://readthedocs.org/projects/sicopolis/badge/?version=latest)](https://sicopolis.readthedocs.io/en/latest/?badge=latest)
-[![Build Status](https://gitlab.awi.de/sicopolis/sicopolis/badges/ad/pipeline.svg)](https://gitlab.awi.de/sicopolis/sicopolis/-/commits/ad)
+[![Build Status](https://gitlab.awi.de/sicopolis/sicopolis/badges/develop/pipeline.svg)](https://gitlab.awi.de/sicopolis/sicopolis/-/commits/develop)
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.04679/status.svg)](https://doi.org/10.21105/joss.04679)
 
 SICOPOLIS-AD v2
