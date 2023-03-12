@@ -6,6 +6,8 @@ stages:
 
 tests:
         stage: test
+        only:
+               - develop
         before_script:
                - export NETCDF_F90_FLAG=-I/usr/lib64/gfortran/modules
                - export LISDIR=/lis-2.0.30/installation
