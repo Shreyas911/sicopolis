@@ -1,10 +1,27 @@
+/*
+ * TAPENADE Automatic Differentiation Engine
+ * Copyright (C) 1999-2021 Inria
+ * See the LICENSE.md file in the project root for more information.
+ *
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
 #include "admm.h"
 
-/** TEMPORARY: FOR DEBUGGING AND STATISTICS. */
-int traceADMM = 0 ; // if nonZero, addm will print trace messages on stdOut.
+#include <time.h>
+
+/* DEBUGGING AND STATISTICS:
+ * -------------------------
+ * Compile with -D ADMM_TRACE          to log calls to ADMM
+ * Compile with -D ADMM_TIME           to show the total time spent in ADMM
+ * Compile with -D ADMM_TIME_SEARCHING to show the total time spent searching in the ADMM table
+ * Compile with -D ADMM_COUNTS         to show the numbers of ADMM operations and objects
+ * Compile with -D ADMM_LABELS         to add a last label argument  to ADMM calls
+ */
+
+#ifdef ADMM_COUNTS
 int numberOfRegisterings = 0 ;
 int numberOfUnregisterings = 0 ;
 int numberOfChunks = 0 ;
@@ -12,11 +29,17 @@ int peakNumberOfChunks = 0 ;
 int numberOfRebases = 0 ;
 int numberOfWaitings = 0 ;
 int peakNumberOfWaitings = 0 ;
-#include <time.h>
-double timeSpentSearching = 0.0 ;
-clock_t startSearchTime, endSearchTime ;
+#endif
+
+#ifdef ADMM_TIME
 double timeSpentInADMM = 0.0 ;
 clock_t startADMMTime, endADMMTime ;
+#endif
+
+#ifdef ADMM_TIME_SEARCHING
+double timeSpentSearching = 0.0 ;
+clock_t startSearchTime, endSearchTime ;
+#endif
 
 /** Cell of a chained list of void* */
 typedef struct _ADMM_List {
@@ -104,6 +127,20 @@ void ADMM_removeChunkInfo(ADMM_ChunkInfo* chunkInfo, ADMM_AddrSort index) {
   }
 }
 
+void ADMM_findRanksInWaitings(void** pointer, void** pointerb, long* indexInWait, long* numberInWait) {
+  // Just for tracing ADMM, returns the length of the waitinglist and the rank in it of pointer/pointerb.
+  ADMM_List* inWaitingRebases = admm_waitingRebases->tail ;
+  ADMM_WaitingAddress* waitingAddress ;
+  *indexInWait = 0 ;
+  *numberInWait = 0 ;
+  while (inWaitingRebases) {
+    waitingAddress = (ADMM_WaitingAddress*)inWaitingRebases->head ;
+    ++(*numberInWait);
+    if (waitingAddress->pp==pointer && waitingAddress->ppb==pointerb) *indexInWait = *numberInWait ;
+    inWaitingRebases = inWaitingRebases->tail ;
+  }
+}
+
 void ADMM_addWaitingRebase(void** pointer, void** pointerb) {
   // First, check if the same pointer(s) are maybe already waiting for a rebase,
   // (for another, previous address, and rebasing this address has never been possible).
@@ -111,7 +148,7 @@ void ADMM_addWaitingRebase(void** pointer, void** pointerb) {
   ADMM_List* inWaitingRebases = admm_waitingRebases->tail ;
   ADMM_WaitingAddress* waitingAddress ;
   int found = 0 ;
-#ifdef TIMESEARCHING
+#ifdef ADMM_TIME_SEARCHING
   startSearchTime = clock() ;
 #endif
   while (!found && inWaitingRebases) {
@@ -119,7 +156,7 @@ void ADMM_addWaitingRebase(void** pointer, void** pointerb) {
     found = (waitingAddress->pp==pointer && waitingAddress->ppb==pointerb) ;
     inWaitingRebases = inWaitingRebases->tail ;
   }
-#ifdef TIMESEARCHING
+#ifdef ADMM_TIME_SEARCHING
   endSearchTime = clock() ;
   timeSpentSearching += ((double)(endSearchTime-startSearchTime))/((double)CLOCKS_PER_SEC) ;
 #endif
@@ -128,8 +165,10 @@ void ADMM_addWaitingRebase(void** pointer, void** pointerb) {
     ADMM_List *newCell = (ADMM_List*)malloc(sizeof(ADMM_List)) ;
     newCell->tail = admm_waitingRebases->tail ;
     newCell->head = (ADMM_WaitingAddress*)malloc(sizeof(ADMM_WaitingAddress)) ;
+#ifdef ADMM_COUNTS
     ++numberOfWaitings ;
     if (peakNumberOfWaitings<numberOfWaitings) peakNumberOfWaitings = numberOfWaitings ;
+#endif
     ((ADMM_WaitingAddress*)newCell->head)->pp = pointer ;
     ((ADMM_WaitingAddress*)newCell->head)->ppb = pointerb ;
     admm_waitingRebases->tail = newCell ;
@@ -151,7 +190,9 @@ int ADMM_chunkInfoShadowedSolvesWaiting(ADMM_ChunkInfo* chunk, ADMM_WaitingAddre
       *(waitingAddress->pp) = chunk->bases[BYBASE]+(*(waitingAddress->pp)-chunk->bases[BYOBASE]) ;
     if (waitingAddress->ppb && *(waitingAddress->ppb))
       *(waitingAddress->ppb) = chunk->bases[BYBASEB]+(*(waitingAddress->ppb)-chunk->bases[BYOBASEB]) ;
+#ifdef ADMM_COUNTS
     ++numberOfRebases ;
+#endif
     return 1 ;
   } else
     return 0 ;
@@ -165,7 +206,9 @@ int ADMM_chunkInfoSolvesWaiting(ADMM_ChunkInfo* chunk, ADMM_WaitingAddress* wait
                && *(waitingAddress->pp)<(chunk->bases[BYOBASE]+chunk->sizeInBytes)) ;
   if (match) {
     *(waitingAddress->pp) = chunk->bases[BYBASE]+(*(waitingAddress->pp)-chunk->bases[BYOBASE]) ;
+#ifdef ADMM_COUNTS
     ++numberOfRebases ;
+#endif
     return 1 ;
   } else
     return 0 ;
@@ -176,7 +219,7 @@ int ADMM_chunkInfoSolvesWaiting(ADMM_ChunkInfo* chunk, ADMM_WaitingAddress* wait
 void ADMM_cleanDeadWaitingsShadowed(void *base, int size, void *baseb, int sizeb) {
   ADMM_List* inWaitingRebases = admm_waitingRebases ;
   ADMM_List* waitingCell ;
-#ifdef TIMESEARCHING
+#ifdef ADMM_TIME_SEARCHING
   startSearchTime = clock() ;
 #endif
   while (inWaitingRebases->tail) {
@@ -189,36 +232,49 @@ void ADMM_cleanDeadWaitingsShadowed(void *base, int size, void *baseb, int sizeb
          baseb <= (void*)((ADMM_WaitingAddress*)waitingCell->head)->ppb &&
          (void*)((ADMM_WaitingAddress*)waitingCell->head)->ppb < baseb+sizeb)
         ) {
-      if (traceADMM) printf(" clean waiting [%li]->%li Shadow:[%li]->%li\n", ((ADMM_WaitingAddress*)waitingCell->head)->pp, (((ADMM_WaitingAddress*)waitingCell->head)->pp?*(((ADMM_WaitingAddress*)waitingCell->head)->pp):NULL), ((ADMM_WaitingAddress*)waitingCell->head)->ppb, (((ADMM_WaitingAddress*)waitingCell->head)->ppb?*(((ADMM_WaitingAddress*)waitingCell->head)->ppb):NULL)) ;
+#ifdef ADMM_TRACE
+      printf(" clean waiting [%li]->%li Shadow:[%li]->%li\n", ((ADMM_WaitingAddress*)waitingCell->head)->pp, (((ADMM_WaitingAddress*)waitingCell->head)->pp?*(((ADMM_WaitingAddress*)waitingCell->head)->pp):NULL), ((ADMM_WaitingAddress*)waitingCell->head)->ppb, (((ADMM_WaitingAddress*)waitingCell->head)->ppb?*(((ADMM_WaitingAddress*)waitingCell->head)->ppb):NULL)) ;
+      fflush(stdout);
+#endif
       inWaitingRebases->tail = inWaitingRebases->tail->tail ;
       free(waitingCell->head) ;
       free(waitingCell) ;
+#ifdef ADMM_COUNTS
       --numberOfWaitings ;
+#endif
     } else
       inWaitingRebases = inWaitingRebases->tail ;
   }
-#ifdef TIMESEARCHING
+#ifdef ADMM_TIME_SEARCHING
   endSearchTime = clock() ;
   timeSpentSearching += ((double)(endSearchTime-startSearchTime))/((double)CLOCKS_PER_SEC) ;
 #endif
 }
 
-void ADMM_registerShadowed(void *base, void *obase, int sizeInBytes, void *baseb, void *obaseb, int sizeInBytesb, int nbElements
-#ifdef WITH_LABELS
+void ADMM_registerShadowed(void *base, void *obase, int sizeInBytes, void *baseb, void **alreadyRebasedb, void *obaseb, int sizeInBytesb, int nbElements
+#ifdef ADMM_LABELS
 , char *label) {
 #else
 ) {char *label = "" ;
 #endif
-#ifdef TIMEADMM
+#ifdef ADMM_TIME
   startADMMTime = clock() ;
 #endif
+  int rebasePhase = (obaseb!=0) ;
   ADMM_ChunkInfo* newChunkInfo = (ADMM_ChunkInfo*)malloc(sizeof(ADMM_ChunkInfo)) ;
+#ifdef ADMM_COUNTS
   ++numberOfChunks ;
   if (numberOfChunks>peakNumberOfChunks) peakNumberOfChunks = numberOfChunks ;
   ++numberOfRegisterings ;
-  if (traceADMM) printf("ADMM_register (old:%li=>)%li+%i    Shadow: (old:%li=>)%li+%i \"%s\"\n", obase, base, sizeInBytes, obaseb, baseb, sizeInBytesb, label);
-  if (!obase) obase = base ;
-  if (!obaseb) obaseb = baseb ;
+#endif
+#ifdef ADMM_TRACE
+  if (rebasePhase)
+    printf("ADMM_register (old:%li=>)%li+%i    Shadow: (old:%li=>)%li+%i \"%s\"\n", obase, base, sizeInBytes, obaseb, baseb, sizeInBytesb, label);
+  else
+    printf("ADMM_register %li+%i    Shadow: %li+%i \"%s\"\n", base, sizeInBytes, baseb, sizeInBytesb, label);
+  fflush(stdout);
+#endif
+  if (!rebasePhase) {obase = base; obaseb = baseb;}
   newChunkInfo->bases[0] = base ;
   newChunkInfo->bases[1] = obase ;
   newChunkInfo->bases[2] = baseb ;
@@ -226,55 +282,85 @@ void ADMM_registerShadowed(void *base, void *obase, int sizeInBytes, void *baseb
   newChunkInfo->sizeInBytes = sizeInBytes ;
   newChunkInfo->sizeInBytesb = sizeInBytesb ;
   newChunkInfo->nbElements = nbElements ;
-#ifdef TIMESEARCHING
+#ifdef ADMM_TIME_SEARCHING
   startSearchTime = clock() ;
 #endif
   ADMM_insertChunkInfo(newChunkInfo, base, BYBASE) ;
   ADMM_insertChunkInfo(newChunkInfo, obase, BYOBASE) ;
   ADMM_insertChunkInfo(newChunkInfo, baseb, BYBASEB) ;
   ADMM_insertChunkInfo(newChunkInfo, obaseb, BYOBASEB) ;
-  /* Now solve waiting pointers and pointerbs with newChunkInfo: */
-  ADMM_List* inWaitingRebases = admm_waitingRebases ;
-  ADMM_List* waitingCell ;
-  while (inWaitingRebases->tail) {
-    waitingCell = inWaitingRebases->tail ;
-    if (traceADMM) printf("  retry rebase [%li]->%li Shadow:[%li]->%li ?", ((ADMM_WaitingAddress*)waitingCell->head)->pp, (((ADMM_WaitingAddress*)waitingCell->head)->pp?*(((ADMM_WaitingAddress*)waitingCell->head)->pp):NULL), ((ADMM_WaitingAddress*)waitingCell->head)->ppb, (((ADMM_WaitingAddress*)waitingCell->head)->ppb?*(((ADMM_WaitingAddress*)waitingCell->head)->ppb):NULL)) ;
-    if (ADMM_chunkInfoShadowedSolvesWaiting(newChunkInfo, (ADMM_WaitingAddress*)waitingCell->head)) {
-      if (traceADMM) printf(" yes => [%li]->%li Shadow:[%li]->%li !\n", ((ADMM_WaitingAddress*)waitingCell->head)->pp, (((ADMM_WaitingAddress*)waitingCell->head)->pp?*(((ADMM_WaitingAddress*)waitingCell->head)->pp):NULL), ((ADMM_WaitingAddress*)waitingCell->head)->ppb, (((ADMM_WaitingAddress*)waitingCell->head)->ppb?*(((ADMM_WaitingAddress*)waitingCell->head)->ppb):NULL)) ;
-      inWaitingRebases->tail = inWaitingRebases->tail->tail ;
-      free(waitingCell->head) ;
-      free(waitingCell) ;
-      --numberOfWaitings ;
-    } else {
-      if (traceADMM) printf(" no!\n") ;
-      inWaitingRebases = inWaitingRebases->tail ;
+  if (rebasePhase) {
+    /* Now solve waiting pointers and pointerbs with newChunkInfo: */
+    ADMM_List* inWaitingRebases = admm_waitingRebases ;
+    ADMM_List* waitingCell ;
+    while (inWaitingRebases->tail) {
+      waitingCell = inWaitingRebases->tail ;
+#ifdef ADMM_TRACE
+      printf("   ...retry rebase [%li]->%li Shadow:[%li]->%li ?", ((ADMM_WaitingAddress*)waitingCell->head)->pp, (((ADMM_WaitingAddress*)waitingCell->head)->pp?*(((ADMM_WaitingAddress*)waitingCell->head)->pp):NULL), ((ADMM_WaitingAddress*)waitingCell->head)->ppb, (((ADMM_WaitingAddress*)waitingCell->head)->ppb?*(((ADMM_WaitingAddress*)waitingCell->head)->ppb):NULL)) ;
+      fflush(stdout);
+#endif
+      if (alreadyRebasedb==((ADMM_WaitingAddress*)waitingCell->head)->ppb) {
+#ifdef ADMM_TRACE
+        printf(" now done => [%li]->%li Shadow:[%li]->%li !\n", ((ADMM_WaitingAddress*)waitingCell->head)->pp, (((ADMM_WaitingAddress*)waitingCell->head)->pp?*(((ADMM_WaitingAddress*)waitingCell->head)->pp):NULL), ((ADMM_WaitingAddress*)waitingCell->head)->ppb, (((ADMM_WaitingAddress*)waitingCell->head)->ppb?*(((ADMM_WaitingAddress*)waitingCell->head)->ppb):NULL)) ;
+        fflush(stdout);
+#endif
+        inWaitingRebases->tail = inWaitingRebases->tail->tail ;
+        free(waitingCell->head) ;
+        free(waitingCell) ;
+      } else if (ADMM_chunkInfoShadowedSolvesWaiting(newChunkInfo, (ADMM_WaitingAddress*)waitingCell->head)) {
+#ifdef ADMM_TRACE
+        printf(" yes => [%li]->%li Shadow:[%li]->%li !\n", ((ADMM_WaitingAddress*)waitingCell->head)->pp, (((ADMM_WaitingAddress*)waitingCell->head)->pp?*(((ADMM_WaitingAddress*)waitingCell->head)->pp):NULL), ((ADMM_WaitingAddress*)waitingCell->head)->ppb, (((ADMM_WaitingAddress*)waitingCell->head)->ppb?*(((ADMM_WaitingAddress*)waitingCell->head)->ppb):NULL)) ;
+        fflush(stdout);
+#endif
+        inWaitingRebases->tail = inWaitingRebases->tail->tail ;
+        free(waitingCell->head) ;
+        free(waitingCell) ;
+#ifdef ADMM_COUNTS
+        --numberOfWaitings ;
+#endif
+      } else {
+#ifdef ADMM_TRACE
+        printf(" no, try again later!\n") ;
+        fflush(stdout);
+#endif
+        inWaitingRebases = inWaitingRebases->tail ;
+      }
     }
   }
-#ifdef TIMESEARCHING
+#ifdef ADMM_TIME_SEARCHING
   endSearchTime = clock() ;
   timeSpentSearching += ((double)(endSearchTime-startSearchTime))/((double)CLOCKS_PER_SEC) ;
 #endif
-#ifdef TIMEADMM
+#ifdef ADMM_TIME
   endADMMTime = clock() ;
   timeSpentInADMM += ((double)(endADMMTime-startADMMTime))/((double)CLOCKS_PER_SEC) ;
 #endif
 }
 
-void ADMM_register(void *base, void *obase, int sizeInBytes, int nbElements
-#ifdef WITH_LABELS
+void ADMM_register(void *base, void **alreadyRebased, void *obase, int sizeInBytes, int nbElements
+#ifdef ADMM_LABELS
 , char *label) {
 #else
 ) {char *label = "" ;
 #endif
-#ifdef TIMEADMM
+#ifdef ADMM_TIME
   startADMMTime = clock() ;
 #endif
+  int rebasePhase = (obase!=0) ;
   ADMM_ChunkInfo* newChunkInfo = (ADMM_ChunkInfo*)malloc(sizeof(ADMM_ChunkInfo)) ;
+#ifdef ADMM_COUNTS
   ++numberOfChunks ;
   if (numberOfChunks>peakNumberOfChunks) peakNumberOfChunks = numberOfChunks ;
   ++numberOfRegisterings ;
-  if (traceADMM) printf("ADMM_register (old:%li=>)%li+%i \"%s\"\n", obase, base, sizeInBytes, label);
-  if (!obase) obase = base ;
+#endif
+#ifdef ADMM_TRACE
+  if (rebasePhase)
+    printf("ADMM_register (old:%li=>)%li+%i \"%s\"\n", obase, base, sizeInBytes, label);
+  else
+    printf("ADMM_register %li+%i \"%s\"\n", base, sizeInBytes, label);
+  fflush(stdout);
+#endif
+  if (!rebasePhase) obase = base ;
   newChunkInfo->bases[0] = base ;
   newChunkInfo->bases[1] = obase ;
   newChunkInfo->bases[2] = NULL ;
@@ -282,146 +368,180 @@ void ADMM_register(void *base, void *obase, int sizeInBytes, int nbElements
   newChunkInfo->sizeInBytes = sizeInBytes ;
   newChunkInfo->sizeInBytesb = 0 ;
   newChunkInfo->nbElements = nbElements ;
-#ifdef TIMESEARCHING
+#ifdef ADMM_TIME_SEARCHING
   startSearchTime = clock() ;
 #endif
   ADMM_insertChunkInfo(newChunkInfo, base, BYBASE) ;
   ADMM_insertChunkInfo(newChunkInfo, obase, BYOBASE) ;
-  /* Now solve waiting pointers with newChunkInfo:
-   * NOTE: we are in the no-shadow Register case, which means that this
-   * memory chunk doesn't need a derivative chunk, and therefore we assume
-   * that there cannot be a shadowed waiting address waiting for this chunk. */
-  ADMM_List* inWaitingRebases = admm_waitingRebases ;
-  ADMM_List* waitingCell ;
-  while (inWaitingRebases->tail) {
-    waitingCell = inWaitingRebases->tail ;
-    if (traceADMM) printf("  retry rebase [%li]->%li ?", ((ADMM_WaitingAddress*)waitingCell->head)->pp, (((ADMM_WaitingAddress*)waitingCell->head)->pp?*(((ADMM_WaitingAddress*)waitingCell->head)->pp):NULL)) ;
-    if (ADMM_chunkInfoSolvesWaiting(newChunkInfo, (ADMM_WaitingAddress*)waitingCell->head)) {
-      if (traceADMM) printf(" yes => [%li]->%li !\n", ((ADMM_WaitingAddress*)waitingCell->head)->pp, (((ADMM_WaitingAddress*)waitingCell->head)->pp?*(((ADMM_WaitingAddress*)waitingCell->head)->pp):NULL)) ;
-      inWaitingRebases->tail = inWaitingRebases->tail->tail ;
-      free(waitingCell->head) ;
-      free(waitingCell) ;
-      --numberOfWaitings ;
-    } else {
-      if (traceADMM) printf(" no!\n") ;
-      inWaitingRebases = inWaitingRebases->tail ;
+  if (rebasePhase) {
+    /* Now solve waiting pointers with newChunkInfo:
+     * NOTE: we are in the no-shadow Register case, which means that this
+     * memory chunk doesn't need a derivative chunk, and therefore we assume
+     * that there cannot be a shadowed waiting address waiting for this chunk. */
+    ADMM_List* inWaitingRebases = admm_waitingRebases ;
+    ADMM_List* waitingCell ;
+    while (inWaitingRebases->tail) {
+      waitingCell = inWaitingRebases->tail ;
+#ifdef ADMM_TRACE
+      printf("   ...retry rebase [%li]->%li ?", ((ADMM_WaitingAddress*)waitingCell->head)->pp, (((ADMM_WaitingAddress*)waitingCell->head)->pp?*(((ADMM_WaitingAddress*)waitingCell->head)->pp):NULL)) ;
+      fflush(stdout);
+#endif
+      if (alreadyRebased==((ADMM_WaitingAddress*)waitingCell->head)->pp) {
+#ifdef ADMM_TRACE
+        printf(" now done => [%li]->%li !\n", ((ADMM_WaitingAddress*)waitingCell->head)->pp, (((ADMM_WaitingAddress*)waitingCell->head)->pp?*(((ADMM_WaitingAddress*)waitingCell->head)->pp):NULL)) ;
+        fflush(stdout);
+#endif
+        inWaitingRebases->tail = inWaitingRebases->tail->tail ;
+        free(waitingCell->head) ;
+        free(waitingCell) ;
+      } else if (ADMM_chunkInfoSolvesWaiting(newChunkInfo, (ADMM_WaitingAddress*)waitingCell->head)) {
+#ifdef ADMM_TRACE
+        printf(" yes => [%li]->%li !\n", ((ADMM_WaitingAddress*)waitingCell->head)->pp, (((ADMM_WaitingAddress*)waitingCell->head)->pp?*(((ADMM_WaitingAddress*)waitingCell->head)->pp):NULL)) ;
+        fflush(stdout);
+#endif
+        inWaitingRebases->tail = inWaitingRebases->tail->tail ;
+        free(waitingCell->head) ;
+        free(waitingCell) ;
+#ifdef ADMM_COUNTS
+        --numberOfWaitings ;
+#endif
+      } else {
+#ifdef ADMM_TRACE
+        printf(" no, try again later!\n") ;
+        fflush(stdout);
+#endif
+        inWaitingRebases = inWaitingRebases->tail ;
+      }
     }
   }
-#ifdef TIMESEARCHING
+#ifdef ADMM_TIME_SEARCHING
   endSearchTime = clock() ;
   timeSpentSearching += ((double)(endSearchTime-startSearchTime))/((double)CLOCKS_PER_SEC) ;
 #endif
-#ifdef TIMEADMM
+#ifdef ADMM_TIME
   endADMMTime = clock() ;
   timeSpentInADMM += ((double)(endADMMTime-startADMMTime))/((double)CLOCKS_PER_SEC) ;
 #endif
 }
 
 void ADMM_unregisterShadowed(void *base, void *baseb, int *nbElements
-#ifdef WITH_LABELS
+#ifdef ADMM_LABELS
 , char *label) {
 #else
 ) {char *label = "" ;
 #endif
-#ifdef TIMEADMM
+#ifdef ADMM_TIME
   startADMMTime = clock() ;
 #endif
-  if (traceADMM) printf("ADMM_unregister %li   Shadow: %li \"%s\"\n", base, baseb, label);
+#ifdef ADMM_TRACE
+  printf("ADMM_unregister %li   Shadow: %li \"%s\"\n", base, baseb, label);
+  fflush(stdout);
+#endif
   ADMM_ChunkInfo* foundChunkInfo = NULL ;
-#ifdef TIMESEARCHING
+#ifdef ADMM_TIME_SEARCHING
   startSearchTime = clock() ;
 #endif
   if (baseb)
     foundChunkInfo = ADMM_searchBase(baseb, BYBASEB) ;
   if (!foundChunkInfo)
     foundChunkInfo = ADMM_searchBase(base, BYBASE) ;
-#ifdef TIMESEARCHING
+#ifdef ADMM_TIME_SEARCHING
   endSearchTime = clock() ;
   timeSpentSearching += ((double)(endSearchTime-startSearchTime))/((double)CLOCKS_PER_SEC) ;
 #endif
   if (foundChunkInfo) {
     *nbElements = foundChunkInfo->nbElements ;
-#ifdef TIMESEARCHING
+#ifdef ADMM_TIME_SEARCHING
     startSearchTime = clock() ;
 #endif
     ADMM_removeChunkInfo(foundChunkInfo, BYBASE) ;
     ADMM_removeChunkInfo(foundChunkInfo, BYOBASE) ;
     ADMM_removeChunkInfo(foundChunkInfo, BYBASEB) ;
     ADMM_removeChunkInfo(foundChunkInfo, BYOBASEB) ;
-#ifdef TIMESEARCHING
+#ifdef ADMM_TIME_SEARCHING
     endSearchTime = clock() ;
     timeSpentSearching += ((double)(endSearchTime-startSearchTime))/((double)CLOCKS_PER_SEC) ;
 #endif
     ADMM_cleanDeadWaitingsShadowed(base, foundChunkInfo->sizeInBytes, baseb, foundChunkInfo->sizeInBytesb) ;
     free(foundChunkInfo) ;
+#ifdef ADMM_COUNTS
     ++numberOfUnregisterings ;
     --numberOfChunks ;
+#endif
   }
-#ifdef TIMEADMM
+#ifdef ADMM_TIME
   endADMMTime = clock() ;
   timeSpentInADMM += ((double)(endADMMTime-startADMMTime))/((double)CLOCKS_PER_SEC) ;
 #endif
 }
 
 void ADMM_unregister(void *base, int *nbElements
-#ifdef WITH_LABELS
+#ifdef ADMM_LABELS
 , char *label) {
 #else
 ) {char *label = "" ;
 #endif
-#ifdef TIMEADMM
+#ifdef ADMM_TIME
   startADMMTime = clock() ;
 #endif
-  if (traceADMM) printf("ADMM_unregister %li \"%s\"\n", base, label);
-#ifdef TIMESEARCHING
+#ifdef ADMM_TRACE
+  printf("ADMM_unregister %li \"%s\"\n", base, label);
+  fflush(stdout);
+#endif
+#ifdef ADMM_TIME_SEARCHING
   startSearchTime = clock() ;
 #endif
   ADMM_ChunkInfo* foundChunkInfo = ADMM_searchBase(base, BYBASE) ;
-#ifdef TIMESEARCHING
+#ifdef ADMM_TIME_SEARCHING
   endSearchTime = clock() ;
   timeSpentSearching += ((double)(endSearchTime-startSearchTime))/((double)CLOCKS_PER_SEC) ;
 #endif
   if (foundChunkInfo) {
     *nbElements = foundChunkInfo->nbElements ;
-#ifdef TIMESEARCHING
+#ifdef ADMM_TIME_SEARCHING
     startSearchTime = clock() ;
 #endif
     ADMM_removeChunkInfo(foundChunkInfo, BYBASE) ;
     ADMM_removeChunkInfo(foundChunkInfo, BYOBASE) ;
-#ifdef TIMESEARCHING
+#ifdef ADMM_TIME_SEARCHING
     endSearchTime = clock() ;
     timeSpentSearching += ((double)(endSearchTime-startSearchTime))/((double)CLOCKS_PER_SEC) ;
 #endif
     ADMM_cleanDeadWaitingsShadowed(base, foundChunkInfo->sizeInBytes, NULL, 0) ;
     free(foundChunkInfo) ;
+#ifdef ADMM_COUNTS
     ++numberOfUnregisterings ;
     --numberOfChunks ;
+#endif
   }
-#ifdef TIMEADMM
+#ifdef ADMM_TIME
   endADMMTime = clock() ;
   timeSpentInADMM += ((double)(endADMMTime-startADMMTime))/((double)CLOCKS_PER_SEC) ;
 #endif
 }
 
 void ADMM_rebaseShadowed(void** pointer, void** pointerb
-#ifdef WITH_LABELS
+#ifdef ADMM_LABELS
 , char *label) {
 #else
 ) {char *label = "" ;
 #endif
-#ifdef TIMEADMM
+#ifdef ADMM_TIME
   startADMMTime = clock() ;
 #endif
-  if (traceADMM) printf("   ADMM_rebase [%li]->%li Shadow:[%li]->%li \"%s\" ?", pointer, (pointer?*pointer:NULL), pointerb, (pointerb?*pointerb:NULL), label) ;
+#ifdef ADMM_TRACE
+  printf("   ADMM_rebase [%li]->%li Shadow:[%li]->%li \"%s\" ?", pointer, (pointer?*pointer:NULL), pointerb, (pointerb?*pointerb:NULL), label) ;
+  fflush(stdout);
+#endif
   ADMM_ChunkInfo* foundChunkInfo = NULL ;
-#ifdef TIMESEARCHING
+#ifdef ADMM_TIME_SEARCHING
   startSearchTime = clock() ;
 #endif
   if (*pointerb)
     foundChunkInfo = ADMM_searchAddress(*pointerb, BYOBASEB) ;
   if (!foundChunkInfo && pointer && *pointer)
     foundChunkInfo = ADMM_searchAddress(*pointer, BYOBASE) ;
-#ifdef TIMESEARCHING
+#ifdef ADMM_TIME_SEARCHING
     endSearchTime = clock() ;
     timeSpentSearching += ((double)(endSearchTime-startSearchTime))/((double)CLOCKS_PER_SEC) ;
 #endif
@@ -430,15 +550,29 @@ void ADMM_rebaseShadowed(void** pointer, void** pointerb
       *pointer = foundChunkInfo->bases[BYBASE]+(*pointer-foundChunkInfo->bases[BYOBASE]) ;
     if (*pointerb)
       *pointerb = foundChunkInfo->bases[BYBASEB]+(*pointerb-foundChunkInfo->bases[BYOBASEB]) ;
-    if (traceADMM) printf(" yes => [%li]->%li Shadow:[%li]->%li !\n", pointer, (pointer?*pointer:NULL), pointerb, (pointerb?*pointerb:NULL)) ;
-  } else if (*pointer || *pointerb) {
+#ifdef ADMM_TRACE
+    printf(" yes => [%li]->%li Shadow:[%li]->%li !\n", pointer, (pointer?*pointer:NULL), pointerb, (pointerb?*pointerb:NULL)) ;
+    printf("  from (old:%li=>)%li+%i    Shadow: (old:%li=>)%li+%i\n", foundChunkInfo->bases[BYOBASE], foundChunkInfo->bases[BYBASE], foundChunkInfo->sizeInBytes, foundChunkInfo->bases[BYOBASEB], foundChunkInfo->bases[BYBASEB], foundChunkInfo->sizeInBytesb);
+    fflush(stdout);
+#endif
+  } else if ((pointer && *pointer) || *pointerb) {
     ADMM_addWaitingRebase(pointer, pointerb) ;
-    if (traceADMM) printf(" no!\n") ;
+#ifdef ADMM_TRACE
+    long indexInWait, numberInWait ;
+    ADMM_findRanksInWaitings(pointer, pointerb, &indexInWait, &numberInWait) ;
+    printf(" no  => add to waiting list [%li/%li]\n",indexInWait,numberInWait) ;
+    fflush(stdout);
+#endif
   } else {
-    if (traceADMM) printf(".\n") ;
+#ifdef ADMM_TRACE
+    printf(".\n") ;
+    fflush(stdout);
+#endif
   }
+#ifdef ADMM_COUNTS
   ++numberOfRebases ;
-#ifdef TIMEADMM
+#endif
+#ifdef ADMM_TIME
   endADMMTime = clock() ;
   timeSpentInADMM += ((double)(endADMMTime-startADMMTime))/((double)CLOCKS_PER_SEC) ;
 #endif
@@ -446,42 +580,60 @@ void ADMM_rebaseShadowed(void** pointer, void** pointerb
 
 
 void ADMM_rebase(void** pointer
-#ifdef WITH_LABELS
+#ifdef ADMM_LABELS
 , char *label) {
 #else
 ) {char *label = "" ;
 #endif
-#ifdef TIMEADMM
+#ifdef ADMM_TIME
   startADMMTime = clock() ;
 #endif
-  if (traceADMM) printf("   ADMM_rebase [%li]->%li \"%s\" ?", pointer, (pointer?*pointer:NULL), label) ;
+#ifdef ADMM_TRACE
+  printf("   ADMM_rebase [%li]->%li \"%s\" ?", pointer, (pointer?*pointer:NULL), label) ;
+  fflush(stdout);
+#endif
   ADMM_ChunkInfo* foundChunkInfo = NULL ;
   if (*pointer) {
-#ifdef TIMESEARCHING
+#ifdef ADMM_TIME_SEARCHING
     startSearchTime = clock() ;
 #endif
     foundChunkInfo = ADMM_searchAddress(*pointer, BYOBASE) ;
-#ifdef TIMESEARCHING
+#ifdef ADMM_TIME_SEARCHING
     endSearchTime = clock() ;
     timeSpentSearching += ((double)(endSearchTime-startSearchTime))/((double)CLOCKS_PER_SEC) ;
 #endif
     if (foundChunkInfo) {
       *pointer = foundChunkInfo->bases[BYBASE]+(*pointer-foundChunkInfo->bases[BYOBASE]) ;
-      if (traceADMM) printf(" yes => [%li]->%li !\n", pointer, (pointer?*pointer:NULL)) ;
+#ifdef ADMM_TRACE
+      printf(" yes => [%li]->%li !\n", pointer, (pointer?*pointer:NULL)) ;
+      printf("  from (old:%li=>)%li+%i    Shadow: (old:%li=>)%li+%i\n", foundChunkInfo->bases[BYOBASE], foundChunkInfo->bases[BYBASE], foundChunkInfo->sizeInBytes, foundChunkInfo->bases[BYOBASEB], foundChunkInfo->bases[BYBASEB], foundChunkInfo->sizeInBytesb);
+      fflush(stdout);
+#endif
     } else {
       ADMM_addWaitingRebase(pointer, NULL) ;
-      if (traceADMM) printf(" no!\n") ;
+#ifdef ADMM_TRACE
+      long indexInWait, numberInWait ;
+      ADMM_findRanksInWaitings(pointer, NULL, &indexInWait, &numberInWait) ;
+      printf(" no  => add to waiting list [%li/%li]\n",indexInWait,numberInWait) ;
+      fflush(stdout);
+#endif
     }
   } else {
-    if (traceADMM) printf(".\n") ;
+#ifdef ADMM_TRACE
+    printf(".\n") ;
+    fflush(stdout);
+#endif
   }
+#ifdef ADMM_COUNTS
   ++numberOfRebases ;
-#ifdef TIMEADMM
+#endif
+#ifdef ADMM_TIME
   endADMMTime = clock() ;
   timeSpentInADMM += ((double)(endADMMTime-startADMMTime))/((double)CLOCKS_PER_SEC) ;
 #endif
 }
 
+#ifdef ADMM_COUNTS
 void ADMM_showChunks() {
   ADMM_List* inChunksByBaseCell = admm_chunksByBaseCell.tail ;
   ADMM_ChunkInfo* chunkInfo ;
@@ -494,8 +646,11 @@ void ADMM_showChunks() {
            chunkInfo->nbElements);
     inChunksByBaseCell = inChunksByBaseCell->tail ;
   }
+  fflush(stdout);
 }
+#endif
 
+#ifdef ADMM_COUNTS
 void ADMM_showWaitings() {
   ADMM_List* inWaitingRebases = admm_waitingRebases->tail ;
   ADMM_WaitingAddress* waitingAddress ;
@@ -509,19 +664,24 @@ void ADMM_showWaitings() {
     inWaitingRebases = inWaitingRebases->tail ;
   }
   printf("\n");
+  fflush(stdout);
 }
+#endif
 
 void ADMM_statistics() {
-#ifdef TIMEADMM
+#ifdef ADMM_TIME
   printf("Time spent in ADMM:%lf\n", timeSpentInADMM) ;
 #endif
-#ifdef TIMESEARCHING
+#ifdef ADMM_TIME_SEARCHING
   printf("Time spent searching:%lf\n", timeSpentSearching) ;
 #endif
+#ifdef ADMM_COUNTS
   printf("Registerings:%i, Unregisterings:%i, numberOfRebases:%i\n",
          numberOfRegisterings, numberOfUnregisterings, numberOfRebases) ;
   printf("chunks:%i[peak:%i] waiting:%i[peak:%i]\n",
          numberOfChunks, peakNumberOfChunks, numberOfWaitings, peakNumberOfWaitings);
   ADMM_showChunks() ;
   ADMM_showWaitings() ;
+#endif
+  fflush(stdout);
 }

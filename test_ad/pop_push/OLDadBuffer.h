@@ -1,7 +1,7 @@
 #ifndef ADBUFFER_LOADED
 #define ADBUFFER_LOADED 1
 
-#include "adStack.h"
+#include "OLDadStack.h"
 
 typedef struct {float r,i;} ccmplx ;
 typedef struct {double dr, di;} cdcmplx ;
@@ -133,7 +133,8 @@ extern void adStack_showTraffic() ;
 extern void showStackAndBuffers(char *locationName) ;
 
 /** Display the current size of the AD stack as
- * <#blocks.#bytesInTopBlock> then size of each type buffers */
-extern void showStackAndBuffersSize() ;
+ * <#blocks.#bytesInTopBlock> then size of each type buffers
+ * "pos" will be displayed in front, to help you identify the location. */
+extern void showStackAndBuffersSize(int pos) ;
 
 #endif

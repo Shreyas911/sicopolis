@@ -1,3 +1,10 @@
+/*
+ * TAPENADE Automatic Differentiation Engine
+ * Copyright (C) 1999-2021 Inria
+ * See the LICENSE.md file in the project root for more information.
+ *
+ */
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,6 +13,10 @@
 #include <errno.h>
 #include <math.h>
 #include "adDebug.h"
+
+/*
+ * Compile with -D ADDEBUG_NUDGE       to nudge wrong ad derivatives back to divided-diff values
+ */
 
 extern void pushNArray(char *x, unsigned int nbChars, int checkReadOnly) ;
 extern void popNArray(char *x, unsigned int nbChars, int checkReadOnly) ;
@@ -39,8 +50,7 @@ static double dbad_currentSeed = 0.0 ;
 static double dbad_condensed_dd, dbad_condensed_tgt, dbad_condensed_adj ;
 static double dbad_refsum, dbad_nextrefsum ;
 
-/** Buffers for the stack mechanism, redefined here after the model
- * of adBuffer.c, to avoid linking with adBuffer.c */
+/** Buffers for stack mechanism, redefined to avoid linking with adStack.c */
 static double dbad_adr8buf[512] ;
 static int dbad_adr8ibuf = 0 ;
 static int dbad_adi4buf[512] ;
@@ -139,7 +149,7 @@ void dbad_resetCondensors() {
 
 double dbad_nextRandom() {
   dbad_currentSeed += dbad_seed ;
-  if (dbad_currentSeed>1.0) dbad_currentSeed-=1.0 ;
+  if (dbad_currentSeed>=1.0) dbad_currentSeed-=1.0 ;
   /* Return a value in range [1.0 2.0[ */
   return dbad_currentSeed+1.0 ;
 }
@@ -363,6 +373,7 @@ void dbad_adDebugTgt_testComplex16(char* varname, cdcmplx var, cdcmplx *vard, in
                varname,dd,dd,diffR,diffI,vard->dr,vard->di) ;
       }
       if (conclude==-1) {
+        //Nudge the ad derivative back to divided-diff value:
         if (hasDifferenceR) {
           vard->dr = dd.dr ;
           printf("%s (.real) RESET:\n", varname) ;
@@ -402,6 +413,7 @@ void dbad_adDebugTgt_testReal8(char* varname, double var, double *vard, int conc
                varname,dd,diff,*vard) ;
       }
       if (conclude==-1 && hasDifference) {
+        //Nudge the ad derivative back to divided-diff value:
         *vard = dd ;
         printf("%s RESET:\n", varname) ;
       }
@@ -433,6 +445,7 @@ void dbad_adDebugTgt_testReal4(char* varname, float var, float *vard, int conclu
                varname,dd,diff,*vard) ;
       }
       if (conclude==-1 && hasDifference) {
+        //Nudge the ad derivative back to divided-diff value:
         *vard = dd ;
         printf("%s RESET:\n", varname) ;
       }
@@ -475,7 +488,8 @@ void dbad_adDebugTgt_testComplex16Array(char* varname, cdcmplx* var, cdcmplx* va
           indexbuf[ibuf] = i ;
           ++ibuf ;
         }
-        if (conclude==-1) { //Nudge the ad derivative back to divided-diff value!
+        if (conclude==-1) {
+          //Nudge the ad derivative back to divided-diff value:
           if (hasDifferenceR) vard[i].dr = dd.dr ;
           if (hasDifferenceI) vard[i].di = dd.di ;
         }
@@ -544,7 +558,8 @@ void dbad_adDebugTgt_testReal8Array(char* varname, double* var, double* vard, in
           indexbuf[ibuf] = i ;
           ++ibuf ;
         }
-        if (conclude==-1 && hasDifference) { //Nudge the ad derivative back to divided-diff value!
+        if (conclude==-1 && hasDifference) {
+          //Nudge the ad derivative back to divided-diff value:
           vard[i] = dd ;
         }
         if (ibuf>=10 || (i==length-1 && ibuf>0)) {
@@ -610,7 +625,8 @@ void dbad_adDebugTgt_testReal4Array(char* varname, float* var, float* vard, int 
           indexbuf[ibuf] = i ;
           ++ibuf ;
         }
-        if (conclude==-1 && hasDifference) { //Nudge the ad derivative back to divided-diff value!
+        if (conclude==-1 && hasDifference) {
+          //Nudge the ad derivative back to divided-diff value:
           vard[i] = dd ;
         }
         if (ibuf>=10 || (i==length-1 && ibuf>0)) {
@@ -697,7 +713,6 @@ void adDebugTgt_init(double epsilon, double seed, int tested_process) {
                dbad_testThisProcess, epsilon, seed) ;
       }
       printf("===========================================================\n") ;
-      dbad_resetCondensors() ;
       mkfifo(fifoFileName, S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH | S_IRWXU | S_IRWXO) ;
       dbad_file = fopen(fifoFileName, "a") ;
       if (dbad_file==NULL) {
@@ -715,9 +730,9 @@ void adDebugTgt_init(double epsilon, double seed, int tested_process) {
                dbad_testThisProcess, epsilon, seed) ;
       }
       printf("===========================================================\n") ;
-      dbad_resetCondensors() ;
       dbad_file = fopen(fifoFileName, "r") ;
     }
+    dbad_resetCondensors() ;
   }
 }
 
@@ -948,27 +963,63 @@ void adDebugTgt_passiveReal4Array(char *varname, float *var, int length) {
 }
 
 void adDebugTgt_testComplex16(char *varname, cdcmplx var, cdcmplx *vard) {
-  dbad_adDebugTgt_testComplex16(varname, var, vard, 0) ; //replace 0 with -1 to nudge vard
+  dbad_adDebugTgt_testComplex16(varname, var, vard,
+#ifdef ADDEBUG_NUDGE
+                                -1
+#else
+                                0
+#endif
+                                ) ;
 }
 
 void adDebugTgt_testReal8(char *varname, double var, double *vard) {
-  dbad_adDebugTgt_testReal8(varname, var, vard, 0) ; //replace 0 with -1 to nudge vard
+  dbad_adDebugTgt_testReal8(varname, var, vard,
+#ifdef ADDEBUG_NUDGE
+                            -1
+#else
+                            0
+#endif
+                            ) ;
 }
 
 void adDebugTgt_testReal4(char *varname, float var, float *vard) {
-  dbad_adDebugTgt_testReal4(varname, var, vard, 0) ; //replace 0 with -1 to nudge vard
+  dbad_adDebugTgt_testReal4(varname, var, vard,
+#ifdef ADDEBUG_NUDGE
+                            -1
+#else
+                            0
+#endif
+                            ) ;
 }
 
 void adDebugTgt_testComplex16Array(char *varname, cdcmplx* var, cdcmplx* vard, int length) {
-  dbad_adDebugTgt_testComplex16Array(varname, var, vard, length, 0) ;
+  dbad_adDebugTgt_testComplex16Array(varname, var, vard, length,
+#ifdef ADDEBUG_NUDGE
+                                     -1
+#else
+                                     0
+#endif
+                                     ) ;
 }
 
 void adDebugTgt_testReal8Array(char *varname, double* var, double* vard, int length) {
-  dbad_adDebugTgt_testReal8Array(varname, var, vard, length, 0) ; //replace 0 with -1 to nudge vard
+  dbad_adDebugTgt_testReal8Array(varname, var, vard, length,
+#ifdef ADDEBUG_NUDGE
+                                 -1
+#else
+                                 0
+#endif
+                                 ) ;
 }
 
 void adDebugTgt_testReal4Array(char *varname, float* var, float* vard, int length) {
-  dbad_adDebugTgt_testReal4Array(varname, var, vard, length, 0) ; //replace 0 with -1 to nudge vard
+  dbad_adDebugTgt_testReal4Array(varname, var, vard, length,
+#ifdef ADDEBUG_NUDGE
+                                 -1
+#else
+                                 0
+#endif
+                                 ) ;
 }
 
 void adDebugTgt_concludeComplex16(char* varname, cdcmplx var, cdcmplx *vard) {

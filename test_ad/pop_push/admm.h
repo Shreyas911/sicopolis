@@ -3,8 +3,6 @@
 //        extern "C" {
 //#   endif
 
-/* #define WITH_LABELS 1  */
-
 /** Re-base restored pointers *pp (and possibly it adjoint *ppb) from their
  * old base from the forward sweep to their new base in the backward sweep.
  * When new base is not available yet, schedules this to be done later
@@ -19,12 +17,12 @@
  *  ADMM_rebase((void**)(&pp)) ;
  */
 void ADMM_rebaseShadowed(void **pp, void **ppb
-#ifdef WITH_LABELS
+#ifdef ADMM_LABELS
 , char *label
 #endif
 );
 void ADMM_rebase(void **pp
-#ifdef WITH_LABELS
+#ifdef ADMM_LABELS
 , char *label
 #endif
 );
@@ -37,13 +35,13 @@ void ADMM_rebase(void **pp
  * then do the same with the info about the derivative
  * chunks "baseb", "obaseb" and "sizeInBytesb".
  * "nbElements" is the length i.e. the number of elements of the allocated array. */
-void ADMM_registerShadowed(void *base, void *obase, int sizeInBytes, void *baseb, void *obaseb, int sizeInBytesb, int nbElements
-#ifdef WITH_LABELS
+void ADMM_registerShadowed(void *base, void *obase, int sizeInBytes, void *baseb, void **alreadyRebasedb, void *obaseb, int sizeInBytesb, int nbElements
+#ifdef ADMM_LABELS
 , char *label
 #endif
 ) ;
-void ADMM_register(void *base, void *obase, int sizeInBytes, int nbElements
-#ifdef WITH_LABELS
+void ADMM_register(void *base, void **alreadyRebased, void *obase, int sizeInBytes, int nbElements
+#ifdef ADMM_LABELS
 , char *label
 #endif
 ) ;
@@ -52,15 +50,17 @@ void ADMM_register(void *base, void *obase, int sizeInBytes, int nbElements
  * Returns in "nbElements" the length i.e. the number of elements of the array
  * that is about to be deallocated. */
 void ADMM_unregisterShadowed(void *base, void *baseb, int *nbElements
-#ifdef WITH_LABELS
+#ifdef ADMM_LABELS
 , char *label
 #endif
 ) ;
 void ADMM_unregister(void *base, int *nbElements
-#ifdef WITH_LABELS
+#ifdef ADMM_LABELS
 , char *label
 #endif
 ) ;
+
+void ADMM_statistics();
 
 //#   if defined(__cplusplus)
 //        }

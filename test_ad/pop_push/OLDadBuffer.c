@@ -1,9 +1,16 @@
+/*
+ * TAPENADE Automatic Differentiation Engine
+ * Copyright (C) 1999-2021 Inria
+ * See the LICENSE.md file in the project root for more information.
+ *
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-#include "adStack.h"
-#include "adBuffer.h"
+#include "OLDadStack.h"
+#include "OLDadBuffer.h"
 
 /************ MEASUREMENT OF PUSH TRAFFIC *************/
 
@@ -700,6 +707,6 @@ void showStackAndBuffers(char *locationName) {
   printf("\n") ;
 }
 
-void showStackAndBuffersSize() {
-  showStackSize(adi4ibuf,adi8ibuf,adr4ibuf,adr8ibuf,adc8ibuf,adc16ibuf,ads1ibuf,adbitibuf,adptribuf) ;
+void showStackAndBuffersSize(int pos) {
+  showStackSize(adi4ibuf,adi8ibuf,adr4ibuf,adr8ibuf,adc8ibuf,adc16ibuf,ads1ibuf,adbitibuf,adptribuf,pos) ;
 }

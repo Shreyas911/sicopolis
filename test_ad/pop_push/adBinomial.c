@@ -1,3 +1,10 @@
+/*
+ * TAPENADE Automatic Differentiation Engine
+ * Copyright (C) 1999-2021 Inria
+ * See the LICENSE.md file in the project root for more information.
+ *
+ */
+
 #include <stdio.h>
 #include "adBinomial.h"
 

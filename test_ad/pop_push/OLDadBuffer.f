@@ -919,7 +919,8 @@ c Remove top repeat level:
 c No pointer buffer so far...
       END
 
-      SUBROUTINE SHOWSTACKANDBUFFERSSIZE()
+      SUBROUTINE SHOWSTACKANDBUFFERSSIZE(pos)
+      INTEGER*4 pos
       INTEGER*4 adi4buf(512)
       INTEGER adi4ibuf
       COMMON /adi4fbuf/adi4buf,adi4ibuf
@@ -945,7 +946,7 @@ c No pointer buffer so far...
       INTEGER adbitibuf
       COMMON /adbitfbuf/adbitbuf, adbitibuf
       CALL SHOWSTACKSIZE(adi4ibuf-1,adi8ibuf-1,adr4ibuf-1,adr8ibuf-1,
-     +     adc8ibuf-1,adc16ibuf-1,ads1ibuf-1,adbitibuf-1,0)
+     +     adc8ibuf-1,adc16ibuf-1,ads1ibuf-1,adbitibuf-1,0,pos)
       END
 
 C=========== MEASUREMENT OF PUSH TRAFFIC ==========
