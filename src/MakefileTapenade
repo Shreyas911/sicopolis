@@ -177,14 +177,14 @@ sicopolis.F90
 
 CPPCMD = cat $< |  cpp -DRUN_SPECS_HEADER=\"sico_specs.h\" -DALLOW_TAPENADE_DIFFERENTIATE=1 -DALLOW_TAPENADE=1 -I../ -I./ -traditional-cpp -P 
 
-CPPCMD_FILES = cat $< |  cpp -DRUN_SPECS_HEADER=\"sico_specs.h\" -imacros sico_specs.h ${DEFINE_FLAGS_ADJOINT} ${LISFLAG} -I./pop_push -traditional-cpp -P
+CPPCMD_FILES = cat $< |  cpp -DRUN_SPECS_HEADER=\"sico_specs.h\" -imacros sico_specs.h ${DEFINE_FLAGS_ADJOINT} ${LISFLAG} -I../test_ad/tapenade_supported/ADFirstAidKit -traditional-cpp -P
 
 ifeq ($(DISC_AND_GRL),0)
 driverforward:${LIBLIS} \
 	${LIB_NETCDF_F90} \
 	sico_specs.h \
-	pop_push/adStack.o \
-	pop_push/adBinomial.o \
+	../test_ad/tapenade_supported/ADFirstAidKit/adStack.o \
+	../test_ad/tapenade_supported/ADFirstAidKit/adBinomial.o \
 	error_m_cpp.o \
 	sico_types_m_cpp.o \
 	sico_maths_m_tlm_cpp.o \
@@ -228,8 +228,8 @@ driverforward:${LIBLIS} \
 		sico_types_m_cpp.o\
 		globals_cpp.o \
 		sico_maths_m_tlm_cpp.o \
-		pop_push/adStack.o \
-		pop_push/adBinomial.o \
+		../test_ad/tapenade_supported/ADFirstAidKit/adStack.o \
+		../test_ad/tapenade_supported/ADFirstAidKit/adBinomial.o \
 		globals_cpp_d.o \
 		sico_variables_m_cpp_d.o \
 		ice_material_properties_m_cpp_d.o \
@@ -272,8 +272,8 @@ numCore_cpp_d.f90 sico_variables_m_cpp_d.f90 ice_material_properties_m_cpp_d.f90
 driveradjoint:${LIBLIS} \
 	${LIB_NETCDF_F90} \
 	sico_specs.h \
-	pop_push/adStack.o \
-	pop_push/adBinomial.o \
+	../test_ad/tapenade_supported/ADFirstAidKit/adStack.o \
+	../test_ad/tapenade_supported/ADFirstAidKit/adBinomial.o \
 	error_m_cpp.o \
 	sico_types_m_cpp.o \
 	sico_maths_m_grad_cpp.o \
@@ -317,8 +317,8 @@ driveradjoint:${LIBLIS} \
 		sico_types_m_cpp.o\
 		globals_cpp.o \
 		sico_maths_m_grad_cpp.o \
-		pop_push/adStack.o \
-		pop_push/adBinomial.o \
+		../test_ad/tapenade_supported/ADFirstAidKit/adStack.o \
+		../test_ad/tapenade_supported/ADFirstAidKit/adBinomial.o \
 		globals_cpp_b.o \
 		sico_variables_m_cpp_b.o \
 		ice_material_properties_m_cpp_b.o \
@@ -362,8 +362,8 @@ ifeq ($(DISC_AND_GRL),1)
 driverforward:${LIBLIS} \
 	${LIB_NETCDF_F90} \
 	sico_specs.h \
-	pop_push/adStack.o \
-	pop_push/adBinomial.o \
+	../test_ad/tapenade_supported/ADFirstAidKit/adStack.o \
+	../test_ad/tapenade_supported/ADFirstAidKit/adBinomial.o \
 	error_m_cpp.o \
 	sico_types_m_cpp.o \
 	sico_maths_m_tlm_cpp.o \
@@ -408,8 +408,8 @@ driverforward:${LIBLIS} \
 		sico_types_m_cpp.o\
 		globals_cpp.o \
 		sico_maths_m_tlm_cpp.o \
-		pop_push/adStack.o \
-		pop_push/adBinomial.o \
+		../test_ad/tapenade_supported/ADFirstAidKit/adStack.o \
+		../test_ad/tapenade_supported/ADFirstAidKit/adBinomial.o \
 		globals_cpp_d.o \
 		sico_variables_m_cpp_d.o \
 		ice_material_properties_m_cpp_d.o \
@@ -453,8 +453,8 @@ discharge_workers_m_cpp_d.f90 numCore_cpp_d.f90 sico_variables_m_cpp_d.f90 ice_m
 driveradjoint:${LIBLIS} \
 	${LIB_NETCDF_F90} \
 	sico_specs.h \
-	pop_push/adStack.o \
-	pop_push/adBinomial.o \
+	../test_ad/tapenade_supported/ADFirstAidKit/adStack.o \
+	../test_ad/tapenade_supported/ADFirstAidKit/adBinomial.o \
 	error_m_cpp.o \
 	sico_types_m_cpp.o \
 	sico_maths_m_grad_cpp.o \
@@ -499,8 +499,8 @@ driveradjoint:${LIBLIS} \
 		sico_types_m_cpp.o\
 		globals_cpp.o \
 		sico_maths_m_grad_cpp.o \
-		pop_push/adStack.o \
-		pop_push/adBinomial.o \
+		../test_ad/tapenade_supported/ADFirstAidKit/adStack.o \
+		../test_ad/tapenade_supported/ADFirstAidKit/adBinomial.o \
 		globals_cpp_b.o \
 		sico_variables_m_cpp_b.o \
 		ice_material_properties_m_cpp_b.o \
