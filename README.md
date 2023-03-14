@@ -10,7 +10,7 @@ SICOPOLIS-AD v2
 Find the documentation [here](https://sicopolis.readthedocs.io/en/latest/).
 Detailed instructions for installation are given [here](https://sicopolis.readthedocs.io/en/latest/AD/AD.html#configuration).
 
-The AD code is tested using `Gitlab-CI`. The testing setup can be found in the directory test_ad of the SICOPOLIS installation. 
+The AD code is tested using `Gitlab-CI`. The testing setup can be found in the directory `test_ad` of the SICOPOLIS installation. 
 
 `SICOPOLIS-AD v2` is an open source project that relies on the participation of its users, and we welcome contributions. Users can contribute using the usual pull request mechanisms in git, and if the contribution is substantial, they can contact us to discuss gaining direct access to the repository.
 
