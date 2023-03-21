@@ -1,5 +1,5 @@
 default:
-        image: shreyas911/sicopolis_ad_v2:v1.3
+        image: shreyas911/sicopolis_ad_v2:v1.4
 
 stages:
         - test
