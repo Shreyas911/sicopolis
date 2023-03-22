@@ -1423,11 +1423,7 @@ use sico_maths_m
 
 implicit none
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in)    :: i, j
-#else /* Tapenade */
-integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. Tapenade */
 real(dp), intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                         at3_1(0:KCMAX), at3_2(0:KCMAX), at4_1(0:KCMAX), &
                         at4_2(0:KCMAX), at5(0:KCMAX), at6(0:KCMAX), at7, &
@@ -1967,11 +1963,7 @@ use sico_maths_m
 
 implicit none
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in)    :: i, j
-#else /* Tapenade */
-integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. Tapenade */
 real(dp), intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                         at3_1(0:KCMAX), at3_2(0:KCMAX), at4_1(0:KCMAX), &
                         at4_2(0:KCMAX), at5(0:KCMAX), at6(0:KCMAX), at7, &
@@ -2492,11 +2484,7 @@ use sico_maths_m
 
 implicit none
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in)    :: i, j
-#else /* Tapenade */
-integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. Tapenade */
 real(dp), intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                         at3_1(0:KCMAX), at3_2(0:KCMAX), at4_1(0:KCMAX), &
                         at4_2(0:KCMAX), at5(0:KCMAX), at6(0:KCMAX), at7, &
@@ -3511,11 +3499,7 @@ use sico_maths_m
 
 implicit none
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in)    :: i, j
-#else /* Tapenade */
-integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. Tapenade */
 real(dp), intent(in) :: atr1, alb1
 
 integer(i4b) :: kc, kt, kr
@@ -3608,11 +3592,7 @@ subroutine shift_cts_upward(at1, at2_1, at2_2, at3_1, at3_2, &
 
 implicit none
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in)    :: i, j
-#else /* Tapenade */
-integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. Tapenade */
 real(dp),     intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                             at3_1(0:KCMAX), at3_2(0:KCMAX), at4_1(0:KCMAX), &
                             at4_2(0:KCMAX), at5(0:KCMAX), at6(0:KCMAX), at7, &
@@ -3702,11 +3682,7 @@ subroutine shift_cts_downward(at1, at2_1, at2_2, at3_1, at3_2, &
 
 implicit none
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in)    :: i, j
-#else /* Tapenade */
-integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. Tapenade */
 real(dp),     intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                             at3_1(0:KCMAX), at3_2(0:KCMAX), at4_1(0:KCMAX), &
                             at4_2(0:KCMAX), at5(0:KCMAX), at6(0:KCMAX), at7, &
@@ -3879,11 +3855,7 @@ use sico_maths_m
 
 implicit none
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in)    :: i, j
-#else /* Tapenade */
-integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. Tapenade */
 real(dp), intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                         at3_1(0:KCMAX), at3_2(0:KCMAX), at4_1(0:KCMAX), &
                         at4_2(0:KCMAX), at5(0:KCMAX), at6(0:KCMAX), at7, &

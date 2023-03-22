@@ -53,11 +53,7 @@ contains
 
   implicit none
 
-#if !defined(ALLOW_TAPENADE)
   integer(i4b), intent(in) :: i, j
-#else
-  integer(i4b), intent(inout) :: i, j
-#endif
 
   integer(i4b) :: mask_update_sea_level
   real(dp)     :: rhosw_rho_ratio, H_sea
