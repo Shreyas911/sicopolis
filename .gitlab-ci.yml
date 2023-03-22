@@ -9,9 +9,9 @@ tests:
         only:
                - develop
         before_script:
-               - export NETCDF_F90_FLAG=-I/usr/gfortran/modules
+               - export NETCDF_F90_FLAG=-I/usr/include
                - export LISDIR=/lis-2.0.30/installation
-               - export LIB_NETCDF_F90_FLAG='-L/usr -lnetcdff'
+               - export LIB_NETCDF_F90_FLAG='-L/usr/lib/x86_64-linux-gnu -lnetcdff'
                - export TAPENADE_HOME=/builds/sicopolis/sicopolis/test_ad/tapenade_supported
                - export PATH=$PATH:$TAPENADE_HOME/bin
                - pwd
