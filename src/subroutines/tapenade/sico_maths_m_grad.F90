@@ -326,7 +326,7 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
 
   call tri_sle(a0, a1, a2, x_copy, b, nrows)
 
-  do i=0,nrows
+  do i=1,nrows
      a0b(i) = - x_copy(i-1)*incrbb(i)
   end do
   do i=0,nrows

@@ -20,7 +20,6 @@ my_*
 /src/*.sh
 /src/*.dat
 /src/driver*
-/src/pop_push/
 /src/*.msg
 /src/html/
 /src/*.gcda
@@ -66,4 +65,4 @@ my_*
 
 **/.DS_Store
 
-/test_ad/pop_push/*.gch
+/test_ad/tapenade_supported/ADFirstAidKit/*.gch

@@ -707,11 +707,7 @@ use enth_temp_omega_m, only : temp_fct_enth
 
 implicit none
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* Tapenade */
-integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. Tapenade */
 
 real(dp), intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                         at3_1(0:KCMAX), at3_2(0:KCMAX), &
@@ -870,11 +866,7 @@ use ice_material_properties_m, only : ratefac_c_t, kappa_val, c_val, &
 
 implicit none
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* Tapenade */
-integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. Tapenade */
 
 real(dp),     intent(in) :: at1(0:KCMAX), &
                             at2_1(0:KCMAX), at2_2(0:KCMAX), &
@@ -1071,11 +1063,7 @@ subroutine calc_temp_enth_1_b(ctr1, clb1, i, j, &
 
 implicit none
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* Tapenade */
-integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. Tapenade */
 
 real(dp),     intent(in) :: ctr1, clb1
 
@@ -1147,11 +1135,7 @@ use enth_temp_omega_m, only : enth_fct_temp_omega
 
 implicit none
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* Tapenade */
-integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. Tapenade */
 
 real(dp),     intent(in) :: ct1(0:KCMAX), ct2(0:KCMAX), ct3(0:KCMAX), &
                             ct4(0:KCMAX), ce5(0:KCMAX), ce6(0:KCMAX), &
@@ -1293,11 +1277,7 @@ subroutine calc_temp_enth_1_d(ct1, ct2, ct3, ct4, ci1, ci2, &
 
 implicit none
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* Tapenade */
-integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. Tapenade */
 
 real(dp),     intent(in) :: ct1(0:KCMAX), ct2(0:KCMAX), ct3(0:KCMAX), &
                             ct4(0:KCMAX), ci1(0:KCMAX), ci2(0:KCMAX)
@@ -1518,11 +1498,7 @@ use enth_temp_omega_m, only : enth_fct_temp_omega, &
 
 implicit none
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* Tapenade */
-integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. Tapenade */
 
 real(dp), intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                         at3_1(0:KCMAX), at3_2(0:KCMAX), &
@@ -1788,11 +1764,7 @@ subroutine calc_temp_enth_2_a1(at1, at2_1, at2_2, at3_1, at3_2, &
 
 implicit none
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* Tapenade */
-integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. Tapenade */
 
 real(dp),     intent(in) :: at1(0:KCMAX), &
                             at2_1(0:KCMAX), at2_2(0:KCMAX), &
@@ -1922,11 +1894,7 @@ use ice_material_properties_m, only : ratefac_c_t, kappa_val, c_val, &
 
 implicit none
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* Tapenade */
-integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. Tapenade */
 
 real(dp),     intent(in) :: at6(0:KCMAX), at7, ai2(0:KCMAX), am3(0:KCMAX)
 real(dp),     intent(in) :: temp_c_val(0:KCMAX), omega_c_val(0:KCMAX)
@@ -1998,11 +1966,7 @@ subroutine calc_temp_enth_2_b(ctr1, clb1, i, j, &
 
 implicit none
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* Tapenade */
-integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. Tapenade */
 
 real(dp),     intent(in) :: ctr1, clb1
 
@@ -2073,11 +2037,7 @@ use enth_temp_omega_m, only : enth_fct_temp_omega
 
 implicit none
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* Tapenade */
-integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. Tapenade */
 
 integer(i4b), intent(in) :: kcmin
 real(dp),     intent(in) :: ct1(0:KCMAX), ct2(0:KCMAX), ct3(0:KCMAX), &
@@ -2258,11 +2218,7 @@ subroutine calc_temp_enth_2_d(ct1, ct2, ct3, ct4, ci1, ci2, &
 
 implicit none
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* Tapenade */
-integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. Tapenade */
 
 real(dp),     intent(in) :: ct1(0:KCMAX), ct2(0:KCMAX), ct3(0:KCMAX), &
                             ct4(0:KCMAX), ci1(0:KCMAX), ci2(0:KCMAX)
@@ -2477,11 +2433,7 @@ use enth_temp_omega_m, only : enth_fct_temp_omega
 
 implicit none
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* Tapenade */
-integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. Tapenade */
 
 real(dp), intent(in) :: atr1, alb1
 
@@ -2590,11 +2542,7 @@ use enth_temp_omega_m, only : enth_fct_temp_omega, &
 
 implicit none
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in) :: i, j
-#else /* Tapenade */
-integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. Tapenade */
 
 real(dp), intent(in) :: at1(0:KCMAX), at2_1(0:KCMAX), at2_2(0:KCMAX), &
                         at3_1(0:KCMAX), at3_2(0:KCMAX), &

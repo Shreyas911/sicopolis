@@ -200,9 +200,10 @@ a Creative Commons Attribution 4.0 International License (CC BY
   PDE-constrained gradient-based optimization.</p>
   <p><monospace>SICOPOLIS-AD v2</monospace> leverages the recently
   open-sourced AD tool <monospace>Tapenade</monospace>
-  (<xref alt="Hascoet &amp; Pascual, 2013" rid="ref-hascoetTAP" ref-type="bibr">Hascoet
-  &amp; Pascual, 2013</xref>) to generate code for the adjoint model of
-  the open-source ice sheet model, <monospace>SICOPOLIS</monospace>
+  (<xref alt="Laurent Hascoët &amp; Pascual, 2013" rid="ref-hascoetTAP" ref-type="bibr">Laurent
+  Hascoët &amp; Pascual, 2013</xref>) to generate code for the adjoint
+  model of the open-source ice sheet model,
+  <monospace>SICOPOLIS</monospace>
   (<xref alt="Greve, 1997" rid="ref-greve1997application" ref-type="bibr">Greve,
   1997</xref>;
   <xref alt="Greve et al., 2011" rid="ref-greve2011initial" ref-type="bibr">Greve
@@ -294,8 +295,8 @@ a Creative Commons Attribution 4.0 International License (CC BY
   et al., 2020</xref>), only the <monospace>ISSM</monospace> model and
   variants thereof possess adjoint model codes which have been
   generated, in part, using automatic differentiation
-  (<xref alt="Hascoët &amp; Morlighem, 2018" rid="ref-doiU003A10.1080U002F10556788.2017.1396600" ref-type="bibr">Hascoët
-  &amp; Morlighem, 2018</xref>;
+  (<xref alt="L. Hascoët &amp; Morlighem, 2018" rid="ref-doiU003A10.1080U002F10556788.2017.1396600" ref-type="bibr">L.
+  Hascoët &amp; Morlighem, 2018</xref>;
   <xref alt="Larour et al., 2014" rid="ref-tc-8-2335-2014" ref-type="bibr">Larour
   et al., 2014</xref>). Multi-centennial and longer integrations with
   the adjoint model have so far been conducted only with
@@ -497,7 +498,6 @@ a Creative Commons Attribution 4.0 International License (CC BY
       <year iso-8601-date="2020">2020</year>
       <volume>13</volume>
       <issue>4</issue>
-      <uri>https://gmd.copernicus.org/articles/13/1845/2020/</uri>
       <pub-id pub-id-type="doi">10.5194/gmd-13-1845-2020</pub-id>
       <fpage>1845</fpage>
       <lpage>1864</lpage>
@@ -523,22 +523,21 @@ a Creative Commons Attribution 4.0 International License (CC BY
       <year iso-8601-date="2020-01">2020</year><month>01</month>
       <volume>2</volume>
       <issue>1</issue>
-      <uri>https://doi.org/10.1088/2515-7620/ab6368</uri>
       <pub-id pub-id-type="doi">10.1088/2515-7620/ab6368</pub-id>
       <fpage>015002</fpage>
       <lpage></lpage>
     </element-citation>
   </ref>
   <ref id="ref-greve2009dynamics">
-    <element-citation publication-type="article-journal">
+    <element-citation publication-type="book">
       <person-group person-group-type="author">
         <name><surname>Greve</surname><given-names>Ralf</given-names></name>
         <name><surname>Blatter</surname><given-names>Heinz</given-names></name>
       </person-group>
-      <article-title>Dynamics of ice sheets and glaciers</article-title>
-      <source>Dynamics of Ice Sheets and Glaciers by Ralf Greve</source>
+      <source>Dynamics of ice sheets and glaciers</source>
+      <publisher-name>Springer</publisher-name>
+      <publisher-loc>Berlin, Germany etc.</publisher-loc>
       <year iso-8601-date="2009">2009</year>
-      <uri>https://doi.org/10.1007/978-3-642-03415-2</uri>
       <pub-id pub-id-type="doi">10.1007/978-3-642-03415-2</pub-id>
     </element-citation>
   </ref>
@@ -547,7 +546,7 @@ a Creative Commons Attribution 4.0 International License (CC BY
       <person-group person-group-type="author">
         <name><surname>Greve</surname><given-names>Ralf</given-names></name>
       </person-group>
-      <article-title>Application of a polythermal three-dimensional ice sheet model to the greenland ice sheet: Response to steady-state and transient climate scenarios</article-title>
+      <article-title>Application of a polythermal three-dimensional ice sheet model to the Greenland ice sheet: Response to steady-state and transient climate scenarios</article-title>
       <source>Journal of Climate</source>
       <year iso-8601-date="1997">1997</year>
       <volume>10</volume>
@@ -564,7 +563,7 @@ a Creative Commons Attribution 4.0 International License (CC BY
         <name><surname>Saito</surname><given-names>Fuyuki</given-names></name>
         <name><surname>Abe-Ouchi</surname><given-names>Ayako</given-names></name>
       </person-group>
-      <article-title>Initial results of the SeaRISE numerical experiments with the models SICOPOLIS and IcIES for the greenland ice sheet</article-title>
+      <article-title>Initial results of the SeaRISE numerical experiments with the models SICOPOLIS and IcIES for the Greenland ice sheet</article-title>
       <source>Annals of Glaciology</source>
       <publisher-name>Cambridge University Press</publisher-name>
       <year iso-8601-date="2011">2011</year>
@@ -595,7 +594,7 @@ a Creative Commons Attribution 4.0 International License (CC BY
   <ref id="ref-hascoetTAP">
     <element-citation publication-type="article-journal">
       <person-group person-group-type="author">
-        <name><surname>Hascoet</surname><given-names>Laurent</given-names></name>
+        <name><surname>Hascoët</surname><given-names>Laurent</given-names></name>
         <name><surname>Pascual</surname><given-names>Valérie</given-names></name>
       </person-group>
       <article-title>The Tapenade Automatic Differentiation tool: principles, model, and specification</article-title>
@@ -604,7 +603,6 @@ a Creative Commons Attribution 4.0 International License (CC BY
       <year iso-8601-date="2013">2013</year>
       <volume>39</volume>
       <issue>3</issue>
-      <uri>https://hal.inria.fr/hal-00913983</uri>
       <pub-id pub-id-type="doi">10.1145/2450153.2450158</pub-id>
     </element-citation>
   </ref>
@@ -614,13 +612,14 @@ a Creative Commons Attribution 4.0 International License (CC BY
         <name><surname>Giering</surname><given-names>Ralf</given-names></name>
         <name><surname>Kaminski</surname><given-names>Thomas</given-names></name>
       </person-group>
-      <article-title>Recipes for adjoint code construction. ACM trans. Math. software</article-title>
+      <article-title>Recipes for adjoint code construction</article-title>
       <source>ACM Transactions on Mathematical Software</source>
       <year iso-8601-date="1999-08">1999</year><month>08</month>
       <volume>24</volume>
+      <issue>4</issue>
       <pub-id pub-id-type="doi">10.1145/293686.293695</pub-id>
-      <fpage></fpage>
-      <lpage></lpage>
+      <fpage>437</fpage>
+      <lpage>474</lpage>
     </element-citation>
   </ref>
   <ref id="ref-openad">
@@ -635,16 +634,17 @@ a Creative Commons Attribution 4.0 International License (CC BY
         <name><surname>Hill</surname><given-names>Chris</given-names></name>
         <name><surname>Wunsch</surname><given-names>Carl</given-names></name>
       </person-group>
-      <article-title>OpenAD/f: A modular open-source tool for automatic differentiation of fortran codes</article-title>
-      <source>ACM Trans. Math. Softw.</source>
+      <article-title>OpenAD/F: A modular open-source tool for automatic differentiation of Fortran codes</article-title>
+      <source>ACM Transactions on Mathematical Software</source>
       <publisher-name>Association for Computing Machinery</publisher-name>
       <publisher-loc>New York, NY, USA</publisher-loc>
       <year iso-8601-date="2008-07">2008</year><month>07</month>
       <volume>34</volume>
       <issue>4</issue>
       <issn>0098-3500</issn>
-      <uri>https://doi.org/10.1145/1377596.1377598</uri>
       <pub-id pub-id-type="doi">10.1145/1377596.1377598</pub-id>
+      <fpage>18:1</fpage>
+      <lpage>18:36</lpage>
     </element-citation>
   </ref>
   <ref id="ref-bueler_brown_lingle_2007">
@@ -684,12 +684,11 @@ a Creative Commons Attribution 4.0 International License (CC BY
         <name><surname>Seddik</surname><given-names>H.</given-names></name>
         <name><surname>Thies</surname><given-names>J.</given-names></name>
       </person-group>
-      <article-title>Capabilities and performance of elmer/ice, a new-generation ice sheet model</article-title>
+      <article-title>Capabilities and performance of Elmer/Ice, a new-generation ice sheet model</article-title>
       <source>Geoscientific Model Development</source>
       <year iso-8601-date="2013">2013</year>
       <volume>6</volume>
       <issue>4</issue>
-      <uri>https://gmd.copernicus.org/articles/6/1299/2013/</uri>
       <pub-id pub-id-type="doi">10.5194/gmd-6-1299-2013</pub-id>
       <fpage>1299</fpage>
       <lpage>1318</lpage>
@@ -701,15 +700,12 @@ a Creative Commons Attribution 4.0 International License (CC BY
         <name><surname>Hascoët</surname><given-names>L.</given-names></name>
         <name><surname>Morlighem</surname><given-names>M.</given-names></name>
       </person-group>
-      <article-title>Source-to-source adjoint algorithmic differentiation of an ice sheet model written in c</article-title>
+      <article-title>Source-to-source adjoint Algorithmic Differentiation of an ice sheet model written in C</article-title>
       <source>Optimization Methods and Software</source>
       <publisher-name>Taylor &amp; Francis</publisher-name>
       <year iso-8601-date="2018">2018</year>
       <volume>33</volume>
       <issue>4-6</issue>
-      <uri> 
-              https://doi.org/10.1080/10556788.2017.1396600
-      </uri>
       <pub-id pub-id-type="doi">10.1080/10556788.2017.1396600</pub-id>
       <fpage>829</fpage>
       <lpage>843</lpage>
@@ -720,14 +716,13 @@ a Creative Commons Attribution 4.0 International License (CC BY
       <person-group person-group-type="author">
         <name><surname>Hindmarsh</surname><given-names>R. C. A.</given-names></name>
       </person-group>
-      <article-title>A numerical comparison of approximations to the stokes equations used in ice sheet and glacier modeling</article-title>
+      <article-title>A numerical comparison of approximations to the Stokes equations used in ice sheet and glacier modeling</article-title>
       <source>Journal of Geophysical Research: Earth Surface</source>
       <year iso-8601-date="2004">2004</year>
       <volume>109</volume>
       <issue>F1</issue>
-      <uri>https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2003JF000065</uri>
       <pub-id pub-id-type="doi">10.1029/2003JF000065</pub-id>
-      <fpage></fpage>
+      <fpage>F01012</fpage>
       <lpage></lpage>
     </element-citation>
   </ref>
@@ -745,12 +740,11 @@ a Creative Commons Attribution 4.0 International License (CC BY
         <name><surname>Tuminaro</surname><given-names>R.</given-names></name>
         <name><surname>Bertagna</surname><given-names>L.</given-names></name>
       </person-group>
-      <article-title>MPAS-albany land ice (MALI): A variable-resolution ice sheet model for earth system modeling using voronoi grids</article-title>
+      <article-title>MPAS-Albany Land Ice (MALI): A variable-resolution ice sheet model for Earth system modeling using Voronoi grids</article-title>
       <source>Geoscientific Model Development</source>
       <year iso-8601-date="2018">2018</year>
       <volume>11</volume>
       <issue>9</issue>
-      <uri>https://gmd.copernicus.org/articles/11/3747/2018/</uri>
       <pub-id pub-id-type="doi">10.5194/gmd-11-3747-2018</pub-id>
       <fpage>3747</fpage>
       <lpage>3780</lpage>
@@ -764,14 +758,13 @@ a Creative Commons Attribution 4.0 International License (CC BY
         <name><surname>Morlighem</surname><given-names>M.</given-names></name>
         <name><surname>Rignot</surname><given-names>E.</given-names></name>
       </person-group>
-      <article-title>Continental scale, high order, high spatial resolution, ice sheet modeling using the ice sheet system model (ISSM)</article-title>
+      <article-title>Continental scale, high order, high spatial resolution, ice sheet modeling using the Ice Sheet System Model (ISSM)</article-title>
       <source>Journal of Geophysical Research: Earth Surface</source>
       <year iso-8601-date="2012">2012</year>
       <volume>117</volume>
       <issue>F1</issue>
-      <uri>https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2011JF002140</uri>
       <pub-id pub-id-type="doi">10.1029/2011JF002140</pub-id>
-      <fpage></fpage>
+      <fpage>F01022</fpage>
       <lpage></lpage>
     </element-citation>
   </ref>
@@ -788,12 +781,11 @@ a Creative Commons Attribution 4.0 International License (CC BY
         <name><surname>Schlegel</surname><given-names>N.</given-names></name>
         <name><surname>Khazendar</surname><given-names>A.</given-names></name>
       </person-group>
-      <article-title>Inferred basal friction and surface mass balance of the northeast greenland ice stream using data assimilation of ICESat (ice cloud and land elevation satellite) surface altimetry and ISSM (ice sheet system model)</article-title>
+      <article-title>Inferred basal friction and surface mass balance of the Northeast Greenland Ice Stream using data assimilation of ICESat (Ice Cloud and land Elevation Satellite) surface altimetry and ISSM (Ice Sheet System Model)</article-title>
       <source>The Cryosphere</source>
       <year iso-8601-date="2014">2014</year>
       <volume>8</volume>
       <issue>6</issue>
-      <uri>https://tc.copernicus.org/articles/8/2335/2014/</uri>
       <pub-id pub-id-type="doi">10.5194/tc-8-2335-2014</pub-id>
       <fpage>2335</fpage>
       <lpage>2351</lpage>
@@ -812,12 +804,11 @@ a Creative Commons Attribution 4.0 International License (CC BY
         <name><surname>Abe-Ouchi</surname><given-names>A.</given-names></name>
         <name><surname>Shepherd</surname><given-names>A.</given-names></name>
       </person-group>
-      <article-title>Ice sheet model intercomparison project (ISMIP6) contribution to CMIP6</article-title>
+      <article-title>Ice Sheet Model Intercomparison Project (ISMIP6) contribution to CMIP6</article-title>
       <source>Geoscientific Model Development</source>
       <year iso-8601-date="2016">2016</year>
       <volume>9</volume>
       <issue>12</issue>
-      <uri>https://gmd.copernicus.org/articles/9/4521/2016/</uri>
       <pub-id pub-id-type="doi">10.5194/gmd-9-4521-2016</pub-id>
       <fpage>4521</fpage>
       <lpage>4545</lpage>
@@ -891,12 +882,11 @@ a Creative Commons Attribution 4.0 International License (CC BY
         <name><surname>Zhang</surname><given-names>Tong</given-names></name>
         <name><surname>Zwinger</surname><given-names>Thomas</given-names></name>
       </person-group>
-      <article-title>Future sea level change under coupled model intercomparison project phase 5 and phase 6 scenarios from the greenland and antarctic ice sheets</article-title>
+      <article-title>Future sea level change under Coupled Model Intercomparison Project Phase 5 and Phase 6 scenarios from the Greenland and Antarctic ice sheets</article-title>
       <source>Geophysical Research Letters</source>
       <year iso-8601-date="2021">2021</year>
       <volume>48</volume>
       <issue>16</issue>
-      <uri>https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2020GL091741</uri>
       <pub-id pub-id-type="doi">10.1029/2020GL091741</pub-id>
       <fpage>e2020GL091741</fpage>
       <lpage></lpage>
@@ -909,8 +899,14 @@ a Creative Commons Attribution 4.0 International License (CC BY
         <name><surname>Fabre</surname><given-names>A.</given-names></name>
         <name><surname>Letréguilly</surname><given-names>A.</given-names></name>
       </person-group>
+      <article-title>Sensitivity of a Greenland ice sheet model to ice flow and ablation parameters: Consequences for the evolution through the last climatic cycle</article-title>
+      <source>Climate Dynamics</source>
       <year iso-8601-date="1996">1996</year>
+      <volume>13</volume>
+      <issue>1</issue>
       <pub-id pub-id-type="doi">10.1007/s003820050149</pub-id>
+      <fpage>11</fpage>
+      <lpage>23</lpage>
     </element-citation>
   </ref>
   <ref id="ref-httpsU003AU002FU002Fdoi.orgU002F10.1029U002F2008JF001015">
@@ -921,14 +917,13 @@ a Creative Commons Attribution 4.0 International License (CC BY
         <name><surname>Hulton</surname><given-names>N. R. J.</given-names></name>
         <name><surname>Payne</surname><given-names>A. J.</given-names></name>
       </person-group>
-      <article-title>The glimmer community ice sheet model</article-title>
+      <article-title>The Glimmer community ice sheet model</article-title>
       <source>Journal of Geophysical Research: Earth Surface</source>
       <year iso-8601-date="2009">2009</year>
       <volume>114</volume>
       <issue>F2</issue>
-      <uri>https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2008JF001015</uri>
       <pub-id pub-id-type="doi">10.1029/2008JF001015</pub-id>
-      <fpage></fpage>
+      <fpage>F02004</fpage>
       <lpage></lpage>
     </element-citation>
   </ref>
@@ -937,7 +932,7 @@ a Creative Commons Attribution 4.0 International License (CC BY
       <person-group person-group-type="author">
         <name><surname>Huybrechts</surname><given-names>Philippe</given-names></name>
       </person-group>
-      <article-title>A 3-d model for the antarctic ice sheet: A sensitivity study on the glacial-interglacial contrast</article-title>
+      <article-title>A 3-D model for the Antarctic ice sheet: A sensitivity study on the glacial-interglacial contrast</article-title>
       <source>Climate Dynamics</source>
       <publisher-name>Springer</publisher-name>
       <year iso-8601-date="1990">1990</year>
@@ -954,8 +949,14 @@ a Creative Commons Attribution 4.0 International License (CC BY
         <name><surname>Pollard</surname><given-names>D.</given-names></name>
         <name><surname>DeConto</surname><given-names>R.</given-names></name>
       </person-group>
+      <article-title>Modelling West Antarctic ice sheet growth and collapse through the past five million years</article-title>
+      <source>Nature</source>
       <year iso-8601-date="2009">2009</year>
+      <volume>458</volume>
+      <issue>7236</issue>
       <pub-id pub-id-type="doi">10.1038/nature07809</pub-id>
+      <fpage>329</fpage>
+      <lpage>332</lpage>
     </element-citation>
   </ref>
 </ref-list>

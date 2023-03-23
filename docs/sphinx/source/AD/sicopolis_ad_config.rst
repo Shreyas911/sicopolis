@@ -234,10 +234,4 @@ In addition to the steps above, the following steps need to be performed from th
 
 * Locate the file ``sico_environment.sh`` in the directory ``sicopolis/runs``, open it with a text editor, and replace the "Default" entry for ``SICO_INSTITUTION`` by the name of your institution (max. 256 characters). This is just for bookkeping purposes.
 
-* Ensure that the Tapenade files are stored in ``src/pop_push``. This makes the Tapenade subroutines accessible to the compiler. The simplest way to do it is to copy the version available in ``test_ad/pop_push``. Run the following command from the root directory of the repository.
-
-::
-
-    cp -r test_ad/pop_push src/
-
 Now, you are ready to use SICOPOLIS-AD v2, as described in :ref:`Running SICOPOLIS-AD v2 <running>`!    

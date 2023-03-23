@@ -730,7 +730,7 @@ Combining all compilation commands into a Makefile
 
 Makefiles are extremely useful to automate the compilation process. The Makefile shown below generates both the tangent linear and adjoint codes, and bundles everything together with the driver routine and a special file provided by the Tapenade developers, called ``adStack.c`` together into a single executable named ``adjoint`` (unfortunately, a slight misnomer since it also executes FD and TLM codes). ``adStack.c`` contains the definitions of the ``POP, PUSH`` mechanisms that Tapenade uses in its generated codes. 
 
-The ``adStack.c`` file can be found in ``test_ad/pop_push/`` sub-directory in the ``ad`` branch of the SICOPOLIS repository. The Makefile assumes that you have the entire ``pop_push`` directory present, so it is better to copy the entire directory to work as is with this Makefile.
+The ``adStack.c`` file can be found in ``test_ad/tapenade_supported/ADFirstAidKit`` sub-directory in the ``ad`` branch of the SICOPOLIS repository. The Makefile assumes that you have the entire ``ADFirstAidKit`` directory present, so it is better to copy the entire directory to work as is with this Makefile.
 
 More information on Makefiles can be found `here <https://www.gnu.org/software/make/manual/make.html>`__ . Makefiles are extremely sensitive to whitespaces both at the start and end of any line, so you should be very careful with that.
 
@@ -746,7 +746,7 @@ More information on Makefiles can be found `here <https://www.gnu.org/software/m
    # Options	
    F90 	:= gfortran
    CC 		:= gcc
-   POP_PUSH:= ./pop_push
+   TAP_AD_kit:= ./ADFirstAidKit
    
    # Rules
    
@@ -761,7 +761,7 @@ More information on Makefiles can be found `here <https://www.gnu.org/software/m
    forward_tgt.mod: forward_d.o
    
    adStack.o : 
-   		$(CC) -c $(POP_PUSH)/adStack.c
+   		$(CC) -c $(TAP_AD_kit)/adStack.c
    
    forward_b.f90: forward.f90
    		tapenade -reverse -head "forward_problem(V)/(xx)" forward.f90

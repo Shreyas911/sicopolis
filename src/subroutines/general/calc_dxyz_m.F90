@@ -399,8 +399,15 @@ contains
 
 !  ------ Constrain the shear fraction to reasonable [0,1] interval
 
+#if !defined(ALLOW_TAPENADE)
         lambda_shear_c(:,j,i) = min(max(lambda_shear_c(:,j,i), 0.0_dp), 1.0_dp)
         lambda_shear_t(:,j,i) = min(max(lambda_shear_t(:,j,i), 0.0_dp), 1.0_dp)
+#else
+        lambda_shear_c(:,j,i) = max(lambda_shear_c(:,j,i), 0.0_dp)
+        lambda_shear_c(:,j,i) = min(lambda_shear_c(:,j,i), 1.0_dp)
+        lambda_shear_t(:,j,i) = max(lambda_shear_t(:,j,i), 0.0_dp)
+        lambda_shear_t(:,j,i) = min(lambda_shear_t(:,j,i), 1.0_dp)
+#endif
 
      else   ! mask(j,i) == 1 or 2; ice-free land or ocean
 

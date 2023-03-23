@@ -421,11 +421,7 @@ subroutine sub_ice_shelf_melting_param_1(time, time_in_years, &
 
 implicit none
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 integer(i4b), intent(in)    :: i, j
-#else /* Tapenade */
-integer(i4b), intent(inout) :: i, j
-#endif /* Normal vs. Tapenade */
 real(dp), intent(in) :: time
 real(dp), intent(in) :: time_in_years
 real(dp), intent(in) :: rhow_rho_ratio
