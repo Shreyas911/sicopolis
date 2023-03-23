@@ -9,7 +9,7 @@ LANG=C
 #
 #  Author: Ralf Greve
 #
-#  Date: 2020-07-03
+#  Date: 2023-03-03
 #
 ################################################################################
 
@@ -17,28 +17,26 @@ git status >/dev/null 2>&1
 
 if [[ `echo $?` -eq 0 ]]; then
 
-   REPO_REVISION_=`git rev-list HEAD --count`
+   # REPO_REVISION_=`git rev-list HEAD --count`
    BUILD_BRANCH=`git rev-parse --abbrev-ref HEAD`
    BUILD_REV_ID=`git rev-parse HEAD`
-   BUILD_REV_ID_SHORT=`git describe --long --tags --dirty --always`
-   if [ ${BUILD_BRANCH} == "master" ]; then
-      REPO_REVISION=${REPO_REVISION_}_g${BUILD_REV_ID_SHORT}
-   else
-      REPO_REVISION=${BUILD_BRANCH}_${REPO_REVISION_}_r${BUILD_REV_ID_SHORT}
+   BUILD_REV_ID_SHORT=`git rev-parse --short=8 HEAD`
+
+   REPO_REVISION="${BUILD_BRANCH}_${BUILD_REV_ID_SHORT}"
+
+   if [[ -n $(git status --untracked-files=no --porcelain) ]]; then
+      REPO_REVISION="${REPO_REVISION}_dirty"
    fi
-   ### Source: https://stackoverflow.com/a/29922075
+
+   ### Source: https://stackoverflow.com/a/29922075 (modified)
 
 else
 
-   REPO_REVISION="(no Git repository)"
-   BUILD_BRANCH=
-   BUILD_REV_ID=
+   REPO_REVISION="no_Git_repository"
 
 fi
 
 export REPO_REVISION
-export BUILD_BRANCH
-export BUILD_REV_ID
 
 echo "Git revision identifier: ${REPO_REVISION}"
 
