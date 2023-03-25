@@ -56,10 +56,7 @@ subroutine sico_init(delta_ts, glac_index, &
                z_mar, &
                ndat2d, ndat3d, n_output)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
   use compare_float_m
-#endif /* Normal */
-
   use ice_material_properties_m, only : ice_mat_eqs_pars
   use enth_temp_omega_m, only : calc_c_int_table, calc_c_int_inv_table, &
                                 enth_fct_temp_omega
@@ -82,10 +79,7 @@ subroutine sico_init(delta_ts, glac_index, &
   use calc_vz_m
   use calc_dxyz_m
   use calc_temp_melt_bas_m
-
-#if !defined(ALLOW_OPENAD) /* Normal */
   use output_m
-#endif /* Normal */
 
 implicit none
 
@@ -245,11 +239,7 @@ time_output = 0.0_dp
 !                                                     if required --------
 
 #if (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
-#if !defined(ALLOW_OPENAD) /* Normal */
   call lis_initialize(ierr)
-#else /* OpenAD */
-  call lis_init_f(ierr)
-#endif /* Normal vs. OpenAD */
 #endif
 
 !-------- Read physical parameters --------
@@ -302,8 +292,6 @@ call error(errormsg)
 
 !-------- Compatibility check of the horizontal resolution with the
 !         number of grid points --------
-
-#if !defined(ALLOW_OPENAD) /* Normal */
 
 #if (!defined(CHECK_RES_IMAX_JMAX) || CHECK_RES_IMAX_JMAX==1)
 
@@ -364,14 +352,6 @@ write(6, fmt='(a)') '         and number of grid points not performed.'
 write(6, fmt='(a)') ' '
 
 #endif /* CHECK_RES_IMAX_JMAX */
-
-#else /* OpenAD */
-
-print *, ' >>> sico_init: not using compare_float for adjoint applications!'
-print *, '                double-check resolutions are integer multiples of'
-print *, '                domain size.'
-
-#endif /* Normal vs. OpenAD */
 
 !-------- Compatibility check of the thermodynamics mode
 !         (cold vs. polythermal vs. enthalpy method)
@@ -714,11 +694,7 @@ call system(trim(shell_command))
 
 filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.log'
 
-#if !defined(ALLOW_OPENAD) /* Normal */
 open(10, iostat=ios, file=trim(filename_with_path), status='new')
-#else /* OpenAD */
-open(10, iostat=ios, file=trim(filename_with_path))
-#endif /* Normal vs. OpenAD */
 
 if (ios /= 0) then
    errormsg = ' >>> sico_init: Error when opening the log file!'
@@ -839,6 +815,9 @@ write(10, fmt=trim(fmt3)) 'fact_z_mar =', FACT_Z_MAR
 write(10, fmt=trim(fmt3)) 'calv_uw_coeff =', CALV_UW_COEFF
 write(10, fmt=trim(fmt3)) 'r1_calv_uw    =', R1_CALV_UW
 write(10, fmt=trim(fmt3)) 'r2_calv_uw    =', R2_CALV_UW
+#if (defined(H0_FLOAT))
+write(10, fmt=trim(fmt3)) 'H0_float      =', H0_FLOAT
+#endif
 #endif
 #elif (MARGIN==3)
 write(10, fmt=trim(fmt2)) 'ICE_SHELF_CALVING = ', ICE_SHELF_CALVING
@@ -1345,8 +1324,6 @@ do n=1, n_output
 end do
 #endif
 
-#if !defined(ALLOW_OPENAD) /* Normal */
-
 if (.not.approx_integer_multiple(dtime_temp, dtime, eps_sp_dp)) then
    errormsg = ' >>> sico_init: dtime_temp must be a multiple of dtime!'
    call error(errormsg)
@@ -1370,14 +1347,6 @@ if (.not.approx_integer_multiple(dtime_out, dtime, eps_sp_dp)) then
    call error(errormsg)
 end if
 #endif
-
-#else /* OpenAD */
-
-print *, ' >>> sico_init: compare_float not used in adjoint applications!'
-print *, '                double check your time step sizes are multples' 
-print *, '                of each other.' 
-
-#endif /* Normal vs. OpenAD */
 
 #if (THK_EVOL==2)
 time_target_topo_init  = TIME_TARGET_TOPO_INIT0 *year2sec   ! a --> s
@@ -2045,28 +2014,12 @@ z_sl_mean = -1.11e+11_dp   ! of subroutine boundary
 call boundary(time_init, dtime, dxi, deta, &
               delta_ts, glac_index, z_mar)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
-
 where ((mask==0).or.(mask==3))
                  ! grounded or floating ice
    as_perp_apl = as_perp
 elsewhere        ! mask==1 or 2, ice-free land or sea
    as_perp_apl = 0.0_dp
 end where
-
-#else /* OpenAD */
-
-do j=0,JMAX
-do i=0,IMAX
-  if ((mask(j,i)==0).or.(mask(j,i)==3)) then
-    as_perp_apl(j,i) = as_perp(j,i)
-  else
-    as_perp_apl(j,i) = 0.0_dp
-  end if
-end do
-end do
-
-#endif /* Normal vs. OpenAD */
 
 smb_corr = 0.0_dp
 
@@ -2182,28 +2135,12 @@ call topography3(dxi, deta, anfdatname)
 call boundary(time_init, dtime, dxi, deta, &
               delta_ts, glac_index, z_mar)
 
-#if !defined(ALLOW_OPENAD) /* Normal */
-
 where ((mask==0).or.(mask==3))
                  ! grounded or floating ice
    as_perp_apl = as_perp
 elsewhere        ! mask==1 or 2, ice-free land or sea
    as_perp_apl = 0.0_dp
 end where
-
-#else /* OpenAD */
-
-do j=0,JMAX
-do i=0,IMAX
-  if ((mask(j,i)==0).or.(mask(j,i)==3)) then
-    as_perp_apl(j,i) = as_perp(j,i)
-  else
-    as_perp_apl(j,i) = 0.0_dp
-  end if
-end do
-end do
-
-#endif /* Normal vs. OpenAD */
 
 smb_corr = 0.0_dp
 
@@ -2354,8 +2291,6 @@ call error(errormsg)
 
 !  ------ Time-series file for the ice sheet on the whole
 
-#if !defined(ALLOW_OPENAD) /* Normal */
-
 filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.ser'
 
 open(12, iostat=ios, file=trim(filename_with_path), status='new')
@@ -2397,13 +2332,6 @@ else if (forcing_flag == 2) then
 
 end if
 
-#else /* OpenAD */
-
-print *, ' >>> sico_init: not writing to the ser file in '
-print *, '                adjoint applications!' 
-
-#endif /* Normal vs. OpenAD */
-
 !  ------ Time-series file for deep boreholes
 
 n_core = 0   ! No boreholes defined
@@ -2422,8 +2350,6 @@ write(14,'(1x,a)') 'No boreholes defined.'
 write(14,'(1x,a)') '---------------------'
 
 !-------- Output of the initial state --------
-
-#if !defined(ALLOW_OPENAD) /* Normal */
 
 #if (defined(OUTPUT_INIT))
 
@@ -2499,13 +2425,6 @@ if (flag_init_output) then
    call output2(time_init, dxi, deta, delta_ts, glac_index)
    call output4(time_init, dxi, deta, delta_ts, glac_index)
 end if
-
-#else /* OpenAD */
-
-print *, ' >>> sico_init: not producing initial, typical outputs'
-print *, '                in adjoint mode.'
-
-#endif /* Normal vs. OpenAD */
 
 end subroutine sico_init
 
