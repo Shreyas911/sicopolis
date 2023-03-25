@@ -1,5 +1,4 @@
 #!/bin/bash
-LANG=C
 
 ################################################################################
 #
@@ -9,26 +8,24 @@ LANG=C
 #
 #  Author: Ralf Greve
 #
-#  Date: 2023-03-03
+#  Date: 2023-03-25
 #
 ################################################################################
 
 git status >/dev/null 2>&1
 
-if [[ `echo $?` -eq 0 ]]; then
+if [[ $(echo $?) -eq 0 ]]; then
 
-   # REPO_REVISION_=`git rev-list HEAD --count`
-   BUILD_BRANCH=`git rev-parse --abbrev-ref HEAD`
-   BUILD_REV_ID=`git rev-parse HEAD`
-   BUILD_REV_ID_SHORT=`git rev-parse --short=8 HEAD`
+   BUILD_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+   BUILD_REV_ID=$(git rev-parse HEAD)
+   BUILD_REV_ID_SHORT=$(git rev-parse --short=9 HEAD)
+   COMM_DATE=$(git show -s --date=format:'%Y%m%dT%H%M%z' --format=%cd)
 
-   REPO_REVISION="${BUILD_BRANCH}_${BUILD_REV_ID_SHORT}"
+   REPO_REVISION="${BUILD_BRANCH}_${BUILD_REV_ID_SHORT}_${COMM_DATE}"
 
    if [[ -n $(git status --untracked-files=no --porcelain) ]]; then
       REPO_REVISION="${REPO_REVISION}_dirty"
    fi
-
-   ### Source: https://stackoverflow.com/a/29922075 (modified)
 
 else
 
