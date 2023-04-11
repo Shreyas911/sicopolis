@@ -9,7 +9,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2023 Ralf Greve
+!! Copyright 2009-2022 Ralf Greve
 !!
 !! @section License
 !!
@@ -60,7 +60,7 @@ subroutine boundary(time, dtime, dxi, deta, &
 
 #if ((MARGIN==2) \
       && (MARINE_ICE_FORMATION==2) \
-      && (MARINE_ICE_CALVING==9))
+      && (MARINE_ICE_CALVING==9 || MARINE_ICE_CALVING==8))
   use calving_m
 #endif
 
@@ -1261,10 +1261,10 @@ end do
 
 calving = 0.0_dp   ! Initialization
 
-#if ((MARGIN==2) \
-      && (MARINE_ICE_FORMATION==2) \
-      && (MARINE_ICE_CALVING==9))
+#if ((MARGIN==2) && (MARINE_ICE_FORMATION==2) && (MARINE_ICE_CALVING==8))
+call constant_calving()
 
+#elif ((MARGIN==2) && (MARINE_ICE_FORMATION==2) && (MARINE_ICE_CALVING==9))
 call calving_underwater_ice()
 
 #endif

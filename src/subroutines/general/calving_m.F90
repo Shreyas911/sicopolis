@@ -4,7 +4,8 @@
 !
 !> @file
 !!
-!! Calving of grounded or floating ice.
+!! Calving of grounded ice according to different calving laws and conditions 
+!! which can be selected by the MARINE_ICE_CALVING variable in the header file 
 !!
 !! @section Copyright
 !!
@@ -46,13 +47,11 @@ module calving_m
 contains
 
 !-------------------------------------------------------------------------------
-!> Calving of grounded "underwater ice".
-!<------------------------------------------------------------------------------
- 
-!-------------------------------------------------------------------------------
-!> Subroutine which applies a constant specific mass loss at grd cells which fulfill the floatation criterion
+!> Subroutine which applies a constant specific mass loss at grid cells which have ocean in at 
+!> one of its neighbouring grid cells 
 !<------------------------------------------------------------------------------
   subroutine constant_calving()
+
   implicit none
 
   real(dp)                           :: year_sec_inv
@@ -90,7 +89,7 @@ contains
 
 ! ------- At least one ocean neighbours to allow calving? -------
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_OPENAD) /* Normal */
 
   do i=0, IMAX
   do j=0, JMAX
@@ -100,58 +99,134 @@ contains
     jm1 = max(j-1,1)
     jp1 = min(j+1,JMAX)
     
-   ! if (mask(j,im1) .gt. 1) .or. (mask(j,ip1) .gt. 1)
     n_ocn=count([mask(j,im1),mask(j,ip1),mask(jm1,i),mask(jp1,i)].gt. 1 )
 
 
 !-------- Constant calving --------
 
-     if ( (mask(j,i) == 0) .and. (n_ocn .gt. 0) ) then
-        !write(*,*)  'CALVING!'
-        calv_ice(j,i) = calv_const
-     else
-        calv_ice(j,i) = 0.0_dp
-     end if
+    if ( (mask(j,i) == 0) .and. (n_ocn .gt. 0) ) then
+       !write(*,*)  'CALVING!'
+       calv_ice(j,i) = calv_const
+    else
+       calv_ice(j,i) = 0.0_dp
+    end if
 
- 
- end do
- end do
+  end do
+  end do
 
-#else /* Tapenade */
+#else /* OpenAD */
 
   do i=0, IMAX
   do j=0, JMAX
-   ! Define neighbor indices
+    ! Define neighbor indices
     im1 = max(i-1,1)
     ip1 = min(i+1,IMAX)
     jm1 = max(j-1,1)
     jp1 = min(j+1,JMAX)
-    
-   ! if (mask(j,im1) .gt. 1) .or. (mask(j,ip1) .gt. 1)
+
     n_ocn=count([mask(j,im1),mask(j,ip1),mask(jm1,i),mask(jp1,i)].gt. 1 )
-    write(*,*) "n_ocean:",n_ocn
 
-  
-  
-     if ( (mask(j,i) == 0) .and. (n_ocn .gt. 0) ) then
-        write(*,*)  'CALVING!'
-        calv_ice(j,i) = calv_const
-     else
-        calv_ice(j,i) = 0.0_dp
-     end if
+
+!-------- Constant calving --------
+
+    if ( (mask(j,i) == 0) .and. (n_ocn .gt. 0) ) then
+       !write(*,*)  'CALVING!'
+       calv_ice(j,i) = calv_const
+    else
+       calv_ice(j,i) = 0.0_dp
+    end if
+
   end do
   end do
 
-#endif /* Normal vs. Tapenade */
+#endif /* Normal vs. OpenAD */
 
   calving = calving + calv_ice
 
   end subroutine constant_calving
   
   
+!-------------------------------------------------------------------------------
+!> Calving of grounded ("underwater") ice when floatation criterion is fullfilled
+!> acording to the calving law proposed by Dunse et al 2011 (JOG)  
+!<------------------------------------------------------------------------------ 
   
-  
-  
+  subroutine calving_underwater_ice()
+
+  implicit none
+
+  real(dp)                           :: year_sec_inv
+  real(dp)                           :: rhosw_rho_ratio
+  real(dp)                           :: calv_uw_coeff, r1_calv_uw, r2_calv_uw
+  real(dp), dimension(0:JMAX,0:IMAX) :: H_sea, calv_uw_ice, H0_flt
+  integer(i4b)                       :: i, j
+
+!-------- Term abbreviations --------
+
+  year_sec_inv = 1.0_dp/year2sec
+
+  rhosw_rho_ratio = RHO_SW/RHO
+
+!-------- Setting of parameters --------
+
+#if (defined(CALV_UW_COEFF))
+  calv_uw_coeff = CALV_UW_COEFF * year_sec_inv
+#else
+  errormsg = ' >>> calving_underwater_ice: CALV_UW_COEFF undefined!'
+  call error(errormsg)
+#endif
+
+#if (defined(R1_CALV_UW))
+  r1_calv_uw = R1_CALV_UW
+#else
+  errormsg = ' >>> calving_underwater_ice: R1_CALV_UW undefined!'
+  call error(errormsg)
+#endif
+
+#if (defined(R2_CALV_UW))
+  r2_calv_uw = R2_CALV_UW
+#else
+  errormsg = ' >>> calving_underwater_ice: R2_CALV_UW undefined!'
+  call error(errormsg)
+#endif
+
+#if (defined(H0_FLOAT))
+  H0_flt = H0_FLOAT
+#else
+  H0_flt = 0.0_dp
+#endif
+
+!-------- Sea depth --------
+
+  H_sea = max(z_sl - zl, 0.0_dp)   ! sea depth
+
+!-------- Calving of "underwater ice" --------
+
+#if !defined(ALLOW_OPENAD) /* Normal */
+
+  where ( (mask == 0).and.(H < rhosw_rho_ratio*H_sea+H0_flt) )
+     calv_uw_ice = calv_uw_coeff * H**r1_calv_uw * H_sea**r2_calv_uw
+  elsewhere
+     calv_uw_ice = 0.0_dp
+  end where
+
+#else /* OpenAD */
+
+  do i=0, IMAX
+  do j=0, JMAX
+     if ( (mask(j,i) == 0) .and. (H(j,i) < rhosw_rho_ratio*H_sea(j,i)) ) then
+        calv_uw_ice(j,i) = calv_uw_coeff * H(j,i)**r1_calv_uw * H_sea(j,i)**r2_calv_uw
+     else
+        calv_uw_ice(j,i) = 0.0_dp
+     end if
+  end do
+  end do
+
+#endif /* Normal vs. OpenAD */
+
+  calving = calving + calv_uw_ice
+
+  end subroutine calving_underwater_ice
   
 
 #if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
