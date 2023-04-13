@@ -6,12 +6,34 @@ Getting started
 Requirements
 ============
 
-Lorem ipsum...
+Unix-like system (e.g., Linux).
+
+| Fortran compiler.
+| So far, the GNU GCC (gfortran) and Intel Fortran (ifort) compilers are supported. If you wish to use a different compiler, please contact help@sicopolis.net.
+
+SICOPOLIS writes output in `NetCDF <https://doi.org/10.5065/D6H70CW6>`__ format (plus some ASCII). An installation of NetCDF version 3.6.x or newer is therefore required. For installation tips, see :ref:`Dependencies/NetCDF <dependencies-netcdf>`.
+
+For the shallow-shelf/shelfy-stream solver, the Library of Iterative Solvers for Linear Systems (`Lis <https://www.ssisc.org/lis/>`__, version 1.4.43 or newer) is required. For installation tips, see  :ref:`Dependencies/Lis <dependencies-lis>`.
 
 Download
 ========
 
-Lorem ipsum...
+Clone the Git repository (recommended)
+  The Git repository of SICOPOLIS is kindly hosted by the GitLab system of the Alfred Wegener Institute for Polar and Marine Research (AWI) in Bremerhaven, Germany. Front page: https://gitlab.awi.de/sicopolis/sicopolis/.
+
+  Cloning the latest develop revision::
+
+    git clone --branch develop
+        https://gitlab.awi.de/sicopolis/sicopolis.git
+
+  (Cloning with SSH instead of HTTPS is also available. See the above GitLab front page link for details.)
+
+  You should then have a new directory "sicopolis" that contains the entire program package.
+
+Download an archive
+  Go to https://gitlab.awi.de/sicopolis/sicopolis/-/tree/develop, click on the download symbol and choose the desired format (zip, tar.gz, tar.bz2, tar).
+
+  Tagged versions of SICOPOLIS are also available from `Zenodo <https://doi.org/10.5281/zenodo.3687337>`__.
 
 Initial configuration
 =====================

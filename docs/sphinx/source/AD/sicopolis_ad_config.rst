@@ -193,8 +193,8 @@ Unix-like system
 
 A Unix-like system, e.g. Linux (Ubuntu, CentOS, Fedora, Redhat, etc.), MacOS is required to run both SICOPOLIS and SICOPOLIS-AD v2.
 
-Setting up SICOPOLIS (latest v5.3)
-==================================
+Setting up SICOPOLIS
+====================
 
 The Git repository of SICOPOLIS is kindly hosted by the GitLab system of the `Alfred Wegener Institute for Polar and Marine Research (AWI) <http://www.awi.de/>`__ in Bremerhaven, Germany. 
 
@@ -209,7 +209,7 @@ The Git repository of SICOPOLIS is kindly hosted by the GitLab system of the `Al
 
 Cloning with SSH instead of HTTPS is also available. See the above GitLab link for details.
 
-* Tagged versions of SICOPOLIS (latest: v5.3, 2021-06-11) can be accessed from the `archive <http://www.sicopolis.net/archive/>`__.
+* Tagged versions of SICOPOLIS can be accessed from the `archive <http://www.sicopolis.net/archive/>`__.
 
 More details can be found `here <http://www.sicopolis.net/>`__.
 
