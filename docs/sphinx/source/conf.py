@@ -32,6 +32,9 @@ extensions = ['nbsphinx', 'IPython.sphinxext.ipython_console_highlighting',
 
 bibtex_bibfiles = ['references.bib']
 
+bibtex_default_style = 'plain'
+bibtex_reference_style = 'label'
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -45,7 +48,6 @@ source_suffix = '.rst'
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['**.ipynb_checkpoints']
-
 
 # -- Options for HTML output -------------------------------------------------
 

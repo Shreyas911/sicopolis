@@ -22,4 +22,5 @@ SICOPOLIS User Manual
    getting_started/getting_started
    dependencies
    AD/AD
+   how_to_contribute
    references

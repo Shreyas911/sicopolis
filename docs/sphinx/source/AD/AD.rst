@@ -18,21 +18,10 @@ Contributors
 
 * Patrick Heimbach - PI of the NSF-supported project that funds this initiative
 
-How to contribute?
-==================
-
-SICOPOLIS-AD v2 is an open source project that relies on the participation of its users, and we welcome contributions. Users can contribute using the usual pull request mechanisms in git, and if the contribution is substantial, they can contact us to discuss gaining direct access to the repository.
-
-If you think you’ve found a bug, please check if you’re using the latest version of the model. If the bug is still present, then think about how you might fix it and file a ticket in the Gitlab issue tracker (you might need to request membership access on Gitlab, which we can approve). Your ticket should include: what the bug does, the location of the bug: file name and line number(s), and any suggestions you have for how it might be fixed.
-
-To request a new feature, or guidance on how to implement it yourself, please open a ticket with a clear explanation of what the feature will do.
-
-You can also directly contact Shreyas Gaikwad (shreyas.gaikwad@utexas.edu) for any of the above.
-
 Introduction and features
 =========================
 
-Previously, OpenAD have been used to get the adjoint of the SICOPOLIS code (`Logan et. al, 2020 <https://gmd.copernicus.org/articles/13/1845/2020/>`__). The current implementation with Tapenade (SICOPOLIS-AD v2) has the following advantages over the previous implementation - 
+Previously, OpenAD have been used to get the adjoint of the SICOPOLIS code (Logan et al. :cite:`logan_etal_2020`). The current implementation with Tapenade, SICOPOLIS-AD v2 (Gaikwad et al. :cite:`gaikwad_etal_2023`), has the following advantages over the previous implementation:
 
 1. It is up-to-date with the latest SICOPOLIS code
 
