@@ -1,7 +1,12 @@
-.. _files_and_dirs:
+.. _getting_started:
 
-Files and directories in SICOPOLIS
-**********************************
+Getting started
+***************
+
+Lorem ipsum...
+
+Directory structure
+===================
 
 * ``runs`` :
 
@@ -158,5 +163,3 @@ Files and directories in SICOPOLIS
        * Number of time-slice file (with leading zeros, 4 digits) :math:`> 0004` 
 
      * This will convert the original time-slice file ``v5_grl20_b2_paleo210004.nc`` to the resolution-doubled file ``v5_grl20_b2_paleo21_dbl_0004.nc`` that serves as initial conditions for run ``v5_grl10_b2_paleo21`` .
-
-

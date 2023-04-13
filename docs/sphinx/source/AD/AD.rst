@@ -1,6 +1,6 @@
 .. _AD:
 
-Using Automatic Differentiation
+Using automatic differentiation
 *******************************
 
 Contributors
@@ -100,18 +100,6 @@ Alternatively, the user can use the functions in ``test_ad/tapenade_config.py`` 
 
    running
    utilities
-
-Papers
-======
-
-.. _references:
-
-.. only:: html
-
-   .. rubric:: Papers
-
-.. bibliography::
-      :all:
 
 Acknowledgements
 ================
