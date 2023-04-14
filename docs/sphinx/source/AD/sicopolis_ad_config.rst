@@ -8,38 +8,36 @@ Ice sheet model SICOPOLIS
 Prerequisites for SICOPOLIS
 ===========================
 
-The official `SICOPOLIS Quick Start Manual <http://www.sicopolis.net/docu/SICOPOLIS_V5dev_Quick_Start.pdf>`__ is generally excellent to get started with SICOPOLIS. However, we will mention some steps here since using the Automatic Differentiation (AD) capabilities with Tapenade requires a slightly modified setup.
+See the ":ref:`getting_started`" section. However, we will mention here some steps since using the Automatic Differentiation (AD) capabilities with Tapenade requires a slightly modified setup.
 
-The satisfaction of the following prerequisites is highly recommended to access all the features of the code. Details can differ from the `SICOPOLIS Quick Start Manual <http://www.sicopolis.net/docu/SICOPOLIS_V5dev_Quick_Start.pdf>`__, since there are multiple ways to do things. We detail one of them here.
+The satisfaction of the following prerequisites is highly recommended to access all the features of the code. Details can differ from the ":ref:`getting_started`" section, since there are multiple ways to do things. We detail one of them here.
 
 GNU GCC Compiler (gfortran+gcc) or Intel Compiler (ifort+icc)
 -------------------------------------------------------------
 
-We have tested the software on gfortran/gcc v5.4.0, v7.2.0 and v8.5.0, any intermediate versions should work just as well. We have also tested the software on ifort/icc v18.0.0 (however, it should be noted that we have not tested the external LIS solver with Intel compilers).
+We have tested the software on gfortran/gcc v5.4.0, v7.2.0 and v8.5.0, any intermediate versions should work just as well. We have also tested the software on ifort/icc v18.0.0 (however, it should be noted that we have not tested the external Lis solver with Intel compilers).
 
 Git
 ---
 
 The Git repository of SICOPOLIS is kindly hosted by the GitLab system of the Alfred Wegener Institute for Polar and Marine Research (AWI) in Bremerhaven, Germany. Front page `here <https://gitlab.awi.de/sicopolis/sicopolis/>`__ .
 
-Cloning the latest develop or ad revision:
+Cloning the latest develop or ad revision::
 
-::
-        git clone --branch develop \
-        https://gitlab.awi.de/sicopolis/sicopolis.git
+  git clone --branch develop \
+  https://gitlab.awi.de/sicopolis/sicopolis.git
 
-::
-        git clone --branch ad \
-        https://gitlab.awi.de/sicopolis/sicopolis.git
+  git clone --branch ad \
+  https://gitlab.awi.de/sicopolis/sicopolis.git
 
 (Cloning with SSH instead of HTTPS is also available. See the above GitLab front page link for details.)
 
 You should then have a new directory ``sicopolis`` that contains the entire program package.
 
-LIS (1.4.43 or newer)
+Lis (1.4.43 or newer)
 ---------------------
 
-LIS installation is mandatory to use shallow shelf/shelfy stream dynamics in simulations. Install LIS as explained in the Quick Start Manual. The following commands might be helpful, they are written for the latest version at the time of writing.
+Lis installation is mandatory to use shallow-shelf/shelfy-stream dynamics in simulations. Install Lis as explained in :ref:`Dependencies/Lis <dependencies-lis>`. The following commands might be helpful, they are written for the latest version at the time of writing.
 
 ::
 
@@ -50,7 +48,7 @@ LIS installation is mandatory to use shallow shelf/shelfy stream dynamics in sim
 
 For AD purposes, we compile the code using the ``src/MakefileTapenade`` makefile. This makefile requires the following environment variables set - 
 
-1. ``LISDIR`` - The installation directory for the LIS version to be used. You can change this variable, either in the Makefile directly, or automatically in your bash or c-shell profile upon login (for example, ``.bashrc``). Examples for both are shown here.
+1. ``LISDIR`` - The installation directory for the Lis version to be used. You can change this variable, either in the Makefile directly, or automatically in your bash or c-shell profile upon login (for example, ``.bashrc``). Examples for both are shown here.
 
 ``src/MakefileTapenade``
 
@@ -67,18 +65,18 @@ For AD purposes, we compile the code using the ``src/MakefileTapenade`` makefile
     export LISDIR="/home/shreyas/lis-2.0.30/installation"
 
 
-2. ``LIBLIS`` - Absolute path to ``liblis.so``. By default in ``src/MakefileTapenade``, it is ``${LISDIR}/lib/liblis.so``. If you follow the original instructions to install LIS, this should work, else one can set it manually within ``src/MakefileTapenade``. 
+2. ``LIBLIS`` - Absolute path to ``liblis.so``. By default in ``src/MakefileTapenade``, it is ``${LISDIR}/lib/liblis.so``. If you follow the original instructions to install Lis, this should work, else one can set it manually within ``src/MakefileTapenade``. 
 
-3. ``LIBLISFLAG`` - Add directory using ``-L`` to be searched for ``-llis``. By default in ``src/MakefileTapenade``, it is ``-L${LISDIR}/lib -llis``. If you follow the original instructions to install LIS, this should work, else one can set it manually within ``src/MakefileTapenade``.
+3. ``LIBLISFLAG`` - Add directory using ``-L`` to be searched for ``-llis``. By default in ``src/MakefileTapenade``, it is ``-L${LISDIR}/lib -llis``. If you follow the original instructions to install Lis, this should work, else one can set it manually within ``src/MakefileTapenade``.
 
-4. ``LISFLAG`` - This flag declares directories to be searched for LIS ``#include`` header file ``lisf.h``, as well as defines the ``BUILD_LIS`` as a macro with value 1. By default in ``src/MakefileTapenade``, it is ``-DBUILD_LIS -I${LISDIR}/include/``. If you follow the original instructions to install LIS, this should work, else one can set it manually within ``src/MakefileTapenade``.
+4. ``LISFLAG`` - This flag declares directories to be searched for Lis ``#include`` header file ``lisf.h``, as well as defines the ``BUILD_LIS`` as a macro with value 1. By default in ``src/MakefileTapenade``, it is ``-DBUILD_LIS -I${LISDIR}/include/``. If you follow the original instructions to install Lis, this should work, else one can set it manually within ``src/MakefileTapenade``.
 
 **NOTE**: Some users have reported needing to extend their ``LD_LIBRARY_PATH`` with the location of ``${LISDIR}/lib`` in order to find ``liblis.so.0``.
 
 NetCDF (3.6.x or newer)
 -----------------------
 
-NetCDF installation is mandatory since it is a powerful library with widespread use for I/O with a machine-independent data format. Install NetCDF as explained in the Quick Start Manual. In some cases, for example while working on a shared server which uses a module manager or Docker container, thing have to be set up differently. ``src/MakefileTapenade`` needs either the ``NETCDF_FORTRAN_DIR`` macro set or both ``NETCDF_F90_FLAG`` and ``LIB_NETCDF_F90_FLAG`` set (see code snippet from ``src/MakefileTapenade`` here).
+NetCDF installation is mandatory since it is a powerful library with widespread use for I/O with a machine-independent data format. Install NetCDF as explained in :ref:`Dependencies/NetCDF <dependencies-netcdf>`. In some cases, for example while working on a shared server which uses a module manager or Docker container, thing have to be set up differently. ``src/MakefileTapenade`` needs either the ``NETCDF_FORTRAN_DIR`` macro set or both ``NETCDF_F90_FLAG`` and ``LIB_NETCDF_F90_FLAG`` set (see code snippet from ``src/MakefileTapenade`` here).
 
 ::
 
@@ -186,7 +184,7 @@ In this case, you will find that the ``./usr/lib64/gfortran/modules/netcdf.mod``
 
 You can also confirm that the files ``/usr/lib64/libnetcdff.so*`` and ``/usr/lib64/libnetcdf.so*`` exist, which means you have to set ``LIB_NETCDF_F90_FLAG=-L/usr/lib64 -lnetcdff``.
 
-The Quick Start manual, and these two cases should help cover most of the issues with the installation of NetCDF.
+The instructions given in :ref:`Dependencies/NetCDF <dependencies-netcdf>`, and these two cases should help cover most of the issues with the installation of NetCDF.
 
 Unix-like system
 ----------------

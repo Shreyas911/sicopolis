@@ -21,6 +21,7 @@ SICOPOLIS User Manual
    introduction
    getting_started/getting_started
    dependencies
+   plotting_and_tools
    AD/AD
    how_to_contribute
    references

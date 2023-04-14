@@ -13,7 +13,7 @@ Unix-like system (e.g., Linux).
 
 SICOPOLIS writes output in `NetCDF <https://doi.org/10.5065/D6H70CW6>`__ format (plus some ASCII). An installation of NetCDF version 3.6.x or newer is therefore required. For installation tips, see :ref:`Dependencies/NetCDF <dependencies-netcdf>`.
 
-For the shallow-shelf/shelfy-stream solver, the Library of Iterative Solvers for Linear Systems (`Lis <https://www.ssisc.org/lis/>`__, version 1.4.43 or newer) is required. For installation tips, see  :ref:`Dependencies/Lis <dependencies-lis>`.
+For the shallow-shelf/shelfy-stream solver, the Library of Iterative Solvers for Linear Systems (`Lis <https://www.ssisc.org/lis/>`__, version 1.4.43 or newer) is required. For installation tips, see :ref:`Dependencies/Lis <dependencies-lis>`.
 
 Download
 ========
@@ -38,7 +38,26 @@ Download an archive
 Initial configuration
 =====================
 
-Lorem ipsum...
+1. Go to the new directory "sicopolis" and execute the following bash scripts::
+
+      ./copy_templates.sh
+      ./get_input_files.sh
+
+   The latter can be configured if you want to download only selected input files (default is downloading everything). To do so, open it with a text editor and change the flag variables before execution.
+
+2. Locate the file sico_configs.sh in the directory sicopolis/runs, and open it with a text editor.
+
+   Set the flags LIS_FLAG, OPENMP_FLAG and LARGE_DATA_FLAG according to your needs. 
+
+   Default is "true"/"true"/"false", which works for all test simulations included in the SICOPOLIS package. LIS_FLAG and OPENMP_FLAG can be set to "false" for simulations with pure shallow-ice dynamics. However, "true" is required for simulations with shallow-shelf dynamics (for floating ice) or hybrid shallow-ice--shelfy-stream dynamics (for grounded ice). For high-resolution simulations (e.g., Greenland/5 km or Antarctica/8 km), LARGE_DATA_FLAG must be set to "true".
+
+   Set NETCDFHOME to the correct path of your NetCDF installation.
+
+   If LIS_FLAG = "true", set LISHOME to the correct path of your Lis installation.
+
+   Depending on your system, some additional settings might have to be added in sico_configs.sh ("module load" commands for dynamic loading etc.).
+
+3. Locate the file sico_environment.sh in the directory sicopolis/runs, open it with a text editor, and replace the "Default" entry for SICO_INSTITUTION by the name of your institution (max. 256 characters).
 
 Directory structure
 ===================
@@ -90,17 +109,17 @@ Directory structure
 
        * Antarctic ice sheet with hybrid shallow-ice--shelfy-stream dynamics (Bernales et al. :cite:`bernales_etal_2017a`) and ice shelves (SSA)
 
-       * Resolution 64 km, :math:`t=-140.1\ldots{}-140.0\,\mathrm{ka}` for the init run without basal sliding (...\_init100a)
+       * Resolution 64 km, :math:`t=-140.1\ldots{}-140.0\,\mathrm{ka}` for the init run without basal sliding (..._init100a)
 
-       * :math:`t=-140\ldots{}0\,\mathrm{ka}` for the run with almost fixed topography (...\_fixtopo)
+       * :math:`t=-140\ldots{}0\,\mathrm{ka}` for the run with almost fixed topography (..._fixtopo)
 
        * basal sliding ramped up during the first 5 ka
 
-       * :math:`t=-0.5\ldots{}0\,\mathrm{ka}` for the final, freely-evolving-topography part of the (...\_spinup09),
+       * :math:`t=-0.5\ldots{}0\,\mathrm{ka}` for the final, freely-evolving-topography part of the (..._spinup09),
 
-       * :math:`t=0\ldots{}100\,\mathrm{a}` for the constant-climate control run (...\_future09\_ctrl)
+       * :math:`t=0\ldots{}100\,\mathrm{a}` for the constant-climate control run (..._future09_ctrl)
 
-       * 64-km version of the spin-up and the constant-climate control run for ISMIP6 InitMIP; Greve and Galton-Fenzi (pers.\ comm.\ 2017).
+       * 64-km version of the spin-up and the constant-climate control run for ISMIP6 InitMIP; Greve and Galton-Fenzi (pers. comm. 2017).
 
      * ``v5_asf2_steady and v5_asf2_surge``
 
@@ -170,50 +189,20 @@ Directory structure
 
 * ``docs`` :
 
-  * Documentation with quick-start manual, sphinx docs, JOSS paper, doxygen, etc.
+  * Documentation for SICOPOLIS.
 
 * ``tools`` :
 
-  * Tools to help with forward modeling, eg - ``resolution_doubler`` , ``make_ismip_output`` , etc.
-
-  1. Program ``make_ismip_output``
-
-     * Generating ISMIP output (see http://tinyurl.com/clic-ismip6) from the NetCDF time-slice files produced by SICOPOLIS
-
-     * For simulation run ``./tools.sh -p make_ismip_output -m run_name``
-
-     * For further options, try ``./tools.sh -h``
-
-  2. Program ``resolution_doubler``
-
-     * Doubling the horizontal resolution of a NetCDF time-slice output file produced by SICOPOLIS
-
-     * For simulation run name, to be executed by ``./tools.sh -p resolution_doubler -m run_name`` 
-
-     * For further options, try ``./tools.sh -h`` 
-
-     * For example, run ``v5_grl10_b2_paleo21`` (10 km resolution) requires the resolution doubled output of run ``v5_grl20_b2_paleo21`` (20 km resolution) for :math:`t=-9 \mathrm{ka}` as initial condition. In order to create it, execute the resolution doubler for run ``v5_grl20_b2_paleo21`` (i.e., with the option ``-m v5_grl20_b2_paleo21``) and enter 
-
-       * Number of time-slice file (with leading zeros, 4 digits) :math:`> 0004` 
-
-     * This will convert the original time-slice file ``v5_grl20_b2_paleo210004.nc`` to the resolution-doubled file ``v5_grl20_b2_paleo21_dbl_0004.nc`` that serves as initial conditions for run ``v5_grl10_b2_paleo21`` .
+  * Directory that contains some useful tools and a shell script (tools.sh) to execute them (see ":ref:`plotting_and_tools`").
 
 How to run a simulation
 =======================
 
 Lorem ipsum...
 
+.. _getting_started-output:
+
 Output files
 ============
-
-Lorem ipsum...
-
-Plotting
-========
-
-Lorem ipsum...
-
-Some useful tools
-=================
 
 Lorem ipsum...
