@@ -19,8 +19,9 @@ SICOPOLIS User Manual
    :numbered: 5
 
    introduction
-   getting_started/getting_started
+   getting_started
    dependencies
+   test_simulations
    plotting_and_tools
    new_domain
    AD/AD
