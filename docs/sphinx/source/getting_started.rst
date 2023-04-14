@@ -75,7 +75,7 @@ Directory "runs"
   Shell scripts (bash) multi_sico_1.sh and multi_sico_2.sh for running multiple simulations by repeated calls of sico.sh.
 
   Subdirectory "headers"
-    Run-specs header files sico\_specs\_\<run\_name\>.h (\<run\_name\>\: name of run) for the simulations to be carried out with SICOPOLIS.
+    Run-specs header files sico\_specs\_\<run\_name\>.h (see :ref:`below <getting_started-run_specs_headers>`) for the simulations to be carried out with SICOPOLIS.
 
     By default, it contains a number of :ref:`test simulations <test_simulations>`.
 
@@ -124,6 +124,19 @@ Directory "tools"
 
 Directory "test_ad"
   AD-specific utilities and CI testing framework.
+
+.. _getting_started-run_specs_headers:
+
+Run-specs header files
+======================
+
+Each simulation (run) must be specified by a run-specs header file (or "header" for short). If the name of the simulation is supposed to be **\<run\_name\>**, then the name of the header must be **sico\_specs\_\<run\_name\>.h**. SICOPOLIS actually extracts the name of the simulation from the name of the header according to this pattern.
+
+A header consists of a pretty large number of preprocessor directives of the form ::
+
+  #define PARAMETER value
+
+These allow specifying many aspects of a simulation and are reasonably well documented in the headers themselves. 
 
 How to run a simulation
 =======================
