@@ -22,6 +22,7 @@ SICOPOLIS User Manual
    getting_started/getting_started
    dependencies
    plotting_and_tools
+   new_domain
    AD/AD
    how_to_contribute
    references

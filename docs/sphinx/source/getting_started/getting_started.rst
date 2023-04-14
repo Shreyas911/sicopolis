@@ -19,7 +19,7 @@ Download
 ========
 
 Clone the Git repository (recommended)
-  The Git repository of SICOPOLIS is kindly hosted by the GitLab system of the Alfred Wegener Institute for Polar and Marine Research (AWI) in Bremerhaven, Germany. Front page: https://gitlab.awi.de/sicopolis/sicopolis/.
+  The Git repository of SICOPOLIS is kindly hosted by the GitLab system of the `Alfred Wegener Institute for Polar and Marine Research (AWI) <https://www.awi.de/>`__ in Bremerhaven, Germany. Front page: https://gitlab.awi.de/sicopolis/sicopolis/.
 
   Cloning the latest develop revision::
 

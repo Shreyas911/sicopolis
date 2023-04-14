@@ -21,7 +21,7 @@ Contributors
 Introduction and features
 =========================
 
-Previously, OpenAD have been used to get the adjoint of the SICOPOLIS code (Logan et al. :cite:`logan_etal_2020`). The current implementation with Tapenade, SICOPOLIS-AD v2 (Gaikwad et al. :cite:`gaikwad_etal_2023`), has the following advantages over the previous implementation:
+Previously, OpenAD have been used to get the adjoint of the SICOPOLIS code (Logan et al. :cite:`logan_etal_2020`). The current implementation with Tapenade, SICOPOLIS-AD v2 (Gaikwad et al. :cite:`gaikwad_etal_2023`), has the following advantages over the previous implementation\:
 
 1. It is up-to-date with the latest SICOPOLIS code
 
@@ -35,17 +35,17 @@ Previously, OpenAD have been used to get the adjoint of the SICOPOLIS code (Loga
 
 5. We have now correctly incorporated the external LIS solver, its tangent linear code, and its adjoint which improve the simulation of Antarctic ice shelves and Greenland outlet glaciers. (subject to more testing)
 
-6. We leverage continuous integration and the pytest framework in order to track changes in the trunk that "break" the AD- based code generation - precludes the need for constant monitoring.
+6. We leverage continuous integration and the pytest framework in order to track changes in the trunk that "break" the AD-based code generation - precludes the need for constant monitoring.
 
 7. We “show” the entire code to Tapenade, including the initialization subroutines, thus avoiding cumbersome maintenance of subroutines OpenAD used to initialize for adjoint runs.
 
 8. We have provided convenient Python scripts to make I/O with the differentiated variables easier.
 
-In addition we also have the following previously available features - 
+In addition we also have the following previously available features\: 
 
 1. The adjoint mode is available, like before along with the capability to do Finite Differences validation of the gradient computed using the adjoint mode.
 
-The code has the following capabilities or possible applications - 
+The code has the following capabilities or possible applications\: 
 
 1. Paleoclimatic inversions using the adjoint generated gradients as part of a model calibration exercise.
 
@@ -78,7 +78,7 @@ Theory and tutorials
 SICOPOLIS-AD v2
 ===============
 
-The code for SICOPOLIS-AD v2 is kept mostly independent from the base SICOPOLIS code, allowing non-AD users to avoid it completely. All of the AD-related support routines and data files can be found in ``src/subroutines/tapenade``. Similarly, all utilities and testing files for AD simulations are stored in the ``test_ad`` directory. A separate Makefile is provided for AD purposes - ``src/MakefileTapenade``.
+The code for SICOPOLIS-AD v2 is kept mostly independent from the base SICOPOLIS code, allowing non-AD users to avoid it completely. All of the AD-related support routines and data files can be found in ``src/subroutines/tapenade``. Similarly, all utilities and testing files for AD simulations are stored in the ``test_ad`` directory. A separate Makefile is provided for AD purposes\: ``src/MakefileTapenade``.
 
 ``SICOPOLIS-AD v2`` can be run directly by interacting with the Makefile and the ``Fortran`` code. The user has to prepare a suitable header file for the base ``SICOPOLIS`` code and add a few more preprocessing directives to run the adjoint code with the same header file. This header file, along with a set of dependent and independent variables, is given to the Makefile. The Makefile executes the workflow for differentiating and compiling the code depending on the mode selected by the user (tangent linear, adjoint, finite differences, code coverage evaluation). The user must then insert the I/O statements in the Tapenade-generated code depending on what they wish to analyze. This is followed by recompilation and execution of the code.
 

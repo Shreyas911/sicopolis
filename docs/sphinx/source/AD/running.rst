@@ -3,9 +3,7 @@
 Running SICOPOLIS-AD v2
 ***********************
 
-SICOPOLIS-AD v2 runs almost independently of the setup for SICOPOLIS. It has its own Makefile ``src/MakefileTapenade``, typically one runs it using the following generic command (assuming the current working directory is ``src/``) - 
-
-::
+SICOPOLIS-AD v2 runs almost independently of the setup for SICOPOLIS. It has its own Makefile ``src/MakefileTapenade``, typically one runs it using the following generic command (assuming the current working directory is ``src/``)::
 
     % make -f MakefileTapenade clean
     % make -f MakefileTapenade driver{mode} HEADER={header} DOMAIN_SHORT={domain} DEP_VAR={dep_var} IND_VARS={ind_vars} DISC_AND_GRL={disc_and_grl}
@@ -27,7 +25,7 @@ Activating variables
 
 There are some variables in the SICOPOLIS code, for example ``c_slide``, the basal sliding coefficient, that are constant in time and reinitialized at each time step in the subroutines in ``src/subroutines/general/calc_vxy_m.F90``. This reinitialization has an "erasing" effect on the the dependency of cost functions to such variables, resulting in identically zero adjoint fields. From a physics standpoint, it is pretty clear that ``c_slide`` should have affect various kinds of cost functions.
 
-The workaround to this issue is to complete the following steps (the code snippets are based on the ``c_slide`` example) - 
+The workaround to this issue is to complete the following steps (the code snippets are based on the ``c_slide`` example)\:
 
 1. Declare a dummy variable in ``src/subroutines/general/sico_variables_m.F90``.
 
