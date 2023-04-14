@@ -96,7 +96,7 @@ Directory "src"
 
   Subdirectory **subroutines/xyz**\: For :ref:`creating new domains <new_domain>`.
 
-Directory "sico_in"
+Directory "sico\_in"
   Input data files for SICOPOLIS.
 
   Subdirectory **general**\: general input files, for any modelled domain.
@@ -113,7 +113,7 @@ Directory "sico_in"
 
   NOTE: These subdirectories also contain README files that describe the input data and provide the corresponding references.
 
-Directory "sico_out"
+Directory "sico\_out"
   Directory into which output files of SICOPOLIS simulations are written by default.
 
 Directory "docs"
@@ -122,7 +122,7 @@ Directory "docs"
 Directory "tools"
   Some useful tools and a shell script (tools.sh) to execute them (see ":ref:`plotting_and_tools`").
 
-Directory "test_ad"
+Directory "test\_ad"
   AD-specific utilities and CI testing framework.
 
 .. _getting_started-run_specs_headers:

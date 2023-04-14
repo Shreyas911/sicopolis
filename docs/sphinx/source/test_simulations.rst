@@ -25,20 +25,20 @@ Run v5_ant40_b2_ss25ka
 
 Run v5_grl20_b2_paleo21
   | Greenland ice sheet, SIA, resolution 20 km,
-  | :math:`t=-140\ldots{}0\,\mathrm{ka}`, basal sliding ramped up during the first 5 ka.
+  | :math:`t=-140\,\mathrm{ka}\ldots{}0`, basal sliding ramped up during the first 5 ka.
   | Modified, low-resolution version of the spin-up for ISMIP6 InitMIP (Greve et al. :cite:`greve_etal_2017a`).
 
 Runs v5\_grl10\_b2\_\{paleo21, future21\_ctrl, future21\_asmb\}
   | Greenland ice sheet, SIA, resolution 10 km,
-  | :math:`t=-9\ldots{}0\,\mathrm{ka}` for the paleo run, :math:`t=0\ldots{}100\,\mathrm{a}` for the future runs.
+  | :math:`t=-9\,\mathrm{ka}\ldots{}0` for the paleo run, :math:`t=0\ldots{}100\,\mathrm{a}` for the future runs.
   | 10-km version of the spin-up and the schematic future climate runs for ISMIP6 InitMIP (Greve et al. :cite:`greve_etal_2017a`).
 
 Runs v5\_ant64\_b2\_\{spinup09\_init100a, spinup09\_fixtopo, spinup09, future09\_ctrl\}
   | Antarctic ice sheet with hybrid shallow-ice--shelfy-stream dynamics
   | (Bernales et al. :cite:`bernales_etal_2017a`) and ice shelves (SSA), resolution 64 km;
   | :math:`t=-140.1\ldots{}-140.0\,\mathrm{ka}` for the init run without basal sliding (..._init100a),
-  | :math:`t=-140\ldots{}0\,\mathrm{ka}` for the run with almost fixed topography (..._fixtopo), basal sliding ramped up during the first 5 ka,
-  | :math:`t=-0.5\ldots{}0\,\mathrm{ka}` for the final, freely-evolving-topography part of the (..._spinup09),
+  | :math:`t=-140\,\mathrm{ka}\ldots{}0` for the run with almost fixed topography (..._fixtopo), basal sliding ramped up during the first 5 ka,
+  | :math:`t=-0.5\,\mathrm{ka}\ldots{}0` for the final, freely-evolving-topography part of the (..._spinup09),
   | :math:`t=0\ldots{}100\,\mathrm{a}` for the constant-climate control run (..._future09_ctrl).
   | 64-km version of the spin-up and the constant-climate control run for ISMIP6 InitMIP (Greve and Galton-Fenzi, pers. comm. 2017).
 
@@ -51,7 +51,7 @@ Runs v5_nmars10_steady, v5_smars10_steady
   | Steady-state runs by Greve :cite:`greve_2007b`.
  
 Run v5_nhem80_nt012_new
-  | Northern hemisphere, SIA, resolution 80 km, :math:`t=-250\ldots{}0\,\mathrm{ka}`.
+  | Northern hemisphere, SIA, resolution 80 km, :math:`t=-250\,\mathrm{ka}\ldots{}0`.
   | Similar to run nt012 by Greve et al. :cite:`greve_etal_1999a`.
 
 Run v5_heino50_st
