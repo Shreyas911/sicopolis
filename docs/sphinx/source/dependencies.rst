@@ -12,7 +12,7 @@ NetCDF (Network Common Data Form) is a common format for scientific data (`doi: 
 
 For **GCC**, installation from a package manager is recommended. Under openSUSE Leap 15.2, install netcdf, netcdf-devel, netcdf-devel-static, netcdf-fortran, netcdf-fortran-devel, netcdf-fortran-static, ncview. This requires the repositories "Software for Scientists and Engineers" and "sebschub's Home Project". Details (especially the required repositories) will differ for other systems.
 
-For the **Intel compiler**, manual installation is required. The C and Fortran libraries are available for download on the `NetCDF website <https://doi.org/10.5065/D6H70CW6>`__ as zip or tar archives. Unzip them into temporary source directories. 
+For the **Intel compiler**, building from the source code is required. The C and Fortran sources are available for download on the `NetCDF website <https://doi.org/10.5065/D6H70CW6>`__ as zip or tar archives. Unzip the archives into temporary directories.
 
 * Prior to version 4.2, a single archive contained both the C and Fortran libraries. A minimal installation for version 4.1.3 (without NetCDF-4 support) can be done by changing to the source directory, then::
 
@@ -29,7 +29,7 @@ For the **Intel compiler**, manual installation is required. The C and Fortran l
 
 * Since version 4.2, the C and Fortran libraries must be installed separately. If NetCDF-4 support is dispensable, the following installation should work (tested under openSUSE Leap 15.2 and icc/ifort 19.1 with versions netcdf-c-4.8.0 and netcdf-fortran-4.5.3 as of January 25, 2021).
 
-  Step 1: Change to the source directory of the C library, then::
+  Change to the source directory of the C library, then::
 
     export NCDIR=/opt/netcdf
     export CC=icc
@@ -42,7 +42,7 @@ For the **Intel compiler**, manual installation is required. The C and Fortran l
                 --disable-netcdf-4 --enable-logging
     make install
 
-  Step 2: Change to the source directory of the Fortran library, then::
+  Change to the source directory of the Fortran library, then::
 
     export NFDIR=/opt/netcdf
     export LD_LIBRARY_PATH=${NCDIR}/lib:${LD_LIBRARY_PATH}
@@ -52,7 +52,73 @@ For the **Intel compiler**, manual installation is required. The C and Fortran l
                 --disable-netcdf-4 --enable-logging
     make install
 
-* For a complete build with NetCDF-4 support, additional libraries are required. See the `NetCDF website <https://doi.org/10.5065/D6H70CW6>`__ for further instructions.
+* A complete build with NetCDF-4 support requires additional libraries. Download the sources of the data-compression library **zlib** (https://www.zlib.net/), the Hierarchical Data Format **HDF5** (https://www.hdfgroup.org/) and the **NetCDF-4** C and Fortran libraries (https://doi.org/10.5065/D6H70CW6). Unpack all archives.
+
+  Step 1: Installation of **zlib**. Change to the source directory, then::
+
+    export ZDIR=/opt/zlib
+    export CC=icc
+    export FC=ifort
+    export CFLAGS="-O2"
+    export CPPFLAGS=
+    export FCFLAGS="-O2"
+    export FFLAGS=${FCFLAGS}
+    ./configure --prefix=${ZDIR} --libdir=${ZDIR}/lib
+    make check
+    make install
+
+  Step 2: Installation of **HDF5**. Change to the source directory, then::
+
+    export ZDIR=/opt/zlib
+    export H5DIR=/opt/hdf5
+    export LD_LIBRARY_PATH=${ZDIR}/lib:${LD_LIBRARY_PATH}
+    export CC=icc
+    export FC=ifort
+    export CFLAGS="-O2"
+    export CPPFLAGS=
+    export FCFLAGS="-O2"
+    export FFLAGS=${FCFLAGS}
+    ./configure --with-zlib=${ZDIR} \
+                --prefix=${H5DIR} --libdir=${H5DIR}/lib \
+                --enable-hl \
+                --with-default-api-version=v18
+    make check
+    make install 
+
+  Step 3: Installation of **NetCDF-4**. Change to the source directory of the C library, then::
+
+    export ZDIR=/opt/zlib
+    export H5DIR=/opt/hdf5
+    export NCDIR=/opt/netcdf
+    export LD_LIBRARY_PATH=${H5DIR}/lib:${LD_LIBRARY_PATH}
+    export CC=icc
+    export FC=ifort
+    export CFLAGS="-O2"
+    export CPPFLAGS="-I${H5DIR}/include -I${ZDIR}/include"
+    export LDFLAGS="-L${H5DIR}/lib -L${ZDIR}/lib"
+    export FCFLAGS="-O2"
+    export FFLAGS=${FCFLAGS}
+    ./configure --prefix=${NCDIR} --libdir=${NCDIR}/lib \
+                --enable-logging --disable-dap-remote-tests
+    make install
+    make check
+
+  Change to the source directory of the Fortran library, then::
+
+    export NFDIR=/opt/netcdf
+    export LD_LIBRARY_PATH=${NCDIR}/lib:${LD_LIBRARY_PATH}
+    export CPPFLAGS=-I${NCDIR}/include
+    export LDFLAGS=-L${NCDIR}/lib
+    ./configure --prefix=${NFDIR} --libdir=${NFDIR}/lib \
+                --enable-logging --disable-dap-remote-tests
+    make install
+    make check
+
+  This was tested under openSUSE Leap 15.3 and icc/ifort 19.1 with versions netcdf-c-4.8.1 and netcdf-fortran-4.5.4 as of March 26, 2022.
+
+  If installation from a package manager does not work out for GCC, try the above procedure, replacing everywhere 'icc' and 'ifort' by 'gcc' and 'gfortran', respectively.
+
+If needed, further instructions can be found on the `NetCDF website <nc>`__.
 
 Installation under /opt usually requires admin rights. The same holds for the common alternative /usr/local. For a local installation, replace it by '/home/<my_user_name>/local'.
 
@@ -63,7 +129,7 @@ Lis
 
 Lis (Library of Iterative Solvers for linear systems) is a software library for solving discretized linear equations (Nishida :cite:`nishida_2010`).
 
-Download the latest version of Lis as a zip archive from https://www.ssisc.org/lis/ (as of January 23, 2021: lis-2.0.30.zip). Unzip the archive into a temporary directory.
+Download the source of Lis as a zip archive from https://www.ssisc.org/lis/ (as of January 23, 2021: lis-2.0.30.zip). Unzip the archive and change to the source directory.
 
 For **GCC**, install lis by executing::
 
