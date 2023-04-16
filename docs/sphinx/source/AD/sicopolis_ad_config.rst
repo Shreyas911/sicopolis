@@ -1,43 +1,23 @@
 .. _sicopolis_ad_config:
 
-Ice sheet model SICOPOLIS
-*************************
-
-.. _sico_prerequisites:
-
-Prerequisites for SICOPOLIS
-===========================
+SICOPOLIS-AD v2
+***************
 
 See the ":ref:`getting_started`" section. However, we will mention here some steps since using the Automatic Differentiation (AD) capabilities with Tapenade requires a slightly modified setup.
 
 The satisfaction of the following prerequisites is highly recommended to access all the features of the code. Details can differ from the ":ref:`getting_started`" section, since there are multiple ways to do things. We detail one of them here.
 
 GNU GCC Compiler (gfortran+gcc) or Intel Compiler (ifort+icc)
--------------------------------------------------------------
+=============================================================
 
-We have tested the software on gfortran/gcc v5.4.0, v7.2.0 and v8.5.0, any intermediate versions should work just as well. We have also tested the software on ifort/icc v18.0.0 (however, it should be noted that we have not tested the external Lis solver with Intel compilers).
-
-Git
----
-
-The Git repository of SICOPOLIS is kindly hosted by the GitLab system of the Alfred Wegener Institute for Polar and Marine Research (AWI) in Bremerhaven, Germany. Front page `here <https://gitlab.awi.de/sicopolis/sicopolis/>`__.
-
-Cloning the latest develop or ad revision::
-
-  git clone --branch develop \
-  https://gitlab.awi.de/sicopolis/sicopolis.git
-
-  git clone --branch ad \
-  https://gitlab.awi.de/sicopolis/sicopolis.git
-
-(Cloning with SSH instead of HTTPS is also available. See the above GitLab front page link for details.)
-
-You should then have a new directory ``sicopolis`` that contains the entire program package.
+We have tested SICOPOLIS-AD v2 on gfortran/gcc v5.4.0, v7.2.0 and v8.5.0, any intermediate versions should work just as well. We have also tested it on ifort/icc v18.0.0 (however, it should be noted that we have not tested the external Lis solver with Intel compilers).
 
 Lis (1.4.43 or newer)
----------------------
+=====================
 
-Lis installation is mandatory to use shallow-shelf/shelfy-stream dynamics in simulations. Install Lis as explained in :ref:`Dependencies/Lis <dependencies-lis>`. The following commands might be helpful, they are written for the latest version at the time of writing::
+Lis installation is mandatory to use shallow-shelf/shelfy-stream dynamics in simulations. Install Lis as explained in :ref:`Dependencies/Lis <dependencies-lis>`.
+
+The following commands might be helpful, they are written for the latest version at the time of writing::
 
   wget https://www.ssisc.org/lis/dl/lis-2.0.30.zip
   unzip lis-2.0.30.zip
@@ -67,9 +47,11 @@ For AD purposes, we compile the code using the ``src/MakefileTapenade`` makefile
 **NOTE**: Some users have reported needing to extend their ``LD_LIBRARY_PATH`` with the location of ``${LISDIR}/lib`` in order to find ``liblis.so.0``.
 
 NetCDF (3.6.x or newer)
------------------------
+=======================
 
-NetCDF installation is mandatory since it is a powerful library with widespread use for I/O with a machine-independent data format. Install NetCDF as explained in :ref:`Dependencies/NetCDF <dependencies-netcdf>`. In some cases, for example while working on a shared server which uses a module manager or Docker container, thing have to be set up differently. ``src/MakefileTapenade`` needs either the ``NETCDF_FORTRAN_DIR`` macro set or both ``NETCDF_F90_FLAG`` and ``LIB_NETCDF_F90_FLAG`` set (see code snippet from ``src/MakefileTapenade`` here). ::
+NetCDF installation is mandatory since it is a powerful library with widespread use for I/O with a machine-independent data format. Install NetCDF as explained in :ref:`Dependencies/NetCDF <dependencies-netcdf>`.
+
+In some cases, for example while working on a shared server which uses a module manager or Docker container, thing have to be set up differently. ``src/MakefileTapenade`` needs either the ``NETCDF_FORTRAN_DIR`` macro set or both ``NETCDF_F90_FLAG`` and ``LIB_NETCDF_F90_FLAG`` set (see code snippet from ``src/MakefileTapenade`` here). ::
 
   ifndef NETCDF_F90_FLAG
   ifndef LIB_NETCDF_F90_FLAG
@@ -164,42 +146,19 @@ You can also confirm that the files ``/usr/lib64/libnetcdff.so*`` and ``/usr/lib
 
 The instructions given in :ref:`Dependencies/NetCDF <dependencies-netcdf>`, and these two cases should help cover most of the issues with the installation of NetCDF.
 
-Unix-like system
-----------------
+Downloading SICOPOLIS-AD v2
+===========================
 
-A Unix-like system, e.g. Linux (Ubuntu, CentOS, Fedora, Redhat, etc.), MacOS is required to run both SICOPOLIS and SICOPOLIS-AD v2.
+As described in the ":ref:`getting_started`" section. However, when using Git, the ``ad`` branch should be cloned::
 
-Setting up SICOPOLIS
-====================
+  git clone --branch ad \
+      https://gitlab.awi.de/sicopolis/sicopolis.git
 
-The Git repository of SICOPOLIS is kindly hosted by the GitLab system of the `Alfred Wegener Institute for Polar and Marine Research (AWI) <https://www.awi.de/>`__ in Bremerhaven, Germany. 
-
-* Front page: `Front page: https://gitlab.awi.de/sicopolis/sicopolis/ <https://gitlab.awi.de/sicopolis/sicopolis/>`__
-
-* Cloning the latest ``ad`` (the branch most relevant to us) revision with Git::
-
-    git clone --branch ad \
-    https://gitlab.awi.de/sicopolis/sicopolis.git
-
-  Cloning with SSH instead of HTTPS is also available. See the above GitLab link for details.
-
-* Tagged versions of SICOPOLIS can be accessed from the `archive <http://www.sicopolis.net/archive/>`__.
-
-SICOPOLIS and SICOPOLIS-AD v2 applications are built using a configuration header file in ``runs/headers``. A typical user setup involves copying over example configuration files from ``runs/headers/templates`` (see below), and suitably modifying one of them for custom runs.
+Tagged versions of SICOPOLIS-AD are also available from `Zenodo <https://doi.org/10.5281/zenodo.3686392>`__.
 
 Initial configuration
 ===================== 
 
-In addition to the steps above, the following steps need to be performed from the root of the repository\:
+As described in the ":ref:`getting_started`" section.
 
-* Copy template header files from ``runs/headers/templates`` to ``runs/headers`` so that SICOPOLIS can read one of these header files for the simulations desired by the user. Also, one can modify them suitably for their own custom simulations. The original files are always stored in ``runs/headers/templates`` for reference. Run the following command from the root directory of the repository::
-
-    ./copy_templates.sh
-
-* Get the input data files needed for both Greenland and Antarctica. These files are stored on a server and needed for various inputs such as geothermal heat flux, physical parameters, height of the ice base and lithosphere, precipitation, definition of regions for heterogenous basal sliding, etc. Run the following command from the root directory of the repository::
-
-    ./get_input_files.sh
-
-* Locate the file ``sico_environment.sh`` in the directory ``sicopolis/runs``, open it with a text editor, and replace the "Default" entry for ``SICO_INSTITUTION`` by the name of your institution (max. 256 characters). This is just for bookkeping purposes.
-
-Now, you are ready to use SICOPOLIS-AD v2, as described in :ref:`Running SICOPOLIS-AD v2 <running>`!
+Now you should be ready to use SICOPOLIS-AD v2, as described in :ref:`Running SICOPOLIS-AD v2 <running>`.

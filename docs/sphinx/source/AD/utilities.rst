@@ -1,8 +1,5 @@
 .. _utilities:
 
-Utilities
-*********
-
 Continuous Integration (CI)
 ===========================
 

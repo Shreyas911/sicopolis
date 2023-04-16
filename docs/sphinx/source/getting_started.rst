@@ -38,14 +38,19 @@ Download an archive
 Initial configuration
 =====================
 
-1. Go to the new directory "sicopolis" and execute the following bash scripts::
+1. Change to the new directory "sicopolis" and execute the bash script copy_templates.sh::
 
       ./copy_templates.sh
+
+   It copies several scripts from "runs/templates" to "runs" and the run-specs header files from "runs/headers/templates" to "runs/headers". This allows modifying the scripts and headers suitably if needed, while the original files are always stored in the respective templates subdirectories for reference. 
+
+2. Execute the bash script get_input_files.sh::
+
       ./get_input_files.sh
 
-   The latter can be configured if you want to download only selected input files (default is downloading everything). To do so, open it with a text editor and change the flag variables before execution.
+  It downloads the input data files for the several model domains (Antarctica, Greenland, etc.) These files are stored on a server (`Zenodo archive <https://doi.org/10.5281/zenodo.6371122>`__) and needed for various inputs such as topography, precipitation, geothermal heat flux, etc. The script can be configured before execution if the input files are only needed for selected domains (default is downloading everything). To do so, open it with a text editor and change the flag variables according to the instructions in the script.
 
-2. Locate the file sico_configs.sh in the directory sicopolis/runs, and open it with a text editor.
+3. Locate the file sico_configs.sh in the directory "runs", and open it with a text editor.
 
    Set the flags LIS_FLAG, OPENMP_FLAG and LARGE_DATA_FLAG according to your needs. 
 
@@ -57,7 +62,7 @@ Initial configuration
 
    Depending on your system, some additional settings might have to be added in sico_configs.sh ("module load" commands for dynamic loading etc.).
 
-3. Locate the file sico_environment.sh in the directory sicopolis/runs, open it with a text editor, and replace the "Default" entry for SICO_INSTITUTION by the name of your institution (max. 256 characters).
+4. Locate the file sico_environment.sh in the directory "runs", open it with a text editor, and replace the "Default" entry for SICO_INSTITUTION by the name of your institution (max. 256 characters).
 
 Directory structure
 ===================

@@ -27,7 +27,7 @@ For the **Intel compiler**, building from the source code is required. The C and
                 --disable-netcdf-4
     make install
 
-* Since version 4.2, the C and Fortran libraries must be installed separately. If NetCDF-4 support is dispensable, the following installation should work (tested under openSUSE Leap 15.2 and icc/ifort 19.1 with versions netcdf-c-4.8.0 and netcdf-fortran-4.5.3 as of January 25, 2021).
+* Since version 4.2, the C and Fortran libraries must be installed separately. If NetCDF-4 support is dispensable, the following installation should work (tested under openSUSE Leap 15.2 and icc/ifort 19.1 with versions netcdf-c-4.8.0 and netcdf-fortran-4.5.3).
 
   Change to the source directory of the C library, then::
 
@@ -52,7 +52,7 @@ For the **Intel compiler**, building from the source code is required. The C and
                 --disable-netcdf-4 --enable-logging
     make install
 
-* A complete build with NetCDF-4 support requires additional libraries. Download the sources of the data-compression library **zlib** (https://www.zlib.net/), the Hierarchical Data Format **HDF5** (https://www.hdfgroup.org/) and the **NetCDF-4** C and Fortran libraries (https://doi.org/10.5065/D6H70CW6). Unpack all archives.
+* The recommended, complete build with NetCDF-4 support requires additional libraries. Download the sources of the data-compression library **zlib** (https://www.zlib.net/), the Hierarchical Data Format **HDF5** (https://www.hdfgroup.org/) and the **NetCDF-4** C and Fortran libraries (https://doi.org/10.5065/D6H70CW6). Unpack all archives.
 
   Step 1: Installation of **zlib**. Change to the source directory, then::
 
@@ -114,7 +114,7 @@ For the **Intel compiler**, building from the source code is required. The C and
     make install
     make check
 
-  This was tested under openSUSE Leap 15.3 and icc/ifort 19.1 with versions netcdf-c-4.8.1 and netcdf-fortran-4.5.4 as of March 26, 2022.
+  This was tested under openSUSE Leap 15.3 and icc/ifort 19.1 with versions zlib-1.2.11, hdf5-1.12.1, netcdf-c-4.8.1 and netcdf-fortran-4.5.4.
 
   If installation from a package manager does not work out for GCC, try the above procedure, replacing everywhere 'icc' and 'ifort' by 'gcc' and 'gfortran', respectively.
 
@@ -129,7 +129,7 @@ Lis
 
 Lis (Library of Iterative Solvers for linear systems) is a software library for solving discretized linear equations (Nishida :cite:`nishida_2010`).
 
-Download the source of Lis as a zip archive from https://www.ssisc.org/lis/ (as of January 23, 2021: lis-2.0.30.zip). Unzip the archive and change to the source directory.
+Download the source of Lis as a zip archive from https://www.ssisc.org/lis/. Unzip the archive and change to the source directory.
 
 For **GCC**, install lis by executing::
 
@@ -142,7 +142,7 @@ For **GCC**, install lis by executing::
               FCFLAGS="-mcmodel=medium" FFLAGS="-mcmodel=medium"
   make install
 
-This has been tested under openSUSE Leap 15.2 and Linux Mint 20.1 (some modifications might be needed under different systems).
+This was tested under openSUSE Leap 15.2 and Linux Mint 20.1 with lis-2.0.30. Some modifications might be needed under different systems.
 
 For the **Intel compiler**, replace 'gcc' and 'gfortran' by 'icc' and 'ifort', respectively.
 
