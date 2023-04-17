@@ -4,18 +4,25 @@
    contain the root `toctree` directive.
 
 SICOPOLIS User Manual
-=====================
+*********************
 
 .. only:: html
 
-   Authors
-   -------
+.. image:: GrIS_Midnight_Sun_with_Halo_June_1995.jpg
+   :width: 500 px
+   :alt: Midnight Sun with Halo over the Greenland Ice Sheet
+   :align: center
+
+\ 
+
+Authors
+=======
 
    Ralf Greve, Shreyas Sunil Gaikwad
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Contents
    :numbered: 5
 
    introduction
