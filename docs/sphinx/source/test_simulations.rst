@@ -3,7 +3,7 @@
 Test simulations
 ****************
 
-These are a number of computationally rather inexpensive test runs, of which the :ref:`run-specs header files <getting_started-run_specs_headers>` are contained in the SICOPOLIS repository.
+These are a number of computationally rather inexpensive test simulations, of which the :ref:`run-specs header files <getting_started-run_specs_headers>` are contained in the SICOPOLIS repository.
 
 Run v5_vialov3d25
   | 3-d version of the 2-d Vialov profile (Vialov :cite:`vialov_1958`),
@@ -56,3 +56,40 @@ Run v5_nhem80_nt012_new
 
 Run v5_heino50_st
   | ISMIP HEINO standard run ST, SIA, resolution 50 km, :math:`t=0\ldots{}200\,\mathrm{ka}` (Calov et al. :cite:`calov_etal_2010`).
+
+-------------
+
+**Computing times:**
+
++-----------------------------------+------------+---------------------+--------------------+
+| Run                               | Model time | Time step\ :sup:`†` | CPU time\ :sup:`‡` |
++===================================+============+=====================+====================+
+| v5\_vialov3d25                    | 100 ka     | 20 a                | 1.0 min            |
++-----------------------------------+------------+---------------------+--------------------+
+| v5\_emtp2sge25\_expA              | 200 ka     | 20 a                | 3.9 min            |
++-----------------------------------+------------+---------------------+--------------------+
+| v5\_grl16\_bm5\_ss25ka            | 25 ka      | 5 a                 | 9.7 min            |
++-----------------------------------+------------+---------------------+--------------------+
+| v5\_ant40\_b2\_ss25ka             | 25 ka      | 10 a                | 5.0 min            |
++-----------------------------------+------------+---------------------+--------------------+
+| v5\_grl20\_b2\_paleo21            | 140 ka     | 5 a                 | 0.8 hrs            |
++-----------------------------------+------------+---------------------+--------------------+
+| v5\_grl10\_b2\_paleo21\ :sup:`\*` | 9 ka       | 1 a                 | 1.0 hrs            |
++-----------------------------------+------------+---------------------+--------------------+
+| v5\_grl10\_b2\_future21\_ctrl     | 100 a      | 1 a                 | 0.9 min            |
++-----------------------------------+------------+---------------------+--------------------+
+| v5\_grl10\_b2\_future21\_asmb     | 100 a      | 1 a                 | 0.9 min            |
++-----------------------------------+------------+---------------------+--------------------+
+| v5\_ant64\_b2\_spinup09\_init100a | 100 a      | 2 / 10 a\ :sup:`†`  | 4.1 sec            |
++-----------------------------------+------------+---------------------+--------------------+
+| v5\_ant64\_b2\_spinup09\_fixtopo  | 140 ka     | 5 / 10 a\ :sup:`†`  | 0.7 hrs            |
++-----------------------------------+------------+---------------------+--------------------+
+| v5\_ant64\_b2\_spinup09           | 500 a      | 2 / 10 a\ :sup:`†`  | 0.5 min            |
++-----------------------------------+------------+---------------------+--------------------+
+| v5\_ant64\_b2\_future09\_ctrl     | 100 a      | 2 / 10 a\ :sup:`†`  | 6.1 sec            |
++-----------------------------------+------------+---------------------+--------------------+
+
+| Table 1: Model times, time steps and computing (CPU) times for the EISMINT, Greenland and Antarctica test simulations contained in the script multi_sico_1.sh, run with SICOPOLIS V5-dev (branch develop, revision 9c909c3c2) and the Intel Fortran Compiler 19.1 for Linux (optimization options -xHOST -O3 -no-prec-div) on a 12-Core Intel Xeon Gold 6256 (3.6 GHz) PC under openSUSE Leap 15.4.
+| \ :sup:`†`: If one value is given, this is the common dynamic (velocity, ice thickness) and thermodynamic (temperature, water content, age) time step. If two values are given (marked by the dagger (\ :sup:`†`) symbol), the first one is the dynamic, the second one the thermodynamic time step.
+| \ :sup:`‡`: All runs were done on a single core only. The v5_ant64_b2_xxx runs that include ice shelves can be done on multiple cores using OpenMP for the SSA solver. However, at the employed, low resolution of 64 km the solver does not scale well, and the gain in wall clock time by using multiple cores is very small.
+| \ :sup:`\*`: For this run, see the remark in the :ref:`subsection on the resolution-doubler tool <plotting_and_tools-res_dbl>`.

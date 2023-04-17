@@ -162,8 +162,7 @@ Alternatively, if you prefer to run :ref:`all EISMINT, Antarctica and Greenland 
 
 For further options, try ``./multi_sico_1.sh -h``.
 
-**Computing times:**
-The approximate computing times for the simulations are listed in Table... [TBD].
+Approximate computing times are listed in the ":ref:`Test simulations <test_simulations>`" section.
 
 .. _getting_started-output:
 

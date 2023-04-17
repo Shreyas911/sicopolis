@@ -13,8 +13,23 @@ Legal notes
 ===========
 
 | Copyright 2009–2023 SICOPOLIS Authors
-| (Ralf Greve, Jorge Bernales, Sebastian Beyer, Heinz Blatter, Reinhard Calov, Thorben Dunse, Eduardo Flandez, Shreyas Sunil Gaikwad, Ben Galton-Fenzi, Thomas Gölles, Björn Grieger, Philipp Hancke, Laurent Hascoet, Patrick Heimbach, Nina Kirchner, Thomas Kleiner, Sascha Knell, Anne Le Brocq, Liz Curry-Logan, Sri Hari Krishna Narayanan, Alex Robinson, Fuyuki Saito, Tatsuru Sato, Marius Schäfer, Matthias Scheiter, Oliver J. Stenzel, Malte Thoma, Roland Warner).
+| (Ralf Greve, Jorge Bernales, Sebastian Beyer, Heinz Blatter, Reinhard Calov, Liz Curry-Logan, Thorben Dunse, Eduardo Flandez, Shreyas Sunil Gaikwad, Ben Galton-Fenzi, Thomas Gölles, Björn Grieger, Philipp Hancke, Laurent Hascoet, Patrick Heimbach, Nina Kirchner, Thomas Kleiner, Sascha Knell, Anne Le Brocq, Sri Hari Krishna Narayanan, Alex Robinson, Fuyuki Saito, Tatsuru Sato, Marius Schäfer, Matthias Scheiter, Oliver J. Stenzel, Malte Thoma, Roland Warner).
 
 SICOPOLIS is free and open-source software. It can be redistributed and/or modified under the terms of the `GNU General Public License <https://www.gnu.org/licenses/>`__ as published by the Free Software Foundation, either version 3 of the License, or (at the user's option) any later version.
 
 SICOPOLIS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the `GNU General Public License <https://www.gnu.org/licenses/>`__ for more details.
+
+Acknowledgements
+================
+
+Thanks a lot for helpful suggestions, comments and questions from many users around the world, including those not already listed as SICOPOLIS authors.
+
+Development of SICOPOLIS has been supported by grants/scholarships from
+
+* Federal State of Hesse, Germany,
+* German National Academic Foundation (Studienstiftung des deutschen Volkes),
+* German Science Foundation (Deutsche Forschungsgemeinschaft DFG),
+* Alexander von Humboldt Foundation,
+* Institute of Low Temperature Science, Hokkaido University,
+* Japan Society for the Promotion of Science (JSPS),
+* Japanese Ministry of Education, Culture, Sports, Science and Technology (MEXT).

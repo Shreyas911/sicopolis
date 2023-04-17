@@ -3,6 +3,8 @@
 Plotting and tools
 ******************
 
+.. _plotting_and_tools-plotting:
+
 Plotting
 ========
 
@@ -16,6 +18,8 @@ The output described in ":ref:`getting_started-output`" can be visualized with a
   %    (transposition needed because MATLAB is column-oriented)
   imagesc(x*1e-3,y*1e-3,surf'); axis xy equal; caxis([0 3200]); colorbar
 
+.. _plotting_and_tools-ismip_output:
+
 Make ISMIP output
 =================
 
@@ -24,6 +28,8 @@ Fortran program (located in sicopolis/tools/make_ismip_output) that generates `I
   ./tools.sh -p make_ismip_output -m run_name
 
 For further options, try ``./tools.sh -h``.
+
+.. _plotting_and_tools-res_dbl:
 
 Resolution doubler
 ==================
