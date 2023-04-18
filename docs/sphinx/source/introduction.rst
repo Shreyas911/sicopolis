@@ -9,6 +9,14 @@ The model is based on the shallow ice approximation for grounded ice, the shallo
 
 The coding is based on a consequent low-tech philosophy. All structures are kept as simple as possible, and advanced coding techniques are only employed where it is deemed appropriate. The use of external libraries is kept at an absolute minimum, which makes the installation very easy and fast.
 
+Resources
+=========
+
+* Model website: http://www.sicopolis.net/
+* User manual: https://sicopolis.readthedocs.io/
+* GitLab repository: https://gitlab.awi.de/sicopolis/sicopolis/
+* SICOPOLIS community @ Zenodo: https://zenodo.org/communities/sicopolis/
+
 Authorship
 ==========
 
