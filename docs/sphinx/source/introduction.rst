@@ -9,11 +9,76 @@ The model is based on the shallow ice approximation for grounded ice, the shallo
 
 The coding is based on a consequent low-tech philosophy. All structures are kept as simple as possible, and advanced coding techniques are only employed where it is deemed appropriate. The use of external libraries is kept at an absolute minimum, which makes the installation very easy and fast.
 
+Authorship
+==========
+
++-----------------------------------+---------------------------------------------------------+
+| Name (affiliation)                | Area of contribution                                    |
++===================================+=========================================================+
+| Jorge Bernales (UU)               | Hybrid shallow-ice-shelfy-stream dynamics               |
++-----------------------------------+---------------------------------------------------------+
+| Sebastian Beyer (AWI)             | Subglacial hydrology                                    |
++-----------------------------------+---------------------------------------------------------+
+| Heinz Blatter (ETHZ)              | Enthalpy method                                         |
++-----------------------------------+---------------------------------------------------------+
+| Reinhard Calov (PIK)              | Coupling with climate models, mass balance conservation |
++-----------------------------------+---------------------------------------------------------+
+| Liz Curry-Logan (UT Austin)       | Principal developer of SICOPOLIS-AD v1                  |
++-----------------------------------+---------------------------------------------------------+
+| Thorben Dunse (HVL)               | Calving, Austfonna                                      |
++-----------------------------------+---------------------------------------------------------+
+| Eduardo Flandez (UACh)            | Mocho-Choshuenco ice cap                                |
++-----------------------------------+---------------------------------------------------------+
+| Shreyas Sunil Gaikwad (UT Austin) | Principal developer of SICOPOLIS-AD v2                  |
++-----------------------------------+---------------------------------------------------------+
+| Ben Galton-Fenzi (UTAS)           | Ice-shelf basal melting                                 |
++-----------------------------------+---------------------------------------------------------+
+| Thomas Gölles (UNIS)              | Tracer transport, scripting                             |
++-----------------------------------+---------------------------------------------------------+
+| Ralf Greve (HU)                   | Principal developer of SICOPOLIS                        |
++-----------------------------------+---------------------------------------------------------+
+| Björn Grieger (ESAC)              | Martian north polar ice cap                             |
++-----------------------------------+---------------------------------------------------------+
+| Philipp Hancke (TUD)              | Tibetan Plateau                                         |
++-----------------------------------+---------------------------------------------------------+
+| Laurent Hascoet (INRIA)           | Developer of the AD tool Tapenade                       |
++-----------------------------------+---------------------------------------------------------+
+| Patrick Heimbach (UT Austin)      | Automatic differentiation (AD)                          |
++-----------------------------------+---------------------------------------------------------+
+| Nina Kirchner (SU)                | Tibetan Plateau                                         |
++-----------------------------------+---------------------------------------------------------+
+| Thomas Kleiner (AWI)              | Subglacial hydrology                                    |
++-----------------------------------+---------------------------------------------------------+
+| Sascha Knell (TUD)                | Elastic lithosphere                                     |
++-----------------------------------+---------------------------------------------------------+
+| Anne Le Brocq (UoE)               | Subglacial hydrology                                    |
++-----------------------------------+---------------------------------------------------------+
+| Sri Hari Krishna Narayanan (ANL)  | Automatic differentiation (AD)                          |
++-----------------------------------+---------------------------------------------------------+
+| Alex Robinson (UCM)               | Coupling with climate models                            |
++-----------------------------------+---------------------------------------------------------+
+| Fuyuki Saito (JAMSTEC)            | Code optimization, scripting                            |
++-----------------------------------+---------------------------------------------------------+
+| Tatsuru Sato (NIT)                | Ice shelves                                             |
++-----------------------------------+---------------------------------------------------------+
+| Marius Schäfer (UACh)             | Northern Patagonian ice field, calving                  |
++-----------------------------------+---------------------------------------------------------+
+| Matthias Scheiter (ANU)           | Mocho-Choshuenco ice cap                                |
++-----------------------------------+---------------------------------------------------------+
+| Oliver J. Stenzel (MPS)           | Martian north polar ice cap                             |
++-----------------------------------+---------------------------------------------------------+
+| Malte Thoma (AWI)                 | Scripting                                               |
++-----------------------------------+---------------------------------------------------------+
+| Roland Warner (UTAS)              | Curvilinear coordinates                                 |
++-----------------------------------+---------------------------------------------------------+
+
+| **Affiliations:** 
+| ANL: Argonne National Laboratory, ANU: Australian National University, AWI: Alfred Wegener Institute for Polar and Marine Research, ESAC: European Space Astronomy Centre, ETHZ: Swiss Federal Institute of Technology in Zurich, HU: Hokkaido University, HVL: Western Norway University of Applied Sciences, INRIA: National Institute for Research in Digital Science and Technology, JAMSTEC: Japan Agency for Marine-Earth Science and Technology, MPS: Max Planck Institute for Solar System Research, NIT: National Institute of Technology, Ichinoseki College, PIK: Potsdam Institute for Climate Impact Research, SU: Stockholm University, TUD: Darmstadt University of Technology, UACh: Austral University of Chile, UCM: Complutense University of Madrid, UoE: University of Exeter, UNIS: University Centre in Svalbard, UTAS: University of Tasmania, UT Austin: University of Texas at Austin, UU: Utrecht University.
+
 Legal notes
 ===========
 
-| Copyright 2009–2023 SICOPOLIS Authors
-| (Ralf Greve, Jorge Bernales, Sebastian Beyer, Heinz Blatter, Reinhard Calov, Liz Curry-Logan, Thorben Dunse, Eduardo Flandez, Shreyas Sunil Gaikwad, Ben Galton-Fenzi, Thomas Gölles, Björn Grieger, Philipp Hancke, Laurent Hascoet, Patrick Heimbach, Nina Kirchner, Thomas Kleiner, Sascha Knell, Anne Le Brocq, Sri Hari Krishna Narayanan, Alex Robinson, Fuyuki Saito, Tatsuru Sato, Marius Schäfer, Matthias Scheiter, Oliver J. Stenzel, Malte Thoma, Roland Warner).
+Copyright 2009–2023 SICOPOLIS Authors.
 
 SICOPOLIS is free and open-source software. It can be redistributed and/or modified under the terms of the `GNU General Public License <https://www.gnu.org/licenses/>`__ as published by the Free Software Foundation, either version 3 of the License, or (at the user's option) any later version.
 
@@ -22,14 +87,16 @@ SICOPOLIS is distributed in the hope that it will be useful, but WITHOUT ANY WAR
 Acknowledgements
 ================
 
-Thanks a lot for helpful suggestions, comments and questions from many users around the world, including those not already listed as SICOPOLIS authors.
+Thanks a lot for helpful support, suggestions, comments and questions from many colleagues around the world, including those not already listed as SICOPOLIS authors.
 
 Development of SICOPOLIS has been supported by grants/scholarships from
 
+* Alexander von Humboldt Foundation, Germany,
 * Federal State of Hesse, Germany,
 * German National Academic Foundation (Studienstiftung des deutschen Volkes),
 * German Science Foundation (Deutsche Forschungsgemeinschaft DFG),
-* Alexander von Humboldt Foundation,
-* Institute of Low Temperature Science, Hokkaido University,
+* Institute of Low Temperature Science, Hokkaido University, Japan,
 * Japan Society for the Promotion of Science (JSPS),
-* Japanese Ministry of Education, Culture, Sports, Science and Technology (MEXT).
+* Japanese Ministry of Education, Culture, Sports, Science and Technology (MEXT),
+* U.S. Department of Energy, Office of Science,
+* U.S. National Science Foundation (NSF).
