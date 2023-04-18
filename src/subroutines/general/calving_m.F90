@@ -77,11 +77,7 @@ contains
   call error(errormsg)
 #endif
 
-#if (defined(H0_FLOAT))
-  H0_flt = H0_FLOAT
-#else
-  H0_flt = 0.0_dp
-#endif
+
 
 !-------- Sea depth --------
 
@@ -89,7 +85,7 @@ contains
 
 ! ------- At least one ocean neighbours to allow calving? -------
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
   do i=0, IMAX
   do j=0, JMAX
@@ -114,7 +110,7 @@ contains
   end do
   end do
 
-#else /* OpenAD */
+#else /* Tapenade */
 
   do i=0, IMAX
   do j=0, JMAX
@@ -139,13 +135,72 @@ contains
   end do
   end do
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
   calving = calving + calv_ice
 
   end subroutine constant_calving
   
-  
+  !-------------------------------------------------------------------------------
+!> Subroutine which applies a velocity dependent specific mass loss at grid cells which have ocean at 
+!> one of its neighbouring grid cells 
+!<------------------------------------------------------------------------------
+  subroutine velocity_calving()
+
+  implicit none
+
+  real(dp)                           :: year_sec_inv
+  real(dp)                           :: scale_factor
+  real(dp)                           :: cellwidth
+  real(dp), dimension(0:JMAX,0:IMAX) :: calv_ice,vmean
+  integer(i4b)                       :: i, j
+  integer(i4b)                       :: im1, ip1, jm1, jp1, n_ocn
+
+!-------- Term abbreviations --------
+
+  year_sec_inv = 1.0_dp/year2sec
+
+
+!-------- Setting of parameters --------
+
+  cellwidth=DX
+#if (defined(VELOCITY_CALV))
+  scale_factor = VELOCITY_CALV * year_sec_inv
+#else
+  errormsg = ' >>> calving_constant_ice: VELOCITY_CALV undefined!'
+  call error(errormsg)
+#endif
+
+! ------- At least one ocean neighbours to allow calving? -------
+
+  do i=0, IMAX
+  do j=0, JMAX
+    ! Define neighbor indices
+    im1 = max(i-1,1)
+    ip1 = min(i+1,IMAX)
+    jm1 = max(j-1,1)
+    jp1 = min(j+1,JMAX)
+    
+    n_ocn=count([mask(j,im1),mask(j,ip1),mask(jm1,i),mask(jp1,i)].gt. 1 )
+
+
+!-------- Constant calving --------
+
+    if ( (mask(j,i) == 0) .and. (n_ocn .gt. 0) ) then
+       !write(*,*)  'CALVING!'
+       vmean(j,i)=sqrt(vx_m(j,i)**2+vy_m(j,i)**2)
+       calv_ice(j,i) = scale_factor*H(j,i)*vmean(j,i)/(cellwidth*1000)
+    else
+       calv_ice(j,i) = 0.0_dp
+    end if
+
+  end do
+  end do
+
+
+  calving = calving + calv_ice
+
+  end subroutine velocity_calving
 !-------------------------------------------------------------------------------
 !> Calving of grounded ("underwater") ice when floatation criterion is fullfilled
 !> acording to the calving law proposed by Dunse et al 2011 (JOG)  
@@ -202,7 +257,7 @@ contains
 
 !-------- Calving of "underwater ice" --------
 
-#if !defined(ALLOW_OPENAD) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
   where ( (mask == 0).and.(H < rhosw_rho_ratio*H_sea+H0_flt) )
      calv_uw_ice = calv_uw_coeff * H**r1_calv_uw * H_sea**r2_calv_uw
@@ -210,11 +265,11 @@ contains
      calv_uw_ice = 0.0_dp
   end where
 
-#else /* OpenAD */
+#else /* Tapenade */
 
   do i=0, IMAX
   do j=0, JMAX
-     if ( (mask(j,i) == 0) .and. (H(j,i) < rhosw_rho_ratio*H_sea(j,i)) ) then
+     if ( (mask(j,i) == 0) .and. (H(j,i) < rhosw_rho_ratio*H_sea(j,i)+H0_flt) ) then
         calv_uw_ice(j,i) = calv_uw_coeff * H(j,i)**r1_calv_uw * H_sea(j,i)**r2_calv_uw
      else
         calv_uw_ice(j,i) = 0.0_dp
@@ -222,7 +277,7 @@ contains
   end do
   end do
 
-#endif /* Normal vs. OpenAD */
+#endif /* Normal vs. Tapenade */
 
   calving = calving + calv_uw_ice
 

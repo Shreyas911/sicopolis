@@ -5,19 +5,19 @@
 
 fldr = "/home/marius/Models/Sicopolis/runs/headers"
 
-file_in = "sico_specs_Run_CALV_UW.h"
+file_in = "sico_specs_const_calv.h"
 
 
-params = ["CALV_UW_COEFF"]
+params = ["KONST_CALV"]
 
-values = ["5.0d-01","5.0d-05","5.0d-04","5.0d-03","5.0d-02","5.0d-06"]
+values = ["0.0d00","100.0d00","500d00","750d00","1000d00"]
 
 
 for i in range(len(values)):
 
     #print(i)
 
-    file_out = "sico_specs_Run_CALV_UW_" + str(i+1) + ".h"
+    file_out = "sico_specs_const_calv_" + str(i+1) + ".h"
 
     with open(file_in, 'r') as fin, open(file_out, 'w') as fout:
 

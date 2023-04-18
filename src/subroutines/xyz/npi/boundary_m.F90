@@ -60,7 +60,7 @@ subroutine boundary(time, dtime, dxi, deta, &
 
 #if ((MARGIN==2) \
       && (MARINE_ICE_FORMATION==2) \
-      && (MARINE_ICE_CALVING==9 || MARINE_ICE_CALVING==8))
+      && (MARINE_ICE_CALVING==9 || MARINE_ICE_CALVING==8 || MARINE_ICE_CALVING==10))
   use calving_m
 #endif
 
@@ -1266,6 +1266,10 @@ call constant_calving()
 
 #elif ((MARGIN==2) && (MARINE_ICE_FORMATION==2) && (MARINE_ICE_CALVING==9))
 call calving_underwater_ice()
+
+
+#elif ((MARGIN==2) && (MARINE_ICE_FORMATION==2) && (MARINE_ICE_CALVING==10))
+call velocity_calving()
 
 #endif
 
