@@ -884,7 +884,7 @@
 !                         1 : Initial conditions are written to
 !                             output files
 
-#define OUTPUT 3
+#define OUTPUT 2
 !                         1 : Writing of time-slice data in files
 !                             '.nc' with prescribed time step
 !                         2 : Writing of time-slice data in files
@@ -902,7 +902,7 @@
 !                         1 : Full set of 2-d and 3-d fields written
 !                             as time-slice data (only for OUTPUT==1,2)
 
-#define OUTPUT_FLUX_VARS 2
+#define OUTPUT_FLUX_VARS 1
 !                         Treatment of flux-type variables (SMB etc.) in both
 !                         the time-slice and time-series outputs:
 !                         1 : Snapshots
@@ -911,16 +911,16 @@
 !                              time-slice output with all 3-d fields for
 !                              OUTPUT==3, in which case snapshots are written)
 
-#define DTIME_OUT0 50000.0d0
+#define DTIME_OUT0 0.0d0
 !                             Time step (in a) for writing of
 !                             time-slice data (only for OUTPUT==1,3)
 
-#define N_OUTPUT 1
+#define N_OUTPUT 3
 !                             Number of specified times for writing of
 !                             time-slice data (only for OUTPUT==2,3,
 !                             not more than 100)
 
-#define TIME_OUT0 (/ 200000.0d0 /)
+#define TIME_OUT0 (/ 5000.0d0, 50000.0d0, 200000.0d0/)
 !                             Times (in a) for writing of time-slice
 !                             data (only for OUTPUT==2,3, in increasing
 !                             order from #1 to #N_OUTPUT)

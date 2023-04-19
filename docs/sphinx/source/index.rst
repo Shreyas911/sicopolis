@@ -1,22 +1,36 @@
-.. SICOPOLIS-AD v2 documentation master file, created by
+.. SICOPOLIS documentation master file, created by
    sphinx-quickstart on Thu Mar 31 13:37:38 2022.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to SICOPOLIS's user manual
-===========================================
+SICOPOLIS User Manual
+*********************
 
 .. only:: html
 
-   Authors
-   -------
+.. image:: GrIS_Midnight_Sun_with_Halo_June_1995.jpg
+   :width: 500 px
+   :alt: Midnight Sun with Halo over the Greenland Ice Sheet
+   :align: center
 
-   Ralf Greve, Shreyas Sunil Gaikwad, Laurent Hascoet, Sri Hari Krishna Narayanan, Liz Curry-Logan, Patrick Heimbach
+\ 
+
+Authors
+=======
+
+   Ralf Greve, Shreyas Sunil Gaikwad
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Contents
    :numbered: 5
 
-   files_and_dirs
+   introduction
+   getting_started
+   dependencies
+   test_simulations
+   plotting_and_tools
+   new_domain
    AD/AD
+   how_to_contribute
+   references

@@ -18,8 +18,8 @@
 # -- Project information -----------------------------------------------------
 
 project = 'SICOPOLIS'
-copyright = '1997-, SICOPOLIS contributors'
-author = 'Ralf Greve, Shreyas Sunil Gaikwad, Sri Hari Krishna Narayanan, Laurent Hascoet, Liz Curry-Logan, Patrick Heimbach'
+copyright = '2009-2023, SICOPOLIS Authors'
+author = 'Ralf Greve, Shreyas Sunil Gaikwad'
 
 
 # -- General configuration ---------------------------------------------------
@@ -30,7 +30,10 @@ author = 'Ralf Greve, Shreyas Sunil Gaikwad, Sri Hari Krishna Narayanan, Laurent
 extensions = ['nbsphinx', 'IPython.sphinxext.ipython_console_highlighting',
               'IPython.sphinxext.ipython_directive', 'sphinx.ext.intersphinx', 'sphinxcontrib.bibtex']
 
-bibtex_bibfiles = ['AD/papers.bib']
+bibtex_bibfiles = ['references.bib']
+
+bibtex_default_style = 'plain'
+bibtex_reference_style = 'label'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -45,7 +48,6 @@ source_suffix = '.rst'
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['**.ipynb_checkpoints']
-
 
 # -- Options for HTML output -------------------------------------------------
 

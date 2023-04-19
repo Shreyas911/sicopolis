@@ -64,6 +64,9 @@ my_*
 /docs/doxygen/latex/*
 !/docs/doxygen/latex/.keep
 
+/docs/sphinx/build/*
+!/docs/sphinx/build/.keep
+
 **/.DS_Store
 
 /test_ad/tapenade_supported/ADFirstAidKit/*.gch
