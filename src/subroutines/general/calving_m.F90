@@ -9,7 +9,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2023 Ralf Greve, Thorben Dunse
+!! Copyright 2009-2023 Ralf Greve, Thorben Dunse, Marius Schaefer
 !!
 !! @section License
 !!
@@ -47,8 +47,8 @@ module calving_m
 contains
 
 !-------------------------------------------------------------------------------
-!> Subroutine which applies a constant specific mass loss at grid cells which have ocean in at 
-!> one of its neighbouring grid cells 
+!> Subroutine which applies a constant specific mass loss at grid cells
+!> which have ocean in at one of its neighbouring grid cells.
 !<------------------------------------------------------------------------------
   subroutine constant_calving()
 
@@ -57,7 +57,6 @@ contains
   real(dp)                           :: year_sec_inv
   real(dp)                           :: rhosw_rho_ratio
   real(dp)                           :: calv_const
-  real(dp)                           :: H0_flt
   real(dp), dimension(0:JMAX,0:IMAX) :: H_sea, calv_ice
   integer(i4b)                       :: i, j
   integer(i4b)                       :: im1, ip1, jm1, jp1, n_ocn
@@ -77,27 +76,22 @@ contains
   call error(errormsg)
 #endif
 
-
-
 !-------- Sea depth --------
 
   H_sea = max(z_sl - zl, 0.0_dp)   ! sea depth
 
 ! ------- At least one ocean neighbours to allow calving? -------
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
-
   do i=0, IMAX
   do j=0, JMAX
     ! Define neighbor indices
-    im1 = max(i-1,1)
+    im1 = max(i-1,0)
     ip1 = min(i+1,IMAX)
-    jm1 = max(j-1,1)
+    jm1 = max(j-1,0)
     jp1 = min(j+1,JMAX)
     
     n_ocn=count([mask(j,im1),mask(j,ip1),mask(jm1,i),mask(jp1,i)].gt. 1 )
 
-
 !-------- Constant calving --------
 
     if ( (mask(j,i) == 0) .and. (n_ocn .gt. 0) ) then
@@ -109,41 +103,14 @@ contains
 
   end do
   end do
-
-#else /* Tapenade */
-
-  do i=0, IMAX
-  do j=0, JMAX
-    ! Define neighbor indices
-    im1 = max(i-1,1)
-    ip1 = min(i+1,IMAX)
-    jm1 = max(j-1,1)
-    jp1 = min(j+1,JMAX)
-
-    n_ocn=count([mask(j,im1),mask(j,ip1),mask(jm1,i),mask(jp1,i)].gt. 1 )
-
-
-!-------- Constant calving --------
-
-    if ( (mask(j,i) == 0) .and. (n_ocn .gt. 0) ) then
-       !write(*,*)  'CALVING!'
-       calv_ice(j,i) = calv_const
-    else
-       calv_ice(j,i) = 0.0_dp
-    end if
-
-  end do
-  end do
-
-#endif /* Normal vs. Tapenade */
 
   calving = calving + calv_ice
 
   end subroutine constant_calving
   
-  !-------------------------------------------------------------------------------
-!> Subroutine which applies a velocity dependent specific mass loss at grid cells which have ocean at 
-!> one of its neighbouring grid cells 
+!-------------------------------------------------------------------------------
+!> Subroutine which applies a velocity dependent specific mass loss
+!> at grid cells which have ocean at one of its neighbouring grid cells.
 !<------------------------------------------------------------------------------
   subroutine velocity_calving()
 
@@ -152,14 +119,13 @@ contains
   real(dp)                           :: year_sec_inv
   real(dp)                           :: scale_factor
   real(dp)                           :: cellwidth
-  real(dp), dimension(0:JMAX,0:IMAX) :: calv_ice,vmean
+  real(dp), dimension(0:JMAX,0:IMAX) :: calv_ice, vmean
   integer(i4b)                       :: i, j
   integer(i4b)                       :: im1, ip1, jm1, jp1, n_ocn
 
 !-------- Term abbreviations --------
 
   year_sec_inv = 1.0_dp/year2sec
-
 
 !-------- Setting of parameters --------
 
@@ -176,13 +142,12 @@ contains
   do i=0, IMAX
   do j=0, JMAX
     ! Define neighbor indices
-    im1 = max(i-1,1)
+    im1 = max(i-1,0)
     ip1 = min(i+1,IMAX)
-    jm1 = max(j-1,1)
+    jm1 = max(j-1,0)
     jp1 = min(j+1,JMAX)
     
     n_ocn=count([mask(j,im1),mask(j,ip1),mask(jm1,i),mask(jp1,i)].gt. 1 )
-
 
 !-------- Constant calving --------
 
@@ -197,15 +162,14 @@ contains
   end do
   end do
 
-
   calving = calving + calv_ice
 
   end subroutine velocity_calving
+
 !-------------------------------------------------------------------------------
-!> Calving of grounded ("underwater") ice when floatation criterion is fullfilled
-!> acording to the calving law proposed by Dunse et al 2011 (JOG)  
+!> Calving of grounded ("underwater") ice when the floatation criterion is
+!> fulfilled, acording to the calving law proposed by Dunse et al 2011 (JOG).
 !<------------------------------------------------------------------------------ 
-  
   subroutine calving_underwater_ice()
 
   implicit none
@@ -213,7 +177,8 @@ contains
   real(dp)                           :: year_sec_inv
   real(dp)                           :: rhosw_rho_ratio
   real(dp)                           :: calv_uw_coeff, r1_calv_uw, r2_calv_uw
-  real(dp), dimension(0:JMAX,0:IMAX) :: H_sea, calv_uw_ice, H0_flt
+  real(dp)                           :: H0_flt
+  real(dp), dimension(0:JMAX,0:IMAX) :: H_sea, calv_uw_ice
   integer(i4b)                       :: i, j
 
 !-------- Term abbreviations --------
@@ -257,38 +222,29 @@ contains
 
 !-------- Calving of "underwater ice" --------
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
-
-  where ( (mask == 0).and.(H < rhosw_rho_ratio*H_sea+H0_flt) )
-     calv_uw_ice = calv_uw_coeff * H**r1_calv_uw * H_sea**r2_calv_uw
-  elsewhere
-     calv_uw_ice = 0.0_dp
-  end where
-
-#else /* Tapenade */
-
   do i=0, IMAX
   do j=0, JMAX
-     if ( (mask(j,i) == 0) .and. (H(j,i) < rhosw_rho_ratio*H_sea(j,i)+H0_flt) ) then
-        calv_uw_ice(j,i) = calv_uw_coeff * H(j,i)**r1_calv_uw * H_sea(j,i)**r2_calv_uw
+
+     if ( (mask(j,i) == 0) &
+          .and. (H(j,i) < rhosw_rho_ratio*H_sea(j,i)+H0_flt) ) then
+        calv_uw_ice(j,i) = calv_uw_coeff &
+                           * H(j,i)**r1_calv_uw * H_sea(j,i)**r2_calv_uw
      else
         calv_uw_ice(j,i) = 0.0_dp
      end if
-  end do
-  end do
 
-#endif /* Normal vs. Tapenade */
+  end do
+  end do
 
   calving = calving + calv_uw_ice
 
   end subroutine calving_underwater_ice
-  
 
 #if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
 !-------------------------------------------------------------------------------
 !> Adjustment of the newly computed ice thickness distribution due to either
-!  the retreat mask due to oceanic forcing or the ice-shelf collapse mask
-!  (counted as calving).
+!! the retreat mask due to oceanic forcing or the ice-shelf collapse mask
+!! (counted as calving).
 !<------------------------------------------------------------------------------
   subroutine calving_retreat_mask(time, dtime)
 

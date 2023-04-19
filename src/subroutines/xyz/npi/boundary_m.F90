@@ -9,7 +9,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2022 Ralf Greve
+!! Copyright 2009-2023 Ralf Greve, Marius Schaefer
 !!
 !! @section License
 !!
@@ -66,11 +66,6 @@ subroutine boundary(time, dtime, dxi, deta, &
 
   use mask_update_sea_level_m
   use pdd_m
-
-#if defined(ALLOW_OPENAD) /* OpenAD */
-  use ctrl_m, only: myfloor, myceiling
-  use sico_maths_m
-#endif /* OpenAD */
 
 implicit none
 
@@ -164,11 +159,6 @@ real(dp), parameter :: &
 
 character(len=64), parameter :: thisroutine = 'boundary'
 
-#if defined(ALLOW_OPENAD) /* OpenAD */
-integer(i4b) :: i_time_in_years
-real(dp)     :: temp_val
-#endif /* OpenAD */
-
 time_in_years = time*sec2year
 n_year_CE     = floor((time_in_years+YEAR_ZERO)+eps_sp_dp)
 
@@ -204,7 +194,6 @@ if (time_in_years < real(grip_time_min,dp)) then
    delta_ts = griptemp(0)
 else if (time_in_years < real(grip_time_max,dp)) then
 
-#if !defined(ALLOW_OPENAD) /* Normal */
    i_kl = floor(((time_in_years) &
           -real(grip_time_min,dp))/real(grip_time_stp,dp))
    i_kl = max(i_kl, 0)
@@ -212,15 +201,6 @@ else if (time_in_years < real(grip_time_max,dp)) then
    i_gr = ceiling(((time_in_years) &
           -real(grip_time_min,dp))/real(grip_time_stp,dp))
    i_gr = min(i_gr, ndata_grip)
-#else /* OpenAD */
-   call myfloor((((time_in_years) &
-          -real(grip_time_min,dp))/real(grip_time_stp,dp)), i_kl)
-   i_kl = max(i_kl, 0)
-
-   call myceiling((((time_in_years) &
-          -real(grip_time_min,dp))/real(grip_time_stp,dp)), i_gr)
-   i_gr = min(i_gr, ndata_grip)
-#endif /* Normal vs. OpenAD */
 
    if (i_kl == i_gr) then
 
@@ -253,7 +233,6 @@ if (time_in_years < real(gi_time_min,dp)) then
    glac_index = glacial_index(0)
 else if (time_in_years < real(gi_time_max,dp)) then
 
-#if !defined(ALLOW_OPENAD) /* Normal */
    i_kl = floor(((time_in_years) &
           -real(gi_time_min,dp))/real(gi_time_stp,dp))
    i_kl = max(i_kl, 0)
@@ -261,15 +240,6 @@ else if (time_in_years < real(gi_time_max,dp)) then
    i_gr = ceiling(((time_in_years) &
           -real(gi_time_min,dp))/real(gi_time_stp,dp))
    i_gr = min(i_gr, ndata_gi)
-#else /* OpenAD */
-   call myfloor((((time_in_years) &
-          -real(gi_time_min,dp))/real(gi_time_stp,dp)),i_kl)
-   i_kl = max(i_kl, 0)
-
-   call myceiling((((time_in_years) &
-          -real(gi_time_min,dp))/real(gi_time_stp,dp)),i_gr)
-   i_gr = min(i_gr, ndata_gi)
-#endif /* Normal vs. OpenAD */
 
    if (i_kl == i_gr) then
 
@@ -561,7 +531,6 @@ if (time_in_years < real(specmap_time_min,dp)) then
    z_sl = specmap_zsl(0)
 else if (time_in_years < real(specmap_time_max,dp)) then
 
-#if !defined(ALLOW_OPENAD) /* Normal */
    i_kl = floor(((time_in_years) &
           -real(specmap_time_min,dp))/real(specmap_time_stp,dp))
    i_kl = max(i_kl, 0)
@@ -569,15 +538,6 @@ else if (time_in_years < real(specmap_time_max,dp)) then
    i_gr = ceiling(((time_in_years) &
           -real(specmap_time_min,dp))/real(specmap_time_stp,dp))
    i_gr = min(i_gr, ndata_specmap)
-#else /* OpenAD */
-   call myfloor((((time_in_years) &
-          -real(specmap_time_min,dp))/real(specmap_time_stp,dp)),i_kl)
-   i_kl = max(i_kl, 0)
-
-   call myceiling((((time_in_years) &
-          -real(specmap_time_min,dp))/real(specmap_time_stp,dp)),i_gr)
-   i_gr = min(i_gr, ndata_specmap)
-#endif /* Normal vs. OpenAD */
 
    if (i_kl == i_gr) then
 
@@ -1056,13 +1016,8 @@ do j=0, JMAX
 
 #elif (SOLID_PRECIP==3)   /* Huybrechts and de Wolde (1999) */
 
-#if !defined(ALLOW_OPENAD) /* Normal */
       frac_solid = 1.0_dp &
                    - 0.5_dp*erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat)
-#else /* OpenAD */
-      call my_erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat, temp_val)
-      frac_solid = 1.0_dp - 0.5_dp*temp_val
-#endif /* Normal vs. OpenAD */
 
 #endif
 
@@ -1208,8 +1163,6 @@ runoff = runoff + runoff_prescribed
 !         including empirical firn-warming correction due to
 !         refreezing meltwater when superimposed ice is formed
 
-#if !defined(ALLOW_OPENAD) /* Normal */
-
 #if (TSURFACE<=5)
 
 where (melt_star >= melt)
@@ -1226,36 +1179,6 @@ temp_s = temp_ma
 
 where (temp_s > -0.001_dp) temp_s = -0.001_dp
                             ! Cut-off of positive air temperatures
-
-#else /* OpenAD */
-
-#if (TSURFACE<=5)
-
-do i=0, IMAX
-do j=0, JMAX
-   if (melt_star(j,i) >= melt(j,i)) then
-      temp_s(j,i) = temp_ma(j,i) + mu*(melt_star(j,i)-melt(j,i))
-   else
-      temp_s(j,i) = temp_ma(j,i)
-   end if
-end do
-end do
-
-#elif (TSURFACE==6)
-
-temp_s = temp_ma
-
-#endif
-
-do i=0, IMAX
-do j=0, JMAX
-   if (temp_s(j,i) > -0.001_dp) then
-      temp_s(j,i) = -0.001_dp   ! Cut-off of positive air temperatures
-   end if
-end do
-end do
-
-#endif /* Normal vs. OpenAD */
 
 !-------- Calving --------
 
