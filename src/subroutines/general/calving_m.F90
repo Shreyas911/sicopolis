@@ -100,27 +100,19 @@ contains
 
 !-------- Calving of "underwater ice" --------
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
-
-  where ( (mask == 0).and.(H < rhosw_rho_ratio*H_sea + H0_flt) )
-     calv_uw_ice = calv_uw_coeff * H**r1_calv_uw * H_sea**r2_calv_uw
-  elsewhere
-     calv_uw_ice = 0.0_dp
-  end where
-
-#else /* Tapenade */
-
   do i=0, IMAX
   do j=0, JMAX
-     if ( (mask(j,i) == 0) .and. (H(j,i) < rhosw_rho_ratio*H_sea(j,i) + H0_flt) ) then
-        calv_uw_ice(j,i) = calv_uw_coeff * H(j,i)**r1_calv_uw * H_sea(j,i)**r2_calv_uw
+
+     if ( (mask(j,i) == 0) &
+          .and. (H(j,i) < rhosw_rho_ratio*H_sea(j,i)+H0_flt) ) then
+        calv_uw_ice(j,i) = calv_uw_coeff &
+                           * H(j,i)**r1_calv_uw * H_sea(j,i)**r2_calv_uw
      else
         calv_uw_ice(j,i) = 0.0_dp
      end if
-  end do
-  end do
 
-#endif /* Normal vs. Tapenade */
+  end do
+  end do
 
   calving = calving + calv_uw_ice
 
@@ -129,8 +121,8 @@ contains
 #if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
 !-------------------------------------------------------------------------------
 !> Adjustment of the newly computed ice thickness distribution due to either
-!  the retreat mask due to oceanic forcing or the ice-shelf collapse mask
-!  (counted as calving).
+!! the retreat mask due to oceanic forcing or the ice-shelf collapse mask
+!! (counted as calving).
 !<------------------------------------------------------------------------------
   subroutine calving_retreat_mask(time, dtime)
 
