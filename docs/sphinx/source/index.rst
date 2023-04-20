@@ -30,7 +30,7 @@ Authors
    dependencies
    test_simulations
    plotting_and_tools
-   new_domain
+   modelling_choices/index
    AD/AD
    how_to_contribute
    references
