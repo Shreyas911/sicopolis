@@ -8,14 +8,35 @@ Model domain, grid and time
 Model domain
 ============
 
-Lorem ipsum...
+.. _defined_domain:
+
+Selecting a pre-defined domain
+------------------------------
+
+SICOPOLIS provides several pre-defined model domains. They can be chosen by defining a domain code in the run-specs header as follows\:
+
+.. code-block:: fortran
+
+  #define GRL
+  !                 Simulated domain:
+  !                   ANT     - Antarctica
+  !                   ASF     - Austfonna
+  !                   EISMINT - EISMINT (Phase 2 SGE and modifications)
+  !                   GRL     - Greenland
+  !                   NHEM    - Northern hemisphere
+  !                   SCAND   - Scandinavia
+  !                   TIBET   - Tibet
+  !                   NMARS   - North polar cap of Mars
+  !                   SMARS   - South polar cap of Mars
+
+This example would select the domain for the Greenland ice sheet. Correspondingly for the other listed domains.
 
 .. _new_domain:
 
 Setting up a new domain
 -----------------------
 
-In addition to the pre-defined domains for Antarctica (ant), Greenland (grl), EISMINT (eismint) etc., there is an unspecified domain XYZ (xyz). This framework allows creating new domains (Laurentide ice sheet, some ice cap, simple testing geometry...) quite easily. The directory src/subroutines/xyz, which hosts the domain-specific subroutines, is by default empty. If you want to create a new domain, copy the subroutines from the most similar existing domain, e.g., starting from Antarctica::
+In addition to the pre-defined domains, there is an unspecified domain XYZ. This framework allows creating new domains (Laurentide ice sheet, some ice cap, simple testing geometry...) quite easily. The directory src/subroutines/xyz, which hosts the domain-specific subroutines, is by default empty. If you want to create a new domain, copy the subroutines from the most similar existing domain, e.g., starting from Antarctica::
 
   cp src/subroutines/ant/*.F90 src/subroutines/xyz/
 
@@ -40,11 +61,13 @@ The subroutines for ISMIP HEINO (Calov et al. :cite:`calov_etal_2010`) are avail
 Spatial grid
 ============
 
-Lorem ipsum...
+Domain boundaries, resolution, projection...
+
+Topography...
 
 .. _model_time:
 
 Model time
 ==========
 
-Lorem ipsum...
+Initial time, final time, time steps...
