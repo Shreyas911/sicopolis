@@ -1,0 +1,219 @@
+﻿<HTML>
+
+<HEAD>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <meta name="author" content="Ralf Greve">
+  <meta name="description" content="Home page of the ice sheet model SICOPOLIS">
+  <meta name="keywords" content="ice, sheet, ice-sheet, model, free, software, SICOPOLIS, Ralf, Greve">
+  <meta name="content-language" content="en">
+  <meta name="robots" content="index, follow">
+  <title>Ice sheet model SICOPOLIS</title>
+  <link href="./styles/ralf_style.css" rel="stylesheet" type="text/css">
+  <link rel="icon" type="image/x-icon" href="./pics/sico-icecube.ico">
+  <link rel="shortcut icon" type="image/x-icon" href="./pics/sico-icecube.ico" />
+  <!-- <link type="image/x-icon" href="./pics/sico-icecube.ico" /> -->
+</HEAD>
+
+<BODY>
+
+<table align="center" cellpadding="25" cellspacing="0"
+       bgcolor="#ffffff" width=750>
+<tr><td>
+
+<hr>
+
+<H1>Ice sheet model SICOPOLIS</H1>
+
+<P style="text-align:center">
+&#x25b6;&nbsp;
+[<A HREF="./">Home</A>]&nbsp;
+[<A HREF="./index.html#get">Get SICOPOLIS</A>]&nbsp;
+[<A HREF="./index.html#docs">Documentation</A>]&nbsp;
+[<A HREF="./publ/">Publications</A>]&nbsp;
+[<A HREF="./index.html#support">Support</A>]&nbsp;
+[<A HREF="./archive/">Archive</A>]&nbsp;
+[<A HREF="./logo.html">Logo</A>]&nbsp;
+&#x25c0;
+</P>
+
+<hr>
+
+<P>SICOPOLIS (SImulation COde for POLythermal Ice Sheets) is a 3-d
+dynamic/thermodynamic model that simulates the evolution of large ice
+sheets and ice caps. It was originally created by
+<A HREF="./publ/">Greve (1997a,b)</A> in a version for the Greenland
+ice sheet. Since then, SICOPOLIS has been developed continuously and
+applied to problems of past, present and future glaciation of Greenland,
+Antarctica, the entire northern hemisphere, the polar ice caps of the
+planet Mars and others.</P>
+
+<P>The model is based on the shallow ice approximation for grounded
+ice, the shallow shelf approximation for floating ice (e.g.,
+<A HREF="http://wwwice.lowtem.hokudai.ac.jp/~greve/publist.html#Book">Greve
+and Blatter 2009</A>) and, optionally, hybrid shallow-ice&ndash;shelfy-stream
+dynamics for ice streams (<A HREF="./publ/">Bernales et&nbsp;al. 2017a,b</A>).
+It is coded in Fortran and uses finite difference discretization on a
+staggered (Arakawa&nbsp;C) grid, the velocity components being taken between
+grid points. A variety of different thermodynamics solvers are available,
+namely the polythermal two-layer method, two versions of the one-layer
+enthalpy method, the cold-ice method and the isothermal method
+(<A HREF="./publ/">Greve and Blatter 2016</A>).</P>
+ 
+<P>The coding is based on a consequent low-tech philosophy. All structures are
+kept as simple as possible, and advanced coding techniques are only employed
+where it is deemed appropriate. The use of external libraries is kept at an
+absolute minimum, which makes the installation very easy and fast.</P>
+
+<table align="center" cellpadding="0" cellspacing="0"
+       bgcolor="#ffffff" width=100%>
+<colgroup>
+    <col width="280">
+    <col width="25">
+    <col width="420">
+</colgroup>
+
+<tr><td valign="top">
+
+<P>Required model forcing:</P>
+
+<UL>
+  <LI> Surface mass balance
+       <BR>
+       (precipitation, evaporation, runoff).</LI>
+  <LI> Mean annual air temperature
+       <BR>
+       above the ice.</LI>
+  <LI> Eustatic sea level.</LI>
+  <LI> Geothermal heat flux.</LI>
+</UL>
+
+</td><td></td><td valign="top">
+
+<P>Main output (as functions of position and time):</P>
+
+<UL>
+  <LI> Extent and thickness of the ice sheet.</LI>
+  <LI> Velocity field.</LI>
+  <LI> Temperature field.</LI>
+  <LI> Water content field (temperate regions).</LI>
+  <LI> Age of the ice.</LI>
+  <LI> Isostatic displacement and temperature of the lithosphere.</LI>
+</UL>
+
+</td></tr></table>
+
+<A NAME="get"><HR></A>
+
+<P><B>Get SICOPOLIS</B></P>
+
+<P>The Git repository of SICOPOLIS is kindly hosted by the GitLab system
+of the <A HREF="http://www.awi.de/">Alfred Wegener Institute for Polar and
+Marine Research (AWI)</A> in Bremerhaven, Germany.</P>
+
+<UL>
+  <LI> Front page: 
+       <A HREF="https://gitlab.awi.de/sicopolis/sicopolis/">https://gitlab.awi.de/sicopolis/sicopolis/</A>
+  <LI> Cloning the latest develop revision with Git:<BR>
+       <code>&nbsp;&nbsp;git clone --branch develop \<BR>
+       &nbsp;&nbsp;&nbsp;&nbsp;https://gitlab.awi.de/sicopolis/sicopolis.git</code><BR>
+       &nbsp;&nbsp;&nbsp;&nbsp;(Cloning with SSH instead of HTTPS is also available.
+       See the above GitLab link for details.)</LI>
+  <LI> Tagged versions of SICOPOLIS (latest: v5.3, 2022-07-21)
+       can be accessed from the <A HREF="./archive/">archive</A>.</LI>
+</UL>
+
+<P><A NAME="docs"><B>Documentation</B></A></P>
+
+<UL>
+  <LI> <A HREF="https://sicopolis.readthedocs.io/">User Manual</A>
+       @ Read the Docs.</LI>
+  <LI> <A HREF="https://gitlab.awi.de/sicopolis/sicopolis/-/tree/develop/src">Source
+       Code Browser</A> @ GitLab.</LI>
+</UL>
+
+<P><A NAME="sico_zenodo"><B>Further resources</B></A></P>
+
+<UL>
+  <LI> <A HREF="https://gitlab.awi.de/sicopolis/sicopolis/-/commits/develop">Commit
+       logs</A> @ GitLab.</LI>
+  <LI> <A HREF="https://zenodo.org/communities/sicopolis/">SICOPOLIS community</A>
+       @ Zenodo.</LI>
+</UL>
+
+<P><A NAME="support"><B>Support</B></A></P>
+
+<UL>
+  <LI> <A HREF="https://ml.hines.hokudai.ac.jp/mailman/listinfo/sicopolis">SICOPOLIS
+       mailing list</a> &ndash; Announcements, discussions, Q&A.
+       <BR>
+       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       &#8618; <A HREF="https://ml.hines.hokudai.ac.jp/pipermail/sicopolis/">Archive (publicly accessible)</A>
+       (since 2020-07-20).
+       <BR>
+       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       &#8618; <A HREF="http://wwwice.lowtem.hokudai.ac.jp/repo/sicopolis/ml-old-archive/">Archive
+                  of old ML (publicly accessible)</A> (until 2020-07-17).
+  </LI>
+  <!-- <LI> Mailing list
+            <A HREF="http://lists.swrepo1.awi.de/cgi-bin/mailman/listinfo/sicopolis-general">SICOPOLIS-General</a>
+            &mdash; Announcements, discussions, Q&A.
+       </LI>
+       <LI> Mailing list
+            <A HREF="http://lists.swrepo1.awi.de/cgi-bin/mailman/listinfo/sicopolis-commits">SICOPOLIS-Commits</a>
+            &mdash; Automatic mailing of commit logs.
+       </LI> -->
+  <LI> Alternatively, please contact
+       help<img style="vertical-align:middle;" alt="&lt;at-nospam&gt;"
+                src="pics/at-nospam_13x12.png">sicopolis.net.
+  </LI>
+</UL>
+
+<P><B>Legal notes</B></P>
+
+<P>SICOPOLIS is free and open-source software. It can be redistributed
+and/or modified under the terms of the
+<A HREF="http://www.gnu.org/licenses/">GNU General Public License</A>
+as published by the Free Software Foundation, either version&nbsp;3 of
+the License, or (at the user's option) any later version.</P>
+
+<P>SICOPOLIS is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<A HREF="http://www.gnu.org/licenses/">GNU General Public License</A>
+for more details.</P>
+
+<hr>
+
+<p style="text-align:center"><A HREF="./pics/SICOPOLIS-Logo.png"><IMG 
+   SRC="./pics/SICOPOLIS-Logo-150px.png"
+   alt="SICOPOLIS Logo"></A></p>
+
+<P style="text-align:center">
+&#x25b6;&nbsp;
+[<A HREF="./">Home</A>]&nbsp;
+[<A HREF="./index.html#get">Get SICOPOLIS</A>]&nbsp;
+[<A HREF="./index.html#docs">Documentation</A>]&nbsp;
+[<A HREF="./publ/">Publications</A>]&nbsp;
+[<A HREF="./index.html#support">Support</A>]&nbsp;
+[<A HREF="./archive/">Archive</A>]&nbsp;
+[<A HREF="./logo.html">Logo</A>]&nbsp;
+&#x25c0;
+</P>
+
+</td></tr>
+</table>
+
+<table align="center" cellpadding="0" cellspacing="0" width=750>
+<tr><td>
+
+<p align="right">&nbsp;<br>Last modified:
+2023-04-21 by
+<A HREF="http://wwwice.lowtem.hokudai.ac.jp/~greve/">Ralf Greve</A>
+&nbsp;&nbsp;<br>&nbsp;</p>
+
+</td></tr>
+</table>
+
+</BODY>
+</HTML>
