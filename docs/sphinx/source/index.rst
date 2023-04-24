@@ -32,5 +32,6 @@ Authors
    plotting_and_tools
    modelling_choices/index
    AD/AD
+   technical_notes/index
    how_to_contribute
    references
