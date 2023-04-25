@@ -9,7 +9,7 @@ Orthogonal coordinates on the Earth's surface
 General considerations
 ======================
 
-In what follows the surface of the Earth will be regarded approximately as a sphere with radius :math:`R_\mathrm{e}=6371\,\mathrm{km}`. Be :math:`x^1`, :math:`x^2` the contravariant coordinates of an arbitrary orthogonal coordinate system on a subset of this sphere (for instance, the Greenland ice sheet and surrounding area). The covariant local base vectors, :math:`\mathbf{g}_1` and :math:`\mathbf{g}_2`, are then defined as the derivatives of the position vector, :math:`\mathbf{r}`, with respect to :math:`x^1`, :math:`x^2` (Bronshtein et al. :cite:`bron_etal_2004`):
+In what follows the surface of the Earth will be regarded approximately as a sphere with radius :math:`R_\mathrm{e}=6371\,\mathrm{km}`. Be :math:`x^1`, :math:`x^2` the contravariant coordinates of an arbitrary orthogonal coordinate system on a subset of this sphere (for instance, the Greenland ice sheet and surrounding area). The covariant local base vectors, :math:`\mathbf{g}_1` and :math:`\mathbf{g}_2`, are then defined as the derivatives of the position vector, :math:`\mathbf{r}`, with respect to :math:`x^1`, :math:`x^2` (Bronshtein et al. :cite:`bronshtein_etal_2015`):
 
 .. math::
   :label: orth_crd_eq001
@@ -54,7 +54,7 @@ A normalised set of base vectors, :math:`\mathbf{e}_1` and :math:`\mathbf{e}_2`,
   = \frac{\mathbf{g}_i}{\sqrt{\mathbf{g}_i\cdot\mathbf{g}_i}}
   = \frac{\mathbf{g}_i}{\sqrt{g_{ii}}}.
 
-According to Bronshtein et al. :cite:`bron_etal_2004`, the gradient of any scalar field :math:`f(x^1,x^2)` is
+According to Bronshtein et al. :cite:`bronshtein_etal_2015`, the gradient of any scalar field :math:`f(x^1,x^2)` is
 
 .. math::
   :label: orth_crd_eq006
@@ -150,7 +150,7 @@ Hence,
     \frac{\partial{}f}{\partial\lambda} \, \mathbf{e}_\lambda
     + \frac{\partial{}f}{\partial\varphi} \, \mathbf{e}_\varphi \right),
 
-and, denoting :math:`u^{\star 1}` by :math:`u_\varphi` and :math:`u^{\star 2}` by :math:`u_\lambda`,
+and, denoting :math:`u^{\star 1}` by :math:`u_\lambda` and :math:`u^{\star 2}` by :math:`u_\varphi`,
 
 .. math::
   :label: orth_crd_eq016
