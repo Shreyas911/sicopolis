@@ -72,7 +72,7 @@ In principle, SICOPOLIS allows using any orthogonal coordinates on the Earth's s
   !                    with distortion correction
   !                2 : Geographical coordinates (longitude/latitude)
 
-For the most common case of Cartesian coordinates :math:`x` and :math:`y` in the stereographic plane (or any other projection plane), let the domain be the rectangle described by :math:`[x_0,x_\mathrm{max}]`, :math:`[y_0,y_\mathrm{max}]`. It is discretized by a regular grid with horizontal resolution :math:`\Delta{x}` (same for the :math:`x`- and :math:`y`-directions). The location of the grid points :math:`x_i` and :math:`y_j` is then given by
+For the most common case of Cartesian coordinates :math:`x` and :math:`y` in the stereographic plane (or any other projection plane), let the domain be the rectangle described by :math:`[x_0,x_\mathrm{max}]`, :math:`[y_0,y_\mathrm{max}]`. It is discretized by a regular (structured) grid with horizontal resolution :math:`\Delta{x}`, which is the same for the :math:`x`- and :math:`y`-directions. The location of the grid points :math:`x_i` and :math:`y_j` is then given by
 
 .. math::
   :label: eq_discr_x
@@ -92,7 +92,42 @@ where the notation :math:`a\,(b)\,c` means "from :math:`a` to :math:`c` in steps
 * IMAX (:math:`=i_\mathrm{max}`, maximum value of the index :math:`i`),
 * JMAX (:math:`=j_\mathrm{max}`, maximum value of the index :math:`j`).
 
-For the vertical (:math:`z`) direction, ...
+For the vertical (:math:`z`) direction, a terrain-following ("sigma") transformation is employed that maps vertical columns in the physical space onto :math:`[0,1]` intervals. If the polythermal two-layer method (POLY, see Section ":ref:`ice_thermodynamics`") is employed, this mapping is done separately for the upper cold-ice layer (:math:`\zeta_\mathrm{c}` domain), the lower temperate-ice layer (:math:`\zeta_\mathrm{t}` domain) and the lithosphere layer (:math:`\zeta_\mathrm{r}` domain). The transformation is linear for the :math:`\zeta_\mathrm{t}` and :math:`\zeta_\mathrm{r}` domains. However, for the :math:`\zeta_\mathrm{c}` domain, exponential stretching is used so that equidistant grid points in the transformed domain map on grid points concentrating towards the base in the physical :math:`z`-coordinate\:
+
+.. math::
+  :label: eq_sigma_trans
+
+  \mbox{Transformation equations for }
+  \zeta_\mathrm{c},\; \zeta_\mathrm{t},\; \zeta_\mathrm{c}\; ...
+
+The location of the grid points in the three transformed domains is given by
+
+.. math::
+  :label: eq_discr_zc
+
+  (\zeta_\mathrm{c})_{k_\mathrm{c}} = k_\mathrm{c}/k_\mathrm{c,max},
+  \qquad k_\mathrm{c}=0\,(1)\,k_\mathrm{c,max},
+
+.. math::
+  :label: eq_discr_zt
+
+  (\zeta_\mathrm{t})_{k_\mathrm{t}} = k_\mathrm{t}/k_\mathrm{t,max},
+  \qquad k_\mathrm{t}=0\,(1)\,k_\mathrm{t,max},
+
+.. math::
+  :label: eq_discr_zr
+
+  (\zeta_\mathrm{r})_{k_\mathrm{r}} = k_\mathrm{r}/k_\mathrm{r,max},
+  \qquad k_\mathrm{r}=0\,(1)\,k_\mathrm{r,max}.
+
+The number of grid points results as :math:`k_\mathrm{c,max}+1`, :math:`k_\mathrm{t,max}+1` and :math:`k_\mathrm{r,max}+1`. The parameters in the run-specs headers are
+
+* KCMAX (:math:`=k_\mathrm{c,max}`, maximum value of the index :math:`k_\mathrm{c}`),
+* KTMAX (:math:`=k_\mathrm{t,max}`, maximum value of the index :math:`k_\mathrm{t}`),
+* KRMAX (:math:`=k_\mathrm{r,max}`, maximum value of the index :math:`k_\mathrm{r}`),
+* DEFORM (:math:`=a`, exponential stretch parameter for the :math:`k_\mathrm{c}` domain; 0.0d0 produces a linear transformation).
+
+For all other thermodynamics schemes (COLD, ENTC, ENTM; see Section ":ref:`ice_thermodynamics`"), ...
 
 Topography...
 
@@ -102,3 +137,10 @@ Model time
 ==========
 
 Initial time, final time, time steps...
+
+.. math::
+  :label: eq_discr_t
+
+  t^n = t^0 + n\Delta{}t, \qquad n=0\,(1)\,n_\mathrm{max}.
+
+Lorem ipsum...

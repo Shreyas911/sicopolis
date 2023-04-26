@@ -9,7 +9,7 @@ Orthogonal coordinates on the Earth's surface
 General considerations
 ======================
 
-In what follows the surface of the Earth will be regarded approximately as a sphere with radius :math:`R_\mathrm{e}=6371\,\mathrm{km}`. Be :math:`x^1`, :math:`x^2` the contravariant coordinates of an arbitrary orthogonal coordinate system on a subset of this sphere (for instance, the Greenland ice sheet and surrounding area). The covariant local base vectors, :math:`\mathbf{g}_1` and :math:`\mathbf{g}_2`, are then defined as the derivatives of the position vector, :math:`\mathbf{r}`, with respect to :math:`x^1`, :math:`x^2` (Bronshtein et al. :cite:`bronshtein_etal_2015`):
+In what follows, the surface of the Earth will be regarded approximately as a sphere with radius :math:`R_\mathrm{e}=6371\,\mathrm{km}`. Be :math:`x^1`, :math:`x^2` the contravariant coordinates of an arbitrary orthogonal coordinate system on a subset of this sphere (for instance, the Greenland ice sheet and surrounding area). The covariant local base vectors, :math:`\mathbf{g}_1` and :math:`\mathbf{g}_2`, are then defined as the derivatives of the position vector, :math:`\mathbf{r}`, with respect to :math:`x^1`, :math:`x^2` (Bronshtein et al. :cite:`bronshtein_etal_2015`):
 
 .. math::
   :label: orth_crd_eq001
@@ -122,7 +122,7 @@ Inserting this result in Eq. |nbsp| :eq:`orth_crd_eq007` yields
 Geographic coordinate system
 ============================
 
-The geographic coordinate system for the surface of the Earth consists of the longitude :math:`\lambda` with range :math:`-180^\circ\ldots{}+180^\circ` (:math:`180^\circ\mathrm{W}\ldots{}180^\circ\mathrm{E}`) and the latitude :math:`\varphi` with range :math:`+90^\circ\ldots{}-90^\circ` (:math:`90^\circ\mathrm{N}\ldots{}90^\circ\mathrm{S}`). For a spherical Earth model, a line element :math:`\mathrm{d}s` is expressed by
+The geographic coordinate system for the surface of the Earth consists of the longitude :math:`\lambda` with range :math:`-180^\circ\ldots{}+180^\circ` (:math:`180^\circ\mathrm{W}\ldots{}180^\circ\mathrm{E}`) and the latitude :math:`\varphi` with range :math:`+90^\circ\ldots{}-90^\circ` (:math:`90^\circ\mathrm{N}\ldots{}90^\circ\mathrm{S}`). For the spherical Earth model employed here, a line element :math:`\mathrm{d}s` is expressed by
 
 .. math::
   :label: orth_crd_eq013
