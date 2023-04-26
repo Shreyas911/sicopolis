@@ -122,7 +122,17 @@ Inserting this result in Eq. |nbsp| :eq:`orth_crd_eq007` yields
 Geographic coordinate system
 ============================
 
-The geographic coordinate system for the surface of the Earth consists of the longitude :math:`\lambda` with range :math:`-180^\circ\ldots{}+180^\circ` (:math:`180^\circ\mathrm{W}\ldots{}180^\circ\mathrm{E}`) and the latitude :math:`\varphi` with range :math:`+90^\circ\ldots{}-90^\circ` (:math:`90^\circ\mathrm{N}\ldots{}90^\circ\mathrm{S}`). For the spherical Earth model employed here, a line element :math:`\mathrm{d}s` is expressed by
+The geographic coordinate system for the surface of the Earth consists of the longitude :math:`\lambda` with range :math:`-180^\circ\ldots{}+180^\circ` (:math:`180^\circ\mathrm{W}\ldots{}180^\circ\mathrm{E}`) and the latitude :math:`\varphi` with range :math:`+90^\circ\ldots{}-90^\circ` (:math:`90^\circ\mathrm{N}\ldots{}90^\circ\mathrm{S}`) (:numref:`geogr_coord`).
+
+.. _geogr_coord:
+.. figure:: figs/Geographic_Coordinates.png
+  :width: 250 px
+  :alt: Geographic coordinates
+  :align: center
+
+  Geographic coordinates :math:`\lambda` (longitude) and :math:`\varphi` (latitude) for a spherical Earth model. (Credit: Wikimedia Commons User:Peter Mercator, public domain.)
+
+For the spherical Earth model employed here, a line element :math:`\mathrm{d}s` is expressed by
 
 .. math::
   :label: orth_crd_eq013
@@ -172,7 +182,15 @@ so that the expressions :eq:`orth_crd_eq015` and :eq:`orth_crd_eq016` are no lon
 Polar stereographic projection
 ==============================
 
-In ice-sheet modelling, a popular alternative to geographic coordinates is the polar stereographic projection. It comes in two different versions for the northern and southern hemisphere, and maps the respective hemisphere to the stereographic plane, which is spanned by the latitude circle defined by the standard parallel :math:`\varphi_0`.
+In ice-sheet modelling, a popular alternative to geographic coordinates is the polar stereographic projection. It comes in two different versions for the northern and southern hemisphere, and maps the respective hemisphere to the stereographic plane, which is spanned by the latitude circle defined by the standard parallel :math:`\varphi_0` (:numref:`stereo_proj`).
+
+.. _stereo_proj:
+.. figure:: figs/Stereographic_Projection.png
+  :width: 500 px
+  :alt: Polar stereographic projection
+  :align: center
+
+  Polar stereographic projection for (a) the northern and (b) the southern hemisphere. The stereographic plane is parallel to the equatorial plane and defined by the standard parallel :math:`\varphi_0`. A point :math:`P` on the surface of the Earth is projected on the point :math:`\mathrm{st}(P)` by intersecting the line :math:`PS` (case a) or :math:`PN` (case b) with the stereographic plane.
 
 Northern hemisphere
 -------------------

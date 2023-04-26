@@ -72,8 +72,8 @@ The results are shown in the plot below. The table below shows a comparison of t
    * - Adjoint Model
      - :math:`2.214 \times 10^1`
  
-.. figure:: t3_validation.png
-      :class: with-border
+.. figure:: figs/t3_validation.png
+   :class: with-border
 
 Validation exercise for Adjoint/Tangent Linear (TLM) modes using the Finite Differences (FD) results for the sensitivity of ``fc`` with respect to ``q_geo``. The upper row shows the sensitivities computed using the Adjoint, Tangent Linear mode, and Finite Differences respectively. The bottom run illustrates the relative error between (Adjoint, FD), (TLM, FD), and (Adjoint, TLM) respectively.
 

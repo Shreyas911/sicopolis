@@ -43,10 +43,10 @@ This will create a ``src/out`` directory. Open ``src/out/index.html`` to get you
 
 You can click further on the hyperlinks to see individual files and lines.
 
-.. figure:: lcov_sample.png
+.. figure:: figs/lcov_sample.png
    :class: with-border
 
-   Example of graphical output for code coverage
+   Example of graphical output for code coverage.
 
 Automation using Python scripts
 ===============================

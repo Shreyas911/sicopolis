@@ -14,13 +14,11 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
-
 # -- Project information -----------------------------------------------------
 
 project = 'SICOPOLIS'
 copyright = '2009-2023, SICOPOLIS Authors'
 author = 'Ralf Greve, Shreyas Sunil Gaikwad'
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -48,6 +46,9 @@ source_suffix = '.rst'
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['**.ipynb_checkpoints']
+
+# Numbering figures
+numfig = True
 
 # -- Options for HTML output -------------------------------------------------
 
