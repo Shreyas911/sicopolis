@@ -119,6 +119,8 @@ Inserting this result in Eq. |nbsp| :eq:`orth_crd_eq007` yields
      \frac{\partial{}(\sqrt{g_{22}}\,u^{\star 1})}{\partial{}x^1}
      + \frac{\partial{}(\sqrt{g_{11}}\,u^{\star 2})}{\partial{}x^2} \right).
 
+Equations |nbsp| :eq:`orth_crd_eq009` and :eq:`orth_crd_eq012` are useful for rewriting the model equations in any orthogonal coordinates on the Earth's surface.
+
 Geographic coordinate system
 ============================
 
@@ -149,27 +151,6 @@ so that, with Eq. |nbsp| :eq:`orth_crd_eq004`,
   \quad
   g_{22} = R_\mathrm{e}^2.
 
-Hence,
-
-.. math::
-  :label: orth_crd_eq015
-
-  \mbox{grad}\,f
-  = \frac{1}{R_\mathrm{e}} \left(
-    \frac{1}{\cos\varphi}
-    \frac{\partial{}f}{\partial\lambda} \, \mathbf{e}_\lambda
-    + \frac{\partial{}f}{\partial\varphi} \, \mathbf{e}_\varphi \right),
-
-and, denoting :math:`u^{\star 1}` by :math:`u_\lambda` and :math:`u^{\star 2}` by :math:`u_\varphi`,
-
-.. math::
-  :label: orth_crd_eq016
-
-  \mbox{div}\,\mathbf{u}
-  = \frac{1}{R_\mathrm{e} \cos\varphi} \left(
-     \frac{\partial{}u_\lambda}{\partial\lambda}
-     + \frac{\partial{}(\cos\varphi\,u_\varphi)}{\partial\varphi} \right).
-
 The shortcoming of this system is that, when approaching the poles, :math:`\varphi=\pm 90^\circ`, the meridians (lines of constant longitude) converge, cumulating in a singularity at the poles themselves. Mathematically this becomes obvious when regarding the metric tensor:
 
 .. math::
@@ -177,7 +158,7 @@ The shortcoming of this system is that, when approaching the poles, :math:`\varp
 
   \lim_{\varphi\rightarrow\pm 90^\circ} g_{11} = 0,
 
-so that the expressions :eq:`orth_crd_eq015` and :eq:`orth_crd_eq016` are no longer defined. Therefore, the latitude-longitude system cannot be used unmodified for a domain that includes one of the Earth's poles.
+so that the expressions :eq:`orth_crd_eq009` and :eq:`orth_crd_eq012` are no longer defined. Therefore, the latitude-longitude system cannot be used unmodified for a domain that includes one of the Earth's poles.
 
 Polar stereographic projection
 ==============================
@@ -304,29 +285,6 @@ from which the metric tensor of the projection can be inferred:
   = \frac{\cos^4\frac{\theta}{2}}{K^2}
   = \frac{1}{K^2 \left(1+\frac{x^2+y^2}{(2R_\mathrm{e}K)^2}\right)^2}.
 
-Thus,
-
-.. math::
-  :label: orth_crd_eq027
-
-  \mbox{grad}\,f = \frac{K}{\cos^2\frac{\theta}{2}}\,
-  \left( \frac{\partial{}f}{\partial{}x}\,\mathbf{e}_x
-         + \frac{\partial{}f}{\partial{}y}\,\mathbf{e}_y \right),
-
-and, denoting :math:`u^{\star 1}` by :math:`u_x` and :math:`u^{\star 2}` by :math:`u_y`,
-
-.. math::
-  :label: orth_crd_eq028
-
-  \mbox{div}\,\mathbf{u}
-  = \frac{K}{\cos^4\frac{\theta}{2}}\,
-    \left(
-      \frac{\partial{}(\cos^2\frac{\theta}{2}\,u_x)}{\partial{}x}
-      + \frac{\partial{}(\cos^2\frac{\theta}{2}\,u_y)}{\partial{}y}
-     \right).
-
-One may again express the :math:`\cos\frac{\theta}{2}` terms by :math:`x` and :math:`y`, see Eq. |nbsp| :eq:`orth_crd_eq025`.
-
 A simpler alternative is to neglect the distortion involved by the projection. In this case, the metric tensor becomes equal to the identity tensor,
 
 .. math::
@@ -361,7 +319,4 @@ where
 
 (:math:`\tilde{\theta}_0=90^\circ+\varphi_0`, standard parallel of the projection expressed in co-latitude). The minus sign in Eq. |nbsp| :eq:`orth_crd_eq018`\ :sub:`2` is omitted in Eq. |nbsp| :eq:`orth_crd_eq029`\ :sub:`2` to preserve a right-handed :math:`x`-:math:`y` system.
 
-Except for the replacement :math:`\theta\rightarrow\tilde{\theta}`, the metric tensor of this projection is the same as that for the northern hemisphere (Eq. |nbsp| :eq:`orth_crd_eq026`), and so are the expressions for the gradient of a scalar field (Eq. |nbsp| :eq:`orth_crd_eq027`) and the divergence of a vector field (Eq. |nbsp| :eq:`orth_crd_eq028`).
-
-Again, one may choose for simplicity to neglect the distortion involved by the projection, and use the identity tensor  
-(Eq. |nbsp| :eq:`orth_crd_eq020`) instead.
+Except for the replacement :math:`\theta\rightarrow\tilde{\theta}`, the metric tensor of this projection is the same as that for the northern hemisphere (Eq. |nbsp| :eq:`orth_crd_eq026`). Again, one may choose for simplicity to neglect the distortion involved by the projection, and use the identity tensor (Eq. |nbsp| :eq:`orth_crd_eq020`) instead.
