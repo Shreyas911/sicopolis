@@ -95,10 +95,33 @@ where the notation :math:`a\,(b)\,c` means "from :math:`a` to :math:`c` in steps
 For the vertical (:math:`z`) direction, a terrain-following ("sigma") transformation is employed that maps vertical columns in the physical space onto :math:`[0,1]` intervals. If the polythermal two-layer method (POLY, see Section ":ref:`ice_thermodynamics`") is employed, this mapping is done separately for the upper cold-ice layer (:math:`\zeta_\mathrm{c}` domain), the lower temperate-ice layer (:math:`\zeta_\mathrm{t}` domain) and the lithosphere layer (:math:`\zeta_\mathrm{r}` domain). The transformation is linear for the :math:`\zeta_\mathrm{t}` and :math:`\zeta_\mathrm{r}` domains. However, for the :math:`\zeta_\mathrm{c}` domain, exponential stretching is used so that equidistant grid points in the transformed domain map on grid points concentrating towards the base in the physical :math:`z`-coordinate\:
 
 .. math::
-  :label: eq_sigma_trans
+  :label: eq_sigma_trans_poly
 
-  \mbox{Transformation equations for }
-  \zeta_\mathrm{c},\; \zeta_\mathrm{t},\; \zeta_\mathrm{c}\; ...
+  \frac{z-z_\mathrm{m}}{H_\mathrm{c}} = \frac{e^{a\zeta_\mathrm{c}}-1}{e^a-1},
+  \qquad
+  \frac{z-b}{H_\mathrm{t}} = \zeta_\mathrm{t},
+  \qquad
+  \frac{z-b_\mathrm{r}}{H_\mathrm{r}} = \zeta_\mathrm{r},
+
+where the geometric quantities are explained in :numref:`poly_ice_sheet` and :math:`a` is the exponential stretch parameter for the :math:`\zeta_\mathrm{c}` domain. For this parameter, :math:`a=2` is a typical choice, while the limit :math:`a=0` produces a linear transformation.
+
+.. _poly_ice_sheet:
+.. figure:: figs/Polythermal_Ice_Sheet.png
+  :width: 500 px
+  :alt: Polythermal ice sheet
+  :align: center
+
+  Cross section through a polythermal ice sheet (vertically exaggerated).
+
+  | CTS: cold-temperate transition surface (interface between the cold-ice and temperate-ice layers),
+  | :math:`h`: position of the ice surface,
+  | :math:`z_\mathrm{m}`: position of the CTS,
+  | :math:`b`: position of the ice base,
+  | :math:`b_\mathrm{r}`: position of the base of the lithosphere layer,
+  | :math:`H=h-b`: ice thickness,
+  | :math:`H_\mathrm{c}=h-z_\mathrm{m}`: thickness of the cold-ice layer,
+  | :math:`H_\mathrm{t}=z_\mathrm{m}-b`: thickness of the temperate-ice layer, if existing (thus :math:`H=H_\mathrm{c}+H_\mathrm{t}`),
+  | :math:`H_\mathrm{r}=b-b_\mathrm{r}`: thickness of the lithosphere (rock) layer.
 
 The location of the grid points in the three transformed domains is given by
 
@@ -120,14 +143,25 @@ The location of the grid points in the three transformed domains is given by
   (\zeta_\mathrm{r})_{k_\mathrm{r}} = k_\mathrm{r}/k_\mathrm{r,max},
   \qquad k_\mathrm{r}=0\,(1)\,k_\mathrm{r,max}.
 
-The number of grid points results as :math:`k_\mathrm{c,max}+1`, :math:`k_\mathrm{t,max}+1` and :math:`k_\mathrm{r,max}+1`. The parameters in the run-specs headers are
+The numbers of grid points result as :math:`k_\mathrm{c,max}+1`, :math:`k_\mathrm{t,max}+1` and :math:`k_\mathrm{r,max}+1`, respectively. The parameters in the run-specs headers are
 
 * KCMAX (:math:`=k_\mathrm{c,max}`, maximum value of the index :math:`k_\mathrm{c}`),
 * KTMAX (:math:`=k_\mathrm{t,max}`, maximum value of the index :math:`k_\mathrm{t}`),
 * KRMAX (:math:`=k_\mathrm{r,max}`, maximum value of the index :math:`k_\mathrm{r}`),
-* DEFORM (:math:`=a`, exponential stretch parameter for the :math:`k_\mathrm{c}` domain; 0.0d0 produces a linear transformation).
+* DEFORM (:math:`=a`, exponential stretch parameter for the :math:`\zeta_\mathrm{c}` domain).
 
-For all other thermodynamics schemes (COLD, ENTC, ENTM; see Section ":ref:`ice_thermodynamics`"), ...
+For all other thermodynamics schemes (ENTC, ENTM, COLD; see Section ":ref:`ice_thermodynamics`"), the entire ice column (no matter whether cold or temperate) is mapped on the :math:`\zeta_\mathrm{c}` domain. The :math:`\zeta_\mathrm{t}` domain is then redundant and collapses onto the ice base:
+
+.. math::
+  :label: eq_sigma_trans_enth
+
+  \frac{z-b}{H} = \frac{e^{a\zeta_\mathrm{c}}-1}{e^a-1},
+  \qquad
+  b = \zeta_\mathrm{t},
+  \qquad
+  \frac{z-b_\mathrm{r}}{H_\mathrm{r}} = \zeta_\mathrm{r}.
+
+For technical reasons, the :math:`\zeta_\mathrm{t}` domain is still present and should be assigned three grid points, that is, KTMAX should be set to 2.
 
 Topography...
 
