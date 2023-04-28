@@ -163,18 +163,63 @@ For all other thermodynamics schemes (ENTC, ENTM, COLD; see Section ":ref:`ice_t
 
 For technical reasons, the :math:`\zeta_\mathrm{t}` domain is still present and should be assigned three grid points, that is, KTMAX should be set to 2.
 
-Topography...
+.. _topography:
+
+Topography
+==========
+
+Gridded present-day topographies that match the horizontal grid must be provided in either NetCDF (\*.nc) or ASCII (any other file extension) format. They can be specified in the run-specs header as follows (example with NetCDF files for simulation v5\_grl16\_bm5\_ss25ka):
+
+.. code-block:: fortran
+
+  #define ZS_PRESENT_FILE   'grl_bm5_16_topo.nc'
+  !                             Name of the file containing the present-day
+  !                             ice-surface topography
+  !                             (if NetCDF, variable name must be 'zs')
+
+  #define ZB_PRESENT_FILE   'grl_bm5_16_topo.nc'
+  !                             Name of the file containing the present-day
+  !                             ice-base topography (only for ANF_DAT==1)
+  !                             (if NetCDF, variable name must be 'zb')
+
+  #define ZL_PRESENT_FILE   'grl_bm5_16_topo.nc'
+  !                             Name of the file containing the present-day
+  !                             lithosphere-surface topography
+  !                             (only for ANF_DAT==1)
+  !                             (if NetCDF, variable name must be 'zl')
+
+  #define ZL0_FILE          'grl_bm5_16_zl0_llra.nc'
+  !                             Name of the file containing the topography
+  !                             of the relaxed lithosphere surface
+  !                             (if NetCDF, variable name must be 'zl0')
+
+  #define MASK_PRESENT_FILE 'grl_bm5_16_topo.nc'
+  !                             Name of the file containing the present-day
+  !                             ice-land-ocean mask
+  !                             (if NetCDF, variable name must be 'mask')
+
+  #define MASK_REGION_FILE 'none'
+  !                             Name of the file containing the region mask
+  !                             ('none' if no file is to be defined)
+  !                             (if NetCDF, variable name must be 'mask_region')
 
 .. _model_time:
 
 Model time
 ==========
 
-Initial time, final time, time steps...
+Model time runs from an initial time :math:`t_\mathrm{init}` until a final time :math:`t_\mathrm{final}`. For the numerical solution, this interval is discretized by different time steps:
 
-.. math::
-  :label: eq_discr_t
+* :math:`\Delta{}t`: dynamic time step, for computing velocity and topography,
+* :math:`\Delta{}t_\mathrm{temp}`: thermodynamic time step, for computing temperature, water content and age, 
+* :math:`\Delta{}t_\mathrm{wss}`: isostatic time step, for computing the isostatic steady-state displacement of the lithosphere (only if the elastic-lithosphere model is chosen).
 
-  t^n = t^0 + n\Delta{}t, \qquad n=0\,(1)\,n_\mathrm{max}.
+The thermodynamic and isostatic time steps must be equal to or integer multiples of the dynamic time step. The values can be specified in the run-specs header as follows:
 
-Lorem ipsum...
+* TIME_INIT0 (:math:`=t_\mathrm{init}`, initial time in a),
+* TIME_END0 (:math:`=t_\mathrm{final}`, final time in a),
+* DTIME0 (:math:`=\Delta{}t`, dynamic time step in a),
+* DTIME_TEMP0 (:math:`=\Delta{}t_\mathrm{temp}`, thermodynamic time step in a),
+* DTIME_WSS0 (:math:`=\Delta{}t_\mathrm{wss}`, isostatic time step in a).
+
+Further, there is a parameter YEAR_ZERO that specifies the SICOPOLIS year zero in astronomical year numbering [= signed year CE (AD)]. For instance, if set to 1990, the time count of SICOPOLIS will be relative to the calendar year 1990 CE. TIME_INIT0 and TIME_END0 must be given in this SICOPOLIS calendar.
