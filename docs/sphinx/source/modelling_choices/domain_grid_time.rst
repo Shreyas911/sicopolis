@@ -161,14 +161,14 @@ For all other thermodynamics schemes (ENTC, ENTM, COLD; see Section ":ref:`ice_t
   \qquad
   \frac{z-b_\mathrm{r}}{H_\mathrm{r}} = \zeta_\mathrm{r}.
 
-For technical reasons, the :math:`\zeta_\mathrm{t}` domain is still present and should be assigned three grid points, that is, KTMAX should be set to 2.
+For technical reasons, the :math:`\zeta_\mathrm{t}` domain is still present and should be assigned three grid points, that is, ``KTMAX`` should be set to ``2``.
 
 .. _topography:
 
 Topography
 ==========
 
-Gridded present-day topographies that match the horizontal grid must be provided in either NetCDF (\*.nc) or ASCII (any other file extension) format. They can be specified in the run-specs header as follows (example with NetCDF files for simulation v5\_grl16\_bm5\_ss25ka):
+Gridded present-day topographies that match the horizontal grid must be provided in either NetCDF (``*.nc``) or ASCII (any other file extension) format. They can be specified in the run-specs header as follows (example with NetCDF files for simulation ``v5_grl16_bm5_ss25ka``):
 
 .. code-block:: fortran
 

@@ -39,10 +39,11 @@ The metric tensor determines the length of line elements :math:`\mathrm{d}s`:
 .. math::
   :label: orth_crd_eq004
 
-  \mathrm{d}s^2 = \mathrm{d}\mathbf{r} \cdot \mathrm{d}\mathbf{r}
-  = \frac{\partial\mathbf{r}}{\partial{}x^i} \mathrm{d}x^i
-    \cdot \frac{\partial\mathbf{r}}{\partial{}x^j} \mathrm{d}x^j
-  = g_{ij}\,\mathrm{d}x^i \mathrm{d}x^j.
+  \mathrm{d}s^2
+     = \mathrm{d}\mathbf{r} \cdot \mathrm{d}\mathbf{r}
+     = \frac{\partial\mathbf{r}}{\partial{}x^i} \mathrm{d}x^i
+       \cdot \frac{\partial\mathbf{r}}{\partial{}x^j} \mathrm{d}x^j
+     = g_{ij}\,\mathrm{d}x^i \mathrm{d}x^j.
 
 A normalised set of base vectors, :math:`\mathbf{e}_1` and :math:`\mathbf{e}_2`, can be constructed as follows:
 
@@ -198,7 +199,7 @@ with the stretch coefficient
 
 Further, :math:`\theta=90^\circ-\varphi` denotes the co-latitude with respect to the north pole, :math:`\theta_0=90^\circ-\varphi_0` is the standard parallel of the projection expressed in co-latitude, and :math:`\lambda_0` is the central meridian that defines the orientation of the Cartesian :math:`x`-:math:`y` system in the stereographic plane.
 
-We now derive an expression for the line element :math:`ds`. From Eq. |nbsp| :eq:`orth_crd_eq018`, with :math:`h(\theta):=\tan(\theta/2)`,
+We now derive an expression for the line element :math:`\mathrm{d}s`. From Eq. |nbsp| :eq:`orth_crd_eq018`, with :math:`h(\theta):=\tan(\theta/2)`,
 
 .. math::
   :label: orth_crd_eq021a
@@ -226,7 +227,7 @@ With Eq. |nbsp| :eq:`orth_crd_eq013`, this yields
   :label: orth_crd_eq022
 
   \begin{eqnarray}
-  ds^2 &=& R_\mathrm{e}^2\, (\mathrm{d}\theta^2 + \sin^2\theta\,\mathrm{d}\lambda^2)
+  \mathrm{d}s^2 &=& R_\mathrm{e}^2\, (\mathrm{d}\theta^2 + \sin^2\theta\,\mathrm{d}\lambda^2)
   \nonumber\\
   &=& \frac{1}{4K^2 \, h^2(\theta) h^{\prime 2}(\theta)}
   \nonumber\\
@@ -264,17 +265,19 @@ the contribution of the mixed term :math:`\propto \mathrm{d}x\,\mathrm{d}y` vani
 .. math::
   :label: orth_crd_eq024
 
-  ds^2 = \frac{\mathrm{d}x^2 + \mathrm{d}y^2}{4K^2 \, h^{\prime 2}(\theta)}
-       = \frac{\cos^4\frac{\theta}{2}}{K^2} (\mathrm{d}x^2 + \mathrm{d}y^2)
-       = \frac{\mathrm{d}x^2 + \mathrm{d}y^2}{K^2 (1+\tan^2\frac{\theta}{2})^2}.
+  \mathrm{d}s^2
+     = \frac{\mathrm{d}x^2 + \mathrm{d}y^2}{4K^2 \, h^{\prime 2}(\theta)}
+     = \frac{\cos^4\frac{\theta}{2}}{K^2} (\mathrm{d}x^2 + \mathrm{d}y^2)
+     = \frac{\mathrm{d}x^2 + \mathrm{d}y^2}{K^2 (1+\tan^2\frac{\theta}{2})^2}.
 
 By applying transformation :eq:`orth_crd_eq018`, one may eliminate the co-latitude:
 
 .. math::
   :label: orth_crd_eq025
 
-  ds^2 = \frac{\mathrm{d}x^2 + \mathrm{d}y^2}{K^2
-         \left(1+\frac{x^2+y^2}{(2R_\mathrm{e}K)^2}\right)^2},
+  \mathrm{d}s^2
+     = \frac{\mathrm{d}x^2 + \mathrm{d}y^2}{K^2
+       \left(1+\frac{x^2+y^2}{(2R_\mathrm{e}K)^2}\right)^2},
 
 from which the metric tensor of the projection can be inferred:
 
