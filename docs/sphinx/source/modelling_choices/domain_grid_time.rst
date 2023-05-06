@@ -150,7 +150,7 @@ The numbers of grid points result as :math:`k_\mathrm{c,max}+1`, :math:`k_\mathr
 * ``KRMAX`` (:math:`=k_\mathrm{r,max}`, maximum value of the index :math:`k_\mathrm{r}`),
 * ``DEFORM`` (:math:`=a`, exponential stretch parameter for the :math:`\zeta_\mathrm{c}` domain).
 
-For all other thermodynamics schemes (ENTC, ENTM, COLD; see Section ":ref:`ice_thermodynamics`"), the entire ice column (no matter whether cold or temperate) is mapped on the :math:`\zeta_\mathrm{c}` domain. The :math:`\zeta_\mathrm{t}` domain is then redundant and collapses onto the ice base:
+For all other thermodynamics schemes (ENTC, ENTM, COLD, ISOT; see Section ":ref:`ice_thermodynamics`"), the entire ice column (no matter whether cold or temperate) is mapped on the :math:`\zeta_\mathrm{c}` domain. The :math:`\zeta_\mathrm{t}` domain is then redundant and collapses onto the ice base:
 
 .. math::
   :label: eq_sigma_trans_enth
@@ -222,4 +222,4 @@ The thermodynamic and isostatic time steps must be equal to or integer multiples
 * ``DTIME_TEMP0`` (:math:`=\Delta{}t_\mathrm{temp}`, thermodynamic time step, in a),
 * ``DTIME_WSS0`` (:math:`=\Delta{}t_\mathrm{wss}`, isostatic time step, in a).
 
-Further, there is a parameter ``YEAR_ZERO`` that specifies the SICOPOLIS year zero in astronomical year numbering [= signed year CE (AD)]. For instance, if set to 1990, the time count of SICOPOLIS will be relative to the calendar year 1990 CE. ``TIME_INIT0`` and ``TIME_END0`` must be given in this SICOPOLIS calendar.
+Further, there is a parameter ``YEAR_ZERO`` that specifies the SICOPOLIS year zero in astronomical year numbering [= signed year CE (AD)]. For instance, if set to ``1990``, the time count of SICOPOLIS will be relative to the calendar year 1990 CE. ``TIME_INIT0`` and ``TIME_END0`` must be given in this SICOPOLIS calendar.
