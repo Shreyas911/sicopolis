@@ -3,7 +3,7 @@
 Ice thermodynamics
 ******************
 
-For modelling ice thermodynamics, five different options are available, which can be chosen by the parameter ``CALCMOD``\:
+For modelling ice thermodynamics, five different options are available, which can be chosen in the run-specs header by the parameter ``CALCMOD``\:
 
 .. code-block:: fortran
 

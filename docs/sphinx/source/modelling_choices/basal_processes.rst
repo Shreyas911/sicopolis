@@ -51,7 +51,11 @@ If set to ``0``, the geothermal heat flux is imposed directly at the grounded ic
 Basal hydrology
 ===============
 
-Lorem ipsum...
+Basal hydrology can be selected in the run-specs header by the parameter ``BASAL_HYDROLOGY``\:
+
+* If set to ``0``, basal hydrology is ignored.
+
+* If set to ``1``, it is assumed that basal water exists and moves in a thin (order of millimetres) and distributed water film. The film thickness is computed by a steady-state routing scheme for subglacial water that receives its input from the basal melting rate under grounded ice (Le Brocq et al. :cite:`lebrocq_etal_2006, lebrocq_etal_2009`, Calov et al. :cite:`calov_etal_2018`). The computations are carried out by the module ``hydro_m``.
 
 .. _gia:
 
