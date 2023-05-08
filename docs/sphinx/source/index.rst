@@ -8,7 +8,7 @@ SICOPOLIS User Manual
 
 .. only:: html
 
-.. image:: GrIS_Midnight_Sun_with_Halo_June_1995.jpg
+.. image:: figs/GrIS_Midnight_Sun_with_Halo_June_1995.jpg
    :width: 500 px
    :alt: Midnight Sun with Halo over the Greenland Ice Sheet
    :align: center
@@ -32,5 +32,6 @@ Authors
    plotting_and_tools
    modelling_choices/index
    AD/AD
+   technical_notes/index
    how_to_contribute
    references

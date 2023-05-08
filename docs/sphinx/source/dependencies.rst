@@ -10,7 +10,7 @@ NetCDF
 
 NetCDF (Network Common Data Form) is a common format for scientific data (`doi: 10.5065/D6H70CW6 <https://doi.org/10.5065/D6H70CW6>`__) that is also used by SICOPOLIS. The NetCDF C and Fortran libraries are required.
 
-For **GCC**, installation from a package manager is recommended. Under openSUSE Leap 15.2, install netcdf, netcdf-devel, netcdf-devel-static, netcdf-fortran, netcdf-fortran-devel, netcdf-fortran-static, ncview. This requires the repositories "Software for Scientists and Engineers" and "sebschub's Home Project". Details (especially the required repositories) will differ for other systems.
+For **GCC**, installation from a package manager is recommended. Under openSUSE Leap 15.2, install ``netcdf``, ``netcdf-devel``, ``netcdf-devel-static``, ``netcdf-fortran``, ``netcdf-fortran-devel``, ``netcdf-fortran-static``, ``ncview``. This requires the repositories "Software for Scientists and Engineers" and "sebschub's Home Project". Details (especially the required repositories) will differ for other systems.
 
 For the **Intel compiler**, building from the source code is required. The C and Fortran sources are available for download on the `NetCDF website <https://doi.org/10.5065/D6H70CW6>`__ as zip or tar archives. Unzip the archives into temporary directories.
 
@@ -116,11 +116,11 @@ For the **Intel compiler**, building from the source code is required. The C and
 
   This was tested under openSUSE Leap 15.3 and icc/ifort 19.1 with versions zlib-1.2.11, hdf5-1.12.1, netcdf-c-4.8.1 and netcdf-fortran-4.5.4.
 
-  If installation from a package manager does not work out for GCC, try the above procedure, replacing everywhere 'icc' and 'ifort' by 'gcc' and 'gfortran', respectively.
+  If installation from a package manager does not work out for GCC, try the above procedure, replacing everywhere ``icc`` and ``ifort`` by ``gcc`` and ``gfortran``, respectively.
 
 If needed, further instructions can be found on the `NetCDF website <nc>`__.
 
-Installation under /opt usually requires admin rights. The same holds for the common alternative /usr/local. For a local installation, replace it by '/home/<my_user_name>/local'.
+Installation under ``/opt`` usually requires admin rights. The same holds for the common alternative ``/usr/local``. For a local installation, replace it by ``/home/<my_user_name>/local``.
 
 .. _dependencies-lis:
 
@@ -144,6 +144,6 @@ For **GCC**, install lis by executing::
 
 This was tested under openSUSE Leap 15.2 and Linux Mint 20.1 with lis-2.0.30. Some modifications might be needed under different systems.
 
-For the **Intel compiler**, replace 'gcc' and 'gfortran' by 'icc' and 'ifort', respectively.
+For the **Intel compiler**, replace ``gcc`` and ``gfortran`` by ``icc`` and ``ifort``, respectively.
 
-Installation under /opt usually requires admin rights. The same holds for the common alternative /usr/local. For a local installation, replace it by '/home/<my_user_name>/local'.
+Installation under ``/opt`` usually requires admin rights. The same holds for the common alternative ``/usr/local``. For a local installation, replace it by ``/home/<my_user_name>/local``.

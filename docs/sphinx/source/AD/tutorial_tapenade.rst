@@ -832,7 +832,7 @@ The results are shown here. The adjoint and the tangent linear model agree with 
 
 A plot of these results is also shown here. To the naked eye, these results are identical.
 
-.. figure:: t2_results.png
+.. figure:: figs/t2_results.png
    :class: with-border
 
    ``xxb`` vs ``x`` for all methods used to calculate the sensitivities.

@@ -1,0 +1,417 @@
+﻿<HTML>
+
+<HEAD>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <meta name="author" content="Ralf Greve">
+  <meta name="description" content="SICOPOLIS version history">
+  <meta name="keywords" content="ice, sheet, ice-sheet, model, free, software, SICOPOLIS, Ralf, Greve">
+  <meta name="content-language" content="en">
+  <meta name="robots" content="index, follow">
+  <title>SICOPOLIS version history (2.9 and older)</title>
+  <link href="../styles/ralf_style.css" rel="stylesheet" type="text/css">
+  <link rel="icon" type="image/x-icon" href="../pics/sico-icecube.ico">
+  <link rel="shortcut icon" type="image/x-icon" href="../pics/sico-icecube.ico" />
+  <!-- <link type="image/x-icon" href="../pics/sico-icecube.ico" /> -->
+</HEAD>
+
+<BODY>
+
+<table align="center" cellpadding="25" cellspacing="0"
+       bgcolor="#ffffff" width=750>
+<tr><td>
+
+<hr>
+
+<H1>Ice sheet model SICOPOLIS</H1>
+
+<p style="text-align:center">
+&#x25b6;&nbsp;
+[<A HREF="../">Home</A>]&nbsp;
+[<A HREF="../index.html#get">Get SICOPOLIS</A>]&nbsp;
+[<A HREF="../index.html#docs">Documentation</A>]&nbsp;
+[<A HREF="../publ/">Publications</A>]&nbsp;
+[<A HREF="../index.html#support">Support</A>]&nbsp;
+[<A HREF="../archive/">Archive</A>]&nbsp;
+[<A HREF="../logo.html">Logo</A>]&nbsp;
+&#x25c0;
+</p>
+
+<hr>
+
+<H2>Version history (2.9 and older)</H2>
+
+<pre>
+
+   Current version : 2.9
+   Date            : 2008-12-17
+
+   *****************************************************************
+   V1.0: Modular version of SICOPOLIS, applicable to any
+         ice sheet.
+         -----------------------------------------------------------
+         Based on sicopolis_nhem.F95 V4.0
+         (northern-hemisphere version of SICOPOLIS).
+   -----------------------------------------------------------------
+   V1.1: Optional new boundary conditions for the ice
+         surface at the margin of the computational domain
+         (parameter BC_MARG).
+   -----------------------------------------------------------------
+   V1.2: Optional first-order-upstream discretization
+         of vertical advection terms without artificial
+         diffusion in the age equation
+         (parameter ADV_VERT).
+         -----------------------------------------------------------
+         Optional exponential coupling between accumulation
+         and delta_ts (parameter ACCSURFACE==3).
+   -----------------------------------------------------------------
+   V1.3: New module for the southern hemisphere included
+         (parameter DOMAIN==4).
+         -----------------------------------------------------------
+         Improved reading of ice-core-temperature and
+         sea-level data, no longer restricted to the
+         interval from 250 kyr BP to today.
+         -----------------------------------------------------------
+         New model domain for Scandinavia included
+         (parameter DOMAIN==2).
+   -----------------------------------------------------------------
+   V1.4: New module for Antarctica included.
+         -----------------------------------------------------------
+         Bugfix in subroutines sico_init
+         (for grl, shem, nmars):
+         Parameter list in calls of subroutine boundary
+         for parameter ANF_DAT==3 corrected.
+         -----------------------------------------------------------
+         Mars module: Degree-day model replaced by simpler
+         accumulation-ablation parameterization.
+   -----------------------------------------------------------------
+   V2.0: All file extensions changed from '.F95' to '.F90'.
+         -----------------------------------------------------------
+         COMMON blocks in input file 'sico.common' replaced
+         by module 'sico_variables'.
+         -----------------------------------------------------------
+         Character variable 'runname' (name of current run)
+         can have an arbitrary length of less than
+         100 characters.
+         -----------------------------------------------------------
+         Variables d_help_c, d_help_t, h_diff,
+         maske, maske_help, n_cts, n_cts_neu, kc_cts,
+         as_perp, temp_s
+         now declared globally in module 'sico_variables'.
+         -----------------------------------------------------------
+         The header file 'sicoheader.F95' does no longer
+         exist; however, 'sicopolis.F90' is compiled
+         directly.
+         -----------------------------------------------------------
+         Header file with simulation specifications must
+         be called 'sico_specs.h'.
+         -----------------------------------------------------------
+         Explicit definition of paths INPATH (for input
+         files), OUTPATH (for output files), ANFDATPATH
+         (for initial-value file) and Z_SLE_PATH (for
+         previously computed time-series file with
+         sea-level equivalents) in specifications file.
+         -----------------------------------------------------------
+         Parameter DOMAIN removed. Instead, the
+         computational domain is now defined by a macro
+         ANT, GRL, SCAND, NHEM, SHEM, EMTP2SGE or NMARS.
+         -----------------------------------------------------------
+         Parameter BC_MARG (see version 1.1) removed, back
+         to zero-thickness boundary condition at the margin
+         of the numerical domain as the only possibility.
+         -----------------------------------------------------------
+         Geothermal heat flux (Q_GEO), flow-enhancement factor
+         (ENH) and minimum ice thickness interpreted as glaciation
+         (H_MIN) now defined in header file sico_specs.h.
+         -----------------------------------------------------------
+         Physical parameters now read from a file by the
+         new subroutine 'phys_para'.
+         -----------------------------------------------------------
+         Indexing of arrays RF(T), KAPPA(T) and C(T)
+         changed such that the index T now corresponds to
+         the temperature in deg C.
+         -----------------------------------------------------------
+         Computation of the horizontal mass flux qx, qy
+         moved from subroutine 'calc_top' to subroutine
+         'calc_vxy'.
+         -----------------------------------------------------------
+         Forcing quantities delta_ts and z_sl added to
+         the output for the time-slice files produced by
+         subroutine 'output1'.
+         -----------------------------------------------------------
+         Bugfix in subroutine 'calc_top':
+         In the diffusive smoothing scheme for zs_neu, the
+         denominator of the correction factor 'korrfakt'
+         can no longer become zero due to the insertion
+         of a volume offset eps_vol.
+   -----------------------------------------------------------------
+   V2.0.1: Maximum surface velocity now written to the time-series
+           files.
+   -----------------------------------------------------------------
+   V2.0.2: Module for the southern hemisphere deleted.
+           ---------------------------------------------------------
+           New Greenland topography data based on Letreguilly and
+           ETOPO5 with slightly smoothed relaxed bedrock used.
+   -----------------------------------------------------------------
+   V2.0.3: Limitation of the computed horizontal velocities to an
+           interval [-VH_MAX, VH_MAX] to be prescribed in the
+           header file.
+   -----------------------------------------------------------------
+   V2.0.4: Implementation of alternative flow laws
+           (Goldsby-Kohlstedt, Durham) in addition to the usual
+           Glen's flow law (parameter FLOW_LAW).
+           ---------------------------------------------------------
+           For the north polar cap of Mars, the average dust content
+           of the ice can be specified (parameter FRAC_DUST).
+   -----------------------------------------------------------------
+   V2.1: Spatially variable geothermal heat flux implemented, can
+         be chosen by new parameter Q_GEO_MOD.
+         -----------------------------------------------------------
+         Output of time-series file for ice-core locations
+         prescribed in subroutine sico_init implemented
+         (parameter OUTSER==3).
+         -----------------------------------------------------------
+         New module for the south-polar cap of Mars included
+         (macro SMARS).
+         -----------------------------------------------------------
+         For the Martian ice caps (NMARS, SMARS), the mass balance
+         is now converted from water equiv. to (ice+dust) equiv.
+         (previously the dust was ignored).
+   -----------------------------------------------------------------
+   V2.2: Sub-melt basal sliding implemented (parameter GAMMA_SLIDE
+         in phys_para file; 0: no sub-melt sliding).
+         -----------------------------------------------------------
+         Greenland:
+         - New Bamber topography implemented, horizontal resolution
+           40, 20 or 10 km.
+         - Surface temperatures (mean annual, mean July)
+           parameterised by Ritz et al. (1997).
+         - Precipitation instead of solid accumulation used as
+           input.
+         - Reeh's degree day model with statistical fluctuations,
+           supplemented by explicit consideration of rainfall
+           and different ice/snow degree-day factors for warm
+           and cold conditions (parameters BETA1_LT_0, BETA1_HT_0,
+           BETA2_LT_0, BETA2_HT_0 in phys_para file).
+         - Net surface mass balance computed as precipitation minus
+           runoff (previously solid accumulation minus melting).
+         - Optional climate forcing by glacial index and prescribed
+           LGM anomalies for surface temperature and precipitation
+           (parameters TSURFACE==5 and ACCSURFACE==5).
+         -----------------------------------------------------------
+         Martian ice caps (NMARS, SMARS):
+         - Accumulation input either in water equiv.
+           or in (ice+dust) equiv. (parameter ACC_UNIT).
+         - Lower limit of -125/-128 deg C (sublimation temperature
+           of CO2 over the NPC/SPC) introduced for the ice surface
+           temperature.
+   -----------------------------------------------------------------
+   V2.3: Implementation of Bjoern Grieger's surface-temperature
+         parameterisation for the Martian ice caps (parameter
+         TSURFACE==6).
+         -----------------------------------------------------------
+         Greenland: Optional linear or exponential interpolation
+         function for glacial-index-based precipitation forcing
+         (parameter PRECIP_ANOM_INTERPOL).
+   -----------------------------------------------------------------
+   V2.4: Implementation of an elastic lithosphere (ELRA model),
+         based on Sascha Knell's diploma thesis
+         (parameter REBOUND==2)
+         -----------------------------------------------------------
+         Implementation of Bernd Muegge's conservative first-order
+         upstream scheme for the age equation
+         (parameters ADV_HOR==3 and ADV_VERT==3).
+         -----------------------------------------------------------
+         Antarctica, Scandinavia (Greenland see V2.2):
+         - Precipitation instead of solid accumulation used as
+           input.
+         - Reeh's degree day model with statistical fluctuations,
+           supplemented by explicit consideration of rainfall.
+         - Net surface mass balance computed as precipitation minus
+           runoff (previously solid accumulation minus melting).
+         - Optional climate forcing by glacial index and prescribed
+           LGM anomalies for surface temperature and precipitation
+           (parameters TSURFACE==5 and ACCSURFACE==5).
+         -----------------------------------------------------------
+         Northern-hemisphere module no longer up-to-date, therefore
+         deleted for the time being.
+         -----------------------------------------------------------
+         Compatibility check between version number of SICOPOLIS
+         and version number in header file.
+   -----------------------------------------------------------------
+   V2.4.1: Antarctica, Scandinavia, Greenland:
+           - Optional computation of surface melting (ablation)
+             by the positive-degree-day (PDD) method
+             or the linear-temperature-index (LTI) method
+             (parameter ABLSURFACE).
+           - Computation of positive degree days (subroutine pdd)
+             changed from annual sinus cycle of the surface
+             temperature to direct use of monthly-mean temperatures.
+           ---------------------------------------------------------
+           Scandinavia:
+           - Climate input (surface temperature, precipitation)
+             changed from seasonal to monthly-mean values.
+           - Optional horizontal resolutions 40, 20 or 10 km.
+   -----------------------------------------------------------------
+   V2.5: Basal sliding now computed in new subroutine calc_vxy_b.
+         Parameters of sliding law are set in the header file
+         (previously in phys_para file). New options: Weertman
+         exponents can be chosen freely, alternative use of
+         full or reduced pressure in sliding law.
+         -----------------------------------------------------------
+         Antarctica, Greenland, Scandinavia:
+         Two variants of PDD, either with instantaneous runoff of
+         rainfall (ABLSURFACE==1), or with contribution of rainfall
+         to formation of superimposed ice (ABLSURFACE==2).
+         Linear-temperature-index (LTI) method is now chosen by
+         ABLSURFACE==3.
+         -----------------------------------------------------------
+         North- and south-polar cap of Mars:
+         In addition to the density and the heat conductivity,
+         now the specific heat is also computed as a
+         volume-fraction-weighed mean of the ice and dust values,
+         respectively. Function c_val changed accordingly.
+         -----------------------------------------------------------
+         EISMINT Phase 2 Simplified Geometry Experiment:
+         Input file surf_para_emtp2sge.dat and subroutine surf_para
+         deleted. Parameters now defined in header file.
+         -----------------------------------------------------------
+         Minimum bedrock elevation for extent of marine ice
+         defined by new variable z_mar. Can be chosen as a constant
+         (MARGIN==2, old option), as proportional to the sea-level
+         stand (MARGIN==3, new option) or as a piecewise linear
+         function of sea level (MARGIN==4, new option; as proposed
+         by Zweck and Huybrechts, 2005).
+   -----------------------------------------------------------------
+   V2.6: New module for ISMIP HEINO included (defined by macro
+         HEINO).
+         -----------------------------------------------------------
+         Additional output of the basal frictional heating in the
+         time-series file for the ice-core locations.
+         -----------------------------------------------------------
+         All constants throughout the program defined consistently
+         as double-precision constants.
+         -----------------------------------------------------------
+         New global parameters pi, pi_inv, pi_180, pi_180_inv, eps.
+   -----------------------------------------------------------------
+   V2.7: Special treatment for the chasms of the Martian NPC (Chasma
+         Borealis) and SPC (Chasma Australis) implemented (optional,
+         parameter CHASM==2). Chasm regions defined in additional
+         mask file -> larger geothermal heat flux and wind erosion
+         rate active within prescribed time interval (specified in
+         header file).
+         -----------------------------------------------------------
+         ISMIP HEINO: Time-series output for the sediment region
+         ("Hudson Bay, Hudson Strait") in new file runname.sed.
+         -----------------------------------------------------------
+         Improved restart: Time derivatives dzs_dtau, dzm_dtau,
+         dzb_dtau, dH_c_dtau and dH_t_dtau written to time-slice
+         files and read by restart routine topography3. Further,
+         Q_b_tot is computed as the sum of Q_bm and Q_tld in
+         initialization routine sico_init.
+         -----------------------------------------------------------
+         In addition to Q_b_tot (formerly called Q_mean), now also
+         limitations of Q_bm and Q_tld with the same lower and upper
+         limits, QB_MIN and QB_MAX, respectively.
+         -----------------------------------------------------------
+         In subroutine output2 Reinhard Calov's method for computing
+         the ice equivalent of the water volume below the sea level
+         (V_ges_redu) implemented.
+   -----------------------------------------------------------------
+   V2.7.1: Martian ice caps (NMARS, SMARS):
+           New topography inputs based on the MOLA MEGDR data with
+           64 pix/deg resolution. Optional horizontal resolutions
+           20, 10 or 5 km.
+   -----------------------------------------------------------------
+   V2.7.2: x and y coordinates of the origin point (i,j) = (0,0)
+           now defined in header file as X0 and Y0.
+           ---------------------------------------------------------
+           Optional computation of the evolution of the free
+           surface as usual (parameter ZS_EVOL==1),
+           or keeping the free surface fixed on the initial
+           topography (parameter ZS_EVOL==0).
+           ---------------------------------------------------------
+           Greenland:
+           Update of the ice-core positions according to Dahl-Jensen
+           (pers. comm. 2006) and inclusion of the planned NEEM
+           core.
+           ---------------------------------------------------------
+           Martian ice caps (NMARS, SMARS):
+           New version of module instemp for the LIT scheme
+           implemented.
+   -----------------------------------------------------------------
+   V2.8: Greenland:
+         Optional special sliding law for the North-East Greenland
+         Ice Stream NEGIS (parameter ICE_STREAM==2).
+         Surface meltwater effect on basal sliding implemented.
+         -----------------------------------------------------------
+         ISMIP HEINO:
+         Optional 25-km resolution implemented (in addition to the
+         standard resolution of 50 km).
+         -----------------------------------------------------------
+         Antarctica:
+         Re-formatting and re-naming of the input data (now same
+         style and units like for Greenland). Topography input newly
+         created from RAMPDEM V2 and BEDMAP data-sets, with an
+         additional 20-km resolution implemented.
+   -----------------------------------------------------------------
+   V2.8.1: Northern-hemisphere module reintroduced, topography
+           files newly created for horizontal resolutions of
+           80, 40 and 20 km.
+           ---------------------------------------------------------
+           Explicit introduction of the evaporation (variable evap).
+           In the modules for the terrestrial ice sheets, evap is
+           set to zero, whereas in the modules for the Martian
+           ice caps, evap accounts for the entire ablation.
+           ---------------------------------------------------------
+           ISMIP HEINO:
+           Introduction of the option ANF_DAT==1, which defines the
+           initial topography as a thin ice layer (with a thickness
+           of 2*H_MIN) everywhere on the land area.
+   -----------------------------------------------------------------
+   V2.9: New module for Tibet included (defined by macro TIBET).
+         -----------------------------------------------------------
+         Greenland:
+         Parameterization for the surface meltwater effect on basal
+         sliding changed; additional dependence on ice thickness
+         and possible nonlinear dependence on runoff.
+         -----------------------------------------------------------
+         Topography files (for zs, zb, zb0, mask) can now be
+         specified in the header file.
+   *****************************************************************
+
+</pre>
+
+<hr>
+
+<p style="text-align:center"><A HREF="../pics/SICOPOLIS-Logo.png"><IMG 
+   SRC="../pics/SICOPOLIS-Logo-150px.png" alt="SICOPOLIS Logo"></A></p>
+
+<p style="text-align:center">
+&#x25b6;&nbsp;
+[<A HREF="../">Home</A>]&nbsp;
+[<A HREF="../index.html#get">Get SICOPOLIS</A>]&nbsp;
+[<A HREF="../index.html#docs">Documentation</A>]&nbsp;
+[<A HREF="../publ/">Publications</A>]&nbsp;
+[<A HREF="../index.html#support">Support</A>]&nbsp;
+[<A HREF="../archive/">Archive</A>]&nbsp;
+[<A HREF="../logo.html">Logo</A>]&nbsp;
+&#x25c0;
+</p>
+
+</td></tr>
+</table>
+
+<table align="center" cellpadding="0" cellspacing="0" width=750>
+<tr><td>
+
+<p align="right">&nbsp;<br>Last modified:
+2023-04-21 by
+<A HREF="http://wwwice.lowtem.hokudai.ac.jp/~greve/">Ralf Greve</A>
+&nbsp;&nbsp;<br>&nbsp;</p>
+
+</td></tr>
+</table>
+
+</BODY>
+</HTML>

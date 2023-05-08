@@ -10,4 +10,5 @@ Modelling choices
    ice_dynamics
    ice_thermodynamics
    basal_processes
+   calving
    climate_forcing

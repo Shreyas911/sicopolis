@@ -1,0 +1,102 @@
+/* Main body */
+
+body {
+  background-color: #e0e0e0;
+}
+
+/* General styles */
+
+* {
+  color:#000000; 
+}
+
+body, h1, h2, h3, h4, p, ul, ol, li, dl, dt, dd, div, td, th, address, blockquote { 
+  font-family: "Trebuchet MS", Trebuchet, Arial, Verdana, sans-serif;
+}
+
+h1 { 
+  font-size: 26px; 
+  line-height: 36.8px;
+  margin-top: 18px; 
+  margin-bottom: 18px;
+  color: #0000ff;
+}
+
+h2 { 
+  font-size: 21px; 
+  line-height: 29.7px;
+  margin-top: 14px; 
+  margin-bottom: 14px; 
+  color: #0000ff;
+}
+
+h3 { 
+  font-size: 16px; 
+  line-height: 22.6px;
+  margin-top: 12px; 
+  margin-bottom: 12px; 
+  color: #0000ff;
+}
+
+h4 { 
+  font-size: 13.4px; 
+  line-height: 19px;
+  margin-top: 11px; 
+  margin-bottom: 11px; 
+  color: #0000ff;
+}
+
+.nomargintopbottom {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+p, ul, ol, li, dl, dt, dd, div, td, th, address, blockquote { 
+  font-size:13.4px; 
+  line-height: 19px;
+}
+
+p.small {
+  font-size:12px; 
+  line-height: 17px;
+}
+
+li,dt { 
+  margin-top: 1px; 
+  margin-bottom: 1px;
+}
+
+dd {
+  margin-top: 1px;
+  margin-bottom: 12px;
+}
+
+img {
+  border: none;
+}
+
+img.email {
+  border: none;
+}
+
+code, pre {
+  font-family: "Courier New", Courier, monospace; 
+  font-size: 13.4px; 
+}
+
+hr {
+  color : #fff;
+  border: none;
+  border-bottom: 1px solid #666;
+  height : 0px;
+}
+
+a:link, a:visited {
+  color: #005599;
+  text-decoration: none;
+}
+
+a:hover {
+  background-color: #ddd;
+}
+
