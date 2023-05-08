@@ -2,8 +2,14 @@
 # (Selection of shell)
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# copy_templates.sh
+#
+# Description:
 #   Making local, not version-controlled copies of the scripts for executing
 #   SICOPOLIS and the run-specification header files.
+#
+# Author: Ralf Greve
+# Date:   2022-12-26
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 CP=/bin/cp
@@ -34,4 +40,5 @@ $CP -f ${HEADER_DIR}/${TEMPLATE_DIR_NAME}/*.h ${HEADER_DIR}
 echo "... done!"
 echo " "
 
-#--------
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#

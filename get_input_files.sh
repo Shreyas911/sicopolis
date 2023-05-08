@@ -2,10 +2,14 @@
 # (Selection of shell)
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# get_input_files.sh
+#
+# Description:
 #   Downloading the input files for SICOPOLIS,
 #   copying them to the corresponding directories.
-#   
-#    - Ralf Greve, 2022-11-08.
+#
+# Author: Ralf Greve
+# Date:   2023-05-08
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #-------- Settings (to be customized) --------
@@ -36,7 +40,7 @@ MOCHO_FLAG=1     # Mocho-Choshuenco ice cap:
 #-------- Initialization --------
 
 # Zenodo repo:
-REPO_URL=https://zenodo.org/record/7197105/files
+REPO_URL=https://zenodo.org/record/7906826/files
 
 # Backup repo:
 # REPO_URL=http://wwwice.lowtem.hokudai.ac.jp/repo/sicopolis/sico_in
@@ -118,4 +122,5 @@ $RM -rf $TMP_DIR
 
 echo; echo "... done!"; echo
 
-#--------
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
