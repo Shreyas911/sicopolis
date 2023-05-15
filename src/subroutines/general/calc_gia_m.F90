@@ -448,38 +448,46 @@ call myceiling(2.0_dp*sigma_filter, n_filter)
 
 n_filter = max(n_filter, 5)
 
-zl0_smoothed = 0.0_dp
+if (sigma_filter > eps_sp_dp) then
 
-do i=0, IMAX
-do j=0, JMAX
+   zl0_smoothed = 0.0_dp
 
-   sum_weigh = 0.0_dp
+   do i=0, IMAX
+   do j=0, JMAX
 
-   do m=-n_filter, n_filter
-   do n=-n_filter, n_filter
+      sum_weigh = 0.0_dp
 
-      i_f = i+m
-      j_f = j+n
+      do m=-n_filter, n_filter
+      do n=-n_filter, n_filter
 
-      if (i_f <    0) i_f =    0
-      if (i_f > IMAX) i_f = IMAX
+         i_f = i+m
+         j_f = j+n
 
-      if (j_f <    0) j_f =    0
-      if (j_f > JMAX) j_f = JMAX
+         if (i_f <    0) i_f =    0
+         if (i_f > IMAX) i_f = IMAX
 
-      dist      = sqrt(real(m,dp)**2+real(n,dp)**2)
-      weigh     = exp(-(dist/sigma_filter)**2)
-      sum_weigh = sum_weigh + weigh
+         if (j_f <    0) j_f =    0
+         if (j_f > JMAX) j_f = JMAX
 
-      zl0_smoothed(j,i) = zl0_smoothed(j,i) + weigh*zl0_raw(j_f,i_f)
+         dist      = sqrt(real(m,dp)**2+real(n,dp)**2)
+         weigh     = exp(-(dist/sigma_filter)**2)
+         sum_weigh = sum_weigh + weigh
+
+         zl0_smoothed(j,i) = zl0_smoothed(j,i) + weigh*zl0_raw(j_f,i_f)
+
+      end do
+      end do
+
+      zl0_smoothed(j,i) = zl0_smoothed(j,i)/sum_weigh
 
    end do
    end do
 
-   zl0_smoothed(j,i) = zl0_smoothed(j,i)/sum_weigh
+else
 
-end do
-end do
+   zl0_smoothed = zl0_raw   ! no smoothing
+
+end if
 
 !-------- Writing on ASCII file --------
 
