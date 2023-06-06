@@ -8,7 +8,7 @@
 !                      Version number of SICOPOLIS
 !                      for which this run-specs header is suitable
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2023-01-14'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2023-05-08'
 !                      Date of last change
 
 !-------- Domain --------
@@ -50,14 +50,19 @@
 !                       for GRID==0 or GRID==1
 
 #define DX 25.0d0
-!                       Horizontal grid spacing in km, for GRID==0
-!                       or GRID==1
-!                       ( 5 km    requires IMAX=300 and JMAX=300,
-!                         6.25 km requires IMAX=240 and JMAX=240,
-!                        10 km    requires IMAX=150 and JMAX=150,
-!                        12.5 km  requires IMAX=120 and JMAX=120,
-!                        25 km    requires IMAX= 60 and JMAX= 60,
-!                        75 km    requires IMAX= 20 and JMAX= 20)
+!                       Horizontal grid spacing in km, for GRID==0 or GRID==1
+!                           (  5 km    requires IMAX=300 and JMAX=300,
+!                              6.25 km requires IMAX=240 and JMAX=240,
+!                             10 km    requires IMAX=150 and JMAX=150,
+!                             12.5 km  requires IMAX=120 and JMAX=120,
+!                             20 km    requires IMAX= 75 and JMAX= 75,
+!                             25 km    requires IMAX= 60 and JMAX= 60,
+!                             50 km    requires IMAX= 30 and JMAX= 30,
+!                             75 km    requires IMAX= 20 and JMAX= 20,
+!                            100 km    requires IMAX= 15 and JMAX= 15,
+!                            125 km    requires IMAX= 12 and JMAX= 12,
+!                            150 km    requires IMAX= 10 and JMAX= 10,
+!                            250 km    requires IMAX=  6 and JMAX=  6)
 
 #define IMAX 60
 !                       IMAX+1: number of grid points in x-direction
@@ -422,24 +427,24 @@
 !                         3 : Initial values from previous
 !                             simulation
 
-#define ZS_PRESENT_FILE   'emtp2sge25_topo.nc'
+#define ZS_PRESENT_FILE   'emtp2sge025_topo.nc'
 !                             Name of the file containing the present-day
 !                             ice-surface topography
 
-#define ZB_PRESENT_FILE   'emtp2sge25_topo.nc'
+#define ZB_PRESENT_FILE   'emtp2sge025_topo.nc'
 !                             Name of the file containing the present-day
 !                             ice-base topography (only for ANF_DAT==1)
 
-#define ZL_PRESENT_FILE   'emtp2sge25_topo.nc'
+#define ZL_PRESENT_FILE   'emtp2sge025_topo.nc'
 !                             Name of the file containing the present-day
 !                             lithosphere-surface topography
 !                             (only for ANF_DAT==1)
 
-#define ZL0_FILE          'emtp2sge25_topo.nc'
+#define ZL0_FILE          'emtp2sge025_topo.nc'
 !                             Name of the file containing the topography
 !                             of the relaxed lithosphere surface
 
-#define MASK_PRESENT_FILE 'emtp2sge25_topo.nc'
+#define MASK_PRESENT_FILE 'emtp2sge025_topo.nc'
 !                             Name of the file containing the present-day
 !                             ice-land-ocean mask
 
