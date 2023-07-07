@@ -1,12 +1,15 @@
-.. _utilities:
+.. _ad_utilities:
+
+Utilities
+=========
 
 Continuous Integration (CI)
-===========================
+---------------------------
 
 We leverage the Continuous Integration (CI) infrastructure of Gitlab-CI. We have a suite of regression tests in our repository at ``test_ad/tests.py`` which leverage the ``pytest`` module in Python. The CI infrastructure allows us to automate the tests. Essentially, these tests are automatically triggered after new code is pushed to the remote repository. They run on an online ``gitlab runner`` which uses a virtual Docker environment that is correctly set up to run the SICOPOLIS code. The instructions that run in the Docker environment can be found in a file name ``.gitlab-ci.yml`` in the root directory. The status of tests can be seen with the help of the build badge in ``README.md`` in the ``ad`` branch.
 
 Code coverage
-=============
+-------------
 
 The information in this section is based on the slides of `Dr. Karl Schulz <https://oden.utexas.edu/people/directory/Karl-W.-Schulz/>`__.
 
@@ -49,14 +52,14 @@ You can click further on the hyperlinks to see individual files and lines.
    Example of graphical output for code coverage.
 
 Automation using Python scripts
-===============================
+-------------------------------
 
 ``test_ad/tapenade_config.py`` contains a few helpful functions for automating the setup and I/O of desired variables in the finite differences, tangent linear and adjoint mode.
  
 The Python functions get updated frequently, therfore the sections that follow are only supposed to serve as a basic guideline on what is possible using these scripts. With very little modifications, these scripts can be used to serve other purposes too.
 
 Automated Normal Mode
----------------------
+^^^^^^^^^^^^^^^^^^^^^
 
 To run the SICOPOLIS code normally (within the AD context, this is generally used to evaluate the cost function ``fc`` during calibration),
 
@@ -87,7 +90,7 @@ All of the above steps are bundled within the ``simulation`` function, which can
                       run_executable_auto = True)
 
 Automated Finite Differences
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A typical finite differences simulation requires perturbing the correct independent variable in the ``grdchk_main`` subroutine in ``src/subroutines/tapenade/tapenade_m.F90``. This is achieved as follows - 
 
@@ -143,7 +146,7 @@ All of the above steps are bundled within the ``simulation`` function, which can
 		      run_executable_auto = True)
 
 Automated Tangent Linear Mode
------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A typical tangent linear mode simulation is set up by giving the correct dependent and independent variables to Tapenade, using the correct I/O for the differentiated variables, and compiling correctly. This can be done easily using the Python functions in ``test_ad/tapenade_config.py``.
 
@@ -171,7 +174,6 @@ This step involves the following sub-steps:
 		 tapenade_m_file = tapenade_m_file,
 		 unit = unit)
 
-
 3. Compile the code.
 
 .. code-block:: python
@@ -179,14 +181,11 @@ This step involves the following sub-steps:
    compile_code(mode = 'forward', header = header, domain = domain,
                 clean = True, dep_var=dep_var, ind_vars = ind_var)
 
-
-
 4. Run the executable.
 
 .. code-block:: python
 
    run_executable('forward')
-
 
 All of the above steps are bundled within the ``simulation`` function, which can be run as follows -
 
@@ -203,7 +202,7 @@ All of the above steps are bundled within the ``simulation`` function, which can
 **NOTE**: While Tapenade can accept multiple independent variables at once, this automated script at least for now accepts only one independent variable at a time.
 
 Automated Adjoint Mode
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 The adjoint mode has the most possible options of what can be done with it. A typical adjoint simulation is set up by giving the correct dependent and independent variables to Tapenade, using the correct I/O for the differentiated variables, and compiling correctly. This can be done easily using the Python functions in ``test_ad/tapenade_config.py``. In addition, we can get the outputs of other adjoint variables, normal variables, both 2D and 3D at different time steps using the python script.
 
@@ -234,8 +233,7 @@ This step involves the following sub-steps:
 
    * Modify ``src/sico_main_loop_m_cpp_b.f90`` to write the variables the user specifies to appropriate files at correct times.
 
-     - **NOTE** - This implementation is a bit dependent on the strings in the differentiated code. For now, the Python script searches for certain strings in the differentiated code to decide where to add the I/O statements. Depending on configurations, these strings might not even be present in ``src/sico_main_loop_m_cpp_b.f90``, in which case the user would have to modify the script suitably after taking a look at ``src/sico_main_loop_m_cpp_b.f90``. 
-
+     - **NOTE** - This implementation is a bit dependent on the strings in the differentiated code. For now, the Python script searches for certain strings in the differentiated code to decide where to add the I/O statements. Depending on configurations, these strings might not even be present in ``src/sico_main_loop_m_cpp_b.f90``, in which case the user would have to modify the script suitably after taking a look at ``src/sico_main_loop_m_cpp_b.f90``.
 
 .. code-block:: python
 
@@ -279,7 +277,7 @@ All of the above steps are bundled within the ``simulation`` function, which can
 **NOTE**: While Tapenade can accept multiple independent variables at once, and this automated script accepts multiple independent variables too, we have only tested it with one independent variable at a time.
 
 Input options
--------------
+^^^^^^^^^^^^^
 
 While executing the Python script the following input options are available to the users.
 
@@ -305,12 +303,11 @@ While executing the Python script the following input options are available to t
 Using all of these options on terminal can get cumbersome. Alternatively, one can use an input ``json`` file as explained below.
 
 Reading inputs from a file
---------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 We use the "header" files in the ``json`` format to provide inputs to ``test_ad/tapenade_config.py``. Note that this is an alternative to writing the entire python command on the terminal, which can get cumbersome and unwieldy. Note that one can also provide some options on terminal, and some in the ``inputs.json`` file. If an option is specified both on the terminal and in the json file, the value specified on the terminal takes precedence.
 
-Sample inputs.json file
-^^^^^^^^^^^^^^^^^^^^^^^
+**Sample inputs.json file:**
 
 A sample ``inputs.json`` file is provided here that acts as a "header" file for our AD workflow.
 
@@ -337,9 +334,8 @@ A sample ``inputs.json`` file is provided here that acts as a "header" file for 
        "output_adj_iters": ["1", "2", "-1", "1", "2", "-1", "1", "2", "-1"]
    }
 
-
 Validation
-----------
+^^^^^^^^^^
 
 Validation of AD (``adjoint, forward``) with finite differences (``grdchk``) can be performed as follows (within the defined tolerance ``TOL``) -
 

@@ -1,9 +1,11 @@
-.. _tutorials:
+.. _ad_tutorials:
 
 Tutorials
 *********
 
 .. toctree::
-    tutorial_self_ad.ipynb
-    tutorial_tapenade.rst
-    tutorial_validation.rst
+   :maxdepth: 3
+
+   tutorial_self_ad.ipynb
+   tutorial_tapenade.rst
+   tutorial_validation.rst

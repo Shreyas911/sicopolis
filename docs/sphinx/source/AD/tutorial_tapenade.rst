@@ -1,6 +1,6 @@
-.. _tutorial_tapenade:
+.. _ad_tutorial_tapenade:
 
-Tutorial 2 : Using Tapenade for a mountain glacier model 
+Tutorial 2: Using Tapenade for a mountain glacier model 
 ********************************************************
 
 In this tutorial, we will describe the steps to use Tapenade to develop the tangent linear and adjoint codes for a simple PDE-based mountain glacier model. The model itself is inspired from the book Fundamentals of Glacier Dynamics, by CJ van der Veen and has been used for glaciology summer schools before, for example `here <http://websrv.cs.umt.edu/isis/index.php/Adjoint_models>`__ , although they used a different tool to develop the adjoint model. 
@@ -860,5 +860,4 @@ Using binomial checkpointing is extremely simple with Tapenade. First we add the
        !!!! Stuff inside the time loop.
    end do
 
-Notice that for the fortran compiler the line we just added is a comment, but when Tapenade parses the code, it knows it needs to use binomial checkpointing. The line essentially tells Tapenade the following - "Use binomial checkpointing for this loop which has nt+1 steps (if you count the exit iteration as well), checkpoint every 20 steps, with the first step numbered as 1." Tapenade uses some subroutines whose names start with ``ADBINOMIAL`` to manage the checkpointing and thus we need to link to the ``adBinomial.c`` file in the Makefile so that  we tell the compiler what these subroutines are. (essentially the same thing we did with ``adStack.c``)
-
+Notice that for the fortran compiler the line we just added is a comment, but when Tapenade parses the code, it knows it needs to use binomial checkpointing. The line essentially tells Tapenade the following - "Use binomial checkpointing for this loop which has nt+1 steps (if you count the exit iteration as well), checkpoint every 20 steps, with the first step numbered as 1." Tapenade uses some subroutines whose names start with ``ADBINOMIAL`` to manage the checkpointing and thus we need to link to the ``adBinomial.c`` file in the Makefile so that  we tell the compiler what these subroutines are. (Essentially the same thing we did with ``adStack.c``.)

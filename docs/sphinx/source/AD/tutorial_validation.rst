@@ -1,6 +1,6 @@
-.. _tutorial_validation:
+.. _ad_tutorial_validation:
 
-Tutorial 3 : Validating results of SICOPOLIS adjoint and tangent linear mode with Finite differences 
+Tutorial 3: Validating results of SICOPOLIS adjoint and tangent linear mode with Finite differences 
 ****************************************************************************************************
 
 In this tutorial, we will discuss how results we get from the adjoint and tangent linear modes (TLM) can be validated with a Finite Differences (FD) run. we use the header file ``v5_grl16_bm5_ss25ka`` provided as a reference template in SICOPOLIS. We shorten, however, the total time to 100 years, to keep the computational cost of the tangent linear and finite differences code reasonable. Our objective or cost function is the total volume of the ice sheet at the end of the run (``fc``). The sensitivity is evaluated with respect to the geothermal heat flux, ``q_geo``, a 19,186-dimensional field.

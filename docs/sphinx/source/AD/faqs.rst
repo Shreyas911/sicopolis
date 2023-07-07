@@ -1,4 +1,4 @@
-.. _theory:
+.. _ad_faqs:
 
 Some FAQs
 *********
