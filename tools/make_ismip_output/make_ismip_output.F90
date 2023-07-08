@@ -9,7 +9,7 @@
 !!
 !! @section Date
 !!
-!! 2023-02-08
+!! 2023-07-06
 !!
 !! @section Copyright
 !!
@@ -1126,7 +1126,7 @@ call check( nf90_put_att(ncid, NF90_GLOBAL, 'title', trim(buffer)) )
 call set_ch_institution(buffer)
 call check( nf90_put_att(ncid, NF90_GLOBAL, 'institution', trim(buffer)) )
 
-buffer = 'SICOPOLIS Version '//SICO_VERSION
+buffer = 'SICOPOLIS'
 call check( nf90_put_att(ncid, NF90_GLOBAL, 'source', trim(buffer)) )
 
 call date_and_time(ch_date, ch_time, ch_zone)

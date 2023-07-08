@@ -1,19 +1,104 @@
+.. _ad_installation:
+
+Installation
+************
+
+SICOPOLIS-AD v2 requires the installation of Tapenade as well as SICOPOLIS. It is mandatory to install the external libraries such as NetCDF, LIS to access the full functionality of the code, as well as git, to be able to clone and contribute to the repository.
+
+.. _tapenade:
+
+Open source AD Tool Tapenade
+============================
+
+`Tapenade <https://team.inria.fr/ecuador/tapenade/>`__ is an Automatic Differentiation Engine developed at `Inria at Sophia Antipolis <https://www.inria.fr/en/inria-centre-universite-cote-azur>`__ by the `Ecuador team <https://team.inria.fr/ecuador/>`__ (formerly `TROPICS team <https://www-sop.inria.fr/tropics/>`__). Tapenade takes as input a computer source program, plus a request for differentiation. Tapenade builds and returns the differentiated source program, that evaluates the required derivatives.
+
+While the SICOPOLIS source files are prepared to generate adjoint sensitivities, they will not be able to do so without an operable installation of Tapenade. Fortunately the Tapenade installation procedure is straightforward.
+
+We detail the instructions here, but the latest instructions can always be found `here. <http://www-sop.inria.fr/ecuador/tapenade/distrib/README.html>`__
+
+Prerequisites for Linux or Mac OS X
+-----------------------------------
+
+Before installing Tapenade, you must check that an up-to-date Java Runtime Environment is installed. Tapenade will not run with older Java Runtime Environment.
+
+Steps for Mac OS
+----------------
+
+Tapenade 3.16 distribution does not contain a fortranParser executable for MacOS. It uses a docker image from `here <https://gitlab.inria.fr/tapenade/tapenade>`__. You need docker on your Mac to run the Tapenade distribution with Fortran programs. Details on how to build fortranParser is `here <https://tapenade.gitlabpages.inria.fr/tapenade/docs/html/src/frontf/README.html?highlight=mac>`__. You may also build Tapenade on your Mac from the `gitlab repository <https://tapenade.gitlabpages.inria.fr/tapenade/docs/html/distrib/README.html>`__.
+
+Steps for Linux
+---------------
+
+1. Read `the Tapenade license. <https://tapenade.gitlabpages.inria.fr/userdoc/build/html/LICENSE.html>`__
+
+2. Download `tapenade_3.16.tar <https://tapenade.gitlabpages.inria.fr/tapenade/distrib/tapenade_3.16.tar>`__ into your chosen installation directory *install_dir*.
+
+  **NOTE**: Alternatively, a Tapenade version that works correctly with SICOPOLIS-AD v2 is always available in the ``test_ad/tapenade_supported`` directory.
+
+3. Go to your chosen installation directory *install_dir*, and extract Tapenade from the tar file::
+
+    % tar xvfz tapenade_3.16.tar
+
+4. On Linux, depending on your distribution, Tapenade may require you to set the shell variable ``JAVA_HOME`` to your java installation directory. It is often ``JAVA_HOME=/usr/java/default``. You might also need to modify the ``PATH`` by adding the bin directory from the Tapenade installation. An example can be found :ref:`here <tapenade_bashrc_snippet>`.
+
+.. _tapenade_bashrc_snippet:
+
+**NOTE**: Every time you wish to use the adjoint capability of SICOPOLIS-AD, you must re-source the environment. We recommend that this be done automatically in your bash or c-shell profile upon login. An example of an addition to a ``.bashrc`` file from a Linux server is given below. Luckily, shell variable ``JAVA_HOME`` was not required to be explicitly set for this particular Linux distribution, but might be necessary for some other distributions. ::
+
+  ##set some env variables for SICOPOLIS tapenade
+
+  export TAPENADE_HOME="/home/shreyas/tapenade_3.16"
+  export PATH="$PATH:$TAPENADE_HOME/bin"
+
+  ##Modules
+
+  module use /share/modulefiles/
+  module load java/jdk/16.0.1 # Java required by Tapenade
+
+You should now have a working copy of Tapenade.
+
+For more information on the tapenade command and its arguments, type::
+
+  tapenade -?
+
+Prerequisites for Windows
+-------------------------
+
+**NOTE**: Although Tapenade can be built on Windows, SICOPOLIS requires a Unix-like system (e.g., Linux), as mentioned in ":ref:`getting_started`".
+
+Before installing Tapenade, you must check that an up-to-date Java Runtime Environment is installed. Tapenade will not run with older Java Runtime Environment. The Fortran parser of Tapenade uses `cygwin <https://www.cygwin.com/>`__.
+
+Steps for Windows
+-----------------
+
+1. Read `the Tapenade license. <https://tapenade.gitlabpages.inria.fr/userdoc/build/html/LICENSE.html>`__
+
+2. Download `tapenade_3.16.zip <https://tapenade.gitlabpages.inria.fr/tapenade/distrib/tapenade_3.16.zip>`__ into your chosen installation directory *install_dir*.
+
+3. Go to your chosen installation directory *install_dir*, and extract Tapenade from the zip file.
+
+4. Save a copy of the ``install_dir\tapenade_3.16\bin\tapenade.bat`` file and modify ``install_dir\tapenade_3.16\bin\tapenade.bat`` according to your installation parameters\:
+
+  | replace ``TAPENADE_HOME=..`` by ``TAPENADE_HOME="install_dir"\tapenade_3.16``
+  | replace ``JAVA_HOME="C:\Progra~1\Java\jdkXXXX"`` by your current java directory
+  | replace ``BROWSER="C:\Program Files\Internet Explorer\iexplore.exe"`` by your current browser.
+
 .. _sicopolis_ad_config:
 
 SICOPOLIS-AD v2
-***************
+===============
 
 See the ":ref:`getting_started`" section. However, we will mention here some steps since using the Automatic Differentiation (AD) capabilities with Tapenade requires a slightly modified setup.
 
 The satisfaction of the following prerequisites is highly recommended to access all the features of the code. Details can differ from the ":ref:`getting_started`" section, since there are multiple ways to do things. We detail one of them here.
 
 GNU GCC Compiler (gfortran+gcc) or Intel Compiler (ifort+icc)
-=============================================================
+-------------------------------------------------------------
 
 We have tested SICOPOLIS-AD v2 on gfortran/gcc v5.4.0, v7.2.0 and v8.5.0, any intermediate versions should work just as well. We have also tested it on ifort/icc v18.0.0 (however, it should be noted that we have not tested the external Lis solver with Intel compilers).
 
 Lis (1.4.43 or newer)
-=====================
+---------------------
 
 Lis installation is mandatory to use shallow-shelf/shelfy-stream dynamics in simulations. Install Lis as explained in :ref:`Dependencies/Lis <dependencies-lis>`.
 
@@ -47,7 +132,7 @@ For AD purposes, we compile the code using the ``src/MakefileTapenade`` makefile
 **NOTE**: Some users have reported needing to extend their ``LD_LIBRARY_PATH`` with the location of ``${LISDIR}/lib`` in order to find ``liblis.so.0``.
 
 NetCDF (3.6.x or newer)
-=======================
+-----------------------
 
 NetCDF installation is mandatory since it is a powerful library with widespread use for I/O with a machine-independent data format. Install NetCDF as explained in :ref:`Dependencies/NetCDF <dependencies-netcdf>`.
 
@@ -147,7 +232,7 @@ You can also confirm that the files ``/usr/lib64/libnetcdff.so*`` and ``/usr/lib
 The instructions given in :ref:`Dependencies/NetCDF <dependencies-netcdf>`, and these two cases should help cover most of the issues with the installation of NetCDF.
 
 Downloading SICOPOLIS-AD v2
-===========================
+---------------------------
 
 As described in the ":ref:`getting_started`" section. However, when using Git, the ``ad`` branch should be cloned::
 
@@ -157,8 +242,8 @@ As described in the ":ref:`getting_started`" section. However, when using Git, t
 Tagged versions of SICOPOLIS-AD are also available from `Zenodo <https://doi.org/10.5281/zenodo.3686392>`__.
 
 Initial configuration
-===================== 
+---------------------
 
 As described in the ":ref:`getting_started`" section.
 
-Now you should be ready to use SICOPOLIS-AD v2, as described in :ref:`Running SICOPOLIS-AD v2 <running>`.
+Now you should be ready to use SICOPOLIS-AD v2, as described in :ref:`Running SICOPOLIS-AD v2 <ad_running>`.

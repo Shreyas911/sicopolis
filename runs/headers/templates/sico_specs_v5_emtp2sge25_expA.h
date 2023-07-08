@@ -4,11 +4,7 @@
 
 !-------- Basic settings --------
 
-#define SICO_VERSION '5-dev'
-!                      Version number of SICOPOLIS
-!                      for which this run-specs header is suitable
-
-#define RUN_SPECS_HEADER_LAST_CHANGED '2023-05-08'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2023-07-06'
 !                      Date of last change
 
 !-------- Domain --------

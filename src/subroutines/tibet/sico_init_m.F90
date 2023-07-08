@@ -222,14 +222,6 @@ call ice_mat_eqs_pars(RF, R_T, KAPPA, C, -190, 10)
 call calc_c_int_table(C, -190, 10, L)
 call calc_c_int_inv_table()
 
-!-------- Compatibility check of the SICOPOLIS version with the header file
-
-if ( trim(VERSION) /= trim(SICO_VERSION) ) then
-   errormsg = ' >>> sico_init: ' &
-                 //'SICOPOLIS version not compatible with header file!'
-   call error(errormsg)
-end if
-
 !-------- Check whether the dynamics and thermodynamics modes are defined
 
 #if (!defined(DYNAMICS))
