@@ -30,7 +30,7 @@ Clone the Git repository (recommended)
   You should then have a new directory ``sicopolis`` that contains the entire program package.
 
 Download an archive
-  Go to https://gitlab.awi.de/sicopolis/sicopolis/-/tree/master, click on the download symbol and choose the desired format (zip, tar.gz, tar.bz2, tar).
+  Go to https://gitlab.awi.de/sicopolis/sicopolis/-/tree/main, click on the download symbol and choose the desired format (zip, tar.gz, tar.bz2, tar).
 
   Tagged versions of SICOPOLIS are also available from `Zenodo <https://doi.org/10.5281/zenodo.3687337>`__.
 
