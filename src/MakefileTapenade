@@ -8,7 +8,7 @@ CC=gcc
 endif
 
 ifndef HEADER
-HEADER=v5_grl20_ss25ka
+HEADER=v5_grl16_ss25ka
 endif
 
 ifndef DOMAIN_SHORT
@@ -30,12 +30,12 @@ endif
 ifndef LISDIR
 ifeq ($(F90C),gfortran)
 ifeq ($(CC),gcc)
-LISDIR=/home/shreyas/lis-1.4.43/installation
+LISDIR=/home/shreyas/lis-2.1.3/installation
 endif
 endif
 ifeq ($(F90C),ifort)
 ifeq ($(CC),icc)
-LISDIR=/home/shreyas/lis-2.0.30-intel/installation
+LISDIR=/home/shreyas/lis-2.1.3-intel/installation
 endif
 endif
 endif

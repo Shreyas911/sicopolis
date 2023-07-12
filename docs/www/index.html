@@ -4,11 +4,11 @@
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
   <meta http-equiv="Content-Style-Type" content="text/css">
   <meta name="author" content="Ralf Greve">
-  <meta name="description" content="Home page of the ice sheet model SICOPOLIS">
+  <meta name="description" content="Home page of the ice-sheet model SICOPOLIS">
   <meta name="keywords" content="ice, sheet, ice-sheet, model, free, software, SICOPOLIS, Ralf, Greve">
   <meta name="content-language" content="en">
   <meta name="robots" content="index, follow">
-  <title>Ice sheet model SICOPOLIS</title>
+  <title>Ice-sheet model SICOPOLIS</title>
   <link href="./styles/ralf_style.css" rel="stylesheet" type="text/css">
   <link rel="icon" type="image/x-icon" href="./pics/sico-icecube.ico">
   <link rel="shortcut icon" type="image/x-icon" href="./pics/sico-icecube.ico" />
@@ -23,7 +23,7 @@
 
 <hr>
 
-<H1>Ice sheet model SICOPOLIS</H1>
+<H1>Ice-sheet model SICOPOLIS</H1>
 
 <P style="text-align:center">
 &#x25b6;&nbsp;
@@ -39,7 +39,7 @@
 
 <hr>
 
-<P>SICOPOLIS (SImulation COde for POLythermal Ice Sheets) is a 3-d
+<P>SICOPOLIS (SImulation COde for POLythermal Ice Sheets) is a 3D
 dynamic/thermodynamic model that simulates the evolution of large ice
 sheets and ice caps. It was originally created by
 <A HREF="./publ/">Greve (1997a,b)</A> in a version for the Greenland
@@ -48,24 +48,25 @@ applied to problems of past, present and future glaciation of Greenland,
 Antarctica, the entire northern hemisphere, the polar ice caps of the
 planet Mars and others.</P>
 
-<P>The model is based on the shallow ice approximation for grounded
-ice, the shallow shelf approximation for floating ice (e.g.,
+<P>The model employs either hybrid shallow-ice&ndash;shelfy-stream
+dynamics (<A HREF="./publ/">Bernales et&nbsp;al. 2017a,b</A>) or the
+shallow-ice approximation for grounded ice, and the shallow-shelf
+approximation for floating ice (e.g.,
 <A HREF="http://wwwice.lowtem.hokudai.ac.jp/~greve/publist.html#Book">Greve
-and Blatter 2009</A>) and, optionally, hybrid shallow-ice&ndash;shelfy-stream
-dynamics for ice streams (<A HREF="./publ/">Bernales et&nbsp;al. 2017a,b</A>).
-It is coded in Fortran and uses finite difference discretization on a
-staggered (Arakawa&nbsp;C) grid, the velocity components being taken between
-grid points. A variety of different thermodynamics solvers are available,
-namely the polythermal two-layer method, two versions of the one-layer
-enthalpy method, the cold-ice method and the isothermal method
-(<A HREF="./publ/">Greve and Blatter 2016</A>).</P>
+and Blatter 2009</A>). It is coded in Fortran and uses finite
+difference discretization on a staggered Arakawa&nbsp;C grid, the
+velocity components being taken between grid points. A variety of
+different thermodynamics solvers are available, namely the polythermal
+two-layer method, two versions of the one-layer enthalpy method, the
+cold-ice method and the isothermal method (<A HREF="./publ/">Greve and
+Blatter 2016</A>).</P>
  
 <P>The coding is based on a consequent low-tech philosophy. All structures are
 kept as simple as possible, and advanced coding techniques are only employed
 where it is deemed appropriate. The use of external libraries is kept at an
 absolute minimum, which makes the installation very easy and fast.</P>
 
-<table align="center" cellpadding="0" cellspacing="0"
+<!-- <table align="center" cellpadding="0" cellspacing="0"
        bgcolor="#ffffff" width=100%>
 <colgroup>
     <col width="280">
@@ -101,7 +102,7 @@ absolute minimum, which makes the installation very easy and fast.</P>
   <LI> Isostatic displacement and temperature of the lithosphere.</LI>
 </UL>
 
-</td></tr></table>
+</td></tr></table> -->
 
 <A NAME="get"><HR></A>
 
@@ -118,8 +119,8 @@ Marine Research (AWI)</A> in Bremerhaven, Germany.</P>
        <code>&nbsp;&nbsp;git clone https://gitlab.awi.de/sicopolis/sicopolis.git</code><BR>
        &nbsp;&nbsp;&nbsp;&nbsp;(Cloning with SSH instead of HTTPS is also available.
        See the above GitLab link for details.)</LI>
-  <LI> Tagged versions of SICOPOLIS (latest: v5.3, 2022-07-21)
-       can be accessed from the <A HREF="./archive/">archive</A>.</LI>
+  <LI> Tagged versions of SICOPOLIS can also be accessed from the
+       <A HREF="./archive/">archive</A>.</LI>
 </UL>
 
 <P><A NAME="docs"><B>Documentation</B></A></P>
@@ -207,7 +208,7 @@ for more details.</P>
 <tr><td>
 
 <p align="right">&nbsp;<br>Last modified:
-2023-07-08 by
+2023-07-11 by
 <A HREF="http://wwwice.lowtem.hokudai.ac.jp/~greve/">Ralf Greve</A>
 &nbsp;&nbsp;<br>&nbsp;</p>
 

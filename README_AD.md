@@ -3,8 +3,7 @@ SICOPOLIS-AD v2
 
 `SICOPOLIS-AD v2` is an open-source adjoint and tangent linear modeling framework for ice sheet model `SICOPOLIS` enabled by the Automatic Differentiation (AD)  tool `Tapenade`.
 
-Find the documentation [here](https://sicopolis.readthedocs.io/en/latest/).
-Detailed instructions for installation are given [here](https://sicopolis.readthedocs.io/en/latest/AD/AD.html#configuration).
+Find the documentation [here](https://sicopolis.readthedocs.io/en/latest/AD/index.html).
 
 The AD code is tested using `Gitlab-CI`. The testing setup can be found in the directory `test_ad` of the SICOPOLIS installation. 
 
@@ -35,7 +34,7 @@ Installation
 
 		5. NetCDF (External library and machine-independent data format, 3.6.x or newer)
 
-For more details, check the documentation [here](https://sicopolis.readthedocs.io/en/latest/AD/AD.html#installation). 
+For more details, check the documentation [here](https://sicopolis.readthedocs.io/en/latest/AD/installation.html).
 
 Capabilities
 ------------
@@ -63,7 +62,7 @@ Contributors
 
 Shreyas Gaikwad, Sri Hari Krishna Narayanan, Laurent Hascoet, Liz Curry-Logan, Ralf Greve, Patrick Heimbach
 
-For contributions of each author, please check the documentation [here](https://sicopolis.readthedocs.io/en/latest/AD/AD.html#contributors).
+For contributions of each author, please check the documentation [here](https://sicopolis.readthedocs.io/en/latest/AD/contributors.html).
 
 License
 -------

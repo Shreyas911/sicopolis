@@ -5,13 +5,13 @@
 !
 #define       MODEL_SICOPOLIS
 #define       VERSION '5'
-#define       DATE    '2023-07-06'
+#define       DATE    '2023-07-11'
 !
 !> @mainpage
 !!
 !! @section Description
 !!
-!! SICOPOLIS (SImulation COde for POLythermal Ice Sheets) is a 3-d
+!! SICOPOLIS (SImulation COde for POLythermal Ice Sheets) is a 3D
 !! dynamic/thermodynamic model that simulates the evolution of large ice
 !! sheets and ice caps. It was originally created by Greve (1997a,b) in a
 !! version for the Greenland ice sheet. Since then, SICOPOLIS has been
@@ -19,76 +19,36 @@
 !! future glaciation of Greenland, Antarctica, the entire northern
 !! hemisphere, the polar ice caps of the planet Mars and others.
 !!
-!! The model is based on the shallow ice approximation for grounded ice, the
-!! shallow shelf approximation for floating ice (e.g., Greve and Blatter 2009)
-!! and, optionally, hybrid shallow-ice--shelfy-stream dynamics for ice streams
-!! (Bernales et al. 2017a,b). It is coded in Fortran and uses finite difference
-!! discretisation on a staggered (Arakawa C) grid, the velocity
+!! The model employs either hybrid shallow-ice-shelfy-stream dynamics
+!! (Bernales et al. 2017a,b) or the shallow-ice approximation for
+!! grounded ice, and the shallow-shelf approximation for floating ice
+!! (e.g., Greve and Blatter 2009). It is coded in Fortran and uses finite
+!! difference discretization on a staggered Arakawa C grid, the velocity
 !! components being taken between grid points. A variety of different
 !! thermodynamics solvers are available, namely the polythermal two-layer
 !! method, two versions of the one-layer enthalpy method, the cold-ice
 !! method and the isothermal method (Greve and Blatter 2016).
 !!
-!! The coding is based on an ease-of-use, low-tech philosophy. All
+!! The coding is based on a consequent low-tech philosophy. All
 !! structures are kept as simple as possible, and advanced coding
 !! techniques are only employed where it is deemed appropriate. The use
-!! of external libraries is kept at an absolute minimum. In fact,
-!! SICOPOLIS can be run without external libraries at all, which makes
-!! the installation very easy and fast.
-!!
-!! Required model forcing:
-!! @li Surface mass balance (precipitation, evaporation, runoff).
-!! @li Mean annual air temperature above the ice.
-!! @li Eustatic sea level.
-!! @li Geothermal heat flux.
-!!
-!! Main output (as functions of position and time):
-!! @li Extent and thickness of the ice sheet.
-!! @li Velocity field.
-!! @li Temperature field.
-!! @li Water-content field (temperate regions).
-!! @li Age of the ice.
-!! @li Isostatic displacement and temperature of the lithosphere.
+!! of external libraries is kept at an absolute minimum, which makes the
+!! installation very easy and fast.
 !!
 !! References:
-!! @li Bernales, J., I. Rogozhina, R. Greve and M. Thomas. 2017a.\n
-!!     Comparison of hybrid schemes for the combination of
-!!     shallow approximations in numerical simulations of the
-!!     Antarctic Ice Sheet.\n
-!!     Cryosphere 11 (1), 247-265.
-!! @li Bernales, J., I. Rogozhina and M. Thomas. 2017b.\n
-!!     Melting and freezing under Antarctic ice shelves from a
-!!     combination of ice-sheet modelling and observations.\n
-!!     Journal of Glaciology 63 (240), 731-744.
-!! @li Greve, R. 1997a.\n
-!!     A continuum-mechanical formulation for shallow polythermal ice sheets.\n
-!!     Phil. Trans. R. Soc. A 355 (1726), 921-974.
-!! @li Greve, R. 1997b.\n
-!!     Application of a polythermal three-dimensional ice sheet model to the
-!!     Greenland ice sheet: Response to steady-state and transient climate
-!!     scenarios.\n
-!!     J. Climate 10 (5), 901-918.
-!! @li Greve, R. and H. Blatter. 2009.\n
-!!     Dynamics of Ice Sheets and Glaciers.\n
-!!     Springer, Berlin, Germany etc., 287 pp.
-!! @li Greve, R. and H. Blatter. 2016.\n
-!!     Comparison of thermodynamics solvers in the polythermal ice sheet model
-!!     SICOPOLIS.\n
-!!     Polar Sci. 10 (1), 11-23.
-!! @li SICOPOLIS website: <http://www.sicopolis.net/>
-!! @li Changelog:
-!!     <https://gitlab.awi.de/sicopolis/sicopolis/> -> Repository -> Commits
+!! @li <https://sicopolis.readthedocs.io/en/latest/references.html>
+!!
+!! Resources:
+!! @li Model website: <http://www.sicopolis.net/>
+!! @li User manual: <https://sicopolis.readthedocs.io/>
+!! @li GitLab repository: <https://gitlab.awi.de/sicopolis/sicopolis/>
+!! @li SICOPOLIS community @ Zenodo:
+!!     <https://zenodo.org/communities/sicopolis/>
 !!
 !! @section Copyright
 !!
 !! Copyright 2009-2023 SICOPOLIS Authors\n
-!! (Ralf Greve, Jorge Bernales, Sebastian Beyer, Heinz Blatter,
-!! Reinhard Calov, Liz Curry-Logan, Thorben Dunse, Eduardo Flandez,
-!! Shreyas Sunil Gaikwad, Ben Galton-Fenzi, Thomas Goelles, Bjoern Grieger,
-!! Philipp Hancke, Laurent Hascoet, Patrick Heimbach, Nina Kirchner,
-!! Thomas Kleiner, Sascha Knell, Anne Le Brocq, Sri Hari Krishna Narayanan,
-!! Alex Robinson, Fuyuki Saito, Tatsuru Sato, Marius Schaefer,
-!! Matthias Scheiter, Oliver J. Stenzel, Malte Thoma, Roland Warner)
+!! (<https://sicopolis.readthedocs.io/en/latest/introduction.html#authorship>)
 !!
 !! @section License
 !!
@@ -103,7 +63,7 @@
 !! GNU General Public License for more details.
 !!
 !! You should have received a copy of the GNU General Public License
-!! along with SICOPOLIS. If not, see <http://www.gnu.org/licenses/>.
+!! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
 !!
 !! @file
 !!
@@ -128,7 +88,7 @@
 !! GNU General Public License for more details.
 !!
 !! You should have received a copy of the GNU General Public License
-!! along with SICOPOLIS. If not, see <http://www.gnu.org/licenses/>.
+!! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
 !<
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
