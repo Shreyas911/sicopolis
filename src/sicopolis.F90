@@ -362,7 +362,15 @@ real(dp), dimension(100) :: time_output
 real(dp) :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
 real(dp) :: z_mar
 
+!tapenade sicopolis_independents_cost
+
 !@ end tapenade_extract @
+
+#if defined(ALLOW_TAPENADE) /* Tapenade */
+integer(i4b) :: mode
+character(len=32) :: arg
+logical :: ISPLAIN, ISTAPE, ISADJOINT
+#endif /* Tapenade */
 
 #if (!defined(ALLOW_GRDCHK) && !defined(ALLOW_TAPENADE)) /* Normal */
 

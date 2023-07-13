@@ -33,6 +33,8 @@ Steps for Linux
 
 2. Download `tapenade_3.16.tar <https://tapenade.gitlabpages.inria.fr/tapenade/distrib/tapenade_3.16.tar>`__ into your chosen installation directory *install_dir*.
 
+  **NOTE**: Alternatively, a Tapenade version that works correctly with SICOPOLIS-AD v2 is always available in the ``test_ad/tapenade_supported`` directory.
+
 3. Go to your chosen installation directory *install_dir*, and extract Tapenade from the tar file::
 
     % tar xvfz tapenade_3.16.tar

@@ -65,4 +65,4 @@ my_*
 
 **/.DS_Store
 
-/src/subroutines/tapenade/ADFirstAidKit/*.gch
+/test_ad/tapenade_supported/ADFirstAidKit/*.gch

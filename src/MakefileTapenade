@@ -59,10 +59,6 @@ endif
 endif
 endif
 
-ifndef ADFirstAidKit_DIR
-ADFirstAidKit_DIR=subroutines/tapenade/ADFirstAidKit
-endif
-
 ### Multiple if statements here since for CI, we define the individual flags separately.
 ### Note - If you have direct access to netcdf.mod and libnetcdff.so in different directories, you'd have to set the flags manually.
 ### As mentioned, see CI yml file to understand more.
@@ -179,22 +175,16 @@ subroutines/tapenade/ctrl_m.F90
 SRC=\
 sicopolis.F90
 
-SRC_TAP=\
-${ADFirstAidKit_DIR}/adStack.c \
-${ADFirstAidKit_DIR}/adBinomial.c
-
-SRC_HEADERS=\
-sico_specs.h
-
 CPPCMD = cat $< |  cpp -DRUN_SPECS_HEADER=\"sico_specs.h\" -DALLOW_TAPENADE_DIFFERENTIATE=1 -DALLOW_TAPENADE=1 -I../ -I./ -traditional-cpp -P 
 
-CPPCMD_FILES = cat $< |  cpp -DRUN_SPECS_HEADER=\"sico_specs.h\" -imacros sico_specs.h ${DEFINE_FLAGS_ADJOINT} ${LISFLAG} -I${ADFirstAidKit_DIR} -traditional-cpp -P
+CPPCMD_FILES = cat $< |  cpp -DRUN_SPECS_HEADER=\"sico_specs.h\" -imacros sico_specs.h ${DEFINE_FLAGS_ADJOINT} ${LISFLAG} -I../test_ad/tapenade_supported/ADFirstAidKit -traditional-cpp -P
 
 ifeq ($(DISC_AND_GRL),0)
 driverforward:${LIBLIS} \
 	${LIB_NETCDF_F90} \
-	${SRC_HEADERS} \
-	$(patsubst %.c,%.o,$(SRC_TAP)) \
+	sico_specs.h \
+	../test_ad/tapenade_supported/ADFirstAidKit/adStack.o \
+	../test_ad/tapenade_supported/ADFirstAidKit/adBinomial.o \
 	error_m_cpp.o \
 	sico_types_m_cpp.o \
 	sico_maths_m_tlm_cpp.o \
@@ -238,7 +228,8 @@ driverforward:${LIBLIS} \
 		sico_types_m_cpp.o\
 		globals_cpp.o \
 		sico_maths_m_tlm_cpp.o \
-		$(patsubst %.c,%.o,$(SRC_TAP)) \
+		../test_ad/tapenade_supported/ADFirstAidKit/adStack.o \
+		../test_ad/tapenade_supported/ADFirstAidKit/adBinomial.o \
 		globals_cpp_d.o \
 		sico_variables_m_cpp_d.o \
 		ice_material_properties_m_cpp_d.o \
@@ -280,8 +271,9 @@ numCore_cpp_d.f90 sico_variables_m_cpp_d.f90 ice_material_properties_m_cpp_d.f90
 
 driveradjoint:${LIBLIS} \
 	${LIB_NETCDF_F90} \
-	${SRC_HEADERS} \
-	$(patsubst %.c,%.o,$(SRC_TAP)) \
+	sico_specs.h \
+	../test_ad/tapenade_supported/ADFirstAidKit/adStack.o \
+	../test_ad/tapenade_supported/ADFirstAidKit/adBinomial.o \
 	error_m_cpp.o \
 	sico_types_m_cpp.o \
 	sico_maths_m_grad_cpp.o \
@@ -325,7 +317,8 @@ driveradjoint:${LIBLIS} \
 		sico_types_m_cpp.o\
 		globals_cpp.o \
 		sico_maths_m_grad_cpp.o \
-		$(patsubst %.c,%.o,$(SRC_TAP)) \
+		../test_ad/tapenade_supported/ADFirstAidKit/adStack.o \
+		../test_ad/tapenade_supported/ADFirstAidKit/adBinomial.o \
 		globals_cpp_b.o \
 		sico_variables_m_cpp_b.o \
 		ice_material_properties_m_cpp_b.o \
@@ -368,8 +361,9 @@ endif
 ifeq ($(DISC_AND_GRL),1)
 driverforward:${LIBLIS} \
 	${LIB_NETCDF_F90} \
-	${SRC_HEADERS} \
-	$(patsubst %.c,%.o,$(SRC_TAP)) \
+	sico_specs.h \
+	../test_ad/tapenade_supported/ADFirstAidKit/adStack.o \
+	../test_ad/tapenade_supported/ADFirstAidKit/adBinomial.o \
 	error_m_cpp.o \
 	sico_types_m_cpp.o \
 	sico_maths_m_tlm_cpp.o \
@@ -414,7 +408,8 @@ driverforward:${LIBLIS} \
 		sico_types_m_cpp.o\
 		globals_cpp.o \
 		sico_maths_m_tlm_cpp.o \
-		$(patsubst %.c,%.o,$(SRC_TAP)) \
+		../test_ad/tapenade_supported/ADFirstAidKit/adStack.o \
+		../test_ad/tapenade_supported/ADFirstAidKit/adBinomial.o \
 		globals_cpp_d.o \
 		sico_variables_m_cpp_d.o \
 		ice_material_properties_m_cpp_d.o \
@@ -457,8 +452,9 @@ discharge_workers_m_cpp_d.f90 numCore_cpp_d.f90 sico_variables_m_cpp_d.f90 ice_m
 
 driveradjoint:${LIBLIS} \
 	${LIB_NETCDF_F90} \
-	${SRC_HEADERS} \
-	$(patsubst %.c,%.o,$(SRC_TAP)) \
+	sico_specs.h \
+	../test_ad/tapenade_supported/ADFirstAidKit/adStack.o \
+	../test_ad/tapenade_supported/ADFirstAidKit/adBinomial.o \
 	error_m_cpp.o \
 	sico_types_m_cpp.o \
 	sico_maths_m_grad_cpp.o \
@@ -503,7 +499,8 @@ driveradjoint:${LIBLIS} \
 		sico_types_m_cpp.o\
 		globals_cpp.o \
 		sico_maths_m_grad_cpp.o \
-		$(patsubst %.c,%.o,$(SRC_TAP)) \
+		../test_ad/tapenade_supported/ADFirstAidKit/adStack.o \
+		../test_ad/tapenade_supported/ADFirstAidKit/adBinomial.o \
 		globals_cpp_b.o \
 		sico_variables_m_cpp_b.o \
 		ice_material_properties_m_cpp_b.o \
