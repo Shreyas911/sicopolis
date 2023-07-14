@@ -5,7 +5,7 @@
 !
 #define       MODEL_SICOPOLIS
 #define       VERSION '5'
-#define       DATE    '2023-07-13'
+#define       DATE    '2023-07-11'
 !
 !> @mainpage
 !!
@@ -23,10 +23,11 @@
 !! (Bernales et al. 2017a,b) or the shallow-ice approximation for
 !! grounded ice, and the shallow-shelf approximation for floating ice
 !! (e.g., Greve and Blatter 2009). It is coded in Fortran and uses finite
-!! difference discretization on a staggered Arakawa C grid. A variety of
-!! different thermodynamics solvers are available, namely the polythermal
-!! two-layer method, two versions of the one-layer enthalpy method, the
-!! cold-ice method and the isothermal method (Greve and Blatter 2016).
+!! difference discretization on a staggered Arakawa C grid, the velocity
+!! components being taken between grid points. A variety of different
+!! thermodynamics solvers are available, namely the polythermal two-layer
+!! method, two versions of the one-layer enthalpy method, the cold-ice
+!! method and the isothermal method (Greve and Blatter 2016).
 !!
 !! The coding is based on a consequent low-tech philosophy. All
 !! structures are kept as simple as possible, and advanced coding
@@ -362,15 +363,7 @@ real(dp), dimension(100) :: time_output
 real(dp) :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
 real(dp) :: z_mar
 
-!tapenade sicopolis_independents_cost
-
 !@ end tapenade_extract @
-
-#if defined(ALLOW_TAPENADE) /* Tapenade */
-integer(i4b) :: mode
-character(len=32) :: arg
-logical :: ISPLAIN, ISTAPE, ISADJOINT
-#endif /* Tapenade */
 
 #if (!defined(ALLOW_GRDCHK) && !defined(ALLOW_TAPENADE)) /* Normal */
 
