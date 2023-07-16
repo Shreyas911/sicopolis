@@ -64,7 +64,7 @@ Glacial isostatic adjustment
 
 Three options are available for glacial isostatic adjustment, which can be selected in the run-specs header by the parameter ``REBOUND``\:
 
-* ``0``: rigid lithosphere, no adjustment.
+* ``0``: Rigid lithosphere, no adjustment.
 
 * ``1``: Local-lithosphere--relaxing-asthenosphere (LLRA) model.
 
