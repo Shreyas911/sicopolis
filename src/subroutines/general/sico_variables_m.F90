@@ -982,6 +982,14 @@ save
    real(dp), dimension(0:JMAX,0:IMAX) :: H_BedMachine_data
    real(dp), dimension(0:JMAX,0:IMAX) :: H_unc_BedMachine_data
 #endif
+
+   character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR2D) :: xx_genarr2d_vars
+   character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR2D) :: xx_genarr2d_weights
+   character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR2D) :: xx_genarr2d_bounds
+ 
+   real(dp),     dimension(NUM_CTRL_GENARR2D,0:JMAX,0:IMAX) :: xx_genarr2d      
+   real(dp),     dimension(NUM_CTRL_GENARR2D,0:JMAX,0:IMAX) :: xx_genarr2d_mask
+
 #endif /* Tapenade */
 
 end module sico_variables_m

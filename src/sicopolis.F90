@@ -92,6 +92,10 @@
 !<
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+#if defined(ALLOW_TAPENADE)
+#include "CTRL_VARS.h"
+#endif
+
 !@ begin tapenade_extract @
 
 !-------- Include run specification header --------
@@ -146,6 +150,7 @@
 
 #if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE)) /* Tapenade */
 #include "subroutines/tapenade/ctrl_m.F90"
+#include "subroutines/tapenade/ctrl_map_genarr.F90"
 #endif /* Tapenade */
 
 #include "subroutines/general/ice_material_properties_m.F90"
