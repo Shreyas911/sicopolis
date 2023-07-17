@@ -42,6 +42,8 @@ module globals
 
   real(dp), dimension(0:JMAX,0:IMAX) :: dzs_dx_aux, dzs_dy_aux
 
+#if (DISC>0)
+
   integer(i4b) :: disc_DW
   integer(i4b) :: n_discharge_call_DW, iter_mar_coa_DW
   real(dp)     :: c_dis_0_DW, s_dis_DW, c_dis_fac_DW
@@ -52,6 +54,8 @@ module globals
   real(dp),     dimension(0:JMAX,0:IMAX) :: c_dis_DW
   real(dp),     dimension(0:JMAX,0:IMAX) :: cst_dist, cos_grad_tc
   real(dp),     dimension(0:JMAX,0:IMAX) :: dis_perp 
+
+#endif
 
   real(dp), dimension(-256:255), public       :: c_int_table
   real(dp), dimension(-524288:524287), public :: c_int_inv_table
