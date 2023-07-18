@@ -52,7 +52,7 @@ That's it! Although, this will only run the FD and TLM at 5 select points for va
                       output_adj_vars = args.output_adj_vars, output_adj_iters = args.output_adj_iters, output_adj_dims = args.output_adj_dims,
                       ckp_status = ckp_status, ckp_num = args.checkpoint)
 
-This run will generate the following files, which are used to plot the results below: ``src/GradientVals_q_geo_1.00E-03_v5_grl16_bm5_ss25ka_{limited_or_full}.dat``, ``src/ForwardVals_q_geo_v5_grl16_bm5_ss25ka_{limited_or_full}.dat``, ``src/AdjointVals_q_geob_v5_grl16_bm5_ss25ka.dat``.
+This run will generate the following files, which are used to plot the results below: ``src/GradientVals_q_geo_1.00E-03_repo_grl16_bm5_ss25ka_{limited_or_full}.dat``, ``src/ForwardVals_q_geo_repo_grl16_bm5_ss25ka_{limited_or_full}.dat``, ``src/AdjointVals_q_geob_repo_grl16_bm5_ss25ka.dat``.
 
 Results
 =======
