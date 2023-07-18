@@ -15,22 +15,22 @@ The information in this section is based on the slides of `Dr. Karl Schulz <http
 
 It is good practice to include the use of a code-coverage tool. Although it has not been used with Tapenade generated code, we can nonetheless use it with the original SICOPOLIS code to see what parts of this code are covered by our regression testing. We use the code coverage tool ``gcov`` and it's graphical front-end, ``lcov``. It aggregates gcov output to generate html containing the source code annotated with coverage information. More details can be found `here <https://gcc.gnu.org/onlinedocs/gcc/Gcov.html>`__ and `here <http://ltp.sourceforge.net/coverage/lcov.php>`__.
 
-Let's say the user wants to generate the code coverage data from running two configurations, ``v5_grl20_ss25ka`` and ``v5_ant40_ss25ka``. Of course, since we only care about code coverage, the total time does not need to be 25000 years for the simulations. 100-200 years will work fine too.
+Let's say the user wants to generate the code coverage data from running two configurations, ``repo_grl20_ss25ka`` and ``repo_ant40_ss25ka``. Of course, since we only care about code coverage, the total time does not need to be 25000 years for the simulations. 100-200 years will work fine too.
 
-First we generate the ``gcov`` output for ``v5_grl20_ss25ka``.
+First we generate the ``gcov`` output for ``repo_grl20_ss25ka``.
 
 ::
 
-    % make -f MakefileTapenade clean; make -f MakefileTapenade drivergrdchk_cov HEADER=v5_grl20_ss25ka DOMAIN_SHORT=grl
+    % make -f MakefileTapenade clean; make -f MakefileTapenade drivergrdchk_cov HEADER=repo_grl20_ss25ka DOMAIN_SHORT=grl
     % ./drivergrdchk_cov 
     % make -f MakefileTapenade cov
     % lcov --capture --directory . --output-file coverage_repo_grl20_ss25ka.info
 
-Next, we generate the ``gcov`` output for ``v5_ant40_ss25ka``.
+Next, we generate the ``gcov`` output for ``repo_ant40_ss25ka``.
 
 ::
     
-    % make -f MakefileTapenade clean; make -f MakefileTapenade drivergrdchk_cov HEADER=v5_ant40_ss25ka DOMAIN_SHORT=ant
+    % make -f MakefileTapenade clean; make -f MakefileTapenade drivergrdchk_cov HEADER=repo_ant40_ss25ka DOMAIN_SHORT=ant
     % ./drivergrdchk_cov 
     % make -f MakefileTapenade cov
     % lcov --capture --directory . --output-file coverage_repo_ant40_ss25ka.info
@@ -317,7 +317,7 @@ A sample ``inputs.json`` file is provided here that acts as a "header" file for 
 
    {
        "json": "inputs.json",
-       "header": "v5_grl20_ss25ka",
+       "header": "repo_grl20_ss25ka",
        "domain": "grl",
        "dep_var": "fc",
        "ind_var": "H",
