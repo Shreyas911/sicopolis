@@ -10,7 +10,7 @@ endif
 PYTHONCMD=python
 
 ifndef HEADER
-HEADER=repo_grl16_ss25ka
+HEADER=repo_grl16_bm5_ss25ka
 endif
 
 ifndef DOMAIN_SHORT
@@ -370,6 +370,8 @@ clean:
 	      *_cpp_b.f90\
 	      *_cpp_d.f90\
               *.o\
+	      *.h\
+	      *.msg\
 	      *.gcov\
 	      *.gcda\
               *.gcno\
@@ -377,8 +379,6 @@ clean:
               driver*\
               *~\
               oad_template_*.*\
-              sico_specs.h\
-              sico_specs_temp.h
 	rm -f ad_template*\
               ad_inline.f\
               OAD_*\
