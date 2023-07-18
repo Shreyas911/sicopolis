@@ -160,9 +160,9 @@ The physical-parameter files can be provided in either ASCII or NetCDF format. T
 How to run a simulation
 =======================
 
-For example, to run the EISMINT Phase 2 Simplified Geometry Experiment A (Payne et al. :cite:`payne_etal_2000`), named ``v5_emtp2sge25_expA``, use the script ``sico.sh`` as follows::
+For example, to run the EISMINT Phase 2 Simplified Geometry Experiment A (Payne et al. :cite:`payne_etal_2000`), named ``repo_emtp2sge25_expA``, use the script ``sico.sh`` as follows::
 
-  (./sico.sh -m v5_emtp2sge25_expA) >out_001.dat 2>&1
+  (./sico.sh -m repo_emtp2sge25_expA) >out_001.dat 2>&1
 
 (from directory ``runs``, bash required). Accordingly for any other simulations.
 
@@ -230,4 +230,4 @@ Output files are written by default to the directory ``sico_out/<run_name>`` (th
 ``<run_name>0001.nc``, ``<run_name>0002.nc``, ...:
   Complete set of fields (topography, velocity, temperature etc., written in NetCDF format) for selected time slices defined in the run-specs header file.
 
-  For example, simulation ``v5_emtp2sge25_expA`` produces three files ``v5_emtp2sge25_expA0001.nc``, ``v5_emtp2sge25_expA0002.nc`` and ``v5_emtp2sge25_expA0003.nc``, which correspond to the times :math:`t=5\,\mathrm{ka}`, :math:`50\,\mathrm{ka}` and :math:`200\,\mathrm{ka}`, respectively.
+  For example, simulation ``repo_emtp2sge25_expA`` produces three files ``repo_emtp2sge25_expA0001.nc``, ``repo_emtp2sge25_expA0002.nc`` and ``repo_emtp2sge25_expA0003.nc``, which correspond to the times :math:`t=5\,\mathrm{ka}`, :math:`50\,\mathrm{ka}` and :math:`200\,\mathrm{ka}`, respectively.

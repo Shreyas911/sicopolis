@@ -15,7 +15,7 @@ Lorem ipsum...
 Geothermal heat flux
 ====================
 
-The geothermal heat flux, assumed to be time-independent, can be specified in the run-specs header as either a constant value or a spatially varying distribution. For the example of simulation :file:`v5_grl16_bm5_ss25ka`:
+The geothermal heat flux, assumed to be time-independent, can be specified in the run-specs header as either a constant value or a spatially varying distribution. For the example of simulation :file:`repo_grl16_bm5_ss25ka`:
 
 .. code-block:: fortran
 
