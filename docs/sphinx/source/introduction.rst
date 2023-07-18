@@ -7,7 +7,7 @@ SICOPOLIS (SImulation COde for POLythermal Ice Sheets) is a 3D dynamic/thermodyn
 
 The model employs either hybrid shallow-ice–shelfy-stream dynamics (Bernales et al. :cite:`bernales_etal_2017a, bernales_etal_2017b`) or the shallow-ice approximation for grounded ice, and the shallow-shelf approximation for floating ice (e.g., Greve and Blatter :cite:`greve_blatter_2009`). It is coded in Fortran and uses finite difference discretization on a staggered Arakawa C grid (Arakawa and Lamb :cite:`arakawa_lamb_1977`). A variety of different thermodynamics solvers are available, namely the polythermal two-layer method, two versions of the one-layer enthalpy method, the cold-ice method and the isothermal method (Greve and Blatter :cite:`greve_blatter_2016`).
 
-The coding is based on a consequent low-tech philosophy. All structures are kept as simple as possible, and advanced coding techniques are only employed where it is deemed appropriate. The use of external libraries is kept at an absolute minimum, which makes the installation very easy and fast.
+The coding is based on a low-tech, ease-of-use philosophy. All structures are kept as simple as possible, and advanced coding techniques are only employed where it is deemed appropriate. The use of external libraries is kept at an absolute minimum, which makes the installation very easy and fast.
 
 Resources
 =========

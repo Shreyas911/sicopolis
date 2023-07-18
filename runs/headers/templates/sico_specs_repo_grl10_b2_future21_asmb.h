@@ -95,10 +95,10 @@
 
 !!!!! NOTE: All time quantities below refer to the SICOPOLIS calendar. !!!!!
 
-#define TIME_INIT0 -9000.0d0
+#define TIME_INIT0 0.0d0
 !                       Initial time of simulation (in a)
 
-#define TIME_END0 0.0d0
+#define TIME_END0 100.0d0
 !                       Final time of simulation (in a)
 
 #define DTIME0 1.0d0
@@ -114,7 +114,7 @@
 !                       isostatic steady-state displacement of the lithosphere
 !                       (only for REBOUND==2, ELRA model)
 
-#define DTIME_MAR_COA0 10.0d0
+#define DTIME_MAR_COA0 1.0d0
 !                       Time step (in a) for computation of
 !                       auxiliary fields mask_mar, cst_dist and cos_grad_tc
 !                       for the ice discharge parameterization
@@ -468,13 +468,13 @@
 !                             [Robin (1955) solution]
 !                         5 : Ice temperature from previous simulation
 
-#define ANFDATNAME 'v5_grl20_b2_paleo21_dbl_0004.nc'
+#define ANFDATNAME 'repo_grl10_b2_paleo210005.nc'
 !                             Initial-value file (only for ANF_DAT==3,
 !                                  or for ANF_DAT==1 and TEMP_INIT==5)
 
 !-------- Lithosphere (bedrock) modelling --------
 
-#define REBOUND 1
+#define REBOUND 0
 !                         0 : No bedrock adjustment
 !                         1 : Isostatic bedrock adjustment with local
 !                             lithosphere and relaxing asthenosphere (LLRA model)
@@ -657,7 +657,7 @@
 
 !-------- Surface temperature --------
 
-#define TSURFACE 4
+#define TSURFACE 1
 !                         1 : delta_ts = DELTA_TS0, steady state
 !                         3 : Sinusoidal air-temperature forcing
 !                             between delta_ts = 0 C and delta_ts =
@@ -730,7 +730,7 @@
 
 !-------- Surface precipitation --------
 
-#define ACCSURFACE 3
+#define ACCSURFACE 1
 !                         1 : Precipitation is constant factor ACCFACT
 !                             times present distribution
 !                         2 : Precipitation is coupled linearly to
@@ -778,7 +778,7 @@
 !                       between precipitation and delta_ts
 !                       (in 1/C, only for ACCSURFACE==2, 3)
 
-#define ELEV_DESERT 1
+#define ELEV_DESERT 0
 !                         0 : No elevation desertification
 !                         1 : Elevation desertification accounted for
 !                             (only for ACCSURFACE==1, 2, 3)
@@ -939,7 +939,7 @@
 
 !-------- Special ISMIP6 InitMIP settings for the surface mass balance --------
 
-!!! #define INITMIP_SMB_ANOM_FILE 'dsmb_10_ISMIP6_v2_EPSG3413.nc'
+#define INITMIP_SMB_ANOM_FILE 'dsmb_10_ISMIP6_v2_EPSG3413.nc'
 !                       Name of the file containing the surface mass balance
 !                       anomaly for ISMIP6 InitMIP
 
@@ -1011,7 +1011,7 @@
 
 !-------- Sea level --------
 
-#define SEA_LEVEL 3
+#define SEA_LEVEL 1
 !                         1 : Constant sea level z_sl = Z_SL0
 !                         2 : Saw-tooth-shaped sea-level forcing
 !                             with glacial minimum z_sl = -130;
@@ -1214,7 +1214,7 @@
 !                         1 : Initial conditions are written to
 !                             output files
 
-#define OUTPUT 2
+#define OUTPUT 3
 !                         1 : Writing of time-slice data in files
 !                             '.nc' with prescribed time step
 !                         2 : Writing of time-slice data in files
@@ -1241,16 +1241,16 @@
 !                              time-slice output with all 3-d fields for
 !                              OUTPUT==3, in which case snapshots are written)
 
-#define DTIME_OUT0 0.0d0
+#define DTIME_OUT0 5.0d0
 !                             Time step (in a) for writing of
 !                             time-slice data (only for OUTPUT==1,3)
 
-#define N_OUTPUT 5
+#define N_OUTPUT 1
 !                             Number of specified times for writing of
 !                             time-slice data (only for OUTPUT==2,3,
 !                             not more than 100)
 
-#define TIME_OUT0 (/ -8000.0d0, -4000.0d0, -1000.0d0, -100.0d0, 0.0d0 /)
+#define TIME_OUT0 (/ 100.0d0 /)
 !                             Times (in a) for writing of time-slice
 !                             data (only for OUTPUT==2,3, in increasing
 !                             order from #1 to #N_OUTPUT)

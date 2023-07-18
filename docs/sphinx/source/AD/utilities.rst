@@ -24,7 +24,7 @@ First we generate the ``gcov`` output for ``v5_grl20_ss25ka``.
     % make -f MakefileTapenade clean; make -f MakefileTapenade drivergrdchk_cov HEADER=v5_grl20_ss25ka DOMAIN_SHORT=grl
     % ./drivergrdchk_cov 
     % make -f MakefileTapenade cov
-    % lcov --capture --directory . --output-file coverage_v5_grl20_ss25ka.info
+    % lcov --capture --directory . --output-file coverage_repo_grl20_ss25ka.info
 
 Next, we generate the ``gcov`` output for ``v5_ant40_ss25ka``.
 
@@ -33,13 +33,13 @@ Next, we generate the ``gcov`` output for ``v5_ant40_ss25ka``.
     % make -f MakefileTapenade clean; make -f MakefileTapenade drivergrdchk_cov HEADER=v5_ant40_ss25ka DOMAIN_SHORT=ant
     % ./drivergrdchk_cov 
     % make -f MakefileTapenade cov
-    % lcov --capture --directory . --output-file coverage_v5_ant40_ss25ka.info
+    % lcov --capture --directory . --output-file coverage_repo_ant40_ss25ka.info
 
 Finally, we need to aggregate and visualize the results of the two ``info`` files we created. 
 
 ::
 
-    % lcov --add-tracefile coverage_v5_grl20_ss25ka.info -a coverage_v5_ant40_ss25ka.info -o merged.info
+    % lcov --add-tracefile coverage_repo_grl20_ss25ka.info -a coverage_repo_ant40_ss25ka.info -o merged.info
     % genhtml merged.info --output-directory out
 
 This will create a ``src/out`` directory. Open ``src/out/index.html`` to get your interactive, graphical output for code coverage.

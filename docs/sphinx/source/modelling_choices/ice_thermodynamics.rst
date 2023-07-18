@@ -20,7 +20,7 @@ For modelling ice thermodynamics, five different options are available, which ca
   !                        For CALCMOD = -1, 0, 2, 3, the kt domain is redundant,
   !                        therefore KTMAX = 2 is recommended
 
-This is the setting of simulation :file:`v5_emtp2sge25_expA`, for which the melting-CTS enthalpy method is selected.
+This is the setting of simulation :file:`repo_emtp2sge25_expA`, for which the melting-CTS enthalpy method is selected.
 
 Options ``1`` and ``3`` are the most sophisticated solvers and thus recommended for most real-world problems. The different methods are discussed by Greve and Blatter :cite:`greve_blatter_2016`.
 

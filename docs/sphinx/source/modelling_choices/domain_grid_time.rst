@@ -54,7 +54,7 @@ in the header. For flexible testing, it is recommended to deactivate the compati
 
 If the new domain requires new global variables, they can be defined in the module ``src/subroutines/xyz/sico_vars.F90``.
 
-The subroutines for ISMIP HEINO (Calov et al. :cite:`calov_etal_2010`) are available in ``src/subroutines/xyz/heino``, and the input files are in ``sico_in/xyz``. If you copy the subroutines from ``src/subroutines/xyz/heino`` to ``src/subroutines/xyz``, you can run ISMIP HEINO experiments (e.g., the run ``v5_heino50_st`` for which a run-specs header file is available).
+The subroutines for ISMIP HEINO (Calov et al. :cite:`calov_etal_2010`) are available in ``src/subroutines/xyz/heino``, and the input files are in ``sico_in/xyz``. If you copy the subroutines from ``src/subroutines/xyz/heino`` to ``src/subroutines/xyz``, you can run ISMIP HEINO experiments (e.g., the run ``repo_heino50_st`` for which a run-specs header file is available).
 
 .. _spatial_grid:
 
@@ -221,7 +221,7 @@ rounded down in the code. For the example of the velocity component
 Topography
 ==========
 
-Gridded present-day topographies that match the horizontal grid must be provided in either NetCDF (``*.nc``) or ASCII (any other file extension) format. They can be specified in the run-specs header as follows (example with NetCDF files for simulation ``v5_grl16_bm5_ss25ka``):
+Gridded present-day topographies that match the horizontal grid must be provided in either NetCDF (``*.nc``) or ASCII (any other file extension) format. They can be specified in the run-specs header as follows (example with NetCDF files for simulation ``repo_grl16_bm5_ss25ka``):
 
 .. code-block:: fortran
 
