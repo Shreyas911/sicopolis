@@ -81,10 +81,6 @@ contains
     use calc_thk_water_bas_m
     use output_m
 
-#if defined(ALLOW_TAPENADE)
-    use ctrl_map_genarr
-#endif
- 
   implicit none
 
 #if !defined(ALLOW_TAPENADE) /* Normal */
@@ -132,10 +128,6 @@ contains
      iter_output(n) = nint((time_output(n)-time_init)/dtime)
   end do
 #endif
-
-#if defined(ALLOW_TAPENADE) /* TAPENADE */
-  call ctrl_map_genarr2d()
-#endif /* TAPENADE */
 
   !$NO AD BINOMIAL-CKP itercount_max+1 20 1
   main_loop : do itercount=1, itercount_max

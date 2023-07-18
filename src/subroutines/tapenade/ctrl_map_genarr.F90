@@ -10,7 +10,8 @@ contains
 
     use sico_types_m
     use sico_variables_m
-        
+    use error_m
+    
     implicit none  
 
     integer(i4b)                 :: ctrl_index, j, i
@@ -42,16 +43,28 @@ contains
 
       if(trim(xx_genarr2d_vars(ctrl_index)) .EQ. 'xx_c_slide') then
         
-        c_slide = c_slide &
+        c_slide_init = c_slide_init &
                 + xx_genarr2d(ctrl_index,:,:) * xx_genarr2d_mask(ctrl_index,:,:)
 
       else if (trim(xx_genarr2d_vars(ctrl_index)) .EQ. 'xx_q_geo') then
 
         q_geo = q_geo + xx_genarr2d(ctrl_index,:,:) * xx_genarr2d_mask(ctrl_index,:,:)
- 
+
+      else if (trim(xx_genarr2d_vars(ctrl_index)) .EQ. 'xx_zs') then
+
+#if (ANF_DAT != 1)
+        errormsg = ' >>> ctrl_map_genarr2d: ' &
+          //'Initial surface topography as a control param is only compatible with ANF_DAT == 1 !'
+        call error(errormsg)
+#endif        
+
+        zs = zs + xx_genarr2d(ctrl_index,:,:) * xx_genarr2d_mask(ctrl_index,:,:)
+         
       else 
 
-        print *, "WARNING! ", xx_genarr2d_vars(ctrl_index), " is not in the genctrl setup yet!"
+        errormsg = ' >>> ctrl_map_genarr2d: ' &
+          //"This control variable is not in the genctrl setup yet!"
+        call error(errormsg)
 
       endif
 

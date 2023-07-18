@@ -105,7 +105,11 @@ do j=0, JMAX
         (n_slide_region(j,i) <= n_slide_regions) ) then
       p_weert(j,i)         = p_weert_aux(n_slide_region(j,i))
       q_weert(j,i)         = q_weert_aux(n_slide_region(j,i))
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK))
       c_slide_init(j,i)    = c_slide_aux(n_slide_region(j,i))*sec2year
+#else
+      c_slide_init(j,i)    = c_slide_init(j,i) + c_slide_aux(n_slide_region(j,i))*sec2year
+#endif
       gamma_slide_inv(j,i) = gamma_slide_inv_aux(n_slide_region(j,i))
       sub_melt_flag(j,i)   = (gamma_slide_aux(n_slide_region(j,i)) >= eps)
    else

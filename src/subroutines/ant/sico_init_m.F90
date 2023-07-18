@@ -40,6 +40,7 @@ module sico_init_m
   use error_m
 #if defined(ALLOW_TAPENADE)
   use globals
+  use ctrl_map_genarr
 #endif
   implicit none
 
@@ -253,6 +254,20 @@ time        = 0.0_dp
 time_init   = 0.0_dp
 time_end    = 0.0_dp
 time_output = 0.0_dp
+
+!-------- Initialization of Tapenade generic control --------
+
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK)) /* TAPENADE */
+
+! Initialize compatible fields to 0
+
+q_geo        = 0.0
+c_slide_init = 0.0
+zs           = 0.0 ! Only compatible with ANF_DAT==1
+
+  call ctrl_map_genarr2d()
+
+#endif /* TAPENADE */
 
 !-------- Initialisation of the Library of Iterative Solvers Lis,
 !                                                     if required --------
@@ -2065,6 +2080,8 @@ close(21, status='keep')
 
 !-------- Determination of the geothermal heat flux --------
 
+#if (!defined(ALLOW_TAPENADE) && defined(ALLOW_GRDCHK)) /* NORMAL */
+ 
 #if (Q_GEO_MOD==1)
 
 !  ------ Constant value
@@ -2086,21 +2103,42 @@ call read_2d_input(filename_with_path, &
                    ch_var_name='GHF', n_var_type=1, n_ascii_header=6, &
                    field2d_r=field2d_aux)
 
-#if !defined(ALLOW_TAPENADE)
-
 q_geo = field2d_aux *1.0e-03_dp   ! mW/m2 -> W/m2
 
-#else
+#endif 
+
+#else /* TAPENADE */
+
+#if (Q_GEO_MOD==1)
+
+!  ------ Constant value
 
 do i=0, IMAX
 do j=0, JMAX
-   q_geo(j,i) = field2d_aux(j,i) *1.0e-03_dp   ! mW/m2 -> W/m2
+   q_geo(j,i) = q_geo(j,i) + Q_GEO *1.0e-03_dp   ! mW/m2 -> W/m2
+end do
+end do
+
+#elif (Q_GEO_MOD==2)
+
+!  ------ Read data from file
+
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                     trim(Q_GEO_FILE)
+
+call read_2d_input(filename_with_path, &
+                   ch_var_name='GHF', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
+
+do i=0, IMAX
+do j=0, JMAX
+   q_geo(j,i) = q_geo(j,i) + field2d_aux(j,i) *1.0e-03_dp   ! mW/m2 -> W/m2
 end do
 end do
 
 #endif
 
-#endif
+#endif /* TAPENADE */
 
 !-------- Reading of tabulated kei function--------
 
@@ -2807,7 +2845,11 @@ call read_2d_input(filename_with_path, &
                    ch_var_name='zs', n_var_type=1, n_ascii_header=6, &
                    field2d_r=field2d_aux)
 
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK)) /* NORMAL */
 zs = field2d_aux
+#else /* TAPENADE */
+zs = zs + field2d_aux
+#endif
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZL_PRESENT_FILE)
