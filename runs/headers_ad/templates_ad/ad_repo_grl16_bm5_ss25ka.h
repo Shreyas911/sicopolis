@@ -1,5 +1,5 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-! Specification file for control variables CTRL_VARS.h
+! Specification file for control variables ad_repo_grl16_bm5_ss25ka.h
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------- Basic settings --------
@@ -19,9 +19,9 @@
 			  	   'xx_zs          ' /)
 !		List of 2D time-invariant control variables
 
-#define XX_GENARR2D_PREPROC_ARR    (/ 'nolog10ctrl', \
-			              'nnnnnnnnnnn', \
-				      'bounds     ' /) 
+#define XX_GENARR2D_PREPROC_ARR    (/ 'log10ctrl', \
+			              'nnnnnnnnn', \
+				      'bounds   ' /) 
 !               Define preprocessing steps for ctrl variables
 !		Fill with nnnn... to ensure same length
 
