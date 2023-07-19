@@ -378,15 +378,7 @@ clean:
               *.gcno\
               *.mod*\
               driver*\
-              *~\
-              oad_template_*.*\
-	rm -f ad_template*\
-              ad_inline.f\
-              OAD_*\
-              w2f__*\
-              iaddr*\
-              stream_vel_variables_passive.f90\
-              head_sf*
+              *~
 
 cleanobj: 
 	rm -f subroutines/tapenade/*.o \
@@ -394,3 +386,4 @@ cleanobj:
               *.o
 
 .PHONY: clean
+.PHONY: cleanobj
