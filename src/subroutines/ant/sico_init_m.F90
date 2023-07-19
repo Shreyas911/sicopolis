@@ -40,7 +40,7 @@ module sico_init_m
   use error_m
 #if defined(ALLOW_TAPENADE)
   use globals
-  use ctrl_map_genarr
+  use ctrl_init_variables_m
 #endif
   implicit none
 
@@ -265,7 +265,7 @@ q_geo        = 0.0
 c_slide_init = 0.0
 zs           = 0.0 ! Only compatible with ANF_DAT==1
 
-  call ctrl_map_genarr2d()
+  call ctrl_init_variables()
 
 #endif /* TAPENADE */
 

@@ -1,75 +1,125 @@
-module ctrl_map_genarr
+module ctrl_map_genarr_m
+
+  use sico_types_m
+  use sico_variables_m
+  use error_m
 
   implicit none
 
-  public :: ctrl_map_genarr2d
+  public :: ctrl_map_ini_genarr2d, ctrl_map_genarr2d
+!  public :: ctrl_map_ini_genarr3d, ctrl_map_genarr3d
 
 contains
 
-  subroutine ctrl_map_genarr2d
+  subroutine ctrl_map_ini_genarr2d
 
-    use sico_types_m
-    use sico_variables_m
-    use error_m
-    
-    implicit none  
+    implicit none
 
-    integer(i4b)                 :: ctrl_index, j, i
-    integer(i4b)                 :: iLow, iHigh, jLow, jHigh
+    integer(i4b)        :: ctrl_index, j, i
+    integer(i4b)        :: igen_c_slide_init, igen_zs, igen_q_geo
 
     xx_genarr2d_vars    = XX_GENARR2D_VARS_ARR
+    xx_genarr2d_preproc = XX_GENARR2D_PREPROC_ARR
     xx_genarr2d_bounds  = XX_GENARR2D_BOUNDS_ARR
 
+    igen_c_slide_init = 0
+    igen_zs           = 0
+    igen_q_geo        = 0
+
     do ctrl_index = 1, NUM_CTRL_GENARR2D
-
-      if (xx_genarr2d_bounds(ctrl_index) .NE. ' ') then
-        read (unit=xx_genarr2d_bounds(ctrl_index),fmt=*) iLow, iHigh, jLow, jHigh
-      else
-                iLow  = 0
-                iHigh = IMAX
-                jLow  = 0
-                jHigh = JMAX
-      end if
-
-      do j = 0, JMAX
-        do i = 0, IMAX
-          if ((i .GE. iLow) .AND. (i .LE. iHigh) .AND. (j .GE. jLow) .AND. (j .LE. jHigh)) then
-            xx_genarr2d_mask(ctrl_index,j,i) = 1.0
-          else
-            xx_genarr2d_mask(ctrl_index,j,i) = 0.0
-          end if
-        end do
-      end do 
-
-      if(trim(xx_genarr2d_vars(ctrl_index)) .EQ. 'xx_c_slide') then
-        
-        c_slide_init = c_slide_init &
-                + xx_genarr2d(ctrl_index,:,:) * xx_genarr2d_mask(ctrl_index,:,:)
-
+      
+      if (trim(xx_genarr2d_vars(ctrl_index)) .EQ. 'xx_c_slide_init') then
+        igen_c_slide_init = ctrl_index
       else if (trim(xx_genarr2d_vars(ctrl_index)) .EQ. 'xx_q_geo') then
-
-        q_geo = q_geo + xx_genarr2d(ctrl_index,:,:) * xx_genarr2d_mask(ctrl_index,:,:)
-
+        igen_q_geo = ctrl_index
       else if (trim(xx_genarr2d_vars(ctrl_index)) .EQ. 'xx_zs') then
-
+        igen_zs = ctrl_index
 #if (ANF_DAT != 1)
         errormsg = ' >>> ctrl_map_genarr2d: ' &
           //'Initial surface topography as a control param is only compatible with ANF_DAT == 1 !'
         call error(errormsg)
 #endif        
-
-        zs = zs + xx_genarr2d(ctrl_index,:,:) * xx_genarr2d_mask(ctrl_index,:,:)
-         
-      else 
-
+      else
         errormsg = ' >>> ctrl_map_genarr2d: ' &
-          //"This control variable is not in the genctrl setup yet!"
+          //"This control variable is not in the genctrl2d setup yet!"
         call error(errormsg)
-
-      endif
-
+      end if
+  
     end do
+
+    if (igen_c_slide_init .GT. 0) then
+      call ctrl_map_genarr2d(c_slide_init, igen_c_slide_init)
+    end if
+    if (igen_q_geo .GT. 0) then
+      call ctrl_map_genarr2d(q_geo, igen_q_geo)
+    end if
+    if (igen_zs .GT. 0) then
+      call ctrl_map_genarr2d(zs, igen_zs)
+    end if
+    
+  end subroutine ctrl_map_ini_genarr2d
+
+  subroutine ctrl_map_genarr2d(fld, iarr)
+
+    implicit none  
+
+    real(dp), dimension(0:JMAX,0:IMAX)          :: fld
+    integer(i4b)                                :: iarr, j, i, k2
+    integer(i4b)                                :: iLow, iHigh, jLow, jHigh
+    logical                                     :: doread, dobounds
+    logical                                     :: dosmooth, doscaling, dolog10ctrl
+    real(dp)                                    :: log10initval, ln10
+    character(128)                              :: preprocs(NUMCTRLPROC)
+
+    doread      = .FALSE.
+    dosmooth    = .FALSE.
+    doscaling   = .FALSE.
+    dolog10ctrl = .FALSE.
+    dobounds    = .FALSE.
+
+    read (unit=xx_genarr2d_preproc(iarr),fmt=*) preprocs
+
+    do k2 = 1, NUMCTRLPROC
+
+      if (preprocs(k2) .EQ. 'smooth') then
+        dosmooth = .TRUE.
+      end if
+      if (preprocs(k2) .EQ. 'scaling') then
+        doscaling = .TRUE.
+      end if
+      if (preprocs(k2) .EQ. 'read') then
+        doread = .TRUE.
+      end if
+      if (preprocs(k2) .EQ. 'log10ctrl') then
+        dolog10ctrl = .TRUE.
+!        log10initval = xx_genarr2d_preproc_r(k2,iarr)
+      end if
+      if (preprocs(k2) .EQ. 'bounds') then
+        dobounds = .TRUE.
+      end if
+    end do
+
+    if (dobounds .AND. trim(xx_genarr2d_bounds(iarr)) .NE. ' ') then
+      read (unit=xx_genarr2d_bounds(iarr),fmt=*) iLow, iHigh, jLow, jHigh
+    else
+      iLow  = 0
+      iHigh = IMAX
+      jLow  = 0
+      jHigh = JMAX
+    end if
+
+    do j = 0, JMAX
+      do i = 0, IMAX
+        if ((i .GE. iLow) .AND. (i .LE. iHigh) .AND. (j .GE. jLow) .AND. (j .LE. jHigh)) then
+          xx_genarr2d_mask(iarr,j,i) = 1.0
+        else
+          xx_genarr2d_mask(iarr,j,i) = 0.0
+        end if
+      end do
+    end do 
+
+    fld = fld + xx_genarr2d(iarr,:,:) * xx_genarr2d_mask(iarr,:,:)
        
   end subroutine ctrl_map_genarr2d
 
-end module ctrl_map_genarr 
+end module ctrl_map_genarr_m 

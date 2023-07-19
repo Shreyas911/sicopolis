@@ -984,11 +984,11 @@ save
 #endif
 
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR2D) :: xx_genarr2d_vars
-   character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR2D) :: xx_genarr2d_weights
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR2D) :: xx_genarr2d_bounds
- 
-   real(dp),     dimension(NUM_CTRL_GENARR2D,0:JMAX,0:IMAX) :: xx_genarr2d      
-   real(dp),     dimension(NUM_CTRL_GENARR2D,0:JMAX,0:IMAX) :: xx_genarr2d_mask
+   character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR2D) :: xx_genarr2d_preproc 
+
+   real(dp),    dimension(NUM_CTRL_GENARR2D,0:JMAX,0:IMAX) :: xx_genarr2d      
+   real(dp),    dimension(NUM_CTRL_GENARR2D,0:JMAX,0:IMAX) :: xx_genarr2d_mask
 
 #endif /* Tapenade */
 
