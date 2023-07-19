@@ -104,38 +104,38 @@ function check_args()
 
 function run()
 {
-   (./sico.sh ${MULTI_OPTIONS_1} -m v5_vialov3d25) \
+   (./sico.sh ${MULTI_OPTIONS_1} -m repo_vialov3d25) \
               >out_multi_101.dat 2>&1
 
-   (./sico.sh ${MULTI_OPTIONS_1} -m v5_emtp2sge25_expA) \
+   (./sico.sh ${MULTI_OPTIONS_1} -m repo_emtp2sge25_expA) \
               >out_multi_102.dat 2>&1
 
-   (./sico.sh ${MULTI_OPTIONS_1} -m v5_grl16_bm5_ss25ka) \
+   (./sico.sh ${MULTI_OPTIONS_1} -m repo_grl16_bm5_ss25ka) \
               >out_multi_103.dat 2>&1
 
-   (./sico.sh ${MULTI_OPTIONS_1} -m v5_ant40_b2_ss25ka) \
+   (./sico.sh ${MULTI_OPTIONS_1} -m repo_ant40_b2_ss25ka) \
               >out_multi_104.dat 2>&1
 
    #--------
 
-   (./sico.sh ${MULTI_OPTIONS_1} -m v5_grl20_b2_paleo21) \
+   (./sico.sh ${MULTI_OPTIONS_1} -m repo_grl20_b2_paleo21) \
               >out_multi_111.dat 2>&1
 
    cd $PWD/../tools ; echo 0004 | \
    (./tools.sh -p resolution_doubler ${MULTI_OPTIONS_2} \
-               -m v5_grl20_b2_paleo21) \
+               -m repo_grl20_b2_paleo21) \
                >$OLDPWD/out_multi_112.dat 2>&1 ; cd $OLDPWD
 
-   (./sico.sh ${MULTI_OPTIONS_1} -m v5_grl10_b2_paleo21 \
-              -a ${MULTI_OUTDIR}/v5_grl20_b2_paleo21) \
+   (./sico.sh ${MULTI_OPTIONS_1} -m repo_grl10_b2_paleo21 \
+              -a ${MULTI_OUTDIR}/repo_grl20_b2_paleo21) \
               >out_multi_113.dat 2>&1
 
-   (./sico.sh ${MULTI_OPTIONS_1} -m v5_grl10_b2_future21_ctrl \
-              -a ${MULTI_OUTDIR}/v5_grl10_b2_paleo21) \
+   (./sico.sh ${MULTI_OPTIONS_1} -m repo_grl10_b2_future21_ctrl \
+              -a ${MULTI_OUTDIR}/repo_grl10_b2_paleo21) \
               >out_multi_114.dat 2>&1
 
-   (./sico.sh ${MULTI_OPTIONS_1} -m v5_grl10_b2_future21_asmb \
-              -a ${MULTI_OUTDIR}/v5_grl10_b2_paleo21) \
+   (./sico.sh ${MULTI_OPTIONS_1} -m repo_grl10_b2_future21_asmb \
+              -a ${MULTI_OUTDIR}/repo_grl10_b2_paleo21) \
               >out_multi_115.dat 2>&1
 
    #--------
@@ -147,20 +147,20 @@ function run()
    OMP_NUM_THREADS=1; export OMP_NUM_THREADS
    #              (number of threads for the SSA solver using OpenMP)
 
-   (./sico.sh ${MULTI_OPTIONS_1} -m v5_ant64_b2_spinup09_init100a) \
+   (./sico.sh ${MULTI_OPTIONS_1} -m repo_ant64_b2_spinup09_init100a) \
               >out_multi_121.dat 2>&1
 
-   (./sico.sh ${MULTI_OPTIONS_1} -m v5_ant64_b2_spinup09_fixtopo \
-              -a ${MULTI_OUTDIR}/v5_ant64_b2_spinup09_init100a \
-              -t ${MULTI_OUTDIR}/v5_ant64_b2_spinup09_init100a) \
+   (./sico.sh ${MULTI_OPTIONS_1} -m repo_ant64_b2_spinup09_fixtopo \
+              -a ${MULTI_OUTDIR}/repo_ant64_b2_spinup09_init100a \
+              -t ${MULTI_OUTDIR}/repo_ant64_b2_spinup09_init100a) \
               >out_multi_122.dat 2>&1
 
-   (./sico.sh ${MULTI_OPTIONS_1} -m v5_ant64_b2_spinup09 \
-              -a ${MULTI_OUTDIR}/v5_ant64_b2_spinup09_fixtopo) \
+   (./sico.sh ${MULTI_OPTIONS_1} -m repo_ant64_b2_spinup09 \
+              -a ${MULTI_OUTDIR}/repo_ant64_b2_spinup09_fixtopo) \
               >out_multi_123.dat 2>&1
 
-   (./sico.sh ${MULTI_OPTIONS_1} -m v5_ant64_b2_future09_ctrl \
-              -a ${MULTI_OUTDIR}/v5_ant64_b2_spinup09) \
+   (./sico.sh ${MULTI_OPTIONS_1} -m repo_ant64_b2_future09_ctrl \
+              -a ${MULTI_OUTDIR}/repo_ant64_b2_spinup09) \
               >out_multi_124.dat 2>&1
 }
 

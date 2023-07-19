@@ -104,25 +104,25 @@ function check_args()
 
 function run()
 {
-   (./sico.sh ${MULTI_OPTIONS_1} -m v5_asf2_steady) \
+   (./sico.sh ${MULTI_OPTIONS_1} -m repo_asf2_steady) \
               >out_multi_201.dat 2>&1
 
-   (./sico.sh ${MULTI_OPTIONS_1} -m v5_asf2_surge) \
+   (./sico.sh ${MULTI_OPTIONS_1} -m repo_asf2_surge) \
               >out_multi_202.dat 2>&1
 
-   (./sico.sh ${MULTI_OPTIONS_1} -m v5_scand_test) \
+   (./sico.sh ${MULTI_OPTIONS_1} -m repo_scand_test) \
               >out_multi_203.dat 2>&1
 
-   (./sico.sh ${MULTI_OPTIONS_1} -m v5_tibet_test) \
+   (./sico.sh ${MULTI_OPTIONS_1} -m repo_tibet_test) \
               >out_multi_204.dat 2>&1
 
-   (./sico.sh ${MULTI_OPTIONS_1} -m v5_nmars10_steady) \
+   (./sico.sh ${MULTI_OPTIONS_1} -m repo_nmars10_steady) \
               >out_multi_205.dat 2>&1
 
-   (./sico.sh ${MULTI_OPTIONS_1} -m v5_smars10_steady) \
+   (./sico.sh ${MULTI_OPTIONS_1} -m repo_smars10_steady) \
               >out_multi_206.dat 2>&1
 
-   (./sico.sh ${MULTI_OPTIONS_1} -m v5_nhem80_nt012_new) \
+   (./sico.sh ${MULTI_OPTIONS_1} -m repo_nhem80_nt012_new) \
               >out_multi_207.dat 2>&1
 
    #--------
@@ -134,7 +134,7 @@ function run()
    ## OMP_NUM_THREADS=1; export OMP_NUM_THREADS
    ## #              (number of threads for the SSA solver using OpenMP)
    ## 
-   ## (./sico.sh ${MULTI_OPTIONS_1} -m v5_emtshelf25_expH) \
+   ## (./sico.sh ${MULTI_OPTIONS_1} -m repo_emtshelf25_expH) \
    ##            >out_multi_211.dat 2>&1
 
    #--------
@@ -144,7 +144,7 @@ function run()
 
    ## cd $PWD/../src/subroutines/xyz ; $CP -f ./heino/*90 ./ ; cd $OLDPWD
    ## 
-   ## (./sico.sh ${MULTI_OPTIONS_1} -m v5_heino50_st) \
+   ## (./sico.sh ${MULTI_OPTIONS_1} -m repo_heino50_st) \
    ##            >out_multi_212.dat 2>&1
 }
 

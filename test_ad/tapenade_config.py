@@ -219,7 +219,7 @@ def setup_grdchk(ind_var, header, domain,
 
 	Variables:
 	ind_var - Independent variable
-	header - Name of header, for example v5_grl20_ss25ka
+	header - Name of header, for example repo_grl20_ss25ka
 	domain - grl or ant
 	dimension - dimension of variable being perturbed
 	z_co_ord - If 3D variable give z co-ordinate
@@ -398,7 +398,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 
 	Variables:
 	ind_var - Independent variable
-	header - Name of header, for example v5_grl20_ss25ka
+	header - Name of header, for example repo_grl20_ss25ka
 	domain - grl or ant
 	ckp_status - True if binomial checkpointing is used, else False
 	numCore_cpp_b_file - Location of numCore_cpp_b.f90 file
@@ -609,7 +609,7 @@ def setup_forward(ind_var, header, domain,
 	
 	Variables:
 	ind_var - Independent variable
-	header - Name of header, for example v5_grl20_ss25ka
+	header - Name of header, for example repo_grl20_ss25ka
 	domain - grl or ant
 	dimension - dimension of variable being perturbed
 	z_co_ord - If 3D variable give z co-ordinate
@@ -778,7 +778,7 @@ def simulation(mode, header, domain,
 
 	Variables:
 	ind_var - Independent variable
-	header - Name of header, for example v5_grl20_ss25ka
+	header - Name of header, for example repo_grl20_ss25ka
 	domain - grl or ant
 	ind_var_z_co_ord = z_co_ord of independent var / vars (plural for adjoints only in the future)
 	ind_var_dim - dimension of independent var / vars (plural for adjoints only in the future)

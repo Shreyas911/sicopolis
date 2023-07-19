@@ -1,5 +1,6 @@
 # .readthedocs.yml
-# Read the Docs configuration file
+# Read the Docs configuration file for Sphinx projects
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
 
 # Required
 version: 2
@@ -14,8 +15,21 @@ sphinx:
   fail_on_warning: true
 
 # Optionally build your docs in additional formats such as PDF and ePub
-formats:
-  - pdf
+#
+# No additional formats
+formats: []
+#
+# Build PDF
+# formats:
+#   - pdf
+#
+# Build PDF & ePub
+# formats:
+#   - pdf
+#   - epub
+#
+# Build all formats
+# formats: all
 
 # Optionally set the version of Python and requirements required to build your docs
 python:

@@ -95,13 +95,13 @@
 
 !!!!! NOTE: All time quantities below refer to the SICOPOLIS calendar. !!!!!
 
-#define TIME_INIT0 0.0d0
+#define TIME_INIT0 -140000.0d0
 !                       Initial time of simulation (in a)
 
-#define TIME_END0 100.0d0
+#define TIME_END0 0.0d0
 !                       Final time of simulation (in a)
 
-#define DTIME0 2.0d0
+#define DTIME0 5.0d0
 !                       Time step (in a) for computation of velocity
 !                       and topography
 
@@ -109,12 +109,12 @@
 !                       Time step (in a) for computation of
 !                       temperature, water content and age of the ice
 
-#define DTIME_WSS0 10.0d0
+#define DTIME_WSS0 100.0d0
 !                       Time step (in a) for computation of
 !                       isostatic steady-state displacement of the lithosphere
 !                       (only for REBOUND==2, ELRA model)
 
-#define DTIME_SER0 2.0d0
+#define DTIME_SER0 100.0d0
 !                       Time step (in a) for writing of data to
 !                       the time-series files
 
@@ -462,13 +462,13 @@
 !                             [Robin (1955) solution]
 !                         5 : Ice temperature from previous simulation
 
-#define ANFDATNAME 'v5_ant64_b2_spinup090004.nc'
+#define ANFDATNAME 'repo_ant64_b2_spinup09_init100a0002.nc'
 !                             Initial-value file (only for ANF_DAT==3,
 !                                  or for ANF_DAT==1 and TEMP_INIT==5)
 
 !-------- Lithosphere (bedrock) modelling --------
 
-#define REBOUND 0
+#define REBOUND 2
 !                         0 : No bedrock adjustment
 !                         1 : Isostatic bedrock adjustment with local
 !                             lithosphere and relaxing asthenosphere (LLRA model)
@@ -524,7 +524,7 @@
 
 !-------- Evolution of the ice thickness --------
 
-#define THK_EVOL 1
+#define THK_EVOL 3
 !                         0 : No evolution of the ice thickness, kept fixed on
 !                             the initial thickness
 !                         1 : Evolution of the ice thickness
@@ -565,7 +565,7 @@
 !                              only for THK_EVOL==2, 3,
 !                              or for ACCSURFACE==7 and ABLSURFACE==7)
 
-#define TARGET_TOPO_DAT_NAME 'none'
+#define TARGET_TOPO_DAT_NAME 'repo_ant64_b2_spinup09_init100a0002.nc'
 !                             Target-topography file
 !                             (only for THK_EVOL==2, 3,
 !                              or for ACCSURFACE==7 and ABLSURFACE==7)
@@ -651,7 +651,7 @@
 
 !-------- Surface temperature --------
 
-#define TSURFACE 1
+#define TSURFACE 4
 !                         1 : delta_ts = DELTA_TS0, steady state
 !                         3 : Sinusoidal air-temperature forcing
 !                             between delta_ts = 0 C and delta_ts =
@@ -694,7 +694,7 @@
 !                       Period (in a) for sinusoidal air-temperature
 !                       forcing (only for TSURFACE==3)
 
-#define GRIP_TEMP_FILE 'none'
+#define GRIP_TEMP_FILE 'vostok_temp_searise.dat'
 !                       Name of the file containing the ice-core
 !                       air-temperature forcing (only for TSURFACE==4)
 
@@ -726,7 +726,7 @@
 
 !-------- Surface precipitation --------
 
-#define ACCSURFACE 1
+#define ACCSURFACE 4
 !                         1 : Precipitation is constant factor ACCFACT
 !                             times present distribution
 !                         2 : Precipitation is coupled linearly to
@@ -751,7 +751,7 @@
 !                       precipitation data
 !                       (for ACCSURFACE<=5)
 
-#define ACCFACT 1.0d0
+#define ACCFACT 0.0d0
 !                       Constant ratio between actual and present
 !                       precipitation (only for ACCSURFACE==1)
 
@@ -760,7 +760,7 @@
 !                       between precipitation and delta_ts
 !                       (in 1/C, only for ACCSURFACE==2, 3)
 
-#define ELEV_DESERT 0
+#define ELEV_DESERT 1
 !                         0 : No elevation desertification
 !                         1 : Elevation desertification accounted for
 !                             (only for ACCSURFACE==1, 2, 3)
@@ -1036,7 +1036,7 @@
 !                       Weertman exponent q (integer) for the basal pressure
 !                       (N_SLIDE_REGIONS separate values)
 
-#define TIME_RAMP_UP_SLIDE 0.0d0
+#define TIME_RAMP_UP_SLIDE 5000.0d0
 !                       Ramp-up time (in a) for basal sliding:
 !                       Sliding starts gradually between the inital time
 !                       (TIME_INIT0) and the initial time plus the ramp-up time
@@ -1093,7 +1093,7 @@
 !                        3 : Weighed average of grounded ice melting (computed)
 !                            and marine ice melting (prescribed by QBM_MARINE)
 
-#define QBM_MARINE 2.0d0
+#define QBM_MARINE 0.0d0
 !                        Basal melting rate at the marine ice front,
 !                        in m/a water equiv. (for MARINE_ICE_BASAL_MELTING==2,3)
 
@@ -1253,7 +1253,7 @@
 !                         1 : Initial conditions are written to
 !                             output files
 
-#define OUTPUT 3
+#define OUTPUT 2
 !                         1 : Writing of time-slice data in files
 !                             '.nc' with prescribed time step
 !                         2 : Writing of time-slice data in files
@@ -1280,16 +1280,17 @@
 !                              time-slice output with all 3-d fields for
 !                              OUTPUT==3, in which case snapshots are written)
 
-#define DTIME_OUT0 10.0d0
+#define DTIME_OUT0 0.0d0
 !                             Time step (in a) for writing of
 !                             time-slice data (only for OUTPUT==1,3)
 
-#define N_OUTPUT 1
+#define N_OUTPUT 8
 !                             Number of specified times for writing of
 !                             time-slice data (only for OUTPUT==2,3,
 !                             not more than 100)
 
-#define TIME_OUT0 (/ 100.0d0 /)
+#define TIME_OUT0 (/ -9000.0d0, -5000.0d0, -2000.0d0, -1000.0d0, \
+                      -500.0d0,  -200.0d0,  -100.0d0,     0.0d0 /)
 !                             Times (in a) for writing of time-slice
 !                             data (only for OUTPUT==2,3, in increasing
 !                             order from #1 to #N_OUTPUT)

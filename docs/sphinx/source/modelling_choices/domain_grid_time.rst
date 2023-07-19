@@ -54,7 +54,7 @@ in the header. For flexible testing, it is recommended to deactivate the compati
 
 If the new domain requires new global variables, they can be defined in the module ``src/subroutines/xyz/sico_vars.F90``.
 
-The subroutines for ISMIP HEINO (Calov et al. :cite:`calov_etal_2010`) are available in ``src/subroutines/xyz/heino``, and the input files are in ``sico_in/xyz``. If you copy the subroutines from ``src/subroutines/xyz/heino`` to ``src/subroutines/xyz``, you can run ISMIP HEINO experiments (e.g., the run ``v5_heino50_st`` for which a run-specs header file is available).
+The subroutines for ISMIP HEINO (Calov et al. :cite:`calov_etal_2010`) are available in ``src/subroutines/xyz/heino``, and the input files are in ``sico_in/xyz``. If you copy the subroutines from ``src/subroutines/xyz/heino`` to ``src/subroutines/xyz``, you can run ISMIP HEINO experiments (e.g., the run ``repo_heino50_st`` for which a run-specs header file is available).
 
 .. _spatial_grid:
 
@@ -163,12 +163,65 @@ For all other thermodynamics schemes (ENTC, ENTM, COLD, ISOT; see Section ":ref:
 
 For technical reasons, the :math:`\zeta_\mathrm{t}` domain is still present and should be assigned three grid points, that is, ``KTMAX`` should be set to ``2``.
 
+A staggered Arakawa C grid is used for reasons of numerical stability
+(Arakawa and Lamb :cite:`arakawa_lamb_1977`). This means that the
+components of the velocity (:math:`v_{x}`, :math:`v_{y}`,
+:math:`v_{z}`) and the volume flux (depth-integrated horizontal
+velocity; :math:`Q_{x}`, :math:`Q_{y}`) are defined in between the
+grid points, while all other quantities are defined on the grid
+points.
+
+.. _arakawa_c_grid:
+.. figure:: figs/Arakawa_C_grid.png
+  :width: 300 px
+  :alt: Arakawa C grid
+  :align: center
+
+  Arakawa C grid for the ice thickness :math:`H` and the volume flux
+  :math:`(Q_{x},Q_{y})` in one grid cell in the horizontal plane,
+  centred around the grid point :math:`(i,j)`.
+
+For the example of the 2D fields ice thickness and volume flux, this
+is illustrated in :numref:`arakawa_c_grid`. For the 3D fields, the
+principle is the same: The velocity components are defined in between
+the grid points\:
+
+.. math::
+  :label: eq_arakawa_c_vxyz
+
+  (v_{x})_{i\pm\frac{1}{2},j,k} \; ,
+  \quad
+  (v_{y})_{i,j\pm\frac{1}{2},k} \; ,
+  \quad
+  (v_{z})_{i,j,k\pm\frac{1}{2}} \; ,
+
+while other fields like the temperature :math:`T` are defined on the
+grid points\: :math:`T_{ijk}`. Note that, depending on the layer
+(:math:`\zeta_\mathrm{c,t,r}` domains, see above), the index :math:`k`
+can either be :math:`k_\mathrm{c}`, :math:`k_\mathrm{t}` or
+:math:`k_\mathrm{r}`.
+
+Since half-integer indices are not allowed in Fortran, they are
+rounded down in the code. For the example of the velocity component
+:math:`v_{x}` in the :math:`k_\mathrm{c}` domain\:
+
+.. math::
+  :label: eq_arakawa_c_indices
+
+  (v_{x})_{i+\frac{1}{2},j,k_\mathrm{c}}
+  \; \rightarrow \;
+  \mbox{vx_c(kc,j,i)}\,,
+  \quad
+  (v_{x})_{i-\frac{1}{2},j,k_\mathrm{c}}
+  \; \rightarrow \;
+  \mbox{vx_c(kc,j,i-1)}\,.
+
 .. _topography:
 
 Topography
 ==========
 
-Gridded present-day topographies that match the horizontal grid must be provided in either NetCDF (``*.nc``) or ASCII (any other file extension) format. They can be specified in the run-specs header as follows (example with NetCDF files for simulation ``v5_grl16_bm5_ss25ka``):
+Gridded present-day topographies that match the horizontal grid must be provided in either NetCDF (``*.nc``) or ASCII (any other file extension) format. They can be specified in the run-specs header as follows (example with NetCDF files for simulation ``repo_grl16_bm5_ss25ka``):
 
 .. code-block:: fortran
 

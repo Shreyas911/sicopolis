@@ -5,7 +5,7 @@ How to create the Doxygen documentation
    `cp doxygen1.8.1-config-template.txt my_doxygen1.8.1-config.txt`
 
 2. Edit my_doxygen1.8.1-config.txt:  
-   Search for "Revision xxxx", and replace xxxx with the current
+   Search for "Revision ...", and replace "..." with the current
    revision number  
    (execute `./rev_id.sh` in the runs directory to find out).  
    Search for "/home/username/Documents/sicopolis/src", and replace
