@@ -13,6 +13,10 @@ ifndef HEADER
 HEADER=repo_grl16_bm5_ss25ka
 endif
 
+ifndef ADHEADER
+ADHEADER=repo_grl16_bm5_ss25ka
+endif
+
 ifndef DOMAIN_SHORT
 DOMAIN_SHORT=grl
 endif
@@ -170,11 +174,11 @@ ${ADFirstAidKit_DIR}/adBinomial.c
 
 SRC_HEADERS=\
 sico_specs.h \
-CTRL_VARS.h
+ad_specs.h
 
 CPPCMD = cat $< |  cpp -DRUN_SPECS_HEADER=\"sico_specs.h\" -DALLOW_TAPENADE_DIFFERENTIATE=1 -DALLOW_TAPENADE=1 -I../ -I./ -traditional-cpp -P 
 
-CPPCMD_FILES = cat $< |  cpp -DRUN_SPECS_HEADER=\"sico_specs.h\" -imacros sico_specs.h -imacros CTRL_VARS.h ${DEFINE_FLAGS_ADJOINT} ${LISFLAG} -I${ADFirstAidKit_DIR} -traditional-cpp -P
+CPPCMD_FILES = cat $< |  cpp -DRUN_SPECS_HEADER=\"sico_specs.h\" -imacros sico_specs.h -imacros ad_specs.h ${DEFINE_FLAGS_ADJOINT} ${LISFLAG} -I${ADFirstAidKit_DIR} -traditional-cpp -P
 
 ifeq ($(DISC_AND_GRL),0)
 SRC_AD=globals_cpp.f90 sico_variables_m_cpp.f90 ctrl_map_genarr_m_cpp.f90 ctrl_init_variables_m_cpp.f90 ice_material_properties_m_cpp.f90 ctrl_m_cpp.f90 enth_temp_omega_m_cpp.f90 stereo_proj_m_cpp.f90 read_m_cpp.f90 mask_update_sea_level_m_cpp.f90 pdd_m_cpp.f90 boundary_m_cpp.f90 init_temp_water_age_m_cpp.f90 calc_enhance_m_cpp.f90 flag_update_gf_gl_cf_m_cpp.f90 calc_vxy_m_cpp.f90 calc_vz_m_cpp.f90 calc_dxyz_m_cpp.f90 calc_temp_melt_bas_m_cpp.f90 output_m_cpp.f90 metric_m_cpp.f90 topograd_m_cpp.f90 calc_temp_m_cpp.f90 calc_temp_enth_m_cpp.f90 calc_gia_m_cpp.f90 calc_thk_m_cpp.f90 calc_bas_melt_m_cpp.f90 calc_thk_water_bas_m_cpp.f90 sico_init_m_cpp.f90 sico_main_loop_m_cpp.f90 sico_end_m_cpp.f90 numCore_cpp.f90
@@ -286,7 +290,7 @@ RESDIR=../sico_out/$(HEADER)
 sico_specs.h: ../runs/headers/sico_specs_$(HEADER).h
 	cp $^ $@
 
-CTRL_VARS.h: subroutines/tapenade/CTRL_VARS.h
+ad_specs.h: ../runs/headers_ad/ad_$(ADHEADER).h
 	cp $^ $@
 
 drivernormal: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_COST) $(SRC)
@@ -311,7 +315,7 @@ cov: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO
 coverage.info: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_COST) $(SRC)
 	${LCOV} --gcov-tool $(GCOV) --capture --directory . --output-file coverage.info
 
-sicopolis.o: $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_COST) $(SRC) CTRL_VARS.h
+sicopolis.o: $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_COST) $(SRC) ad_specs.h
 	sed -i 's/&__NL__//g' sico_specs.h
 	${F90C} -I./ ${F90FLAGS} ${DEFINE_FLAGS_ADJOINT} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
 

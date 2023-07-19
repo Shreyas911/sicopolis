@@ -93,7 +93,7 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #if defined(ALLOW_TAPENADE)
-#include "CTRL_VARS.h"
+#include "ad_specs.h"
 #endif
 
 !@ begin tapenade_extract @

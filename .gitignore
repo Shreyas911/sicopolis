@@ -8,6 +8,7 @@ my_*
 /runs/*
 !/runs/*/
 /runs/headers/*.h
+/runs/headers_ad/*.h
 
 /tools/*
 !/tools/*/
