@@ -18,9 +18,11 @@ contains
     integer(i4b)        :: ctrl_index, j, i
     integer(i4b)        :: igen_c_slide_init, igen_zs, igen_q_geo
 
-    xx_genarr2d_vars    = XX_GENARR2D_VARS_ARR
-    xx_genarr2d_preproc = XX_GENARR2D_PREPROC_ARR
-    xx_genarr2d_bounds  = XX_GENARR2D_BOUNDS_ARR
+    xx_genarr2d_vars            = XX_GENARR2D_VARS_ARR
+    xx_genarr2d_preproc         = XX_GENARR2D_PREPROC_ARR
+    xx_genarr2d_bounds          = XX_GENARR2D_BOUNDS_ARR
+    xx_genarr2d_log10initval    = XX_GENARR2D_LOG10INITVAL_ARR
+    xx_genarr2d_weight          = XX_GENARR2D_WEIGHT_ARR
 
     igen_c_slide_init = 0
     igen_zs           = 0
@@ -63,13 +65,15 @@ contains
 
     implicit none  
 
-    real(dp), dimension(0:JMAX,0:IMAX)          :: fld
+    real(dp), dimension(0:JMAX,0:IMAX)          :: fld, wgenarr2d
     integer(i4b)                                :: iarr, j, i, k2
     integer(i4b)                                :: iLow, iHigh, jLow, jHigh
     logical                                     :: doread, dobounds
     logical                                     :: dosmooth, doscaling, dolog10ctrl
     real(dp)                                    :: log10initval, ln10
-    character(128)                              :: preprocs(NUMCTRLPROC)
+    character(128), dimension(NUMCTRLPROC)      :: preprocs
+
+    ln10 = log(10.0)
 
     doread      = .FALSE.
     dosmooth    = .FALSE.
@@ -83,16 +87,27 @@ contains
 
       if (preprocs(k2) .EQ. 'smooth') then
         dosmooth = .TRUE.
+        errormsg = "Weaver and Courtier like smoothing is not yet implemented!"
+        call error(errormsg)
       end if
       if (preprocs(k2) .EQ. 'scaling') then
         doscaling = .TRUE.
+        do j = 0, JMAX
+          do i = 0, IMAX
+            read(unit=xx_genarr2d_weight(iarr), fmt=*) wgenarr2d(j,i)
+          end do
+        end do
+      else
+        wgenarr2d = 1.0
       end if
       if (preprocs(k2) .EQ. 'read') then
         doread = .TRUE.
+        errormsg = "Reading xx_gen from a file is yet to be implemented!"
+        call error(errormsg)
       end if
       if (preprocs(k2) .EQ. 'log10ctrl') then
         dolog10ctrl = .TRUE.
-!        log10initval = xx_genarr2d_preproc_r(k2,iarr)
+        log10initval = xx_genarr2d_log10initval(iarr)
       end if
       if (preprocs(k2) .EQ. 'bounds') then
         dobounds = .TRUE.
@@ -118,8 +133,16 @@ contains
       end do
     end do 
 
-    fld = fld + xx_genarr2d(iarr,:,:) * xx_genarr2d_mask(iarr,:,:)
-       
+    xx_genarr2d(iarr,:,:) = xx_genarr2d(iarr,:,:) / sqrt(wgenarr2d(:,:))
+
+    if (dolog10ctrl) then  
+      xx_genarr2d(iarr,:,:) = xx_genarr2d(iarr,:,:) + log10initval
+      xx_genarr2d(iarr,:,:) = EXP(ln10 * xx_genarr2d(iarr,:,:)) 
+      fld = xx_genarr2d(iarr,:,:) * xx_genarr2d_mask(iarr,:,:)
+    else
+      fld = fld + xx_genarr2d(iarr,:,:) * xx_genarr2d_mask(iarr,:,:)
+    end if       
+
   end subroutine ctrl_map_genarr2d
 
 end module ctrl_map_genarr_m 
