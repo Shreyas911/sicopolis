@@ -11,7 +11,7 @@
 #define NUM_CTRL_GENARR2D	3
 !          	Number of 2D time-invariant control variables
 
-#define NUMCTRLPROC		1
+#define NUMCTRLPROC		2
 !		Maximum number of preprocessing steps for ctrl variables		
 
 #define XX_GENARR2D_VARS_ARR	(/ 'xx_c_slide_init', \
@@ -19,9 +19,9 @@
 			  	   'xx_zs          ' /)
 !		List of 2D time-invariant control variables
 
-#define XX_GENARR2D_PREPROC_ARR    (/ 'log10ctrl', \
-			              'nnnnnnnnn', \
-				      'bounds   ' /) 
+#define XX_GENARR2D_PREPROC_ARR    (/ 'log10ctrl,bounds', \
+			              'nnnnnnnnn,nnnnnn', \
+				      'bounds   ,nnnnnn' /) 
 !               Define preprocessing steps for ctrl variables
 !		Fill with nnnn... to ensure same length
 
