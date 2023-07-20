@@ -149,9 +149,9 @@
 #include "subroutines/general/error_m.F90"
 
 #if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE)) /* Tapenade */
-#include "subroutines/tapenade/ctrl_m.F90"
-#include "subroutines/tapenade/ctrl_map_genarr_m.F90"
-#include "subroutines/tapenade/ctrl_init_variables_m.F90"
+#include "subroutines/tapenade/cost/cost_m.F90"
+#include "subroutines/tapenade/ctrl/ctrl_map_genarr_m.F90"
+#include "subroutines/tapenade/ctrl/ctrl_init_variables_m.F90"
 #endif /* Tapenade */
 
 #include "subroutines/general/ice_material_properties_m.F90"

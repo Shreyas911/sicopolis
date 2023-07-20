@@ -1,6 +1,6 @@
 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !
-!  Module  :  c t r l _ m
+!  Module  :  c o s t _ m
 !
 !> @file
 !!
@@ -33,7 +33,7 @@
 !-------------------------------------------------------------------------------
 !> Declarations of control variables for adjointing.
 !<------------------------------------------------------------------------------
-module ctrl_m
+module cost_m
 
   use sico_types_m  
   use sico_variables_m
@@ -179,5 +179,5 @@ print *, '           AGE_COST simulations'
   end subroutine myfloor
 #endif
 
-end module ctrl_m
+end module cost_m
 !

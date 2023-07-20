@@ -227,7 +227,7 @@ end subroutine calc_gia
 subroutine calc_el(load_ice_water, dxi, deta)
 
 #if defined(ALLOW_TAPENADE) /* Tapenade */
-  use ctrl_m, only: myfloor
+  use cost_m, only: myfloor
 #endif /* Tapenade */
 
 implicit none
@@ -370,7 +370,7 @@ end subroutine calc_el
 subroutine make_zl0()
 
 #if defined(ALLOW_TAPENADE) /* Tapenade */
-  use ctrl_m, only: myceiling 
+  use cost_m, only: myceiling 
 #endif /* Tapenade */
 
   use netcdf

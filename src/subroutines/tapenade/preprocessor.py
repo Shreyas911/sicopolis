@@ -113,7 +113,7 @@ def extract_begin(filename):
   for line in extlines.splitlines():
     line = re.sub(r"sico_main_loop", "sicopolis_tapenade", line)
     retline += line + "\n"
-  retline += "use ctrl_m \n"
+  retline += "use cost_m \n"
   return retline
 
 

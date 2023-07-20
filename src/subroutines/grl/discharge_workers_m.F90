@@ -395,7 +395,7 @@ contains
   subroutine discharge(dxi, deta)
 
 #ifdef ALLOW_TAPENADE /* Tapenade */
-  use ctrl_m, only: myfloor
+  use cost_m, only: myfloor
 #endif /* Tapenade */
 
   ! Authors: Reinhard Calov, Andrey Ganopolski
@@ -509,7 +509,7 @@ contains
   !                      larger side. 
 
 #ifdef ALLOW_TAPENADE /* Tapenade */
-  use ctrl_m, only: myceiling
+  use cost_m, only: myceiling
 #endif /* Tapenade */
 
   implicit none

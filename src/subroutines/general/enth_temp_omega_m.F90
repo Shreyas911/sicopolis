@@ -176,7 +176,7 @@ end subroutine calc_c_int_table
 subroutine calc_c_int_inv_table()
 
 #if defined(ALLOW_TAPENADE) /* Tapenade */
-  use ctrl_m, only: myceiling, myfloor
+  use cost_m, only: myceiling, myfloor
 #endif /* Tapenade */
 
 implicit none

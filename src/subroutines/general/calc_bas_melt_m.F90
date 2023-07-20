@@ -416,7 +416,7 @@ subroutine sub_ice_shelf_melting_param_1(time, time_in_years, &
                                          i, j, Q_bm_floating)
 
 #if defined(ALLOW_TAPENADE) /* Tapenade */
-  use ctrl_m, only: myfloor
+  use cost_m, only: myfloor
 #endif /* Tapenade */
 
 implicit none
@@ -672,7 +672,7 @@ subroutine sub_ice_shelf_melting_param_2(time, time_in_years, &
 #endif /* Normal */
 
 #if defined(ALLOW_TAPENADE) /* Tapenade */
-  use ctrl_m, only: myfloor
+  use cost_m, only: myfloor
 #endif /* Tapenade */
 
 implicit none

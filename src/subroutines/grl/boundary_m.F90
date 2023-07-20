@@ -58,7 +58,7 @@ subroutine boundary(time, dtime, dxi, deta, &
                     delta_ts, glac_index, z_mar)
 
 #if defined(ALLOW_TAPENADE) /* Tapenade */
-  use ctrl_m, only: myceiling, myfloor
+  use cost_m, only: myceiling, myfloor
   use sico_maths_m, only: my_erfc
 #endif /* Tapenade */
 

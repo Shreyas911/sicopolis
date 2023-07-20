@@ -106,7 +106,7 @@ call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
    use sico_main_loop_m
    use sico_end_m
    
-   use ctrl_m
+   use cost_m
    
    implicit none
    
