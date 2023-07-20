@@ -187,7 +187,7 @@ def get_imax_jmax_kcmax_ktmax(specs_file='sico_specs.h'):
 		sys.exit(1)
 
 def copy_file(original_file = '../test_ad/tapenade_m_adjoint_template.F90', 
-			destination_file = 'subroutines/tapenade/tapenade_m.F90'):
+			destination_file = 'subroutines/tapenade/src/tapenade_m.F90'):
 
 	'''
 	Purpose - Copy file from source to destination
@@ -211,7 +211,7 @@ def setup_grdchk(ind_var, header, domain,
 	perturbation = 1.e-3,
 	limited_or_block_or_full = 'limited',
 	block_imin = None, block_imax = None, block_jmin = None, block_jmax = None,
-	tapenade_m_file = 'subroutines/tapenade/tapenade_m.F90',
+	tapenade_m_file = 'subroutines/tapenade/src/tapenade_m.F90',
 	unit = '9999'):
 
 	'''
@@ -233,7 +233,7 @@ def setup_grdchk(ind_var, header, domain,
 	'''
 
 	copy_file(original_file = '../test_ad/tapenade_m_adjoint_template.F90',
-		  destination_file = 'subroutines/tapenade/tapenade_m.F90')
+		  destination_file = 'subroutines/tapenade/src/tapenade_m.F90')
 
 	IMAX, JMAX, KCMAX, KTMAX = get_imax_jmax_kcmax_ktmax()
 
@@ -600,7 +600,7 @@ def setup_forward(ind_var, header, domain,
 	dimension = 2, 
 	z_co_ord = None, limited_or_block_or_full = 'limited',
 	block_imin = None, block_imax = None, block_jmin = None, block_jmax = None,
-	tapenade_m_file = 'subroutines/tapenade/tapenade_m.F90',
+	tapenade_m_file = 'subroutines/tapenade/src/tapenade_m.F90',
 	unit = '99999'):
 	
 
@@ -762,7 +762,7 @@ def simulation(mode, header, domain,
 	      limited_or_block_or_full = 'limited',
 	      ind_var_dim = 2, ind_var_z_co_ord = None,
 	      perturbation = 1.e-3,
-	      tapenade_m_file = 'subroutines/tapenade/tapenade_m.F90',
+	      tapenade_m_file = 'subroutines/tapenade/src/tapenade_m.F90',
 	      run_executable_auto = 'False',
 	      unit = '9999',
 	      block_imin = None, block_imax = None, block_jmin = None, block_jmax = None,
@@ -846,7 +846,7 @@ def simulation(mode, header, domain,
 			setup_binomial_checkpointing(status = False)
 
 		copy_file(original_file = '../test_ad/tapenade_m_adjoint_template.F90',
-		  destination_file = 'subroutines/tapenade/tapenade_m.F90')
+		  destination_file = 'subroutines/tapenade/src/tapenade_m.F90')
 
 		compile_code(mode = mode, header = header, domain = domain,
 			    clean = True, dep_var=dep_var, ind_vars = ind_var,

@@ -269,7 +269,7 @@
 #include "subroutines/general/sico_end_m.F90"
 
 #if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE)) /* Tapenade */
-#include "subroutines/tapenade/tapenade_m.F90"
+#include "subroutines/tapenade/src/tapenade_m.F90"
 #endif /* Tapenade */
 
 !-------------------------------------------------------------------------------

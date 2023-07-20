@@ -129,7 +129,7 @@ def extract_head_c(filename):
   begin_str = extract_begin("subroutines/general/sico_main_loop_m.F90")
   print(indep_str+cost_str)
   for line in extlines.splitlines():
-    line = re.sub(r"subroutines/general/sico_maths_m.F90", "subroutines/tapenade/sico_maths_m_stub.F90",line)
+    line = re.sub(r"subroutines/general/sico_maths_m.F90", "subroutines/tapenade/stubs/sico_maths_m_stub.F90",line)
     line = re.sub(r"!tapenade sicopolis_independents_cost", indep_str+cost_str,line)
     line = re.sub(r"!tapenade begin subroutine sicopolis_tapenade", begin_str, line)
     line = re.sub(r"!tapenade end subroutine sicopolis_tapenade", dep_str+"end subroutine sicopolis_tapenade", line)

@@ -76,10 +76,10 @@ endif
 
 ifndef FLOW_TAPAD_FILE
 ifeq ($(F90C),ifort)
-FLOW_TAPAD_FILE := subroutines/tapenade/flowFiles/flow_tapad_intel
+FLOW_TAPAD_FILE := subroutines/tapenade/flow/flow_tapad_intel
 endif
 ifeq ($(F90C),gfortran)
-FLOW_TAPAD_FILE := subroutines/tapenade/flowFiles/flow_tapad_gnu
+FLOW_TAPAD_FILE := subroutines/tapenade/flow/flow_tapad_gnu
 endif
 endif
 
@@ -125,10 +125,10 @@ subroutines/grl/sico_init_m.F90\
 subroutines/ant/sico_init_m.F90\
 subroutines/general/error_m.F90\
 subroutines/general/init_temp_water_age_m.F90\
-subroutines/tapenade/tapenade_m.F90
+subroutines/tapenade/src/tapenade_m.F90
 
 SRC_SICO_SOLVERS=\
-subroutines/tapenade/sico_maths_m_stub.F90
+subroutines/tapenade/stubs/sico_maths_m_stub.F90
 
 SRC_SICO=\
 subroutines/general/sico_types_m.F90\
@@ -213,7 +213,7 @@ driverforward:${LIBLIS} \
 	error_m_cpp.o \
 	sico_types_m_cpp.o \
 	sico_maths_m_tlm_cpp.o \
-	subroutines/tapenade/diffsizes.o \
+	subroutines/tapenade/src/diffsizes.o \
 	globals_cpp.o \
 	sico_vars_m_cpp.o \
 	nc_check_m_cpp.o \
@@ -227,7 +227,7 @@ driverforward:${LIBLIS} \
 		sico_maths_m_tlm_cpp.o \
 		$(patsubst %.c,%.o,$(SRC_TAP)) \
 		${OBJ_AD_TLM} \
-		subroutines/tapenade/diffsizes.o \
+		subroutines/tapenade/src/diffsizes.o \
 		sicopolis.o \
 		${LIBLISFLAG} \
 		${LIB_NETCDF_F90_FLAG}
@@ -248,7 +248,7 @@ driveradjoint:${LIBLIS} \
 	error_m_cpp.o \
 	sico_types_m_cpp.o \
 	sico_maths_m_grad_cpp.o \
-	subroutines/tapenade/diffsizes.o \
+	subroutines/tapenade/src/diffsizes.o \
 	globals_cpp.o \
 	sico_vars_m_cpp.o \
 	nc_check_m_cpp.o \
@@ -262,7 +262,7 @@ driveradjoint:${LIBLIS} \
 		sico_maths_m_grad_cpp.o \
 		$(patsubst %.c,%.o,$(SRC_TAP)) \
 		${OBJ_AD_ADJ} \
-		subroutines/tapenade/diffsizes.o \
+		subroutines/tapenade/src/diffsizes.o \
 		sicopolis.o \
 		${LIBLISFLAG} \
 		${LIB_NETCDF_F90_FLAG}
@@ -322,9 +322,9 @@ sicopolis.o: $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_COST
 subroutines/general/sico_maths_m.o : subroutines/general/sico_maths_m.F90
 	${F90C} -DALLOW_TAPENADE ${LISFLAG} -I./ ${F90FLAGS} -o $@ -c $<
 
-subroutines/tapenade/sico_maths_m_grad.o : subroutines/tapenade/sico_maths_m_grad.F90
+subroutines/tapenade/src/sico_maths_m_grad.o : subroutines/tapenade/src/sico_maths_m_grad.F90
 	${F90C} -DALLOW_TAPENADE ${LISFLAG} -I./ ${F90FLAGS} -o $@ -c $<
-subroutines/tapenade/tapenade_m.o: subroutines/tapenade/tapenade_m.F90
+subroutines/tapenade/src/tapenade_m.o: subroutines/tapenade/src/tapenade_m.F90
 	${F90C} -DALLOW_TAPENADE ${LISFLAG} -I./ ${F90FLAGS} -o $@ -c $<
 
 sico_variables_m_cpp.f90: subroutines/general/sico_variables_m.F90
@@ -358,7 +358,12 @@ sico_variables_m_cpp.f90: subroutines/general/sico_variables_m.F90
 	cat dummy.f90 > $@
 	sed -i 's/__NL__/\n/g' $@
 
-%_cpp.f90: subroutines/tapenade/%.F90
+%_cpp.f90: subroutines/tapenade/src/%.F90
+	$(CPPCMD_FILES) > dummy.f90
+	cat dummy.f90 > $@
+	sed -i 's/__NL__/\n/g' $@
+
+%_cpp.f90: subroutines/tapenade/stubs/%.F90
 	$(CPPCMD_FILES) > dummy.f90
 	cat dummy.f90 > $@
 	sed -i 's/__NL__/\n/g' $@
@@ -374,7 +379,7 @@ sico_variables_m_cpp.f90: subroutines/general/sico_variables_m.F90
 	sed -i 's/__NL__/\n/g' $@
 
 clean: 
-	rm -f subroutines/tapenade/*.o \
+	rm -f subroutines/tapenade/*/*.o \
               subroutines/general/*.o\
               numCore.pre.xb.x2w.w2f.post.o\
               sicopolis.o\
@@ -395,7 +400,7 @@ clean:
               *~
 
 cleanobj: 
-	rm -f subroutines/tapenade/*.o \
+	rm -f subroutines/tapenade/*/*.o \
               subroutines/general/*.o\
               *.o
 
