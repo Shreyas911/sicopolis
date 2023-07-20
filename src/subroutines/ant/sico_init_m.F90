@@ -40,8 +40,11 @@ module sico_init_m
   use error_m
 #if defined(ALLOW_TAPENADE)
   use globals
+#endif
+#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
   use ctrl_init_variables_m
 #endif
+
   implicit none
 
   public

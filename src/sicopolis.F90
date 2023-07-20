@@ -92,7 +92,7 @@
 !<
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#if defined(ALLOW_TAPENADE)
+#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
 #include "ad_specs.h"
 #endif
 
