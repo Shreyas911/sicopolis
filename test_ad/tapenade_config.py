@@ -186,7 +186,7 @@ def get_imax_jmax_kcmax_ktmax(specs_file='sico_specs.h'):
 		print(err)
 		sys.exit(1)
 
-def copy_file(original_file = '../test_ad/tapenade_m_adjoint_template.F90', 
+def copy_file(original_file = '../test_ad/tapenade_m_templates/tapenade_m_adjoint_template.F90', 
 			destination_file = 'subroutines/tapenade/src/tapenade_m.F90'):
 
 	'''
@@ -232,7 +232,7 @@ def setup_grdchk(ind_var, header, domain,
 	unit - The unit to be used in FORTRAN-90 code while opening and closing the output file
 	'''
 
-	copy_file(original_file = '../test_ad/tapenade_m_adjoint_template.F90',
+	copy_file(original_file = '../test_ad/tapenade_m_templates/tapenade_m_adjoint_template.F90',
 		  destination_file = 'subroutines/tapenade/src/tapenade_m.F90')
 
 	IMAX, JMAX, KCMAX, KTMAX = get_imax_jmax_kcmax_ktmax()
@@ -627,7 +627,7 @@ def setup_forward(ind_var, header, domain,
 	else:
 		raise ValueError('Wrong Domain')
 
-	copy_file(original_file = '../test_ad/tapenade_m_tlm_template.F90',
+	copy_file(original_file = '../test_ad/tapenade_m_templates/tapenade_m_tlm_template.F90',
 		  destination_file = tapenade_m_file)
 
 	IMAX, JMAX, KCMAX, KTMAX = get_imax_jmax_kcmax_ktmax()
@@ -845,7 +845,7 @@ def simulation(mode, header, domain,
 		else: 
 			setup_binomial_checkpointing(status = False)
 
-		copy_file(original_file = '../test_ad/tapenade_m_adjoint_template.F90',
+		copy_file(original_file = '../test_ad/tapenade_m_templates/tapenade_m_adjoint_template.F90',
 		  destination_file = 'subroutines/tapenade/src/tapenade_m.F90')
 
 		compile_code(mode = mode, header = header, domain = domain,

@@ -106,7 +106,7 @@ This step involves the following sub-steps:
 
    * Decide which of the three modes is most appropriate - ``limited, block, full``. ``limited`` means that we compute the finite differences sensitivity at 5 selected points only. ``block`` allows the sensitivity to be computed at a block of points within `block_imin, block_imax` and `block_jmin, block_jmax`. ``full`` computes the sensitivities for all points, which can be prohibitively expensive.
 
-   * Copy the adjoint template file ``test_ad/tapenade_m_adjoint_template.F90`` to ``src/subroutines/tapenade/src/tapenade_m.F90``. This template file contains useful directives (these directives are comments to F90 compilers, but serve as reference strings to locate the correct line for our Python scripts) which the Python functions can leverage to perturb the correct independent variable in the right direction and compute the sensitivities, for example ``!@ python_automated_grdchk limited_or_block_or_full @`` ``!@ python_automated_grdchk @``. The following code snippet performs this task.
+   * Copy the adjoint template file ``test_ad/tapenade_m_templates/tapenade_m_adjoint_template.F90`` to ``src/subroutines/tapenade/src/tapenade_m.F90``. This template file contains useful directives (these directives are comments to F90 compilers, but serve as reference strings to locate the correct line for our Python scripts) which the Python functions can leverage to perturb the correct independent variable in the right direction and compute the sensitivities, for example ``!@ python_automated_grdchk limited_or_block_or_full @`` ``!@ python_automated_grdchk @``. The following code snippet performs this task.
 
 .. code-block:: python
 
@@ -162,7 +162,7 @@ This step involves the following sub-steps:
 
    * Decide which of the three modes is most appropriate - ``limited, block, full``. ``limited`` means that we compute the finite differences sensitivity at 5 selected points only. ``block`` allows the sensitivity to be computed at a block of points within `block_imin, block_imax` and `block_jmin, block_jmax`. ``full`` computes the sensitivities for all points, which can be prohibitively expensive.
 
-   * Copy the TLM template file ``test_ad/tapenade_m_tlm_template.F90`` to ``src/subroutines/tapenade/src/tapenade_m.F90``. This template file contains useful directives (these directives are comments to F90 compilers, but serve as reference strings to locate the correct line for our Python scripts) which the Python functions can use to correctly set up the loop for getting the directional derivatives as well as the I/O, for example ``!@ python_automated_tlm dep_vard @`` ``!@ python_automated_tlm limited_or_block_or_full @``. The following code snippet performs this task.
+   * Copy the TLM template file ``test_ad/tapenade_m_templates/tapenade_m_tlm_template.F90`` to ``src/subroutines/tapenade/src/tapenade_m.F90``. This template file contains useful directives (these directives are comments to F90 compilers, but serve as reference strings to locate the correct line for our Python scripts) which the Python functions can use to correctly set up the loop for getting the directional derivatives as well as the I/O, for example ``!@ python_automated_tlm dep_vard @`` ``!@ python_automated_tlm limited_or_block_or_full @``. The following code snippet performs this task.
 
 .. code-block:: python
 
@@ -229,7 +229,7 @@ The adjoint mode has the most possible options of what can be done with it. A ty
 
 This step involves the following sub-steps:
 
-   * Copy the adjoint template file ``test_ad/tapenade_m_adjoint_template.F90`` to ``src/subroutines/tapenade/src/tapenade_m.F90``. Set up I/O for the independent variable.
+   * Copy the adjoint template file ``test_ad/tapenade_m_templates/tapenade_m_adjoint_template.F90`` to ``src/subroutines/tapenade/src/tapenade_m.F90``. Set up I/O for the independent variable.
 
    * Modify ``src/sico_main_loop_m_cpp_b.f90`` to write the variables the user specifies to appropriate files at correct times.
 
