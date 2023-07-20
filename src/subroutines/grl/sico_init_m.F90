@@ -84,7 +84,7 @@ subroutine sico_init(delta_ts, glac_index, &
   use read_m, only : read_target_topo_nc, &
                      read_2d_input, read_kei, read_phys_para
 
-#if (defined(ALLOW_NORMAL) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
+#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
   use read_m, only : read_age_data, read_BedMachine_data
 #endif
 
@@ -2190,7 +2190,7 @@ H_w     = 0.0_dp
   call error(errormsg)
 #endif
 
-#if (defined(ALLOW_NORMAL) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
+#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
 #if defined(AGE_COST)
   call read_age_data()
 #endif

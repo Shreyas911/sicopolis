@@ -43,7 +43,7 @@ module read_m
   public :: read_tms_nc, read_target_topo_nc, &
             read_2d_input, read_phys_para, read_kei
 
-#if (defined(ALLOW_NORMAL) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
+#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
   public :: read_age_data, read_BedMachine_data
 #endif
 
@@ -1746,7 +1746,7 @@ contains
 
   end subroutine read_phys_para_value
 
-#if (defined(ALLOW_NORMAL) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
+#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
 !-------------------------------------------------------------------------------
 !> Reading in of adjoint related data (only set up for ages right now).
 !<------------------------------------------------------------------------------
