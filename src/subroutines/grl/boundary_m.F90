@@ -757,15 +757,8 @@ do j=0, JMAX
    temp_ma_present(j,i) = theta_ma &
                   + gamma_ma*zs(j,i) &
                   + c_ma*phi(j,i)*rad2deg &
-#if !defined(ALLOW_TAPENADE) /* Normal */
                   + kappa_ma*(modulo(lambda(j,i)+pi,2.0_dp*pi)-pi)*rad2deg
                               ! west longitudes counted negatively
-#else /* Tapenade */
-                  + kappa_ma*((lambda(j,i)+pi - &
-                              (2.0_dp*pi * int((lambda(j,i)+pi)/(2.0_dp*pi)))) &
-                              - pi) &
-                            *rad2deg
-#endif /* Normal vs. Tapenade */
 
 #elif (TSURFACE==6)
 
@@ -780,15 +773,8 @@ do j=0, JMAX
    temp_mj_present(j,i) = theta_mj &
                     + gamma_mj*zs(j,i) &
                     + c_mj*phi(j,i)*rad2deg &
-#if !defined(ALLOW_TAPENADE) /* Normal */
                     + kappa_mj*(modulo(lambda(j,i)+pi,2.0_dp*pi)-pi)*rad2deg
                                 ! west longitudes counted negatively
-#else /* Tapenade */
-                    + kappa_mj*((lambda(j,i)+pi - &
-                                (2.0_dp*pi * int((lambda(j,i)+pi)/(2.0_dp*pi)))) &
-                                - pi) &
-                              *rad2deg
-#endif /* Normal vs. Tapenade */
 
 #elif (TSURFACE==6)
 
