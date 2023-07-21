@@ -44,39 +44,9 @@ import argparse
 import os.path
 import sys
 
-indep_str="""
-!#ifdef ALLOW_TAPENADE
-!$tapenade INDEPENDENT(H_c)
-!$tapenade INDEPENDENT(c_drag)
-!$tapenade INDEPENDENT(c_slide)
-!$tapenade INDEPENDENT(vx_c)
-!$tapenade INDEPENDENT(temp_c)
-!$tapenade INDEPENDENT(temp_ma_present)
-!$tapenade INDEPENDENT(sigma_c)
-!$tapenade INDEPENDENT(precip_present)
-!$tapenade INDEPENDENT(q_geo)
-!$tapenade INDEPENDENT(vis_int_g)
-!$tapenade INDEPENDENT(dzs_deta_g)
-!$tapenade INDEPENDENT(calving)
-!$tapenade INDEPENDENT(dzs_dxi_g)
-!$tapenade INDEPENDENT(Q_bm)
-!$tapenade INDEPENDENT(Q_tld)
-!$tapenade INDEPENDENT(acc_fact)
-!#endif
-"""
-
-cost_str="""
-!#if (defined(ALLOW_COST))
-!#endif
-"""
-
 dep_str="""
 call cost_final()
 call sico_end()
-
-!#ifdef ALLOW_TAPENADE
-!$tapenade DEPENDENT(fc)
-!#endif
 """
 
 def readFile(name):
@@ -127,10 +97,8 @@ def extract_head_c(filename):
   for m in match:
     extlines += m
   begin_str = extract_begin("subroutines/general/sico_main_loop_m.F90")
-  print(indep_str+cost_str)
   for line in extlines.splitlines():
     line = re.sub(r"subroutines/general/sico_maths_m.F90", "subroutines/tapenade/stubs/sico_maths_m_stub.F90",line)
-    line = re.sub(r"!tapenade sicopolis_independents_cost", indep_str+cost_str,line)
     line = re.sub(r"!tapenade begin subroutine sicopolis_tapenade", begin_str, line)
     line = re.sub(r"!tapenade end subroutine sicopolis_tapenade", dep_str+"end subroutine sicopolis_tapenade", line)
     appendFile('numCore.F90',line)
