@@ -415,10 +415,6 @@ subroutine sub_ice_shelf_melting_param_1(time, time_in_years, &
                                          rhow_rho_ratio, &
                                          i, j, Q_bm_floating)
 
-#if defined(ALLOW_TAPENADE) /* Tapenade */
-  use cost_m, only: myfloor
-#endif /* Tapenade */
-
 implicit none
 
 integer(i4b), intent(in)    :: i, j
@@ -434,20 +430,12 @@ real(dp) :: lon_d, lat_d, Phi_par
 
 real(dp), parameter :: beta_sw = 7.61e-04_dp
 
-#if defined(ALLOW_TAPENADE) /* Tapenade */
-integer(i4b) :: i_time_in_years
-#endif /* Tapenade */
-
 #if (FLOATING_ICE_BASAL_MELTING==5)
 
 real(dp), parameter :: c_sw = 3974.0_dp, &
                        g_t  =    5.0e-05_dp
 
 #endif
-
-#if defined(ALLOW_TAPENADE) /* Tapenade */
-call myfloor(time_in_years, i_time_in_years)
-#endif /* Tapenade */
 
 #if (FLOATING_ICE_BASAL_MELTING==4)
 
@@ -465,14 +453,9 @@ alpha = ALPHA_QBM
 lon_d = lambda(j,i) *rad2deg
 lat_d = phi(j,i)    *rad2deg
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 lon_d = modulo(lon_d+180.0_dp, 360.0_dp)-180.0_dp
                                   ! mapping to interval
                                   ! [-180 deg, +180 deg)
-#else /* Tapenade */
-lon_d = (lon_d+180.0_sp) &
-           - ((360.0_sp * int(lon_d+180.0_sp)/360.0_sp)) - 180.0_sp
-#endif /* Normal vs. Tapenade */
 
 if ((lon_d>=-10.0_dp).and.(lon_d<60.0_dp)) then
                                       ! Western East Antarctica
@@ -632,13 +615,8 @@ call error(errormsg)
 
 if ((time_in_years > 0.0_dp).and.(time_in_years <= 40.0_dp)) then
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
    Q_bm_floating = Q_bm_floating &
                       + 0.025_dp*floor(time_in_years)*ab_anom_initmip(j,i)
-#else /* Tapenade */
-   Q_bm_floating = Q_bm_floating &
-                      + 0.025_dp*i_time_in_years*ab_anom_initmip(j,i)
-#endif /* Normal vs. Tapenade */
 
 else if (time_in_years > 40.0_dp) then
 
@@ -666,14 +644,6 @@ subroutine sub_ice_shelf_melting_param_2(time, time_in_years, &
 
   use netcdf
   use nc_check_m
-
-#if !defined(ALLOW_TAPENADE) /* Normal */
-  use compare_float_m
-#endif /* Normal */
-
-#if defined(ALLOW_TAPENADE) /* Tapenade */
-  use cost_m, only: myfloor
-#endif /* Tapenade */
 
 implicit none
 
@@ -709,10 +679,6 @@ real(dp)     :: real_n
 
 logical, save :: firstcall_param_2 = .true.
 
-#if defined(ALLOW_TAPENADE) /* Tapenade */
-integer(i4b) :: i_time_in_years
-#endif /* Tapenade */
-
 #if (!defined(N_BM_REGIONS) || N_BM_REGIONS<=1)
 real(dp) :: gamma0_bm_aux(1)
 real(dp) :: delta_tf_bm_aux(1)
@@ -737,10 +703,6 @@ real(dp), parameter :: Lf_bm    = 3.34e+05_dp
                                   ! Latent heat of fusion for ice (J/kg)
 real(dp), parameter :: cpw_bm   = 3974.0_dp
                                   ! Specific heat of sea water (J/kg/K)
-
-#if defined(ALLOW_TAPENADE) /* Tapenade */
-call myfloor(time_in_years, i_time_in_years)
-#endif /* Tapenade */
 
 !-------- Read file with the thermal forcing data of the ocean --------
 
@@ -803,8 +765,6 @@ if ( firstcall_param_2.or.(n_year_CE_aux /= n_year_CE_aux_save) ) then
 
 !  ------ Check consistency of the depth (z_tf_bm) data
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
-
       if (.not.(approx_equal(z_tf_bm(0), ZMIN_TF_BM, eps_sp_dp))) then
          errormsg = ' >>> sub_ice_shelf_melting_param_2:' &
                   //         end_of_line &
@@ -827,8 +787,6 @@ if ( firstcall_param_2.or.(n_year_CE_aux /= n_year_CE_aux_save) ) then
                   //'        and parameters NZ_TF_BM, DZ_TF_BM!'
          call error(errormsg)
       end if
-
-#endif /* Normal */
 
    else   ! ( trim(adjustl(TF_BM_FILES)) == 'none' )
 
@@ -1007,13 +965,8 @@ do j=0, JMAX
 
          if ((time_in_years > 0.0_dp).and.(time_in_years <= 40.0_dp)) then
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
             Q_bm(j,i) = Q_bm(j,i) &
                            + 0.025_dp*floor(time_in_years)*ab_anom_initmip(j,i)
-#else /* Tapenade */
-            Q_bm(j,i) = Q_bm(j,i) &
-                           + 0.025_dp*i_time_in_years*ab_anom_initmip(j,i)
-#endif /* Normal vs. Tapenade */
 
          else if (time_in_years > 40.0_dp) then
 

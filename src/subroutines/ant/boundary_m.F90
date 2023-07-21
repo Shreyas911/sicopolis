@@ -68,7 +68,6 @@ subroutine boundary(time, dtime, dxi, deta, &
   use pdd_m
 
 #if defined(ALLOW_TAPENADE) /* Tapenade */
-  use cost_m, only: myfloor, myceiling
   use sico_maths_m
 #endif /* Tapenade */
 
@@ -204,7 +203,6 @@ if (time_in_years < real(grip_time_min,dp)) then
    delta_ts = griptemp(0)
 else if (time_in_years < real(grip_time_max,dp)) then
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
    i_kl = floor(((time_in_years) &
           -real(grip_time_min,dp))/real(grip_time_stp,dp))
    i_kl = max(i_kl, 0)
@@ -212,15 +210,6 @@ else if (time_in_years < real(grip_time_max,dp)) then
    i_gr = ceiling(((time_in_years) &
           -real(grip_time_min,dp))/real(grip_time_stp,dp))
    i_gr = min(i_gr, ndata_grip)
-#else /* Tapenade */
-   call myfloor((((time_in_years) &
-          -real(grip_time_min,dp))/real(grip_time_stp,dp)), i_kl)
-   i_kl = max(i_kl, 0)
-
-   call myceiling((((time_in_years) &
-          -real(grip_time_min,dp))/real(grip_time_stp,dp)), i_gr)
-   i_gr = min(i_gr, ndata_grip)
-#endif /* Normal vs. Tapenade */
 
    if (i_kl == i_gr) then
 
@@ -253,7 +242,6 @@ if (time_in_years < real(gi_time_min,dp)) then
    glac_index = glacial_index(0)
 else if (time_in_years < real(gi_time_max,dp)) then
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
    i_kl = floor(((time_in_years) &
           -real(gi_time_min,dp))/real(gi_time_stp,dp))
    i_kl = max(i_kl, 0)
@@ -261,15 +249,6 @@ else if (time_in_years < real(gi_time_max,dp)) then
    i_gr = ceiling(((time_in_years) &
           -real(gi_time_min,dp))/real(gi_time_stp,dp))
    i_gr = min(i_gr, ndata_gi)
-#else /* Tapenade */
-   call myfloor((((time_in_years) &
-          -real(gi_time_min,dp))/real(gi_time_stp,dp)),i_kl)
-   i_kl = max(i_kl, 0)
-
-   call myceiling((((time_in_years) &
-          -real(gi_time_min,dp))/real(gi_time_stp,dp)),i_gr)
-   i_gr = min(i_gr, ndata_gi)
-#endif /* Normal vs. Tapenade */
 
    if (i_kl == i_gr) then
 
@@ -561,7 +540,6 @@ if (time_in_years < real(specmap_time_min,dp)) then
    z_sl = specmap_zsl(0)
 else if (time_in_years < real(specmap_time_max,dp)) then
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
    i_kl = floor(((time_in_years) &
           -real(specmap_time_min,dp))/real(specmap_time_stp,dp))
    i_kl = max(i_kl, 0)
@@ -569,15 +547,6 @@ else if (time_in_years < real(specmap_time_max,dp)) then
    i_gr = ceiling(((time_in_years) &
           -real(specmap_time_min,dp))/real(specmap_time_stp,dp))
    i_gr = min(i_gr, ndata_specmap)
-#else /* Tapenade */
-   call myfloor((((time_in_years) &
-          -real(specmap_time_min,dp))/real(specmap_time_stp,dp)),i_kl)
-   i_kl = max(i_kl, 0)
-
-   call myceiling((((time_in_years) &
-          -real(specmap_time_min,dp))/real(specmap_time_stp,dp)),i_gr)
-   i_gr = min(i_gr, ndata_specmap)
-#endif /* Normal vs. Tapenade */
 
    if (i_kl == i_gr) then
 
@@ -1198,18 +1167,9 @@ smb_corr_prescribed = smb_corr_in
 
 #if (defined(INITMIP_SMB_ANOM_FILE))   /* Correction for ISMIP InitMIP */
 
-#if defined(ALLOW_TAPENADE) /* Tapenade */
-call myfloor(time_in_years, i_time_in_years)
-#endif /* Tapenade */
-
 if ((time_in_years > 0.0_dp).and.(time_in_years <= 40.0_dp)) then
-#if !defined(ALLOW_TAPENADE) /* Normal */
    smb_corr_prescribed = smb_corr_prescribed &
                               + 0.025_dp*floor(time_in_years) * smb_anom_initmip
-#else /* Tapenade */
-   smb_corr_prescribed = smb_corr_prescribed &
-                              + 0.025_dp*(i_time_in_years) * smb_anom_initmip
-#endif /* Normal vs. Tapenade */
 else if (time_in_years > 40.0_dp) then
    smb_corr_prescribed = smb_corr_prescribed &
                               + smb_anom_initmip

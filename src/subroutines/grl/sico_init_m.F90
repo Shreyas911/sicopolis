@@ -62,9 +62,7 @@ subroutine sico_init(delta_ts, glac_index, &
                z_mar, &
                ndat2d, ndat3d, n_output)
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
   use compare_float_m
-#endif /* Normal */
 
   use ice_material_properties_m, only : ice_mat_eqs_pars
   use enth_temp_omega_m, only : calc_c_int_table, calc_c_int_inv_table, &
@@ -320,8 +318,6 @@ call error(errormsg)
 !-------- Compatibility check of the horizontal resolution with the
 !         number of grid points --------
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
-
 #if (!defined(CHECK_RES_IMAX_JMAX) || CHECK_RES_IMAX_JMAX==1)
 
 #if (GRID==0 || GRID==1)
@@ -395,13 +391,6 @@ write(6, fmt='(a)') '         and number of grid points not performed.'
 write(6, fmt='(a)') ' '
 
 #endif /* CHECK_RES_IMAX_JMAX */
-
-#else /* Tapenade */
-
-print *, ' >>> sico_init: grid compatibility check not performed'
-print *, '          in adjoint applications; check manually.' 
-
-#endif /* Normal vs. Tapenade */
 
 !-------- Compatibility check of the thermodynamics mode
 !         (cold vs. polythermal vs. enthalpy method)
@@ -1403,8 +1392,6 @@ do n=1, n_output
 end do
 #endif
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
-
 if (.not.approx_integer_multiple(dtime_temp, dtime, eps_sp_dp)) then
    errormsg = ' >>> sico_init: dtime_temp must be a multiple of dtime!'
    call error(errormsg)
@@ -1428,14 +1415,6 @@ if (.not.approx_integer_multiple(dtime_out, dtime, eps_sp_dp)) then
    call error(errormsg)
 end if
 #endif
-
-#else /* Tapenade */
-
-print *, ' >>> sico_init: not checking that time steps are '
-print *, '                multiples of each other in adjoint mode;'
-print *, '                check manually.'
-
-#endif /* Normal vs. Tapenade */
 
 #if (THK_EVOL==2)
 time_target_topo_init  = TIME_TARGET_TOPO_INIT0 *year2sec   ! a --> s

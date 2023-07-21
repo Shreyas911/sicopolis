@@ -86,7 +86,6 @@ private :: c_int_val, c_int_inv_val
 public  :: calc_c_int_table, calc_c_int_inv_table
 public  :: enth_fct_temp_omega, temp_fct_enth, omega_fct_enth
 public :: c_int_val, c_int_inv_val
-private :: myfloor_local_ETO
 
 #endif /* Normal vs. Tapenade */
 
@@ -175,10 +174,6 @@ end subroutine calc_c_int_table
 !<------------------------------------------------------------------------------
 subroutine calc_c_int_inv_table()
 
-#if defined(ALLOW_TAPENADE) /* Tapenade */
-  use cost_m, only: myceiling, myfloor
-#endif /* Tapenade */
-
 implicit none
 
 integer(i4b)       :: n
@@ -194,17 +189,9 @@ c_int_inv_table = 0.0_dp
 enth_min = c_int_val(real(n_temp_min,dp))
 enth_max = c_int_val(real(n_temp_max,dp))
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 n_enth_min = ceiling(enth_min)
-#else /* Tapenade */
-call myceiling(enth_min,n_enth_min)
-#endif /* Normal vs. Tapenade */
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 n_enth_max = floor(enth_max)
-#else /* Tapenade */
-call myfloor(enth_max, n_enth_max)
-#endif /* Normal vs. Tapenade */
 
 if ((n_enth_min <= -524288).or.(n_enth_max >= 524287)) then
    errormsgg = ' >>> calc_c_int_inv_table: ' &
@@ -298,11 +285,7 @@ integer(i4b) :: n_temp_1, n_temp_2
 
 ! character(len=256) :: errormsgg
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 n_temp_1 = floor(temp_val)
-#else /* Tapenade */
-n_temp_1 = myfloor_local_ETO(temp_val)
-#endif /* Normal vs. Tapenade */
 
 n_temp_1 = max(min(n_temp_1, n_temp_max-1), n_temp_min)
 n_temp_2 = n_temp_1 + 1
@@ -334,11 +317,7 @@ integer(i4b) :: n_enth_1, n_enth_2
 
 ! character(len=256) :: errormsgg
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 n_enth_1 = floor(enth_val)
-#else /* Tapenade */
-n_enth_1 = myfloor_local_ETO(enth_val)
-#endif /* Normal vs. Tapenade */
 
 n_enth_1 = max(min(n_enth_1, n_enth_max-1), n_enth_min)
 n_enth_2 = n_enth_1 + 1
@@ -417,37 +396,6 @@ enth_i = c_int_val(temp_m_val)   ! Enthalpy of pure ice at the melting point
 omega_fct_enth = max((enth_val-enth_i)*L_inv, 0.0_dp)
 
 end function omega_fct_enth
-
-!-------------------------------------------------------------------------------
-
-#if defined(ALLOW_TAPENADE) /* Tapenade */
-
-  function myfloor_local_ETO(num)
-
-  use sico_variables_m
-
-  implicit none
-
-  integer(i4b)             :: inum
-  real(dp), intent(in) :: num
-  integer(i4b) :: myfloor_local_ETO
-
-  inum = int(num);
-
-  if (abs(num-real(inum,dp)) <= &
-    (abs(num+real(inum,dp))*myepsilon_dp) ) then
-    myfloor_local_ETO = inum;
-  else if (num>0) then
-    myfloor_local_ETO = inum;
-  else if (num<0) then
-    myfloor_local_ETO = inum - 1;
-  end if
-
-  end function myfloor_local_ETO
-
-#endif /* Tapenade */
-
-!-------------------------------------------------------------------------------
 
 end module enth_temp_omega_m
 !

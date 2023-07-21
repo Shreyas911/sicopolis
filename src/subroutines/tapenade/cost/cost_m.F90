@@ -42,9 +42,6 @@ module cost_m
   implicit none
 
   public :: cost_final 
-#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
-  public :: myceiling, myfloor 
-#endif
 
 contains
  
@@ -133,51 +130,7 @@ print *, '           AGE_COST simulations'
   !         crazy with the file outputting:
   print *, 'Final cost, fc = ', fc
   print *, trim(OUT_PATH)
+
   end subroutine cost_final
 
-#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
-  subroutine myceiling(num, output)
-  
-  implicit none
-  
-  integer(i4b)             :: inum
-  real(dp), intent(in) :: num
-  integer(i4b), intent(out) :: output
-  
-  inum = int(num);
-  
-  inum = int(num);
-  if (abs(num-real(inum,dp)) <= &
-    (abs(num+real(inum,dp))*myepsilon_dp) ) then
-    output = inum;
-  else if (num>0) then
-    output = inum + 1;
-  else if (num<0) then
-    output = inum;
-  end if
-  end subroutine myceiling
-  
-  subroutine myfloor(num, output)
-  
-  implicit none
-  
-  integer(i4b)             :: inum
-  real(dp), intent(in) :: num
-  integer(i4b), intent(out) :: output
-  
-  inum = int(num);
-  
-  if (abs(num-real(inum,dp)) <= &
-    (abs(num+real(inum,dp))*myepsilon_dp) ) then
-    output = inum;
-  else if (num>0) then
-    output = inum;
-  else if (num<0) then
-    output = inum - 1;
-  end if
-  
-  end subroutine myfloor
-#endif
-
 end module cost_m
-!

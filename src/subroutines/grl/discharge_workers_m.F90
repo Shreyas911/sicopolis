@@ -49,9 +49,7 @@ module discharge_workers_m
   use globals
 #endif
  
-#if !defined(ALLOW_TAPENADE) /* Normal */
   use compare_float_m
-#endif /* Normal */
 
   implicit none
 
@@ -192,16 +190,10 @@ contains
   call error(errormsg)
 #endif
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
   if (.not.approx_integer_multiple(dtime_mar_coa, dtime, eps_sp_dp)) then
      errormsg = ' >>> disc_param: dtime_mar_coa must be a multiple of dtime!'
      call error(errormsg)
   end if
-#else /* Tapenade */
-     print *, ' >>> disc_param: compare_float_m not used in adjoint'
-     print *, '                 applications! double check ' 
-     print *, '                 dtime_mar_coa and dtime are multiples'
-#endif /* Normal vs. Tapenade */
 
 #if !defined(ALLOW_TAPENADE) /* Normal */
   iter_mar_coa = nint(dtime_mar_coa/dtime)
@@ -394,10 +386,6 @@ contains
 !<------------------------------------------------------------------------------
   subroutine discharge(dxi, deta)
 
-#ifdef ALLOW_TAPENADE /* Tapenade */
-  use cost_m, only: myfloor
-#endif /* Tapenade */
-
   ! Authors: Reinhard Calov, Andrey Ganopolski
   ! Institution: Potsdam Institute for Climate Impact Research  
   ! Date: 11.6.16
@@ -432,11 +420,7 @@ contains
 
 #else /* Tapenade */
 
-  ! this is mod broken down algorithmically:
-  tmp = real(n_discharge_call_DW)/real(iter_mar_coa_DW)
-  call myfloor(tmp, valmodint)
-  valmod = real(n_discharge_call_DW) - real(iter_mar_coa_DW) * real(valmodint)
-  if ((valmod==0) .or. (n_discharge_call_DW==1)) then
+  if ((mod(n_discharge_call_DW, iter_mar_coa_DW)==0).or.(n_discharge_call_DW==1)) then
      write(6, fmt='(10x,a)') 'Computation of mask_mar, cst_dist, cos_grad_tc'
      call marginal_ring(dxi, deta)
      call coastal_distance(dxi, deta)
@@ -507,10 +491,6 @@ contains
   !                      enlargement is by a rectangles a the respective four side of 
   !                      the square. Smaller side lenght equals the rectangle root of 2 of the
   !                      larger side. 
-
-#ifdef ALLOW_TAPENADE /* Tapenade */
-  use cost_m, only: myceiling
-#endif /* Tapenade */
 
   implicit none
 
@@ -609,19 +589,11 @@ contains
               end if
             end do
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
             if(leave_loop) then
               l_e=l
               d_l=ceiling(l_e*sqrt(2.0_dp)+0.001_dp)
               exit   ! leave loop in l
             end if
-#else /* Tapenade */
-            if(leave_loop) then
-              l_e=l
-              call myceiling((l_e*sqrt(2.0_dp)+0.001_dp), d_l)
-            end if
-          l = l+1
-#endif /* Normal vs. Tapenade */
 
           end do
           ! left
