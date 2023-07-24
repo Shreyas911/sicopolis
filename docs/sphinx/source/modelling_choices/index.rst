@@ -8,7 +8,7 @@ Modelling choices
 
    domain_grid_time
    ice_dynamics
+   enhancement_factor
    ice_thermodynamics
    basal_processes
    calving
-   climate_forcing
