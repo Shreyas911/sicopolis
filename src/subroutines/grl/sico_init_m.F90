@@ -42,7 +42,7 @@ module sico_init_m
   use globals
 #endif
 #if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
-  use ctrl_init_variables_m
+  use ctrl_init_genarr_m
 #endif
 
   implicit none
@@ -260,7 +260,7 @@ q_geo        = 0.0
 c_slide_init = 0.0
 zs           = 0.0 ! Only compatible with ANF_DAT==1
 
-  call ctrl_init_variables()
+  call ctrl_init_genarr()
 
 #endif /* TAPENADE */
 
