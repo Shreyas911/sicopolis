@@ -95,9 +95,15 @@ contains
 
 #else   /* all other domains */
 
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK)) /* TAPENADE */
+     do kc=0, KCMAX
+        temp_c(kc,j,i) =  temp_c(kc,j,i) -10.0_dp
+     end do
+#else /* NORMAL */
      do kc=0, KCMAX
         temp_c(kc,j,i) =  -10.0_dp
      end do
+#endif
 
 #endif
 
@@ -129,9 +135,15 @@ contains
   do i=0, IMAX
   do j=0, JMAX
 
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK)) /* TAPENADE */
+     do kc=0, KCMAX
+        temp_c(kc,j,i) = temp_c(kc,j,i) + temp_s(j,i)
+     end do
+#else /* NORMAL */
      do kc=0, KCMAX
         temp_c(kc,j,i) = temp_s(j,i)
      end do
+#endif
 
   end do
   end do
@@ -171,6 +183,42 @@ contains
   do i=0, IMAX
   do j=0, JMAX
 
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK)) /* TAPENADE */
+     if (mask(j,i)<=2) then
+
+        do kc=0, KCMAX
+
+           temp_c(kc,j,i) = temp_c(kc,j,i) + temp_s(j,i) &
+                            + (q_geo(j,i)/kappa_const_val) &
+                              *H_c(j,i)*(1.0_dp-eaz_c_quotient(kc))
+                            ! linear temperature distribution according to the
+                            ! geothermal heat flux
+        end do
+
+        if (temp_c(0,j,i) >= -BETA*H_c(j,i)) then
+
+           temp_ice_base = -BETA*H_c(j,i)
+
+           do kc=0, KCMAX
+              temp_c(kc,j,i) = temp_s(j,i) &
+                               + (temp_ice_base-temp_s(j,i)) &
+                                 *(1.0_dp-eaz_c_quotient(kc))
+           end do
+
+        end if
+
+     else   ! mask(j,i)==3, floating ice
+
+        temp_ice_base = -BETA*H_c(j,i) - DELTA_TM_SW
+
+        do kc=0, KCMAX
+           temp_c(kc,j,i) = temp_c(kc,j,i) + temp_s(j,i) &
+                            + (temp_ice_base-temp_s(j,i)) &
+                              *(1.0_dp-eaz_c_quotient(kc))
+        end do
+
+     end if
+#else /* NORMAL */
      if (mask(j,i)<=2) then
 
         do kc=0, KCMAX
@@ -205,7 +253,7 @@ contains
         end do
 
      end if
-
+#endif
   end do
   end do
 
@@ -271,9 +319,15 @@ contains
 #else
         erf_val_2      = my_erf(z_above_base/(sqrt(2.0_dp)*K))
 #endif
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK)) /* TAPENADE */
+        temp_c(kc,j,i) = temp_c(kc,j,i) + temp_s(j,i) &
+                          + (qgeo_val/kappa_const_val) &
+                            * sqrt(0.5_dp*pi)*K*(erf_val_1-erf_val_2)
+#else /* NORMAL */
         temp_c(kc,j,i) = temp_s(j,i) &
                           + (qgeo_val/kappa_const_val) &
                             * sqrt(0.5_dp*pi)*K*(erf_val_1-erf_val_2)
+#endif
      end do
 
      if ( (mask(j,i) <= 2).and.(temp_c(0,j,i) >= -BETA*H_c(j,i)) ) then
@@ -423,7 +477,11 @@ contains
   do j=0, JMAX
 
      do kc=0, KCMAX
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK)) /* TAPENADE */
+        temp_c(kc,j,i) = temp_c(kc,j,i) + temp_s(j,i)
+#else
         temp_c(kc,j,i) = temp_s(j,i)
+#endif
      end do
 
   end do

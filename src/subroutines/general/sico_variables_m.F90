@@ -992,6 +992,15 @@ save
    real(dp),    dimension(NUM_CTRL_GENARR2D,0:JMAX,0:IMAX) :: xx_genarr2d      
    real(dp),    dimension(NUM_CTRL_GENARR2D,0:JMAX,0:IMAX) :: xx_genarr2d_mask
 
+   character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR3D) :: xx_genarr3d_vars
+   character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR3D) :: xx_genarr3d_bounds
+   character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR3D) :: xx_genarr3d_preproc 
+   character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR3D) :: xx_genarr3d_weight
+
+   real(dp),    dimension(NUM_CTRL_GENARR3D)                       :: xx_genarr3d_log10initval
+   real(dp),    dimension(NUM_CTRL_GENARR3D,0:KCMAX,0:JMAX,0:IMAX) :: xx_genarr3d      
+   real(dp),    dimension(NUM_CTRL_GENARR3D,0:KCMAX,0:JMAX,0:IMAX) :: xx_genarr3d_mask
+
 #endif /* Tapenade */
 
 end module sico_variables_m
