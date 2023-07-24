@@ -92,8 +92,8 @@ contains
       end if
       if (preprocs(k2) .EQ. 'scaling') then
         doscaling = .TRUE.
-        do j = 0, JMAX
-          do i = 0, IMAX
+        do i = 0, IMAX
+          do j = 0, JMAX
             read(unit=xx_genarr2d_weight(iarr), fmt=*) wgenarr2d(j,i)
           end do
         end do
@@ -123,15 +123,15 @@ contains
       jHigh = JMAX
     end if
 
-    do j = 0, JMAX
-      do i = 0, IMAX
+    do i = 0, IMAX
+      do j = 0, JMAX
         if ((i .GE. iLow) .AND. (i .LE. iHigh) .AND. (j .GE. jLow) .AND. (j .LE. jHigh)) then
           xx_genarr2d_mask(iarr,j,i) = 1.0
         else
           xx_genarr2d_mask(iarr,j,i) = 0.0
         end if
       end do
-    end do 
+    end do
 
     xx_genarr2d(iarr,:,:) = xx_genarr2d(iarr,:,:) / sqrt(wgenarr2d(:,:))
 
