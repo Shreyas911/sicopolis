@@ -154,6 +154,7 @@ contains
   implicit none
 
   integer(i4b) :: i, j, kc
+  real(dp) :: z_above_base, temp_pmp
 
 !-------- Initial ice temperature --------
 
@@ -163,6 +164,26 @@ contains
      do kc=0, KCMAX
         temp_c(kc,j,i) = temp_s(j,i)
      end do
+
+  end do
+  end do
+
+  do i=0, IMAX
+  do j=0, JMAX
+
+     do kc=0, KCMAX-1
+
+        z_above_base = H_c(j,i)*eaz_c_quotient(kc)
+        temp_pmp     = -BETA*(H_c(j,i)-z_above_base)
+
+        if (temp_c(kc,j,i) > temp_pmp) temp_c(kc,j,i) = temp_pmp
+                            ! Cut-off of englacial temperatures above PMP
+
+     end do
+
+     kc = KCMAX
+        if (temp_c(kc,j,i) > -0.001_dp) temp_c(kc,j,i) = -0.001_dp
+                            ! Cut-off of non-negative surface temperatures
 
   end do
   end do
