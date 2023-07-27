@@ -43,6 +43,7 @@ module sico_init_m
 #endif
 #if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
   use ctrl_init_genarr_m
+  use ctrl_map_gentim_m
 #endif
 
   implicit none
@@ -2123,6 +2124,12 @@ do j=0, JMAX
 end do
 end do
 
+#endif
+
+!-------- gentim2d setup --------
+
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+  call ctrl_map_ini_gentim2d(time_init, dtime, 0)
 #endif
 
 !-------- Definition of initial values --------

@@ -988,18 +988,25 @@ save
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR2D) :: xx_genarr2d_preproc 
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR2D) :: xx_genarr2d_weight
 
-   real(dp),    dimension(NUM_CTRL_GENARR2D)               :: xx_genarr2d_log10initval
-   real(dp),    dimension(NUM_CTRL_GENARR2D,0:JMAX,0:IMAX) :: xx_genarr2d      
-   real(dp),    dimension(NUM_CTRL_GENARR2D,0:JMAX,0:IMAX) :: xx_genarr2d_mask
+   real(dp), dimension(NUM_CTRL_GENARR2D)               :: xx_genarr2d_log10initval
+   real(dp), dimension(NUM_CTRL_GENARR2D,0:JMAX,0:IMAX) :: xx_genarr2d      
+   real(dp), dimension(NUM_CTRL_GENARR2D,0:JMAX,0:IMAX) :: xx_genarr2d_mask
 
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR3D) :: xx_genarr3d_vars
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR3D) :: xx_genarr3d_bounds
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR3D) :: xx_genarr3d_preproc 
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR3D) :: xx_genarr3d_weight
 
-   real(dp),    dimension(NUM_CTRL_GENARR3D)                       :: xx_genarr3d_log10initval
-   real(dp),    dimension(NUM_CTRL_GENARR3D,0:KCMAX,0:JMAX,0:IMAX) :: xx_genarr3d      
-   real(dp),    dimension(NUM_CTRL_GENARR3D,0:KCMAX,0:JMAX,0:IMAX) :: xx_genarr3d_mask
+   real(dp), dimension(NUM_CTRL_GENARR3D)                       :: xx_genarr3d_log10initval
+   real(dp), dimension(NUM_CTRL_GENARR3D,0:KCMAX,0:JMAX,0:IMAX) :: xx_genarr3d      
+   real(dp), dimension(NUM_CTRL_GENARR3D,0:KCMAX,0:JMAX,0:IMAX) :: xx_genarr3d_mask
+
+   character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENTIM2D) :: xx_gentim2d_vars
+   
+   real(dp)                                                      :: xx_gentim2d_period
+   real(dp), dimension(NUM_CTRL_GENTIM2D)                        :: xx_gentim2d_log10initval
+   real(dp), dimension(NUM_CTRL_GENTIM2D,0:ADNMAX,0:JMAX,0:IMAX) :: xx_gentim2d
+   real(dp), dimension(NUM_CTRL_GENTIM2D,0:ADNMAX,0:JMAX,0:IMAX) :: xx_gentim2d_mask
 
 #endif /* Tapenade */
 

@@ -40,6 +40,7 @@ module sico_main_loop_m
   use error_m
 #if defined(ALLOW_TAPENADE)
   use globals
+  use ctrl_map_gentim_m
 #endif
   
   implicit none
@@ -142,6 +143,12 @@ contains
   
   mask_old = mask
   
+  !-------- gentim2d setup --------
+
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+  call ctrl_map_ini_gentim2d(time_init, dtime, itercount)
+#endif
+
   !-------- Boundary conditions --------
   
   call boundary(time, dtime, dxi, deta, delta_ts, glac_index, z_mar)

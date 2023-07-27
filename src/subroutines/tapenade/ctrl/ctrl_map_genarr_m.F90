@@ -71,7 +71,7 @@ contains
     logical                                     :: doread, dobounds
     logical                                     :: dosmooth, doscaling, dolog10ctrl
     real(dp)                                    :: log10initval, ln10
-    character(128), dimension(NUMCTRLPROC2D)      :: preprocs
+    character(128), dimension(NUMCTRLPROCARR2D)      :: preprocs
 
     ln10 = log(10.0)
 
@@ -83,7 +83,7 @@ contains
 
     read (unit=xx_genarr2d_preproc(iarr),fmt=*) preprocs
 
-    do k2 = 1, NUMCTRLPROC2D
+    do k2 = 1, NUMCTRLPROCARR2D
 
       if (preprocs(k2) .EQ. 'smooth') then
         dosmooth = .TRUE.
@@ -196,7 +196,7 @@ contains
     logical                                             :: doread, dobounds
     logical                                             :: dosmooth, doscaling, dolog10ctrl
     real(dp)                                            :: log10initval, ln10
-    character(128), dimension(NUMCTRLPROC3D)            :: preprocs
+    character(128), dimension(NUMCTRLPROCARR3D)            :: preprocs
 
     ln10 = log(10.0)
 
@@ -208,7 +208,7 @@ contains
 
     read (unit=xx_genarr3d_preproc(iarr),fmt=*) preprocs
 
-    do k3 = 1, NUMCTRLPROC3D
+    do k3 = 1, NUMCTRLPROCARR3D
 
       if (preprocs(k3) .EQ. 'smooth') then
         dosmooth = .TRUE.

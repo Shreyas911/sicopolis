@@ -152,6 +152,7 @@
 #include "subroutines/tapenade/cost/cost_m.F90"
 #include "subroutines/tapenade/ctrl/ctrl_map_genarr_m.F90"
 #include "subroutines/tapenade/ctrl/ctrl_init_genarr_m.F90"
+#include "subroutines/tapenade/ctrl/ctrl_map_gentim_m.F90"
 #endif /* Tapenade */
 
 #include "subroutines/general/ice_material_properties_m.F90"

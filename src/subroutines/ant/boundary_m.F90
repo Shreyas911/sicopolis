@@ -40,6 +40,9 @@ module boundary_m
   use sico_variables_m
   use sico_vars_m
   use error_m
+#if defined(ALLOW_TAPENADE)
+  use globals
+#endif
 
   implicit none
 
@@ -95,8 +98,12 @@ real(dp) :: time_gr, time_kl
 real(dp) :: z_sle_present, z_sle_help
 
 real(dp), dimension(0:JMAX,0:IMAX,0:12) :: precip
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+real(dp), dimension(0:JMAX,0:IMAX)      :: temp_ampl
+#else
 real(dp), dimension(0:JMAX,0:IMAX,12)   :: temp_mm
 real(dp), dimension(0:JMAX,0:IMAX)      :: temp_ma, temp_ampl
+#endif
 real(dp), dimension(12) :: temp_mm_help
 real(dp), dimension(0:JMAX,0:IMAX)      :: accum_prescribed, &
                                            runoff_prescribed
@@ -748,6 +755,38 @@ do j=0, JMAX
 
 #endif
 
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK)) /* TAPENADE */
+
+#if (TSURFACE<=4)
+
+!  ------ Correction with deviation delta_ts
+
+   temp_ma(j,i)   = temp_ma(j,i)   + temp_ma_present(j,i) + delta_ts
+   temp_mm(j,i,7) = temp_mm(j,i,7) + temp_mj_present(j,i) + delta_ts
+
+#elif (TSURFACE==5)
+
+!  ------ Correction with LGM anomaly and glacial index
+
+   temp_ma(j,i)   = temp_ma(j,i)   + temp_ma_present(j,i) + glac_index*temp_ma_lgm_anom(j,i)
+   temp_mm(j,i,7) = temp_mm(j,i,7) + temp_mj_present(j,i) + glac_index*temp_mj_lgm_anom(j,i)
+
+#elif (TSURFACE==6)
+
+!  ------ Mean-annual and mean-July (summer) surface temperatures
+!                                            from data read above --------
+
+   temp_ma(j,i)   = temp_ma(j,i) + temp_maat_climatol(j,i) &
+                       + temp_maat_anom(j,i) &
+                          + dtemp_maat_dz(j,i)*(zs(j,i)-zs_ref(j,i))
+
+   temp_mm(j,i,7) = temp_ma(j,i)
+                   ! not contained in read data, thus set to dummy value
+
+#endif
+
+#else /* NORMAL */
+
 #if (TSURFACE<=4)
 
 !  ------ Correction with deviation delta_ts
@@ -773,6 +812,8 @@ do j=0, JMAX
 
    temp_mm(j,i,7) = temp_ma(j,i)
                    ! not contained in read data, thus set to dummy value
+
+#endif
 
 #endif
 
@@ -1303,6 +1344,11 @@ n_year_CE_isc_save = n_year_CE_isc
 #endif
 
 if (firstcall) firstcall = .false.
+
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+temp_ma = 0.0_dp
+temp_mm = 0.0_dp
+#endif
 
 end subroutine boundary
 
