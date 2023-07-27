@@ -19,7 +19,7 @@
 			  	   'xx_zs          ' /)
 !		List of 2D time-invariant control variables
 
-#define XX_GENARR2D_PREPROC_ARR    (/ 'log10ctrl,bounds', \
+#define XX_GENARR2D_PREPROC_ARR    (/ 'nnnnnnnnn,bounds', \
 			              'nnnnnnnnn,nnnnnn', \
 				      'bounds   ,nnnnnn' /) 
 !               Define preprocessing steps for ctrl variables
@@ -88,5 +88,5 @@
 #define XX_GENTIM2D_PERIOD	10.0
 !		Time period for gentim2d
 
-#define ADNMAX			5
+#define ADNMAX			4
 !		(TIME_END0-TIME_INIT0)/XX_GENTIM2D_PERIOD 
