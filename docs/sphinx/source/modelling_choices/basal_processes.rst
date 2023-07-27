@@ -67,10 +67,11 @@ These models are described by Le Meur and Huybrechts :cite:`lemeur_huy_1996` and
 
 The detailed settings are controlled by additional parameters (``FRAC_LLRA``, ``TIME_LAG_MOD``, ``TIME_LAG``, ``TIME_LAG_FILE``, ``FLEX_RIG_MOD``, ``FLEX_RIG``, ``FLEX_RIG_FILE``, ``DTIME_WSS0``) as described in the run-specs headers.
 
-The isostatically relaxed lithosphere surface topography (parameter ``ZL0_FILE``, see ":ref:`topography`") is required for the isostasy models. A special setting for generating this topography can be enabled by
+.. note::
+  The isostatically relaxed lithosphere surface topography (parameter ``ZL0_FILE``, see ":ref:`topography`") is required for the isostasy models. A special setting for generating this topography can be enabled by
 
-.. code-block:: fortran
+  .. code-block:: fortran
 
-  #define EXEC_MAKE_ZL0
+    #define EXEC_MAKE_ZL0
 
-It should be used together with ``ANF_DAT 1`` (present-day topography used as initial topography), computes the isostatically relaxed lithosphere surface topography, writes it on file and then stops the simulation (irrespective of the setting for the final time :math:`t_\mathrm{final}`). The underlying assumption is that the present-day bed topography is approximately in equilibrium with the present-day ice load.
+  It should be used together with ``ANF_DAT 1`` (present-day topography used as initial topography), computes the isostatically relaxed lithosphere surface topography, writes it on file and then stops the simulation (irrespective of the setting for the final time :math:`t_\mathrm{final}`). The underlying assumption is that the present-day bed topography is approximately in equilibrium with the present-day ice load.
