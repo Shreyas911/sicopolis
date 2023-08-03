@@ -528,10 +528,6 @@
 !                         topography (ZL_PRESENT_FILE) can be used.
 !                         !!! Not to be used regularly!!!
 
-#define Q_LITHO 0
-!                         0 : No coupled heat-conducting bedrock
-!                         1 : Coupled heat-conducting bedrock
-
 !-------- Evolution of the ice thickness --------
 
 #define THK_EVOL 0
@@ -858,21 +854,24 @@
 !                       Threshold water film thickness for water-film-enhanced
 !                       basal sliding (in m, only for BASAL_HYDROLOGY==1)
 
-!-------- Geothermal heat flux --------
-
-#define Q_GEO_MOD 1
-!                         1 : Constant geothermal heat flux defined
-!                             by parameter Q_GEO
-!                         2 : Spatially varying geothermal heat flux
-!                             read from file
+!-------- Geothermal heat flux (GHF) --------
 
 #define Q_GEO 35.0d0
-!                       Constant geothermal heat flux (for Q_GEO_MOD==1),
-!                       in mW/m2
+!                       Spatially constant GHF (in mW/m2)
+!                       (only used if Q_GEO_FILE == 'none', otherwise ignored)
 
-#define Q_GEO_FILE 'nmars10_qgeo_xxx.dat'
-!                       Name of the file containing the spatially varying
-!                       geothermal heat flux (for Q_GEO_MOD==2)
+#define Q_GEO_FILE 'none'
+!                       Name of the file containing the spatially varying GHF
+!                       (set to 'none' if spatially constant GHF
+!                       defined by parameter Q_GEO is to be used)
+
+#define Q_LITHO 0
+!                       0 : No coupled heat-conducting bedrock
+!                           (GHF imposed directly at the grounded ice base)
+!                       1 : Coupled heat-conducting bedrock
+!                           (GHF imposed at the base of the
+!                           thermal lithosphere layer of thickness H_R,
+!                           defined in the physical-parameter file)
 
 !-------- Treatment of Chasma Borealis --------
 

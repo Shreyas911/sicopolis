@@ -518,10 +518,6 @@
 !                         topography (ZL_PRESENT_FILE) can be used.
 !                         !!! Not to be used regularly!!!
 
-#define Q_LITHO 0
-!                         0 : No coupled heat-conducting bedrock
-!                         1 : Coupled heat-conducting bedrock
-
 !-------- Evolution of the ice thickness --------
 
 #define THK_EVOL 1
@@ -1067,35 +1063,38 @@
 !                       Threshold water film thickness for water-film-enhanced
 !                       basal sliding (in m, only for BASAL_HYDROLOGY==1)
 
-!-------- Geothermal heat flux --------
-
-#define Q_GEO_MOD 1
-!                         1 : Constant geothermal heat flux defined
-!                             by parameter Q_GEO
-!                         2 : Spatially varying geothermal heat flux
-!                             read from file
+!-------- Geothermal heat flux (GHF) --------
 
 #define Q_GEO 55.0d0
-!                       Constant geothermal heat flux (for Q_GEO_MOD==1),
-!                       in mW/m2
+!                       Spatially constant GHF (in mW/m2)
+!                       (only used if Q_GEO_FILE == 'none', otherwise ignored)
 
 #define Q_GEO_FILE 'none'
-!                       Name of the file containing the spatially varying
-!                       geothermal heat flux (for Q_GEO_MOD==2)
+!                       Name of the file containing the spatially varying GHF
+!                       (set to 'none' if spatially constant GHF
+!                       defined by parameter Q_GEO is to be used)
+
+#define Q_LITHO 0
+!                       0 : No coupled heat-conducting bedrock
+!                           (GHF imposed directly at the grounded ice base)
+!                       1 : Coupled heat-conducting bedrock
+!                           (GHF imposed at the base of the
+!                           thermal lithosphere layer of thickness H_R,
+!                           defined in the physical-parameter file)
 
 !-------- Basal melting at the marine ice front --------
 
 #define MARINE_ICE_BASAL_MELTING 1
-!                        Basal melting rate at the marine ice front:
-!                        1 : Computed by the usual energy jump condition
-!                            for grounded ice
-!                        2 : Prescribed by QBM_MARINE
-!                        3 : Weighed average of grounded ice melting (computed)
-!                            and marine ice melting (prescribed by QBM_MARINE)
+!                       Basal melting rate at the marine ice front:
+!                       1 : Computed by the usual energy jump condition
+!                           for grounded ice
+!                       2 : Prescribed by QBM_MARINE
+!                       3 : Weighed average of grounded ice melting (computed)
+!                           and marine ice melting (prescribed by QBM_MARINE)
 
 #define QBM_MARINE 2.0d0
-!                        Basal melting rate at the marine ice front,
-!                        in m/a water equiv. (for MARINE_ICE_BASAL_MELTING==2,3)
+!                       Basal melting rate at the marine ice front,
+!                       in m/a water equiv. (for MARINE_ICE_BASAL_MELTING==2,3)
 
 !-------- Basal melting for floating ice (only for MARGIN==3) --------
 
