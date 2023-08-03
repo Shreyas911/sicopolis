@@ -106,6 +106,7 @@ real(dp),           intent(out) :: z_mar
 integer(i4b)       :: i, j, kc, kt, kr, m, n, ir, jr, n1, n2
 integer(i4b)       :: ios, ios1, ios2, ios3, ios4
 integer(i4b)       :: ierr
+integer(i4b)       :: n_q_geo_mod
 integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_ref
 real(dp)           :: dtime0, dtime_temp0, dtime_wss0, dtime_out0, dtime_ser0
 real(dp)           :: time_init0, time_end0
@@ -729,6 +730,30 @@ time_output0(20) = TIME_OUT0_20
 
 #endif
 
+!-------- Type of the geothermal heat flux (GHF) --------
+
+#if (!defined(Q_GEO_FILE))
+
+n_q_geo_mod = 1   ! spatially constant GHF
+
+#else
+
+if ( (trim(adjustl(Q_GEO_FILE)) == 'none') &
+     .or. &
+     (trim(adjustl(Q_GEO_FILE)) == 'None') &
+     .or. &
+     (trim(adjustl(Q_GEO_FILE)) == 'NONE') ) then
+
+   n_q_geo_mod = 1   ! spatially constant GHF
+
+else
+
+   n_q_geo_mod = 2   ! spatially varying GHF
+
+end if
+
+#endif
+
 !-------- Write log file --------
 
 shell_command = 'if [ ! -d'
@@ -929,8 +954,11 @@ if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
    write(10, fmt=trim(fmt1)) ' '
 end if
 #endif
-#if (ANF_DAT==1 && defined(TEMP_INIT))
+#if (ANF_DAT==1)
 write(10, fmt=trim(fmt2)) 'TEMP_INIT = ', TEMP_INIT
+#if (TEMP_INIT==1 && defined(TEMP_INIT_VAL))
+write(10, fmt=trim(fmt3)) 'temp_init_val =', TEMP_INIT_VAL
+#endif
 #endif
 #if (ANF_DAT==3 || (ANF_DAT==1 && TEMP_INIT==5))
 write(10, fmt=trim(fmt1)) 'Initial-value file = '//ANFDATNAME
@@ -1196,12 +1224,12 @@ write(10, fmt=trim(fmt3)) 'Hw0_slide  =', HW0_SLIDE
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
-write(10, fmt=trim(fmt2)) 'Q_GEO_MOD = ', Q_GEO_MOD
-#if (Q_GEO_MOD==1)
-write(10, fmt=trim(fmt3)) 'q_geo =', Q_GEO
-#elif (Q_GEO_MOD==2)
-write(10, fmt=trim(fmt1)) 'q_geo file = '//Q_GEO_FILE
-#endif
+if (n_q_geo_mod==1) then
+   write(10, fmt=trim(fmt3)) 'q_geo =', Q_GEO
+else if (n_q_geo_mod==2) then
+   write(10, fmt=trim(fmt1)) 'q_geo file = '//Q_GEO_FILE
+end if
+write(10, fmt=trim(fmt2)) 'Q_LITHO = ', Q_LITHO
 write(10, fmt=trim(fmt1)) ' '
 
 #if (defined(MARINE_ICE_BASAL_MELTING))
@@ -1297,7 +1325,6 @@ errormsg = ' >>> sico_init: FLEX_RIG_MOD must be either 1 or 2!'
 call error(errormsg)
 #endif
 #endif
-write(10, fmt=trim(fmt2)) 'Q_LITHO = ', Q_LITHO
 write(10, fmt=trim(fmt1)) ' '
 
 write(10, fmt=trim(fmt3)) 'numdiff_H_t =', NUMDIFF_H_T
@@ -2065,62 +2092,66 @@ close(21, status='keep')
 !-------- Determination of the geothermal heat flux --------
 
 #if (!defined(ALLOW_TAPENADE) && defined(ALLOW_GRDCHK)) /* NORMAL */
- 
-#if (Q_GEO_MOD==1)
+
+if (n_q_geo_mod==1) then
 
 !  ------ Constant value
 
-do i=0, IMAX
-do j=0, JMAX
-   q_geo(j,i) = Q_GEO *1.0e-03_dp   ! mW/m2 -> W/m2
-end do
-end do
+   do i=0, IMAX
+   do j=0, JMAX
+      q_geo(j,i) = Q_GEO *1.0e-03_dp   ! mW/m2 -> W/m2
+   end do
+   end do
 
-#elif (Q_GEO_MOD==2)
+else if (n_q_geo_mod==2) then
 
 !  ------ Read data from file
 
-filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
-                     trim(Q_GEO_FILE)
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(Q_GEO_FILE)
 
-call read_2d_input(filename_with_path, &
-                   ch_var_name='GHF', n_var_type=1, n_ascii_header=6, &
-                   field2d_r=field2d_aux)
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='GHF', n_var_type=1, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
 
-q_geo = field2d_aux *1.0e-03_dp   ! mW/m2 -> W/m2
+   do i=0, IMAX
+   do j=0, JMAX
+      q_geo(j,i) = field2d_aux(j,i) *1.0e-03_dp   ! mW/m2 -> W/m2
+   end do
+   end do
 
-#endif 
+endif
 
 #else /* TAPENADE */
 
-#if (Q_GEO_MOD==1)
+if (n_q_geo_mod==1) then
 
 !  ------ Constant value
 
-do i=0, IMAX
-do j=0, JMAX
-   q_geo(j,i) = q_geo(j,i) + Q_GEO *1.0e-03_dp   ! mW/m2 -> W/m2
-end do
-end do
+   do i=0, IMAX
+   do j=0, JMAX
+      q_geo(j,i) = q_geo(j,i) + Q_GEO *1.0e-03_dp   ! mW/m2 -> W/m2
+   end do
+   end do
 
-#elif (Q_GEO_MOD==2)
+else if (n_q_geo_mod==2) then
 
 !  ------ Read data from file
 
-filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
-                     trim(Q_GEO_FILE)
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(Q_GEO_FILE)
 
-call read_2d_input(filename_with_path, &
-                   ch_var_name='GHF', n_var_type=1, n_ascii_header=6, &
-                   field2d_r=field2d_aux)
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='GHF', n_var_type=1, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
 
-do i=0, IMAX
-do j=0, JMAX
-   q_geo(j,i) = q_geo(j,i) + field2d_aux(j,i) *1.0e-03_dp   ! mW/m2 -> W/m2
-end do
-end do
+   do i=0, IMAX
+   do j=0, JMAX
+      q_geo(j,i) = q_geo(j,i) + field2d_aux(j,i) *1.0e-03_dp   ! mW/m2 -> W/m2
+   end do
+   end do
 
-#endif
+endif
 
 #endif /* TAPENADE */
 
@@ -2277,7 +2308,7 @@ Q_b_tot = 0.0_dp
 p_b_w   = 0.0_dp
 H_w     = 0.0_dp
 
-#if (!defined(TEMP_INIT) || TEMP_INIT==1)
+#if (TEMP_INIT==1)
   call init_temp_water_age_1_1()
 #elif (TEMP_INIT==2)
   call init_temp_water_age_1_2()

@@ -4,7 +4,7 @@
 
 !-------- Basic settings --------
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2023-07-06'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2023-08-03'
 !                      Date of last change
 
 !-------- Domain --------
@@ -109,10 +109,6 @@
 !                       Time step (in a) for computation of
 !                       isostatic steady-state displacement of the lithosphere
 !                       (only for REBOUND==2, ELRA model)
-
-#define DTIME_SER0 1.0d+05
-!                       Time step (in a) for writing of data to
-!                       the time-series files
 
 !!! #define YEAR_SEC 31556926.0d0
 !                       Conversion from years to seconds;
@@ -473,6 +469,10 @@
 !                             [Robin (1955) solution]
 !                         5 : Ice temperature from previous simulation
 
+#define TEMP_INIT_VAL -100.0d0
+!                         Prescribed initial temperature (in deg C)
+!                         (only for ANF_DAT==1 and TEMP_INIT==1)
+
 #define ANFDATNAME 'none'
 !                             Initial-value file (only for ANF_DAT==3,
 !                                  or for ANF_DAT==1 and TEMP_INIT==5)
@@ -528,10 +528,6 @@
 !                         For ZL0_FILE, the present-day lithosphere surface
 !                         topography (ZL_PRESENT_FILE) can be used.
 !                         !!! Not to be used regularly!!!
-
-#define Q_LITHO 0
-!                         0 : No coupled heat-conducting bedrock
-!                         1 : Coupled heat-conducting bedrock
 
 !-------- Evolution of the ice thickness --------
 
@@ -859,21 +855,24 @@
 !                       Threshold water film thickness for water-film-enhanced
 !                       basal sliding (in m, only for BASAL_HYDROLOGY==1)
 
-!-------- Geothermal heat flux --------
-
-#define Q_GEO_MOD 1
-!                         1 : Constant geothermal heat flux defined
-!                             by parameter Q_GEO
-!                         2 : Spatially varying geothermal heat flux
-!                             read from file
+!-------- Geothermal heat flux (GHF) --------
 
 #define Q_GEO 35.0d0
-!                       Constant geothermal heat flux (for Q_GEO_MOD==1),
-!                       in mW/m2
+!                       Spatially constant GHF (in mW/m2)
+!                       (only used if Q_GEO_FILE == 'none', otherwise ignored)
 
-#define Q_GEO_FILE 'smars10_qgeo_xxx.dat'
-!                       Name of the file containing the spatially varying
-!                       geothermal heat flux (for Q_GEO_MOD==2)
+#define Q_GEO_FILE 'none'
+!                       Name of the file containing the spatially varying GHF
+!                       (set to 'none' if spatially constant GHF
+!                       defined by parameter Q_GEO is to be used)
+
+#define Q_LITHO 0
+!                       0 : No coupled heat-conducting bedrock
+!                           (GHF imposed directly at the grounded ice base)
+!                       1 : Coupled heat-conducting bedrock
+!                           (GHF imposed at the base of the
+!                           thermal lithosphere layer of thickness H_R,
+!                           defined in the physical-parameter file)
 
 !-------- Treatment of Chasma Australis --------
 
@@ -952,19 +951,23 @@
 !                              time-slice output with all 3-d fields for
 !                              OUTPUT==3, in which case snapshots are written)
 
+#define DTIME_SER0 1.0d+05
+!                         Time step (in a) for writing of data to
+!                         the time-series files (scalar variables)
+
 #define DTIME_OUT0 0.0d0
-!                             Time step (in a) for writing of
-!                             time-slice data (only for OUTPUT==1,3)
+!                         Time step (in a) for writing of
+!                         time-slice data (only for OUTPUT==1,3)
 
 #define N_OUTPUT 1
-!                             Number of specified times for writing of
-!                             time-slice data (only for OUTPUT==2,3,
-!                             not more than 100)
+!                         Number of specified times for writing of
+!                         time-slice data (only for OUTPUT==2,3,
+!                         not more than 100)
 
 #define TIME_OUT0 (/ 0.0d0 /)
-!                             Times (in a) for writing of time-slice
-!                             data (only for OUTPUT==2,3, in increasing
-!                             order from #1 to #N_OUTPUT)
+!                         Times (in a) for writing of time-slice
+!                         data (only for OUTPUT==2,3, in increasing
+!                         order from #1 to #N_OUTPUT)
 
 !-------- Limiters etc. --------
 
