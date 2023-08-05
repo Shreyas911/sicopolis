@@ -363,10 +363,6 @@ buffer = 'Time-slice output no. '//ch_ndat//' of simulation ' &
 call check( nf90_put_att(ncid, NF90_GLOBAL, 'title', trim(buffer)), &
             thisroutine )
 
-call set_ch_institution(buffer)
-call check( nf90_put_att(ncid, NF90_GLOBAL, 'institution', trim(buffer)), &
-            thisroutine )
-
 buffer = 'SICOPOLIS Version '//VERSION
 call check( nf90_put_att(ncid, NF90_GLOBAL, 'source', trim(buffer)), &
             thisroutine )
@@ -378,8 +374,12 @@ buffer = ch_date(1:4)//'-'//ch_date(5:6)//'-'//ch_date(7:8)//' '// &
 call check( nf90_put_att(ncid, NF90_GLOBAL, 'history', trim(buffer)), &
             thisroutine )
 
-buffer = 'http://www.sicopolis.net/'
+call set_ch_website(buffer)
 call check( nf90_put_att(ncid, NF90_GLOBAL, 'references', trim(buffer)), &
+            thisroutine )
+
+call set_ch_institution(buffer)
+call check( nf90_put_att(ncid, NF90_GLOBAL, 'institution', trim(buffer)), &
             thisroutine )
 
 !  ------ Definition of the dimensions
@@ -5683,10 +5683,6 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
       call check( nf90_put_att(ncid(n), NF90_GLOBAL, 'title', trim(buffer)), &
                   thisroutine )
 
-      call set_ch_institution(buffer)
-      call check( nf90_put_att(ncid(n), NF90_GLOBAL, 'institution', trim(buffer)), &
-                  thisroutine )
-
       buffer = 'SICOPOLIS Version '//VERSION
       call check( nf90_put_att(ncid(n), NF90_GLOBAL, 'source', trim(buffer)), &
                   thisroutine )
@@ -5698,8 +5694,12 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
       call check( nf90_put_att(ncid(n), NF90_GLOBAL, 'history', trim(buffer)), &
                   thisroutine )
 
-      buffer = 'http://www.sicopolis.net/'
+      call set_ch_website(buffer)
       call check( nf90_put_att(ncid(n), NF90_GLOBAL, 'references', trim(buffer)), &
+                  thisroutine )
+
+      call set_ch_institution(buffer)
+      call check( nf90_put_att(ncid(n), NF90_GLOBAL, 'institution', trim(buffer)), &
                   thisroutine )
 
 !  ------ Definition of the dimensions
@@ -7260,11 +7260,6 @@ if (n_core >= 1) then
       call check( nf90_put_att(ncid, NF90_GLOBAL, 'title', trim(buffer)), &
                   thisroutine )
 
-      call set_ch_institution(buffer)
-      call check( nf90_put_att(ncid, NF90_GLOBAL, 'institution', &
-                               trim(buffer)), &
-                  thisroutine )
-
       buffer = 'SICOPOLIS Version '//VERSION
       call check( nf90_put_att(ncid, NF90_GLOBAL, 'source', trim(buffer)), &
                   thisroutine )
@@ -7276,8 +7271,13 @@ if (n_core >= 1) then
       call check( nf90_put_att(ncid, NF90_GLOBAL, 'history', trim(buffer)), &
                   thisroutine )
 
-      buffer = 'http://www.sicopolis.net/'
+      call set_ch_website(buffer)
       call check( nf90_put_att(ncid, NF90_GLOBAL, 'references', trim(buffer)), &
+                  thisroutine )
+
+      call set_ch_institution(buffer)
+      call check( nf90_put_att(ncid, NF90_GLOBAL, 'institution', &
+                               trim(buffer)), &
                   thisroutine )
 
 !  ------ Definition of the dimensions
@@ -8074,6 +8074,31 @@ end subroutine output5
   end subroutine set_cmode
 
 !-------------------------------------------------------------------------------
+!> Set the value of the website string ch_website.
+!<------------------------------------------------------------------------------
+  subroutine set_ch_website(ch_website)
+
+  implicit none
+
+  character(len=*), intent(out) :: ch_website
+
+  integer(i4b)       :: istat
+  character(len=256) :: ch_website_default, ch_value
+
+  ch_website_default = ' '
+
+  call get_environment_variable(name='SICO_WEBSITE', value=ch_value, &
+                                status=istat, trim_name=.true.)
+
+  if (istat /= 0) then
+    ch_website = ch_website_default
+  else
+     ch_website = trim(ch_value)
+  end if
+
+  end subroutine set_ch_website
+
+!-------------------------------------------------------------------------------
 !> Set the value of the institution string ch_institution.
 !<------------------------------------------------------------------------------
   subroutine set_ch_institution(ch_institution)
@@ -8091,7 +8116,7 @@ end subroutine output5
   call get_environment_variable(name='SICO_INSTITUTION', value=ch_value, &
                                 status=istat, trim_name=.true.)
 
-  if (istat /= 0) then 
+  if (istat /= 0) then
 
     ch_institution = ch_institution_default
 
