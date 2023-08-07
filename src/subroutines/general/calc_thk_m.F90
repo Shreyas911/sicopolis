@@ -55,7 +55,7 @@ module calc_thk_m
 #endif
   public :: calc_thk_init
   public :: calc_thk_sia_expl, calc_thk_sia_impl
-  public :: calc_thk_expl, calc_thk_impl
+  public :: calc_thk_expl
   public :: calc_thk_mask_update
   public :: account_mb_source
 contains
@@ -134,14 +134,13 @@ H_new  = H    ! will be overwritten later
 
   flag_solver_explicit = .true.
 
-#elif (CALCTHK==2 || CALCTHK==3 \
-       || CALCTHK==5 || CALCTHK==6)   /* implicit solver */
+#elif (CALCTHK==2)   /* implicit solver */
 
   flag_solver_explicit = .false.
 
 #else
 
-  errormsg = ' >>> calc_thk_init: CALCTHK must be between 1 and 6!'
+  errormsg = ' >>> calc_thk_init: CALCTHK must be 1, 2 or 4!'
   call error(errormsg)
 
 #endif
@@ -239,11 +238,7 @@ end subroutine calc_thk_sia_expl
 !<------------------------------------------------------------------------------
 subroutine calc_thk_sia_impl(time, dtime, dxi, deta, z_mar, mean_accum)
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
-use sico_maths_m, only : sor_sprs
-#else /* Tapenade */
 use sico_maths_m
-#endif /* Normal vs. Tapenade */
 
 #if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
   use calving_m
@@ -259,8 +254,6 @@ integer(i4b)                       :: i, j
 integer(i4b)                       :: k, nnz
 real(dp)                           :: azs2, azs3
 real(dp), dimension(0:JMAX,0:IMAX) :: czs2, czs3
-
-#if (CALCTHK==2)
 
 integer(i4b)                            :: ierr
 integer(i4b)                            :: iter
@@ -287,37 +280,6 @@ real(dp),             dimension(n_sprs) :: lgs_a_value_trim
 
 real(dp)                                :: eps_sor
 
-#elif (CALCTHK==3)
-
-#if !defined(ALLOW_TAPENADE) /* Normal */
-LIS_INTEGER                            :: ierr
-LIS_INTEGER                            :: iter
-LIS_INTEGER                            :: nc, nr
-LIS_INTEGER, parameter                 :: nmax   =    (IMAX+1)*(JMAX+1)
-LIS_INTEGER, parameter                 :: n_sprs = 10*(IMAX+1)*(JMAX+1)
-LIS_INTEGER, allocatable, dimension(:) :: lgs_a_ptr, lgs_a_index
-LIS_INTEGER, allocatable, dimension(:) :: lgs_a_diag_index
-LIS_MATRIX                             :: lgs_a
-LIS_VECTOR                             :: lgs_b, lgs_x
-LIS_SCALAR,  allocatable, dimension(:) :: lgs_a_value, lgs_b_value, lgs_x_value
-LIS_SOLVER                             :: solver
-character(len=256)                     :: ch_solver_set_option
-#else /* Tapenade */
-integer(i4b)                            :: nc, nr
-integer(i4b), parameter                 :: nmax   =    (IMAX+1)*(JMAX+1)
-integer(i4b), parameter                 :: n_sprs = 10*(IMAX+1)*(JMAX+1)
-real(dp),             dimension(n_sprs) :: lgs_a_index
-integer(i4b),         dimension(nmax+1) :: lgs_a_ptr
-integer(i4b),           dimension(nmax) :: lgs_a_diag_index
-integer(i4b),         dimension(n_sprs) :: lgs_a_index_trim
-real(dp),             dimension(n_sprs) :: lgs_a_value
-real(dp),               dimension(nmax) :: lgs_b_value
-real(dp),               dimension(nmax) :: lgs_x_value
-real(dp),             dimension(n_sprs) :: lgs_a_value_trim
-#endif /* Normal vs. Tapenade */
-
-#endif
-
 !-------- Abbreviations --------
 
 azs2 = dtime/(dxi*dxi)
@@ -342,8 +304,6 @@ end do
 
 !-------- Assembly of the system of linear equations
 !                     (matrix storage: compressed sparse row CSR) --------
-
-#if (CALCTHK==2 || CALCTHK==3)
 
 #if !defined(ALLOW_TAPENADE) /* Normal */
 allocate(lgs_a_value(n_sprs), lgs_a_index(n_sprs), lgs_a_ptr(nmax+1))
@@ -442,18 +402,8 @@ end do
 
 nnz = k   ! number of non-zero elements of the matrix
 
-#else
-
-errormsg = ' >>> calc_thk_sia_impl: CALCTHK must be either 2 or 3!'
-call error(errormsg)
-
-#endif
-
-!-------- Solution of the system of linear equations --------
-
-#if (CALCTHK==2)
-
-!  ------ Solution with the built-in SOR solver
+!-------- Solution of the system of linear equations
+!                                   (built-in SOR solver) --------
 
 #if !defined(ALLOW_TAPENADE) /* Normal */
 allocate(lgs_a_value_trim(nnz), lgs_a_index_trim(nnz))
@@ -490,88 +440,6 @@ end do
 deallocate(lgs_a_value_trim, lgs_a_index_trim, lgs_a_ptr)
 deallocate(lgs_a_diag_index, lgs_b_value, lgs_x_value)
 #endif /* Normal */
-
-#elif (CALCTHK==3)
-
-#if !defined(ALLOW_TAPENADE) /* Normal */
-  
-  !  ------ Settings for Lis
-  
-  call lis_matrix_create(LIS_COMM_WORLD, lgs_a, ierr)
-  call lis_vector_create(LIS_COMM_WORLD, lgs_b, ierr)
-  call lis_vector_create(LIS_COMM_WORLD, lgs_x, ierr)
-  
-  call lis_matrix_set_size(lgs_a, 0, nmax, ierr)
-  call lis_vector_set_size(lgs_b, 0, nmax, ierr)
-  call lis_vector_set_size(lgs_x, 0, nmax, ierr)
-  
-  do nr=1, nmax
-  
-     do nc=lgs_a_ptr(nr), lgs_a_ptr(nr+1)-1
-        call lis_matrix_set_value(LIS_INS_VALUE, nr, lgs_a_index(nc), &
-                                                 lgs_a_value(nc), lgs_a, ierr)
-     end do
-  
-     call lis_vector_set_value(LIS_INS_VALUE, nr, lgs_b_value(nr), lgs_b, ierr)
-     call lis_vector_set_value(LIS_INS_VALUE, nr, lgs_x_value(nr), lgs_x, ierr)
-  
-  end do
-
-  call lis_matrix_set_type(lgs_a, LIS_MATRIX_CSR, ierr)
-  call lis_matrix_assemble(lgs_a, ierr)
-  
-  !  ------ Solution with Lis
-  
-  call lis_solver_create(solver, ierr)
-  
-  ch_solver_set_option = '-i bicg -p ilu '// &
-                         '-maxiter 1000 -tol 1.0e-12 -initx_zeros false'
-  
-  call lis_solver_set_option(trim(ch_solver_set_option), solver, ierr)
-  call CHKERR(ierr)
-  
-  call lis_solve(lgs_a, lgs_b, lgs_x, solver, ierr)
-  call CHKERR(ierr)
-  
-  call lis_solver_get_iter(solver, iter, ierr)
-  write(6,'(10x,a,i0)') 'calc_thk_sia_impl: iter = ', iter
-  
-  lgs_x_value = 0.0_dp
-  call lis_vector_gather(lgs_x, lgs_x_value, ierr)
-  call lis_matrix_destroy(lgs_a, ierr)
-  call lis_vector_destroy(lgs_b, ierr)
-  call lis_vector_destroy(lgs_x, ierr)
-  call lis_solver_destroy(solver, ierr)
-
-  do nr=1, nmax
-    i = n2i(nr)
-    j = n2j(nr)
-    zs_new(j,i) = lgs_x_value(nr)
-  end do
-  
-  deallocate(lgs_a_value, lgs_a_index, lgs_a_ptr)
-  deallocate(lgs_a_diag_index, lgs_b_value, lgs_x_value)
-  
-#else /* Tapenade */
-
-  do k=1, nnz   ! relocate matrix to trimmed arrays
-     lgs_a_value_trim(k) = lgs_a_value(k)
-     lgs_a_index_trim(k) = int(lgs_a_index(k))
-  end do
-
-  call sico_lis_solver(nmax, nnz, &
-                       lgs_a_ptr, lgs_a_index_trim, &
-                       lgs_a_value_trim, lgs_b_value, lgs_x_value)
-
-  do nr=1, nmax
-     i = n2i(nr)
-     j = n2j(nr)
-     zs_new(j,i) = lgs_x_value(nr)
-  end do
-
-#endif /* Normal vs. Tapenade */
-
-#endif
 
 !-------- Ice thickness --------
 
@@ -734,415 +602,6 @@ call calving_retreat_mask(time, dtime)
 #endif
 
 end subroutine calc_thk_expl
-
-!-------------------------------------------------------------------------------
-!> Over-implicit solver for the general ice thickness equation.
-!<------------------------------------------------------------------------------
-subroutine calc_thk_impl(time, dtime, dxi, deta, z_mar, mean_accum)
-
-#if !defined(ALLOW_TAPENADE) /* Normal */
-#if (CALCTHK==5)
-use sico_maths_m, only : sor_sprs
-#elif (CALCTHK==6)
-use sico_maths_m, only : sor_sprs, sico_lis_solver
-#endif
-#else /* Tapenade */
-use sico_maths_m
-#endif /* Normal vs. Tapenade */
-
-#if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
-  use calving_m
-#endif
-
-implicit none
-
-real(dp), intent(in) :: time, dtime, dxi, deta
-real(dp), intent(in) :: z_mar
-real(dp), intent(in) :: mean_accum
-
-integer(i4b)                       :: i, j
-integer(i4b)                       :: k, nnz
-real(dp), dimension(0:JMAX,0:IMAX) :: dt_darea
-real(dp), dimension(0:JMAX,0:IMAX) :: vx_m_1, vx_m_2, vy_m_1, vy_m_2
-real(dp), dimension(0:JMAX,0:IMAX) :: upH_x_1, upH_x_2, upH_y_1, upH_y_2
-real(dp), dimension(0:JMAX,0:IMAX) :: sq_g22_x_1, sq_g22_x_2
-real(dp), dimension(0:JMAX,0:IMAX) :: sq_g11_y_1, sq_g11_y_2
-
-#if (CALCTHK==5)
-
-integer(i4b)                            :: ierr
-integer(i4b)                            :: iter
-integer(i4b)                            :: nc, nr
-integer(i4b), parameter                 :: nmax   =    (IMAX+1)*(JMAX+1)
-integer(i4b), parameter                 :: n_sprs = 10*(IMAX+1)*(JMAX+1)
-
-#if !defined(ALLOW_TAPENADE) /* Normal */
-integer(i4b), allocatable, dimension(:) :: lgs_a_ptr, lgs_a_index
-integer(i4b), allocatable, dimension(:) :: lgs_a_diag_index
-integer(i4b), allocatable, dimension(:) :: lgs_a_index_trim
-real(dp),     allocatable, dimension(:) :: lgs_a_value, lgs_b_value, lgs_x_value
-real(dp),     allocatable, dimension(:) :: lgs_a_value_trim
-#else /* Tapenade */
-real(dp),             dimension(n_sprs) :: lgs_a_index
-integer(i4b),         dimension(nmax+1) :: lgs_a_ptr
-integer(i4b),           dimension(nmax) :: lgs_a_diag_index
-integer(i4b),         dimension(n_sprs) :: lgs_a_index_trim
-real(dp),             dimension(n_sprs) :: lgs_a_value
-real(dp),               dimension(nmax) :: lgs_b_value
-real(dp),               dimension(nmax) :: lgs_x_value
-real(dp),             dimension(n_sprs) :: lgs_a_value_trim
-#endif /* Normal vs. Tapenade */
-
-real(dp)                                :: eps_sor
-
-#elif (CALCTHK==6)
-
-#if !defined(ALLOW_TAPENADE) /* Normal */
-LIS_INTEGER                            :: ierr
-LIS_INTEGER                            :: iter
-LIS_INTEGER                            :: nc, nr
-LIS_INTEGER, parameter                 :: nmax   =    (IMAX+1)*(JMAX+1)
-LIS_INTEGER, parameter                 :: n_sprs = 10*(IMAX+1)*(JMAX+1)
-LIS_INTEGER, allocatable, dimension(:) :: lgs_a_ptr, lgs_a_index
-LIS_INTEGER, allocatable, dimension(:) :: lgs_a_diag_index
-LIS_MATRIX                             :: lgs_a
-LIS_VECTOR                             :: lgs_b, lgs_x
-LIS_SCALAR,  allocatable, dimension(:) :: lgs_a_value, lgs_b_value, lgs_x_value
-LIS_SOLVER                             :: solver
-character(len=256)                     :: ch_solver_set_option
-#else /* Tapenade */
-integer(i4b)                            :: nc, nr
-integer(i4b), parameter                 :: nmax   =    (IMAX+1)*(JMAX+1)
-integer(i4b), parameter                 :: n_sprs = 10*(IMAX+1)*(JMAX+1)
-real(dp),             dimension(n_sprs) :: lgs_a_index
-integer(i4b),         dimension(nmax+1) :: lgs_a_ptr
-integer(i4b),           dimension(nmax) :: lgs_a_diag_index
-integer(i4b),         dimension(n_sprs) :: lgs_a_index_trim
-real(dp),             dimension(n_sprs) :: lgs_a_value
-real(dp),               dimension(nmax) :: lgs_b_value
-real(dp),               dimension(nmax) :: lgs_x_value
-real(dp),             dimension(n_sprs) :: lgs_a_value_trim
-#endif /* Normal vs. Tapenade */
-
-#endif
-
-!-------- Abbreviations --------
-
-dt_darea = dtime/cell_area
-
-do i=0, IMAX
-do j=0, JMAX
-
-   if (flag_inner_point(j,i)) then
-
-      vx_m_1(j,i) = vx_m(j,i-1)
-      vx_m_2(j,i) = vx_m(j,i)
-      vy_m_1(j,i) = vy_m(j-1,i)
-      vy_m_2(j,i) = vy_m(j,i)
-
-      if (vx_m_1(j,i) >= 0.0_dp) then
-         upH_x_1(j,i) = H(j,i-1)
-      else
-         upH_x_1(j,i) = H(j,i)
-      end if
-
-      if (vx_m_2(j,i) >= 0.0_dp) then
-         upH_x_2(j,i) = H(j,i)
-      else
-         upH_x_2(j,i) = H(j,i+1)
-      end if
-
-      if (vy_m_1(j,i) >= 0.0_dp) then
-         upH_y_1(j,i) = H(j-1,i)
-      else
-         upH_y_1(j,i) = H(j,i)
-      end if
-
-      if (vy_m_2(j,i) >= 0.0_dp) then
-         upH_y_2(j,i) = H(j,i)
-      else
-         upH_y_2(j,i) = H(j+1,i)
-      end if
-
-      sq_g22_x_1(j,i) = sq_g22_sgx(j,i-1)
-      sq_g22_x_2(j,i) = sq_g22_sgx(j,i)
-      sq_g11_y_1(j,i) = sq_g11_sgy(j-1,i)
-      sq_g11_y_2(j,i) = sq_g11_sgy(j,i)
-
-   else   ! .not.(flag_inner_point(j,i))
-
-      vx_m_1(j,i) = 0.0_dp
-      vx_m_2(j,i) = 0.0_dp
-      vy_m_1(j,i) = 0.0_dp
-      vy_m_2(j,i) = 0.0_dp
-
-      upH_x_1(j,i) = 0.0_dp
-      upH_x_2(j,i) = 0.0_dp
-      upH_y_1(j,i) = 0.0_dp
-      upH_y_2(j,i) = 0.0_dp
-
-      sq_g22_x_1(j,i) = 0.0_dp
-      sq_g22_x_2(j,i) = 0.0_dp
-      sq_g11_y_1(j,i) = 0.0_dp
-      sq_g11_y_2(j,i) = 0.0_dp
-
-   end if
-
-end do
-end do
-
-!-------- Assembly of the system of linear equations
-!                     (matrix storage: compressed sparse row CSR) --------
-
-#if (CALCTHK==5 || CALCTHK==6)
-
-#if !defined(ALLOW_TAPENADE) /* Normal */
-allocate(lgs_a_value(n_sprs), lgs_a_index(n_sprs), lgs_a_ptr(nmax+1))
-allocate(lgs_a_diag_index(nmax), lgs_b_value(nmax), lgs_x_value(nmax))
-#endif /* Normal */
-
-lgs_a_value = 0.0_dp
-#if !defined(ALLOW_TAPENADE) /* Normal */
-lgs_a_index = 0
-#else /* Tapenade */
-lgs_a_index = 0.0_dp
-#endif /* Normal vs. Tapenade */
-lgs_a_ptr   = 0
-
-lgs_b_value = 0.0_dp
-lgs_x_value = 0.0_dp
-
-lgs_a_ptr(1) = 1
-
-k = 0
-
-do nr=1, nmax   ! loop over rows
-
-   i = n2i(nr)
-   j = n2j(nr)
-
-   if (flag_inner_point(j,i)) then   ! inner point
-
-      k=k+1 ; nc=ij2n(j,i-1) ; lgs_a_index(k)=nc   ! for H(j,i-1)
-      if (vx_m_1(j,i) > 0.0_dp) &
-         lgs_a_value(k) = -dt_darea(j,i)*vx_m_1(j,i) &
-                                        *sq_g22_x_1(j,i)*deta*OVI_WEIGHT
-
-      k=k+1 ; nc=ij2n(j-1,i) ; lgs_a_index(k)=nc   ! for H(j-1,i)
-      if (vy_m_1(j,i) > 0.0_dp) &
-         lgs_a_value(k) = -dt_darea(j,i)*vy_m_1(j,i) &
-                                        *sq_g11_y_1(j,i)*dxi*OVI_WEIGHT
-
-      k=k+1 ; lgs_a_index(k)=nr ; lgs_a_diag_index(nr)=k  ! for H(j,i)
-      lgs_a_value(k) = 1.0_dp                             ! (diagonal element)
-      if (vy_m_1(j,i) < 0.0_dp) &
-         lgs_a_value(k) = lgs_a_value(k) &
-                          - dt_darea(j,i)*vy_m_1(j,i) &
-                                         *sq_g11_y_1(j,i)*dxi*OVI_WEIGHT
-      if (vx_m_1(j,i) < 0.0_dp) &
-         lgs_a_value(k) = lgs_a_value(k) &
-                          - dt_darea(j,i)*vx_m_1(j,i) &
-                                         *sq_g22_x_1(j,i)*deta*OVI_WEIGHT
-      if (vx_m_2(j,i) > 0.0_dp) &
-         lgs_a_value(k) = lgs_a_value(k) &
-                          + dt_darea(j,i)*vx_m_2(j,i) &
-                                         *sq_g22_x_2(j,i)*deta*OVI_WEIGHT
-      if (vy_m_2(j,i) > 0.0_dp) &
-         lgs_a_value(k) = lgs_a_value(k) &
-                          + dt_darea(j,i)*vy_m_2(j,i) &
-                                         *sq_g11_y_2(j,i)*dxi*OVI_WEIGHT
-
-      k=k+1 ; nc=ij2n(j+1,i) ; lgs_a_index(k)=nc   ! for H(j+1,i)
-      if (vy_m_2(j,i) < 0.0_dp) &
-         lgs_a_value(k) = dt_darea(j,i)*vy_m_2(j,i) &
-                                       *sq_g11_y_2(j,i)*dxi*OVI_WEIGHT
-
-      k=k+1 ; nc=ij2n(j,i+1) ; lgs_a_index(k)=nc   ! for H(j,i+1)
-      if (vx_m_2(j,i) < 0.0_dp) &
-         lgs_a_value(k) = dt_darea(j,i)*vx_m_2(j,i) &
-                                       *sq_g22_x_2(j,i)*deta*OVI_WEIGHT
-
-      lgs_b_value(nr) = H(j,i) &
-                        +dtime*mb_source(j,i) &
-                        -(1.0_dp-OVI_WEIGHT) &
-                           * dt_darea(j,i) &
-                             * (  ( vx_m_2(j,i)*upH_x_2(j,i) &
-                                               *sq_g22_x_2(j,i)*deta   &
-                                   -vx_m_1(j,i)*upH_x_1(j,i) &
-                                               *sq_g22_x_1(j,i)*deta ) &
-                                + ( vy_m_2(j,i)*upH_y_2(j,i) &
-                                               *sq_g11_y_2(j,i)*dxi    &
-                                   -vy_m_1(j,i)*upH_y_1(j,i) &
-                                               *sq_g11_y_1(j,i)*dxi  ) )
-                                                          ! right-hand side
-
-   else   ! zero-thickness boundary condition
-
-      k = k+1
-      lgs_a_value(k)       = 1.0_dp   ! diagonal element only
-      lgs_a_diag_index(nr) = k
-      lgs_a_index(k)       = nr
-      lgs_b_value(nr)      = 0.0_dp
-
-   end if
-
-   lgs_x_value(nr) = H(j,i)   ! old ice thickness,
-                              ! initial guess for solution vector
-
-   lgs_a_ptr(nr+1) = k+1   ! row is completed, store index to next row
-
-end do
-
-nnz = k   ! number of non-zero elements of the matrix
-
-#else
-
-errormsg = ' >>> calc_thk_impl: CALCTHK must be either 5 or 6!'
-call error(errormsg)
-
-#endif
-
-!-------- Solution of the system of linear equations --------
-
-#if (CALCTHK==5)
-
-!  ------ Solution with the built-in SOR solver
-
-#if !defined(ALLOW_TAPENADE) /* Normal */
-allocate(lgs_a_value_trim(nnz), lgs_a_index_trim(nnz))
-#endif /* Normal */
-
-do k=1, nnz   ! relocate matrix to trimmed arrays
-   lgs_a_value_trim(k) = lgs_a_value(k)
-#if !defined(ALLOW_TAPENADE) /* Normal */
-   lgs_a_index_trim(k) = lgs_a_index(k)
-#else /* Tapenade */
-   lgs_a_index_trim(k) = int(lgs_a_index(k))
-#endif /* Normal vs. Tapenade */
-end do
-
-#if !defined(ALLOW_TAPENADE) /* Normal */
-deallocate(lgs_a_value, lgs_a_index)
-#endif /* Normal */
-
-eps_sor = 1.0e-05_dp*mean_accum*dtime   ! convergence parameter
-
-call sor_sprs(lgs_a_value_trim, &
-              lgs_a_index_trim, lgs_a_diag_index, lgs_a_ptr, &
-              lgs_b_value, &
-              nnz, nmax, &
-              OMEGA_SOR, eps_sor, lgs_x_value, ierr)
-
-do nr=1, nmax
-   i = n2i(nr)
-   j = n2j(nr)
-   H_new(j,i) = lgs_x_value(nr)
-end do
-
-#if !defined(ALLOW_TAPENADE) /* Normal */
-deallocate(lgs_a_value_trim, lgs_a_index_trim, lgs_a_ptr)
-deallocate(lgs_a_diag_index, lgs_b_value, lgs_x_value)
-#endif /* Normal */
-
-#elif (CALCTHK==6)
-
-#if !defined(ALLOW_TAPENADE) /* Normal */
-
-!  ------ Settings for Lis
-
-call lis_matrix_create(LIS_COMM_WORLD, lgs_a, ierr)
-call lis_vector_create(LIS_COMM_WORLD, lgs_b, ierr)
-call lis_vector_create(LIS_COMM_WORLD, lgs_x, ierr)
-
-call lis_matrix_set_size(lgs_a, 0, nmax, ierr)
-call lis_vector_set_size(lgs_b, 0, nmax, ierr)
-call lis_vector_set_size(lgs_x, 0, nmax, ierr)
-
-do nr=1, nmax
-
-   do nc=lgs_a_ptr(nr), lgs_a_ptr(nr+1)-1
-      call lis_matrix_set_value(LIS_INS_VALUE, nr, lgs_a_index(nc), &
-                                               lgs_a_value(nc), lgs_a, ierr)
-   end do
-
-   call lis_vector_set_value(LIS_INS_VALUE, nr, lgs_b_value(nr), lgs_b, ierr)
-   call lis_vector_set_value(LIS_INS_VALUE, nr, lgs_x_value(nr), lgs_x, ierr)
-
-end do
-
-call lis_matrix_set_type(lgs_a, LIS_MATRIX_CSR, ierr)
-call lis_matrix_assemble(lgs_a, ierr)
-
-!  ------ Solution with Lis
-
-call lis_solver_create(solver, ierr)
-
-ch_solver_set_option = '-i bicg -p ilu '// &
-                       '-maxiter 1000 -tol 1.0e-12 -initx_zeros false'
-
-call lis_solver_set_option(trim(ch_solver_set_option), solver, ierr)
-call CHKERR(ierr)
-
-call lis_solve(lgs_a, lgs_b, lgs_x, solver, ierr)
-call CHKERR(ierr)
-
-call lis_solver_get_iter(solver, iter, ierr)
-write(6,'(10x,a,i0)') 'calc_thk_impl: iter = ', iter
-
-lgs_x_value = 0.0_dp
-call lis_vector_gather(lgs_x, lgs_x_value, ierr)
-call lis_matrix_destroy(lgs_a, ierr)
-call lis_vector_destroy(lgs_b, ierr)
-call lis_vector_destroy(lgs_x, ierr)
-call lis_solver_destroy(solver, ierr)
-
-do nr=1, nmax
-   i = n2i(nr)
-   j = n2j(nr)
-   H_new(j,i) = lgs_x_value(nr)
-end do
-
-deallocate(lgs_a_value, lgs_a_index, lgs_a_ptr)
-deallocate(lgs_a_diag_index, lgs_b_value, lgs_x_value)
-
-#else /* Tapenade */
-
-do k=1, nnz   ! relocate matrix to trimmed arrays
-   lgs_a_value_trim(k) = lgs_a_value(k)
-#if !defined(ALLOW_TAPENADE) /* Normal */
-   lgs_a_index_trim(k) = lgs_a_index(k)
-#else /* Tapenade */
-   lgs_a_index_trim(k) = int(lgs_a_index(k))
-#endif /* Normal vs. Tapenade */
-end do
-call sico_lis_solver(nmax, nnz, &
-                           lgs_a_ptr, lgs_a_index_trim, &
-                           lgs_a_value_trim, lgs_b_value, lgs_x_value)
-do nr=1, nmax
-   i = n2i(nr)
-   j = n2j(nr)
-   H_new(j,i) = lgs_x_value(nr)
-end do
-
-#endif /* Normal vs. Tapenade */
-
-#endif
-
-!-------- Applying the source term --------
-
-call apply_mb_source(dtime, z_mar)
-
-!-------- Adjusting the ice thickness, if needed --------
-
-call thk_adjust(time, dtime)
-
-!-------- Calving due to prescribed retreat mask --------
-
-#if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
-call calving_retreat_mask(time, dtime)
-#endif
-
-end subroutine calc_thk_impl
 
 !-------------------------------------------------------------------------------
 !> Ice thickness evolution due to the source term (surface mass balance,
