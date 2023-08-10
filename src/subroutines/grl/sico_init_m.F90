@@ -2480,13 +2480,17 @@ else if (forcing_flag == 2) then
 end if
 
 !  ------ Time-series file for deep boreholes
-#if !defined(ALLOW_TAPENADE)
+
 n_core = 7   ! GRIP, GISP2, Dye3, Camp Century (CC),
              ! NorthGRIP (NGRIP), NEEM, EastGRIP (EGRIP)
 
-allocate(lambda_core(n_core), phi_core(n_core), &
-         x_core(n_core), y_core(n_core), ch_core(n_core))
-#endif
+if (n_core > n_core_max) then
+   errormsg = ' >>> sico_init: n_core <= n_core_max required!' &
+            //         end_of_line &
+            //'        Increase value of n_core_max in sico_variables_m!'
+   call error(errormsg)
+end if
+
 ch_core(1)     = 'GRIP'
 phi_core(1)    =  72.58722_dp *deg2rad   ! Geographical position of GRIP,
 lambda_core(1) = -37.64222_dp *deg2rad   ! conversion deg -> rad

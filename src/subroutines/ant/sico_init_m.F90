@@ -2595,12 +2595,14 @@ print *, '                adjoint applications!'
 
 !  ------ Time-series file for deep boreholes
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
-
 n_core = 6   ! Vostok, Dome A, Dome C, Dome F, Kohnen, Byrd
 
-allocate(lambda_core(n_core), phi_core(n_core), &
-         x_core(n_core), y_core(n_core), ch_core(n_core))
+if (n_core > n_core_max) then
+   errormsg = ' >>> sico_init: n_core <= n_core_max required!' &
+            //         end_of_line &
+            //'        Increase value of n_core_max in sico_variables_m!'
+   call error(errormsg)
+end if
 
 ch_core(1)     = 'Vostok'
 phi_core(1)    = -78.467_dp *deg2rad    ! Geographical position of Vostok,
@@ -2651,8 +2653,6 @@ x_core = lambda_core
 y_core = phi_core
 
 #endif
-
-#endif /* Normal (Tapenade: No core data for adjoint) */
 
 filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.core'
 

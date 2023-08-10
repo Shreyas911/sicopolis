@@ -7042,9 +7042,8 @@ real(dp), dimension(:), allocatable :: H_core, temp_b_core, &
                                        vx_s_core, vy_s_core, vh_s_core, &
                                        Rx_b_core, Ry_b_core, R_b_core, &
                                        bmb_core
-#if defined(ALLOW_TAPENADE)
 real(dp), dimension(:), allocatable :: arg1
-#endif
+
 integer(i4b)       :: cmode
 integer(i4b)       :: n_deflate_level
 logical            :: flag_shuffle
@@ -7072,9 +7071,8 @@ if (n_core >= 1) then
             vx_s_core(n_core), vy_s_core(n_core), vh_s_core(n_core), &
             Rx_b_core(n_core), Ry_b_core(n_core), R_b_core(n_core), &
             bmb_core(n_core))
-#if defined(ALLOW_TAPENADE)
-    allocate(arg1(n_core))
-#endif
+   allocate(arg1(n_core))
+
 !-------- Determination of ice-core data --------
 
    do n=1, n_core
@@ -7641,71 +7639,51 @@ if (n_core >= 1) then
    if ((forcing_flag == 1).or.(forcing_flag == 3)) then
 
       call check( nf90_inq_varid(ncid, 'delta_ts', ncv), thisroutine )
-      call check( nf90_put_var(ncid, ncv, real(delta_ts,sp), &
+      call check( nf90_put_var(ncid, ncv, delta_ts, &
                                start=nc1cor), thisroutine )
 
    else if (forcing_flag == 2) then
 
       call check( nf90_inq_varid(ncid, 'glac_index', ncv), thisroutine )
-      call check( nf90_put_var(ncid, ncv, real(glac_index,sp), &
+      call check( nf90_put_var(ncid, ncv, glac_index, &
                                start=nc1cor), thisroutine )
 
    end if
 
    call check( nf90_inq_varid(ncid, 'z_sl_mean', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(z_sl_mean,sp), &
+   call check( nf90_put_var(ncid, ncv, z_sl_mean, &
                             start=nc1cor), thisroutine )
 
-#if !defined(ALLOW_TAPENADE)
    call check( nf90_inq_varid(ncid, 'H_core', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(H_core,sp), &
+   arg1 = H_core
+   call check( nf90_put_var(ncid, ncv, arg1, &
                             start=nc2cor, count=nc2cnt), thisroutine )
 
    call check( nf90_inq_varid(ncid, 'vh_b_core', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(vh_b_core,sp), &
+   arg1 = vh_b_core
+   call check( nf90_put_var(ncid, ncv, arg1, &
                             start=nc2cor, count=nc2cnt), thisroutine )
 
    call check( nf90_inq_varid(ncid, 'vh_s_core', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(vh_s_core,sp), &
+   arg1 = vh_s_core
+   call check( nf90_put_var(ncid, ncv, arg1, &
                             start=nc2cor, count=nc2cnt), thisroutine )
 
    call check( nf90_inq_varid(ncid, 'temp_b_core', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(temp_b_core,sp), &
+   arg1 = temp_b_core
+   call check( nf90_put_var(ncid, ncv, arg1, &
                             start=nc2cor, count=nc2cnt), thisroutine )
 
    call check( nf90_inq_varid(ncid, 'R_b_core', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(R_b_core,sp), &
+   arg1 = R_b_core
+   call check( nf90_put_var(ncid, ncv, arg1, &
                             start=nc2cor, count=nc2cnt), thisroutine )
 
    call check( nf90_inq_varid(ncid, 'bmb_core', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, real(bmb_core,sp), &
-                            start=nc2cor, count=nc2cnt), thisroutine )
-#else
-   call check( nf90_inq_varid(ncid, 'H_core', ncv), thisroutine )
-   arg1 = real(H_core,sp)
+   arg1 = bmb_core
    call check( nf90_put_var(ncid, ncv, arg1, &
                             start=nc2cor, count=nc2cnt), thisroutine )
-   arg1 = real(vh_b_core,sp)
-   call check( nf90_inq_varid(ncid, 'vh_b_core', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, arg1, &
-                            start=nc2cor, count=nc2cnt), thisroutine )
-   arg1 = real(vh_s_core,sp)
-   call check( nf90_inq_varid(ncid, 'vh_s_core', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, arg1, &
-                            start=nc2cor, count=nc2cnt), thisroutine )
-   arg1 = real(temp_b_core,sp)
-   call check( nf90_inq_varid(ncid, 'temp_b_core', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, arg1, &
-                            start=nc2cor, count=nc2cnt), thisroutine )
-   arg1 = real(R_b_core,sp)
-   call check( nf90_inq_varid(ncid, 'R_b_core', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, arg1, &
-                            start=nc2cor, count=nc2cnt), thisroutine )
-   arg1 = real(bmb_core,sp)
-   call check( nf90_inq_varid(ncid, 'bmb_core', ncv), thisroutine )
-   call check( nf90_put_var(ncid, ncv, arg1, &
-                            start=nc2cor, count=nc2cnt), thisroutine )
-#endif
+
 !  ------ Syncing NetCDF file (every 100th time)
 
    n_sync = 100
@@ -7719,10 +7697,7 @@ if (n_core >= 1) then
               temp_b_core, &
               Rx_b_core, Ry_b_core, R_b_core, &
               bmb_core)
-
-#if defined(ALLOW_TAPENADE)
-    deallocate(arg1)
-#endif
+   deallocate(arg1)
 
 !!! else   ! (n_core == 0 -> do nothing)
 !!!

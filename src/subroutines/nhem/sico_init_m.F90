@@ -1835,6 +1835,13 @@ end if
 
 n_core = 0   ! No boreholes defined
 
+if (n_core > n_core_max) then
+   errormsg = ' >>> sico_init: n_core <= n_core_max required!' &
+            //         end_of_line &
+            //'        Increase value of n_core_max in sico_variables_m!'
+   call error(errormsg)
+end if
+
 filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.core'
 
 open(14, iostat=ios, file=trim(filename_with_path), status='new')

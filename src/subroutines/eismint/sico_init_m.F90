@@ -1648,8 +1648,12 @@ write(12,1103)
 
 n_core = 2   ! central dome, position halfway to coast
 
-allocate(lambda_core(n_core), phi_core(n_core), &
-         x_core(n_core), y_core(n_core), ch_core(n_core))
+if (n_core > n_core_max) then
+   errormsg = ' >>> sico_init: n_core <= n_core_max required!' &
+            //         end_of_line &
+            //'        Increase value of n_core_max in sico_variables_m!'
+   call error(errormsg)
+end if
 
 ch_core(1)     = 'P1'
 lambda_core(1) = 0.0_dp   ! dummy
