@@ -75,9 +75,6 @@ contains
   close(unit=48, status='keep')
   close(unit=49, status='keep')
   close(unit=50, status='keep')
-#if !defined(ALLOW_TAPENADE)
-  deallocate(lambda_surf, phi_surf, x_surf, y_surf)
-#endif
 #endif
 
 #if (defined(XYZ))

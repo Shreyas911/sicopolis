@@ -7788,37 +7788,37 @@ do n=1, n_surf
 
 ! ------ Surface velocities
 
-      field = vx_s_g
-      call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
-                    vx_surf(n), flag_in_domain)
+   field = vx_s_g
+   call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                 vx_surf(n), flag_in_domain)
 
-      field = vy_s_g
-      call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
-                    vy_surf(n), flag_in_domain)
+   field = vy_s_g
+   call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                 vy_surf(n), flag_in_domain)
 
-      field = vz_s
-      call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
-                    vz_surf(n), flag_in_domain)
+   field = vz_s
+   call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                 vz_surf(n), flag_in_domain)
 
 ! ------ Basal velocities
 
-      field = vx_b_g
-      call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
-                    vx_base(n), flag_in_domain)
+   field = vx_b_g
+   call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                 vx_base(n), flag_in_domain)
 
-      field = vy_b_g
-      call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
-                    vy_base(n), flag_in_domain)
+   field = vy_b_g
+   call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                 vy_base(n), flag_in_domain)
 
-      field = vz_b
-      call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
-                    vz_base(n), flag_in_domain)
+   field = vz_b
+   call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                 vz_base(n), flag_in_domain)
 
 ! ------ Basal temperature relative to pressure melting point
 
-      field = temph_b
-      call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
-                    temp_base_pmp(n), flag_in_domain)
+   field = temph_b
+   call borehole(field, x_surf(n), y_surf(n), dxi, deta, 'grid', &
+                 temp_base_pmp(n), flag_in_domain)
 
 end do
 
@@ -7917,7 +7917,7 @@ n=n_surf
 deallocate(zl_surf, zs_surf, accum_surf, as_perp_surf, &
            snowfall_surf, rainfall_surf, runoff_surf, &
 	   vx_surf, vy_surf, vz_surf, &
-	   vx_base, vy_base, vz_base,temp_base_pmp)
+	   vx_base, vy_base, vz_base, temp_base_pmp)
 
 end subroutine output5
 

@@ -1957,7 +1957,7 @@ write(14,'(1x,a)') '---------------------'
 write(14,'(1x,a)') 'No boreholes defined.'
 write(14,'(1x,a)') '---------------------'
 
-!  ------ Time-series file for 20 mass balance stakes
+!  ------ Time-series file for mass balance stakes etc.
 
 #if (WRITE_SER_FILE_STAKES>0)
 
@@ -1965,10 +1965,14 @@ n_surf = 163   ! 19 mass balance stakes + 18 cores (Pinglot)
                ! 10 points on flowlines (Duvebreen & B3)
 	       ! 116 points along ELA
 
-allocate(lambda_surf(n_surf), phi_surf(n_surf), &
-         x_surf(n_surf), y_surf(n_surf))
+if (n_surf > n_surf_max) then
+   errormsg = ' >>> sico_init: n_surf <= n_surf_max required!' &
+            //         end_of_line &
+            //'        Increase value of n_surf_max in sico_vars_m!'
+   call error(errormsg)
+end if
 
-!%%%%%%%%%%%%%%     mass balance stakes     %%%%%%%%%%%%%%%%%%%%%%
+!    ---- Mass balance stakes
 
 phi_surf(1)    =  79.8322_dp *deg2rad    ! Geographical position
 lambda_surf(1) =  24.0043_dp *deg2rad    ! at 79.8322N, 24.0043E
@@ -2027,7 +2031,7 @@ lambda_surf(18) =  26.1354_dp *deg2rad   ! at 79.8499N, 26.1354E
 phi_surf(19)    =  79.8499_dp *deg2rad   ! Geographical position
 lambda_surf(19) =  25.7261_dp *deg2rad   ! at 79.8499N, 25.7261E
 
-!%%%%%%%%%%%%%%     Pinglot's shallow cores     %%%%%%%%%%%%%%%%%%%%%%
+!    ---- Pinglot's shallow cores
 
 phi_surf(20)    =  79.833333_dp *deg2rad    ! Geographical position
 lambda_surf(20) =  24.935833_dp *deg2rad    ! at 79.833333N, 24.935833E
@@ -2083,7 +2087,7 @@ lambda_surf(36) =  25.788611_dp *deg2rad    ! at 79.847778N, 25.788611E
 phi_surf(37)    =  79.830000_dp *deg2rad    ! Geographical position
 lambda_surf(37) =  24.001389_dp *deg2rad    ! at 79.830000N, 24.001389E
 
-!%%%%%%%%%%%%%%     flowline points     %%%%%%%%%%%%%%%%%%%%%%
+!    ---- Flowline points
 
 phi_surf(38)    =  80.1427268586056_dp *deg2rad    ! Geographical position of
 lambda_surf(38) =  23.9534492294493_dp *deg2rad    ! Duve-1
@@ -2115,7 +2119,7 @@ lambda_surf(46) =  24.8934874838598_dp *deg2rad    ! B3-4
 phi_surf(47)    =  79.5275754154375_dp *deg2rad    ! Geographical position of
 lambda_surf(47) =  24.7125320718015_dp *deg2rad    ! B3-5
 
-!%%%%%%%% basin controll points on ELA (N:450m, S:300m)  %%%%%%%%%%%%%%%%
+!    ---- Basin control points on ELA (N:450m, S:300m)
 
 phi_surf(48)    =  79.6232572730302_dp *deg2rad    ! Geographical position of
 lambda_surf(48) =  22.4297425686265_dp *deg2rad    ! Eton-1
@@ -2491,7 +2495,7 @@ y_surf = phi_surf
 
 #endif
 
-!---------open files for writing the different fields at these locations
+!    ---- Open files for writing the different fields at these locations
 
 filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'_zb.dat'
 
@@ -2506,7 +2510,7 @@ end if
    write(41,4002)
 
    4001 format('%Time series of the bedrock for 163 surface points')
-   4002 format('%------------------------------------------------')
+   4002 format('%-------------------------------------------------')
 
 filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'_zs.dat'
 
