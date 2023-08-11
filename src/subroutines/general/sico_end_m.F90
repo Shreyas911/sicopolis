@@ -80,14 +80,6 @@ contains
 #endif
 #endif
 
-#if !defined(ALLOW_TAPENADE)
-  if (allocated(specmap_zsl)) deallocate(specmap_zsl)
-#endif
-
-#if defined(ALLOW_GRDCHK)
-  if (allocated(griptemp)) deallocate(griptemp)
-#endif
-
 #if (defined(XYZ))
 #if (defined(HEINO))
   close(unit=15, status='keep')

@@ -795,8 +795,6 @@ save
 !> ch_core(n): Names of the prescribed borehole positions
    character(len=16), dimension(n_core_max) :: ch_core
 
-#if !defined(ALLOW_TAPENADE)
-
 !> grip_time_min: Minimum time of the data values for the
 !>                surface temperature anomaly
    integer(i4b) :: grip_time_min
@@ -808,46 +806,10 @@ save
    integer(i4b) :: grip_time_max
 !> ndata_grip: Number of data values for the surface temperature anomaly
    integer(i4b) :: ndata_grip
+!> ndata_grip_max: Maximum allowed value of ndata_grip
+   integer(i4b), parameter :: ndata_grip_max = 262143
 !> griptemp(n): Data values for the surface temperature anomaly
-   real(dp), dimension(:), allocatable :: griptemp
-
-#else
-
-#if (TSURFACE!=4)
-
-!> grip_time_min: Minimum time of the data values for the
-!>                surface temperature anomaly
-   integer(i4b) :: grip_time_min
-!> grip_time_stp: Time step of the data values for the
-!>                surface temperature anomaly
-   integer(i4b) :: grip_time_stp
-!> grip_time_max: Maximum time of the data values for the
-!>                surface temperature anomaly
-   integer(i4b) :: grip_time_max
-!> ndata_grip: Number of data values for the surface temperature anomaly
-   integer(i4b) :: ndata_grip
-!> griptemp(n): Data values for the surface temperature anomaly
-   real(dp), dimension(:), allocatable :: griptemp
-
-#else
-
-!> grip_time_min: Minimum time of the data values for the
-!>                surface temperature anomaly
-   integer(i4b) :: grip_time_min = -139990 !@ python_automated_metadata GRIP_TIME_MIN @ 
-!> grip_time_stp: Time step of the data values for the
-!>                surface temperature anomaly
-   integer(i4b) :: grip_time_stp = 1 !@ python_automated_metadata GRIP_TIME_STP @ 
-!> grip_time_max: Maximum time of the data values for the
-!>                surface temperature anomaly
-   integer(i4b) :: grip_time_max = 3 !@ python_automated_metadata GRIP_TIME_MAX @ 
-!> ndata_grip: Number of data values for the surface temperature anomaly
-   integer(i4b), parameter :: ndata_grip = 139993 !@ python_automated_metadata NDATA_GRIP @ 
-!> griptemp(n): Data values for the surface temperature anomaly
-   real(dp), dimension(0:ndata_grip) :: griptemp
-
-#endif
-
-#endif
+   real(dp), dimension(0:ndata_grip_max):: griptemp
 
 !> gi_time_min: Minimum time of the data values for the glacial index
    integer(i4b) :: gi_time_min
@@ -857,10 +819,10 @@ save
    integer(i4b) :: gi_time_max
 !> ndata_gi: Number of data values for the glacial index
    integer(i4b) :: ndata_gi
+!> ndata_gi_max: Maximum allowed value of ndata_gi
+   integer(i4b), parameter :: ndata_gi_max = 262143
 !> glacial_index(n): Data values for the glacial index
-   real(dp), dimension(:), allocatable :: glacial_index
-
-#if !defined(ALLOW_TAPENADE)
+   real(dp), dimension(0:ndata_gi_max) :: glacial_index
 
 !> specmap_time_min: Minimum time of the data values for the sea level
    integer(i4b) :: specmap_time_min
@@ -870,40 +832,10 @@ save
    integer(i4b) :: specmap_time_max
 !> ndata_specmap: Number of data values for the sea level
    integer(i4b) :: ndata_specmap
+!> ndata_specmap_max: Maximum allowed value of ndata_specmap
+   integer(i4b), parameter :: ndata_specmap_max = 16383
 !> specmap_zsl(n): Data values for the sea level
-   real(dp), dimension(:), allocatable :: specmap_zsl
-
-#else
-
-#if (SEA_LEVEL!=3)
-
-!> specmap_time_min: Minimum time of the data values for the sea level
-   integer(i4b) :: specmap_time_min
-!> specmap_time_stp: Time step of the data values for the sea level
-   integer(i4b) :: specmap_time_stp
-!> specmap_time_max: Maximum time of the data values for the sea level
-   integer(i4b) :: specmap_time_max
-!> ndata_specmap: Number of data values for the sea level
-   integer(i4b) :: ndata_specmap
-!> specmap_zsl(n): Data values for the sea level
-   real(dp), dimension(:), allocatable :: specmap_zsl
-
-#else
-
-!> specmap_time_min: Minimum time of the data values for the sea level
-   integer(i4b) :: specmap_time_min = -124000 !@ python_automated_metadata SPECMAP_TIME_MIN @ 
-!> specmap_time_stp: Time step of the data values for the sea level
-   integer(i4b) :: specmap_time_stp = 1000 !@ python_automated_metadata SPECMAP_TIME_STP @ 
-!> specmap_time_max: Maximum time of the data values for the sea level
-   integer(i4b) :: specmap_time_max = 0 !@ python_automated_metadata SPECMAP_TIME_MAX @ 
-!> ndata_specmap: Number of data values for the sea level
-   integer(i4b), parameter :: ndata_specmap = 124 !@ python_automated_metadata NDATA_SPECMAP @ 
-!> specmap_zsl(n): Data values for the sea level
-   real(dp), dimension(0:ndata_specmap) :: specmap_zsl
-
-#endif
-
-#endif
+   real(dp), dimension(0:ndata_specmap_max) :: specmap_zsl
 
 !> time_target_topo_init: Initial time for target-topography adjustment
    real(dp) :: time_target_topo_init

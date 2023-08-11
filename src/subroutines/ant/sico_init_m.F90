@@ -1783,7 +1783,7 @@ if (ios /= 0) then
    errormsg = ' >>> sico_init: Error when opening the data file for delta_ts!'
    call error(errormsg)
 end if
-#if !defined(ALLOW_TAPENADE)
+
 read(21, fmt=*) ch_dummy, grip_time_min, grip_time_stp, grip_time_max
 
 if (ch_dummy /= '#') then
@@ -1795,10 +1795,13 @@ end if
 
 ndata_grip = (grip_time_max-grip_time_min)/grip_time_stp
 
-allocate(griptemp(0:ndata_grip))
-#else 
-read(21, fmt=*)
-#endif
+if (ndata_grip > ndata_grip_max) then
+   errormsg = ' >>> sico_init: ndata_grip <= ndata_grip_max required!' &
+            //         end_of_line &
+            //'        Increase value of ndata_grip_max in sico_variables_m!'
+   call error(errormsg)
+end if
+
 do n=0, ndata_grip
    read(21, fmt=*) d_dummy, griptemp(n)
 end do
@@ -1831,7 +1834,12 @@ end if
 
 ndata_gi = (gi_time_max-gi_time_min)/gi_time_stp
 
-allocate(glacial_index(0:ndata_gi))
+if (ndata_gi > ndata_gi_max) then
+   errormsg = ' >>> sico_init: ndata_gi <= ndata_gi_max required!' &
+            //         end_of_line &
+            //'        Increase value of ndata_gi_max in sico_variables_m!'
+   call error(errormsg)
+end if
 
 do n=0, ndata_gi
    read(21, fmt=*) d_dummy, glacial_index(n)
@@ -2062,7 +2070,7 @@ if (ios /= 0) then
    errormsg = ' >>> sico_init: Error when opening the data file for z_sl!'
    call error(errormsg)
 end if
-#if !defined(ALLOW_TAPENADE)
+
 read(21, fmt=*) ch_dummy, specmap_time_min, specmap_time_stp, specmap_time_max
 
 if (ch_dummy /= '#') then
@@ -2076,10 +2084,13 @@ end if
 
 ndata_specmap = (specmap_time_max-specmap_time_min)/specmap_time_stp
 
-allocate(specmap_zsl(0:ndata_specmap))
-#else 
-read(21, fmt=*)
-#endif
+if (ndata_specmap > ndata_specmap_max) then
+   errormsg = ' >>> sico_init: ndata_specmap <= ndata_specmap_max required!' &
+            //         end_of_line &
+            //'        Increase value of ndata_specmap_max in sico_variables_m!'
+   call error(errormsg)
+end if
+
 do n=0, ndata_specmap
    read(21, fmt=*) d_dummy, specmap_zsl(n)
 end do
