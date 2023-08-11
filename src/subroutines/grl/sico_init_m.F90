@@ -1945,7 +1945,12 @@ end if
 
 ndata_glann = (glann_time_max-glann_time_min)/glann_time_stp
 
-allocate(dT_glann_CLIMBER(0:ndata_glann))
+if (ndata_glann > ndata_glann_max) then
+   errormsg = ' >>> sico_init: ndata_glann <= ndata_glann_max required!' &
+            //         end_of_line &
+            //'        Increase value of ndata_glann_max in sico_vars_m!'
+   call error(errormsg)
+end if
 
 do n=0, ndata_glann
    read(21, fmt=*) d_dummy, dT_glann_CLIMBER(n)
