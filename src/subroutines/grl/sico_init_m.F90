@@ -272,7 +272,7 @@ temp_c       = 0.0 ! Not compatible with TEMP_INIT==5
 !-------- Initialisation of the Library of Iterative Solvers Lis,
 !                                                     if required --------
 
-#if (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
+#if (MARGIN==3 || DYNAMICS==2)
 #if !defined(ALLOW_TAPENADE) /* Normal */
   call lis_initialize(ierr)
 #else /* Tapenade */
@@ -1002,13 +1002,11 @@ write(10, fmt=trim(fmt1)) 'Path to target-topography file = '//TARGET_TOPO_PATH
 write(10, fmt=trim(fmt1)) 'Maximum ice extent mask file = '//MASK_MAXEXTENT_FILE
 #endif
 
-#if (CALCTHK==2 || CALCTHK==3 || CALCTHK==5 || CALCTHK==6)
+#if (CALCTHK==2)
 write(10, fmt=trim(fmt3))  'ovi_weight =', OVI_WEIGHT
-#if (CALCTHK==2 || CALCTHK==5)
 write(10, fmt=trim(fmt3))  'omega_sor =', OMEGA_SOR
 #if (ITER_MAX_SOR>0)
 write(10, fmt=trim(fmt2)) 'iter_max_sor = ', ITER_MAX_SOR
-#endif
 #endif
 #endif
 write(10, fmt=trim(fmt1)) ' '
@@ -1725,6 +1723,7 @@ temp_mj_lgm_anom = temp_mj_lgm_anom * TEMP_MJ_ANOM_FACT
 !-------- Read data for delta_ts --------
 
 #if (TSURFACE==4)
+
 filename_with_path = trim(IN_PATH)//'/general/'//trim(GRIP_TEMP_FILE)
 
 open(21, iostat=ios, file=trim(filename_with_path), status='old')
@@ -1734,7 +1733,6 @@ if (ios /= 0) then
    call error(errormsg)
 end if
 
-#if !defined(ALLOW_TAPENADE)
 read(21, fmt=*) ch_dummy, grip_time_min, grip_time_stp, grip_time_max
 
 if (ch_dummy /= '#') then
@@ -1746,14 +1744,13 @@ end if
 
 ndata_grip = (grip_time_max-grip_time_min)/grip_time_stp
 
-if (allocated(griptemp)) then
-  deallocate(griptemp)
+if (ndata_grip > ndata_grip_max) then
+   errormsg = ' >>> sico_init: ndata_grip <= ndata_grip_max required!' &
+            //         end_of_line &
+            //'        Increase value of ndata_grip_max in sico_variables_m!'
+   call error(errormsg)
 end if
 
-allocate(griptemp(0:ndata_grip))
-#else 
-read(21, fmt=*)
-#endif
 do n=0, ndata_grip
    read(21, fmt=*) d_dummy, griptemp(n)
 end do
@@ -1786,7 +1783,12 @@ end if
 
 ndata_gi = (gi_time_max-gi_time_min)/gi_time_stp
 
-allocate(glacial_index(0:ndata_gi))
+if (ndata_gi > ndata_gi_max) then
+   errormsg = ' >>> sico_init: ndata_gi <= ndata_gi_max required!' &
+            //         end_of_line &
+            //'        Increase value of ndata_gi_max in sico_variables_m!'
+   call error(errormsg)
+end if
 
 do n=0, ndata_gi
    read(21, fmt=*) d_dummy, glacial_index(n)
@@ -1944,7 +1946,12 @@ end if
 
 ndata_glann = (glann_time_max-glann_time_min)/glann_time_stp
 
-allocate(dT_glann_CLIMBER(0:ndata_glann))
+if (ndata_glann > ndata_glann_max) then
+   errormsg = ' >>> sico_init: ndata_glann <= ndata_glann_max required!' &
+            //         end_of_line &
+            //'        Increase value of ndata_glann_max in sico_vars_m!'
+   call error(errormsg)
+end if
 
 do n=0, ndata_glann
    read(21, fmt=*) d_dummy, dT_glann_CLIMBER(n)
@@ -1957,6 +1964,7 @@ close(21, status='keep')
 !-------- Read data for z_sl --------
 
 #if (SEA_LEVEL==3)
+
 filename_with_path = trim(IN_PATH)//'/general/'//trim(SEA_LEVEL_FILE)
 
 open(21, iostat=ios, file=trim(filename_with_path), status='old')
@@ -1965,7 +1973,7 @@ if (ios /= 0) then
    errormsg = ' >>> sico_init: Error when opening the data file for z_sl!'
    call error(errormsg)
 end if
-#if !defined(ALLOW_TAPENADE)
+
 read(21, fmt=*) ch_dummy, specmap_time_min, specmap_time_stp, specmap_time_max
 
 if (ch_dummy /= '#') then
@@ -1979,10 +1987,13 @@ end if
 
 ndata_specmap = (specmap_time_max-specmap_time_min)/specmap_time_stp
 
-allocate(specmap_zsl(0:ndata_specmap))
-#else 
-read(21, fmt=*)
-#endif
+if (ndata_specmap > ndata_specmap_max) then
+   errormsg = ' >>> sico_init: ndata_specmap <= ndata_specmap_max required!' &
+            //         end_of_line &
+            //'        Increase value of ndata_specmap_max in sico_variables_m!'
+   call error(errormsg)
+end if
+
 do n=0, ndata_specmap
    read(21, fmt=*) d_dummy, specmap_zsl(n)
 end do
@@ -2524,13 +2535,17 @@ else if (forcing_flag == 2) then
 end if
 
 !  ------ Time-series file for deep boreholes
-#if !defined(ALLOW_TAPENADE)
+
 n_core = 7   ! GRIP, GISP2, Dye3, Camp Century (CC),
              ! NorthGRIP (NGRIP), NEEM, EastGRIP (EGRIP)
 
-allocate(lambda_core(n_core), phi_core(n_core), &
-         x_core(n_core), y_core(n_core), ch_core(n_core))
-#endif
+if (n_core > n_core_max) then
+   errormsg = ' >>> sico_init: n_core <= n_core_max required!' &
+            //         end_of_line &
+            //'        Increase value of n_core_max in sico_variables_m!'
+   call error(errormsg)
+end if
+
 ch_core(1)     = 'GRIP'
 phi_core(1)    =  72.58722_dp *deg2rad   ! Geographical position of GRIP,
 lambda_core(1) = -37.64222_dp *deg2rad   ! conversion deg -> rad

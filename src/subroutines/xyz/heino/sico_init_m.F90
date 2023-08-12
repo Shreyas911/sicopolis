@@ -195,7 +195,7 @@ time_output = 0.0_dp
 !-------- Initialisation of the Library of Iterative Solvers Lis,
 !                                                     if required --------
 
-#if (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
+#if (MARGIN==3 || DYNAMICS==2)
   call lis_initialize(ierr)
 #endif
 
@@ -673,13 +673,11 @@ write(10, fmt=trim(fmt2)) 'OCEAN_CONNECTIVITY = ', OCEAN_CONNECTIVITY
 write(10, fmt=trim(fmt3)) 'H_isol_max =', H_ISOL_MAX
 #endif
 
-#if (CALCTHK==2 || CALCTHK==3 || CALCTHK==5 || CALCTHK==6)
+#if (CALCTHK==2)
 write(10, fmt=trim(fmt3))  'ovi_weight   =', OVI_WEIGHT
-#if (CALCTHK==2 || CALCTHK==5)
 write(10, fmt=trim(fmt3))  'omega_sor    =', OMEGA_SOR
 #if (ITER_MAX_SOR>0)
 write(10, fmt=trim(fmt2)) 'iter_max_sor = ', ITER_MAX_SOR
-#endif
 #endif
 #endif
 
@@ -1091,7 +1089,12 @@ end if
 
 ndata_grip = (grip_time_max-grip_time_min)/grip_time_stp
 
-allocate(griptemp(0:ndata_grip))
+if (ndata_grip > ndata_grip_max) then
+   errormsg = ' >>> sico_init: ndata_grip <= ndata_grip_max required!' &
+            //         end_of_line &
+            //'        Increase value of ndata_grip_max in sico_variables_m!'
+   call error(errormsg)
+end if
 
 do n=0, ndata_grip
    read(21, fmt=*) d_dummy, griptemp(n)
@@ -1127,7 +1130,12 @@ end if
 
 ndata_specmap = (specmap_time_max-specmap_time_min)/specmap_time_stp
 
-allocate(specmap_zsl(0:ndata_specmap))
+if (ndata_specmap > ndata_specmap_max) then
+   errormsg = ' >>> sico_init: ndata_specmap <= ndata_specmap_max required!' &
+            //         end_of_line &
+            //'        Increase value of ndata_specmap_max in sico_variables_m!'
+   call error(errormsg)
+end if
 
 do n=0, ndata_specmap
    read(21, fmt=*) d_dummy, specmap_zsl(n)
@@ -1551,8 +1559,12 @@ write(15,1109)
 
 n_core = 7   ! Points P1 - P7
 
-allocate(lambda_core(n_core), phi_core(n_core), &
-         x_core(n_core), y_core(n_core), ch_core(n_core))
+if (n_core > n_core_max) then
+   errormsg = ' >>> sico_init: n_core <= n_core_max required!' &
+            //         end_of_line &
+            //'        Increase value of n_core_max in sico_variables_m!'
+   call error(errormsg)
+end if
 
 ch_core(1)     = 'P1'
 lambda_core(1) =    0.0_dp  ! dummy
