@@ -84,7 +84,7 @@ subroutine sico_init(delta_ts, glac_index, &
 #endif
 
   use read_m, only : read_target_topo_nc, &
-                     read_2d_input, read_kei, read_phys_para
+                     read_scalar_input, read_2d_input, read_kei, read_phys_para
 
 #if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
   use read_m, only : read_age_data, read_BedMachine_data
@@ -1726,34 +1726,10 @@ temp_mj_lgm_anom = temp_mj_lgm_anom * TEMP_MJ_ANOM_FACT
 
 filename_with_path = trim(IN_PATH)//'/general/'//trim(GRIP_TEMP_FILE)
 
-open(21, iostat=ios, file=trim(filename_with_path), status='old')
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the data file for delta_ts!'
-   call error(errormsg)
-end if
-
-read(21, fmt=*) ch_dummy, grip_time_min, grip_time_stp, grip_time_max
-
-if (ch_dummy /= '#') then
-   errormsg = ' >>> sico_init: grip_time_min, grip_time_stp, grip_time_max' &
-            //         end_of_line &
-            //'        not defined in data file for delta_ts!'
-   call error(errormsg)
-end if
-
-ndata_grip = (grip_time_max-grip_time_min)/grip_time_stp
-
-if (ndata_grip > ndata_grip_max) then
-   errormsg = ' >>> sico_init: ndata_grip <= ndata_grip_max required!' &
-            //         end_of_line &
-            //'        Increase value of ndata_grip_max in sico_variables_m!'
-   call error(errormsg)
-end if
-
-do n=0, ndata_grip
-   read(21, fmt=*) d_dummy, griptemp(n)
-end do
+call read_scalar_input(filename_with_path, &
+                       'delta_ts', ndata_grip_max, &
+                       grip_time_min, grip_time_stp, grip_time_max, &
+                       ndata_grip, griptemp)
 
 close(21, status='keep')
 
@@ -1765,36 +1741,10 @@ close(21, status='keep')
 
 filename_with_path = trim(IN_PATH)//'/general/'//trim(GLAC_IND_FILE)
 
-open(21, iostat=ios, file=trim(filename_with_path), status='old')
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the glacial-index file!'
-   call error(errormsg)
-end if
-
-read(21, fmt=*) ch_dummy, gi_time_min, gi_time_stp, gi_time_max
-
-if (ch_dummy /= '#') then
-   errormsg = ' >>> sico_init: gi_time_min, gi_time_stp, gi_time_max' &
-            //         end_of_line &
-            //'        not defined in glacial-index file!'
-   call error(errormsg)
-end if
-
-ndata_gi = (gi_time_max-gi_time_min)/gi_time_stp
-
-if (ndata_gi > ndata_gi_max) then
-   errormsg = ' >>> sico_init: ndata_gi <= ndata_gi_max required!' &
-            //         end_of_line &
-            //'        Increase value of ndata_gi_max in sico_variables_m!'
-   call error(errormsg)
-end if
-
-do n=0, ndata_gi
-   read(21, fmt=*) d_dummy, glacial_index(n)
-end do
-
-close(21, status='keep')
+call read_scalar_input(filename_with_path, &
+                       'gi', ndata_gi_max, &
+                       gi_time_min, gi_time_stp, gi_time_max, &
+                       ndata_gi, glacial_index)
 
 #endif
 
@@ -1927,37 +1877,10 @@ end if
 
 filename_with_path = trim(IN_PATH)//'/general/dTg_paleo.dat'
 
-open(21, iostat=ios, file=trim(filename_with_path), status='old')
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: ' &
-                 //'Error when opening the data file for dT_glann_CLIMBER!'
-   call error(errormsg)
-end if
-
-read(21, fmt=*) ch_dummy, glann_time_min, glann_time_stp, glann_time_max
-
-if (ch_dummy /= '#') then
-   errormsg = ' >>> sico_init: glann_time_min, glann_time_stp, glann_time_max' &
-            //         end_of_line &
-            //'        not defined in data file for dT_glann_CLIMBER!'
-   call error(errormsg)
-end if
-
-ndata_glann = (glann_time_max-glann_time_min)/glann_time_stp
-
-if (ndata_glann > ndata_glann_max) then
-   errormsg = ' >>> sico_init: ndata_glann <= ndata_glann_max required!' &
-            //         end_of_line &
-            //'        Increase value of ndata_glann_max in sico_vars_m!'
-   call error(errormsg)
-end if
-
-do n=0, ndata_glann
-   read(21, fmt=*) d_dummy, dT_glann_CLIMBER(n)
-end do
-
-close(21, status='keep')
+call read_scalar_input(filename_with_path, &
+                       'dT_glann', ndata_glann_max, &
+                       glann_time_min, glann_time_stp, glann_time_max, &
+                       ndata_glann, dT_glann_CLIMBER)
 
 #endif
 
@@ -1967,38 +1890,10 @@ close(21, status='keep')
 
 filename_with_path = trim(IN_PATH)//'/general/'//trim(SEA_LEVEL_FILE)
 
-open(21, iostat=ios, file=trim(filename_with_path), status='old')
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the data file for z_sl!'
-   call error(errormsg)
-end if
-
-read(21, fmt=*) ch_dummy, specmap_time_min, specmap_time_stp, specmap_time_max
-
-if (ch_dummy /= '#') then
-   errormsg = ' >>> sico_init:' &
-            //         end_of_line &
-            //'        specmap_time_min, specmap_time_stp, specmap_time_max' &
-            //         end_of_line &
-            //'        not defined in data file for z_sl!'
-   call error(errormsg)
-end if
-
-ndata_specmap = (specmap_time_max-specmap_time_min)/specmap_time_stp
-
-if (ndata_specmap > ndata_specmap_max) then
-   errormsg = ' >>> sico_init: ndata_specmap <= ndata_specmap_max required!' &
-            //         end_of_line &
-            //'        Increase value of ndata_specmap_max in sico_variables_m!'
-   call error(errormsg)
-end if
-
-do n=0, ndata_specmap
-   read(21, fmt=*) d_dummy, specmap_zsl(n)
-end do
-
-close(21, status='keep')
+call read_scalar_input(filename_with_path, &
+                       'z_sl', ndata_specmap_max, &
+                       specmap_time_min, specmap_time_stp, specmap_time_max, &
+                       ndata_specmap, specmap_zsl)
 
 #endif
 

@@ -65,7 +65,7 @@ subroutine sico_init(delta_ts, glac_index, &
   use stereo_proj_m
 #endif
 
-  use read_m, only : read_2d_input, read_kei, read_phys_para
+  use read_m, only : read_scalar_input, read_2d_input, read_kei, read_phys_para
 
   use boundary_m
   use init_temp_water_age_m
@@ -1389,36 +1389,10 @@ temp_ma_present = temp_ma_present * TEMP_MA_PRESENT_FACT
 
 filename_with_path = trim(IN_PATH)//'/general/'//trim(GRIP_TEMP_FILE)
 
-open(21, iostat=ios, file=trim(filename_with_path), status='old')
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the data file for delta_ts!'
-   call error(errormsg)
-end if
-
-read(21, fmt=*) ch_dummy, grip_time_min, grip_time_stp, grip_time_max
-
-if (ch_dummy /= '#') then
-   errormsg = ' >>> sico_init: grip_time_min, grip_time_stp, grip_time_max' &
-            //         end_of_line &
-            //'        not defined in data file for delta_ts!'
-   call error(errormsg)
-end if
-
-ndata_grip = (grip_time_max-grip_time_min)/grip_time_stp
-
-if (ndata_grip > ndata_grip_max) then
-   errormsg = ' >>> sico_init: ndata_grip <= ndata_grip_max required!' &
-            //         end_of_line &
-            //'        Increase value of ndata_grip_max in sico_variables_m!'
-   call error(errormsg)
-end if
-
-do n=0, ndata_grip
-   read(21, fmt=*) d_dummy, griptemp(n)
-end do
-
-close(21, status='keep')
+call read_scalar_input(filename_with_path, &
+                       'delta_ts', ndata_grip_max, &
+                       grip_time_min, grip_time_stp, grip_time_max, &
+                       ndata_grip, griptemp)
 
 #endif
 
@@ -1428,36 +1402,10 @@ close(21, status='keep')
 
 filename_with_path = trim(IN_PATH)//'/general/'//trim(GLAC_IND_FILE)
 
-open(21, iostat=ios, file=trim(filename_with_path), status='old')
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the glacial-index file!'
-   call error(errormsg)
-end if
-
-read(21, fmt=*) ch_dummy, gi_time_min, gi_time_stp, gi_time_max
-
-if (ch_dummy /= '#') then
-   errormsg = ' >>> sico_init: gi_time_min, gi_time_stp, gi_time_max' &
-            //         end_of_line &
-            //'        not defined in glacial-index file!'
-   call error(errormsg)
-end if
-
-ndata_gi = (gi_time_max-gi_time_min)/gi_time_stp
-
-if (ndata_gi > ndata_gi_max) then
-   errormsg = ' >>> sico_init: ndata_gi <= ndata_gi_max required!' &
-            //         end_of_line &
-            //'        Increase value of ndata_gi_max in sico_variables_m!'
-   call error(errormsg)
-end if
-
-do n=0, ndata_gi
-   read(21, fmt=*) d_dummy, glacial_index(n)
-end do
-
-close(21, status='keep')
+call read_scalar_input(filename_with_path, &
+                       'gi', ndata_gi_max, &
+                       gi_time_min, gi_time_stp, gi_time_max, &
+                       ndata_gi, glacial_index)
 
 #endif
 
@@ -1467,38 +1415,10 @@ close(21, status='keep')
 
 filename_with_path = trim(IN_PATH)//'/general/'//trim(SEA_LEVEL_FILE)
 
-open(21, iostat=ios, file=trim(filename_with_path), status='old')
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the data file for z_sl!'
-   call error(errormsg)
-end if
-
-read(21, fmt=*) ch_dummy, specmap_time_min, specmap_time_stp, specmap_time_max
-
-if (ch_dummy /= '#') then
-   errormsg = ' >>> sico_init:' &
-            //         end_of_line &
-            //'        specmap_time_min, specmap_time_stp, specmap_time_max' &
-            //         end_of_line &
-            //'        not defined in data file for z_sl!'
-   call error(errormsg)
-end if
-
-ndata_specmap = (specmap_time_max-specmap_time_min)/specmap_time_stp
-
-if (ndata_specmap > ndata_specmap_max) then
-   errormsg = ' >>> sico_init: ndata_specmap <= ndata_specmap_max required!' &
-            //         end_of_line &
-            //'        Increase value of ndata_specmap_max in sico_variables_m!'
-   call error(errormsg)
-end if
-
-do n=0, ndata_specmap
-   read(21, fmt=*) d_dummy, specmap_zsl(n)
-end do
-
-close(21, status='keep')
+call read_scalar_input(filename_with_path, &
+                       'z_sl', ndata_specmap_max, &
+                       specmap_time_min, specmap_time_stp, specmap_time_max, &
+                       ndata_specmap, specmap_zsl)
 
 #endif
 
