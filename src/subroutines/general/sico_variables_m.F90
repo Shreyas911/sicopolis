@@ -837,12 +837,27 @@ save
 !> specmap_zsl(n): Data values for the sea level
    real(dp), dimension(0:ndata_specmap_max) :: specmap_zsl
 
-!> time_target_topo_init: Initial time for target-topography adjustment
-   real(dp) :: time_target_topo_init
-!> time_target_topo_final: Final time for target-topography adjustment
-   real(dp) :: time_target_topo_final
-!> target_topo_tau_0: Relaxation time for target-topography adjustment
+!> target_topo_tau0_time_min: Minimum time of the data values
+!>                            for the relaxation time for the topography nudging
+   integer(i4b) :: target_topo_tau0_time_min
+!> target_topo_tau0_time_stp: Time step of the data values
+!>                            for the relaxation time for the topography nudging
+   integer(i4b) :: target_topo_tau0_time_stp
+!> target_topo_tau0_time_max: Maximum time of the data values
+!>                            for the relaxation time for the topography nudging
+   integer(i4b) :: target_topo_tau0_time_max
+!> ndata_target_topo_tau0: Number of data values
+!>                         for the relaxation time for the topography nudging
+   integer(i4b) :: ndata_target_topo_tau0
+!> ndata_target_topo_tau0_max: Maximum allowed value of ndata_target_topo_tau0
+   integer(i4b), parameter :: ndata_target_topo_tau0_max = 16383
+!> target_topo_tau0(n): Data values for the relaxation time
+!>                      for the topography nudging
+   real(dp), dimension(0:ndata_target_topo_tau0_max) :: target_topo_tau0
+!> target_topo_tau_0: Constant relaxation time for the topography nudging
    real(dp) :: target_topo_tau_0
+!> target_topo_tau: Relaxation time for the topography nudging
+   real(dp) :: target_topo_tau
 !> mask_target(j,i): Target topography (ice-land-ocean mask)
    integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_target
 !> zs_target(j,i): Target topography (ice surface)
