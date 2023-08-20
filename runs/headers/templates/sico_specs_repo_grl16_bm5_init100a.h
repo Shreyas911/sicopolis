@@ -4,7 +4,7 @@
 
 !-------- Basic settings --------
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2023-08-19'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2023-08-20'
 !                      Date of last change
 
 !-------- Domain --------
@@ -526,7 +526,7 @@
 
 !-------- Evolution of the ice thickness --------
 
-#define THK_EVOL 4
+#define THK_EVOL 1
 !                         0 : No evolution of the ice thickness, kept fixed on
 !                             the initial thickness
 !                         1 : Evolution of the ice thickness
@@ -539,9 +539,6 @@
 !                             the ice topography (zs, zb, zl, H) is nugded
 !                             towards a prescribed target with the
 !                             constant relaxation time TARGET_TOPO_TAU0.
-!                         4 : Evolution of the ice thickness,
-!                             but maximum ice extent is constrained by the
-!                             prescribed mask MASK_MAXEXTENT_FILE.
 
 #define OCEAN_CONNECTIVITY 1
 !                         0 : Ocean connectivity not enforced.
@@ -570,7 +567,8 @@
 !                          or for ACCSURFACE==7 and ABLSURFACE==7)
 
 #define MASK_MAXEXTENT_FILE 'grl_bm5_16_topo.nc'
-!                         Maximum ice extent mask file (only for THK_EVOL==4)
+!                         Maximum ice extent mask file (only for THK_EVOL>=1)
+!                         ('none' if no file is to be defined)
 
 #define CALCTHK 2
 !                         Solution of the ice-thickness equation:
