@@ -4,7 +4,7 @@
 
 !-------- Basic settings --------
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2023-08-07'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2023-08-19'
 !                      Date of last change
 
 !-------- Domain --------
@@ -481,8 +481,8 @@
 !                         1 : Ocean connectivity enforced.
 
 #define H_ISOL_MAX 1000.0d0
-!                             Maximum thickness of isolated ice points (in m)
-!                             (if set to 0.0d0, isolated ice points are killed).
+!                         Maximum thickness of isolated ice points (in m)
+!                         (if set to 0.0d0, isolated ice points are killed).
 
 #define CALCTHK 2
 !                         Solution of the ice-thickness equation:

@@ -847,9 +847,8 @@ write(10, fmt=trim(fmt3)) 'H_isol_max =', H_ISOL_MAX
 #endif
 
 #if (THK_EVOL==2)
-write(10, fmt=trim(fmt3)) 'time_target_topo_init  =', TIME_TARGET_TOPO_INIT0
-write(10, fmt=trim(fmt3)) 'time_target_topo_final =', TIME_TARGET_TOPO_FINAL0
-write(10, fmt=trim(fmt3)) 'target_topo_tau_0 =', TARGET_TOPO_TAU0
+write(10, fmt=trim(fmt1)) 'Target-topography relaxation-time file = ' &
+                          //TARGET_TOPO_TAU0_FILE
 write(10, fmt=trim(fmt1)) 'Target-topography file = '//TARGET_TOPO_DAT_NAME
 write(10, fmt=trim(fmt1)) 'Path to target-topography file = '//TARGET_TOPO_PATH
 #endif
@@ -1244,9 +1243,17 @@ end if
 #endif
 
 #if (THK_EVOL==2)
-time_target_topo_init  = TIME_TARGET_TOPO_INIT0 *year2sec   ! a --> s
-time_target_topo_final = TIME_TARGET_TOPO_FINAL0*year2sec   ! a --> s
-target_topo_tau_0 = TARGET_TOPO_TAU0 *year2sec   ! a --> s
+
+filename_with_path = trim(IN_PATH)//'/general/'//trim(TARGET_TOPO_TAU0_FILE)
+
+call read_scalar_input(filename_with_path, &
+                       'target_topo_tau0', ndata_target_topo_tau0_max, &
+                       target_topo_tau0_time_min, target_topo_tau0_time_stp, &
+                       target_topo_tau0_time_max, &
+                       ndata_target_topo_tau0, target_topo_tau0)
+
+target_topo_tau0 = target_topo_tau0 *year2sec   ! a --> s
+
 #endif
 
 #if (THK_EVOL==3)

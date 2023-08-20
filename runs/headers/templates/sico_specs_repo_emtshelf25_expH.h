@@ -4,7 +4,7 @@
 
 !-------- Basic settings --------
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2023-08-07'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2023-08-19'
 !                      Date of last change
 
 !-------- Domain --------
@@ -497,12 +497,11 @@
 !                         0 : No evolution of the ice thickness, kept fixed on
 !                             the initial thickness
 !                         1 : Evolution of the ice thickness
-!                         2 : Evolution of the ice thickness, but between times
-!                             TIME_TARGET_TOPO_INIT0 and TIME_TARGET_TOPO_FINAL0
-!                             the ice topography (zs, zb, zl, H) is nudged
-!                             towards a prescribed target with the
-!                             relaxation time smoothly decreasing from
-!                             TARGET_TOPO_TAU0 to zero.
+!                         2 : Evolution of the ice thickness, but
+!                             the ice topography (zs, zb, zl, H) is nugded
+!                             towards a prescribed target with a
+!                             time-dependent relaxation time
+!                             read from the file TARGET_TOPO_TAU0_FILE.
 !                         3 : Evolution of the ice thickness, but
 !                             the ice topography (zs, zb, zl, H) is nugded
 !                             towards a prescribed target with the
@@ -516,29 +515,27 @@
 !                         1 : Ocean connectivity enforced.
 
 #define H_ISOL_MAX 1000.0d0
-!                             Maximum thickness of isolated ice points (in m)
-!                             (if set to 0.0d0, isolated ice points are killed).
+!                         Maximum thickness of isolated ice points (in m)
+!                         (if set to 0.0d0, isolated ice points are killed).
 
-#define TIME_TARGET_TOPO_INIT0 0.0d0
-!                             Initial time for nudging towards target topography
-!                             (in a; only for THK_EVOL==2)
-
-#define TIME_TARGET_TOPO_FINAL0 0.0d0
-!                             Final time for nudging towards target topography
-!                             (in a; only for THK_EVOL==2)
+#define TARGET_TOPO_TAU0_FILE 'none'
+!                         Name of the file containing the time-dependent
+!                         relaxation time for
+!                         nudging towards target topography
+!                         (only for THK_EVOL==2)
 
 #define TARGET_TOPO_TAU0 100.0d0
-!                             Relaxation time for
-!                             nudging towards target topography
-!                             (in a;
-!                              only for THK_EVOL==2, 3)
+!                         Relaxation time for
+!                         nudging towards target topography
+!                         (in a;
+!                          only for THK_EVOL==3)
 
 #define TARGET_TOPO_DAT_NAME 'none'
-!                             Target-topography file
-!                             (only for THK_EVOL==2, 3)
+!                         Target-topography file
+!                         (only for THK_EVOL==2, 3)
 
 #define MASK_MAXEXTENT_FILE 'none'
-!                             Maximum ice extent mask file (only for THK_EVOL==4)
+!                         Maximum ice extent mask file (only for THK_EVOL==4)
 
 #define CALCTHK 4
 !                         Solution of the ice-thickness equation:

@@ -690,18 +690,27 @@ end subroutine apply_mb_source
 !<------------------------------------------------------------------------------
   subroutine thk_adjust(time, dtime)
 
+#if defined(ALLOW_TAPENADE) /* Tapenade */
+#if (THK_EVOL==2)
+  use ctrl_m, only: myfloor, myceiling
+#endif
+#endif /* Tapenade */
+
   implicit none
 
   real(dp), intent(in) :: time, dtime
 
+  integer(i4b)                       :: n1, n2
   real(dp), dimension(0:JMAX,0:IMAX) :: H_new_tmp
-  real(dp)                           :: time_dimless
-  real(dp)                           :: target_topo_tau_factor, target_topo_tau
+  real(dp)                           :: time_in_years
+  real(dp)                           :: time1, time2
   real(dp)                           :: dtime_inv
 
 #if defined(ALLOW_TAPENADE) /* Tapenade */
   integer(i4b) :: i, j
 #endif /* Tapenade */
+
+  time_in_years = time*sec2year
 
 !-------- Saving computed H_new before any adjustments --------
 
@@ -744,26 +753,76 @@ end subroutine apply_mb_source
 !  ------ Nudging towards prescribed target topography
 !                                    with varying relaxation time
 
-  if (time >= time_target_topo_final) then
+  if (time_in_years < real(target_topo_tau0_time_min,dp)) then
 
-     H_new = H_target
+     target_topo_tau = target_topo_tau0(0)
 
-  else if (time > time_target_topo_init) then
+  else if (time_in_years < real(target_topo_tau0_time_max,dp)) then
 
-     time_dimless =  (time                  -time_target_topo_init) &
-                    /(time_target_topo_final-time_target_topo_init)
+#if !defined(ALLOW_TAPENADE) /* Normal */
+     n1 = floor((time_in_years &
+             -real(target_topo_tau0_time_min,dp)) &
+                /real(target_topo_tau0_time_stp,dp))
+#else /* Tapenade */
+     call myfloor((time_in_years &
+             -real(target_topo_tau0_time_min,dp)) &
+                /real(target_topo_tau0_time_stp,dp),n1)
+#endif /* Normal vs. Tapenade */
 
-     time_dimless = max(min(time_dimless, 1.0_dp), 0.0_dp)
-                                  ! constrain to interval [0,1]
+     n1 = max(n1, 0)
 
-     target_topo_tau_factor = time_dimless*time_dimless*time_dimless &
-                                 *(10.0_dp + time_dimless &
-                                             *(-15.0_dp+6.0_dp*time_dimless))
-                                  ! make transition smooth (quintic function)
+#if !defined(ALLOW_TAPENADE) /* Normal */
+     n2 = ceiling((time_in_years &
+             -real(target_topo_tau0_time_min,dp)) &
+                /real(target_topo_tau0_time_stp,dp))
+#else /* Tapenade */
+     call myceiling(((time_in_years &
+              -real(target_topo_tau0_time_min,dp)) &
+                 /real(target_topo_tau0_time_stp,dp)),n2)
+#endif /* Normal vs. Tapenade */
 
-     target_topo_tau_factor = 1.0_dp-target_topo_tau_factor
+     n2 = min(n2, ndata_target_topo_tau0)
 
-     target_topo_tau = target_topo_tau_0 * target_topo_tau_factor
+     if (n1 == n2) then
+
+        target_topo_tau = target_topo_tau0(n1)
+
+     else
+
+        time1 = (target_topo_tau0_time_min + n1*target_topo_tau0_time_stp) &
+                *year2sec
+        time2 = (target_topo_tau0_time_min + n2*target_topo_tau0_time_stp) &
+                *year2sec
+
+        target_topo_tau = target_topo_tau0(n1) &
+                  +(target_topo_tau0(n2)-target_topo_tau0(n1)) &
+                  *(time-time1)/(time2-time1)
+                   ! linear interpolation of the relaxation-time data
+
+     end if
+
+  else
+
+     target_topo_tau = target_topo_tau0(ndata_target_topo_tau0)
+
+  end if
+
+  if (target_topo_tau*sec2year > no_value_pos_1) then
+             ! relaxation time target_topo_tau interpreted as infinity
+
+#if (!defined(ALLOW_GRDCHK) && !defined(ALLOW_TAPENADE)) /* Normal */
+     target_topo_tau = huge(1.0_dp)
+#endif
+
+     !!! H_new = H_new
+
+  else if (target_topo_tau*sec2year < epsi) then
+             ! relaxation time target_topo_tau interpreted as zero
+
+     target_topo_tau = 0.0_dp
+     H_new           = H_target
+
+  else
 
      H_new =   ( target_topo_tau*H_new + dtime*H_target ) &
              / ( target_topo_tau       + dtime )
@@ -777,8 +836,27 @@ end subroutine apply_mb_source
 
   target_topo_tau = target_topo_tau_0
 
-  H_new =   ( target_topo_tau*H_new + dtime*H_target ) &
-          / ( target_topo_tau       + dtime )
+  if (target_topo_tau*sec2year > no_value_pos_1) then
+             ! relaxation time target_topo_tau interpreted as infinity
+
+#if (!defined(ALLOW_GRDCHK) && !defined(ALLOW_TAPENADE)) /* Normal */
+     target_topo_tau = huge(1.0_dp)
+#endif
+
+     !!! H_new = H_new
+
+  else if (target_topo_tau*sec2year < epsi) then
+             ! relaxation time target_topo_tau interpreted as zero
+
+     target_topo_tau = 0.0_dp
+     H_new           = H_target
+
+  else
+
+     H_new =   ( target_topo_tau*H_new + dtime*H_target ) &
+             / ( target_topo_tau       + dtime )
+
+  end if
 
 #elif (THK_EVOL==4)
 
@@ -819,7 +897,7 @@ end subroutine apply_mb_source
   runoff  = runoff  - min(smb_corr, 0.0_dp)
                     ! runoff is counted as positive for mass loss
 
-end subroutine thk_adjust
+  end subroutine thk_adjust
 
 !-------------------------------------------------------------------------------
 !> Update of the ice-land-ocean mask etc.
@@ -886,17 +964,6 @@ dzb_dtau  = (zb_new-zb)*dtime_inv
 dzm_dtau  = dH_t_dtau+dzb_dtau
 dH_dtau   = (H_new-H)*dtime_inv
 dH_c_dtau = dzs_dtau-dzm_dtau
-
-#if (THK_EVOL==2)
-if ( abs((time-time_target_topo_final)*year_sec_inv) < eps ) then
-   dzs_dtau  = 0.0_dp   ! Introduced
-   dzb_dtau  = 0.0_dp   ! by
-   dzm_dtau  = 0.0_dp   ! Tatsuru Sato
-   dH_dtau   = 0.0_dp   ! for
-   dH_c_dtau = 0.0_dp   ! stability
-   dH_t_dtau = 0.0_dp   ! reasons
-end if
-#endif
 
 !-------- New gradients --------
 
@@ -1016,8 +1083,8 @@ end do
 
 !  ------ Adjustment due to prescribed target topography
 
-#if (THK_EVOL==2)
-if (time >= time_target_topo_final) mask = mask_target
+#if (THK_EVOL==2 || THK_EVOL==3)
+if (target_topo_tau*sec2year < epsi) mask = mask_target
 #endif
 
 !-------- Correction of zs_new and zb_new for ice-free land and sea --------
@@ -1173,8 +1240,8 @@ end do
 
 !  ------ Adjustment due to prescribed target topography
 
-#if (THK_EVOL==2)
-if (time >= time_target_topo_final) mask = mask_target
+#if (THK_EVOL==2 || THK_EVOL==3)
+if (target_topo_tau*sec2year < epsi) mask = mask_target
 #endif
 
 !-------- Correction of zs_new and zb_new for ice-free land and sea --------
@@ -1459,8 +1526,8 @@ end do
 
 !  ------ Adjustment due to prescribed target topography
 
-#if (THK_EVOL==2)
-if (time >= time_target_topo_final) mask = mask_target
+#if (THK_EVOL==2 || THK_EVOL==3)
+if (target_topo_tau*sec2year < epsi) mask = mask_target
 #endif
 
 !-------- Correction of zs_new and zb_new
