@@ -869,6 +869,10 @@ save
 !> H_target(j,i): Target topography (ice thickness)
    real(dp), dimension(0:JMAX,0:IMAX) :: H_target
 
+!> flag_mask_maxextent: Flag for maximum ice extent.
+!>                       .true.: specified
+!>                      .false.: not specified
+   logical :: flag_mask_maxextent
 !> mask_maxextent(j,i): Maximum ice extent mask.
 !>                       0: not allowed to glaciate,
 !>                       1: allowed to glaciate.
