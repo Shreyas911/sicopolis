@@ -9,7 +9,7 @@ Several options are available for the evolution of the ice thickness, selected b
 
 * ``1``: Free evolution of the ice thickness.
 
-* ``2``: Evolution of the ice thickness, but the ice topography (zs, zb, zl, H) is nugded towards a prescribed target with a time-dependent relaxation time read from the file ``TARGET_TOPO_TAU0_FILE``.
+* ``2``: Evolution of the ice thickness, but the ice topography (zs, zb, zl, H) is nugded towards a prescribed target with a time-dependent relaxation time read from the file ``TARGET_TOPO_TAU0_FILE`` (to be located in ``sico_in/general``).
 
 * ``3``: Evolution of the ice thickness, but the ice topography (zs, zb, zl, H) is nugded towards a prescribed target with the constant relaxation time ``TARGET_TOPO_TAU0``.
 
@@ -43,7 +43,7 @@ are applied, where :math:`h` is the surface topography, :math:`b` the ice-base t
 
 Nudging is equivalent to applying an SMB correction, which is diagnosed by the model.
 
-For the cases ``THK_EVOL >= 1``, the maximum ice extent can be constrained spatially by a prescribed mask file, specified by the parameter ``MASK_MAXEXTENT_FILE``. If set to ``'none'`` or undefined, no spatial constraint is applied.
+For the cases ``THK_EVOL >= 1``, the maximum ice extent can be constrained spatially by a prescribed mask file, specified by the parameter ``MASK_MAXEXTENT_FILE`` (file to be located in ``sico_in/ant`` for Antarctica, ``sico_in/grl`` for Greenland, etc.). If set to ``'none'`` or undefined, no spatial constraint is applied.
 
 The numerical scheme for solving the ice-thickness equation can be chosen by the parameter ``CALCTHK``\:
 

@@ -95,17 +95,17 @@
 
 !!!!! NOTE: All time quantities below refer to the SICOPOLIS calendar. !!!!!
 
-#define TIME_INIT0 0.0d0
+#define TIME_INIT0 -100.0d0
 !                       Initial time of simulation (in a)
 
-#define TIME_END0 100.0d0
+#define TIME_END0 0.0d0
 !                       Final time of simulation (in a)
 
-#define DTIME0 1.0d0
+#define DTIME0 5.0d0
 !                       Time step (in a) for computation of velocity
 !                       and topography
 
-#define DTIME_TEMP0 1.0d0
+#define DTIME_TEMP0 5.0d0
 !                       Time step (in a) for computation of
 !                       temperature, water content and age of the ice
 
@@ -1226,7 +1226,7 @@
 !                              time-slice output with all 3-d fields for
 !                              OUTPUT==3, in which case snapshots are written)
 
-#define DTIME_SER0 1.0d0
+#define DTIME_SER0 5.0d0
 !                         Time step (in a) for writing of data to
 !                         the time-series files (scalar variables)
 
@@ -1239,7 +1239,7 @@
 !                         time-slice data (only for OUTPUT==2,3,
 !                         not more than 100)
 
-#define TIME_OUT0 100.0d0
+#define TIME_OUT0 0.0d0
 !                         Times (in a) for writing of time-slice
 !                         data (only for OUTPUT==2,3, in increasing
 !                         order from #1 to #N_OUTPUT)
