@@ -713,6 +713,30 @@ time_output0(20) = TIME_OUT0_20
 
 #endif
 
+!-------- Maximum ice extent yes/no --------
+
+#if (!defined(MASK_MAXEXTENT_FILE) || THK_EVOL==0)
+
+flag_mask_maxextent = .false.   ! no maximum ice extent specified
+
+#else
+
+if ( (trim(adjustl(MASK_MAXEXTENT_FILE)) == 'none') &
+     .or. &
+     (trim(adjustl(MASK_MAXEXTENT_FILE)) == 'None') &
+     .or. &
+     (trim(adjustl(MASK_MAXEXTENT_FILE)) == 'NONE') ) then
+
+   flag_mask_maxextent = .false.   ! no maximum ice extent specified
+
+else
+
+   flag_mask_maxextent = .true.   ! maximum ice extent specified
+
+end if
+
+#endif
+
 !-------- Type of the geothermal heat flux (GHF) --------
 
 #if (!defined(Q_GEO_FILE))
@@ -859,8 +883,10 @@ write(10, fmt=trim(fmt1)) 'Target-topography file = '//TARGET_TOPO_DAT_NAME
 write(10, fmt=trim(fmt1)) 'Path to target-topography file = '//TARGET_TOPO_PATH
 #endif
 
-#if (THK_EVOL==4)
-write(10, fmt=trim(fmt1)) 'Maximum ice extent mask file = '//MASK_MAXEXTENT_FILE
+#if (defined(MASK_MAXEXTENT_FILE))
+if (flag_mask_maxextent) &
+   write(10, fmt=trim(fmt1)) 'Maximum ice extent mask file = ' &
+                             // trim(adjustl(MASK_MAXEXTENT_FILE))
 #endif
 
 #if (CALCTHK==2)
@@ -1298,7 +1324,11 @@ call read_target_topo_nc(target_topo_dat_name)
 
 !-------- Reading of the maximum ice extent mask --------
 
-#if (THK_EVOL==4)
+mask_maxextent = 1   ! default (no constraint)
+
+#if (defined(MASK_MAXEXTENT_FILE))
+
+if (flag_mask_maxextent) then
 
 #if (GRID==0 || GRID==1)
 
@@ -1318,6 +1348,8 @@ errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
 call error(errormsg)
 
 #endif
+
+end if
 
 #endif
 

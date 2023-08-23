@@ -700,15 +700,12 @@ end subroutine apply_mb_source
 
   real(dp), intent(in) :: time, dtime
 
+  integer(i4b)                       :: i, j
   integer(i4b)                       :: n1, n2
   real(dp), dimension(0:JMAX,0:IMAX) :: H_new_tmp
   real(dp)                           :: time_in_years
   real(dp)                           :: time1, time2
   real(dp)                           :: dtime_inv
-
-#if defined(ALLOW_TAPENADE) /* Tapenade */
-  integer(i4b) :: i, j
-#endif /* Tapenade */
 
   time_in_years = time*sec2year
 
@@ -718,21 +715,13 @@ end subroutine apply_mb_source
 
 !-------- Correct negative thickness values --------
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
-
-  where (H_new < 0.0_dp) H_new = 0.0_dp
-
-#else /* Tapenade */
-
   do i=0, IMAX  
   do j=0, JMAX 
-     if ( H_new(j,i) < 0.0_dp ) then
+     if (H_new(j,i) < 0.0_dp) then
         H_new(j,i) = 0.0_dp
      end if
   end do
   end do
-
-#endif /* Normal vs. Tapenade */
 
 !-------- Further adjustments --------
 
@@ -858,33 +847,26 @@ end subroutine apply_mb_source
 
   end if
 
-#elif (THK_EVOL==4)
-
-!  ------ Maximum ice extent constrained by prescribed mask
-
-#if !defined(ALLOW_TAPENADE) /* Normal */
-
-  where (mask_maxextent == 0) &   ! not allowed to glaciate
-     H_new = 0.0_dp
-
-#else /* Tapenade */
-
-  do i=0, IMAX
-  do j=0, JMAX
-    if ( mask_maxextent(j,i) == 0 ) then
-      H_new(j,i) = 0.0_dp
-    end if
-  end do
-  end do
-
-#endif /* Normal vs. Tapenade */
-
 #else
 
-  errormsg = ' >>> thk_adjust: THK_EVOL must be between 0 and 4!'
+  errormsg = ' >>> thk_adjust: THK_EVOL must be between 0 and 3!'
   call error(errormsg)
 
 #endif
+
+!  ------ Maximum ice extent constrained by prescribed mask
+
+  if (flag_mask_maxextent) then
+
+     do i=0, IMAX
+     do j=0, JMAX
+        if (mask_maxextent(j,i) == 0) then
+           H_new(j,i) = 0.0_dp   ! not allowed to glaciate
+        end if
+     end do
+     end do
+
+  end if
 
 !-------- Computation of the mass balance adjustment --------
 

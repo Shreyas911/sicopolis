@@ -4,7 +4,7 @@
 
 !-------- Basic settings --------
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2023-08-19'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2023-08-20'
 !                      Date of last change
 
 !-------- Domain --------
@@ -95,17 +95,17 @@
 
 !!!!! NOTE: All time quantities below refer to the SICOPOLIS calendar. !!!!!
 
-#define TIME_INIT0 0.0d0
+#define TIME_INIT0 -100.0d0
 !                       Initial time of simulation (in a)
 
-#define TIME_END0 100.0d0
+#define TIME_END0 0.0d0
 !                       Final time of simulation (in a)
 
-#define DTIME0 1.0d0
+#define DTIME0 5.0d0
 !                       Time step (in a) for computation of velocity
 !                       and topography
 
-#define DTIME_TEMP0 1.0d0
+#define DTIME_TEMP0 5.0d0
 !                       Time step (in a) for computation of
 !                       temperature, water content and age of the ice
 
@@ -526,7 +526,7 @@
 
 !-------- Evolution of the ice thickness --------
 
-#define THK_EVOL 4
+#define THK_EVOL 1
 !                         0 : No evolution of the ice thickness, kept fixed on
 !                             the initial thickness
 !                         1 : Evolution of the ice thickness
@@ -539,9 +539,6 @@
 !                             the ice topography (zs, zb, zl, H) is nugded
 !                             towards a prescribed target with the
 !                             constant relaxation time TARGET_TOPO_TAU0.
-!                         4 : Evolution of the ice thickness,
-!                             but maximum ice extent is constrained by the
-!                             prescribed mask MASK_MAXEXTENT_FILE.
 
 #define OCEAN_CONNECTIVITY 1
 !                         0 : Ocean connectivity not enforced.
@@ -570,7 +567,8 @@
 !                          or for ACCSURFACE==7 and ABLSURFACE==7)
 
 #define MASK_MAXEXTENT_FILE 'grl_bm5_16_topo.nc'
-!                         Maximum ice extent mask file (only for THK_EVOL==4)
+!                         Maximum ice extent mask file (only for THK_EVOL>=1)
+!                         ('none' if no file is to be defined)
 
 #define CALCTHK 2
 !                         Solution of the ice-thickness equation:
@@ -1228,7 +1226,7 @@
 !                              time-slice output with all 3-d fields for
 !                              OUTPUT==3, in which case snapshots are written)
 
-#define DTIME_SER0 1.0d0
+#define DTIME_SER0 5.0d0
 !                         Time step (in a) for writing of data to
 !                         the time-series files (scalar variables)
 
@@ -1241,7 +1239,7 @@
 !                         time-slice data (only for OUTPUT==2,3,
 !                         not more than 100)
 
-#define TIME_OUT0 100.0d0
+#define TIME_OUT0 0.0d0
 !                         Times (in a) for writing of time-slice
 !                         data (only for OUTPUT==2,3, in increasing
 !                         order from #1 to #N_OUTPUT)
