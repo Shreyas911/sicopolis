@@ -8,7 +8,7 @@
 !!
 !! @section Date
 !!
-!! 2023-01-03
+!! 2023-08-24
 !!
 !! @section Copyright
 !!
@@ -82,7 +82,7 @@ real(dp), parameter :: very_large = 1.1111e+11_dp
 
 !-------- Settings --------
 
-ch_domain = 'ANT'
+ch_domain = 'CALVINGMIP'
 
 ! Simulated domain:
 !   ANT   - Antarctica
@@ -308,13 +308,13 @@ end do
 
 select case(ch_domain)
 
-   case ('VIALOV')
+   case ('VIALOV', 'CALVINGMIP')
 
 !    ---- RF(T) = const
 
       RF = 3.16887646e-24_dp
 
-   case ('EISMINT', 'CALVINGMIP', 'HEINO')
+   case ('EISMINT', 'HEINO')
 
 !    ---- RF(T), set-up of EISMINT Phase 2 SGE
 
