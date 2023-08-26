@@ -8,7 +8,7 @@
 !!
 !! @section Date
 !!
-!! 2023-08-24
+!! 2023-08-26
 !!
 !! @section Copyright
 !!
@@ -119,8 +119,14 @@ filename_nc = 'my_phys_para_' // trim(ch_domain) // '_' &
 
 !  ------ General parameters
 
-RHO = 9.1e+02_dp
-! Density of ice = 910 kg/m3 
+select case(ch_domain)
+   case ('CALVINGMIP')
+      RHO = 9.17e+02_dp
+      ! Density of ice = 917 kg/m3 
+   case default
+      RHO = 9.1e+02_dp
+      ! Density of ice = 910 kg/m3 
+end select
 
 RHO_W = 1.0e+03_dp
 ! Density of pure water = 1000 kg/m3
@@ -308,11 +314,17 @@ end do
 
 select case(ch_domain)
 
-   case ('VIALOV', 'CALVINGMIP')
+   case ('VIALOV')
 
 !    ---- RF(T) = const
 
       RF = 3.16887646e-24_dp
+
+   case ('CALVINGMIP')
+
+!    ---- RF(T) = const
+
+      RF = 9.30920838e-26_dp
 
    case ('EISMINT', 'HEINO')
 
