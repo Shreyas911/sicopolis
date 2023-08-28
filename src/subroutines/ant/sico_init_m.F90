@@ -805,7 +805,8 @@ write(10, fmt=trim(fmt1)) 'Computational domain:'
 write(10, fmt=trim(fmt1)) '   '//trim(ch_domain_long)
 write(10, fmt=trim(fmt1)) ' '
 
-write(10, fmt=trim(fmt1)) 'Physical-parameter file = '//PHYS_PARA_FILE
+write(10, fmt=trim(fmt1)) 'Physical-parameter file = ' &
+                          // trim(adjustl(PHYS_PARA_FILE))
 write(10, fmt=trim(fmt1)) ' '
 
 write(10, fmt=trim(fmt2)) 'GRID = ', GRID
