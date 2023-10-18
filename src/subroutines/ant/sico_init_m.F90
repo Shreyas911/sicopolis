@@ -43,6 +43,7 @@ module sico_init_m
 #endif
 #if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
   use ctrl_init_genarr_m
+  use ctrl_map_gentim_m
 #endif
 
   implicit none
@@ -75,7 +76,7 @@ subroutine sico_init(delta_ts, glac_index, &
 #endif
 
   use read_m, only : read_target_topo_nc, &
-                     read_2d_input, read_kei, read_phys_para
+                     read_scalar_input, read_2d_input, read_kei, read_phys_para
 
   use boundary_m
   use init_temp_water_age_m
@@ -104,7 +105,8 @@ real(dp),           intent(out) :: z_mar
 
 integer(i4b)       :: i, j, kc, kt, kr, m, n, ir, jr, n1, n2
 integer(i4b)       :: ios, ios1, ios2, ios3, ios4
-integer(i4b)       :: ierr
+integer(i4b)       :: istat, ierr
+integer(i4b)       :: n_q_geo_mod
 integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_ref
 real(dp)           :: dtime0, dtime_temp0, dtime_wss0, dtime_out0, dtime_ser0
 real(dp)           :: time_init0, time_end0
@@ -116,6 +118,7 @@ real(dp)           :: larmip_qbm_anom_aux(5)
 character(len=256) :: anfdatname, target_topo_dat_name
 character(len=256) :: filename_with_path
 character(len=256) :: shell_command
+character(len=256) :: ch_revision
 character          :: ch_dummy
 logical            :: flag_init_output, flag_3d_output
 
@@ -260,10 +263,13 @@ time_output = 0.0_dp
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK)) /* TAPENADE */
 
 ! Initialize compatible fields to 0
-
+! 2D fields
 q_geo        = 0.0
 c_slide_init = 0.0
 zs           = 0.0 ! Only compatible with ANF_DAT==1
+
+! 3D fields
+temp_c       = 0.0 ! Not compatible with TEMP_INIT==5
 
   call ctrl_init_genarr()
 
@@ -272,7 +278,7 @@ zs           = 0.0 ! Only compatible with ANF_DAT==1
 !-------- Initialisation of the Library of Iterative Solvers Lis,
 !                                                     if required --------
 
-#if (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
+#if (MARGIN==3 || DYNAMICS==2)
 #if !defined(ALLOW_TAPENADE) /* Normal */
   call lis_initialize(ierr)
 #else /* Tapenade */
@@ -725,6 +731,54 @@ time_output0(20) = TIME_OUT0_20
 
 #endif
 
+!-------- Maximum ice extent yes/no --------
+
+#if (!defined(MASK_MAXEXTENT_FILE) || THK_EVOL==0)
+
+flag_mask_maxextent = .false.   ! no maximum ice extent specified
+
+#else
+
+if ( (trim(adjustl(MASK_MAXEXTENT_FILE)) == 'none') &
+     .or. &
+     (trim(adjustl(MASK_MAXEXTENT_FILE)) == 'None') &
+     .or. &
+     (trim(adjustl(MASK_MAXEXTENT_FILE)) == 'NONE') ) then
+
+   flag_mask_maxextent = .false.   ! no maximum ice extent specified
+
+else
+
+   flag_mask_maxextent = .true.   ! maximum ice extent specified
+
+end if
+
+#endif
+
+!-------- Type of the geothermal heat flux (GHF) --------
+
+#if (!defined(Q_GEO_FILE))
+
+n_q_geo_mod = 1   ! spatially constant GHF
+
+#else
+
+if ( (trim(adjustl(Q_GEO_FILE)) == 'none') &
+     .or. &
+     (trim(adjustl(Q_GEO_FILE)) == 'None') &
+     .or. &
+     (trim(adjustl(Q_GEO_FILE)) == 'NONE') ) then
+
+   n_q_geo_mod = 1   ! spatially constant GHF
+
+else
+
+   n_q_geo_mod = 2   ! spatially varying GHF
+
+end if
+
+#endif
+
 !-------- Write log file --------
 
 shell_command = 'if [ ! -d'
@@ -752,7 +806,8 @@ write(10, fmt=trim(fmt1)) 'Computational domain:'
 write(10, fmt=trim(fmt1)) '   '//trim(ch_domain_long)
 write(10, fmt=trim(fmt1)) ' '
 
-write(10, fmt=trim(fmt1)) 'Physical-parameter file = '//PHYS_PARA_FILE
+write(10, fmt=trim(fmt1)) 'Physical-parameter file = ' &
+                          // trim(adjustl(PHYS_PARA_FILE))
 write(10, fmt=trim(fmt1)) ' '
 
 write(10, fmt=trim(fmt2)) 'GRID = ', GRID
@@ -957,9 +1012,8 @@ write(10, fmt=trim(fmt3)) 'H_isol_max =', H_ISOL_MAX
 #endif
 
 #if (THK_EVOL==2)
-write(10, fmt=trim(fmt3)) 'time_target_topo_init  =', TIME_TARGET_TOPO_INIT0
-write(10, fmt=trim(fmt3)) 'time_target_topo_final =', TIME_TARGET_TOPO_FINAL0
-write(10, fmt=trim(fmt3)) 'target_topo_tau_0 =', TARGET_TOPO_TAU0
+write(10, fmt=trim(fmt1)) 'Target-topography relaxation-time file = ' &
+                          //TARGET_TOPO_TAU0_FILE
 write(10, fmt=trim(fmt1)) 'Target-topography file = '//TARGET_TOPO_DAT_NAME
 write(10, fmt=trim(fmt1)) 'Path to target-topography file = '//TARGET_TOPO_PATH
 #endif
@@ -970,17 +1024,17 @@ write(10, fmt=trim(fmt1)) 'Target-topography file = '//TARGET_TOPO_DAT_NAME
 write(10, fmt=trim(fmt1)) 'Path to target-topography file = '//TARGET_TOPO_PATH
 #endif
 
-#if (THK_EVOL==4)
-write(10, fmt=trim(fmt1)) 'Maximum ice extent mask file = '//MASK_MAXEXTENT_FILE
+#if (defined(MASK_MAXEXTENT_FILE))
+if (flag_mask_maxextent) &
+   write(10, fmt=trim(fmt1)) 'Maximum ice extent mask file = ' &
+                             // trim(adjustl(MASK_MAXEXTENT_FILE))
 #endif
 
-#if (CALCTHK==2 || CALCTHK==3 || CALCTHK==5 || CALCTHK==6)
+#if (CALCTHK==2)
 write(10, fmt=trim(fmt3))  'ovi_weight =', OVI_WEIGHT
-#if (CALCTHK==2 || CALCTHK==5)
 write(10, fmt=trim(fmt3))  'omega_sor =', OMEGA_SOR
 #if (ITER_MAX_SOR>0)
 write(10, fmt=trim(fmt2)) 'iter_max_sor = ', ITER_MAX_SOR
-#endif
 #endif
 #endif
 write(10, fmt=trim(fmt1)) ' '
@@ -1195,12 +1249,12 @@ write(10, fmt=trim(fmt3)) 'Hw0_slide  =', HW0_SLIDE
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
-write(10, fmt=trim(fmt2)) 'Q_GEO_MOD = ', Q_GEO_MOD
-#if (Q_GEO_MOD==1)
-write(10, fmt=trim(fmt3)) 'q_geo =', Q_GEO
-#elif (Q_GEO_MOD==2)
-write(10, fmt=trim(fmt1)) 'q_geo file = '//Q_GEO_FILE
-#endif
+if (n_q_geo_mod==1) then
+   write(10, fmt=trim(fmt3)) 'q_geo =', Q_GEO
+else if (n_q_geo_mod==2) then
+   write(10, fmt=trim(fmt1)) 'q_geo file = '//Q_GEO_FILE
+end if
+write(10, fmt=trim(fmt2)) 'Q_LITHO = ', Q_LITHO
 write(10, fmt=trim(fmt1)) ' '
 
 #if (defined(MARINE_ICE_BASAL_MELTING))
@@ -1296,7 +1350,6 @@ errormsg = ' >>> sico_init: FLEX_RIG_MOD must be either 1 or 2!'
 call error(errormsg)
 #endif
 #endif
-write(10, fmt=trim(fmt2)) 'Q_LITHO = ', Q_LITHO
 write(10, fmt=trim(fmt1)) ' '
 
 write(10, fmt=trim(fmt3)) 'numdiff_H_t =', NUMDIFF_H_T
@@ -1354,7 +1407,10 @@ end do
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
+call get_environment_variable(name='REPO_REVISION', value=ch_revision, &
+                              status=istat, trim_name=.true.)
 write(10, fmt=trim(fmt1)) 'Program version and date: '//VERSION//' / '//DATE
+write(10, fmt=trim(fmt1)) 'Git revision identifier : ' // trim(ch_revision)
 
 close(10, status='keep')
 
@@ -1420,9 +1476,17 @@ end if
 #endif
 
 #if (THK_EVOL==2)
-time_target_topo_init  = TIME_TARGET_TOPO_INIT0 *year2sec   ! a --> s
-time_target_topo_final = TIME_TARGET_TOPO_FINAL0*year2sec   ! a --> s
-target_topo_tau_0 = TARGET_TOPO_TAU0 *year2sec   ! a --> s
+
+filename_with_path = trim(IN_PATH)//'/general/'//trim(TARGET_TOPO_TAU0_FILE)
+
+call read_scalar_input(filename_with_path, &
+                       'target_topo_tau0', ndata_target_topo_tau0_max, &
+                       target_topo_tau0_time_min, target_topo_tau0_time_stp, &
+                       target_topo_tau0_time_max, &
+                       ndata_target_topo_tau0, target_topo_tau0)
+
+target_topo_tau0 = target_topo_tau0 *year2sec   ! a --> s
+
 #endif
 
 #if (THK_EVOL==3)
@@ -1687,7 +1751,11 @@ call read_target_topo_nc(target_topo_dat_name)
 
 !-------- Reading of the maximum ice extent mask --------
 
-#if (THK_EVOL==4)
+mask_maxextent = 1   ! default (no constraint)
+
+#if (defined(MASK_MAXEXTENT_FILE))
+
+if (flag_mask_maxextent) then
 
 #if (GRID==0 || GRID==1)
 
@@ -1707,6 +1775,8 @@ errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
 call error(errormsg)
 
 #endif
+
+end if
 
 #endif
 
@@ -1750,33 +1820,10 @@ temp_mj_lgm_anom = temp_mj_lgm_anom * TEMP_MJ_ANOM_FACT
 
 filename_with_path = trim(IN_PATH)//'/general/'//trim(GRIP_TEMP_FILE)
 
-open(21, iostat=ios, file=trim(filename_with_path), status='old')
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the data file for delta_ts!'
-   call error(errormsg)
-end if
-#if !defined(ALLOW_TAPENADE)
-read(21, fmt=*) ch_dummy, grip_time_min, grip_time_stp, grip_time_max
-
-if (ch_dummy /= '#') then
-   errormsg = ' >>> sico_init: grip_time_min, grip_time_stp, grip_time_max' &
-            //         end_of_line &
-            //'        not defined in data file for delta_ts!'
-   call error(errormsg)
-end if
-
-ndata_grip = (grip_time_max-grip_time_min)/grip_time_stp
-
-allocate(griptemp(0:ndata_grip))
-#else 
-read(21, fmt=*)
-#endif
-do n=0, ndata_grip
-   read(21, fmt=*) d_dummy, griptemp(n)
-end do
-
-close(21, status='keep')
+call read_scalar_input(filename_with_path, &
+                       'delta_ts', ndata_grip_max, &
+                       grip_time_min, grip_time_stp, grip_time_max, &
+                       ndata_grip, griptemp)
 
 #endif
 
@@ -1786,31 +1833,10 @@ close(21, status='keep')
 
 filename_with_path = trim(IN_PATH)//'/general/'//trim(GLAC_IND_FILE)
 
-open(21, iostat=ios, file=trim(filename_with_path), status='old')
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the glacial-index file!'
-   call error(errormsg)
-end if
-
-read(21, fmt=*) ch_dummy, gi_time_min, gi_time_stp, gi_time_max
-
-if (ch_dummy /= '#') then
-   errormsg = ' >>> sico_init: gi_time_min, gi_time_stp, gi_time_max' &
-            //         end_of_line &
-            //'        not defined in glacial-index file!'
-   call error(errormsg)
-end if
-
-ndata_gi = (gi_time_max-gi_time_min)/gi_time_stp
-
-allocate(glacial_index(0:ndata_gi))
-
-do n=0, ndata_gi
-   read(21, fmt=*) d_dummy, glacial_index(n)
-end do
-
-close(21, status='keep')
+call read_scalar_input(filename_with_path, &
+                       'gi', ndata_gi_max, &
+                       gi_time_min, gi_time_stp, gi_time_max, &
+                       ndata_gi, glacial_index)
 
 #endif
 
@@ -2029,97 +2055,76 @@ end if
 
 filename_with_path = trim(IN_PATH)//'/general/'//trim(SEA_LEVEL_FILE)
 
-open(21, iostat=ios, file=trim(filename_with_path), status='old')
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the data file for z_sl!'
-   call error(errormsg)
-end if
-#if !defined(ALLOW_TAPENADE)
-read(21, fmt=*) ch_dummy, specmap_time_min, specmap_time_stp, specmap_time_max
-
-if (ch_dummy /= '#') then
-   errormsg = ' >>> sico_init:' &
-            //         end_of_line &
-            //'        specmap_time_min, specmap_time_stp, specmap_time_max' &
-            //         end_of_line &
-            //'        not defined in data file for z_sl!'
-   call error(errormsg)
-end if
-
-ndata_specmap = (specmap_time_max-specmap_time_min)/specmap_time_stp
-
-allocate(specmap_zsl(0:ndata_specmap))
-#else 
-read(21, fmt=*)
-#endif
-do n=0, ndata_specmap
-   read(21, fmt=*) d_dummy, specmap_zsl(n)
-end do
-
-close(21, status='keep')
+call read_scalar_input(filename_with_path, &
+                       'z_sl', ndata_specmap_max, &
+                       specmap_time_min, specmap_time_stp, specmap_time_max, &
+                       ndata_specmap, specmap_zsl)
 
 #endif
 
 !-------- Determination of the geothermal heat flux --------
 
 #if (!defined(ALLOW_TAPENADE) && defined(ALLOW_GRDCHK)) /* NORMAL */
- 
-#if (Q_GEO_MOD==1)
+
+if (n_q_geo_mod==1) then
 
 !  ------ Constant value
 
-do i=0, IMAX
-do j=0, JMAX
-   q_geo(j,i) = Q_GEO *1.0e-03_dp   ! mW/m2 -> W/m2
-end do
-end do
+   do i=0, IMAX
+   do j=0, JMAX
+      q_geo(j,i) = Q_GEO *1.0e-03_dp   ! mW/m2 -> W/m2
+   end do
+   end do
 
-#elif (Q_GEO_MOD==2)
+else if (n_q_geo_mod==2) then
 
 !  ------ Read data from file
 
-filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
-                     trim(Q_GEO_FILE)
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(Q_GEO_FILE)
 
-call read_2d_input(filename_with_path, &
-                   ch_var_name='GHF', n_var_type=1, n_ascii_header=6, &
-                   field2d_r=field2d_aux)
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='GHF', n_var_type=1, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
 
-q_geo = field2d_aux *1.0e-03_dp   ! mW/m2 -> W/m2
+   do i=0, IMAX
+   do j=0, JMAX
+      q_geo(j,i) = field2d_aux(j,i) *1.0e-03_dp   ! mW/m2 -> W/m2
+   end do
+   end do
 
-#endif 
+endif
 
 #else /* TAPENADE */
 
-#if (Q_GEO_MOD==1)
+if (n_q_geo_mod==1) then
 
 !  ------ Constant value
 
-do i=0, IMAX
-do j=0, JMAX
-   q_geo(j,i) = q_geo(j,i) + Q_GEO *1.0e-03_dp   ! mW/m2 -> W/m2
-end do
-end do
+   do i=0, IMAX
+   do j=0, JMAX
+      q_geo(j,i) = q_geo(j,i) + Q_GEO *1.0e-03_dp   ! mW/m2 -> W/m2
+   end do
+   end do
 
-#elif (Q_GEO_MOD==2)
+else if (n_q_geo_mod==2) then
 
 !  ------ Read data from file
 
-filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
-                     trim(Q_GEO_FILE)
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(Q_GEO_FILE)
 
-call read_2d_input(filename_with_path, &
-                   ch_var_name='GHF', n_var_type=1, n_ascii_header=6, &
-                   field2d_r=field2d_aux)
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='GHF', n_var_type=1, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
 
-do i=0, IMAX
-do j=0, JMAX
-   q_geo(j,i) = q_geo(j,i) + field2d_aux(j,i) *1.0e-03_dp   ! mW/m2 -> W/m2
-end do
-end do
+   do i=0, IMAX
+   do j=0, JMAX
+      q_geo(j,i) = q_geo(j,i) + field2d_aux(j,i) *1.0e-03_dp   ! mW/m2 -> W/m2
+   end do
+   end do
 
-#endif
+endif
 
 #endif /* TAPENADE */
 
@@ -2222,6 +2227,12 @@ do j=0, JMAX
 end do
 end do
 
+#endif
+
+!-------- gentim2d setup --------
+
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+  call ctrl_map_ini_gentim2d(time_init, dtime, 0)
 #endif
 
 !-------- Definition of initial values --------
@@ -2599,12 +2610,14 @@ print *, '                adjoint applications!'
 
 !  ------ Time-series file for deep boreholes
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
-
 n_core = 6   ! Vostok, Dome A, Dome C, Dome F, Kohnen, Byrd
 
-allocate(lambda_core(n_core), phi_core(n_core), &
-         x_core(n_core), y_core(n_core), ch_core(n_core))
+if (n_core > n_core_max) then
+   errormsg = ' >>> sico_init: n_core <= n_core_max required!' &
+            //         end_of_line &
+            //'        Increase value of n_core_max in sico_variables_m!'
+   call error(errormsg)
+end if
 
 ch_core(1)     = 'Vostok'
 phi_core(1)    = -78.467_dp *deg2rad    ! Geographical position of Vostok,
@@ -2655,8 +2668,6 @@ x_core = lambda_core
 y_core = phi_core
 
 #endif
-
-#endif /* Normal (Tapenade: No core data for adjoint) */
 
 filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.core'
 

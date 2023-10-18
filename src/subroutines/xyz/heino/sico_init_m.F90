@@ -61,7 +61,7 @@ subroutine sico_init(delta_ts, glac_index, &
   use enth_temp_omega_m, only : calc_c_int_table, calc_c_int_inv_table, &
                                 enth_fct_temp_omega
 
-  use read_m, only : read_2d_input, read_phys_para
+  use read_m, only : read_scalar_input, read_2d_input, read_phys_para
 
   use boundary_m
   use init_temp_water_age_m
@@ -88,7 +88,8 @@ real(dp),           intent(out) :: z_mar
 
 integer(i4b)       :: i, j, kc, kt, kr, m, n, ir, jr, n1, n2
 integer(i4b)       :: ios, ios1, ios2, ios3, ios4
-integer(i4b)       :: ierr
+integer(i4b)       :: istat, ierr
+integer(i4b)       :: n_q_geo_mod
 real(dp)           :: dtime0, dtime_temp0, dtime_wss0, dtime_out0, dtime_ser0
 real(dp)           :: time_init0, time_end0
 #if (OUTPUT==2 || OUTPUT==3)
@@ -98,6 +99,7 @@ real(dp)           :: d_dummy
 character(len=256) :: anfdatname
 character(len=256) :: filename_with_path
 character(len=256) :: shell_command
+character(len=256) :: ch_revision
 character          :: ch_dummy
 logical            :: flag_init_output, flag_3d_output
 
@@ -194,7 +196,7 @@ time_output = 0.0_dp
 !-------- Initialisation of the Library of Iterative Solvers Lis,
 !                                                     if required --------
 
-#if (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
+#if (MARGIN==3 || DYNAMICS==2)
   call lis_initialize(ierr)
 #endif
 
@@ -548,6 +550,30 @@ time_output0(20) = TIME_OUT0_20
 
 #endif
 
+!-------- Type of the geothermal heat flux (GHF) --------
+
+#if (!defined(Q_GEO_FILE))
+
+n_q_geo_mod = 1   ! spatially constant GHF
+
+#else
+
+if ( (trim(adjustl(Q_GEO_FILE)) == 'none') &
+     .or. &
+     (trim(adjustl(Q_GEO_FILE)) == 'None') &
+     .or. &
+     (trim(adjustl(Q_GEO_FILE)) == 'NONE') ) then
+
+   n_q_geo_mod = 1   ! spatially constant GHF
+
+else
+
+   n_q_geo_mod = 2   ! spatially varying GHF
+
+end if
+
+#endif
+
 !-------- Write log file --------
 
 shell_command = 'if [ ! -d'
@@ -569,6 +595,10 @@ end if
 
 write(10, fmt=trim(fmt1)) 'Computational domain:'
 write(10, fmt=trim(fmt1)) trim(ch_domain_long)
+write(10, fmt=trim(fmt1)) ' '
+
+write(10, fmt=trim(fmt1)) 'Physical-parameter file = ' &
+                          // trim(adjustl(PHYS_PARA_FILE))
 write(10, fmt=trim(fmt1)) ' '
 
 write(10, fmt=trim(fmt2)) 'GRID = ', GRID
@@ -648,13 +678,11 @@ write(10, fmt=trim(fmt2)) 'OCEAN_CONNECTIVITY = ', OCEAN_CONNECTIVITY
 write(10, fmt=trim(fmt3)) 'H_isol_max =', H_ISOL_MAX
 #endif
 
-#if (CALCTHK==2 || CALCTHK==3 || CALCTHK==5 || CALCTHK==6)
+#if (CALCTHK==2)
 write(10, fmt=trim(fmt3))  'ovi_weight   =', OVI_WEIGHT
-#if (CALCTHK==2 || CALCTHK==5)
 write(10, fmt=trim(fmt3))  'omega_sor    =', OMEGA_SOR
 #if (ITER_MAX_SOR>0)
 write(10, fmt=trim(fmt2)) 'iter_max_sor = ', ITER_MAX_SOR
-#endif
 #endif
 #endif
 
@@ -781,10 +809,10 @@ write(10, fmt=trim(fmt3)) 'Hw0_slide   =', HW0_SLIDE
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
-write(10, fmt=trim(fmt2)) 'Q_GEO_MOD = ', Q_GEO_MOD
-#if (Q_GEO_MOD==1)
-write(10, fmt=trim(fmt3)) 'q_geo =', Q_GEO
-#endif
+if (n_q_geo_mod==1) then
+   write(10, fmt=trim(fmt3)) 'q_geo =', Q_GEO
+end if
+write(10, fmt=trim(fmt2)) 'Q_LITHO = ', Q_LITHO
 write(10, fmt=trim(fmt1)) ' '
 
 write(10, fmt=trim(fmt2)) 'REBOUND       = ', REBOUND
@@ -813,7 +841,6 @@ errormsg = ' >>> sico_init: FLEX_RIG_MOD must be either 1 or 2!'
 call error(errormsg)
 #endif
 #endif
-write(10, fmt=trim(fmt2)) 'Q_LITHO       = ', Q_LITHO
 write(10, fmt=trim(fmt1)) ' '
 
 #if (FLOW_LAW==2)
@@ -979,7 +1006,10 @@ end do
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
+call get_environment_variable(name='REPO_REVISION', value=ch_revision, &
+                              status=istat, trim_name=.true.)
 write(10, fmt=trim(fmt1)) 'Program version and date: '//VERSION//' / '//DATE
+write(10, fmt=trim(fmt1)) 'Git revision identifier : ' // trim(ch_revision)
 
 close(10, status='keep')
 
@@ -1049,31 +1079,10 @@ n_slide_region = nint(field2d_aux)
 
 filename_with_path = trim(IN_PATH)//'/general/'//trim(GRIP_TEMP_FILE)
 
-open(21, iostat=ios, file=trim(filename_with_path), status='old')
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the data file for delta_ts!'
-   call error(errormsg)
-end if
-
-read(21, fmt=*) ch_dummy, grip_time_min, grip_time_stp, grip_time_max
-
-if (ch_dummy /= '#') then
-   errormsg = ' >>> sico_init: grip_time_min, grip_time_stp, grip_time_max' &
-            //         end_of_line &
-            //'        not defined in data file for delta_ts!'
-   call error(errormsg)
-end if
-
-ndata_grip = (grip_time_max-grip_time_min)/grip_time_stp
-
-allocate(griptemp(0:ndata_grip))
-
-do n=0, ndata_grip
-   read(21, fmt=*) d_dummy, griptemp(n)
-end do
-
-close(21, status='keep')
+call read_scalar_input(filename_with_path, &
+                       'delta_ts', ndata_grip_max, &
+                       grip_time_min, grip_time_stp, grip_time_max, &
+                       ndata_grip, griptemp)
 
 #endif
 
@@ -1083,55 +1092,32 @@ close(21, status='keep')
 
 filename_with_path = trim(IN_PATH)//'/general/'//trim(SEA_LEVEL_FILE)
 
-open(21, iostat=ios, file=trim(filename_with_path), status='old')
-
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the data file for z_sl!'
-   call error(errormsg)
-end if
-
-read(21, fmt=*) ch_dummy, specmap_time_min, specmap_time_stp, specmap_time_max
-
-if (ch_dummy /= '#') then
-   errormsg = ' >>> sico_init:' &
-            //         end_of_line &
-            //'        specmap_time_min, specmap_time_stp, specmap_time_max' &
-            //         end_of_line &
-            //'        not defined in data file for z_sl!'
-   call error(errormsg)
-end if
-
-ndata_specmap = (specmap_time_max-specmap_time_min)/specmap_time_stp
-
-allocate(specmap_zsl(0:ndata_specmap))
-
-do n=0, ndata_specmap
-   read(21, fmt=*) d_dummy, specmap_zsl(n)
-end do
-
-close(21, status='keep')
+call read_scalar_input(filename_with_path, &
+                       'z_sl', ndata_specmap_max, &
+                       specmap_time_min, specmap_time_stp, specmap_time_max, &
+                       ndata_specmap, specmap_zsl)
 
 #endif
 
 !-------- Determination of the geothermal heat flux --------
 
-#if (Q_GEO_MOD==1)
+if (n_q_geo_mod==1) then
 
 !  ------ Constant value
 
-do i=0, IMAX
-do j=0, JMAX
-   q_geo(j,i) = Q_GEO *1.0e-03_dp   ! mW/m2 -> W/m2
-end do
-end do
+   do i=0, IMAX
+   do j=0, JMAX
+      q_geo(j,i) = Q_GEO *1.0e-03_dp   ! mW/m2 -> W/m2
+   end do
+   end do
 
-#elif (Q_GEO_MOD==2)
+else if (n_q_geo_mod==2) then
 
-errormsg = ' >>> sico_init: ' &
-              //'Option Q_GEO_MOD==2 not available for this application!'
-call error(errormsg)
+   errormsg = ' >>> sico_init: ' &
+                 //'Option Q_GEO_FILE not available for this application!'
+   call error(errormsg)
 
-#endif
+end if
 
 !-------- Determination of the time lag
 !                              of the relaxing asthenosphere --------
@@ -1527,8 +1513,12 @@ write(15,1109)
 
 n_core = 7   ! Points P1 - P7
 
-allocate(lambda_core(n_core), phi_core(n_core), &
-         x_core(n_core), y_core(n_core), ch_core(n_core))
+if (n_core > n_core_max) then
+   errormsg = ' >>> sico_init: n_core <= n_core_max required!' &
+            //         end_of_line &
+            //'        Increase value of n_core_max in sico_variables_m!'
+   call error(errormsg)
+end if
 
 ch_core(1)     = 'P1'
 lambda_core(1) =    0.0_dp  ! dummy

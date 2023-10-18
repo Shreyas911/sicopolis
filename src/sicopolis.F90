@@ -4,8 +4,8 @@
 !             (SImulation COde for POLythermal Ice Sheets)
 !
 #define       MODEL_SICOPOLIS
-#define       VERSION '5'
-#define       DATE    '2023-07-14'
+#define       VERSION '23'
+#define       DATE    '2023-09-29'
 !
 !> @mainpage
 !!
@@ -39,7 +39,7 @@
 !! @li <https://sicopolis.readthedocs.io/en/latest/references.html>
 !!
 !! Resources:
-!! @li Model website: <http://www.sicopolis.net/>
+!! @li Model website: <https://www.sicopolis.net/>
 !! @li User manual: <https://sicopolis.readthedocs.io/>
 !! @li GitLab repository: <https://gitlab.awi.de/sicopolis/sicopolis/>
 !! @li SICOPOLIS community @ Zenodo:
@@ -152,6 +152,7 @@
 #include "subroutines/tapenade/cost/cost_m.F90"
 #include "subroutines/tapenade/ctrl/ctrl_map_genarr_m.F90"
 #include "subroutines/tapenade/ctrl/ctrl_init_genarr_m.F90"
+#include "subroutines/tapenade/ctrl/ctrl_map_gentim_m.F90"
 #endif /* Tapenade */
 
 #include "subroutines/general/ice_material_properties_m.F90"

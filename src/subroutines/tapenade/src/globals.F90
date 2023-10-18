@@ -40,6 +40,9 @@ module globals
 
   implicit none
 
+  real(dp), dimension(0:JMAX,0:IMAX,12)   :: temp_mm
+  real(dp), dimension(0:JMAX,0:IMAX)      :: temp_ma
+
   real(dp), dimension(0:JMAX,0:IMAX) :: dzs_dx_aux, dzs_dy_aux
 
 #if (DISC>0)

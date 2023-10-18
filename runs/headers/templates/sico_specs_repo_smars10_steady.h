@@ -4,7 +4,7 @@
 
 !-------- Basic settings --------
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2023-07-26'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2023-08-20'
 !                      Date of last change
 
 !-------- Domain --------
@@ -110,10 +110,6 @@
 !                       isostatic steady-state displacement of the lithosphere
 !                       (only for REBOUND==2, ELRA model)
 
-#define DTIME_SER0 1.0d+05
-!                       Time step (in a) for writing of data to
-!                       the time-series files
-
 !!! #define YEAR_SEC 31556926.0d0
 !                       Conversion from years to seconds;
 !                       only required if supposed to be different from
@@ -193,7 +189,7 @@
 !                         kicks in (for DYNAMICS==2 and HYB_MOD==0).
 
 #define SSTA_SIA_WEIGH_FCT 1
-!                         SStA-SIA weighing factor as a function of the
+!                         SStA-SIA weighting factor as a function of the
 !                         slip ratio (for DYNAMICS==2 and HYB_MOD==0):
 !                         0 : Linear function (continuous transitions)
 !                         1 : Cubic function (smooth transitions)
@@ -533,10 +529,6 @@
 !                         topography (ZL_PRESENT_FILE) can be used.
 !                         !!! Not to be used regularly!!!
 
-#define Q_LITHO 0
-!                         0 : No coupled heat-conducting bedrock
-!                         1 : Coupled heat-conducting bedrock
-
 !-------- Evolution of the ice thickness --------
 
 #define THK_EVOL 0
@@ -549,41 +541,32 @@
 !                         1 : Ocean connectivity enforced.
 
 #define H_ISOL_MAX 1000.0d0
-!                             Maximum thickness of isolated ice points (in m)
-!                             (if set to 0.0d0, isolated ice points are killed).
+!                         Maximum thickness of isolated ice points (in m)
+!                         (if set to 0.0d0, isolated ice points are killed).
 
 #define CALCTHK 2
 !                         Solution of the ice-thickness equation:
 !                         1 : Explicit scheme for the diffusive
 !                             SIA ice-surface equation
 !                         2 : Over-implicit scheme for the diffusive
-!                             SIA ice-surface equation,
-!                             iterative built-in SOR solver
-!                         3 : Over-implicit scheme for the diffusive
-!                             SIA ice-surface equation,
-!                             iterative library-based (Lis) solver
+!                             SIA ice-surface equation
+!                             (iterative built-in SOR solver)
 !                         4 : Explicit scheme for the general
 !                             ice-thickness equation
-!                         5 : Over-implicit scheme for the general
-!                             ice-thickness equation,
-!                             iterative built-in SOR solver
-!                         6 : Over-implicit scheme for the general
-!                             ice-thickness equation,
-!                             iterative library-based (Lis) solver
 
 #define OVI_WEIGHT 1.5d0
-!                       Weighing parameter for the over-implicit scheme
-!                       (only for CALCTHK==2, 3, 5, 6)
+!                         Weighting parameter for the over-implicit scheme
+!                         (only for CALCTHK==2)
 
 #define OMEGA_SOR 1.0d0
-!                       Relaxation parameter for the iterative SOR solver
-!                       for systems of linear equations
-!                       (0 < OMEGA_SOR < 2, only for CALCTHK==2, 5)
+!                         Relaxation parameter for the iterative SOR solver
+!                         for systems of linear equations
+!                         (0 < OMEGA_SOR < 2, only for CALCTHK==2)
 
 #define ITER_MAX_SOR 1000
-!                       Maximum number of iterations for the iterative
-!                       SOR solver for systems of linear equations
-!                       (only for CALCTHK==2, 5)
+!                         Maximum number of iterations for the iterative
+!                         SOR solver for systems of linear equations
+!                         (only for CALCTHK==2)
 
 !-------- Advection treatment in the temperature and age equations --------
 
@@ -863,21 +846,24 @@
 !                       Threshold water film thickness for water-film-enhanced
 !                       basal sliding (in m, only for BASAL_HYDROLOGY==1)
 
-!-------- Geothermal heat flux --------
-
-#define Q_GEO_MOD 1
-!                         1 : Constant geothermal heat flux defined
-!                             by parameter Q_GEO
-!                         2 : Spatially varying geothermal heat flux
-!                             read from file
+!-------- Geothermal heat flux (GHF) --------
 
 #define Q_GEO 35.0d0
-!                       Constant geothermal heat flux (for Q_GEO_MOD==1),
-!                       in mW/m2
+!                       Spatially constant GHF (in mW/m2)
+!                       (only used if Q_GEO_FILE == 'none', otherwise ignored)
 
-#define Q_GEO_FILE 'smars10_qgeo_xxx.dat'
-!                       Name of the file containing the spatially varying
-!                       geothermal heat flux (for Q_GEO_MOD==2)
+#define Q_GEO_FILE 'none'
+!                       Name of the file containing the spatially varying GHF
+!                       (set to 'none' if spatially constant GHF
+!                       defined by parameter Q_GEO is to be used)
+
+#define Q_LITHO 0
+!                       0 : No coupled heat-conducting bedrock
+!                           (GHF imposed directly at the grounded ice base)
+!                       1 : Coupled heat-conducting bedrock
+!                           (GHF imposed at the base of the
+!                           thermal lithosphere layer of thickness H_R,
+!                           defined in the physical-parameter file)
 
 !-------- Treatment of Chasma Australis --------
 
@@ -956,19 +942,23 @@
 !                              time-slice output with all 3-d fields for
 !                              OUTPUT==3, in which case snapshots are written)
 
+#define DTIME_SER0 1.0d+05
+!                         Time step (in a) for writing of data to
+!                         the time-series files (scalar variables)
+
 #define DTIME_OUT0 0.0d0
-!                             Time step (in a) for writing of
-!                             time-slice data (only for OUTPUT==1,3)
+!                         Time step (in a) for writing of
+!                         time-slice data (only for OUTPUT==1,3)
 
 #define N_OUTPUT 1
-!                             Number of specified times for writing of
-!                             time-slice data (only for OUTPUT==2,3,
-!                             not more than 100)
+!                         Number of specified times for writing of
+!                         time-slice data (only for OUTPUT==2,3,
+!                         not more than 100)
 
 #define TIME_OUT0 (/ 0.0d0 /)
-!                             Times (in a) for writing of time-slice
-!                             data (only for OUTPUT==2,3, in increasing
-!                             order from #1 to #N_OUTPUT)
+!                         Times (in a) for writing of time-slice
+!                         data (only for OUTPUT==2,3, in increasing
+!                         order from #1 to #N_OUTPUT)
 
 !-------- Limiters etc. --------
 
@@ -1007,7 +997,7 @@
 #define MEAN_ACCUM 1.0d-01
 !                       Mean accumulation rate over modelled ice sheet,
 !                       in mm water or (ice + dust) equiv./a
-!                       [Only required in case of CALCTHK==2, 5 for
+!                       [Only required in case of CALCTHK==2 for
 !                       the convergence criterion of the SOR method.
 !                       Need not be very precise, a rough estimate is
 !                       sufficient.]
