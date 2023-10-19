@@ -30,11 +30,11 @@ contains
 
     do ctrl_index = 1, NUM_CTRL_GENARR2D
       
-      if (trim(xx_genarr2d_vars(ctrl_index)) .EQ. 'xx_c_slide_init') then
+      if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_c_slide_init') then
         igen_c_slide_init = ctrl_index
-      else if (trim(xx_genarr2d_vars(ctrl_index)) .EQ. 'xx_q_geo') then
+      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_q_geo') then
         igen_q_geo = ctrl_index
-      else if (trim(xx_genarr2d_vars(ctrl_index)) .EQ. 'xx_zs') then
+      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_zs') then
         igen_zs = ctrl_index
 #if (ANF_DAT != 1)
         errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
@@ -116,7 +116,7 @@ contains
       end if
     end do
 
-    if (dobounds .AND. trim(xx_genarr2d_bounds(iarr)) .NE. ' ') then
+    if (dobounds .AND. trim(adjustl(xx_genarr2d_bounds(iarr))) .NE. ' ') then
       read (unit=xx_genarr2d_bounds(iarr),fmt=*) iLow, iHigh, jLow, jHigh
     else
       iLow  = 0
@@ -164,7 +164,7 @@ contains
 
     do ctrl_index = 1, NUM_CTRL_GENARR3D
       
-      if (trim(xx_genarr3d_vars(ctrl_index)) .EQ. 'xx_temp_c') then
+      if (trim(adjustl(xx_genarr3d_vars(ctrl_index))) .EQ. 'xx_temp_c') then
         igen_temp_c = ctrl_index
 #if (((ANF_DAT == 1) && TEMP_INIT==5) || (ANF_DAT > 2))
         errormsg = ' >>> ctrl_map_ini_genarr3d: ' &
@@ -243,7 +243,7 @@ contains
       end if
     end do
 
-    if (dobounds .AND. trim(xx_genarr3d_bounds(iarr)) .NE. ' ') then
+    if (dobounds .AND. trim(adjustl(xx_genarr3d_bounds(iarr))) .NE. ' ') then
       read (unit=xx_genarr3d_bounds(iarr),fmt=*) iLow, iHigh, jLow, jHigh, kcLow, kcHigh
     else
       iLow   = 0

@@ -27,7 +27,7 @@ contains
 
     do ctrl_index = 1, NUM_CTRL_GENTIM2D
       
-      if (trim(xx_gentim2d_vars(ctrl_index)) .EQ. 'xx_temp') then
+      if (trim(adjustl(xx_gentim2d_vars(ctrl_index))) .EQ. 'xx_temp') then
         igen_temp = ctrl_index
       else
         errormsg = ' >>> ctrl_map_ini_gentim2d: ' &
