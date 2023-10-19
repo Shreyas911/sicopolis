@@ -3,4 +3,9 @@
 Atmospheric forcing
 *******************
 
+.. _atm_eismint:
+
+EISMINT
+=======
+
 Lorem ipsum...
