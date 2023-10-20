@@ -19,6 +19,7 @@ module ad_output_m
 
     implicit none
 
+    integer(i4b) :: i, j, kc, kt, kr
     integer(i4b) :: ctrl_index
     integer(i4b) :: ios
     integer(i4b) :: cmode
@@ -46,6 +47,15 @@ module ad_output_m
     !     nc1cnt(1): Count of a 1-d array
     !     nc2cnt(2): Count of a 2-d array
     !     nc3cnt(3): Count of a 3-d array
+
+    real(dp) :: xi_conv(0:IMAX), eta_conv(0:JMAX), &
+    sigma_level_c_conv(0:KCMAX), sigma_level_t_conv(0:KTMAX), &
+    sigma_level_r_conv(0:KRMAX)
+
+    real(dp), dimension(NUM_CTRL_GENARR2D,0:IMAX,0:JMAX) :: xx_genarr2d_conv, &
+                                                            xx_genarr2db_conv
+    real(dp), dimension(NUM_CTRL_GENARR3D,0:IMAX,0:JMAX,0:KCMAX) :: xx_genarr3d_conv, &
+                                                                    xx_genarr3db_conv
 
     character(len=64), parameter :: thisroutine = 'ad_output'
 
@@ -217,8 +227,7 @@ module ad_output_m
     call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
           thisroutine )
 
-
-    !    ---- Write xx_genarr2d variables to file
+    !    ---- Define xx_genarr2d variables
     do ctrl_index = 1, NUM_CTRL_GENARR2D
 
       call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
@@ -227,13 +236,69 @@ module ad_output_m
                 thisroutine )
 
 #if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid, trim(adjustl(xx_genarr2d_vars(ctrl_index))), &
+                NF90_DOUBLE, nc2d, ncv, &
+                deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                thisroutine )
+#else
+      call check( nf90_def_var(ncid, trim(adjustl(xx_genarr2d_vars(ctrl_index))), &
+                NF90_DOUBLE, nc2d, ncv), &
+                thisroutine )     
+#endif      
+
+      call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
+                thisroutine )
+      call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
+                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
       call check( nf90_def_var(ncid, trim(adjustl(xx_genarr2d_vars(ctrl_index)))//'b', &
-                NF90_FLOAT, nc2d, ncv, &
+                NF90_DOUBLE, nc2d, ncv, &
                 deflate_level=n_deflate_level, shuffle=flag_shuffle), &
                 thisroutine )
 #else
       call check( nf90_def_var(ncid, trim(adjustl(xx_genarr2d_vars(ctrl_index)))//'b', &
-                NF90_FLOAT, nc2d, ncv), &
+                NF90_DOUBLE, nc2d, ncv), &
+                thisroutine )
+#endif
+    end do
+
+    !    ---- Define xx_genarr2d variables
+    do ctrl_index = 1, NUM_CTRL_GENARR3D
+
+      call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc3d(1)), &
+                thisroutine )
+      call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc3d(2)), &
+                thisroutine )
+      call check( nf90_inq_dimid(ncid, trim(coord_id(3)), nc3d(3)), &
+                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid, trim(adjustl(xx_genarr3d_vars(ctrl_index))), &
+                NF90_DOUBLE, nc3d, ncv, &
+                deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                thisroutine )
+#else
+      call check( nf90_def_var(ncid, trim(adjustl(xx_genarr3d_vars(ctrl_index))), &
+                NF90_DOUBLE, nc3d, ncv), &
+                thisroutine )     
+#endif      
+
+      call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc3d(1)), &
+                thisroutine )
+      call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc3d(2)), &
+                thisroutine )
+      call check( nf90_inq_dimid(ncid, trim(coord_id(3)), nc3d(3)), &
+                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid, trim(adjustl(xx_genarr3d_vars(ctrl_index)))//'b', &
+                NF90_DOUBLE, nc3d, ncv, &
+                deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                thisroutine )
+#else
+      call check( nf90_def_var(ncid, trim(adjustl(xx_genarr3d_vars(ctrl_index)))//'b', &
+                NF90_DOUBLE, nc3d, ncv), &
                 thisroutine )
 #endif
     end do
@@ -244,13 +309,101 @@ module ad_output_m
 
 !    ---- Put variables in
 
+    do i=0, IMAX
+      xi_conv(i) = xi(i)
+    end do
+   
+    do j=0, JMAX
+      eta_conv(j) = eta(j)
+    end do
+   
+    do kc=0, KCMAX
+      sigma_level_c_conv(kc) = eaz_c_quotient(kc)
+    end do
+   
+    do kt=0, KTMAX
+      sigma_level_t_conv(kt) = zeta_t(kt)
+    end do
+   
+    do kr=0, KRMAX
+      sigma_level_r_conv(kr) = real(kr,dp)/real(KRMAX,dp)
+    end do
+
+    call check( nf90_inq_varid(ncid, 'x', ncv), thisroutine )
+    call check( nf90_put_var(ncid, ncv, xi_conv, &
+                             start=nc1cor_i, count=nc1cnt_i), &
+                thisroutine )
+    
+    call check( nf90_inq_varid(ncid, 'y', ncv), thisroutine )
+    call check( nf90_put_var(ncid, ncv, eta_conv, &
+                             start=nc1cor_j, count=nc1cnt_j), &
+                thisroutine )
+    
+    call check( nf90_inq_varid(ncid, 'sigma_level_c', ncv), thisroutine )
+    call check( nf90_put_var(ncid, ncv, sigma_level_c_conv, &
+                             start=nc1cor_kc, count=nc1cnt_kc), &
+                thisroutine )
+    
+    call check( nf90_inq_varid(ncid, 'sigma_level_t', ncv), thisroutine )
+    call check( nf90_put_var(ncid, ncv, sigma_level_t_conv, &
+                             start=nc1cor_kt, count=nc1cnt_kt), &
+                thisroutine )
+    
+    call check( nf90_inq_varid(ncid, 'sigma_level_r', ncv), thisroutine )
+    call check( nf90_put_var(ncid, ncv, sigma_level_r_conv, &
+                             start=nc1cor_kr, count=nc1cnt_kr), &
+                thisroutine )
+                
+    do i=0, IMAX
+    do j=0, JMAX
+    do ctrl_index = 1, NUM_CTRL_GENARR2D
+      xx_genarr2d_conv(ctrl_index,i,j) = xx_genarr2d(ctrl_index,j,i)
+      xx_genarr2db_conv(ctrl_index,i,j) = xx_genarr2db(ctrl_index,j,i)
+    end do
+    end do
+    end do
+
+    do i=0, IMAX
+    do j=0, JMAX
+    do kc=0, KCMAX
+    do ctrl_index = 1, NUM_CTRL_GENARR2D
+      xx_genarr3d_conv(ctrl_index,i,j,kc) = xx_genarr3d(ctrl_index,kc,j,i)
+      xx_genarr3db_conv(ctrl_index,i,j,kc) = xx_genarr3db(ctrl_index,kc,j,i)
+    end do
+    end do
+    end do
+    end do
+
     do ctrl_index = 1, NUM_CTRL_GENARR2D
 
+      call check( nf90_inq_varid(ncid, trim(adjustl(xx_genarr2d_vars(ctrl_index))), &
+                  ncv), &
+                  thisroutine )
+      call check( nf90_put_var(ncid, ncv, xx_genarr2d_conv(ctrl_index,:,:), &
+                               start=nc2cor_ij, count=nc2cnt_ij), &
+                  thisroutine )
       call check( nf90_inq_varid(ncid, trim(adjustl(xx_genarr2d_vars(ctrl_index)))//'b', &
-                ncv), &
-                thisroutine )
-      call check( nf90_put_var(ncid, ncv, xx_genarr2db(ctrl_index,:,:), &
-                              start=nc2cor_ij, count=nc2cnt_ij), &
+                  ncv), &
+                  thisroutine )
+      call check( nf90_put_var(ncid, ncv, xx_genarr2db_conv(ctrl_index,:,:), &
+                               start=nc2cor_ij, count=nc2cnt_ij), &
+                  thisroutine )
+
+    end do
+
+    do ctrl_index = 1, NUM_CTRL_GENARR3D
+
+      call check( nf90_inq_varid(ncid, trim(adjustl(xx_genarr3d_vars(ctrl_index))), &
+                  ncv), &
+                  thisroutine )
+      call check( nf90_put_var(ncid, ncv, xx_genarr3d_conv(ctrl_index,:,:,:), &
+                               start=nc3cor_ijkc, count=nc3cnt_ijkc), &
+                  thisroutine )
+      call check( nf90_inq_varid(ncid, trim(adjustl(xx_genarr3d_vars(ctrl_index)))//'b', &
+                  ncv), &
+                  thisroutine )
+      call check( nf90_put_var(ncid, ncv, xx_genarr3db_conv(ctrl_index,:,:,:), &
+                               start=nc3cor_ijkc, count=nc3cnt_ijkc), &
                   thisroutine )
 
     end do
