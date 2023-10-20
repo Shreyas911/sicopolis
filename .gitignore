@@ -66,4 +66,5 @@ my_*
 
 **/.DS_Store
 **/__pycache__
+**/*.nc
 /src/subroutines/tapenade/ADFirstAidKit/*.gch

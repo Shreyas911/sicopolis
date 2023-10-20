@@ -161,11 +161,12 @@ subroutines/grl/boundary_m.F90\
 subroutines/ant/boundary_m.F90\
 subroutines/general/sico_main_loop_m.F90
 
-SRC_SICO_COST=\
+SRC_SICO_AD=\
 subroutines/tapenade/cost/cost_m.F90 \
 subroutines/tapenade/ctrl/ctrl_map_genarr_m.F90 \
 subroutines/tapenade/ctrl/ctrl_init_genarr_m.F90 \
-subroutines/tapenade/ctrl/ctrl_map_gentim_m.F90
+subroutines/tapenade/ctrl/ctrl_map_gentim_m.F90 \
+subroutines/tapenade/ad_io/ad_output_m.F90
 
 SRC=\
 sicopolis.F90
@@ -259,6 +260,7 @@ driveradjoint:${LIBLIS} \
 	nc_check_m_cpp.o \
 	PHONY_TAP_ADJ \
 	${OBJ_AD_ADJ} \
+	ad_output_m_cpp.o \
 	tapenade_m_cpp.o \
 	sicopolis.o
 	${F90C} ${F90FLAGS} -o $@ \
@@ -299,29 +301,29 @@ sico_specs.h: ../runs/headers/sico_specs_$(HEADER).h
 ad_specs.h: ../runs/headers_ad/ad_$(ADHEADER).h
 	cp $^ $@
 
-drivernormal: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_COST) $(SRC)
+drivernormal: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
 	sed -i 's/&__NL__//g' sico_specs.h
 	${F90C} -I./ ${F90FLAGS} ${DEFINE_FLAGS_NORMAL} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
 	${F90C} ${F90FLAGS} -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
 
 
-drivergrdchk: sico_specs.h ad_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_COST) $(SRC)
+drivergrdchk: sico_specs.h ad_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
 	sed -i 's/&__NL__//g' sico_specs.h
 	${F90C} -I./ ${F90FLAGS} ${DEFINE_FLAGS_GRDCHK} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
 	${F90C} ${F90FLAGS} -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
 
-drivergrdchk_cov: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_COST) $(SRC)
+drivergrdchk_cov: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
 	${F90C} -I./ ${F90FLAGS_COV} ${DEFINE_FLAGS_GRDCHK} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
 	${F90C} ${F90FLAGS_COV} -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
 
 
-cov: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_COST) $(SRC)
-	${GCOV} $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_COST) $(SRC)
+cov: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
+	${GCOV} $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
 
-coverage.info: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_COST) $(SRC)
+coverage.info: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
 	${LCOV} --gcov-tool $(GCOV) --capture --directory . --output-file coverage.info
 
-sicopolis.o: $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_COST) $(SRC) ad_specs.h
+sicopolis.o: $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_AD) $(SRC) ad_specs.h
 	sed -i 's/&__NL__//g' sico_specs.h
 	${F90C} -I./ ${F90FLAGS} ${DEFINE_FLAGS_ADJOINT} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
 
@@ -365,6 +367,11 @@ sico_variables_m_cpp.f90: subroutines/general/sico_variables_m.F90
 	sed -i 's/__NL__/\n/g' $@
 
 %_cpp.f90: subroutines/tapenade/src/%.F90
+	$(CPPCMD_FILES) > dummy.f90
+	cat dummy.f90 > $@
+	sed -i 's/__NL__/\n/g' $@
+
+%_cpp.f90: subroutines/tapenade/ad_io/%.F90
 	$(CPPCMD_FILES) > dummy.f90
 	cat dummy.f90 > $@
 	sed -i 's/__NL__/\n/g' $@

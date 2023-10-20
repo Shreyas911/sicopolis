@@ -1,0 +1,294 @@
+module ad_output_m
+
+  use sico_types_m
+  use sico_variables_m_diff
+  use sico_vars_m
+  use error_m
+
+  implicit none
+
+  private :: set_cmode
+  public :: ad_output
+
+  contains
+
+  subroutine ad_output
+
+    use netcdf
+    use nc_check_m
+
+    implicit none
+
+    integer(i4b) :: ctrl_index
+    integer(i4b) :: ios
+    integer(i4b) :: cmode
+    integer(i4b) :: n_deflate_level
+    logical      :: flag_shuffle
+    integer(i4b) :: ncid, ncv
+    !     ncid:      ID of the output file
+    !     ncv:       Variable ID
+    integer(i4b) :: ncd, nc1d, nc2d(2), nc3d(3)
+    !     ncd:       Dimension ID
+    !     nc1d:      Dimension of a 1-d array
+    !     nc2d:      Vector with the dimensions of a 2-d array
+    !     nc3d:      Vector with the dimensions of a 3-d array
+    integer(i4b) :: nc1cor_i(1), nc1cor_j(1), &
+                    nc1cor_kc(1), nc1cor_kt(1), nc1cor_kr(1), &
+                    nc2cor_ij(2), &
+                    nc3cor_ijkc(3), nc3cor_ijkt(3), nc3cor_ijkr(3)
+    !     nc1cor(1): Corner of a 1-d array
+    !     nc2cor(2): Corner of a 2-d array
+    !     nc3cor(3): Corner of a 3-d array
+    integer(i4b) :: nc1cnt_i(1), nc1cnt_j(1), &
+                    nc1cnt_kc(1), nc1cnt_kt(1), nc1cnt_kr(1), &
+                    nc2cnt_ij(2), &
+                    nc3cnt_ijkc(3), nc3cnt_ijkt(3), nc3cnt_ijkr(3)
+    !     nc1cnt(1): Count of a 1-d array
+    !     nc2cnt(2): Count of a 2-d array
+    !     nc3cnt(3): Count of a 3-d array
+
+    character(len=64), parameter :: thisroutine = 'ad_output'
+
+    character(len=256) :: filename, filename_with_path, temp_path
+    character(len= 16) :: ch_date, ch_time, ch_zone
+
+    character(len=256) :: buffer
+    character(len= 16), parameter :: filename_extension = '.nc'
+    character(len= 16), allocatable :: coord_id(:)
+
+    nc1cor_i = (/ 1 /)
+    nc1cnt_i = (/ IMAX+1 /)
+    
+    nc1cor_j = (/ 1 /)
+    nc1cnt_j = (/ JMAX+1 /)
+    
+    nc1cor_kc = (/ 1 /)
+    nc1cnt_kc = (/ KCMAX+1 /)
+    
+    nc1cor_kt = (/ 1 /)
+    nc1cnt_kt = (/ KTMAX+1 /)
+    
+    nc1cor_kr = (/ 1 /)
+    nc1cnt_kr = (/ KRMAX+1 /)
+    
+    nc2cor_ij = (/ 1, 1 /)
+    nc2cnt_ij = (/ IMAX+1, JMAX+1 /)
+    
+    nc3cor_ijkc = (/ 1, 1, 1 /)
+    nc3cnt_ijkc = (/ IMAX+1, JMAX+1, KCMAX+1 /)
+    
+    nc3cor_ijkt = (/ 1, 1, 1 /)
+    nc3cnt_ijkt = (/ IMAX+1, JMAX+1, KTMAX+1 /)
+    
+    nc3cor_ijkr = (/ 1, 1, 1 /)
+    nc3cnt_ijkr = (/ IMAX+1, JMAX+1, KRMAX+1 /)
+
+    !-------- Create file name --------
+    temp_path = AD_OUTPUT_PATH
+    filename = 'ad_output'//trim(filename_extension)
+    filename_with_path = trim(temp_path)//'/'//trim(filename)
+
+    !-------- File initialization --------
+
+    if (allocated(coord_id)) deallocate(coord_id); allocate(coord_id(5))
+    coord_id(1) = 'x'; coord_id(2) = 'y'
+    coord_id(3) = 'zeta_c'; coord_id(4) = 'zeta_t'; coord_id(5) = 'zeta_r'
+    
+    !  ------ Open NetCDF file
+    
+    call set_cmode(cmode, n_deflate_level, flag_shuffle)
+
+    ios = nf90_create(trim(filename_with_path), cmode, ncid)
+    if (ios /= nf90_noerr) then
+        errormsg = ' >>> '//trim(thisroutine)//': Error when opening a' &
+                //               end_of_line &
+                //'              NetCDF AD-output file!'
+        call error(errormsg)
+    end if
+    
+    !  ------ Global attributes
+    
+    call date_and_time(ch_date, ch_time, ch_zone)
+    buffer = ch_date(1:4)//'-'//ch_date(5:6)//'-'//ch_date(7:8)//' '// &
+              ch_time(1:2)//':'//ch_time(3:4)//':'//ch_time(5:6)//' '// &
+              ch_zone(1:3)//':'//ch_zone(4:5)//' - Data produced'
+    call check( nf90_put_att(ncid, NF90_GLOBAL, 'history', trim(buffer)), &
+                thisroutine )
+
+    !  ------ Definition of the dimensions
+    
+    call check( nf90_def_dim(ncid, trim(coord_id(1)), IMAX+1,  ncd), thisroutine )
+    call check( nf90_def_dim(ncid, trim(coord_id(2)), JMAX+1,  ncd), thisroutine )
+    call check( nf90_def_dim(ncid, trim(coord_id(3)), KCMAX+1, ncd), thisroutine )
+    call check( nf90_def_dim(ncid, trim(coord_id(4)), KTMAX+1, ncd), thisroutine )
+    call check( nf90_def_dim(ncid, trim(coord_id(5)), KRMAX+1, ncd), thisroutine )
+      
+    !    ---- x (= xi)
+
+    call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc1d), &
+          thisroutine )
+
+    call check( nf90_def_var(ncid, 'x', NF90_DOUBLE, nc1d, ncv), &
+          thisroutine )
+
+    buffer = 'm'
+    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
+          thisroutine )
+    buffer = 'projection_x_coordinate'
+    call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
+          thisroutine )
+    buffer = 'x-coordinate of the grid point i'
+    call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
+          thisroutine )
+    call check( nf90_put_att(ncid, ncv, 'axis', 'x'), &
+          thisroutine )
+
+    !    ---- y (= eta)
+
+    call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc1d), &
+          thisroutine )
+
+    call check( nf90_def_var(ncid, 'y', NF90_DOUBLE, nc1d, ncv), &
+          thisroutine )
+
+    buffer = 'm'
+    call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
+          thisroutine )
+    buffer = 'projection_y_coordinate'
+    call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
+          thisroutine )
+    buffer = 'y-coordinate of the grid point j'
+    call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
+          thisroutine )
+    call check( nf90_put_att(ncid, ncv, 'axis', 'y'), &
+          thisroutine )
+
+    !    ---- sigma_level_c
+
+    call check( nf90_inq_dimid(ncid, trim(coord_id(3)), nc1d), &
+          thisroutine )
+
+    call check( nf90_def_var(ncid, 'sigma_level_c', NF90_DOUBLE, nc1d, ncv), &
+          thisroutine )
+
+    buffer = 'up'
+    call check( nf90_put_att(ncid, ncv, 'positive', trim(buffer)), &
+          thisroutine )
+    buffer = 'land_ice_kc_layer_sigma_coordinate'
+    call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
+          thisroutine )
+    buffer = 'sigma-coordinate of the grid point kc'
+    call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
+          thisroutine )
+
+    !    ---- sigma_level_t
+
+    call check( nf90_inq_dimid(ncid, trim(coord_id(4)), nc1d), &
+          thisroutine )
+
+    call check( nf90_def_var(ncid, 'sigma_level_t', NF90_DOUBLE, nc1d, ncv), &
+          thisroutine )
+
+    buffer = 'up'
+    call check( nf90_put_att(ncid, ncv, 'positive', trim(buffer)), &
+          thisroutine )
+    buffer = 'land_ice_kt_layer_sigma_coordinate'
+    call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
+          thisroutine )
+    buffer = 'sigma-coordinate of the grid point kt'
+    call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
+          thisroutine )
+
+    !    ---- sigma_level_r
+
+    call check( nf90_inq_dimid(ncid, trim(coord_id(5)), nc1d), &
+          thisroutine )
+
+    call check( nf90_def_var(ncid, 'sigma_level_r', NF90_DOUBLE, nc1d, ncv), &
+          thisroutine )
+
+    buffer = 'up'
+    call check( nf90_put_att(ncid, ncv, 'positive', trim(buffer)), &
+          thisroutine )
+    buffer = 'lithosphere_layer_sigma_coordinate'
+    call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
+          thisroutine )
+    buffer = 'sigma-coordinate of the grid point kr'
+    call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
+          thisroutine )
+
+
+    !    ---- Write xx_genarr2d variables to file
+    do ctrl_index = 1, NUM_CTRL_GENARR2D
+
+      call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
+                thisroutine )
+      call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
+                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid, trim(adjustl(xx_genarr2d_vars(ctrl_index)))//'b', &
+                NF90_FLOAT, nc2d, ncv, &
+                deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                thisroutine )
+#else
+      call check( nf90_def_var(ncid, trim(adjustl(xx_genarr2d_vars(ctrl_index)))//'b', &
+                NF90_FLOAT, nc2d, ncv), &
+                thisroutine )
+#endif
+    end do
+    
+!    ---- End of the definitions
+
+    call check( nf90_enddef(ncid), thisroutine )
+
+!    ---- Put variables in
+
+    do ctrl_index = 1, NUM_CTRL_GENARR2D
+
+      call check( nf90_inq_varid(ncid, trim(adjustl(xx_genarr2d_vars(ctrl_index)))//'b', &
+                ncv), &
+                thisroutine )
+      call check( nf90_put_var(ncid, ncv, xx_genarr2db(ctrl_index,:,:), &
+                              start=nc2cor_ij, count=nc2cnt_ij), &
+                  thisroutine )
+
+    end do
+
+    call check( nf90_sync(ncid),  thisroutine )
+    call check( nf90_close(ncid), thisroutine )
+
+    deallocate(coord_id)
+
+  end subroutine ad_output
+
+!-------------------------------------------------------------------------------
+!> Set the creation mode and compression type for NetCDF files.
+!<------------------------------------------------------------------------------
+  subroutine set_cmode(cmode, n_deflate_level, flag_shuffle)
+
+    use netcdf
+  
+    implicit none
+  
+    integer(i4b), intent(out) :: cmode
+    integer(i4b), intent(out) :: n_deflate_level
+    logical,      intent(out) :: flag_shuffle
+  
+#if (NETCDF4_ENABLED==1)
+  
+    cmode           = ior(NF90_NETCDF4, NF90_CLASSIC_MODEL)
+    n_deflate_level = 1
+    flag_shuffle    = .true.
+  
+#else
+  
+    cmode           = NF90_NOCLOBBER
+    n_deflate_level = 0
+    flag_shuffle    = .false.
+  
+#endif
+  
+    end subroutine set_cmode
+
+end module ad_output_m

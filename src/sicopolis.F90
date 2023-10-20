@@ -153,6 +153,7 @@
 #include "subroutines/tapenade/ctrl/ctrl_map_genarr_m.F90"
 #include "subroutines/tapenade/ctrl/ctrl_init_genarr_m.F90"
 #include "subroutines/tapenade/ctrl/ctrl_map_gentim_m.F90"
+#include "subroutines/tapenade/ad_io/ad_output_m.F90"
 #endif /* Tapenade */
 
 #include "subroutines/general/ice_material_properties_m.F90"
