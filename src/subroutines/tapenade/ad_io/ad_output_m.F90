@@ -19,7 +19,7 @@ module ad_output_m
 
     implicit none
 
-    integer(i4b) :: i, j, kc, kt, kr
+    integer(i4b) :: i, j, kc, tad
     integer(i4b) :: ctrl_index
     integer(i4b) :: ios
     integer(i4b) :: cmode
@@ -34,28 +34,29 @@ module ad_output_m
     !     nc2d:      Vector with the dimensions of a 2-d array
     !     nc3d:      Vector with the dimensions of a 3-d array
     integer(i4b) :: nc1cor_i(1), nc1cor_j(1), &
-                    nc1cor_kc(1), nc1cor_kt(1), nc1cor_kr(1), &
-                    nc2cor_ij(2), &
-                    nc3cor_ijkc(3), nc3cor_ijkt(3), nc3cor_ijkr(3)
+                    nc1cor_kc(1), nc1cor_tad(1), &
+                    nc2cor_ij(2), nc2cor_ijtad(3), &
+                    nc3cor_ijkc(3)
     !     nc1cor(1): Corner of a 1-d array
     !     nc2cor(2): Corner of a 2-d array
     !     nc3cor(3): Corner of a 3-d array
     integer(i4b) :: nc1cnt_i(1), nc1cnt_j(1), &
-                    nc1cnt_kc(1), nc1cnt_kt(1), nc1cnt_kr(1), &
-                    nc2cnt_ij(2), &
-                    nc3cnt_ijkc(3), nc3cnt_ijkt(3), nc3cnt_ijkr(3)
+                    nc1cnt_kc(1), nc1cnt_tad(1), &
+                    nc2cnt_ij(2), nc2cnt_ijtad(3), &
+                    nc3cnt_ijkc(3)
     !     nc1cnt(1): Count of a 1-d array
     !     nc2cnt(2): Count of a 2-d array
     !     nc3cnt(3): Count of a 3-d array
 
     real(dp) :: xi_conv(0:IMAX), eta_conv(0:JMAX), &
-    sigma_level_c_conv(0:KCMAX), sigma_level_t_conv(0:KTMAX), &
-    sigma_level_r_conv(0:KRMAX)
+    sigma_level_c_conv(0:KCMAX), time_ad_conv(0:ADNMAX)
 
     real(dp), dimension(NUM_CTRL_GENARR2D,0:IMAX,0:JMAX) :: xx_genarr2d_conv, &
                                                             xx_genarr2db_conv
     real(dp), dimension(NUM_CTRL_GENARR3D,0:IMAX,0:JMAX,0:KCMAX) :: xx_genarr3d_conv, &
                                                                     xx_genarr3db_conv
+    real(dp), dimension(NUM_CTRL_GENTIM2D,0:ADNMAX,0:IMAX,0:JMAX) :: xx_gentim2d_conv, &
+                                                                     xx_gentim2db_conv
 
     character(len=64), parameter :: thisroutine = 'ad_output'
 
@@ -74,24 +75,18 @@ module ad_output_m
     
     nc1cor_kc = (/ 1 /)
     nc1cnt_kc = (/ KCMAX+1 /)
-    
-    nc1cor_kt = (/ 1 /)
-    nc1cnt_kt = (/ KTMAX+1 /)
-    
-    nc1cor_kr = (/ 1 /)
-    nc1cnt_kr = (/ KRMAX+1 /)
+
+    nc1cor_tad = (/ 1 /)
+    nc1cnt_tad = (/ ADNMAX+1 /)
     
     nc2cor_ij = (/ 1, 1 /)
     nc2cnt_ij = (/ IMAX+1, JMAX+1 /)
     
     nc3cor_ijkc = (/ 1, 1, 1 /)
     nc3cnt_ijkc = (/ IMAX+1, JMAX+1, KCMAX+1 /)
-    
-    nc3cor_ijkt = (/ 1, 1, 1 /)
-    nc3cnt_ijkt = (/ IMAX+1, JMAX+1, KTMAX+1 /)
-    
-    nc3cor_ijkr = (/ 1, 1, 1 /)
-    nc3cnt_ijkr = (/ IMAX+1, JMAX+1, KRMAX+1 /)
+
+    nc2cor_ijtad = (/ 1, 1, 1 /)
+    nc2cnt_ijtad = (/ IMAX+1, JMAX+1, ADNMAX+1 /)
 
     !-------- Create file name --------
     temp_path = AD_OUTPUT_PATH
@@ -100,9 +95,9 @@ module ad_output_m
 
     !-------- File initialization --------
 
-    if (allocated(coord_id)) deallocate(coord_id); allocate(coord_id(5))
+    if (allocated(coord_id)) deallocate(coord_id); allocate(coord_id(4))
     coord_id(1) = 'x'; coord_id(2) = 'y'
-    coord_id(3) = 'zeta_c'; coord_id(4) = 'zeta_t'; coord_id(5) = 'zeta_r'
+    coord_id(3) = 'zeta_c'; coord_id(4) = 'time_ad'
     
     !  ------ Open NetCDF file
     
@@ -130,8 +125,7 @@ module ad_output_m
     call check( nf90_def_dim(ncid, trim(coord_id(1)), IMAX+1,  ncd), thisroutine )
     call check( nf90_def_dim(ncid, trim(coord_id(2)), JMAX+1,  ncd), thisroutine )
     call check( nf90_def_dim(ncid, trim(coord_id(3)), KCMAX+1, ncd), thisroutine )
-    call check( nf90_def_dim(ncid, trim(coord_id(4)), KTMAX+1, ncd), thisroutine )
-    call check( nf90_def_dim(ncid, trim(coord_id(5)), KRMAX+1, ncd), thisroutine )
+    call check( nf90_def_dim(ncid, trim(coord_id(4)), ADNMAX+1, ncd), thisroutine )
       
     !    ---- x (= xi)
 
@@ -191,39 +185,18 @@ module ad_output_m
     call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
           thisroutine )
 
-    !    ---- sigma_level_t
+    !    ---- time_ad
 
     call check( nf90_inq_dimid(ncid, trim(coord_id(4)), nc1d), &
           thisroutine )
 
-    call check( nf90_def_var(ncid, 'sigma_level_t', NF90_DOUBLE, nc1d, ncv), &
+    call check( nf90_def_var(ncid, 'time_ad', NF90_DOUBLE, nc1d, ncv), &
           thisroutine )
 
-    buffer = 'up'
-    call check( nf90_put_att(ncid, ncv, 'positive', trim(buffer)), &
-          thisroutine )
-    buffer = 'land_ice_kt_layer_sigma_coordinate'
+    buffer = 'time_ad_gentim2d'
     call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
           thisroutine )
-    buffer = 'sigma-coordinate of the grid point kt'
-    call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
-          thisroutine )
-
-    !    ---- sigma_level_r
-
-    call check( nf90_inq_dimid(ncid, trim(coord_id(5)), nc1d), &
-          thisroutine )
-
-    call check( nf90_def_var(ncid, 'sigma_level_r', NF90_DOUBLE, nc1d, ncv), &
-          thisroutine )
-
-    buffer = 'up'
-    call check( nf90_put_att(ncid, ncv, 'positive', trim(buffer)), &
-          thisroutine )
-    buffer = 'lithosphere_layer_sigma_coordinate'
-    call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
-          thisroutine )
-    buffer = 'sigma-coordinate of the grid point kr'
+    buffer = 'Times between which linear interp. for gentim2d'
     call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
           thisroutine )
 
@@ -263,7 +236,7 @@ module ad_output_m
 #endif
     end do
 
-    !    ---- Define xx_genarr2d variables
+    !    ---- Define xx_genarr3d variables
     do ctrl_index = 1, NUM_CTRL_GENARR3D
 
       call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc3d(1)), &
@@ -302,6 +275,47 @@ module ad_output_m
                 thisroutine )
 #endif
     end do
+
+    !    ---- Define xx_gentim2d variables
+    do ctrl_index = 1, NUM_CTRL_GENTIM2D
+      
+      call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc3d(1)), &
+                thisroutine )
+      call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc3d(2)), &
+                thisroutine )
+      call check( nf90_inq_dimid(ncid, trim(coord_id(4)), nc3d(3)), &
+                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid, trim(adjustl(xx_gentim2d_vars(ctrl_index))), &
+                NF90_DOUBLE, nc3d, ncv, &
+                deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                thisroutine )
+#else
+      call check( nf90_def_var(ncid, trim(adjustl(xx_gentim2d_vars(ctrl_index))), &
+                NF90_DOUBLE, nc3d, ncv), &
+                thisroutine )     
+#endif      
+
+      call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc3d(1)), &
+                thisroutine )
+      call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc3d(2)), &
+                thisroutine )
+      call check( nf90_inq_dimid(ncid, trim(coord_id(4)), nc3d(3)), &
+                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid, trim(adjustl(xx_gentim2d_vars(ctrl_index)))//'b', &
+                NF90_DOUBLE, nc3d, ncv, &
+                deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                thisroutine )
+#else
+      call check( nf90_def_var(ncid, trim(adjustl(xx_gentim2d_vars(ctrl_index)))//'b', &
+                NF90_DOUBLE, nc3d, ncv), &
+                thisroutine )
+#endif     
+
+    end do
     
 !    ---- End of the definitions
 
@@ -320,13 +334,9 @@ module ad_output_m
     do kc=0, KCMAX
       sigma_level_c_conv(kc) = eaz_c_quotient(kc)
     end do
-   
-    do kt=0, KTMAX
-      sigma_level_t_conv(kt) = zeta_t(kt)
-    end do
-   
-    do kr=0, KRMAX
-      sigma_level_r_conv(kr) = real(kr,dp)/real(KRMAX,dp)
+
+    do tad=0, ADNMAX
+      time_ad_conv(tad) = tad*XX_GENTIM2D_PERIOD
     end do
 
     call check( nf90_inq_varid(ncid, 'x', ncv), thisroutine )
@@ -343,17 +353,12 @@ module ad_output_m
     call check( nf90_put_var(ncid, ncv, sigma_level_c_conv, &
                              start=nc1cor_kc, count=nc1cnt_kc), &
                 thisroutine )
-    
-    call check( nf90_inq_varid(ncid, 'sigma_level_t', ncv), thisroutine )
-    call check( nf90_put_var(ncid, ncv, sigma_level_t_conv, &
-                             start=nc1cor_kt, count=nc1cnt_kt), &
+
+    call check( nf90_inq_varid(ncid, 'time_ad', ncv), thisroutine )
+    call check( nf90_put_var(ncid, ncv, time_ad_conv, &
+                             start=nc1cor_tad, count=nc1cnt_tad), &
                 thisroutine )
-    
-    call check( nf90_inq_varid(ncid, 'sigma_level_r', ncv), thisroutine )
-    call check( nf90_put_var(ncid, ncv, sigma_level_r_conv, &
-                             start=nc1cor_kr, count=nc1cnt_kr), &
-                thisroutine )
-                
+
     do i=0, IMAX
     do j=0, JMAX
     do ctrl_index = 1, NUM_CTRL_GENARR2D
@@ -369,6 +374,17 @@ module ad_output_m
     do ctrl_index = 1, NUM_CTRL_GENARR2D
       xx_genarr3d_conv(ctrl_index,i,j,kc) = xx_genarr3d(ctrl_index,kc,j,i)
       xx_genarr3db_conv(ctrl_index,i,j,kc) = xx_genarr3db(ctrl_index,kc,j,i)
+    end do
+    end do
+    end do
+    end do
+
+    do i=0, IMAX
+    do j=0, JMAX
+    do tad=0, ADNMAX
+    do ctrl_index = 1, NUM_CTRL_GENTIM2D
+      xx_gentim2d_conv(ctrl_index,i,j,tad) = xx_gentim2d(ctrl_index,tad,j,i)
+      xx_gentim2db_conv(ctrl_index,i,j,tad) = xx_gentim2db(ctrl_index,tad,j,i)
     end do
     end do
     end do
@@ -404,6 +420,23 @@ module ad_output_m
                   thisroutine )
       call check( nf90_put_var(ncid, ncv, xx_genarr3db_conv(ctrl_index,:,:,:), &
                                start=nc3cor_ijkc, count=nc3cnt_ijkc), &
+                  thisroutine )
+
+    end do
+
+    do ctrl_index = 1, NUM_CTRL_GENTIM2D
+
+      call check( nf90_inq_varid(ncid, trim(adjustl(xx_gentim2d_vars(ctrl_index))), &
+                  ncv), &
+                  thisroutine )
+      call check( nf90_put_var(ncid, ncv, xx_gentim2d_conv(ctrl_index,:,:,:), &
+                               start=nc2cor_ijtad, count=nc2cnt_ijtad), &
+                  thisroutine )
+      call check( nf90_inq_varid(ncid, trim(adjustl(xx_gentim2d_vars(ctrl_index)))//'b', &
+                  ncv), &
+                  thisroutine )
+      call check( nf90_put_var(ncid, ncv, xx_gentim2db_conv(ctrl_index,:,:,:), &
+                               start=nc2cor_ijtad, count=nc2cnt_ijtad), &
                   thisroutine )
 
     end do
