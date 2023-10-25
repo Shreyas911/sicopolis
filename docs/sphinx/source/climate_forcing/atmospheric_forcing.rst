@@ -6,12 +6,14 @@ Atmospheric forcing
 .. |nbsp| unicode:: 0xA0 
    :trim:
 
+Atmospheric forcing consists of the surface temperature and surface mass balance (SMB). Both must be provided for the simulated ice sheet as functions of space and time.
+
 .. _atm_eismint:
 
 EISMINT
 =======
 
-For the EISMINT (simplified geometry) domain, the surface temperature and surface mass balance (SMB) are specified by simple parameterizations. These parameterizations depend either on the horizontal distance from the centre of the domain, :math:`r`, or on the surface elevation, :math:`h`.
+For the EISMINT (simplified geometry) domain, the surface temperature and SMB are specified by simple parameterizations. These parameterizations depend either on the horizontal distance from the centre of the domain, :math:`r`, or on the surface elevation, :math:`h`.
 
 The distance-dependent parameterizations (parameter ``SURFACE_FORCING = 1``) are those from the original EISMINT set-up by Payne et al. :cite:`payne_etal_2000`. The surface temperature, :math:`T_\mathrm{s}`, is given by
 
