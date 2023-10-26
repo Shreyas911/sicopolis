@@ -526,7 +526,7 @@
 
 !-------- Evolution of the ice thickness --------
 
-#define THK_EVOL 1
+#define THK_EVOL 2
 !                         0 : No evolution of the ice thickness, kept fixed on
 !                             the initial thickness
 !                         1 : Evolution of the ice thickness
@@ -548,7 +548,7 @@
 !                         Maximum thickness of isolated ice points (in m)
 !                         (if set to 0.0d0, isolated ice points are killed).
 
-#define TARGET_TOPO_TAU0_FILE 'none'
+#define TARGET_TOPO_TAU0_FILE 'target_topo_tau_ss25ka.dat'
 !                         Name of the file containing the time-dependent
 !                         relaxation time for
 !                         nudging towards target topography
@@ -561,7 +561,7 @@
 !                          only for THK_EVOL==3,
 !                          or for ACCSURFACE==7 and ABLSURFACE==7)
 
-#define TARGET_TOPO_DAT_NAME 'none'
+#define TARGET_TOPO_DAT_NAME 'repo_grl16_bm5_init100a0001.nc'
 !                         Target-topography file
 !                         (only for THK_EVOL==2, 3,
 !                          or for ACCSURFACE==7 and ABLSURFACE==7)
