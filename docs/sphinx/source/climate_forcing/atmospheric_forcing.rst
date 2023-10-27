@@ -86,9 +86,16 @@ Currently, it is not implemented to make the parameters of the above parameteriz
 Antarctica, Greenland, etc.
 ===========================
 
-For the terrestrial ice sheets and ice caps, the choice of the surface temperature and SMB is controlled by the run-specs-header paramaters ``TSURFACE``, ``ACCSURFACE`` and ``ABLSURFACE``, as well as further, dependent parameters. (...)
+For the terrestrial ice sheets and ice caps, the choice of the surface temperature and SMB is controlled by the run-specs-header paramaters ``TSURFACE``, ``ACCSURFACE`` and ``ABLSURFACE``, as well as further, dependent parameters. The following methods are available:
 
-.. Two paradigms... precip plus parameterized runoff vs. prescribed SMB...
+* | For ``TSURFACE``, ``ACCSURFACE``, ``ABLSURFACE`` all ``<= 5``, the surface temperature and precipitation are prescribed via a present-day distribution plus time-dependent anomaly approach, while the runoff is parameterized by either the positive-degree-day (PDD) method (version by Calov and Greve :cite:`calov_greve_2005`) or the linear-temperature-index (LTI) method (Ohmura :cite:`ohmura_2001`).
+  | The time dependency results either from a time-dependent surface temperature anomaly :math:`\Delta{}T_\mathrm{s}(t)` (``TSURFACE`` and ``ACCSURFACE < 5``), or from a time-dependent glacial index :math:`g(t)` (``TSURFACE = ACCSURFACE = 5``).
+
+* | For ``TSURFACE = ACCSURFACE = ABLSURFACE = 6``, the surface temperature and (net) SMB are prescribed, typically from GCM output. This is the method used for the ISMIP6 future predictions (Goelzer et al. :cite:`goelzer_etal_2020`, Seroussi et al. :cite:`seroussi_etal_2020`) and follow-up studies. It requires present-day distributions plus annual anomalies for the surface temperature and SMB, all to be provided as NetCDF files.
+
+* | The setting ``ACCSURFACE = ABLSURFACE = 7`` selects the "implied SMB" by Calov et al. :cite:`calov_etal_2018`. It has a similar effect as the setting ``THK_EVOL = 3`` (topography nudging towards a prescribed target with a constant relaxation time; see Section ":ref:`Ice-thickness evolution <ice_thickness_evolution>`").
+
+For details on the different settings, see the documentation in the run-specs headers. Note that not all options are implemented for all domains.
 
 .. _atm_n_s_mars:
 
