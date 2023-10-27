@@ -81,6 +81,15 @@ In the run-specs headers, the parameters to be defined are
 
 Currently, it is not implemented to make the parameters of the above parameterizations time-dependent. (This feature can be added quite easily if need arises.) However, time-dependent anomalies of the surface temperature can be defined via the parameter ``TSURFACE`` and additional parameters, as described in the run-specs headers.
 
+.. _atm_ant_grl_etc:
+
+Antarctica, Greenland, etc.
+===========================
+
+For the terrestrial ice sheets and ice caps, the choice of the surface temperature and SMB is controlled by the run-specs-header paramaters ``TSURFACE``, ``ACCSURFACE`` and ``ABLSURFACE``, as well as further, dependent parameters. (...)
+
+.. Two paradigms... precip plus parameterized runoff vs. prescribed SMB...
+
 .. _atm_n_s_mars:
 
 North and south polar caps of Mars
