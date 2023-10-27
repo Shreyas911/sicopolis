@@ -3,6 +3,9 @@
 Test simulations
 ****************
 
+.. |nbsp| unicode:: 0xA0 
+   :trim:
+
 These are a number of computationally rather inexpensive test simulations, of which the :ref:`run-specs header files <getting_started-run_specs_headers>` are contained in the SICOPOLIS repository.
 
 Run ``repo_vialov3d25``
@@ -17,13 +20,21 @@ Run ``repo_emtp2sge25_expA``
 
 Run ``repo_grl16_bm5_ss25ka``
   | Greenland ice sheet, SIA, resolution 16 km,
-  | short steady-state run (:math:`t=0\ldots{}25\,\mathrm{ka}`) for modern climate conditions (unpublished).
+  | short steady-state run (:math:`t=0\ldots{}25\,\mathrm{ka}`) for modern climate conditions (:numref:`grl16_ss25ka_volume`; unpublished).
 
 Runs ``repo_grl16_bm5_{init100a, ss25ka_nudged}``
   | Greenland ice sheet, SIA, resolution 16 km;
   | :math:`t=-100\,\mathrm{a}\ldots{}0` for the init run without basal sliding (..._init100a),
   | :math:`t=0\,\ldots{}25\,\mathrm{ka}` for the main run (..._ss25ka_nudged),
-  | steady-state run for modern climate conditions, free evolution during the first 10 ka, after that gradual nudging towards the slightly smoothed present-day topography computed by the init run (unpublished).
+  | steady-state run for modern climate conditions, free evolution during the first 10 ka, after that gradual nudging towards the slightly smoothed present-day topography computed by the init run (:numref:`grl16_ss25ka_volume`; unpublished).
+
+.. _grl16_ss25ka_volume:
+.. figure:: figs/grl16_ss25ka.png
+  :width: 500 px
+  :alt: Ice volume for steady-state simulations for Greenland
+  :align: center
+
+  Ice volume for the two steady-state simulations for Greenland, repo_grl16_bm5_ss25ka (unconstrained evolution) and repo_grl16_bm5_ss25ka_nudged (topography nudging with time-dependent relaxation time after t |nbsp| = |nbsp| 10 |nbsp| ka).
 
 Run ``repo_ant40_b2_ss25ka``
   | Antarctic ice sheet without ice shelves, SIA, resolution 40 km,
