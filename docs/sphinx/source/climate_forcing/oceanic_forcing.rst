@@ -17,3 +17,12 @@ Two different options for prescribing the sea level are available, selected in t
 * ``3``: Time-dependent sea level (e.g., reconstruction from data) from an input file (ASCII or NetCDF), specified by the parameter ``SEA_LEVEL_FILE``.
 
 Both options assume a spatially constant sea level. However, the variable ``z_sl`` is actually a 2D field, so that SICOPOLIS can handle in principle a spatially variable sea level as well.
+
+.. _ice_shelf_basal_melting:
+
+Ice-shelf basal melting
+=======================
+
+Lorem ipsum...
+
+.. Move calving to here?
