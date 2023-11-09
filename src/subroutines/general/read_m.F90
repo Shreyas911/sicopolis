@@ -1604,96 +1604,6 @@ contains
           ! LAMBDA0 is already in rad, no conversion required
   end if
 
-#if (!defined(NMARS) && !defined(SMARS))   /* not Martian polar caps */
-
-  if (flag_nc) then
-     call check( nf90_inq_varid(ncid, 'S_STAT_0', ncv), thisroutine )
-     call check( nf90_get_var(ncid, ncv, S_STAT_0), thisroutine )
-     n_cnt_phys_para = n_cnt_phys_para + 1
-  else
-     call read_phys_para_value(S_STAT_0, n_unit, n_cnt_phys_para)
-  end if
-
-#if (!defined(GRL))   /* not Greenland */
-
-  if (flag_nc) then
-     call check( nf90_inq_varid(ncid, 'BETA1_0', ncv), thisroutine )
-     call check( nf90_get_var(ncid, ncv, BETA1_0), thisroutine )
-     n_cnt_phys_para = n_cnt_phys_para + 1
-  else
-     call read_phys_para_value(BETA1_0, n_unit, n_cnt_phys_para)
-  end if
-
-  if (flag_nc) then
-     call check( nf90_inq_varid(ncid, 'BETA2_0', ncv), thisroutine )
-     call check( nf90_get_var(ncid, ncv, BETA2_0), thisroutine )
-     n_cnt_phys_para = n_cnt_phys_para + 1
-  else
-     call read_phys_para_value(BETA2_0, n_unit, n_cnt_phys_para)
-  end if
-
-#else   /* Greenland */
-
-  if (flag_nc) then
-     call check( nf90_inq_varid(ncid, 'BETA1_LT_0', ncv), thisroutine )
-     call check( nf90_get_var(ncid, ncv, BETA1_LT_0), thisroutine )
-     n_cnt_phys_para = n_cnt_phys_para + 1
-  else
-     call read_phys_para_value(BETA1_LT_0, n_unit, n_cnt_phys_para)
-  end if
-
-  if (flag_nc) then
-     call check( nf90_inq_varid(ncid, 'BETA1_HT_0', ncv), thisroutine )
-     call check( nf90_get_var(ncid, ncv, BETA1_HT_0), thisroutine )
-     n_cnt_phys_para = n_cnt_phys_para + 1
-  else
-     call read_phys_para_value(BETA1_HT_0, n_unit, n_cnt_phys_para)
-  end if
-
-  if (flag_nc) then
-     call check( nf90_inq_varid(ncid, 'BETA2_LT_0', ncv), thisroutine )
-     call check( nf90_get_var(ncid, ncv, BETA2_LT_0), thisroutine )
-     n_cnt_phys_para = n_cnt_phys_para + 1
-  else
-     call read_phys_para_value(BETA2_LT_0, n_unit, n_cnt_phys_para)
-  end if
-
-  if (flag_nc) then
-     call check( nf90_inq_varid(ncid, 'BETA2_HT_0', ncv), thisroutine )
-     call check( nf90_get_var(ncid, ncv, BETA2_HT_0), thisroutine )
-     n_cnt_phys_para = n_cnt_phys_para + 1
-  else
-     call read_phys_para_value(BETA2_HT_0, n_unit, n_cnt_phys_para)
-  end if
-
-  if (flag_nc) then
-     call check( nf90_inq_varid(ncid, 'PHI_SEP_0', ncv), thisroutine )
-     call check( nf90_get_var(ncid, ncv, PHI_SEP_0), thisroutine )
-     n_cnt_phys_para = n_cnt_phys_para + 1
-  else
-     call read_phys_para_value(PHI_SEP_0, n_unit, n_cnt_phys_para)
-  end if
-
-#endif
-
-  if (flag_nc) then
-     call check( nf90_inq_varid(ncid, 'PMAX_0', ncv), thisroutine )
-     call check( nf90_get_var(ncid, ncv, PMAX_0), thisroutine )
-     n_cnt_phys_para = n_cnt_phys_para + 1
-  else
-     call read_phys_para_value(PMAX_0, n_unit, n_cnt_phys_para)
-  end if
-
-  if (flag_nc) then
-     call check( nf90_inq_varid(ncid, 'MU_0', ncv), thisroutine )
-     call check( nf90_get_var(ncid, ncv, MU_0), thisroutine )
-     n_cnt_phys_para = n_cnt_phys_para + 1
-  else
-     call read_phys_para_value(MU_0, n_unit, n_cnt_phys_para)
-  end if
-
-#endif
-
   if (flag_nc) then
      call check( nf90_inq_varid(ncid, 'RF', ncv), thisroutine )
      call check( nf90_get_var(ncid, ncv, RF), thisroutine )
@@ -1739,34 +1649,34 @@ contains
   if (.not.flag_nc) then   ! ASCII file
 
 #if (defined(ANT))
-     n_phys_para = 14 + 5 + 5 + 3*201
+     n_phys_para = 14 + 5 + 3*201
 #elif (defined(ASF))
-     n_phys_para = 14 + 5 + 5 + 3*201
+     n_phys_para = 14 + 5 + 3*201
 #elif (defined(EISMINT))
-     n_phys_para = 14 + 5 + 5 + 3*201
+     n_phys_para = 14 + 5 + 3*201
 #elif (defined(GRL))
-     n_phys_para = 14 + 5 + 8 + 3*201
+     n_phys_para = 14 + 5 + 3*201
 #elif (defined(NHEM))
-     n_phys_para = 14 + 5 + 5 + 3*201
+     n_phys_para = 14 + 5 + 3*201
 #elif (defined(SCAND))
-     n_phys_para = 14 + 5 + 5 + 3*201
+     n_phys_para = 14 + 5 + 3*201
 #elif (defined(TIBET))
-     n_phys_para = 14 + 5 + 5 + 3*201
+     n_phys_para = 14 + 5 + 3*201
 #elif (defined(NMARS))
-     n_phys_para = 16 + 5     + 3*201
+     n_phys_para = 16 + 5 + 3*201
 #elif (defined(SMARS))
-     n_phys_para = 16 + 5     + 3*201
+     n_phys_para = 16 + 5 + 3*201
 #elif (defined(XYZ))
 #if (defined(HEINO))   /* under XYZ */
-     n_phys_para = 14 + 5 + 5 + 3*201
+     n_phys_para = 14 + 5 + 3*201
 #elif (defined(MOCHO))   /* under XYZ */
-     n_phys_para = 14 + 5 + 5 + 3*201
+     n_phys_para = 14 + 5 + 3*201
 #elif (defined(NPI))   /* under XYZ */
-     n_phys_para = 14 + 5 + 5 + 3*201
+     n_phys_para = 14 + 5 + 3*201
 #elif (defined(SHMARS))   /* under XYZ */
-     n_phys_para = 14 + 5 + 5 + 3*201
+     n_phys_para = 14 + 5 + 3*201
 #else   /* default under XYZ */
-     n_phys_para = 14 + 5 + 5 + 3*201
+     n_phys_para = 14 + 5 + 3*201
 #endif
 #endif
 
