@@ -1638,25 +1638,11 @@ contains
 
   real(dp), intent(out) :: d_para
 
-  integer            :: lch
-  character          :: ch1
-  character(len= 64) :: ch_para_1a, ch_para_1b, ch_para_2a, ch_para_2b
-
-#if !defined(ALLOW_TAPENADE) /* Normal */
-
-  integer            :: n_equals
+  integer            :: lch, n_equals
   character(len=256) :: ch_line
-
-#else /* Tapenade */
-
-  character :: ch_dummy
-  logical   :: first_read
-
-  first_read = .true.
-
-#endif /* Normal vs. Tapenade */
-
-!-------- Read parameter --------
+  character(len= 64) :: ch_para_1a, ch_para_1b, ch_para_2a, ch_para_2b
+  character(len=  8) :: ch_equals
+  character          :: ch1, ch2
 
   lch        = len(ch_para)
   ch_para_1a = ch_para
@@ -1665,57 +1651,39 @@ contains
 
   do while (ch1 == '%')
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
-
      read(unit=n_unit, fmt='(a)') ch_line
 
      ch1 = ch_line(1:1)
 
      if (ch1 /= '%') then   ! no comment line
 
+#if !defined(ALLOW_TAPENADE) /* Normal */
         n_equals = index(ch_line, '=')
+#else /* Tapenade: cannot differentiate through index function */
+        n_equals = 15   ! assuming the equals sign to be
+                        ! always in row 15 of the phys_para file
+#endif /* Normal vs. Tapenade */
 
-        read(ch_line(1:n_equals-1), fmt='(a)') ch_para_2a
-        read(ch_line(n_equals+1:) , fmt=*    ) d_para
+        ch_para_2a = ch_line(1:n_equals-1)
+        ch2        = ch_line(n_equals:n_equals)
 
-     end if
-
-#else /* Tapenade */
-            ! Tapenade cannot differentiate through index function
-            !    -> assuming the equals sign to be
-            !       always in row 15 of the phys_para file
-
-     if (first_read) then
-        read(unit=n_unit, fmt='(a)', advance='no') ch1
-        first_read=.false.
-     else
-        read(unit=n_unit, fmt='(a)') ch_dummy
-        read(unit=n_unit, fmt='(a)', advance='no') ch1
-     end if
-
-     if (ch1 /= '%') then   ! no comment line
-
-        read(unit=n_unit, fmt='(a13,a)', advance='no') ch_para_2a, ch_dummy
-
-        if (ch_dummy == '=') then
-           read(unit=n_unit, fmt=*) d_para
+        if (ch2 == '=') then
+           read(ch_line(n_equals+1:), fmt=*) d_para
         else
+           write(ch_equals, '(i0)') n_equals
            errormsg = ' >>> read_phys_para_value:' &
                     //         end_of_line &
                     //'        Trying to read ' // trim(ch_para_1a) &
                     //         ' from ' // PHYS_PARA_FILE // ',' &
                     //         end_of_line &
-                    //'        but equals sign (=) is not in row 15!'
+                    //'        but equals sign (=) is not in row ' &
+                    //         trim(ch_equals)//'!'
            call error(errormsg)
         end if
 
      end if
 
-#endif /* Normal vs. Tapenade */
-
   end do
-
-!-------- Check whether correct parameter was read --------
 
   ch_para_1a = adjustl(ch_para_1a)
   ch_para_2a = adjustl(ch_para_2a)
