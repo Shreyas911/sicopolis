@@ -36,8 +36,9 @@ Runs ``repo_grl16_bm5_{init100a, ss25ka_nudged}``
 
   Ice volume for the two steady-state simulations for Greenland, repo_grl16_bm5_ss25ka (unconstrained evolution) and repo_grl16_bm5_ss25ka_nudged (topography nudging with time-dependent relaxation time after t |nbsp| = |nbsp| 10 |nbsp| ka).
 
-Run ``repo_ant40_b2_ss25ka``
-  | Antarctic ice sheet without ice shelves, SIA, resolution 40 km,
+Run ``repo_ant64_bm3_ss25ka``
+  | Antarctic ice sheet, hybrid shallow-ice--shelfy-stream dynamics (Bernales et al. :cite:`bernales_etal_2017a`),
+  | instantaneous removal of ice shelves ("float-kill"), resolution 64 km,
   | short steady-state run (:math:`t=0\ldots{}25\,\mathrm{ka}`) for modern climate conditions (unpublished).
 
 Run ``repo_grl20_b2_paleo21``
@@ -91,7 +92,7 @@ Run ``repo_heino50_st``
 +-------------------------------------+------------+---------------------+--------------------+
 | repo\_grl16\_bm5\_ss25ka_nudged     | 25 ka      | 5 a                 | 10.6 min           |
 +-------------------------------------+------------+---------------------+--------------------+
-| repo\_ant40\_b2\_ss25ka             | 25 ka      | 10 a                | 5.4 min            |
+| repo\_ant64\_bm3\_ss25ka            | 25 ka      | 2 / 10 a\ :sup:`†`  | 8.9 min            |
 +-------------------------------------+------------+---------------------+--------------------+
 | repo\_grl20\_b2\_paleo21            | 140 ka     | 5 a                 | 0.9 hrs            |
 +-------------------------------------+------------+---------------------+--------------------+
@@ -110,7 +111,7 @@ Run ``repo_heino50_st``
 | repo\_ant64\_b2\_future09\_ctrl     | 100 a      | 2 / 10 a\ :sup:`†`  | 6.2 sec            |
 +-------------------------------------+------------+---------------------+--------------------+
 
-| Table 1: Model times, time steps and computing (CPU) times for the EISMINT, Greenland and Antarctica test simulations contained in the script ``multi_sico_1.sh``, run with SICOPOLIS v23 (revision 1ea4d5055) and the Intel Fortran Compiler 19.1 for Linux (optimization options ``-xHOST -O3 -no-prec-div``) on a 12-Core Intel Xeon Gold 6256 (3.6 GHz) PC under openSUSE Leap 15.5.
+| Table 1: Model times, time steps and computing (CPU) times for the EISMINT, Greenland and Antarctica test simulations contained in the script ``multi_sico_1.sh``, run with SICOPOLIS v23 (revision 18fbc2386) and the Intel Fortran Compiler 19.1 for Linux (optimization options ``-xHOST -O3 -no-prec-div``) on a 12-Core Intel Xeon Gold 6256 (3.6 GHz) PC under openSUSE Leap 15.5.
 | \ :sup:`†`: If one value is given, this is the common dynamic (velocity, ice thickness) and thermodynamic (temperature, water content, age) time step. If two values are given (marked by the dagger (\ :sup:`†`) symbol), the first one is the dynamic, the second one the thermodynamic time step.
-| \ :sup:`‡`: All runs were done on a single core only. The ``repo_ant64_b2_xxx`` runs that include ice shelves can be done on multiple cores using OpenMP for the SSA solver. However, at the employed, low resolution of 64 km the solver does not scale well, and the gain in wall clock time by using multiple cores is very small.
+| \ :sup:`‡`: All runs were done on a single core only. The ``repo_ant64_xxx`` runs can be done on multiple cores using OpenMP for the SSA solver. However, at the employed, low resolution of 64 km the solver does not scale well, and the gain in wall clock time by using multiple cores is very small.
 | \ :sup:`\*`: For this run, see the remark in the :ref:`subsection on the resolution-doubler tool <plotting_and_tools-res_dbl>`.
