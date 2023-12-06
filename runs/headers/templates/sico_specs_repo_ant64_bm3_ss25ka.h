@@ -192,7 +192,7 @@
 !                         If the slip ratio is larger, hybrid SIA/SStA dynamics
 !                         kicks in (for DYNAMICS==2 and HYB_MOD==0).
 
-#define SSTA_SIA_WEIGH_FCT 1
+#define SSTA_SIA_WEIGH_FCT 2
 !                         SStA-SIA weighting factor as a function of the
 !                         slip ratio (for DYNAMICS==2 and HYB_MOD==0):
 !                         0 : Linear function (continuous transitions)
@@ -648,7 +648,7 @@
 !                             read directly from NetCDF files
 !                             (requires ACCSURFACE==6, ABLSURFACE==6)
 
-#define TEMP_PRESENT_PARA 1
+#define TEMP_PRESENT_PARA 2
 !                         Parameterization of the present-day mean-annual
 !                         and mean-January (summer) surface temperatures by
 !                         1 : Fortuin and Oerlemans (1990)
