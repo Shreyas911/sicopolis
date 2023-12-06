@@ -167,6 +167,14 @@ function run()
    (./sico.sh ${MULTI_OPTIONS_1} -m repo_ant64_b2_future09_ctrl \
               -a ${MULTI_OUTDIR}/repo_ant64_b2_spinup09) \
               >out_multi_124.dat 2>&1
+
+   (./sico.sh ${MULTI_OPTIONS_1} -m repo_ant64_b2_future09_asmb \
+              -a ${MULTI_OUTDIR}/repo_ant64_b2_spinup09) \
+              >out_multi_125.dat 2>&1
+
+   (./sico.sh ${MULTI_OPTIONS_1} -m repo_ant64_b2_future09_abmb \
+              -a ${MULTI_OUTDIR}/repo_ant64_b2_spinup09) \
+              >out_multi_126.dat 2>&1
 }
 
 ################################################################################
