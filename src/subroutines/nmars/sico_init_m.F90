@@ -1154,12 +1154,12 @@ do j=0, JMAX
 #if (ACC_UNIT==1)
 
    accum_present(j,i) = accum_present(j,i) &
-                           *(1.0e-03_dp/year2sec)*(RHO_W/RHO_I) &
+                           *(1.0e-03_dp*sec2year)*(RHO_W/RHO_I) &
                            *(1.0_dp/(1.0_dp-FRAC_DUST))
 
 #elif (ACC_UNIT==2)
 
-   accum_present(j,i) = accum_present(j,i)*(1.0e-03_dp/year2sec)
+   accum_present(j,i) = accum_present(j,i)*(1.0e-03_dp*sec2year)
 
 #endif
 
@@ -1170,13 +1170,13 @@ end do
 
 #if (ACC_UNIT==1)
 
-mean_accum = MEAN_ACCUM*(1.0e-03_dp/year2sec)*(RHO_W/RHO_I) &
+mean_accum = MEAN_ACCUM*(1.0e-03_dp*sec2year)*(RHO_W/RHO_I) &
                        *(1.0_dp/(1.0_dp-FRAC_DUST))
 !                      ! mm/a water equiv. --> m/s (ice+dust) equiv.
 
 #elif (ACC_UNIT==2)
 
-mean_accum = MEAN_ACCUM*(1.0e-03_dp/year2sec)
+mean_accum = MEAN_ACCUM*(1.0e-03_dp*sec2year)
 !                      ! mm/a (ice+dust) equiv. --> m/s (ice+dust) equiv.
 
 #endif

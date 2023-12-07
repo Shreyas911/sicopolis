@@ -1189,7 +1189,7 @@ do n=1, 12   ! month counter
                       n_var_type=1, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
                       field2d_r=field2d_aux)
 
-   precip_present(:,:,n) = field2d_aux *(1.0e-03_dp/year2sec)*(RHO_W/RHO)
+   precip_present(:,:,n) = field2d_aux *(1.0e-03_dp*sec2year)*(RHO_W/RHO)
                                         ! mm/a water equiv. -> m/s ice equiv.
 
 end do
@@ -1253,7 +1253,7 @@ end do
 
 !-------- Mean accumulation --------
 
-mean_accum = MEAN_ACCUM*(1.0e-03_dp/year2sec)*(RHO_W/RHO)
+mean_accum = MEAN_ACCUM*(1.0e-03_dp*sec2year)*(RHO_W/RHO)
                        ! mm/a water equiv. -> m/s ice equiv.
 
 !-------- Read present topography mask --------

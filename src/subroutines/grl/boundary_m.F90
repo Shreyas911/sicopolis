@@ -1243,26 +1243,29 @@ runoff = -min(as_perp, 0.0_dp)
 
 smb_corr_prescribed = smb_corr_in
 
-#if (defined(INITMIP_SMB_ANOM_FILE))   /* Correction for ISMIP InitMIP */
+if (flag_initmip_asmb) then   ! Correction for ISMIP InitMIP
 
 #if defined(ALLOW_TAPENADE) /* Tapenade */
-call myfloor(time_in_years, i_time_in_years)
+   call myfloor(time_in_years, i_time_in_years)
 #endif /* Tapenade */
 
-if ((time_in_years > 0.0_dp).and.(time_in_years <= 40.0_dp)) then
+   if ((time_in_years > 0.0_dp).and.(time_in_years <= 40.0_dp)) then
+
 #if !defined(ALLOW_TAPENADE) /* Normal */
-   smb_corr_prescribed = smb_corr_prescribed &
+      smb_corr_prescribed = smb_corr_prescribed &
                               + 0.025_dp*floor(time_in_years) * smb_anom_initmip
 #else /* Tapenade */
-   smb_corr_prescribed = smb_corr_prescribed &
+      smb_corr_prescribed = smb_corr_prescribed &
                               + 0.025_dp*(i_time_in_years) * smb_anom_initmip
 #endif /* Normal vs. Tapenade */
-else if (time_in_years > 40.0_dp) then
-   smb_corr_prescribed = smb_corr_prescribed &
-                              + smb_anom_initmip
-end if
 
-#endif
+   else if (time_in_years > 40.0_dp) then
+
+      smb_corr_prescribed = smb_corr_prescribed + smb_anom_initmip
+
+   end if
+
+end if
 
 as_perp = as_perp + smb_corr_prescribed
 
