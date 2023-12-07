@@ -966,7 +966,11 @@ write(10, fmt=trim(fmt1)) 'zl_present file = '//ZL_PRESENT_FILE
 write(10, fmt=trim(fmt1)) 'zl0 file = '//ZL0_FILE
 write(10, fmt=trim(fmt1)) 'mask_present file = '//MASK_PRESENT_FILE
 #if (defined(MASK_REGION_FILE))
-if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+if ( (trim(adjustl(MASK_REGION_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'NONE') ) then
    write(10, fmt=trim(fmt1)) 'mask_region file = '//MASK_REGION_FILE
    write(10, fmt=trim(fmt1)) ' '
 end if
@@ -1142,14 +1146,22 @@ write(10, fmt=trim(fmt1)) ' '
 #endif
 
 #if (defined(SMB_CORR_FILE))
-if ( trim(adjustl(SMB_CORR_FILE)) /= 'none' ) then
+if ( (trim(adjustl(SMB_CORR_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(SMB_CORR_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(SMB_CORR_FILE)) /= 'NONE') ) then
    write(10, fmt=trim(fmt1)) 'smb_corr_file = '//SMB_CORR_FILE
    write(10, fmt=trim(fmt1)) ' '
 end if
 #endif
 
 #if (defined(INITMIP_SMB_ANOM_FILE))
-if ( trim(adjustl(INITMIP_SMB_ANOM_FILE)) /= 'none' ) then
+if ( (trim(adjustl(INITMIP_SMB_ANOM_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(INITMIP_SMB_ANOM_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(INITMIP_SMB_ANOM_FILE)) /= 'NONE') ) then
    write(10, fmt=trim(fmt1)) 'initmip_smb_anom file = '//INITMIP_SMB_ANOM_FILE
 end if
 write(10, fmt=trim(fmt1)) ' '
@@ -1308,14 +1320,22 @@ write(10, fmt=trim(fmt3)) 'dz_tf_bm   =',  DZ_TF_BM
 #endif
 
 #if (defined(INITMIP_BMB_ANOM_FILE))
-if ( trim(adjustl(INITMIP_BMB_ANOM_FILE)) /= 'none' ) then
+if ( (trim(adjustl(INITMIP_BMB_ANOM_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(INITMIP_BMB_ANOM_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(INITMIP_BMB_ANOM_FILE)) /= 'NONE') ) then
    write(10, fmt=trim(fmt1)) 'initmip_bmb_anom file = '//INITMIP_BMB_ANOM_FILE
 end if
 #endif
 
 #if (defined(LARMIP_REGIONS_FILE))
 write(10, fmt=trim(fmt1)) 'larmip_regions_file = '//LARMIP_REGIONS_FILE
-if ( trim(adjustl(LARMIP_REGIONS_FILE)) /= 'none' ) then
+if ( (trim(adjustl(LARMIP_REGIONS_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(LARMIP_REGIONS_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(LARMIP_REGIONS_FILE)) /= 'NONE') ) then
    larmip_qbm_anom_aux = LARMIP_QBM_ANOM
    write(10, fmt=trim(fmt3)) 'larmip_qbm_anom_1 =', larmip_qbm_anom_aux(1)
    write(10, fmt=trim(fmt3)) 'larmip_qbm_anom_2 =', larmip_qbm_anom_aux(2)
@@ -1933,7 +1953,11 @@ smb_corr_in = 0.0_dp
 
 #if (defined(SMB_CORR_FILE))
 
-if (trim(adjustl(SMB_CORR_FILE)) /= 'none') then
+if ( (trim(adjustl(SMB_CORR_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(SMB_CORR_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(SMB_CORR_FILE)) /= 'NONE') ) then
 
    filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                         trim(SMB_CORR_FILE)
@@ -1955,7 +1979,11 @@ end if
 
 #if (defined(INITMIP_SMB_ANOM_FILE))
 
-if ( trim(adjustl(INITMIP_SMB_ANOM_FILE)) /= 'none' ) then
+if ( (trim(adjustl(INITMIP_SMB_ANOM_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(INITMIP_SMB_ANOM_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(INITMIP_SMB_ANOM_FILE)) /= 'NONE') ) then
 
    filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)// &
                                       '/'//trim(INITMIP_SMB_ANOM_FILE)
@@ -1991,7 +2019,11 @@ end if
 
 #if (defined(INITMIP_BMB_ANOM_FILE))
 
-if ( trim(adjustl(INITMIP_BMB_ANOM_FILE)) /= 'none' ) then
+if ( (trim(adjustl(INITMIP_BMB_ANOM_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(INITMIP_BMB_ANOM_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(INITMIP_BMB_ANOM_FILE)) /= 'NONE') ) then
 
    filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)// &
                                       '/'//trim(INITMIP_BMB_ANOM_FILE)
@@ -2027,7 +2059,11 @@ end if
 
 #if (defined(LARMIP_REGIONS_FILE))
 
-if ( trim(adjustl(LARMIP_REGIONS_FILE)) /= 'none' ) then
+if ( (trim(adjustl(LARMIP_REGIONS_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(LARMIP_REGIONS_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(LARMIP_REGIONS_FILE)) /= 'NONE') ) then
 
    filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)// &
                                       '/'//trim(LARMIP_REGIONS_FILE)
@@ -2997,7 +3033,11 @@ mask_region = -1
 
 #if (defined(MASK_REGION_FILE))
 
-if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+if ( (trim(adjustl(MASK_REGION_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'NONE') ) then
                                       ! read mask_region from file
 
    filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
@@ -3198,7 +3238,11 @@ mask_region = -1
 
 #if (defined(MASK_REGION_FILE))
 
-if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+if ( (trim(adjustl(MASK_REGION_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'NONE') ) then
                                       ! read mask_region from file
 
    filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
@@ -3348,7 +3392,11 @@ mask_region = -1
 
 #if (defined(MASK_REGION_FILE))
 
-if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+if ( (trim(adjustl(MASK_REGION_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'NONE') ) then
                                       ! read mask_region from file
 
    filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &

@@ -837,7 +837,11 @@ write(10, fmt=trim(fmt1)) 'zl0 file          = '//ZL0_FILE
 write(10, fmt=trim(fmt1)) 'mask_present file = '//MASK_PRESENT_FILE
 #endif
 #if (defined(MASK_REGION_FILE))
-if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+if ( (trim(adjustl(MASK_REGION_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'NONE') ) then
    write(10, fmt=trim(fmt1)) 'mask_region file = '//MASK_REGION_FILE
    write(10, fmt=trim(fmt1)) ' '
 end if
@@ -920,7 +924,11 @@ write(10, fmt=trim(fmt3)) 'ela      =', ELA
 write(10, fmt=trim(fmt1)) ' '
 
 #if (defined(SMB_CORR_FILE))
-if ( trim(adjustl(SMB_CORR_FILE)) /= 'none' ) then
+if ( (trim(adjustl(SMB_CORR_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(SMB_CORR_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(SMB_CORR_FILE)) /= 'NONE') ) then
    write(10, fmt=trim(fmt1)) 'smb_corr_file = '//SMB_CORR_FILE
    write(10, fmt=trim(fmt1)) ' '
 end if
@@ -1380,7 +1388,11 @@ smb_corr_in = 0.0_dp
 
 #if (defined(SMB_CORR_FILE))
 
-if (trim(adjustl(SMB_CORR_FILE)) /= 'none') then
+if ( (trim(adjustl(SMB_CORR_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(SMB_CORR_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(SMB_CORR_FILE)) /= 'NONE') ) then
 
    filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                         trim(SMB_CORR_FILE)
@@ -2118,7 +2130,11 @@ mask_region = -1
 
 #if (defined(MASK_REGION_FILE))
 
-if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+if ( (trim(adjustl(MASK_REGION_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'NONE') ) then
                                       ! read mask_region from file
 
    filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
@@ -2285,7 +2301,11 @@ mask_region = -1
 
 #if (defined(MASK_REGION_FILE))
 
-if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+if ( (trim(adjustl(MASK_REGION_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'NONE') ) then
                                       ! read mask_region from file
 
    filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
@@ -2414,7 +2434,11 @@ mask_region = -1
 
 #if (defined(MASK_REGION_FILE))
 
-if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+if ( (trim(adjustl(MASK_REGION_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'NONE') ) then
                                       ! read mask_region from file
 
    filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &

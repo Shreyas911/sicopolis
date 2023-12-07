@@ -680,7 +680,11 @@ write(10, fmt=trim(fmt1)) 'zl_present file   = '//ZL_PRESENT_FILE
 write(10, fmt=trim(fmt1)) 'zl0 file          = '//ZL0_FILE
 write(10, fmt=trim(fmt1)) 'mask_present file = '//MASK_PRESENT_FILE
 #if (defined(MASK_REGION_FILE))
-if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+if ( (trim(adjustl(MASK_REGION_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'NONE') ) then
    write(10, fmt=trim(fmt1)) 'mask_region file = '//MASK_REGION_FILE
    write(10, fmt=trim(fmt1)) ' '
 end if
@@ -2045,7 +2049,11 @@ mask_region = -1
 
 #if (defined(MASK_REGION_FILE))
 
-if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+if ( (trim(adjustl(MASK_REGION_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'NONE') ) then
                                       ! read mask_region from file
 
    filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
@@ -2167,7 +2175,11 @@ mask_region = -1
 
 #if (defined(MASK_REGION_FILE))
 
-if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+if ( (trim(adjustl(MASK_REGION_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'NONE') ) then
                                       ! read mask_region from file
 
    filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &

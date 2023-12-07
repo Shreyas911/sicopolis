@@ -756,7 +756,11 @@ if ( firstcall_param_2.or.(n_year_CE_aux /= n_year_CE_aux_save) ) then
 
    write(ch_year_CE, '(i0)') n_year_CE_aux
 
-   if ( trim(adjustl(TF_BM_FILES)) /= 'none' ) then
+   if ( (trim(adjustl(TF_BM_FILES)) /= 'none') &
+        .and. &
+        (trim(adjustl(TF_BM_FILES)) /= 'None') &
+        .and. &
+        (trim(adjustl(TF_BM_FILES)) /= 'NONE') ) then
 
 !  ------ Read data from file
 
@@ -830,7 +834,7 @@ if ( firstcall_param_2.or.(n_year_CE_aux /= n_year_CE_aux_save) ) then
 
 #endif /* Normal */
 
-   else   ! ( trim(adjustl(TF_BM_FILES)) == 'none' )
+   else   ! ( trim(adjustl(TF_BM_FILES)) == 'none' or 'None' or 'NONE' )
 
 !  ------ Use present-day data
 
