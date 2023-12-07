@@ -30,7 +30,7 @@ Runs ``repo_grl16_bm5_{init100a, ss25ka_nudged}``
 
 .. _grl16_ss25ka_volume:
 .. figure:: figs/grl16_ss25ka.png
-  :width: 500 px
+  :width: 480 px
   :alt: Ice volume for steady-state simulations for Greenland
   :align: center
 
@@ -39,7 +39,15 @@ Runs ``repo_grl16_bm5_{init100a, ss25ka_nudged}``
 Run ``repo_ant64_bm3_ss25ka``
   | Antarctic ice sheet, hybrid shallow-ice--shelfy-stream dynamics (Bernales et al. :cite:`bernales_etal_2017a`),
   | instantaneous removal of ice shelves ("float-kill"), resolution 64 km,
-  | short steady-state run (:math:`t=0\ldots{}25\,\mathrm{ka}`) for modern climate conditions (unpublished).
+  | short steady-state run (:math:`t=0\ldots{}25\,\mathrm{ka}`) for modern climate conditions (:numref:`ant64_bm3_ss25ka0003_H_vs`; unpublished).
+
+.. _ant64_bm3_ss25ka0003_H_vs:
+.. figure:: figs/repo_ant64_bm3_ss25ka0003_H_vs.png
+  :width: 680 px
+  :alt: Ice thickness and surface velocity for float-kill simulation for Antarctica
+  :align: center
+
+  Ice thickness and surface velocity for the short steady-state simulation for Antarctica with instantaneous removal of ice shelves ("float-kill"), repo_ant64_bm3_ss25ka. The West Antarctic ice sheet has largely disappeared.
 
 Run ``repo_grl20_b2_paleo21``
   | Greenland ice sheet, SIA, resolution 20 km,
@@ -54,7 +62,7 @@ Runs ``repo_grl10_b2_{paleo21, future21_ctrl, future21_asmb}``
 
 .. _grl10_b2_future21_vaf:
 .. figure:: figs/grl10_b2_future21.png
-  :width: 500 px
+  :width: 480 px
   :alt: Ice volume above flotation for future climate simulations for Greenland
   :align: center
 
@@ -72,7 +80,7 @@ Runs ``repo_ant64_b2_{spinup09_init100a, spinup09_fixtopo, spinup09, future09_ct
 
 .. _ant64_b2_future09_vaf:
 .. figure:: figs/ant64_b2_future09.png
-  :width: 500 px
+  :width: 480 px
   :alt: Ice volume above flotation for future climate simulations for Antarctica
   :align: center
 
