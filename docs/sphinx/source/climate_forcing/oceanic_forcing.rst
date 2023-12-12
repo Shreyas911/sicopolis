@@ -10,7 +10,7 @@ Sea level
 
 The sea level surrounding the simulated ice sheet determines the land area available for glaciation. The level :math:`z=0` corresponds to the mean sea level at present day, and the SICOPOLIS variable ``z_sl`` denotes the sea level relative to this reference.
 
-Two different options for prescribing the sea level are available, selected in the run-specs headers by the parameter ``SEA_LEVEL``:
+Two different options for prescribing the sea level are available, selected in the run-specs headers by the parameter ``SEA_LEVEL``\:
 
 * ``1``: Temporally constant sea level z_sl, specified by the parameter ``Z_SL0``.
 
@@ -23,9 +23,38 @@ Both options assume a spatially constant sea level. However, the variable ``z_sl
 Ice-shelf basal melting
 =======================
 
-Lorem ipsum...
+The parameter ``FLOATING_ICE_BASAL_MELTING`` in the run-specs headers allows specifying the melting rate under ice shelves (floating ice). For all terrestrial ice sheets, the following options can be chosen\:
 
-.. _calving_ice_shelves:
+* ``1``: Constant values for the continental shelf and the abyssal ocean, respectively.
+
+* ``4``: Local parameterization as a function of the oceanic thermal forcing (ocean temperature :math:`T_\mathrm{oc}` minus ice shelf basal temperature :math:`T_\mathrm{m,b}`).
+
+The parameterization for ``FLOATING_ICE_BASAL_MELTING = 4`` reads
+
+.. math::
+  :label: ice_shelf_bas_melt_1
+
+  a_\mathrm{b} = S_\mathrm{w} \Omega\,(T_\mathrm{oc}-T_\mathrm{m,b})^\alpha\,,
+
+where :math:`a_\mathrm{b}` is the sub-ice-shelf melting rate. The parameters :math:`\Omega`, :math:`T_\mathrm{oc}` and :math:`\alpha` can be set in the run-specs header. If the thermal forcing is negative, it is set to zero. The scaling factor :math:`S_\mathrm{w}` is
+
+.. math::
+  :label: ice_shelf_bas_melt_scaling_factor
+
+  S_\mathrm{w}
+    = \mathrm{tanh}\,\bigg(\frac{H_\mathrm{w}}{H_\mathrm{w,0}}\bigg)\,.
+
+This factor reduces the melting rate close to the grounding line where the water column :math:`H_\mathrm{w}` is thin. The parameter :math:`H_\mathrm{w,0}` can also be set in the run-specs header; a value recommended by Asay-Davis et al. :cite:`asay-davis_etal_2016` is :math:`75\,\mathrm{m}`. Setting this parameter to zero results in :math:`S_\mathrm{w}=1` everywhere; the scaling is then switched off.
+
+For the Antarctic ice sheet, two additional options are available\:
+
+* ``5``: Sector-wise, local parameterization as a function of the thermal forcing (Greve and Galton-Fenzi :cite:`greve_galton-fenzi_2017`).
+
+* ``6``: "ISMIP6 standard approach": Sector-wise, non-local quadratic parameterization as a function of the thermal forcing (Jourdain et al. :cite:`jourdain_etal_2020`).
+
+Currently, option ``FLOATING_ICE_BASAL_MELTING = 6`` is the only one that allows prescribing a time-dependent thermal forcing.
+
+  .. _calving_ice_shelves:
 
 Ice-shelf calving
 =================
