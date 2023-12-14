@@ -62,9 +62,21 @@ For the Antarctic ice sheet, two additional options are available\:
 
   The parameters :math:`\Omega` and :math:`\alpha` result from a tuning procedure for eight different sectors, using observed present-day melt rates as a target (as explained in the main part and appendix of Greve and Galton-Fenzi :cite:`greve_galton-fenzi_2017`). For the thermal forcing :math:`T_\mathrm{f}`, :math:`T_\mathrm{oc}` is chosen for each sector as the sector-averaged temperature at 500 metres depth just outside the ice-shelf cavity (computed with data from the World Ocean Atlas 2009 :cite:`locarnini_etal_2010`), while :math:`T_\mathrm{b}` is computed by Eq. |nbsp| :eq:`ice_shelf_bas_temp`.
 
-* ``6``: "ISMIP6 standard approach": Sector-wise, non-local quadratic parameterization as a function of the thermal forcing (Jourdain et al. :cite:`jourdain_etal_2020`, Seroussi et al. :cite:`seroussi_etal_2020`).
+* ``6``: "ISMIP6 standard approach": Sector-wise, non-local quadratic parameterization for the 18 IMBIE-2016 sectors (Rignot and Mouginot :cite:`rignot_mouginot_2016`, The IMBIE Team :cite:`imbie_2018`), where the two sectors feeding the Ross ice shelf and the two sectors feeding the Filchner--Ronne ice shelf are combined, leaving 16 distinct sectors (Jourdain et al. :cite:`jourdain_etal_2020`, Seroussi et al. :cite:`seroussi_etal_2020`). The parameterization depends on the local thermal forcing :math:`T_\mathrm{f}` and the sector-averaged thermal forcing :math:`\langle{}T_\mathrm{f}\rangle{}_\mathrm{sector}` as follows\:
 
-  Currently, this is the only option that allows prescribing a time-dependent thermal forcing. Following the ISMIP6-Antarctica protocol, it must be provided as NetCDF input files that contain for each year the mean-annual, 3D thermal forcing for the entire computational domain.
+  .. math::
+    :label: ice_shelf_bas_melt_3
+
+    a_\mathrm{b} 
+      = \gamma_0
+        \bigg(\frac{\rho_\mathrm{sw}c_\mathrm{sw}}{\rho L}\bigg)^2
+        \, (T_\mathrm{f} + \delta{}T_\mathrm{sector})
+        \, |\langle{}T_\mathrm{f}\rangle{}_\mathrm{sector}
+              + \delta{}T_\mathrm{sector}|\,,
+
+  where :math:`\rho`, :math:`\rho_\mathrm{sw}`, :math:`L` and :math:`c_\mathrm{sw}` are defined as in Eq. |nbsp| :eq:`ice_shelf_bas_melt_2`. The coefficient :math:`\gamma_0`, similar to an exchange velocity, and the sectorial temperature offsets :math:`\delta{}T_\mathrm{sector}` are obtained by calibrating the parameterization against observations (see Jourdain et al. :cite:`jourdain_etal_2020`).
+
+  The thermal forcing at the ice--ocean interface is derived by extrapolating the oceanic fields from GCMs into the ice-shelf cavities. Following the ISMIP6-Antarctica protocol, it must be provided as NetCDF input files that contain for each year the mean-annual, 3D thermal forcing for the entire computational domain. Therefore, this option allows prescribing a time-dependent thermal forcing (which is currently not the case for the other options).
 
 For all cases, an additional scaling factor :math:`S_\mathrm{w}` can be applied (:math:`a_\mathrm{b}\rightarrow{}S_\mathrm{w}\,a_\mathrm{b}`), defined as
 
