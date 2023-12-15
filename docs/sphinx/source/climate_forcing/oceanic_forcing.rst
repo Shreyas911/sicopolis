@@ -26,18 +26,32 @@ Both options assume a spatially constant sea level. However, the variable ``z_sl
 Ice-shelf basal melting
 =======================
 
-The parameter ``FLOATING_ICE_BASAL_MELTING`` in the run-specs headers allows specifying the melting rate under ice shelves (floating ice). For all terrestrial ice sheets, the following options can be chosen\:
+The parameter ``FLOATING_ICE_BASAL_MELTING`` in the run-specs headers allows specifying the melting rate under ice shelves (floating ice), :math:`a_\mathrm{b}`. For all terrestrial ice sheets, the following options can be chosen\:
 
-* ``1``: Constant values for the continental shelf (parameter ``QBM_FLOAT_1``) and the abyssal ocean (``QBM_FLOAT_3``), respectively. The threshold seabed elevation separating the continental shelf from the abyssal ocean is defined by the parameter ``Z_ABYSS``.
-
-* ``4``: Local parameterization as a function of the oceanic thermal forcing :math:`T_\mathrm{f}=T_\mathrm{oc}-T_\mathrm{b}` (difference between the ocean temperature :math:`T_\mathrm{oc}` and the ice-shelf basal temperature :math:`T_\mathrm{b}`)\:
+* ``1``: Constant values for the continental shelf (:math:`a_\mathrm{b}^\mathrm{c.s.}`) and the abyssal ocean (:math:`a_\mathrm{b}^\mathrm{a.o.}`), respectively\:
 
   .. math::
     :label: ice_shelf_bas_melt_1
 
-    a_\mathrm{b} = \Omega\,T_\mathrm{f}^\alpha\,,
+    a_\mathrm{b}
+    = \left\{
+      \begin{array}{ll}
+      a_\mathrm{b}^\mathrm{c.s.} & \mbox{if}\;\; z_\mathrm{l} > z_\mathrm{abyss}\,,
+      \\
+      a_\mathrm{b}^\mathrm{a.o.} & \mbox{if}\;\; z_\mathrm{l} \le z_\mathrm{abyss}\,,
+      \end{array}
+    \right.
 
-  where :math:`a_\mathrm{b}` is the sub-ice-shelf melting rate. The parameters :math:`T_\mathrm{oc}`, :math:`\Omega` and :math:`\alpha` can be set in the run-specs header (``TEMP_OCEAN``, ``OMEGA_QBM`` and ``ALPHA_QBM``, respectively). The ice-shelf basal temperature is computed as
+  where :math:`z_\mathrm{l}` is the seabed (lithosphere surface) elevation and :math:`z_\mathrm{abyss}` the threshold seabed elevation that separates the continental shelf from the abyssal ocean. The parameters :math:`a_\mathrm{b}^\mathrm{c.s.}`, :math:`a_\mathrm{b}^\mathrm{a.o.}` and :math:`z_\mathrm{abyss}` can be set in the run-specs headers (``QBM_FLOAT_1``, ``QBM_FLOAT_3`` and ``Z_ABYSS``, respectively).
+
+* ``4``: Local parameterization as a function of the oceanic thermal forcing :math:`T_\mathrm{f}=T_\mathrm{oc}-T_\mathrm{b}` (difference between the ocean temperature :math:`T_\mathrm{oc}` and the ice-shelf basal temperature :math:`T_\mathrm{b}`)\:
+
+  .. math::
+    :label: ice_shelf_bas_melt_4
+
+    a_\mathrm{b} = \Omega\,T_\mathrm{f}^\alpha\,.
+
+  The parameters :math:`T_\mathrm{oc}`, :math:`\Omega` and :math:`\alpha` can be set in the run-specs headers (``TEMP_OCEAN``, ``OMEGA_QBM`` and ``ALPHA_QBM``, respectively). The ice-shelf basal temperature is computed as
 
   .. math::
     :label: ice_shelf_bas_temp
@@ -52,7 +66,7 @@ For the Antarctic ice sheet, two additional options are available\:
 * ``5``: Sector-wise, local parameterization as a function of the thermal forcing (Greve and Galton-Fenzi :cite:`greve_galton-fenzi_2017`). This parameterization is modified after Beckmann and Goosse :cite:`beckmann_goosse_2003`, with a linear dependence on the thermal forcing :math:`T_\mathrm{f}` and an additional power-law dependence on the draft :math:`d`\:
 
   .. math::
-    :label: ice_shelf_bas_melt_2
+    :label: ice_shelf_bas_melt_5
 
     a_\mathrm{b} 
       = \frac{\rho_\mathrm{sw}c_\mathrm{sw}\gamma_\mathrm{t}}{\rho L}
@@ -65,7 +79,7 @@ For the Antarctic ice sheet, two additional options are available\:
 * ``6``: "ISMIP6 standard approach": Sector-wise, non-local quadratic parameterization for the 18 IMBIE-2016 sectors (Rignot and Mouginot :cite:`rignot_mouginot_2016`, The IMBIE Team :cite:`imbie_2018`), where the two sectors feeding the Ross ice shelf and the two sectors feeding the Filchner--Ronne ice shelf are combined, leaving 16 distinct sectors (Jourdain et al. :cite:`jourdain_etal_2020`, Seroussi et al. :cite:`seroussi_etal_2020`). The parameterization depends on the local thermal forcing :math:`T_\mathrm{f}` and the sector-averaged thermal forcing :math:`\langle{}T_\mathrm{f}\rangle{}_\mathrm{sector}` as follows\:
 
   .. math::
-    :label: ice_shelf_bas_melt_3
+    :label: ice_shelf_bas_melt_6
 
     a_\mathrm{b} 
       = \gamma_0
@@ -74,9 +88,9 @@ For the Antarctic ice sheet, two additional options are available\:
         \, |\langle{}T_\mathrm{f}\rangle{}_\mathrm{sector}
               + \delta{}T_\mathrm{sector}|\,,
 
-  where :math:`\rho`, :math:`\rho_\mathrm{sw}`, :math:`L` and :math:`c_\mathrm{sw}` are defined as in Eq. |nbsp| :eq:`ice_shelf_bas_melt_2`. The coefficient :math:`\gamma_0`, similar to an exchange velocity, and the sectorial temperature offsets :math:`\delta{}T_\mathrm{sector}` are obtained by calibrating the parameterization against observations (see Jourdain et al. :cite:`jourdain_etal_2020`).
+  where :math:`\rho`, :math:`\rho_\mathrm{sw}`, :math:`L` and :math:`c_\mathrm{sw}` are defined as in Eq. |nbsp| :eq:`ice_shelf_bas_melt_5`. The coefficient :math:`\gamma_0`, similar to an exchange velocity, and the sectorial temperature offsets :math:`\delta{}T_\mathrm{sector}` are obtained by calibrating the parameterization against observations (see Jourdain et al. :cite:`jourdain_etal_2020`).
 
-  The thermal forcing at the ice--ocean interface is derived by extrapolating the oceanic fields from GCMs into the ice-shelf cavities. Following the ISMIP6-Antarctica protocol, it must be provided as NetCDF input files that contain for each year the mean-annual, 3D thermal forcing for the entire computational domain. Therefore, this option allows prescribing a time-dependent thermal forcing (which is currently not the case for the other options).
+  The thermal forcing at the ice--ocean interface is derived by extrapolating the oceanic fields from GCMs into the ice-shelf cavities. Following the ISMIP6-Antarctica protocol, it must be provided as NetCDF input files that contain for each year the mean-annual, 3D thermal forcing for the entire computational domain. Thereby, this option allows prescribing a time-dependent thermal forcing (which is currently not the case for the other options). For the detailed parameter settings, see the description in the run-specs headers.
 
 For all cases, an additional scaling factor :math:`S_\mathrm{w}` can be applied (:math:`a_\mathrm{b}\rightarrow{}S_\mathrm{w}\,a_\mathrm{b}`), defined as
 
@@ -86,7 +100,7 @@ For all cases, an additional scaling factor :math:`S_\mathrm{w}` can be applied 
   S_\mathrm{w}
     = \mathrm{tanh}\,\bigg(\frac{H_\mathrm{w}}{H_\mathrm{w,0}}\bigg)\,.
 
-This factor reduces the melting rate close to the grounding line where the water column :math:`H_\mathrm{w}` is thin. The parameter :math:`H_\mathrm{w,0}` can be set in the run-specs header (``H_W_0``). A value recommended by Asay-Davis et al. :cite:`asay-davis_etal_2016` is :math:`75\,\mathrm{m}`, while Gladstone et al. :cite:`gladstone_etal_2017` used :math:`36.79\,(=100/e)\,\mathrm{m}`. Setting this parameter to zero results in :math:`S_\mathrm{w}=1` everywhere; the scaling is then switched off.
+This factor reduces the melting rate close to the grounding line where the water column :math:`H_\mathrm{w}` is thin. The parameter :math:`H_\mathrm{w,0}` can be set in the run-specs headers (``H_W_0``). A value recommended by Asay-Davis et al. :cite:`asay-davis_etal_2016` is :math:`75\,\mathrm{m}`, while Gladstone et al. :cite:`gladstone_etal_2017` used :math:`36.79\,(=100/e)\,\mathrm{m}`. Setting this parameter to zero results in :math:`S_\mathrm{w}=1` everywhere; the scaling is then switched off.
 
   .. _calving_ice_shelves:
 
