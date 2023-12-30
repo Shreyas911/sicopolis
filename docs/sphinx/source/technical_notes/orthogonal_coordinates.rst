@@ -292,7 +292,17 @@ from which the metric tensor of the projection can be inferred:
 
   g_{11} = g_{22}
   = \frac{\cos^4\frac{\theta}{2}}{K^2}
-  = \frac{1}{K^2 \left(1+\frac{x^2+y^2}{(2R_\mathrm{e}K)^2}\right)^2}.
+  = \frac{1}{K^2 \left(1+\frac{x^2+y^2}{(2R_\mathrm{e}K)^2}\right)^2}
+
+(see :numref:`stereo_sphere_metric`).
+
+.. _stereo_sphere_metric:
+.. figure:: figs/stereo_sphere_metric.png
+  :width: 435 px
+  :alt: Metric tensor
+  :align: center
+
+  Metric tensor (:math:`g_{11},\;g_{22}`) of the polar stereographic projection for a spherical Earth model. Standard parallel :math:`\varphi_0=70^\circ\mathrm{N}`.
 
 A simpler alternative is to neglect the distortion involved by the projection. In this case, the metric tensor becomes equal to the identity tensor,
 
