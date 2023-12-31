@@ -7,11 +7,11 @@
 
 # Requirements:
 # -------------
-# Ensure you have pip (package installer for Python) installed
-# (https://pypi.org/project/pip/).
+# Ensure that you have pip (package installer for Python)
+# and Pandoc (document converter) installed.
 
 # cd docs/sphinx
-# pip install -r requirements.txt
+# pip install -r requirements.txt   # \!/ not as root
 
 # Actual build:
 # -------------
