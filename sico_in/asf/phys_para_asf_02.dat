@@ -62,7 +62,7 @@
 %       Inverse flattening of the Earth = 298.257223563
 %
   LATD0       = 79.7208d+00
-%       Standard parallel +79.7208 deg (79.7208 degN)     
+%       Standard parallel +79.7208 deg (79.7208 degN)
 %
   LOND0       = 15.0d+00
 %       Central meridian +15.0 deg (15.0 degE, central median of UTM33)

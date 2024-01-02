@@ -1788,7 +1788,7 @@ open(unit=1094, file=path, status='old')
        end do
     end do
 
-    ! ages yr --> s
+    ! ages a -> s
     do k=0,KDATA
        do j=0,JMAX
           do i=0,IMAX

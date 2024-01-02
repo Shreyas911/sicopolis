@@ -188,7 +188,7 @@ contains
   
      dH_t_dtau      = (H_t_new - H_t)*dtime_temp_inv
   
-  !  ------ New values --> old values
+  !  ------ New values -> old values
   
      n_cts   = n_cts_new
      kc_cts  = kc_cts_new
@@ -305,7 +305,7 @@ contains
 
   call flag_update_gf_gl_cf()
 
-  !  ------ New values --> old values
+  !  ------ New values -> old values
   
   zs  = zs_new
   zm  = zm_new
