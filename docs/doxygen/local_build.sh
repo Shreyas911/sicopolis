@@ -17,7 +17,7 @@
 # Edit my_Doxyfile.txt:
 #  * Search for "Revision ...", and replace "..." with the current
 #    revision number
-#    (execute `./rev_id.sh` in the runs directory to find out).
+#    (execute `./rev_id.sh` in the main directory to find out).
 #  * Search for "/home/username/Documents/sicopolis/src", and replace
 #    this by the actual path of the src directory.
 
