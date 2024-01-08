@@ -5,9 +5,15 @@
 
 my_*
 
-/runs/*
-!/runs/*/
-/runs/headers/*.h
+/*.sh
+!/copy_templates.sh
+!/get_input_files.sh
+
+/out*
+/*.dat
+/*.txt
+
+/headers/*.h
 
 /tools/*
 !/tools/*/
@@ -54,6 +60,9 @@ my_*
 
 /sico_out/*
 !/sico_out/.keep
+
+/tmp/*
+!/tmp/.keep
 
 /docs/doxygen/html/*
 !/docs/doxygen/html/.keep
