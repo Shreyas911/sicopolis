@@ -58,7 +58,7 @@ function check_args()
    MULTI_OPTIONS_2=' '
 
    if [ ! "$MULTI_OUTDIR_ARG" ]; then
-      MULTI_OUTDIR=${PWD}"/../sico_out"
+      MULTI_OUTDIR=${PWD}"/sico_out"
    else
       lastch=`echo $MULTI_OUTDIR_ARG | sed -e 's/\(^.*\)\(.$\)/\2/'`
       if [ ${lastch} == "/" ]; then
@@ -133,7 +133,7 @@ function run()
    (./sico.sh ${MULTI_OPTIONS_1} -m repo_grl20_b2_paleo21) \
               >out_multi_111.dat 2>&1
 
-   cd $PWD/../tools ; echo 0004 | \
+   cd $PWD/tools ; echo 0004 | \
    (./tools.sh -p resolution_doubler ${MULTI_OPTIONS_2} \
                -m repo_grl20_b2_paleo21) \
                >$OLDPWD/out_multi_112.dat 2>&1 ; cd $OLDPWD

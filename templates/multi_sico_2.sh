@@ -58,7 +58,7 @@ function check_args()
    MULTI_OPTIONS_2=' '
 
    if [ ! "$MULTI_OUTDIR_ARG" ]; then
-      MULTI_OUTDIR=${PWD}"/../sico_out"
+      MULTI_OUTDIR=${PWD}"/sico_out"
    else
       lastch=`echo $MULTI_OUTDIR_ARG | sed -e 's/\(^.*\)\(.$\)/\2/'`
       if [ ${lastch} == "/" ]; then
@@ -138,7 +138,7 @@ function run()
    # !!! WARNING: Uncommenting the following will overwrite any self-written
    #              routines in sicopolis/src/subroutines/xyz !!!
 
-   ## cd $PWD/../src/subroutines/xyz ; $CP -f ./heino/*90 ./ ; cd $OLDPWD
+   ## cd $PWD/src/subroutines/xyz ; $CP -f ./heino/*90 ./ ; cd $OLDPWD
    ## 
    ## (./sico.sh ${MULTI_OPTIONS_1} -m repo_heino50_st) \
    ##            >out_multi_212.dat 2>&1
