@@ -123,6 +123,9 @@ Directory ``sico_out``
 Directory ``docs``
   Documentation for SICOPOLIS.
 
+Directory ``tmp``
+  Empty directory, contents ignored by Git.
+
 Directory ``tools``
   Some useful tools and a shell script (``tools.sh``) to execute them (see ":ref:`plotting_and_tools`").
 
@@ -166,7 +169,7 @@ How to run a simulation
 
 For example, to run the EISMINT Phase 2 Simplified Geometry Experiment A (Payne et al. :cite:`payne_etal_2000`), named ``repo_emtp2sge25_expA``, use the script ``sico.sh`` as follows::
 
-  (./sico.sh -m repo_emtp2sge25_expA) >out_001.dat 2>&1
+  (./sico.sh -m repo_emtp2sge25_expA) >tmp/out_001.dat 2>&1 &
 
 (from the main directory, bash required). Accordingly for any other simulation.
 
@@ -177,13 +180,13 @@ To list further options, execute ``./sico.sh -h``.
 
 If you prefer to run :ref:`all EISMINT, Antarctica and Greenland simulations <test_simulations>` consecutively, execute the script ``multi_sico_1.sh``::
 
-  (./multi_sico_1.sh) >out_multi_100.dat 2>&1 &
+  (./multi_sico_1.sh) >tmp/out_multi_100.dat 2>&1 &
 
 To list further options, execute ``./multi_sico_1.sh -h``.
 
 Alternatively, :ref:`all other test simulations (Austfonna etc.) <test_simulations>` can be run with the script ``multi_sico_2.sh``::
 
-  (./multi_sico_2.sh) >out_multi_200.dat 2>&1 &
+  (./multi_sico_2.sh) >tmp/out_multi_200.dat 2>&1 &
 
 Approximate computing times are listed in the ":ref:`Test simulations <test_simulations>`" section.
 
