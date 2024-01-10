@@ -104,26 +104,31 @@ function check_args()
 
 function run()
 {
+   SICO_SH_OUT_DIR="tmp"
+   #              (directory for output files of script sico.sh)
+
+   #--------
+
    (./sico.sh ${MULTI_OPTIONS_1} -m repo_asf2_steady) \
-              >out_multi_201.dat 2>&1
+              >${SICO_SH_OUT_DIR}/out_multi_201.dat 2>&1
 
    (./sico.sh ${MULTI_OPTIONS_1} -m repo_asf2_surge) \
-              >out_multi_202.dat 2>&1
+              >${SICO_SH_OUT_DIR}/out_multi_202.dat 2>&1
 
    (./sico.sh ${MULTI_OPTIONS_1} -m repo_scand_test) \
-              >out_multi_203.dat 2>&1
+              >${SICO_SH_OUT_DIR}/out_multi_203.dat 2>&1
 
    (./sico.sh ${MULTI_OPTIONS_1} -m repo_tibet_test) \
-              >out_multi_204.dat 2>&1
+              >${SICO_SH_OUT_DIR}/out_multi_204.dat 2>&1
 
    (./sico.sh ${MULTI_OPTIONS_1} -m repo_nmars10_steady) \
-              >out_multi_205.dat 2>&1
+              >${SICO_SH_OUT_DIR}/out_multi_205.dat 2>&1
 
    (./sico.sh ${MULTI_OPTIONS_1} -m repo_smars10_steady) \
-              >out_multi_206.dat 2>&1
+              >${SICO_SH_OUT_DIR}/out_multi_206.dat 2>&1
 
    (./sico.sh ${MULTI_OPTIONS_1} -m repo_nhem80_nt012_new) \
-              >out_multi_207.dat 2>&1
+              >${SICO_SH_OUT_DIR}/out_multi_207.dat 2>&1
 
    #--------
 
@@ -131,7 +136,7 @@ function run()
    ## #              (number of threads for the SSA solver using OpenMP)
    ## 
    ## (./sico.sh ${MULTI_OPTIONS_1} -m repo_emtshelf25_expH) \
-   ##            >out_multi_211.dat 2>&1
+   ##            >${SICO_SH_OUT_DIR}/out_multi_211.dat 2>&1
 
    #--------
 
@@ -141,7 +146,7 @@ function run()
    ## cd $PWD/src/subroutines/xyz ; $CP -f ./heino/*90 ./ ; cd $OLDPWD
    ## 
    ## (./sico.sh ${MULTI_OPTIONS_1} -m repo_heino50_st) \
-   ##            >out_multi_212.dat 2>&1
+   ##            >${SICO_SH_OUT_DIR}/out_multi_212.dat 2>&1
 }
 
 ################################################################################
