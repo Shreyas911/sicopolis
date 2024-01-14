@@ -8,7 +8,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2023 Ralf Greve
+!! Copyright 2009-2024 Ralf Greve
 !!
 !! @section License
 !!
@@ -38,7 +38,7 @@ module sico_main_loop_m
   use sico_variables_m
   use sico_vars_m
   use error_m
-#if defined(ALLOW_TAPENADE)
+#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
   use globals
   use ctrl_map_gentim_m
 #endif
@@ -195,7 +195,7 @@ contains
   
      dH_t_dtau      = (H_t_new - H_t)*dtime_temp_inv
   
-  !  ------ New values --> old values
+  !  ------ New values -> old values
   
      n_cts   = n_cts_new
      kc_cts  = kc_cts_new
@@ -312,7 +312,7 @@ contains
 
   call flag_update_gf_gl_cf()
 
-  !  ------ New values --> old values
+  !  ------ New values -> old values
   
   zs  = zs_new
   zm  = zm_new

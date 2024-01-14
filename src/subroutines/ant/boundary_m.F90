@@ -4,12 +4,12 @@
 !
 !> @file
 !!
-!! Computation of the surface temperature (must be less than 0 deg C!)
+!! Computation of the surface temperature (must be less than 0 degC)
 !! and of the accumulation-ablation function.
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2023 Ralf Greve
+!! Copyright 2009-2024 Ralf Greve
 !!
 !! @section License
 !!
@@ -31,7 +31,7 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
-!> Computation of the surface temperature (must be less than 0 deg C!)
+!> Computation of the surface temperature (must be less than 0 degC)
 !! and of the accumulation-ablation function.
 !<------------------------------------------------------------------------------
 module boundary_m
@@ -40,7 +40,7 @@ module boundary_m
   use sico_variables_m
   use sico_vars_m
   use error_m
-#if defined(ALLOW_TAPENADE)
+#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
   use globals
 #endif
 
@@ -52,7 +52,7 @@ contains
 
 !-------------------------------------------------------------------------------
 !> Main routine of boundary_m:
-!! Computation of the surface temperature (must be less than 0 deg C!)
+!! Computation of the surface temperature (must be less than 0 degC)
 !! and of the accumulation-ablation function.
 !<------------------------------------------------------------------------------
 subroutine boundary(time, dtime, dxi, deta, &
@@ -296,7 +296,11 @@ if ( firstcall.or.(n_year_CE_aux /= n_year_CE_aux_save) ) then
 
 !  ------ Surface-temperature anomaly
 
-   if ( trim(adjustl(TEMP_ANOM_FILES)) /= 'none' ) then
+   if ( (trim(adjustl(TEMP_ANOM_FILES)) /= 'none') &
+        .and. &
+        (trim(adjustl(TEMP_ANOM_FILES)) /= 'None') &
+        .and. &
+        (trim(adjustl(TEMP_ANOM_FILES)) /= 'NONE') ) then
 
       filename_with_path = trim(TEMP_SMB_ANOM_DIR)//'/'// &
                            trim(TEMP_ANOM_SUBDIR)//'/'// &
@@ -324,9 +328,17 @@ if ( firstcall.or.(n_year_CE_aux /= n_year_CE_aux_save) ) then
 
 !  ------ Surface-temperature vertical gradient
 
-   if ( trim(adjustl(dTEMPdz_FILES)) /= 'none' ) then
+   if ( (trim(adjustl(dTEMPdz_FILES)) /= 'none') &
+        .and. &
+        (trim(adjustl(dTEMPdz_FILES)) /= 'None') &
+        .and. &
+        (trim(adjustl(dTEMPdz_FILES)) /= 'NONE') ) then
 
-      if ( trim(adjustl(dTEMPdz_SUBDIR)) /= 'value' ) then   ! read from file
+      if ( (trim(adjustl(dTEMPdz_SUBDIR)) /= 'value') &
+           .and. &
+           (trim(adjustl(dTEMPdz_SUBDIR)) /= 'Value') &
+           .and. &
+           (trim(adjustl(dTEMPdz_SUBDIR)) /= 'VALUE') ) then  ! read from file
 
          filename_with_path = trim(TEMP_SMB_ANOM_DIR)//'/'// &
                               trim(dTEMPdz_SUBDIR)//'/'// &
@@ -362,7 +374,11 @@ if ( firstcall.or.(n_year_CE_aux /= n_year_CE_aux_save) ) then
 
 !  ------ SMB anomaly
 
-   if ( trim(adjustl(SMB_ANOM_FILES)) /= 'none' ) then
+   if ( (trim(adjustl(SMB_ANOM_FILES)) /= 'none') &
+        .and. &
+        (trim(adjustl(SMB_ANOM_FILES)) /= 'None') &
+        .and. &
+        (trim(adjustl(SMB_ANOM_FILES)) /= 'NONE') ) then
 
       filename_with_path = trim(TEMP_SMB_ANOM_DIR)//'/'// &
                            trim(SMB_ANOM_SUBDIR)//'/'// &
@@ -405,9 +421,17 @@ if ( firstcall.or.(n_year_CE_aux /= n_year_CE_aux_save) ) then
 
 !  ------ SMB vertical gradient
 
-   if ( trim(adjustl(dSMBdz_FILES)) /= 'none' ) then
+   if ( (trim(adjustl(dSMBdz_FILES)) /= 'none') &
+        .and. &
+        (trim(adjustl(dSMBdz_FILES)) /= 'None') &
+        .and. &
+        (trim(adjustl(dSMBdz_FILES)) /= 'NONE') ) then
 
-      if ( trim(adjustl(dSMBdz_SUBDIR)) /= 'value' ) then   ! read from file
+      if ( (trim(adjustl(dSMBdz_SUBDIR)) /= 'value') &
+           .and. &
+           (trim(adjustl(dSMBdz_SUBDIR)) /= 'Value') &
+           .and. &
+           (trim(adjustl(dSMBdz_SUBDIR)) /= 'VALUE') ) then  ! read from file
 
          filename_with_path = trim(TEMP_SMB_ANOM_DIR)//'/'// &
                               trim(dSMBdz_SUBDIR)//'/'// &
@@ -508,40 +532,14 @@ n_year_CE_aux_save = n_year_CE_aux
 !-------- Sea level --------
 
 #if (SEA_LEVEL==1)
-!  ------ constant sea level
+
+!  ------ Temporally constant sea level
+
 z_sl = Z_SL0
-
-#elif (SEA_LEVEL==2)
-!  ------ saw-tooth-shaped palaeoclimatic sea-level forcing
-
-z_sl_min = -130.0_dp
-
-t1 = -250000.0_dp *year2sec
-t2 = -140000.0_dp *year2sec
-t3 = -125000.0_dp *year2sec
-t4 =  -21000.0_dp *year2sec
-t5 =   -8000.0_dp *year2sec
-t6 =       0.0_dp *year2sec
-
-if (time < t1) then
-   z_sl = 0.0_dp
-else if (time < t2) then
-   z_sl = z_sl_min*(time-t1)/(t2-t1)
-else if (time < t3) then
-   z_sl = -z_sl_min*(time-t3)/(t3-t2)
-else if (time < t4) then
-   z_sl = z_sl_min*(time-t3)/(t4-t3)
-else if (time < t5) then
-   z_sl = -z_sl_min*(time-t5)/(t5-t4)
-else if (time < t6) then
-   z_sl = 0.0_dp
-else
-   z_sl = 0.0_dp
-end if
 
 #elif (SEA_LEVEL==3)
 
-!  ------ z_sl from the SPECMAP record
+!  ------ Time-dependent sea level from data
 
 if (time_in_years < real(specmap_time_min,dp)) then
    z_sl = specmap_zsl(0)
@@ -574,6 +572,11 @@ else if (time_in_years < real(specmap_time_max,dp)) then
 else
    z_sl  = specmap_zsl(ndata_specmap)
 end if
+
+#else
+
+errormsg = ' >>> boundary: Parameter SEA_LEVEL must be either 1 or 3!'
+call error(errormsg)
 
 #endif
 
@@ -873,18 +876,18 @@ beta_t  =  88.9_dp
 #if (SOLID_PRECIP==1)     /* Marsiat (1994) */
 
 temp_rain =    7.0_dp   ! Threshold monthly mean temperature for
-                        ! precipitation = 100% rain, in deg C
+                        ! precipitation = 100% rain, in degC
 temp_snow =  -10.0_dp   ! Threshold monthly mean temperature for &
-                        ! precipitation = 100% snow, in deg C
+                        ! precipitation = 100% snow, in degC
 
 inv_delta_temp_rain_snow = 1.0_dp/(temp_rain-temp_snow)
 
 #elif (SOLID_PRECIP==2)   /* Bales et al. (2009) */
 
 temp_rain =    7.2_dp   ! Threshold monthly mean temperature for &
-                        ! precipitation = 100% rain, in deg C
+                        ! precipitation = 100% rain, in degC
 temp_snow =  -11.6_dp   ! Threshold monthly mean temperature for &
-                        ! precipitation = 100% snow, in deg C
+                        ! precipitation = 100% snow, in degC
 
 coeff(0) =  5.4714e-01_dp   ! Coefficients
 coeff(1) = -9.1603e-02_dp   ! of
@@ -896,12 +899,18 @@ coeff(5) =  6.0e-07_dp      ! fit
 #elif (SOLID_PRECIP==3)   /* Huybrechts and de Wolde (1999) */
 
 temp_rain = 2.0_dp      ! Threshold instantaneous temperature for &
-                        ! precipitation = 100% rain, in deg C
+                        ! precipitation = 100% rain, in degC
 temp_snow = temp_rain   ! Threshold instantaneous temperature for &
-                        ! precipitation = 100% snow, in deg C
+                        ! precipitation = 100% snow, in degC
 
-s_stat    = S_STAT_0    ! Standard deviation of the air termperature
-                        ! (same parameter as in the PDD model)
+#if (defined(S_STAT_0))
+s_stat = S_STAT_0    ! Standard deviation of the air termperature
+                     ! (same parameter as in the PDD model)
+#else
+errormsg = ' >>> boundary: ' &
+           // 'Parameters for PDD model not defined in run-specs header!'
+call error(errormsg)
+#endif
 
 inv_sqrt2_s_stat = 1.0_dp/(sqrt(2.0_dp)*s_stat)
 
@@ -911,19 +920,26 @@ inv_sqrt2_s_stat = 1.0_dp/(sqrt(2.0_dp)*s_stat)
 
 #if (ABLSURFACE==1 || ABLSURFACE==2)
 
+#if (defined(S_STAT_0) && defined(BETA1_0) && defined(BETA2_0) \
+                       && defined(PMAX_0) && defined(MU_0))
 s_stat = S_STAT_0
 beta1  = BETA1_0  *(0.001_dp/86400.0_dp)*(RHO_W/RHO)
-                           ! (mm WE)/(d*deg C) --> (m IE)/(s*deg C)
+                           ! (mm WE)/(d*degC) -> (m IE)/(s*degC)
 beta2  = BETA2_0  *(0.001_dp/86400.0_dp)*(RHO_W/RHO)
-                           ! (mm WE)/(d*deg C) --> (m IE)/(s*deg C)
+                           ! (mm WE)/(d*degC) -> (m IE)/(s*degC)
 Pmax   = PMAX_0
 mu     = MU_0     *(1000.0_dp*86400.0_dp)*(RHO/RHO_W)
-                           ! (d*deg C)/(mm WE) --> (s*deg C)/(m IE)
+                           ! (d*degC)/(mm WE) -> (s*degC)/(m IE)
+#else
+errormsg = ' >>> boundary: ' &
+           // 'Parameters for PDD model not defined in run-specs header!'
+call error(errormsg)
+#endif
 
 #elif (ABLSURFACE==3)
 
 lambda_lti = LAMBDA_LTI  *(0.001_dp*sec2year)*(RHO_W/RHO)
-                         ! (mm WE)/(a*deg C) --> (m IE)/(s*deg C)
+                         ! (mm WE)/(a*degC) -> (m IE)/(s*degC)
 temp_lti   = TEMP_LTI
 mu         = 0.0_dp      ! no superimposed ice considered
 
@@ -1206,7 +1222,7 @@ runoff = -min(as_perp, 0.0_dp)
 
 smb_corr_prescribed = smb_corr_in
 
-#if (defined(INITMIP_SMB_ANOM_FILE))   /* Correction for ISMIP InitMIP */
+if (flag_initmip_asmb) then   ! Correction for ISMIP InitMIP
 
 if ((time_in_years > 0.0_dp).and.(time_in_years <= 40.0_dp)) then
    smb_corr_prescribed = smb_corr_prescribed &
@@ -1216,7 +1232,7 @@ else if (time_in_years > 40.0_dp) then
                               + smb_anom_initmip
 end if
 
-#endif
+end if
 
 as_perp = as_perp + smb_corr_prescribed
 

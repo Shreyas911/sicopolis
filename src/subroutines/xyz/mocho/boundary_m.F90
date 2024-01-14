@@ -4,12 +4,12 @@
 !
 !> @file
 !!
-!! Computation of the surface temperature (must be less than 0 deg C!)
+!! Computation of the surface temperature (must be less than 0 degC)
 !! and of the accumulation-ablation function.
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2023 Ralf Greve, Eduardo Flandez, Matthias Scheiter
+!! Copyright 2009-2024 Ralf Greve, Eduardo Flandez, Matthias Scheiter
 !!
 !! @section License
 !!
@@ -31,7 +31,7 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
-!> Computation of the surface temperature (must be less than 0 deg C!)
+!> Computation of the surface temperature (must be less than 0 degC)
 !! and of the accumulation-ablation function.
 !<------------------------------------------------------------------------------
 module boundary_m
@@ -49,7 +49,7 @@ contains
 
 !-------------------------------------------------------------------------------
 !> Main routine of boundary_m:
-!! Computation of the surface temperature (must be less than 0 deg C!)
+!! Computation of the surface temperature (must be less than 0 degC)
 !! and of the accumulation-ablation function.
 !<------------------------------------------------------------------------------
 subroutine boundary(time, dtime, dxi, deta, &
@@ -114,15 +114,15 @@ delta_ts = SINE_AMPLIT &
 
 !  ------ delta_ts from the GRIP record
 
-if (time/year2sec.lt.real(grip_time_min,dp)) then
+if (time*sec2year.lt.real(grip_time_min,dp)) then
    delta_ts = griptemp(0)
-else if (time/year2sec.lt.real(grip_time_max,dp)) then
+else if (time*sec2year.lt.real(grip_time_max,dp)) then
 
-   i_kl = floor(((time/year2sec) &
+   i_kl = floor(((time*sec2year) &
           -real(grip_time_min,dp))/real(grip_time_stp,dp))
    i_kl = max(i_kl, 0)
 
-   i_gr = ceiling(((time/year2sec) &
+   i_gr = ceiling(((time*sec2year) &
           -real(grip_time_min,dp))/real(grip_time_stp,dp))
    i_gr = min(i_gr, ndata_grip)
 
@@ -157,50 +157,24 @@ delta_ts = delta_ts * GRIP_TEMP_FACT
 !-------- Sea level --------
 
 #if (SEA_LEVEL==1)
-!  ------ constant sea level
+
+!  ------ Temporally constant sea level
+
 z_sl = Z_SL0
-
-#elif (SEA_LEVEL==2)
-!  ------ saw-tooth-shaped palaeoclimatic sea-level forcing
-
-z_sl_min = -130.0_dp
-
-t1 = -250000.0_dp *year2sec
-t2 = -140000.0_dp *year2sec
-t3 = -125000.0_dp *year2sec
-t4 =  -21000.0_dp *year2sec
-t5 =   -8000.0_dp *year2sec
-t6 =       0.0_dp *year2sec
-
-if (time.lt.t1) then
-   z_sl = 0.0_dp
-else if (time.lt.t2) then
-   z_sl = z_sl_min*(time-t1)/(t2-t1)
-else if (time.lt.t3) then
-   z_sl = -z_sl_min*(time-t3)/(t3-t2)
-else if (time.lt.t4) then
-   z_sl = z_sl_min*(time-t3)/(t4-t3)
-else if (time.lt.t5) then
-   z_sl = -z_sl_min*(time-t5)/(t5-t4)
-else if (time.lt.t6) then
-   z_sl = 0.0_dp
-else
-   z_sl = 0.0_dp
-end if
 
 #elif (SEA_LEVEL==3)
 
-!  ------ z_sl from the SPECMAP record
+!  ------ Time-dependent sea level from data
 
-if (time/year2sec.lt.real(specmap_time_min,dp)) then
+if (time*sec2year.lt.real(specmap_time_min,dp)) then
    z_sl = specmap_zsl(0)
-else if (time/year2sec.lt.real(specmap_time_max,dp)) then
+else if (time*sec2year.lt.real(specmap_time_max,dp)) then
 
-   i_kl = floor(((time/year2sec) &
+   i_kl = floor(((time*sec2year) &
           -real(specmap_time_min,dp))/real(specmap_time_stp,dp))
    i_kl = max(i_kl, 0)
 
-   i_gr = ceiling(((time/year2sec) &
+   i_gr = ceiling(((time*sec2year) &
           -real(specmap_time_min,dp))/real(specmap_time_stp,dp))
    i_gr = min(i_gr, ndata_specmap)
 
@@ -223,6 +197,11 @@ else if (time/year2sec.lt.real(specmap_time_max,dp)) then
 else
    z_sl  = specmap_zsl(ndata_specmap)
 end if
+
+#else
+
+errormsg = ' >>> boundary: Parameter SEA_LEVEL must be either 1 or 3!'
+call error(errormsg)
 
 #endif
 

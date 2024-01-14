@@ -8,7 +8,7 @@
 !!
 !! @section Copyright
 !!
-!! Copyright 2009-2023 Ralf Greve
+!! Copyright 2009-2024 Ralf Greve
 !!
 !! @section License
 !!
@@ -218,18 +218,18 @@ call ice_mat_eqs_pars(RF, R_T, KAPPA, C, -190, 10)
 
 #if (!defined(SURFACE_FORCING) || SURFACE_FORCING==1)
 
-temp_min  = TEMP_MIN                         ! deg C
+temp_min  = TEMP_MIN                         ! degC
 s_t       = S_T       *1.0e-03_dp            ! K/km -> K/m
-b_max     = B_MAX     /year2sec              ! m/a -> m/s
-s_b       = S_B       *1.0e-03_dp/year2sec   ! m/(a*km) -> 1/s
+b_max     = B_MAX     *sec2year              ! m/a -> m/s
+s_b       = S_B       *1.0e-03_dp*sec2year   ! m/(a*km) -> 1/s
 eld       = ELD       *1.0e+03_dp            ! km -> m
 
 #elif (SURFACE_FORCING==2)
 
-temp_0    = TEMP_0                           ! deg C
+temp_0    = TEMP_0                           ! degC
 gamma_t   = GAMMA_T   *1.0e-03_dp            ! K/km -> K/m
-s_0       = S_0       /year2sec              ! m/a -> m/s
-m_0       = M_0       *1.0e-03_dp/year2sec   ! m/(a*km) -> 1/s
+s_0       = S_0       *sec2year              ! m/a -> m/s
+m_0       = M_0       *1.0e-03_dp*sec2year   ! m/(a*km) -> 1/s
 ela       = ELA       *1.0e+03_dp            ! km -> m
 
 #else
@@ -873,7 +873,11 @@ write(10, fmt=trim(fmt1)) 'zl_present file = '//ZL_PRESENT_FILE
 write(10, fmt=trim(fmt1)) 'zl0 file = '//ZL0_FILE
 write(10, fmt=trim(fmt1)) 'mask_present file = '//MASK_PRESENT_FILE
 #if (defined(MASK_REGION_FILE))
-if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+if ( (trim(adjustl(MASK_REGION_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'NONE') ) then
    write(10, fmt=trim(fmt1)) 'mask_region file = '//MASK_REGION_FILE
    write(10, fmt=trim(fmt1)) ' '
 end if
@@ -1174,18 +1178,18 @@ close(10, status='keep')
 
 !-------- Conversion of time quantities --------
 
-year_zero  = year_zero*year2sec     ! a --> s
-time_init  = time_init0*year2sec    ! a --> s
-time_end   = time_end0*year2sec     ! a --> s
-dtime      = dtime0*year2sec        ! a --> s
-dtime_temp = dtime_temp0*year2sec   ! a --> s
-dtime_ser  = dtime_ser0*year2sec    ! a --> s
+year_zero  = year_zero*year2sec     ! a -> s
+time_init  = time_init0*year2sec    ! a -> s
+time_end   = time_end0*year2sec     ! a -> s
+dtime      = dtime0*year2sec        ! a -> s
+dtime_temp = dtime_temp0*year2sec   ! a -> s
+dtime_ser  = dtime_ser0*year2sec    ! a -> s
 #if (OUTPUT==1 || OUTPUT==3)
-dtime_out  = dtime_out0*year2sec    ! a --> s
+dtime_out  = dtime_out0*year2sec    ! a -> s
 #endif
 #if (OUTPUT==2 || OUTPUT==3)
 do n=1, n_output
-   time_output(n) = time_output0(n)*year2sec  ! a --> s
+   time_output(n) = time_output0(n)*year2sec  ! a -> s
 end do
 #endif
 
@@ -1216,12 +1220,12 @@ call read_scalar_input(filename_with_path, &
                        target_topo_tau0_time_max, &
                        ndata_target_topo_tau0, target_topo_tau0)
 
-target_topo_tau0 = target_topo_tau0 *year2sec   ! a --> s
+target_topo_tau0 = target_topo_tau0 *year2sec   ! a -> s
 
 #endif
 
 #if (THK_EVOL==3)
-target_topo_tau_0 = TARGET_TOPO_TAU0 *year2sec   ! a --> s
+target_topo_tau_0 = TARGET_TOPO_TAU0 *year2sec   ! a -> s
 #endif
 
 time = time_init
@@ -1247,8 +1251,8 @@ n_slide_region = nint(field2d_aux)
 
 !-------- Mean accumulation --------
 
-mean_accum = MEAN_ACCUM*(1.0e-03_dp/year2sec)*(RHO_W/RHO)
-!                      ! mm/a water equiv. --> m/s ice equiv.
+mean_accum = MEAN_ACCUM*(1.0e-03_dp*sec2year)*(RHO_W/RHO)
+!                      ! mm/a water equiv. -> m/s ice equiv.
 
 
 
@@ -1637,7 +1641,7 @@ end if
 write(12,1102)
 write(12,1103)
 
-   1102 format('         t(a)  D_Ts(deg C) z_sl_mean(m)',/, &
+   1102 format('         t(a)   D_Ts(degC) z_sl_mean(m)',/, &
                '                    V(m^3)     V_g(m^3)     V_f(m^3)', &
                '       A(m^2)     A_g(m^2)     A_f(m^2)',/, &
                '                               V_sle(m)     V_t(m^3)', &
@@ -1956,7 +1960,11 @@ mask_region = -1
 
 #if (defined(MASK_REGION_FILE))
 
-if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+if ( (trim(adjustl(MASK_REGION_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'NONE') ) then
                                       ! read mask_region from file
 
    filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
@@ -2087,7 +2095,11 @@ mask_region = -1
 
 #if (defined(MASK_REGION_FILE))
 
-if ( trim(adjustl(MASK_REGION_FILE)) /= 'none' ) then
+if ( (trim(adjustl(MASK_REGION_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'NONE') ) then
                                       ! read mask_region from file
 
    filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &

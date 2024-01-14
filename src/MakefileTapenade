@@ -22,7 +22,7 @@ DOMAIN_SHORT=grl
 endif
 
 ifndef DISC_AND_GRL
-DISC_AND_GRL := $(shell ${PYTHONCMD} subroutines/tapenade/utils/check_GRL_DISC.py -f ../runs/headers/sico_specs_${HEADER}.h)
+DISC_AND_GRL := $(shell python3 subroutines/tapenade/utils/check_GRL_DISC.py -f ../headers/sico_specs_${HEADER}.h)
 ### PRINT STATEMENT TO CHECK VARIABLE ###
 ifeq ($(DISC_AND_GRL),0)
 $(info DISC_AND_GRL is $(DISC_AND_GRL))
@@ -165,8 +165,7 @@ SRC_SICO_AD=\
 subroutines/tapenade/cost/cost_m.F90 \
 subroutines/tapenade/ctrl/ctrl_map_genarr_m.F90 \
 subroutines/tapenade/ctrl/ctrl_init_genarr_m.F90 \
-subroutines/tapenade/ctrl/ctrl_map_gentim_m.F90 \
-subroutines/tapenade/ad_io/ad_output_m.F90
+subroutines/tapenade/ctrl/ctrl_map_gentim_m.F90
 
 SRC=\
 sicopolis.F90
@@ -260,7 +259,6 @@ driveradjoint:${LIBLIS} \
 	nc_check_m_cpp.o \
 	PHONY_TAP_ADJ \
 	${OBJ_AD_ADJ} \
-	ad_output_m_cpp.o \
 	tapenade_m_cpp.o \
 	sicopolis.o
 	${F90C} ${F90FLAGS} -o $@ \
@@ -295,10 +293,11 @@ numCore.F90: sicopolis.F90
 RUN=$(HEADER)
 INDIR=../sico_in
 RESDIR=../sico_out/$(HEADER)
-sico_specs.h: ../runs/headers/sico_specs_$(HEADER).h
-	cp $^ $@
 
-ad_specs.h: ../runs/headers_ad/ad_$(ADHEADER).h
+sico_specs.h: ../headers/sico_specs_$(HEADER).h
+	cp $^ sico_specs.h
+
+ad_specs.h: ../headers_ad/ad_$(ADHEADER).h
 	cp $^ $@
 
 drivernormal: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
@@ -336,7 +335,7 @@ subroutines/tapenade/src/tapenade_m.o: subroutines/tapenade/src/tapenade_m.F90
 	${F90C} -DALLOW_TAPENADE ${LISFLAG} -I./ ${F90FLAGS} -o $@ -c $<
 
 sico_variables_m_cpp.f90: subroutines/general/sico_variables_m.F90
-	${PYTHONCMD} subroutines/tapenade/utils/deal_with_metadata.py -SS ../runs/headers/sico_specs_${HEADER}.h -SV subroutines/general/sico_variables_m.F90
+	${PYTHONCMD} subroutines/tapenade/utils/deal_with_metadata.py -SS ../headers/sico_specs_${HEADER}.h -SV subroutines/general/sico_variables_m.F90
 	$(CPPCMD_FILES) > dummy.f90
 	cat dummy.f90 > $@
 	sed -i 's/__NL__/\n/g' $@
@@ -405,7 +404,6 @@ clean:
               *.o\
 	      *.h\
 	      *.msg\
-	      *.dat\
 	      *.gcov\
 	      *.gcda\
               *.gcno\
