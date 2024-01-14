@@ -413,7 +413,7 @@
 
 !-------- Initial conditions --------
 
-#define ANF_DAT 3
+#define ANF_DAT 1
 !                         1 : Present initial topography
 !                         2 : Ice-free initial topography with
 !                             relaxed lithosphere
