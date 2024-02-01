@@ -5,7 +5,7 @@
 !
 #define       MODEL_SICOPOLIS
 #define       VERSION '24'
-#define       DATE    '2024-01-31'
+#define       DATE    '2024-02-01'
 !
 !> @file
 !!
@@ -94,15 +94,13 @@
 #include "subroutines/general/stereo_proj_m.F90"
 #include "subroutines/general/metric_m.F90"
 
-#if (!defined(ALLOW_TAPENADE) \
-     || defined(ALLOW_TAPENADE_DIFFERENTIATE)) /* Normal */
+#if (!defined(ALLOW_TAPENADE) || defined(ALLOW_TAPENADE_DIFFERENTIATE)) /* Normal */
 #include "subroutines/general/sico_maths_m.F90"
 #endif /* Normal */
 
 #if !defined(ALLOW_TAPENADE) /* Normal */
 #include "subroutines/general/compare_float_m.F90"
 #endif /* Normal */
-
 
 #include "subroutines/general/nc_check_m.F90"
 
@@ -140,7 +138,6 @@
 #include "subroutines/general/calc_temp_enth_m.F90"
 #endif
 
-
 #if (BASAL_HYDROLOGY==1)
 #include "subroutines/general/hydro_m.F90"
 #endif
@@ -148,7 +145,6 @@
 #if (defined(NMARS) || defined(SMARS))
 #include "subroutines/general/mars_instemp_m.f90"
 #endif
-
 
 #include "subroutines/general/calc_temp_melt_bas_m.F90"
 #include "subroutines/general/calc_bas_melt_m.F90"

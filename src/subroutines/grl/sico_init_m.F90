@@ -895,8 +895,7 @@ write(10, fmt=trim(fmt2)) 'MARINE_ICE_FORMATION = ', MARINE_ICE_FORMATION
 write(10, fmt=trim(fmt2)) 'MARINE_ICE_CALVING   = ', MARINE_ICE_CALVING
 #if (MARINE_ICE_CALVING==2 || MARINE_ICE_CALVING==3)
 write(10, fmt=trim(fmt3)) 'z_mar =', Z_MAR
-#elif (MARINE_ICE_CALVING==4 || MARINE_ICE_CALVING==5 \
-       || MARINE_ICE_CALVING==6 || MARINE_ICE_CALVING==7)
+#elif (MARINE_ICE_CALVING==4 || MARINE_ICE_CALVING==5 || MARINE_ICE_CALVING==6 || MARINE_ICE_CALVING==7)
 write(10, fmt=trim(fmt3)) 'fact_z_mar =', FACT_Z_MAR
 #elif (MARINE_ICE_FORMATION==2 && MARINE_ICE_CALVING==9)
 write(10, fmt=trim(fmt3)) 'calv_uw_coeff =', CALV_UW_COEFF
@@ -1131,8 +1130,7 @@ write(10, fmt=trim(fmt1)) ' '
 write(10, fmt=trim(fmt2)) 'ABLSURFACE = ', ABLSURFACE
 
 #if (ABLSURFACE==1 || ABLSURFACE==2)
-#if (defined(S_STAT_0) && defined(BETA1_0) && defined(BETA2_0) \
-                       && defined(PMAX_0) && defined(MU_0))
+#if (defined(S_STAT_0) && defined(BETA1_0) && defined(BETA2_0) && defined(PMAX_0) && defined(MU_0))
 write(10, fmt=trim(fmt3)) 's_stat =', S_STAT_0
 write(10, fmt=trim(fmt3)) 'beta1  =', BETA1_0
 write(10, fmt=trim(fmt3)) 'beta2  =', BETA2_0
@@ -1305,9 +1303,7 @@ write(10, fmt=trim(fmt3)) 'time_ramp_up_slide =', TIME_RAMP_UP_SLIDE
 #if (SLIDE_LAW==2 || SLIDE_LAW==3)
 write(10, fmt=trim(fmt3)) 'red_pres_limit_fact =', RED_PRES_LIMIT_FACT
 #endif
-#if (BASAL_HYDROLOGY==1 \
-       && defined(HYDRO_SLIDE_SAT_FCT) \
-       && defined(C_HW_SLIDE) && defined(HW0_SLIDE))
+#if (BASAL_HYDROLOGY==1 && defined(HYDRO_SLIDE_SAT_FCT) && defined(C_HW_SLIDE) && defined(HW0_SLIDE))
 write(10, fmt=trim(fmt2)) 'HYDRO_SLIDE_SAT_FCT = ', HYDRO_SLIDE_SAT_FCT
 write(10, fmt=trim(fmt3)) 'c_Hw_slide =', C_HW_SLIDE
 write(10, fmt=trim(fmt3)) 'Hw0_slide  =', HW0_SLIDE
@@ -1721,9 +1717,7 @@ n_slide_region = nint(field2d_aux)
 
 !-------- Reading of the prescribed target topography --------
 
-#if ( (THK_EVOL==2 || THK_EVOL==3) \
-      || \
-      (ACCSURFACE==7 && ABLSURFACE==7) )
+#if ( (THK_EVOL==2 || THK_EVOL==3) || (ACCSURFACE==7 && ABLSURFACE==7) )
 
 target_topo_dat_name = trim(TARGET_TOPO_DAT_NAME)
 

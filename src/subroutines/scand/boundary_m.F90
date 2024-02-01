@@ -55,9 +55,7 @@ contains
 subroutine boundary(time, dtime, dxi, deta, &
                     delta_ts, glac_index, z_mar)
 
-#if ((MARGIN==2) \
-      && (MARINE_ICE_FORMATION==2) \
-      && (MARINE_ICE_CALVING==9))
+#if ((MARGIN==2) && (MARINE_ICE_FORMATION==2) && (MARINE_ICE_CALVING==9))
   use calving_m
 #endif
 
@@ -424,8 +422,7 @@ inv_sqrt2_s_stat = 1.0_dp/(sqrt(2.0_dp)*s_stat)
 
 #if (ABLSURFACE==1 || ABLSURFACE==2)
 
-#if (defined(S_STAT_0) && defined(BETA1_0) && defined(BETA2_0) \
-                       && defined(PMAX_0) && defined(MU_0))
+#if (defined(S_STAT_0) && defined(BETA1_0) && defined(BETA2_0) && defined(PMAX_0) && defined(MU_0))
 s_stat = S_STAT_0
 beta1  = BETA1_0  *(0.001_dp/86400.0_dp)*(RHO_W/RHO)
                         ! (mm WE)/(d*degC) -> (m IE)/(s*degC)
@@ -661,9 +658,7 @@ where (temp_s > -0.001_dp) temp_s = -0.001_dp
 
 calving = 0.0_dp   ! Initialization
 
-#if ((MARGIN==2) \
-      && (MARINE_ICE_FORMATION==2) \
-      && (MARINE_ICE_CALVING==9))
+#if ((MARGIN==2) && (MARINE_ICE_FORMATION==2) && (MARINE_ICE_CALVING==9))
 
 call calving_underwater_ice()
 

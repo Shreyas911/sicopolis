@@ -3690,10 +3690,10 @@ end subroutine calc_vis_ssa
 !! [-vel_max, vel_max].
 !<------------------------------------------------------------------------------
 #if !defined(ALLOW_TAPENADE)
-elemental subroutine velocity_limiter_gradual(velocity, vel_max, vel_max_inv)
-#else
-subroutine velocity_limiter_gradual(velocity, vel_max, vel_max_inv)
+elemental &
 #endif
+subroutine velocity_limiter_gradual(velocity, vel_max, vel_max_inv)
+
 implicit none
 
 real(dp), intent(in)    :: vel_max, vel_max_inv

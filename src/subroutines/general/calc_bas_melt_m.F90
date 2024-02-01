@@ -364,8 +364,7 @@ Q_b_tot = Q_bm + Q_tld
    call error(errormsg)
 #endif
 
-#if ( defined(MARINE_ICE_BASAL_MELTING) \
-      && ( MARINE_ICE_BASAL_MELTING==2 || MARINE_ICE_BASAL_MELTING==3 ) )
+#if ( defined(MARINE_ICE_BASAL_MELTING) && ( MARINE_ICE_BASAL_MELTING==2 || MARINE_ICE_BASAL_MELTING==3 ) )
 
 if (QBM_MARINE*sec2year*rhow_rho_ratio > qbm_max) then
    errormsg = ' >>> calc_qbm: QBM_MARINE' &

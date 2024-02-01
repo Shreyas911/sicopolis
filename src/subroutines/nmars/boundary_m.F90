@@ -69,9 +69,7 @@ subroutine boundary(time, dtime, dxi, deta, &
   use mars_instemp_m
 #endif
 
-#if ((MARGIN==2) \
-      && (MARINE_ICE_FORMATION==2) \
-      && (MARINE_ICE_CALVING==9))
+#if ((MARGIN==2) && (MARINE_ICE_FORMATION==2) && (MARINE_ICE_CALVING==9))
   use calving_m
 #endif
 
@@ -637,9 +635,7 @@ temp_s = max(temp_s, temp_s_min)   ! Cut-off of air temperatures below the
 
 calving = 0.0_dp   ! Initialization
 
-#if ((MARGIN==2) \
-      && (MARINE_ICE_FORMATION==2) \
-      && (MARINE_ICE_CALVING==9))
+#if ((MARGIN==2) && (MARINE_ICE_FORMATION==2) && (MARINE_ICE_CALVING==9))
 
 call calving_underwater_ice()
 
