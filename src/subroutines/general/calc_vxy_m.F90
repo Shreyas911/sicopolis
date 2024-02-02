@@ -2,15 +2,13 @@
 !
 !  Module :  c a l c _ v x y _ m
 !
-!> @file
+!> Computation of the horizontal velocity vx, vy.
 !!
-!! Computation of the horizontal velocity vx, vy.
+!!##### Authors
 !!
-!! @section Copyright
+!! Ralf Greve, Tatsuru Sato, Thomas Goelles, Jorge Bernales
 !!
-!! Copyright 2009-2024 Ralf Greve, Tatsuru Sato, Thomas Goelles, Jorge Bernales
-!!
-!! @section License
+!!##### License
 !!
 !! This file is part of SICOPOLIS.
 !!
@@ -21,11 +19,11 @@
 !!
 !! SICOPOLIS is distributed in the hope that it will be useful,
 !! but WITHOUT ANY WARRANTY; without even the implied warranty of
-!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !! GNU General Public License for more details.
 !!
 !! You should have received a copy of the GNU General Public License
-!! along with SICOPOLIS.  If not, see <http://www.gnu.org/licenses/>.
+!! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
 !<
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -215,7 +213,7 @@ dzs_dy_aux = dzs_deta
 
 #if (!defined(GL_SURF_GRAD) || GL_SURF_GRAD==1)
 
-!!! continue
+!%% continue
 
 #elif (GL_SURF_GRAD==2)
 
@@ -3354,8 +3352,8 @@ call lis_solver_get_iter(solver, lin_iter, ierr)
 
 write(6,'(a,i0,a)', advance='no') 'lin_iter = ', lin_iter, ', '
 
-!!! call lis_solver_get_time(solver,solver_time,ierr)
-!!! print *, 'calc_vxy_ssa_matrix: time (s) = ', solver_time
+!%% call lis_solver_get_time(solver,solver_time,ierr)
+!%% print *, 'calc_vxy_ssa_matrix: time (s) = ', solver_time
 
 lgs_x_value = 0.0_dp
 call lis_vector_gather(lgs_x, lgs_x_value, ierr)

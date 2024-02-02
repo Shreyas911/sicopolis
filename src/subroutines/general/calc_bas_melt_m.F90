@@ -2,15 +2,13 @@
 !
 !  Module :  c a l c _ b a s _ m e l t _ m
 !
-!> @file
+!> Computation of the basal melting rate.
 !!
-!! Computation of the basal melting rate.
+!!##### Authors
 !!
-!! @section Copyright
+!! Ralf Greve, Ben Galton-Fenzi, Tatsuru Sato
 !!
-!! Copyright 2009-2024 Ralf Greve, Ben Galton-Fenzi, Tatsuru Sato
-!!
-!! @section License
+!!##### License
 !!
 !! This file is part of SICOPOLIS.
 !!
@@ -21,11 +19,11 @@
 !!
 !! SICOPOLIS is distributed in the hope that it will be useful,
 !! but WITHOUT ANY WARRANTY; without even the implied warranty of
-!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !! GNU General Public License for more details.
 !!
 !! You should have received a copy of the GNU General Public License
-!! along with SICOPOLIS.  If not, see <http://www.gnu.org/licenses/>.
+!! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
 !<
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -164,7 +162,7 @@ do j=1, JMAX-1
 
 #if (!defined(MARINE_ICE_BASAL_MELTING) || MARINE_ICE_BASAL_MELTING==1)
 
-      !!! continue
+      !%% continue
 
 #elif (MARINE_ICE_BASAL_MELTING==2)
 
@@ -227,7 +225,7 @@ do j=1, JMAX-1
 
       if (flag_grounding_line_1(j,i)) then
                                 ! grounding line (grounded-ice side)
-         !!! continue
+         !%% continue
 
       else if ( (zb(j,i) < z_sl(j,i)) &          ! marine ice margin
                 .and. &
@@ -240,7 +238,7 @@ do j=1, JMAX-1
 
 #if (MARINE_ICE_BASAL_MELTING==1)
 
-         !!! continue
+         !%% continue
 
 #elif (MARINE_ICE_BASAL_MELTING==2)
 
@@ -310,8 +308,8 @@ do j=1, JMAX-1
 
 #elif (FLOATING_ICE_BASAL_MELTING==6)
 
-      !!! continue
-      !!! (will be computed below by subroutine sub_ice_shelf_melting_param_2)
+      !%% continue
+      !%% (will be computed below by subroutine sub_ice_shelf_melting_param_2)
 
 #else
       errormsg = ' >>> calc_qbm: FLOATING_ICE_BASAL_MELTING' &
@@ -576,7 +574,7 @@ call error(errormsg)
 
 #else
 
-!!! continue
+!%% continue
 
 #endif
 

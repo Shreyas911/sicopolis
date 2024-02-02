@@ -2,16 +2,15 @@
 !
 !  Module :  b o u n d a r y _ m
 !
-!> @file
-!!
+!> MOCHO domain:
 !! Computation of the surface temperature (must be less than 0 degC)
 !! and of the accumulation-ablation function.
 !!
-!! @section Copyright
+!!##### Authors
 !!
-!! Copyright 2009-2024 Ralf Greve, Eduardo Flandez, Matthias Scheiter
+!! Ralf Greve, Eduardo Flandez, Matthias Scheiter
 !!
-!! @section License
+!!##### License
 !!
 !! This file is part of SICOPOLIS.
 !!
@@ -22,16 +21,17 @@
 !!
 !! SICOPOLIS is distributed in the hope that it will be useful,
 !! but WITHOUT ANY WARRANTY; without even the implied warranty of
-!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !! GNU General Public License for more details.
 !!
 !! You should have received a copy of the GNU General Public License
-!! along with SICOPOLIS.  If not, see <http://www.gnu.org/licenses/>.
+!! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
 !<
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
-!> Computation of the surface temperature (must be less than 0 degC)
+!> MOCHO domain:
+!! Computation of the surface temperature (must be less than 0 degC)
 !! and of the accumulation-ablation function.
 !<------------------------------------------------------------------------------
 module boundary_m
@@ -385,7 +385,7 @@ do j=0, JMAX
       asp_dist(j,i) = mod(atan(asp_a/asp_b), 2.0_dp*pi)
    else   ! (asp_b >= 0.0_dp)
       asp_dist(j,i) = atan(asp_a/asp_b) + pi
-                      !!! singular for asp_b == 0.0_dp !!!
+                      !%% singular for asp_b == 0.0_dp
    end if
 
    ela_now = ela + dela_dts * delta_ts
@@ -421,7 +421,7 @@ do j=0, JMAX
       asp_dist(j,i) = mod(atan(asp_a/asp_b), 2.0_dp*pi)
    else   ! (asp_b >= 0.0_dp)
       asp_dist(j,i) = atan(asp_a/asp_b) + pi
-                      !!! singular for asp_b == 0.0_dp !!!
+                      !%% singular for asp_b == 0.0_dp
    end if
 
    grad_dist(j,i) = sqrt( (asp_a/(2.0_dp*dxi))**2 &
@@ -457,7 +457,7 @@ do j=0, JMAX
       asp_dist(j,i) = mod(atan(asp_a/asp_b), 2.0_dp*pi)
    else   ! (asp_b >= 0.0_dp)
       asp_dist(j,i) = atan(asp_a/asp_b) + pi
-                      !!! singular for asp_b == 0.0_dp !!!
+                      !%% singular for asp_b == 0.0_dp
    end if
 
    ela_now = ela + dela_dts * delta_ts

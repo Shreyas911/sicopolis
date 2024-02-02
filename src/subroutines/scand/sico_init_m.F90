@@ -2,15 +2,13 @@
 !
 !  Module :  s i c o _ i n i t _ m
 !
-!> @file
+!> SCAND domain: Initializations for SICOPOLIS.
 !!
-!! Initialisations for SICOPOLIS.
+!!##### Authors
 !!
-!! @section Copyright
+!! Ralf Greve
 !!
-!! Copyright 2009-2024 Ralf Greve
-!!
-!! @section License
+!!##### License
 !!
 !! This file is part of SICOPOLIS.
 !!
@@ -21,16 +19,16 @@
 !!
 !! SICOPOLIS is distributed in the hope that it will be useful,
 !! but WITHOUT ANY WARRANTY; without even the implied warranty of
-!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !! GNU General Public License for more details.
 !!
 !! You should have received a copy of the GNU General Public License
-!! along with SICOPOLIS.  If not, see <http://www.gnu.org/licenses/>.
+!! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
 !<
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
-!> Initialisations for SICOPOLIS.
+!> SCAND domain: Initializations for SICOPOLIS.
 !<------------------------------------------------------------------------------
 module sico_init_m
 
@@ -1605,13 +1603,13 @@ Q_b_tot = Q_bm + Q_tld
 #elif (ENHMOD==3)
    call calc_enhance_3(time_init)
 #elif (ENHMOD==4)
-   !!! call calc_enhance_4()
-   !!!    (for anisotropic flow enhancement factor,
-   !!!     use values read from output of previous simulation)
+   !%% call calc_enhance_4()
+   !%%    (for anisotropic flow enhancement factor,
+   !%%     use values read from output of previous simulation)
 #elif (ENHMOD==5)
-   !!! call calc_enhance_5()
-   !!!    (for anisotropic flow enhancement factor,
-   !!!     use values read from output of previous simulation)
+   !%% call calc_enhance_5()
+   !%%    (for anisotropic flow enhancement factor,
+   !%%     use values read from output of previous simulation)
 #else
    errormsg = ' >>> sico_init: Parameter ENHMOD must be between 1 and 5!'
    call error(errormsg)

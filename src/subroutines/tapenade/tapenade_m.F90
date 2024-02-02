@@ -2,17 +2,14 @@
 !
 !  Module :  t a p e n a d e _ m
 !
-!> @file
+!> Catch-all module for tapenade-related subroutines.
 !!
-!! Catch-all module for tapenade-related subroutines.
+!!##### Authors
 !!
-!! @section Copyright
+!! Shreyas Sunil Gaikwad, Laurent Hascoet, Sri Hari Krishna Narayanan,
+!! Liz Curry-Logan, Patrick Heimbach, Ralf Greve
 !!
-!! Copyright 2017-2024 Shreyas Sunil Gaikwad, Laurent Hascoet,
-!!                     Sri Hari Krishna Narayanan, Liz Curry-Logan,
-!!                     Patrick Heimbach, Ralf Greve
-!!
-!! @section License
+!!##### License
 !!
 !! This file is part of SICOPOLIS.
 !!
@@ -23,11 +20,11 @@
 !!
 !! SICOPOLIS is distributed in the hope that it will be useful,
 !! but WITHOUT ANY WARRANTY; without even the implied warranty of
-!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !! GNU General Public License for more details.
 !!
 !! You should have received a copy of the GNU General Public License
-!! along with SICOPOLIS.  If not, see <http://www.gnu.org/licenses/>.
+!! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
 !<
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

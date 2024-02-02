@@ -5,17 +5,15 @@
 !
 #define       MODEL_SICOPOLIS
 #define       VERSION '24'
-#define       DATE    '2024-02-01'
+#define       DATE    '2024-02-02'
 !
-!> @file
+!> Main program file of SICOPOLIS.
 !!
-!! Main program file of SICOPOLIS.
+!!##### Authors
 !!
-!! @section Copyright
+!! [SICOPOLIS Authors](https://sicopolis.readthedocs.io/en/latest/introduction.html#authorship)
 !!
-!! Copyright 2009-2024 SICOPOLIS Authors
-!!
-!! @section License
+!!##### License
 !!
 !! This file is part of SICOPOLIS.
 !!

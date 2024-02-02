@@ -2,15 +2,13 @@
 !
 !  Module :  c a l c _ t h k _ w a t e r _ b a s _ m
 !
-!> @file
+!> Computation of the thickness of the water column under the ice base.
 !!
-!! Computation of the thickness of the water column under the ice base.
+!!##### Authors
 !!
-!! @section Copyright
+!! Ralf Greve, Marius Schaefer
 !!
-!! Copyright 2009-2024 Ralf Greve, Marius Schaefer
-!!
-!! @section License
+!!##### License
 !!
 !! This file is part of SICOPOLIS.
 !!
@@ -21,11 +19,11 @@
 !!
 !! SICOPOLIS is distributed in the hope that it will be useful,
 !! but WITHOUT ANY WARRANTY; without even the implied warranty of
-!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !! GNU General Public License for more details.
 !!
 !! You should have received a copy of the GNU General Public License
-!! along with SICOPOLIS.  If not, see <http://www.gnu.org/licenses/>.
+!! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
 !<
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

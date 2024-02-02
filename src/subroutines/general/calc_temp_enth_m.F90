@@ -2,15 +2,13 @@
 !
 !  Module :  c a l c _ t e m p _ e n t h _ m
 !
-!> @file
+!> Computation of temperature, water content and age with the enthalpy method.
 !!
-!! Computation of temperature, water content and age with the enthalpy method.
+!!##### Authors
 !!
-!! @section Copyright
+!! Ralf Greve, Heinz Blatter
 !!
-!! Copyright 2013-2024 Ralf Greve, Heinz Blatter
-!!
-!! @section License
+!!##### License
 !!
 !! This file is part of SICOPOLIS.
 !!
@@ -21,11 +19,11 @@
 !!
 !! SICOPOLIS is distributed in the hope that it will be useful,
 !! but WITHOUT ANY WARRANTY; without even the implied warranty of
-!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !! GNU General Public License for more details.
 !!
 !! You should have received a copy of the GNU General Public License
-!! along with SICOPOLIS.  If not, see <http://www.gnu.org/licenses/>.
+!! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
 !<
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1677,7 +1675,7 @@ end if
 
 #elif (CALCMOD==2)   /* ENTC scheme */
 
-!!! continue   ! no corrector step
+!%% continue   ! no corrector step
 
 #else
 

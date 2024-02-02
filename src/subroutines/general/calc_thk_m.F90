@@ -2,15 +2,13 @@
 !
 !  Module :  c a l c _ t h k _ m
 !
-!> @file
+!> Computation of the ice thickness.
 !!
-!! Computation of the ice thickness.
+!!##### Authors
 !!
-!! @section Copyright
+!! Ralf Greve, Reinhard Calov, Tatsuru Sato
 !!
-!! Copyright 2009-2024 Ralf Greve, Reinhard Calov, Tatsuru Sato
-!!
-!! @section License
+!!##### License
 !!
 !! This file is part of SICOPOLIS.
 !!
@@ -21,11 +19,11 @@
 !!
 !! SICOPOLIS is distributed in the hope that it will be useful,
 !! but WITHOUT ANY WARRANTY; without even the implied warranty of
-!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !! GNU General Public License for more details.
 !!
 !! You should have received a copy of the GNU General Public License
-!! along with SICOPOLIS.  If not, see <http://www.gnu.org/licenses/>.
+!! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
 !<
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -735,7 +733,7 @@ end subroutine apply_mb_source
 
 !  ------ Ice thickness evolves freely
 
-  !!! continue
+  !%% continue
 
 #elif (THK_EVOL==2)
 
@@ -803,7 +801,7 @@ end subroutine apply_mb_source
      target_topo_tau = huge(1.0_dp)
 #endif
 
-     !!! H_new = H_new
+     !%% H_new = H_new
 
   else if (target_topo_tau*sec2year < epsi) then
              ! relaxation time target_topo_tau interpreted as zero
@@ -832,7 +830,7 @@ end subroutine apply_mb_source
      target_topo_tau = huge(1.0_dp)
 #endif
 
-     !!! H_new = H_new
+     !%% H_new = H_new
 
   else if (target_topo_tau*sec2year < epsi) then
              ! relaxation time target_topo_tau interpreted as zero
@@ -926,7 +924,7 @@ end if
 #if (!defined(OCEAN_CONNECTIVITY) || OCEAN_CONNECTIVITY==1)
    call ocean_connect()
 #elif (OCEAN_CONNECTIVITY==0)
-   !!! continue
+   !%% continue
 #else
    errormsg = ' >>> calc_thk_mask_update:' &
             //         end_of_line &
@@ -1826,8 +1824,8 @@ subroutine account_mb_source(dtime, z_mar)
                                        /(runoff(j,i)+calving(j,i) &
                                                     +Q_b_tot(j,i))
 
-           !!! else runoff(j,i)=0.0_dp .and. calving(j,i) = 0.0_dp &
-           !!!                         .and. Q_b_tot(j,i) = 0.0_dp
+           !%% else runoff(j,i)=0.0_dp .and. calving(j,i) = 0.0_dp &
+           !%%                         .and. Q_b_tot(j,i) = 0.0_dp
 
            end if
 

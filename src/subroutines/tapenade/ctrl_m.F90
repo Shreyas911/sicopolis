@@ -2,16 +2,14 @@
 !
 !  Module  :  c t r l _ m
 !
-!> @file
+!> Declarations of control variables for adjointing.
 !!
-!! Declarations of control variables for adjointing.
+!!##### Authors
 !!
-!! @section Copyright
+!! Liz Curry-Logan, Shreyas Sunil Gaikwad,
+!! Sri Hari Krishna Narayanan
 !!
-!! Copyright 2017-2024 Liz Curry-Logan, Shreyas Sunil Gaikwad,
-!!                     Sri Hari Krishna Narayanan
-!!
-!! @section License
+!!##### License
 !!
 !! This file is part of SICOPOLIS.
 !!
@@ -22,11 +20,11 @@
 !!
 !! SICOPOLIS is distributed in the hope that it will be useful,
 !! but WITHOUT ANY WARRANTY; without even the implied warranty of
-!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !! GNU General Public License for more details.
 !!
 !! You should have received a copy of the GNU General Public License
-!! along with SICOPOLIS.  If not, see <http://www.gnu.org/licenses/>.
+!! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
 !<
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

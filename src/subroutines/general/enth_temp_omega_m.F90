@@ -2,16 +2,14 @@
 !
 !  Module :  e n t h _ t e m p _ o m e g a _ m
 !
-!> @file
-!!
-!! Conversion from temperature (temp) and water content (omega) to enthalpy
+!> Conversion from temperature (temp) and water content (omega) to enthalpy
 !! (enth) and vice versa.
 !!
-!! @section Copyright
+!!##### Authors
 !!
-!! Copyright 2013-2024 Ralf Greve, Heinz Blatter
+!! Ralf Greve, Heinz Blatter
 !!
-!! @section License
+!!##### License
 !!
 !! This file is part of SICOPOLIS.
 !!
@@ -22,11 +20,11 @@
 !!
 !! SICOPOLIS is distributed in the hope that it will be useful,
 !! but WITHOUT ANY WARRANTY; without even the implied warranty of
-!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !! GNU General Public License for more details.
 !!
 !! You should have received a copy of the GNU General Public License
-!! along with SICOPOLIS.  If not, see <http://www.gnu.org/licenses/>.
+!! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
 !<
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

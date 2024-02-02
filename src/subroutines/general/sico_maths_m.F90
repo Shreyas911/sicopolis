@@ -2,16 +2,14 @@
 !
 !  Module :  s i c o _ m a t h s _ m
 !
-!> @file
+!> Several mathematical tools used by SICOPOLIS.
 !!
-!! Several mathematical tools used by SICOPOLIS.
+!!##### Authors
 !!
-!! @section Copyright
+!! Ralf Greve, Shreyas Sunil Gaikwad,
+!! Liz Curry-Logan, Sri Hari Krishna Narayanan
 !!
-!! Copyright 2009-2024 Ralf Greve, Shreyas Sunil Gaikwad
-!!                     Liz Curry-Logan, Sri Hari Krishna Narayanan
-!!
-!! @section License
+!!##### License
 !!
 !! This file is part of SICOPOLIS.
 !!
@@ -22,11 +20,11 @@
 !!
 !! SICOPOLIS is distributed in the hope that it will be useful,
 !! but WITHOUT ANY WARRANTY; without even the implied warranty of
-!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !! GNU General Public License for more details.
 !!
 !! You should have received a copy of the GNU General Public License
-!! along with SICOPOLIS.  If not, see <http://www.gnu.org/licenses/>.
+!! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
 !<
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -137,7 +135,7 @@ contains
      ! a1: a1(j) is element A_(j,j)   of matrix A
      ! a2: a2(j) is element A_(j,j+1) of matrix A
      ! b: inhomogeneity vector
-     ! nrows: size of matrix A (indices run from 0 (!!!) to nrows)
+     ! nrows: size of matrix A (indices run from 0 (!) to nrows)
      ! x: solution vector
 
   integer(i4b) :: n

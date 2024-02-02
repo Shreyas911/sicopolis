@@ -2,22 +2,16 @@
 !
 !  Module :  d i s c h a r g e _ w o r k e r s _ m
 !
-!> @file
+!> GRL domain:
+!! Ice discharge parameterization for the Greenland ice sheet
+!! (Calov, Robinson, Perrette and Ganopolski, 2015,
+!!  Cryosphere 9, 179-196, doi: 10.5194/tc-9-179-2015).
 !!
-!! Ice discharge parameterization for the Greenland ice sheet.
+!!##### Authors
 !!
-!! References:
-!! @li Calov, R., A. Robinson, M. Perrette and A. Ganopolski. 2015.\n
-!!     Simulating the Greenland ice sheet under present-day and 
-!!     palaeo constraints including a new discharge parameterization.\n
-!!     Cryosphere 9, 179-196.
+!! Reinhard Calov, Andrey Ganopolski
 !!
-!! @section Copyright
-!!
-!! Copyright 2011-2024 Reinhard Calov, Andrey Ganopolski
-!!                     (Potsdam Institute for Climate Impact Research)
-!!
-!! @section License
+!!##### License
 !!
 !! This file is part of SICOPOLIS.
 !!
@@ -28,16 +22,17 @@
 !!
 !! SICOPOLIS is distributed in the hope that it will be useful,
 !! but WITHOUT ANY WARRANTY; without even the implied warranty of
-!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !! GNU General Public License for more details.
 !!
 !! You should have received a copy of the GNU General Public License
-!! along with SICOPOLIS.  If not, see <http://www.gnu.org/licenses/>.
+!! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
 !<
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
-!> Ice discharge parameterization for the Greenland ice sheet.
+!> GRL domain:
+!! Ice discharge parameterization for the Greenland ice sheet.
 !<------------------------------------------------------------------------------
 module discharge_workers_m
 
@@ -252,7 +247,7 @@ contains
   real(dp) :: disc_target, disc_tot, dT_sub
 
   ! targeted total ice discharge
-  ! 350 Gt/yr Calov et al. (2015)   !!! 400 Gt/yr van den Broeke et al (2016)
+  ! 350 Gt/yr Calov et al. (2015)   !%% 400 Gt/yr van den Broeke et al (2016)
   disc_target = 350.0_dp ! in Gt/yr  
 
   H   = zs-zb
@@ -759,8 +754,8 @@ contains
       qrt_1=grad_zs_x(j,i)*grad_zs_x(j,i)+grad_zs_y(j,i)*grad_zs_y(j,i)
       qrt_2=grad_dist_x(j,i)*grad_dist_x(j,i)+grad_dist_y(j,i)*grad_dist_y(j,i)
       if(qrt_1.ne.0.0_dp.and.qrt_2.ne.0.0_dp) then
-  !!! top_cst_alpha(j,i)=dacos( (grad_zs_x(j,i)*grad_dist_x(j,i)+grad_zs_y(j,i)*grad_dist_y(j,i))/ &
-  !!! (sqrt(qrt_1)*sqrt(qrt_2)) )
+  !%% top_cst_alpha(j,i)=dacos( (grad_zs_x(j,i)*grad_dist_x(j,i)+grad_zs_y(j,i)*grad_dist_y(j,i))/ &
+  !%% (sqrt(qrt_1)*sqrt(qrt_2)) )
 
         cos_grad_tc(j,i)= (grad_zs_x(j,i)*grad_dist_x(j,i)+grad_zs_y(j,i)*grad_dist_y(j,i))/ &
         (sqrt(qrt_1)*sqrt(qrt_2))

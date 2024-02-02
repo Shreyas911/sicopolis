@@ -2,27 +2,18 @@
 !
 !  Module :  h y d r o _ m   (including several sub-modules)
 !
-!> @file
+!> Routing scheme for the basal meltwater.
 !!
-!! Routing scheme for the basal meltwater.
+!! This module uses elements of the code produced by
+!! Le Brocq et al. (2006, Comput. Geosci. 32, 1780-1795,
+!! doi: 10.1016/j.cageo.2006.05.003), but has been modified
+!! and repurposed for this hydrology module of SICOPOLIS.
 !!
-!! Reference:
-!! @li Le Brocq, A. M., A. J. Payne and M. J. Siegert. 2006.\n
-!!     West Antarctic balance calculations:
-!!     Impact of flux-routing algorithm, smoothing algorithm and topography.\n
-!!     Computers & Geosciences 32 (10), 1780-1795,
-!!     doi: 10.1016/j.cageo.2006.05.003.
+!!##### Authors
 !!
-!! @section Copyright
+!! Sebastian Beyer, Anne Le Brocq, Thomas Kleiner, Ralf Greve
 !!
-!! The following code uses elements of the code produced by
-!! Le Brocq et al. (2006), but has been modified and repurposed
-!! for this hydrology module of SICOPOLIS.
-!!
-!! Copyright 2006-2024 Sebastian Beyer, Anne Le Brocq, Thomas Kleiner,
-!!                     Ralf Greve
-!!
-!! @section License
+!!##### License
 !!
 !! This file is part of SICOPOLIS.
 !!
@@ -33,11 +24,11 @@
 !!
 !! SICOPOLIS is distributed in the hope that it will be useful,
 !! but WITHOUT ANY WARRANTY; without even the implied warranty of
-!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !! GNU General Public License for more details.
 !!
 !! You should have received a copy of the GNU General Public License
-!! along with SICOPOLIS.  If not, see <http://www.gnu.org/licenses/>.
+!! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
 !<
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

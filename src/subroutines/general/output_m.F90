@@ -2,16 +2,13 @@
 !
 !  Module :  o u t p u t _ m
 !
-!> @file
+!> Writing of output data on files.
 !!
-!! Writing of output data on files.
+!!##### Authors
 !!
-!! @section Copyright
+!! Ralf Greve, Reinhard Calov, Thomas Goelles, Thorben Dunse
 !!
-!! Copyright 2009-2024 Ralf Greve, Reinhard Calov, Thomas Goelles,
-!!                     Thorben Dunse
-!!
-!! @section License
+!!##### License
 !!
 !! This file is part of SICOPOLIS.
 !!
@@ -22,11 +19,11 @@
 !!
 !! SICOPOLIS is distributed in the hope that it will be useful,
 !! but WITHOUT ANY WARRANTY; without even the implied warranty of
-!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !! GNU General Public License for more details.
 !!
 !! You should have received a copy of the GNU General Public License
-!! along with SICOPOLIS.  If not, see <http://www.gnu.org/licenses/>.
+!! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
 !<
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -131,7 +128,7 @@ real(dp), dimension(0:JMAX,0:IMAX), save :: accum_sum         = 0.0_dp, &
                                             q_gl_g_sum        = 0.0_dp
 
 #if (defined(CLIMATOLOGY_EXTRACTION_HACK))
-    !!! Climatology extraction hack (must not be used routinely) !!!
+    !%% Climatology extraction hack (must not be used routinely)!
         real(dp), dimension(0:JMAX,0:IMAX), save :: temp_maat_sum = 0.0_dp, &
                                                     zs_sum        = 0.0_dp
 #endif
@@ -168,7 +165,7 @@ real(dp), dimension(0:JMAX,0:IMAX) :: accum_flx         , &
                                       q_gl_g_flx
 
 #if (defined(CLIMATOLOGY_EXTRACTION_HACK))
-    !!! Climatology extraction hack (must not be used routinely) !!!
+    !%% Climatology extraction hack (must not be used routinely)!
         real(dp), dimension(0:JMAX,0:IMAX) :: temp_maat_flx , &
                                               zs_flx
 #endif
@@ -4155,7 +4152,7 @@ dH_dtau_flx       = dH_dtau
 q_gl_g_flx        = q_gl_g
 
 #if (defined(CLIMATOLOGY_EXTRACTION_HACK))
-    !!! Climatology extraction hack (must not be used routinely) !!!
+    !%% Climatology extraction hack (must not be used routinely)!
         temp_maat_flx = temp_maat
         zs_flx        = zs
 #endif
@@ -4197,7 +4194,7 @@ if ( .not.((OUTPUT==3).and.(flag_3d_output)) ) then
       q_gl_g_sum        = 0.0_dp
 
 #if (defined(CLIMATOLOGY_EXTRACTION_HACK))
-    !!! Climatology extraction hack (must not be used routinely) !!!
+    !%% Climatology extraction hack (must not be used routinely)!
         temp_maat_sum = 0.0_dp
         zs_sum        = 0.0_dp
 #endif
@@ -4238,7 +4235,7 @@ if ( .not.((OUTPUT==3).and.(flag_3d_output)) ) then
       !       (otherwise, weighting with changing dtime would be required)
 
 #if (defined(CLIMATOLOGY_EXTRACTION_HACK))
-    !!! Climatology extraction hack (must not be used routinely) !!!
+    !%% Climatology extraction hack (must not be used routinely)!
         temp_maat_sum = temp_maat_sum + temp_maat
         zs_sum        = zs_sum        + zs
 #endif
@@ -4277,7 +4274,7 @@ if ( .not.((OUTPUT==3).and.(flag_3d_output)) ) then
       q_gl_g_flx        = q_gl_g_sum        * r_n_flx_ave_cnt_inv
 
 #if (defined(CLIMATOLOGY_EXTRACTION_HACK))
-    !!! Climatology extraction hack (must not be used routinely) !!!
+    !%% Climatology extraction hack (must not be used routinely)!
         temp_maat_flx = temp_maat_sum * r_n_flx_ave_cnt_inv
         zs_flx        = zs_sum        * r_n_flx_ave_cnt_inv
 #endif
@@ -4319,7 +4316,7 @@ else   ! (OUTPUT==3).and.(flag_3d_output)
    q_gl_g_flx        = q_gl_g
 
 #if (defined(CLIMATOLOGY_EXTRACTION_HACK))
-    !!! Climatology extraction hack (must not be used routinely) !!!
+    !%% Climatology extraction hack (must not be used routinely)!
         temp_maat_flx = temp_maat
         zs_flx        = zs
 #endif
@@ -4475,7 +4472,7 @@ do j=0, JMAX
    ratio_sl_conv(i,j)   = real(ratio_sl(j,i),sp)
 
 #if (defined(CLIMATOLOGY_EXTRACTION_HACK))
-    !!! Climatology extraction hack (must not be used routinely) !!!
+    !%% Climatology extraction hack (must not be used routinely)!
         temp_maat_conv(i,j) = real(temp_maat_flx(j,i),sp)
         zs_conv(i,j)        = real(zs_flx(j,i),sp)
 #endif
@@ -5659,7 +5656,7 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 
       filename_with_path = trim(OUT_PATH)//'/'//trim(filename)
 
-      !!! call set_cmode(cmode, n_deflate_level, flag_shuffle)
+      !%% call set_cmode(cmode, n_deflate_level, flag_shuffle)
 
       cmode           = NF90_NOCLOBBER
       n_deflate_level = 0
@@ -7234,7 +7231,7 @@ if (n_core >= 1) then
       filename           = trim(run_name)//'_core.nc'
       filename_with_path = trim(OUT_PATH)//'/'//trim(filename)
 
-      !!! call set_cmode(cmode, n_deflate_level, flag_shuffle)
+      !%% call set_cmode(cmode, n_deflate_level, flag_shuffle)
 
       cmode           = NF90_NOCLOBBER
       n_deflate_level = 0
@@ -7699,9 +7696,9 @@ if (n_core >= 1) then
               bmb_core)
    deallocate(arg1)
 
-!!! else   ! (n_core == 0 -> do nothing)
-!!!
-!!!    continue
+!%% else   ! (n_core == 0 -> do nothing)
+!%%
+!%%    continue
 
 end if
 
