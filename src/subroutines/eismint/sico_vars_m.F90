@@ -38,27 +38,39 @@ implicit none
 save
 
 #if (!defined(SURFACE_FORCING) || SURFACE_FORCING==1)
-!> temp_min: Minimum surface temperature
-   real(dp) :: temp_min
-!> s_t: Gradient of surface temperature change with horizontal distance
-   real(dp) :: s_t
-!> b_max: Maximum accumulation rate
-   real(dp) :: b_max
-!> s_b: Gradient of accumulation rate change with horizontal distance
-   real(dp) :: s_b
-!> eld: Equilibrium line distance
-   real(dp) :: eld
+
+real(dp) :: temp_min
+   !! Minimum surface temperature
+
+real(dp) :: s_t
+   !! Gradient of surface temperature change with horizontal distance
+
+real(dp) :: b_max
+   !! Maximum accumulation rate
+
+real(dp) :: s_b
+   !! Gradient of accumulation rate change with horizontal distance
+
+real(dp) :: eld
+   !! Equilibrium line distance
+
 #elif (SURFACE_FORCING==2)
-!> temp_0: Surface temperature at z=0
-   real(dp) :: temp_0
-!> gamma_t: Lapse rate of the surface temperature
-   real(dp) :: gamma_t
-!> s_0: Maximum accumulation rate
-   real(dp) :: s_0
-!> m_0: Melting gradient (change of accumulation rate with elevation)
-   real(dp) :: m_0
-!> ela: Equilibrium line altitude
-   real(dp) :: ela
+
+real(dp) :: temp_0
+   !! Surface temperature at z=0
+
+real(dp) :: gamma_t
+   !! Lapse rate of the surface temperature
+
+real(dp) :: s_0
+   !! Maximum accumulation rate
+
+real(dp) :: m_0
+   !! Melting gradient (change of accumulation rate with elevation)
+
+real(dp) :: ela
+   !! Equilibrium line altitude
+
 #endif
 
 end module sico_vars_m

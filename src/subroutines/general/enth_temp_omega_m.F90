@@ -45,35 +45,35 @@ save
 
 #if !defined(ALLOW_TAPENADE) /* Normal */
 
-!> c_int_table:     Temperature integral of the specific heat of ice.
-!!                  Index is temperature in degC.
-   real(dp), dimension(-256:255), private       :: c_int_table
+real(dp), dimension(-256:255), private :: c_int_table
+   !! Temperature integral of the specific heat of ice.
+   !! Index is temperature in degC.
 
-!> c_int_inv_table: Inverse of the temperature integral of the specific heat
-!!                  of ice. Index is enthalpy in J/kg (zero for 0 degC).
-   real(dp), dimension(-524288:524287), private :: c_int_inv_table
+real(dp), dimension(-524288:524287), private :: c_int_inv_table
+   !! Inverse of the temperature integral of the specific heat
+   !! of ice. Index is enthalpy in J/kg (zero for 0 degC).
 
-!> n_temp_min: Lower index limit of properly defined values in c_int_table
-!!             (n_temp_min >= -256).
-   integer(i4b), private :: n_temp_min
+integer(i4b), private :: n_temp_min
+   !! Lower index limit of properly defined values in c_int_table
+   !! (n_temp_min >= -256).
 
-!> n_temp_max: Upper index limit of properly defined values in c_int_table
-!!             (n_temp_max <= 255).
-   integer(i4b), private :: n_temp_max
+integer(i4b), private :: n_temp_max
+   !! Upper index limit of properly defined values in c_int_table
+   !! (n_temp_max <= 255).
 
-!> n_enth_min: Lower index limit of properly defined values in c_int_inv_table
-!!             (n_enth_min >= -524288).
-   integer(i4b), private :: n_enth_min
+integer(i4b), private :: n_enth_min
+   !! Lower index limit of properly defined values in c_int_inv_table
+   !! (n_enth_min >= -524288).
 
-!> n_enth_max: Upper index limit of properly defined values in c_int_inv_table
-!!             (n_enth_max <= 524287).
-   integer(i4b), private :: n_enth_max
+integer(i4b), private :: n_enth_max
+   !! Upper index limit of properly defined values in c_int_inv_table
+   !! (n_enth_max <= 524287).
 
-!> L: Latent heat of ice
-   real(dp), private :: L
+real(dp), private :: L
+   !! Latent heat of ice.
 
-!> L_inv: Inverse of the latent heat of ice
-   real(dp), private :: L_inv
+real(dp), private :: L_inv
+   !! Inverse of the latent heat of ice.
 
 public  :: calc_c_int_table, calc_c_int_inv_table
 public  :: enth_fct_temp_omega, temp_fct_enth, omega_fct_enth

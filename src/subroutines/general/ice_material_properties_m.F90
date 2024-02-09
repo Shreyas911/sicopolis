@@ -44,39 +44,42 @@ save
 
 #if !defined(ALLOW_TAPENADE) /* Normal */
 
-!> RF(n): Tabulated values for the rate factor of cold ice
-   real(dp), dimension(-256:255), private       :: RF
+real(dp), dimension(-256:255), private :: RF
+   !! Tabulated values for the rate factor of cold ice
 
-!> R_T: Coefficient of the water-content dependence in the rate factor
-!!      for temperate ice
-   real(dp)                     , private       :: R_T
+real(dp), private :: R_T
+   !! Coefficient of the water-content dependence in the rate factor
+   !! for temperate ice
 
-!> KAPPA(n): Tabulated values for the heat conductivity of ice
-   real(dp), dimension(-256:255), private       :: KAPPA
+real(dp), dimension(-256:255), private :: KAPPA
+   !! Tabulated values for the heat conductivity of ice
 
-!> C(n): Tabulated values for the specific heat of ice
-   real(dp), dimension(-256:255), private       :: C
+real(dp), dimension(-256:255), private :: C
+   !! Tabulated values for the specific heat of ice
 
-!> n_temp_min: Lower index limit of properly defined values in RF, KAPPA and C
-!!             (n_temp_min >= -256).
-   integer(i4b), private :: n_temp_min
+integer(i4b), private :: n_temp_min
+   !! Lower index limit of properly defined values in RF, KAPPA and C
+   !! (n_temp_min >= -256).
 
-!> n_temp_max: Upper index limit of properly defined values in RF, KAPPA and C
-!!             (n_temp_max <= 255).
-   integer(i4b), private :: n_temp_max
+integer(i4b), private :: n_temp_max
+   !! Upper index limit of properly defined values in RF, KAPPA and C
+   !! (n_temp_max <= 255).
 
-!> RHO_I: Density of ice
-   real(dp)                     , private       :: RHO_I
-                                                ! only for the Martian ice caps
-!> RHO_C: Density of crustal material (dust)
-   real(dp)                     , private       :: RHO_C
-                                                ! only for the Martian ice caps
-!> KAPPA_C: Heat conductivity of crustal material (dust)
-   real(dp)                     , private       :: KAPPA_C
-                                                ! only for the Martian ice caps
-!> C_C: Specific heat of crustal material (dust)
-   real(dp)                     , private       :: C_C
-                                                ! only for the Martian ice caps
+real(dp), private :: RHO_I
+   !! Density of ice
+   !! (only for the Martian ice caps)
+
+real(dp), private :: RHO_C
+   !! Density of crustal material (dust)
+   !! (only for the Martian ice caps)
+
+real(dp), private :: KAPPA_C
+   !! Heat conductivity of crustal material (dust)
+   !! (only for the Martian ice caps)
+
+real(dp), private :: C_C
+   !! Specific heat of crustal material (dust)
+   !! (only for the Martian ice caps)
 
 private
 public :: ice_mat_eqs_pars, &

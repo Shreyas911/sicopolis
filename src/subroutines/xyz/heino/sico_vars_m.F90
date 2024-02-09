@@ -37,20 +37,26 @@ use sico_types_m
 implicit none
 save
 
-!> temp_min: Minimum surface temperature
-   real(dp) :: temp_min
-!> s_t: Gradient of surface temperature change with horizontal distance
-   real(dp) :: s_t
-!> x_hat: Coordinate xi (= x) of the centre of the model domain
-   real(dp) :: x_hat
-!> y_hat: Coordinate eta (= y) of the centre of the model domain
-   real(dp) :: y_hat
-!> rad: Radius of the model domain
-   real(dp) :: rad
-!> b_min: Minimum accumulation rate
-   real(dp) :: b_min
-!> b_max: Maximum accumulation rate
-   real(dp) :: b_max
+real(dp) :: temp_min
+   !! Minimum surface temperature
+
+real(dp) :: s_t
+   !! Gradient of surface temperature change with horizontal distance
+
+real(dp) :: x_hat
+   !! Coordinate xi (= x) of the centre of the model domain
+
+real(dp) :: y_hat
+   !! Coordinate eta (= y) of the centre of the model domain
+
+real(dp) :: rad
+   !! Radius of the model domain
+
+real(dp) :: b_min
+   !! Minimum accumulation rate
+
+real(dp) :: b_max
+   !! Maximum accumulation rate
 
 end module sico_vars_m
 !
