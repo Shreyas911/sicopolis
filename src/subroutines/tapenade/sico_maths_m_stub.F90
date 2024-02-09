@@ -2,7 +2,7 @@
 !
 !  Module :  s i c o _ m a t h s _ m _ s t u b
 !
-!> Stub file for the mathematical tools in the sico_maths_m module.
+!! Stub file for the mathematical tools in the sico_maths_m module.
 !!
 !!##### Authors
 !!
@@ -24,12 +24,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Stub file for the mathematical tools in the sico_maths_m module.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module sico_maths_m
 
   use sico_types_m
@@ -68,7 +68,7 @@ contains
 !! [matrix storage: compressed sparse row CSR,
 !! represented by arrays lgs_a_value(values), lgs_a_index (indices)
 !! and lgs_a_ptr (pointers)].
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine sor_sprs_stub(lgs_a_value, lgs_a_index, lgs_a_diag_index, &
                            lgs_a_ptr, &
                            lgs_b_value, &
@@ -147,7 +147,7 @@ contains
 
 !-------------------------------------------------------------------------------
 !> Solution of a system of linear equations Ax=b with tridiagonal matrix A.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine tri_sle_stub(a0, a1, a2, x, b, nrows)
 
   implicit none
@@ -206,7 +206,7 @@ contains
 
 !-------------------------------------------------------------------------------
 !> Bilinear interpolation.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine bilinint_stub(x1, x2, y1, y2, z11, z12, z21, z22, x, y, retval)
 
   implicit none
@@ -229,7 +229,7 @@ contains
 !> Computation of the complementary error function erfc(x) = 1-erf(x)
 !! with a fractional error everywhere less than 1.2 x 10^(-7)
 !! (formula by Press et al., 'Numerical Recipes in Fortran 77').
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine my_erfc_stub(x, retval)
 
   implicit none
@@ -262,7 +262,7 @@ contains
 !> A stub or dummy subroutine for sico_lis_solver.
 !! Note that there are no actual calls to the LIS library since it is treated
 !! as a black box, and we only need this stub to be a placeholder.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine sico_lis_solver_stub(nmax, nnz, &
                                   lgs_a_ptr, lgs_a_index, &
                                   lgs_a_value, lgs_b_value, lgs_x_value)

@@ -2,7 +2,7 @@
 !
 !  Module :  b o u n d a r y _ m
 !
-!> ASF domain:
+!! ASF domain:
 !! Computation of the surface temperature (must be less than 0 degC)
 !! and of the accumulation-ablation function.
 !!
@@ -26,14 +26,14 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> ASF domain:
 !! Computation of the surface temperature (must be less than 0 degC)
 !! and of the accumulation-ablation function.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module boundary_m
 
   use sico_types_m
@@ -51,7 +51,7 @@ contains
 !> Main routine of boundary_m:
 !! Computation of the surface temperature (must be less than 0 degC)
 !! and of the accumulation-ablation function.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine boundary(time, dtime, dxi, deta, &
                     delta_ts, glac_index, z_mar)
 

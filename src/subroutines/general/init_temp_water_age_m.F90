@@ -2,7 +2,7 @@
 !
 !  Module :  i n i t _ t e m p _ w a t e r _ a g e _ m
 !
-!> Initial temperature, water content and age.
+!! Initial temperature, water content and age.
 !!
 !!##### Authors
 !!
@@ -24,12 +24,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Initial temperature, water content and age.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module init_temp_water_age_m
 
   use sico_types_m
@@ -85,7 +85,7 @@ contains
 !> Initial temperature, water content and age
 !! (case ANF_DAT==1, TEMP_INIT==1:
 !! present-day initial topography, isothermal conditions).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine init_temp_water_age_1_1()
 
   implicit none
@@ -146,7 +146,7 @@ contains
 !! (case ANF_DAT==1, TEMP_INIT==2:
 !! present-day initial topography,
 !! ice temperature equal to local surface temperature).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine init_temp_water_age_1_2()
 
   implicit none
@@ -199,7 +199,7 @@ contains
 !! (case ANF_DAT==1, TEMP_INIT==3:
 !! present-day initial topography,
 !! ice temperature linearly increasing with depth).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine init_temp_water_age_1_3()
 
   use ice_material_properties_m, only : kappa_val
@@ -271,7 +271,7 @@ contains
 !> Initial temperature, water content and age
 !! (case ANF_DAT==1, TEMP_INIT==4:
 !! present-day initial topography, ice temperature from Robin (1955) solution).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine init_temp_water_age_1_4()
 
   use ice_material_properties_m, only : kappa_val, c_val
@@ -359,7 +359,7 @@ contains
 !! (case ANF_DAT==1, TEMP_INIT==5:
 !! present-day initial topography,
 !! ice temperature, water content and age from previous simulation).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine init_temp_water_age_1_5(filename)
 
   use read_m, only : read_tms_nc
@@ -460,7 +460,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Initial temperature, water content and age
 !! (case ANF_DAT==2: ice-free conditions with relaxed bedrock).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine init_temp_water_age_2()
 
   implicit none
@@ -489,7 +489,7 @@ contains
 
 !-------------------------------------------------------------------------------
 !> Initial lithosphere temperature.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine init_temp_r()
 
   implicit none
@@ -514,7 +514,7 @@ contains
 
 !-------------------------------------------------------------------------------
 !> Initial water content.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine init_water()
 
   implicit none
@@ -526,7 +526,7 @@ contains
 
 !-------------------------------------------------------------------------------
 !> Initial age.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine init_age()
 
   implicit none

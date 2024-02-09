@@ -2,7 +2,7 @@
 !
 !  Module :  c a l c _ v x y _ m
 !
-!> Computation of the horizontal velocity vx, vy.
+!! Computation of the horizontal velocity vx, vy.
 !!
 !!##### Authors
 !!
@@ -24,12 +24,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Computation of the horizontal velocity vx, vy.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module calc_vxy_m
 
   use sico_types_m
@@ -51,7 +51,7 @@ contains
 
 !-------------------------------------------------------------------------------
 !> Initializations for the basal horizontal velocity vx_b, vy_b.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_vxy_b_init()
 
 implicit none
@@ -190,7 +190,7 @@ end subroutine calc_vxy_b_init
 !-------------------------------------------------------------------------------
 !> Computation of the auxiliary surface gradients dzs_dx_aux, dzs_dy_aux
 !! (optional one-sided gradients at the grounding line).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_dzs_dxy_aux(dxi, deta)
 
 implicit none
@@ -379,7 +379,7 @@ end subroutine calc_dzs_dxy_aux
 !-------------------------------------------------------------------------------
 !> Computation of the basal horizontal velocity vx_b, vy_b in the shallow ice
 !! approximation.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_vxy_b_sia(time)
 
 implicit none
@@ -745,7 +745,7 @@ end subroutine calc_vxy_b_sia
 !! sigma, the depth-averaged fluidity flui_ave_sia, the horizontal
 !! velocity vx, vy and the horizontal volume flux qx, qy in the shallow ice
 !! approximation.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_vxy_sia(dzeta_c, dzeta_t)
 
 use ice_material_properties_m, only : ratefac_c, ratefac_t, ratefac_c_t, creep
@@ -1367,7 +1367,7 @@ end subroutine calc_vxy_sia
 !-------------------------------------------------------------------------------
 !> Computation of the horizontal velocity vx, vy, the horizontal volume flux
 !> qx, qy etc. for static ice.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_vxy_static()
 
 implicit none
@@ -1444,7 +1444,7 @@ end subroutine calc_vxy_static
 !> Computation of the horizontal velocity vx, vy, the horizontal volume flux
 !! qx, qy and the flux across the grounding line q_gl_g in the shallow shelf
 !! approximation (SSA) or the shelfy stream approximation (SStA).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_vxy_ssa(dxi, deta, dzeta_c, dzeta_t)
 
 #if (DYNAMICS==2)
@@ -2109,7 +2109,7 @@ end subroutine calc_vxy_ssa
 !-------------------------------------------------------------------------------
 !> Solution of the system of linear equations for the horizontal velocities
 !! vx_m_ssa, vy_m_ssa in the SSA/SStA.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_vxy_ssa_matrix(dxi, deta, &
                                flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y)
 
@@ -3401,7 +3401,7 @@ end subroutine calc_vxy_ssa_matrix
 
 !-------------------------------------------------------------------------------
 !> Computation of the depth-integrated viscosity vis_int_g in the SSA/SStA.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_vis_ssa(dxi, deta, dzeta_c, dzeta_t)
 
 #if (DYNAMICS==2)
@@ -3686,7 +3686,7 @@ end subroutine calc_vis_ssa
 !-------------------------------------------------------------------------------
 !> Gradual limitation of computed horizontal velocities to the interval
 !! [-vel_max, vel_max].
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 #if !defined(ALLOW_TAPENADE)
 elemental &
 #endif

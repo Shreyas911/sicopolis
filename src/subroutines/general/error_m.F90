@@ -2,7 +2,7 @@
 !
 !  Module :  e r r o r _ m
 !
-!> Writing of error messages and stopping execution.
+!! Writing of error messages and stopping execution.
 !!
 !!##### Authors
 !!
@@ -24,12 +24,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Writing of error messages and stopping execution.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module error_m
 
   implicit none
@@ -40,7 +40,7 @@ contains
 
 !-------------------------------------------------------------------------------
 !> Main routine of error_m: Writing of error messages and stopping execution.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine error(error_message)
 
   implicit none

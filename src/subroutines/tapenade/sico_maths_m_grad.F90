@@ -2,7 +2,7 @@
 !
 !  Module :  s i c o _ m a t h s _ m _ g r a d
 !
-!> Stub file for solvers in adjoint (reverse) mode of SICOPOLIS-AD v2.
+!! Stub file for solvers in adjoint (reverse) mode of SICOPOLIS-AD v2.
 !!
 !!##### Authors
 !!
@@ -24,12 +24,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Stub file for solvers in adjoint (reverse) mode of SICOPOLIS-AD v2.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module sico_maths_m_diff
 
   use sico_types_m
@@ -78,7 +78,7 @@ contains
 !! [matrix storage: compressed sparse row CSR,
 !! represented by arrays lgs_a_value(values), lgs_a_index (indices)
 !! and lgs_a_ptr (pointers)].
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
                          nnz, nmax, &
                          b_value, b_index, b_diag_index, b_ptr)
@@ -131,7 +131,7 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
 !> Differentiation of sor_sprs_stub in reverse (adjoint) mode:
 !! gradient of useful results: lgs_x_value,
 !! with respect to varying inputs: lgs_b_value lgs_x_value lgs_a_value.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine sor_sprs_stub_b(lgs_a_value, lgs_a_valueb, lgs_a_index, &
                              lgs_a_diag_index, lgs_a_ptr, &
                              lgs_b_value, lgs_b_valueb, &
@@ -211,7 +211,7 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
 !! [matrix storage: compressed sparse row CSR,
 !! represented by arrays lgs_a_value(values), lgs_a_index (indices)
 !! and lgs_a_ptr (pointers)].
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine sor_sprs_stub(lgs_a_value, lgs_a_index, lgs_a_diag_index, &
                            lgs_a_ptr, lgs_b_value, &
                            nnz, nmax, &
@@ -292,7 +292,7 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
 !> Differentiation of tri_sle_stub in reverse (adjoint) mode:
 !! gradient of useful results: x,
 !! with respect to varying inputs: x a0 a1 a2 b.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine tri_sle_stub_b(a0, a0b, a1, a1b, a2, a2b, x, xb, b, bb, nrows)
 
   implicit none
@@ -339,7 +339,7 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
 
 !-------------------------------------------------------------------------------
 !> Solution of a system of linear equations Ax=b with tridiagonal matrix A.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine tri_sle_stub(a0, a1, a2, x, b, nrows)
 
   implicit none
@@ -398,7 +398,7 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
 
 !-------------------------------------------------------------------------------
 !> Bilinear interpolation.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   function bilinint(x1, x2, y1, y2, z11, z12, z21, z22, x, y)
 
   implicit none
@@ -421,7 +421,7 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
 !> Differentiation of my_erfc_stub in reverse (adjoint) mode:
 !! gradient of useful results: retval,
 !! with respect to varying inputs: x.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine my_erfc_stub_b(x, xb, retval, retvalb)
 
   implicit none
@@ -492,7 +492,7 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
 !> Computation of the complementary error function erfc(x) = 1-erf(x)
 !! with a fractional error everywhere less than 1.2 x 10^(-7)
 !! (formula by Press et al., 'Numerical Recipes in Fortran 77').
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine my_erfc_stub(x, retval)
 
   implicit none
@@ -527,7 +527,7 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
 !! [matrix storage: compressed sparse row CSR,
 !! represented by arrays lgs_a_value(values), lgs_a_index (indices)
 !! and lgs_a_ptr (pointers)].
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine transpose_csr_no_diagonal(a_value, a_index, a_ptr, &
                                        nnz, nmax, &
                                        b_value, b_index, b_ptr)
@@ -576,7 +576,7 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
 !! [matrix storage: compressed sparse row CSR,
 !! represented by arrays lgs_a_value(values), lgs_a_index (indices)
 !! and lgs_a_ptr (pointers)].
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 #include "lisf.h"
   subroutine sico_lis_solver_stub(nmax, nnz, lgs_a_ptr, lgs_a_index, &
                                   lgs_a_value, lgs_b_value, lgs_x_value)
@@ -659,7 +659,7 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
 !> Differentiation of sico_lis_solver_stub in reverse (adjoint) mode:
 !! gradient of useful results: lgs_x_value,
 !! with respect to varying inputs: lgs_b_value lgs_x_value lgs_a_value.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine sico_lis_solver_stub_b(nmax, nnz, lgs_a_ptr, lgs_a_index, &
                                     lgs_a_value, lgs_a_valueb, &
                                     lgs_b_value, lgs_b_valueb, lgs_x_value, &

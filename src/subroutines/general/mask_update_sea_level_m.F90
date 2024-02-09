@@ -2,7 +2,7 @@
 !
 !  Module :  m a s k _ u p d a t e _ s e a _ l e v e l _ m
 !
-!> Update of the ice-land-ocean mask due to changes of the sea level.
+!! Update of the ice-land-ocean mask due to changes of the sea level.
 !!
 !!##### Authors
 !!
@@ -24,12 +24,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Update of the ice-land-ocean mask due to changes of the sea level.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module mask_update_sea_level_m
 
   use sico_types_m
@@ -46,7 +46,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Main function of mask_update_m:
 !! Update of the ice-land-ocean mask due to changes of the sea level.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   function mask_update_sea_level(i, j)
 
   implicit none

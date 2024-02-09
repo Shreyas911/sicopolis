@@ -2,7 +2,7 @@
 !
 !  Module :  s i c o _ m a i n _ l o o p _ m
 !
-!> Main loop of SICOPOLIS.
+!! Main loop of SICOPOLIS.
 !!
 !!##### Authors
 !!
@@ -24,12 +24,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   
 !-------------------------------------------------------------------------------
 !> Main loop of SICOPOLIS.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module sico_main_loop_m
   
   use sico_types_m
@@ -48,7 +48,7 @@ contains
   
 !-------------------------------------------------------------------------------
 !> Main routine of sico_main_loop_m: Main loop of SICOPOLIS.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 !@ begin tapenade_extract @
   subroutine sico_main_loop(delta_ts, glac_index, &
                       mean_accum, &

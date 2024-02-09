@@ -2,7 +2,7 @@
 !
 !  Module :  c a l c _ t e m p _ m
 !
-!> Computation of temperature, water content and age.
+!! Computation of temperature, water content and age.
 !!
 !!##### Authors
 !!
@@ -24,12 +24,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Computation of temperature, water content and age.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module calc_temp_m
 
   use sico_types_m
@@ -49,7 +49,7 @@ contains
 
 !-------------------------------------------------------------------------------
 !> Computation of temperature, water content and age in polythermal mode.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_temp_poly(dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
                           dtime_temp)
 
@@ -829,7 +829,7 @@ end subroutine calc_temp_poly
 
 !-------------------------------------------------------------------------------
 !> Computation of temperature and age in cold-ice mode.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_temp_cold(dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
                           dtime_temp)
 
@@ -1357,7 +1357,7 @@ end subroutine calc_temp_cold
 
 !-------------------------------------------------------------------------------
 !> Isothermal mode: Setting of the temperature and age to constant values.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_temp_const()
 
 implicit none
@@ -1403,7 +1403,7 @@ end subroutine calc_temp_const
 
 !-------------------------------------------------------------------------------
 !> Computation of temperature and age for a cold ice column.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_temp1(at1, at2_1, at2_2, at3_1, at3_2, &
    at4_1, at4_2, at5, at6, at7, atr1, acb1, acb2, &
    acb3, acb4, alb1, ai1, ai2, &
@@ -1944,7 +1944,7 @@ end subroutine calc_temp1
 !-------------------------------------------------------------------------------
 !> Computation of temperature and age for an ice column with a temperate base
 !! overlain by cold ice.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_temp2(at1, at2_1, at2_2, at3_1, at3_2, &
    at4_1, at4_2, at5, at6, at7, atr1, alb1, &
    ai1, ai2, &
@@ -2464,7 +2464,7 @@ end subroutine calc_temp2
 !-------------------------------------------------------------------------------
 !> Computation of temperature, water content and age for an ice column with a
 !! temperate base overlain by a temperate-ice layer.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_temp3(at1, at2_1, at2_2, at3_1, at3_2, &
    at4_1, at4_2, at5, at6, at7, atr1, am1, am2, alb1, &
    aw1, aw2, aw3, aw4, aw5, aw7, aw8, aw9, aqtld, &
@@ -3486,7 +3486,7 @@ end subroutine calc_temp3
 
 !-------------------------------------------------------------------------------
 !> Computation of temperature and age for an ice-free column.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_temp_r(atr1, alb1, i, j)
 
 #if !defined(ALLOW_TAPENADE) /* Normal */
@@ -3580,7 +3580,7 @@ end subroutine calc_temp_r
 
 !-------------------------------------------------------------------------------
 !> Upward shifting of the CTS.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine shift_cts_upward(at1, at2_1, at2_2, at3_1, at3_2, &
               at4_1, at4_2, at5, at6, at7, atr1, am1, am2, alb1, &
               aw1, aw2, aw3, aw4, aw5, aw7, aw8, aw9, aqtld, &
@@ -3670,7 +3670,7 @@ end subroutine shift_cts_upward
 
 !-------------------------------------------------------------------------------
 !> Downward shifting of the CTS.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine shift_cts_downward(at1, at2_1, at2_2, at3_1, at3_2, &
               at4_1, at4_2, at5, at6, at7, atr1, am1, am2, alb1, &
               aw1, aw2, aw3, aw4, aw5, aw7, aw8, aw9, aqtld, &
@@ -3836,7 +3836,7 @@ end subroutine shift_cts_downward
 
 !-------------------------------------------------------------------------------
 !> Computation of temperature and age for ice shelves (floating ice).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_temp_ssa(at1, at2_1, at2_2, at3_1, at3_2, &
    at4_1, at4_2, at5, at6, at7, atr1, alb1, &
    ai1, ai2, &

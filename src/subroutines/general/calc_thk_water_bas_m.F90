@@ -2,7 +2,7 @@
 !
 !  Module :  c a l c _ t h k _ w a t e r _ b a s _ m
 !
-!> Computation of the thickness of the water column under the ice base.
+!! Computation of the thickness of the water column under the ice base.
 !!
 !!##### Authors
 !!
@@ -24,12 +24,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Computation of the thickness of the water column under the ice base.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module calc_thk_water_bas_m
 
   use sico_types_m
@@ -51,7 +51,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Main subroutine of calc_thk_water_bas_m:
 !! Computation of the thickness of the water column under the ice base.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine calc_thk_water_bas()
 
   implicit none

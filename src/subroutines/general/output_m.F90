@@ -2,7 +2,7 @@
 !
 !  Module :  o u t p u t _ m
 !
-!> Writing of output data on files.
+!! Writing of output data on files.
 !!
 !!##### Authors
 !!
@@ -24,12 +24,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Writing of output data on files.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module output_m
 
   use sico_types_m
@@ -49,7 +49,7 @@ contains
 
 !-------------------------------------------------------------------------------
 !> Writing of time-slice files in NetCDF format.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine output1(time, delta_ts, glac_index, &
                    flag_3d_output, ndat2d, ndat3d, &
                    opt_flag_compute_flux_vars_only)
@@ -5254,7 +5254,7 @@ end subroutine output1
 
 !-------------------------------------------------------------------------------
 !> Writing of time-series data on file in ASCII and NetCDF format.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine output2(time, dxi, deta, delta_ts, glac_index, &
                    opt_flag_compute_flux_vars_only)
 
@@ -6646,7 +6646,7 @@ end subroutine output2
 
 !-------------------------------------------------------------------------------
 !> Computation of the scalar output variables.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine scalar_variables(time, &
                             H_cold, H_temp, &
                             time_val, &
@@ -7019,7 +7019,7 @@ end subroutine scalar_variables
 !-------------------------------------------------------------------------------
 !> Writing of time-series data of the deep ice cores on file in ASCII
 !! and NetCDF format.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine output4(time, dxi, deta, delta_ts, glac_index)
 
   use netcdf
@@ -7711,7 +7711,7 @@ end subroutine output4
 !-------------------------------------------------------------------------------
 !> Writing of time-series data for all defined surface points on file
 !! in ASCII format. Modification of Tolly's output7 by Thorben Dunse.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine output5(time, dxi, deta, delta_ts, glac_index)
 
 implicit none
@@ -7924,7 +7924,7 @@ end subroutine output5
 !> Computation of an arbitrary field quantity for a given borehole
 !! position x_pos, y_pos by weighed averaging of the corresponding
 !! gridded 2-d field.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine borehole(field, x_pos, y_pos, dxi, deta, ch_grid, &
                       field_val, flag_in_domain)
 
@@ -8018,7 +8018,7 @@ end subroutine output5
 
 !-------------------------------------------------------------------------------
 !> Set the creation mode and compression type for NetCDF files.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine set_cmode(cmode, n_deflate_level, flag_shuffle)
 
   use netcdf
@@ -8047,7 +8047,7 @@ end subroutine output5
 
 !-------------------------------------------------------------------------------
 !> Set the value of the website string ch_website.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine set_ch_website(ch_website)
 
   implicit none
@@ -8072,7 +8072,7 @@ end subroutine output5
 
 !-------------------------------------------------------------------------------
 !> Set the value of the institution string ch_institution.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine set_ch_institution(ch_institution)
 
   implicit none
@@ -8112,7 +8112,7 @@ end subroutine output5
 
 !-------------------------------------------------------------------------------
 !> Set the value of the auxiliary variable grads_nc_tweaks.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine set_grads_nc_tweaks(grads_nc_tweaks)
 
   implicit none

@@ -2,7 +2,7 @@
 !
 !  Module :  s i c o _ t y p e s _ m
 !
-!> Declarations of kind types for SICOPOLIS.
+!! Declarations of kind types for SICOPOLIS.
 !!
 !!##### Authors
 !!
@@ -24,12 +24,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Declarations of kind types for SICOPOLIS.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module sico_types_m
 
 implicit none

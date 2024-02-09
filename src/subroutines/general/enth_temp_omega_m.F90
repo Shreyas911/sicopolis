@@ -2,7 +2,7 @@
 !
 !  Module :  e n t h _ t e m p _ o m e g a _ m
 !
-!> Conversion from temperature (temp) and water content (omega) to enthalpy
+!! Conversion from temperature (temp) and water content (omega) to enthalpy
 !! (enth) and vice versa.
 !!
 !!##### Authors
@@ -25,13 +25,13 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Conversion from temperature (temp) and water content (omega) to enthalpy
 !! (enth) and vice versa.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module enth_temp_omega_m
 
 use sico_types_m
@@ -46,27 +46,27 @@ save
 #if !defined(ALLOW_TAPENADE) /* Normal */
 
 !> c_int_table:     Temperature integral of the specific heat of ice.
-!>                  Index is temperature in degC.
+!!                  Index is temperature in degC.
    real(dp), dimension(-256:255), private       :: c_int_table
 
 !> c_int_inv_table: Inverse of the temperature integral of the specific heat
-!>                  of ice. Index is enthalpy in J/kg (zero for 0 degC).
+!!                  of ice. Index is enthalpy in J/kg (zero for 0 degC).
    real(dp), dimension(-524288:524287), private :: c_int_inv_table
 
 !> n_temp_min: Lower index limit of properly defined values in c_int_table
-!>             (n_temp_min >= -256).
+!!             (n_temp_min >= -256).
    integer(i4b), private :: n_temp_min
 
 !> n_temp_max: Upper index limit of properly defined values in c_int_table
-!>             (n_temp_max <= 255).
+!!             (n_temp_max <= 255).
    integer(i4b), private :: n_temp_max
 
 !> n_enth_min: Lower index limit of properly defined values in c_int_inv_table
-!>             (n_enth_min >= -524288).
+!!             (n_enth_min >= -524288).
    integer(i4b), private :: n_enth_min
 
 !> n_enth_max: Upper index limit of properly defined values in c_int_inv_table
-!>             (n_enth_max <= 524287).
+!!             (n_enth_max <= 524287).
    integer(i4b), private :: n_enth_max
 
 !> L: Latent heat of ice
@@ -93,7 +93,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Computation of the temperature integral of the specific heat of ice as a
 !! table (c_int_table). Further, definition of the latent heat of ice.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_c_int_table(c_table, n_tmp_min, n_tmp_max, L_val)
 
 implicit none
@@ -170,7 +170,7 @@ end subroutine calc_c_int_table
 !-------------------------------------------------------------------------------
 !> Computation of the inverse of the temperature integral of the specific heat
 !! of ice as a table (c_int_inv_table).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_c_int_inv_table()
 
 #if defined(ALLOW_TAPENADE) /* Tapenade */
@@ -283,7 +283,7 @@ end subroutine calc_c_int_inv_table
 !-------------------------------------------------------------------------------
 !> Temperature integral of the specific heat of ice
 !! (enthalpy as function of temperature).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 function c_int_val(temp_val)
 
 implicit none
@@ -319,7 +319,7 @@ end function c_int_val
 
 !-------------------------------------------------------------------------------
 !> Inverse function of c_int_val (temperature as function of enthalpy).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 function c_int_inv_val(enth_val)
 
 implicit none
@@ -355,7 +355,7 @@ end function c_int_inv_val
 
 !-------------------------------------------------------------------------------
 !> Enthalpy as a function of temperature and water content.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 function enth_fct_temp_omega(temp_val, omega_val)
 
 implicit none
@@ -374,7 +374,7 @@ end function enth_fct_temp_omega
 
 !-------------------------------------------------------------------------------
 !> Temperature as a function of enthalpy.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 function temp_fct_enth(enth_val, temp_m_val)
 
 implicit none
@@ -398,7 +398,7 @@ end function temp_fct_enth
 
 !-------------------------------------------------------------------------------
 !> Water content as a function of enthalpy.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 function omega_fct_enth(enth_val, temp_m_val)
 
 implicit none

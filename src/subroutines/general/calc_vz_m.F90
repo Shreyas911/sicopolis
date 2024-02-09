@@ -2,7 +2,7 @@
 !
 !  Module :  c a l c _ v z _ m
 !
-!> Computation of the vertical velocity vz.
+!! Computation of the vertical velocity vz.
 !!
 !!##### Authors
 !!
@@ -24,12 +24,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Computation of the vertical velocity vz.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module calc_vz_m
 
   use sico_types_m
@@ -45,7 +45,7 @@ contains
 
 !-------------------------------------------------------------------------------
 !> Computation of the vertical velocity vz for grounded ice.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_vz_grounded(dxi, deta, dzeta_c, dzeta_t)
 
 implicit none
@@ -252,7 +252,7 @@ end subroutine calc_vz_grounded
 
 !-------------------------------------------------------------------------------
 !> Computation of the vertical velocity vz for floating ice.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_vz_floating(dxi, deta, dzeta_c)
 
 implicit none
@@ -366,7 +366,7 @@ end subroutine calc_vz_floating
 
 !-------------------------------------------------------------------------------
 !> Computation of the vertical velocity vz for static ice.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_vz_static()
 
 implicit none

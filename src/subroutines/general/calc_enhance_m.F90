@@ -2,7 +2,7 @@
 !
 !  Module :  c a l c _ e n h a n c e _ m
 !
-!> Computation of the flow enhancement factor.
+!! Computation of the flow enhancement factor.
 !!
 !!##### Authors
 !!
@@ -24,12 +24,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Computation of the flow enhancement factor.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module calc_enhance_m
 
   use sico_types_m
@@ -57,7 +57,7 @@ contains
 !> Computation of the flow enhancement factor.
 !! Case ENHMOD==1:
 !! constant for grounded ice, constant for floating ice.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine calc_enhance_1()
 
   implicit none
@@ -82,7 +82,7 @@ contains
 !! Case ENHMOD==2:
 !! two different values depending on age for grounded ice,
 !! constant for floating ice.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine calc_enhance_2()
 
   implicit none
@@ -131,7 +131,7 @@ contains
 !! Case ENHMOD==3:
 !! two different values depending on time of deposition for grounded ice,
 !! constant for floating ice.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine calc_enhance_3(time)
 
   implicit none
@@ -196,7 +196,7 @@ contains
 !! Case ENHMOD==4:
 !! minimal anisotropic enhancement factor for grounded ice,
 !! constant for floating ice.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine calc_enhance_4()
 
   implicit none
@@ -217,7 +217,7 @@ contains
 !> Computation of the flow enhancement factor.
 !! Case ENHMOD==5:
 !! minimal anisotropic enhancement factor for grounded and floating ice.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine calc_enhance_5()
 
   implicit none
@@ -232,7 +232,7 @@ contains
 
 !-------------------------------------------------------------------------------
 !> Weighted enhancement factor for SIA/SStA hybrid dynamics.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine calc_enhance_hybrid_weighted(weigh_ssta_sia)
 
   implicit none
@@ -269,7 +269,7 @@ contains
 
 !-------------------------------------------------------------------------------
 !> Minimal anisotropic flow enhancement factor.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine calc_enhance_aniso()
 
   implicit none
@@ -313,7 +313,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Constant, prescribed flow enhancement factor for ice streams
 !! (fast-flowing ice).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine calc_enhance_stream_const()
 
   implicit none
@@ -331,7 +331,7 @@ contains
 
 !-------------------------------------------------------------------------------
 !> Constant, prescribed flow enhancement factor for floating ice.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine calc_enhance_floating_const()
 
   implicit none
@@ -368,7 +368,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Modification of the flow enhancement factor due to dust content
 !! (for the Martian polar caps).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine mod_enhance_dust()
 
   implicit none

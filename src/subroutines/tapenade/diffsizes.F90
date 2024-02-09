@@ -2,7 +2,7 @@
 !
 !  Module :   d i f f s i z e s
 !
-!> A necessary module for TAPENADE.
+!! A necessary module for TAPENADE.
 !!
 !!##### Authors
 !!
@@ -24,12 +24,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> A necessary module for TAPENADE.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module diffsizes
 
   implicit none

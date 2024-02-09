@@ -2,7 +2,7 @@
 !
 !  Module :  b o u n d a r y _ m
 !
-!> NMARS domain:
+!! NMARS domain:
 !! Mars Atmosphere-Ice Coupler MAIC-1.5.
 !! Computation of the surface temperature (must be less than 0 degC)
 !! and of the accumulation-ablation rate for the north polar cap of Mars.
@@ -28,7 +28,7 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
@@ -37,7 +37,7 @@
 !! Computation of the surface temperature (must be less than 0 degC)
 !! and of the accumulation-ablation rate for the north polar cap of Mars.
 !! Computation of the geothermal heat flux.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module boundary_m
 
   use sico_types_m
@@ -57,7 +57,7 @@ contains
 !! Computation of the surface temperature (must be less than 0 degC)
 !! and of the accumulation-ablation rate for the north polar cap of Mars.
 !! Computation of the geothermal heat flux.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine boundary(time, dtime, dxi, deta, &
                     delta_ts, glac_index, z_mar)
 

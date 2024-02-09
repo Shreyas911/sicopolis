@@ -2,7 +2,7 @@
 !
 !  Module :  p d d _ m
 !
-!> Computation of the positive degree days (PDD) with statistical temperature
+!! Computation of the positive degree days (PDD) with statistical temperature
 !! fluctuations; based on semi-analytical solution by Calov and Greve (2005).
 !!
 !!##### Authors
@@ -25,13 +25,13 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Computation of the positive degree days (PDD) with statistical temperature
 !! fluctuations; based on semi-analytical solution by Calov and Greve (2005).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module pdd_m
 
   use sico_types_m
@@ -50,7 +50,7 @@ contains
 !! fluctuations; based on semi-analytical solution by Calov and Greve (2005).
 !! Note that this routine uses years as time unit
 !! (as opposed to the seconds which are usually used by SICOPOLIS).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine pdd(temp_mm, s_stat, ET)
 
 #if defined(ALLOW_TAPENADE) /* Tapenade */

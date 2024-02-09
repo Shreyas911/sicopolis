@@ -2,7 +2,7 @@
 !
 !  Module :  t a p e n a d e _ m
 !
-!> Catch-all module for tapenade-related subroutines.
+!! Catch-all module for tapenade-related subroutines.
 !!
 !!##### Authors
 !!
@@ -25,12 +25,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Catch-all module for tapenade-related subroutines.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module tapenade_m
 
   implicit none
@@ -51,7 +51,7 @@ contains
 !> Adjoint master is the main tool by which sicopolis.F90 invokes the
 !! adjoint/tlm code. Its job is to figure out what mode of the adjoint code is
 !! being invoked and run the appropriate subroutine. 
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 #ifdef ALLOW_TAPENADE
   subroutine adjoint_master
 
@@ -322,9 +322,9 @@ use sico_variables_m_diff
    !@ python_automated_grdchk IO end @   
    end subroutine grdchk_main
 
-!!-------------------------------------------------------------------------------
-!!> Checks to see if output dir exists. If so, deletes it.
-!!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
+!> Checks to see if output dir exists. If so, deletes it.
+!--------------------------------------------------------------------------------
   subroutine deldirs
 
   implicit none

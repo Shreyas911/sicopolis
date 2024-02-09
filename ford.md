@@ -1,7 +1,6 @@
 project: SICOPOLIS
-summary: SICOPOLIS - SImulation COde for POLythermal Ice Sheets
+summary: SICOPOLIS Developer Manual
 author: SICOPOLIS Authors
-favicon: ./docs/www/sico-icecube.ico
 src_dir: ./src
 preprocess: false
 docmark: !

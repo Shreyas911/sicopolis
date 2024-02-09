@@ -2,7 +2,7 @@
 !
 !  Module :  s i c o _ v a r i a b l e s _ m
 !
-!> Declarations of global variables for SICOPOLIS.
+!! Declarations of global variables for SICOPOLIS.
 !!
 !!##### Authors
 !!
@@ -24,12 +24,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Declarations of global variables for SICOPOLIS.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module sico_variables_m
 
 use sico_types_m

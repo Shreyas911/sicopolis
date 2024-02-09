@@ -2,7 +2,7 @@
 !
 !  Module :  n e t c d f _ s t u b
 !
-!> Stub file for NetCDF subroutines for SICOPOLIS-AD v2.
+!! Stub file for NetCDF subroutines for SICOPOLIS-AD v2.
 !!
 !!##### Authors
 !!
@@ -24,12 +24,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Stub file for NetCDF subroutines for SICOPOLIS-AD v2.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module netcdf
 
 implicit none 

@@ -5,9 +5,9 @@
 !
 #define       MODEL_SICOPOLIS
 #define       VERSION '24'
-#define       DATE    '2024-02-02'
+#define       DATE    '2024-02-09'
 !
-!> Main program file of SICOPOLIS.
+!! Main program of SICOPOLIS.
 !!
 !!##### Authors
 !!
@@ -29,7 +29,7 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !@ begin tapenade_extract @
@@ -204,7 +204,7 @@
 
 !-------------------------------------------------------------------------------
 !> Main program of SICOPOLIS.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 program sicopolis
 
 !-------- Description of variables declared locally --------

@@ -2,7 +2,7 @@
 !
 !  Module :  s i c o _ v a r s _ m
 !
-!> ASF domain: Declarations of global variables for SICOPOLIS.
+!! ASF domain: Declarations of global variables for SICOPOLIS.
 !!
 !!##### Authors
 !!
@@ -24,12 +24,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> ASF domain: Declarations of global variables for SICOPOLIS.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module sico_vars_m
 
 use sico_types_m

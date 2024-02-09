@@ -2,7 +2,7 @@
 !
 !  Module  :  c t r l _ m
 !
-!> Declarations of control variables for adjointing.
+!! Declarations of control variables for adjointing.
 !!
 !!##### Authors
 !!
@@ -25,12 +25,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Declarations of control variables for adjointing.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module ctrl_m
 
   use sico_types_m  
@@ -68,7 +68,7 @@ contains
 !! This is currently the default.
 !!
 !! Other cost functions are certainly possible, and recommended! 
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine cost_final()
   
   implicit none

@@ -2,7 +2,7 @@
 !
 !  Module :  c o m p a r e _ f l o a t _ m
 !
-!> Comparison of single- or double-precision floating-point numbers.
+!! Comparison of single- or double-precision floating-point numbers.
 !!
 !!##### Authors
 !!
@@ -24,12 +24,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Comparison of single- or double-precision floating-point numbers.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module compare_float_m
 
 #if (defined(MODEL_SICOPOLIS))
@@ -66,7 +66,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Check whether single-precision x and y are approximately equal
 !! (within a given eps limit).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   function approx_equal_sp(x, y, eps)
 
   implicit none
@@ -87,7 +87,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Check whether double-precision x and y are approximately equal
 !! (within a given eps limit).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   function approx_equal_dp(x, y, eps)
 
   implicit none
@@ -108,7 +108,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Check whether single-precision x is approximately equal to an integer
 !! (within a given eps limit).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   function approx_equal_integer_sp(x, eps)
 
   implicit none
@@ -131,7 +131,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Check whether double-precision x is approximately equal to an integer
 !! (within a given eps limit).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   function approx_equal_integer_dp(x, eps)
 
   implicit none
@@ -154,7 +154,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Check whether single-precision x is approximately an integer multiple of
 !! single-precision y (within a given eps limit).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   function approx_integer_multiple_sp(x, y, eps)
 
   implicit none
@@ -179,7 +179,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Check whether double-precision x is approximately an integer multiple of
 !! double-precision y (within a given eps limit).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   function approx_integer_multiple_dp(x, y, eps)
 
   implicit none

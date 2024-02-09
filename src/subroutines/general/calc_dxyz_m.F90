@@ -2,7 +2,7 @@
 !
 !  Module :  c a l c _ d x y z _ m
 !
-!> Computation of all components of the strain-rate tensor, the full
+!! Computation of all components of the strain-rate tensor, the full
 !! effective strain rate and the shear fraction.
 !!
 !!##### Authors
@@ -25,13 +25,13 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Computation of all components of the strain-rate tensor, the full
 !! effective strain rate and the shear fraction.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module calc_dxyz_m
 
   use sico_types_m
@@ -50,7 +50,7 @@ contains
 !> Main subroutine of calc_dxyz_m:
 !! Computation of all components of the strain-rate tensor, the full
 !! effective strain rate and the shear fraction.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine calc_dxyz(dxi, deta, dzeta_c, dzeta_t)
 
   implicit none

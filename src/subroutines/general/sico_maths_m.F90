@@ -2,7 +2,7 @@
 !
 !  Module :  s i c o _ m a t h s _ m
 !
-!> Several mathematical tools used by SICOPOLIS.
+!! Several mathematical tools used by SICOPOLIS.
 !!
 !!##### Authors
 !!
@@ -25,12 +25,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Several mathematical tools used by SICOPOLIS.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module sico_maths_m
 
   use sico_types_m
@@ -46,7 +46,7 @@ contains
 !! [matrix storage: compressed sparse row CSR,
 !! represented by arrays lgs_a_value(values), lgs_a_index (indices)
 !! and lgs_a_ptr (pointers)].
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine sor_sprs(lgs_a_value, lgs_a_index, lgs_a_diag_index, lgs_a_ptr, &
                       lgs_b_value, &
                       nnz, nmax, omega, eps_sor, lgs_x_value, ierr)
@@ -122,7 +122,7 @@ contains
 
 !-------------------------------------------------------------------------------
 !> Solution of a system of linear equations Ax=b with tridiagonal matrix A.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine tri_sle(a0, a1, a2, x, b, nrows)
 
   implicit none
@@ -181,7 +181,7 @@ contains
 
 !-------------------------------------------------------------------------------
 !> Bilinear interpolation.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   function bilinint(x1, x2, y1, y2, z11, z12, z21, z22, x, y)
 
   implicit none
@@ -204,7 +204,7 @@ contains
 !> Computation of the complementary error function erfc(x) = 1-erf(x)
 !! with a fractional error everywhere less than 1.2 x 10^(-7)
 !! (formula by Press et al., 'Numerical Recipes in Fortran 77').
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine my_erfc(x, retval)
 
   implicit none
@@ -236,7 +236,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Definition of sico_lis_solver for Tapenade.
 !! The code does nothing because only a definition is needed.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 #include "lisf.h"
   subroutine sico_lis_solver(nmax, nnz, &
                              lgs_a_ptr, lgs_a_index, &

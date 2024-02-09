@@ -2,7 +2,7 @@
 !
 !  Module :  c a l v i n g _ m
 !
-!> Calving of grounded or floating ice.
+!! Calving of grounded or floating ice.
 !!
 !!##### Authors
 !!
@@ -24,12 +24,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Calving of grounded or floating ice.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module calving_m
 
   use sico_types_m
@@ -45,7 +45,7 @@ contains
 
 !-------------------------------------------------------------------------------
 !> Calving of grounded "underwater ice".
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine calving_underwater_ice()
 
   implicit none
@@ -118,7 +118,7 @@ contains
 !> Adjustment of the newly computed ice thickness distribution due to either
 !! the retreat mask due to oceanic forcing or the ice-shelf collapse mask
 !! (counted as calving).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine calving_retreat_mask(time, dtime)
 
   implicit none

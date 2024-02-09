@@ -2,7 +2,7 @@
 !
 !  Module :  s i c o _ i n i t _ m
 !
-!> MOCHO domain: Initializations for SICOPOLIS.
+!! MOCHO domain: Initializations for SICOPOLIS.
 !!
 !!##### Authors
 !!
@@ -24,12 +24,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> MOCHO domain: Initializations for SICOPOLIS.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module sico_init_m
 
   use sico_types_m
@@ -45,7 +45,7 @@ contains
 
 !-------------------------------------------------------------------------------
 !> Main routine of sico_init_m: Initialisations for SICOPOLIS.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine sico_init(delta_ts, glac_index, &
                mean_accum, &
                dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
@@ -1916,7 +1916,7 @@ end subroutine sico_init
 !! (including gradients) and of the horizontal grid spacings dxi, deta.
 !! For ice-free initial topography with relaxed lithosphere
 !! (not defined for this domain, thus routine stops execution of SICOPOLIS).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine topography1(dxi, deta)
 
   use read_m, only : read_2d_input
@@ -2154,7 +2154,7 @@ end subroutine topography1
 !> Definition of the initial surface and bedrock topography
 !! (including gradients) and of the horizontal grid spacings dxi, deta.
 !! For ice-free initial topography with relaxed lithosphere.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine topography2(dxi, deta)
 
   use read_m, only : read_2d_input
@@ -2325,7 +2325,7 @@ end subroutine topography2
 !> Definition of the initial surface and bedrock topography
 !! (including gradients) and of the horizontal grid spacings dxi, deta.
 !! For initial topography from previous simulation.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine topography3(dxi, deta, anfdatname)
 
   use read_m, only : read_tms_nc, read_2d_input

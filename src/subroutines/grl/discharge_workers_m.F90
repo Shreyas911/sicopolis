@@ -2,7 +2,7 @@
 !
 !  Module :  d i s c h a r g e _ w o r k e r s _ m
 !
-!> GRL domain:
+!! GRL domain:
 !! Ice discharge parameterization for the Greenland ice sheet
 !! (Calov, Robinson, Perrette and Ganopolski, 2015,
 !!  Cryosphere 9, 179-196, doi: 10.5194/tc-9-179-2015).
@@ -27,13 +27,13 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> GRL domain:
 !! Ice discharge parameterization for the Greenland ice sheet.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module discharge_workers_m
 
   use sico_types_m
@@ -77,7 +77,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Ice discharge parameters (Greenland).
 !! [Assign ice discharge parameters.]
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine disc_param(dtime)
 
   ! Author: Reinhard Calov
@@ -221,7 +221,7 @@ contains
 !> Constant in ice discharge parameterization (Greenland).
 !! [Determine (amount of magnitude of) constant in ice discharge
 !! parameterization.]
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine calc_c_dis_0(dxi, deta)
 
   ! Author: Reinhard Calov
@@ -340,7 +340,7 @@ contains
 !> Dependence of ice discharge coefficient on latitude (Greenland).
 !! [Determine dependence of ice discharge coefficient on latitude.
 !! This can be improved. For now I recommend s_dis=1.]
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine disc_fields()
 
   ! Author: Reinhard Calov
@@ -386,7 +386,7 @@ contains
 !> Ice discharge parameterization main formula, controler (general).
 !! [Compute ice discharge via a parameterization using distance of ice 
 !! margin to coast and ice thickness as parameters.]
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine discharge(dxi, deta)
 
 #ifdef ALLOW_TAPENADE /* Tapenade */
@@ -487,7 +487,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Distance to the coast (general).
 !! [Compute distance to the coast for every land point.]
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine coastal_distance(dxi, deta)
 
   ! Author: Reinhard Calov
@@ -770,7 +770,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Ring along an ice sheet margin (general).
 !! [Compute marginal ring.]
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine marginal_ring(dxi, deta)
 
   ! Author: Reinhard Calov
@@ -863,7 +863,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Anomaly of subsurface temperature (general).
 !! [Compute anomaly of subsurface temperature with a simple parameterization.]
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine calc_sub_oc_dT(T_sub_PD, dT_glann, dT_sub)
 
   ! Author: Reinhard Calov

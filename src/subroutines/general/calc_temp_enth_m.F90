@@ -2,7 +2,7 @@
 !
 !  Module :  c a l c _ t e m p _ e n t h _ m
 !
-!> Computation of temperature, water content and age with the enthalpy method.
+!! Computation of temperature, water content and age with the enthalpy method.
 !!
 !!##### Authors
 !!
@@ -24,12 +24,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Computation of temperature, water content and age with the enthalpy method.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module calc_temp_enth_m
 
   use sico_types_m
@@ -47,7 +47,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Main subroutine of calc_temp_enth_m:
 !! Computation of temperature, water content and age with the enthalpy method.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_temp_enth(dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
                           dtime_temp)
 
@@ -686,7 +686,7 @@ end subroutine calc_temp_enth
 !-------------------------------------------------------------------------------
 !> Computation of temperature and age for a cold ice column with the
 !! enthalpy method.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_temp_enth_1(at1, at2_1, at2_2, at3_1, at3_2, &
                             at4_1, at4_2, at5, at6, at7, &
                             atr1, acb1, acb2, acb3, acb4, alb1, &
@@ -846,7 +846,7 @@ end subroutine calc_temp_enth_1
 !-------------------------------------------------------------------------------
 !> Computation of temperature and age for a cold ice column with the
 !! enthalpy method: Abbreviations.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_temp_enth_1_a(at1, at2_1, at2_2, at3_1, at3_2, &
                               at4_1, at4_2, at5, at6, at7, &
                               atr1, acb1, acb2, acb3, acb4, alb1, &
@@ -1055,7 +1055,7 @@ end subroutine calc_temp_enth_1_a
 !> Computation of temperature and age for a cold ice column with the
 !! enthalpy method:
 !! Set-up of the equations for the bedrock temperature.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_temp_enth_1_b(ctr1, clb1, i, j, &
                               lgs_a0, lgs_a1, lgs_a2, lgs_b)
 
@@ -1119,7 +1119,7 @@ end subroutine calc_temp_enth_1_b
 !> Computation of temperature and age for a cold ice column with the
 !! enthalpy method:
 !! Set-up of the equations for the ice enthalpy.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_temp_enth_1_c(ct1, ct2, ct3, ct4, ce5, ce6, ce7, &
                               ct1_sg, ct2_sg, ct3_sg, ct4_sg, &
                               ccbe1, ccb2, ccb3, ccb4, &
@@ -1264,7 +1264,7 @@ end subroutine calc_temp_enth_1_c
 !> Computation of temperature and age for a cold ice column with the
 !! enthalpy method:
 !! Set-up of the equations for the age of ice.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_temp_enth_1_d(ct1, ct2, ct3, ct4, ci1, ci2, &
                               ct1_sg, ct2_sg, ct3_sg, ct4_sg, &
                               adv_vert_sg, abs_adv_vert_sg, &
@@ -1477,7 +1477,7 @@ end subroutine calc_temp_enth_1_d
 !-------------------------------------------------------------------------------
 !> Computation of temperature and age for an ice column with a temperate base
 !! with the enthalpy method.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_temp_enth_2(at1, at2_1, at2_2, at3_1, at3_2, &
                             at4_1, at4_2, at5, at6, at7, atr1, alb1, &
                             ai1, ai2, aqtlde, am3, &
@@ -1750,7 +1750,7 @@ end subroutine calc_temp_enth_2
 !-------------------------------------------------------------------------------
 !> Computation of temperature and age for an ice column with a temperate base
 !! with the enthalpy method: Abbreviations I.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_temp_enth_2_a1(at1, at2_1, at2_2, at3_1, at3_2, &
                                at4_1, at4_2, at5, atr1, alb1, &
                                ai1, aqtlde, &
@@ -1882,7 +1882,7 @@ end subroutine calc_temp_enth_2_a1
 !-------------------------------------------------------------------------------
 !> Computation of temperature and age for an ice column with a temperate base
 !! with the enthalpy method: Abbreviations II.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_temp_enth_2_a2(at6, at7, ai2, am3, temp_c_val, omega_c_val, &
                                dtime_temp_inv, &
                                i, j, ce6, ce7, ci2, cm3)
@@ -1958,7 +1958,7 @@ end subroutine calc_temp_enth_2_a2
 !> Computation of temperature and age for an ice column with a temperate base
 !! with the enthalpy method:
 !! Set-up of the equations for the bedrock temperature.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_temp_enth_2_b(ctr1, clb1, i, j, &
                               lgs_a0, lgs_a1, lgs_a2, lgs_b)
 
@@ -2022,7 +2022,7 @@ end subroutine calc_temp_enth_2_b
 !> Computation of temperature and age for an ice column with a temperate base
 !! with the enthalpy method:
 !! Set-up of the equations for the ice enthalpy.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_temp_enth_2_c(ct1, ct2, ct3, ct4, ce5, ce6, ce7, &
                               ct1_sg, ct2_sg, ct3_sg, ct4_sg, cm3, &
                               adv_vert_sg, abs_adv_vert_sg, &
@@ -2205,7 +2205,7 @@ end subroutine calc_temp_enth_2_c
 !> Computation of temperature and age for an ice column with a temperate base
 !! with the enthalpy method:
 !! Set-up of the equations for the age of ice.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_temp_enth_2_d(ct1, ct2, ct3, ct4, ci1, ci2, &
                               ct1_sg, ct2_sg, ct3_sg, ct4_sg, &
                               adv_vert_sg, abs_adv_vert_sg, &
@@ -2418,7 +2418,7 @@ end subroutine calc_temp_enth_2_d
 !-------------------------------------------------------------------------------
 !> Computation of temperature, age, water content and enthalpy for an
 !! ice-free column.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_temp_enth_r(atr1, alb1, i, j)
 
 #if !defined(ALLOW_TAPENADE) /* Normal */
@@ -2519,7 +2519,7 @@ end subroutine calc_temp_enth_r
 !-------------------------------------------------------------------------------
 !> Computation of temperature and age for ice shelves (floating ice)
 !! with the enthalpy method.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_temp_enth_ssa(at1, at2_1, at2_2, at3_1, at3_2, &
                               at4_1, at4_2, at5, at6, at7, atr1, alb1, &
                               ai1, ai2, &

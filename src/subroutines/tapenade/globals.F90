@@ -2,7 +2,7 @@
 !
 !  Module :  g l o b a l s
 !
-!> TAPENADE does not like the save statement and instead prefers the global
+!! TAPENADE does not like the save statement and instead prefers the global
 !! variables to be declared in a separate file.
 !!
 !!##### Authors
@@ -25,13 +25,13 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> TAPENADE does not like the save statement and instead prefers the global
 !! variables to be declared in a separate file.
-!<++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 module globals
         
   use sico_types_m

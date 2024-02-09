@@ -2,7 +2,7 @@
 !
 !  Module :  c a l c _ t e m p _ m e l t _ b a s _ m
 !
-!> Computation of the melting and basal temperatures.
+!! Computation of the melting and basal temperatures.
 !!
 !!##### Authors
 !!
@@ -24,12 +24,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Computation of the melting and basal temperatures.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module calc_temp_melt_bas_m
 
   use sico_types_m
@@ -45,7 +45,7 @@ contains
 
 !-------------------------------------------------------------------------------
 !> Computation of the melting temperatures.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine calc_temp_melt()
 
   implicit none
@@ -78,7 +78,7 @@ contains
 
 !-------------------------------------------------------------------------------
 !> Computation of the basal temperatures.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
   subroutine calc_temp_bas()
 
   implicit none

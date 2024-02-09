@@ -2,7 +2,7 @@
 !
 !  Module :  c a l c _ b a s _ m e l t _ m
 !
-!> Computation of the basal melting rate.
+!! Computation of the basal melting rate.
 !!
 !!##### Authors
 !!
@@ -24,12 +24,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Computation of the basal melting rate.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 module calc_bas_melt_m
 
   use sico_types_m
@@ -47,7 +47,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Computation of the basal melting rate Q_bm.
 !! Summation of Q_bm and Q_tld (water drainage rate from the temperate layer).
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_qbm(time, dzeta_c, dzeta_r)
 
 use ice_material_properties_m, only : kappa_val
@@ -407,7 +407,7 @@ end subroutine calc_qbm
 
 !-------------------------------------------------------------------------------
 !> Local sub-ice-shelf melting parameterization.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine sub_ice_shelf_melting_param_1(time, time_in_years, &
                                          rhow_rho_ratio, &
                                          i, j, Q_bm_floating)
@@ -660,7 +660,7 @@ end subroutine sub_ice_shelf_melting_param_1
 
 !-------------------------------------------------------------------------------
 !> Non-local sub-ice-shelf melting parameterization by ISMIP6.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine sub_ice_shelf_melting_param_2(time, time_in_years, &
                                          rhow_rho_ratio, z_abyssal, &
                                          n_year_CE)

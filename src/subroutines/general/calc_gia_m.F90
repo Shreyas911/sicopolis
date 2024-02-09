@@ -2,7 +2,7 @@
 !
 !  Module :  c a l c _ g i a _ m
 !
-!> Computation of the glacial isostatic adjustment of the lithosphere surface.
+!! Computation of the glacial isostatic adjustment of the lithosphere surface.
 !!
 !!##### Authors
 !!
@@ -24,12 +24,12 @@
 !!
 !! You should have received a copy of the GNU General Public License
 !! along with SICOPOLIS. If not, see <https://www.gnu.org/licenses/>.
-!<
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
 !> Computation of the glacial isostatic adjustment of the lithosphere surface.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
 module calc_gia_m
 
@@ -48,7 +48,7 @@ contains
 !-------------------------------------------------------------------------------
 !> Main subroutine of calc_gia_m:
 !! Computation of the glacial isostatic adjustment of the lithosphere surface.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_gia(time, dtime, dxi, deta, itercount, iter_wss)
 
 #if defined(ALLOW_TAPENADE) /* Tapenade */
@@ -298,7 +298,7 @@ end subroutine calc_gia
 !-------------------------------------------------------------------------------
 !> Computation of the isostatic steady-state displacement of the lithosphere
 !! for the elastic-lithosphere (EL) model.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine calc_el(load_ice_water, dxi, deta)
 
 #if defined(ALLOW_TAPENADE) /* Tapenade */
@@ -441,7 +441,7 @@ end subroutine calc_el
 !! lithosphere model (depending on the setting of the parameter REBOUND).
 !! This routine is not to be used regularly, and it is only executed if the
 !! parameter EXEC_MAKE_ZL0 is defined in the header file.
-!<------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine make_zl0()
 
 #if defined(ALLOW_TAPENADE) /* Tapenade */
