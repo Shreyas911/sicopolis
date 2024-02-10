@@ -5,7 +5,7 @@
 !
 #define       MODEL_SICOPOLIS
 #define       VERSION '24'
-#define       DATE    '2024-02-09'
+#define       DATE    '2024-02-10'
 !
 !! Main program of SICOPOLIS.
 !!
@@ -207,60 +207,6 @@
 !-------------------------------------------------------------------------------
 program sicopolis
 
-!-------- Description of variables declared locally --------
-
-!  i                 : Index for coordinate xi
-!  j                 : Index for coordinate eta
-!  kc                : Index for coordinate zeta_c
-!  kt                : Index for coordinate zeta_t
-!  kr                : Index for coordinate zeta_r
-!                      (in the bedrock)
-!  ios               : IOSTAT variable for files
-!  itercount         : Counter for the time steps
-!  ndat2d/3d         : Counters for the time-slice files
-!  n_output          : For OUTPUT==2 number of time-slice files
-!                      to be produced
-!  dH_t_smooth(j,i)  : Amount of smoothing of H_t
-!  delta_ts          : Time-dependent surface-temperature variation
-!  glac_index        : Time-dependent glacial index
-!  forcing_flag      : 1 - forcing by delta_ts, 2 - forcing by glac_index
-!  precip_mam_present(j,i) : Measured present spring precipitation
-!  precip_jja_present(j,i) : Measured present summer precipitation
-!  precip_son_present(j,i) : Measured present autumn precipitation
-!  precip_djf_present(j,i) : Measured present winter precipitation
-!  temp_mam_present(j,i)   : Present spring surface temperature
-!                            from data
-!  temp_jja_present(j,i)   : Present summer surface temperature
-!                            from data
-!  temp_son_present(j,i)   : Present autumn surface temperature
-!                            from data
-!  temp_djf_present(j,i)   : Present winter surface temperature
-!                            from data
-!  mean_accum        : Mean present accumulation over land
-!  time              : Current time of simulation
-!  time_init         : Initial time of simulation
-!  time_end          : Final time of simulation
-!  dtime             : Time step for computation of velocity and
-!                      topography
-!  dtime_temp        : Time step for computation of temperature,
-!                      water content and age of the ice
-!  dtime_wss         : Time step for computation of isostatic steady-state
-!                      displacement of the lithosphere (ELRA model)
-!  dtime_out         : Time step for output of time-slice files
-!  dtime_ser         : Time step for writing of data in time-series
-!                      file
-!  time_output(n)    : For OUTPUT==2 specified times for output of
-!                      time-slice files
-!  (.)0              : Quantity (.) before its conversion to MKS units
-!  dxi               : Grid spacing in x-direction
-!  deta              : Grid spacing in y-direction
-!  dzeta_c           : Grid spacing in z-direction in the upper (kc) ice domain
-!                      (in sigma-coordinate zeta_c)
-!  dzeta_t           : Grid spacing in z-direction in the lower (kt) ice domain
-!                      (in sigma-coordinate zeta_t)
-!  dzeta_r           : Grid spacing in z-direction in the bedrock (kr) domain
-!                      (in sigma-coordinate zeta_r)
-
 !-------- Declaration of variables --------
 
 !@ begin tapenade_extract @
@@ -289,15 +235,73 @@ implicit none
 
 !@ begin tapenade_extract @
 
-integer(i4b) :: ndat2d, ndat3d
+integer(i4b) :: ndat2d
+   !! Counter for the time-slice files
+
+integer(i4b) :: ndat3d
+   !! Counter for the time-slice files
+
 integer(i4b) :: n_output
-real(dp) :: delta_ts, glac_index
+   !! Number of time-slice files to be produced (for OUTPUT==2, 3)
+
+real(dp) :: delta_ts
+   !! Time-dependent surface-temperature anomaly
+
+real(dp) :: glac_index
+   !! Time-dependent glacial index
+
 real(dp) :: mean_accum
-real(dp) :: dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser
-real(dp) :: time, time_init, time_end
+   !! Mean present accumulation over land
+
+real(dp) :: dtime
+   !! Time step for computation of velocity and topography
+
+real(dp) :: dtime_temp
+   !! Time step for computation of temperature, water content
+   !! and age of the ice
+
+real(dp) :: dtime_wss
+   !! Time step for computation of isostatic steady-state displacement
+   !! of the lithosphere (ELRA model)
+
+real(dp) :: dtime_out
+   !! Time step for output of time-slice files
+
+real(dp) :: dtime_ser
+   !! Time step for writing of data in time-series file
+
+real(dp) :: time
+   !! Current time of simulation
+
+real(dp) :: time_init
+   !! Initial time of simulation
+
+real(dp) :: time_end
+   !! Final time of simulation
+
 real(dp), dimension(100) :: time_output
-real(dp) :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
+   !! Specified times for output of time-slice files (for OUTPUT==2, 3)
+
+real(dp) :: dxi
+   !! Grid spacing in x-direction
+
+real(dp) :: deta
+   !! Grid spacing in y-direction
+
+real(dp) :: dzeta_c
+   !! Grid spacing in z-direction in the upper (kc) ice domain
+   !! (in sigma-coordinate zeta_c)
+
+real(dp) :: dzeta_t
+   !! Grid spacing in z-direction in the lower (kt) ice domain
+   !! (in sigma-coordinate zeta_t)
+
+real(dp) :: dzeta_r
+   !! Grid spacing in z-direction in the bedrock (kr) domain
+   !! (in sigma-coordinate zeta_r)
+
 real(dp) :: z_mar
+   !! Minimum bedrock (sea bed) elevation allowed to be covered by marine ice
 
 !tapenade sicopolis_independents_cost
 
@@ -311,7 +315,7 @@ logical :: ISPLAIN, ISTAPE, ISADJOINT
 
 #if (!defined(ALLOW_GRDCHK) && !defined(ALLOW_TAPENADE)) /* Normal */
 
-!-------- Initialisations --------
+!-------- Initializations --------
 
 !@ begin tapenade_extract @
 
