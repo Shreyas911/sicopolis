@@ -85,8 +85,14 @@
 #define XX_GENTIM2D_VARS_ARR	(/ 'xx_temp' /)
 !		List of 3D time-varying control variables
 
-#define XX_GENTIM2D_PERIOD	10.0
+#define XX_GENTIM2D_PERIOD	5.0
 !		Time period for gentim2d
 
 #define ADNMAX			5
 !		(TIME_END0-TIME_INIT0)/XX_GENTIM2D_PERIOD 
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+#define AD_INPUT_PATH '/home/shreyas/update_to_develop_sicopolis/sicopolis/src/subroutines/tapenade/ad_io'
+
+#define AD_OUTPUT_PATH '/home/shreyas/update_to_develop_sicopolis/sicopolis/src/subroutines/tapenade/ad_io'

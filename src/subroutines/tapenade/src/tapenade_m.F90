@@ -66,6 +66,7 @@ use sico_variables_m_diff
   use enth_temp_omega_m_diff
   use sico_init_m_diff
   use globals_diff
+  use ad_input_m
   use ad_output_m
 
   implicit none
@@ -81,6 +82,7 @@ use sico_variables_m_diff
                                                 dzeta_t, dzeta_r
   real(dp)                                   :: z_mar
 fcb = 1.
+call ad_input()
 call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
 & dtime_temp, dtime_wss, dtime_out, dtime_ser, time, time_init, time_end&
 & , time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, &

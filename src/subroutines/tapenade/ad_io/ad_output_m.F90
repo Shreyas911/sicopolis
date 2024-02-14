@@ -55,7 +55,7 @@ module ad_output_m
                                                             xx_genarr2db_conv
     real(dp), dimension(NUM_CTRL_GENARR3D,0:IMAX,0:JMAX,0:KCMAX) :: xx_genarr3d_conv, &
                                                                     xx_genarr3db_conv
-    real(dp), dimension(NUM_CTRL_GENTIM2D,0:ADNMAX,0:IMAX,0:JMAX) :: xx_gentim2d_conv, &
+    real(dp), dimension(NUM_CTRL_GENTIM2D,0:IMAX,0:JMAX,0:ADNMAX) :: xx_gentim2d_conv, &
                                                                      xx_gentim2db_conv
 
     character(len=64), parameter :: thisroutine = 'ad_output'
@@ -372,7 +372,7 @@ module ad_output_m
     do i=0, IMAX
     do j=0, JMAX
     do kc=0, KCMAX
-    do ctrl_index = 1, NUM_CTRL_GENARR2D
+    do ctrl_index = 1, NUM_CTRL_GENARR3D
       xx_genarr3d_conv(ctrl_index,i,j,kc) = xx_genarr3d(ctrl_index,kc,j,i)
       xx_genarr3db_conv(ctrl_index,i,j,kc) = xx_genarr3db(ctrl_index,kc,j,i)
     end do
