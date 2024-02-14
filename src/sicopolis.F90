@@ -405,10 +405,10 @@ call sico_end()
 
 #else /* Tapenade */
 #if (defined(ALLOW_GRDCHK))
-call grdchk_main
+call grdchk_main()
 #endif
 #if (defined(ALLOW_TAPENADE))
-call adjoint_master
+call adjoint_master()
 #endif
 #endif /* Normal vs. Tapenade */
 
