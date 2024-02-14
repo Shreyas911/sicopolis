@@ -66,6 +66,7 @@ use sico_variables_m_diff
   use enth_temp_omega_m_diff
   use sico_init_m_diff
   use globals_diff
+  use ad_output_m
 
   implicit none
   integer(i4b)                               :: ndat2d, ndat3d
@@ -84,6 +85,7 @@ call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
 & dtime_temp, dtime_wss, dtime_out, dtime_ser, time, time_init, time_end&
 & , time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
 & z_mar, ndat2d, ndat3d, n_output)
+call ad_output()
   end subroutine adjoint_master
 #endif
 

@@ -163,6 +163,9 @@ subroutines/tapenade/ctrl/ctrl_map_genarr_m.F90 \
 subroutines/tapenade/ctrl/ctrl_init_genarr_m.F90 \
 subroutines/tapenade/ctrl/ctrl_map_gentim_m.F90
 
+SRC_SICO_AD_IO=\
+subroutines/tapenade/ad_io/ad_output_m.F90
+
 SRC=\
 sicopolis.F90
 
@@ -255,6 +258,7 @@ driveradjoint:${LIBLIS} \
 	nc_check_m_cpp.o \
 	PHONY_TAP_ADJ \
 	${OBJ_AD_ADJ} \
+	ad_output_m_cpp.o \
 	tapenade_m_cpp.o \
 	sicopolis.o
 	${F90C} ${F90FLAGS} -o $@ \
@@ -264,6 +268,7 @@ driveradjoint:${LIBLIS} \
 		sico_maths_m_grad_cpp.o \
 		$(patsubst %.c,%.o,$(SRC_TAP)) \
 		${OBJ_AD_ADJ} \
+		ad_output_m_cpp.o \
 		subroutines/tapenade/src/diffsizes.o \
 		sicopolis.o \
 		${LIBLISFLAG} \
