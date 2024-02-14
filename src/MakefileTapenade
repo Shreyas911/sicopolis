@@ -118,17 +118,7 @@ DEFINE_FLAGS_GRDCHK= -DALLOW_GRDCHK -DIN_PATH=\"${IN_PATH_GRDCHK}\" -DOUT_PATH=\
 
 IN_PATH_ADJOINT=../sico_in
 OUT_PATH_ADJOINT=../sico_out/ADJOINT_${HEADER}
-DEFINE_FLAGS_ADJOINT= -DDATE=\"15/07/21\" -DVERSION=\"5-dev\" -DALLOW_TAPENADE -DALLOW_TAPENADE_DIFFERENTIATE -DIN_PATH=\"${IN_PATH_ADJOINT}\" -DOUT_PATH=\"${OUT_PATH_ADJOINT}\"
-
-SRC_SICO_PASSIVE=\
-subroutines/grl/sico_init_m.F90\
-subroutines/ant/sico_init_m.F90\
-subroutines/general/error_m.F90\
-subroutines/general/init_temp_water_age_m.F90\
-subroutines/tapenade/src/tapenade_m.F90
-
-SRC_SICO_SOLVERS=\
-subroutines/tapenade/stubs/sico_maths_m_stub.F90
+DEFINE_FLAGS_ADJOINT= -DDATE=\"14/02/24\" -DVERSION=\"v23.12\" -DALLOW_TAPENADE -DALLOW_TAPENADE_DIFFERENTIATE -DIN_PATH=\"${IN_PATH_ADJOINT}\" -DOUT_PATH=\"${OUT_PATH_ADJOINT}\"
 
 SRC_SICO=\
 subroutines/general/sico_types_m.F90\
@@ -159,7 +149,13 @@ subroutines/general/calc_bas_melt_m.F90\
 subroutines/general/calc_thk_water_bas_m.F90\
 subroutines/grl/boundary_m.F90\
 subroutines/ant/boundary_m.F90\
-subroutines/general/sico_main_loop_m.F90
+subroutines/general/sico_main_loop_m.F90\
+subroutines/tapenade/stubs/sico_maths_m_stub.F90\
+subroutines/grl/sico_init_m.F90\
+subroutines/ant/sico_init_m.F90\
+subroutines/general/error_m.F90\
+subroutines/general/init_temp_water_age_m.F90\
+subroutines/tapenade/src/tapenade_m.F90
 
 SRC_SICO_AD=\
 subroutines/tapenade/cost/cost_m.F90 \
@@ -300,29 +296,30 @@ sico_specs.h: ../headers/sico_specs_$(HEADER).h
 ad_specs.h: ../headers_ad/ad_$(ADHEADER).h
 	cp $^ $@
 
-drivernormal: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
+drivernormal: sico_specs.h $(SRC_SICO) $(SRC)
+	rm -r ${OUT_PATH_NORMAL}
 	sed -i 's/&__NL__//g' sico_specs.h
 	${F90C} -I./ ${F90FLAGS} ${DEFINE_FLAGS_NORMAL} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
 	${F90C} ${F90FLAGS} -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
 
 
-drivergrdchk: sico_specs.h ad_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
+drivergrdchk: sico_specs.h ad_specs.h $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
 	sed -i 's/&__NL__//g' sico_specs.h
 	${F90C} -I./ ${F90FLAGS} ${DEFINE_FLAGS_GRDCHK} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
 	${F90C} ${F90FLAGS} -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
 
-drivergrdchk_cov: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
+drivergrdchk_cov: sico_specs.h $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
 	${F90C} -I./ ${F90FLAGS_COV} ${DEFINE_FLAGS_GRDCHK} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
 	${F90C} ${F90FLAGS_COV} -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
 
 
-cov: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
-	${GCOV} $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
+cov: sico_specs.h $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
+	${GCOV} $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
 
-coverage.info: sico_specs.h $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
+coverage.info: sico_specs.h $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
 	${LCOV} --gcov-tool $(GCOV) --capture --directory . --output-file coverage.info
 
-sicopolis.o: $(SRC_SICO_PASSIVE) $(SRC_SICO_SOLVERS) $(SRC_SICO) $(SRC_SICO_AD) $(SRC) ad_specs.h
+sicopolis.o: $(SRC_SICO) $(SRC_SICO_AD) $(SRC) ad_specs.h
 	sed -i 's/&__NL__//g' sico_specs.h
 	${F90C} -I./ ${F90FLAGS} ${DEFINE_FLAGS_ADJOINT} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
 
