@@ -253,7 +253,7 @@ time_output = 0.0_dp
 ! 2D fields
 q_geo        = 0.0
 c_slide_init = 0.0
-zs           = 0.0 ! Only compatible with ANF_DAT==1
+H            = 0.0 ! Only compatible with ANF_DAT==1
 
 ! 3D fields
 temp_c       = 0.0 ! Not compatible with TEMP_INIT==5
@@ -2858,11 +2858,7 @@ call read_2d_input(filename_with_path, &
                    ch_var_name='zs', n_var_type=1, n_ascii_header=6, &
                    field2d_r=field2d_aux)
 
-#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK)) /* NORMAL */
 zs = field2d_aux
-#else /* TAPENADE */
-zs = zs + field2d_aux
-#endif
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZL_PRESENT_FILE)
@@ -2977,7 +2973,11 @@ do j=0, JMAX
    n_cts(j,i) = -1
    kc_cts(j,i) = 0
 
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK)) /* NORMAL */
    H(j,i)   = zs(j,i)-zm(j,i)
+#else /* TAPENADE */
+   H(j,i)   = H(j,i) + zs(j,i)-zm(j,i)
+#endif
    H_c(j,i) = H(j,i)
    H_t(j,i) = 0.0_dp
 

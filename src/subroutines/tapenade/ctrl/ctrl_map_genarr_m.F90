@@ -16,7 +16,7 @@ contains
     implicit none
 
     integer(i4b)        :: ctrl_index
-    integer(i4b)        :: igen_c_slide_init, igen_zs, igen_q_geo
+    integer(i4b)        :: igen_c_slide_init, igen_H, igen_q_geo
 
     xx_genarr2d_vars            = XX_GENARR2D_VARS_ARR
     xx_genarr2d_preproc         = XX_GENARR2D_PREPROC_ARR
@@ -25,7 +25,7 @@ contains
     xx_genarr2d_weight          = XX_GENARR2D_WEIGHT_ARR
 
     igen_c_slide_init = 0
-    igen_zs           = 0
+    igen_H           = 0
     igen_q_geo        = 0
 
     do ctrl_index = 1, NUM_CTRL_GENARR2D
@@ -34,8 +34,8 @@ contains
         igen_c_slide_init = ctrl_index
       else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_q_geo') then
         igen_q_geo = ctrl_index
-      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_zs') then
-        igen_zs = ctrl_index
+      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_H') then
+        igen_H = ctrl_index
 #if (ANF_DAT != 1)
         errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
           //'Initial surface topography as a control param is only compatible with ANF_DAT == 1 !'
@@ -55,8 +55,8 @@ contains
     if (igen_q_geo .GT. 0) then
       call ctrl_map_genarr2d(q_geo, igen_q_geo)
     end if
-    if (igen_zs .GT. 0) then
-      call ctrl_map_genarr2d(zs, igen_zs)
+    if (igen_H .GT. 0) then
+      call ctrl_map_genarr2d(H, igen_H)
     end if
     
   end subroutine ctrl_map_ini_genarr2d

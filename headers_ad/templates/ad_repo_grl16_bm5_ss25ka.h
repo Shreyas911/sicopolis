@@ -15,8 +15,8 @@
 !		Maximum number of preprocessing steps for ctrl variables		
 
 #define XX_GENARR2D_VARS_ARR	(/ 'xx_c_slide_init', \
-				   'xx_q_geo       ', \
-			  	   'xx_zs          ' /)
+				   				   'xx_q_geo       ', \
+			  	   				   'xx_H           ' /)
 !		List of 2D time-invariant control variables
 
 #define XX_GENARR2D_PREPROC_ARR    (/ 'log10ctrl,bounds', \
@@ -40,8 +40,8 @@
 !		Set C_SLIDE == 0.0 in the HEADER file
 
 #define XX_GENARR2D_WEIGHT_ARR       (/ 'w_c_slide_init.dat', \
-				        'w_q_geo.dat       ', \
-					'w_zs.dat          ' /)
+				        				'w_q_geo.dat       ', \
+										'w_H.dat           ' /)
 !		Weight files to be used if preproc=scaling
 !		Otherwise defaults to weight 1.0 for all indices
 
@@ -93,6 +93,8 @@
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-#define AD_INPUT_PATH '/home/shreyas/update_to_develop_sicopolis/sicopolis/src/subroutines/tapenade/ad_io'
+!#define AD_INPUT_PATH '/home/shreyas/update_to_develop_sicopolis/sicopolis/src/subroutines/tapenade/ad_io'
+!		 Absolute input path to read xx_gen* fields
 
 #define AD_OUTPUT_PATH '/home/shreyas/update_to_develop_sicopolis/sicopolis/src/subroutines/tapenade/ad_io'
+!		Absolute output path to write xx_gen* fields
