@@ -196,38 +196,9 @@ call ad_output()
                 
             !@ python_automated_grdchk @
 
- 
-            ! -- H_c
+            ! Example -- H
             !orig_val = H(j,i)
-            !H(j,i) = orig_val * perturbation 
-
-            ! -- mean annual temp 
-            !orig_val = temp_ma_present(j,i)
-            !temp_ma_present(j,i) = orig_val * perturbation
-
-            ! -- mean annual temp 
-            !orig_val = q_geo(j,i)
-            !q_geo(j,i) = orig_val * perturbation 
-
-            ! -- mean annual temp 
-            !orig_val = vx_c(24,j,i)
-            !vx_c(24,j,i) = orig_val * perturbation
-
-            ! -- mean annual temp 
-            !orig_val = c_slide(j,i)
-            !c_slide(j,i) = orig_val * perturbation
-
-            ! -- mean annual temp 
-            !orig_val = c_drag(j,i)
-            !c_drag(j,i) = orig_val * perturbation
-
-            ! -- precip_present
-            !orig_val = precip_present(j,i,1)
-            !precip_present(j,i,1) = orig_val * perturbation
-
-            ! -- experimental field acc_fact
-            !orig_val = acc_fact(j,i)
-            !acc_fact(j,i) = orig_val * perturbation
+            !H(j,i) = orig_val * perturbation
 
             ! -- sanity check
             write(6,fmt='(a,f40.20)') "orig_val = ", orig_val
