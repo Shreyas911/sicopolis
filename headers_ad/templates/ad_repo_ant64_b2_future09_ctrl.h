@@ -1,5 +1,5 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-! Specification file for control variables ad_repo_grl16_bm5_ss25ka.h
+! Specification file for control variables ad_repo_ant64_b2_future09_ctrl.h
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------- Basic settings --------
