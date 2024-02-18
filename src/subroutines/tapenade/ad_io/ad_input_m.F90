@@ -49,9 +49,9 @@ module ad_input_m
         ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
 
         if (ios /= nf90_noerr) then
-            errormsg = ' >>> sico_init: Error when opening the file' &
-                    //                 end_of_line &
-                    //'                for the surface-temperature and SMB climatology!'
+            errormsg = ' >>> '//trim(thisroutine)//': Error when opening a' &
+            //               end_of_line &
+            //'              NetCDF AD-input file!'
             call error(errormsg)
         end if
     
