@@ -297,7 +297,7 @@ else if (n_year_CE_surf_clim > TEMP_SMB_ANOM_TIME_MAX) then
    n_year_CE_surf_clim = TEMP_SMB_ANOM_TIME_MAX
 end if
 
-if ( firstcall_boundary &
+if ( firstcall%boundary &
      .or.(n_year_CE_surf_clim /= n_year_CE_surf_clim_save) ) then
 
    write(ch_year_CE, '(i0)') n_year_CE_surf_clim
@@ -1344,7 +1344,7 @@ n_year_CE_rtr = n_year_CE
 if (n_year_CE_rtr > RETREAT_MASK_TIME_MAX) &
                        n_year_CE_rtr = RETREAT_MASK_TIME_MAX
 
-if (firstcall_boundary) r_mask_retreat = 1.0_dp   ! initialization
+if (firstcall%boundary) r_mask_retreat = 1.0_dp   ! initialization
 
 if (n_year_CE_rtr < RETREAT_MASK_TIME_MIN) then
 
@@ -1385,7 +1385,7 @@ n_year_CE_rtr_save = n_year_CE_rtr
 
 #endif
 
-if (firstcall_boundary) firstcall_boundary = .false.
+if (firstcall%boundary) firstcall%boundary = .false.
 
 end subroutine boundary
 

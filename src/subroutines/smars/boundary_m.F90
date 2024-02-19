@@ -666,7 +666,7 @@ end do
 
 #endif
 
-if (firstcall_boundary) firstcall_boundary = .false.
+if (firstcall%boundary) firstcall%boundary = .false.
 
 end subroutine boundary
 

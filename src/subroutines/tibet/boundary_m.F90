@@ -663,7 +663,7 @@ call calving_underwater_ice()
 
 #endif
 
-if (firstcall_boundary) firstcall_boundary = .false.
+if (firstcall%boundary) firstcall%boundary = .false.
 
 end subroutine boundary
 

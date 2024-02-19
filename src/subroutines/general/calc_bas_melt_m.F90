@@ -750,7 +750,7 @@ else if (n_year_CE_bas_melt > TF_BM_TIME_MAX) then
    n_year_CE_bas_melt = TF_BM_TIME_MAX
 end if
 
-if ( firstcall_sub_ice_shelf_melting_param_2 &
+if ( firstcall%sub_ice_shelf_melting_param_2 &
      .or.(n_year_CE_bas_melt /= n_year_CE_bas_melt_save) ) then
 
    write(ch_year_CE, '(i0)') n_year_CE_bas_melt
@@ -1051,8 +1051,8 @@ do j=0, JMAX
 end do
 end do
 
-if (firstcall_sub_ice_shelf_melting_param_2) &
-    firstcall_sub_ice_shelf_melting_param_2 = .false.
+if (firstcall%sub_ice_shelf_melting_param_2) &
+    firstcall%sub_ice_shelf_melting_param_2 = .false.
 
 #else   /* not (defined(ANT) && FLOATING_ICE_BASAL_MELTING==6) */
 

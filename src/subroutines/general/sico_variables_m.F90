@@ -1197,11 +1197,8 @@ integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_maxextent
    !!  0: not allowed to glaciate,
    !!  1: allowed to glaciate
 
-logical :: firstcall_boundary = .true.
-   !! First-call variable for the routine 'boundary'
-
-logical :: firstcall_sub_ice_shelf_melting_param_2 = .true.
-   !! First-call variable for the routine 'sub_ice_shelf_melting_param_2'
+type(flag_firstcall) :: firstcall
+   !! First-call flags for several routines
 
 integer(i4b) :: n_year_CE_surf_clim_save = -9999
    !! Time (in years CE) for ISMIP6-type surface climate forcing data

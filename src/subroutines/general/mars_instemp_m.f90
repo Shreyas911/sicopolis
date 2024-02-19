@@ -42,8 +42,8 @@ module mars_instemp_m
 
    public
 
-   !> Martian surface temperatures
    type ins
+      !! Martian surface temperatures
       real(dp) :: t(0:360,-90:90)
          !! Temperature as a function of time and latitude
       real(dp) :: tam(-90:90)
