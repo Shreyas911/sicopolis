@@ -214,6 +214,15 @@ call ad_output()
           
             call cost_final()
             call sico_end
+
+            ! Initialize compatible fields to 0
+            ! 2D fields
+            q_geo        = 0.0
+            c_slide_init = 0.0
+            H            = 0.0 ! Only compatible with ANF_DAT==1
+
+            ! 3D fields
+            temp_c       = 0.0 ! Not compatible with TEMP_INIT==5
        
             ! store cost
             fc_collected(d) = fc
