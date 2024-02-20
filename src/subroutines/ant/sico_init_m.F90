@@ -248,18 +248,7 @@ time_output = 0.0_dp
 !-------- Initialization of Tapenade generic control --------
 
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK)) /* TAPENADE */
-
-! Initialize compatible fields to 0
-! 2D fields
-q_geo        = 0.0
-c_slide_init = 0.0
-H            = 0.0 ! Only compatible with ANF_DAT==1
-
-! 3D fields
-temp_c       = 0.0 ! Not compatible with TEMP_INIT==5
-
   call ctrl_init_genarr()
-
 #endif /* TAPENADE */
 
 !-------- Initialisation of the Library of Iterative Solvers Lis,
