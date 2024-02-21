@@ -157,8 +157,10 @@ subroutines/general/error_m.F90\
 subroutines/general/init_temp_water_age_m.F90\
 subroutines/tapenade/src/tapenade_m.F90
 
-SRC_SICO_AD=\
-subroutines/tapenade/cost/cost_m.F90 \
+SRC_SICO_AD_COST=\
+subroutines/tapenade/cost/cost_m.F90
+
+SRC_SICO_AD_CTRL=\
 subroutines/tapenade/ctrl/ctrl_map_genarr_m.F90 \
 subroutines/tapenade/ctrl/ctrl_init_genarr_m.F90 \
 subroutines/tapenade/ctrl/ctrl_map_gentim_m.F90
@@ -311,23 +313,23 @@ drivernormal: sico_specs.h $(SRC_SICO) $(SRC)
 	${F90C} ${F90FLAGS} -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
 
 
-drivergrdchk: sico_specs.h ad_specs.h $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
+drivergrdchk: sico_specs.h $(SRC_SICO) $(SRC_SICO_AD_COST) $(SRC)
 	sed -i 's/&__NL__//g' sico_specs.h
 	${F90C} -I./ ${F90FLAGS} ${DEFINE_FLAGS_GRDCHK} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
 	${F90C} ${F90FLAGS} -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
 
-drivergrdchk_cov: sico_specs.h $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
+drivergrdchk_cov: sico_specs.h $(SRC_SICO) $(SRC_SICO_AD_COST) $(SRC)
 	${F90C} -I./ ${F90FLAGS_COV} ${DEFINE_FLAGS_GRDCHK} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
 	${F90C} ${F90FLAGS_COV} -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
 
 
-cov: sico_specs.h $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
+cov: sico_specs.h $(SRC_SICO) $(SRC_SICO_AD_COST) $(SRC)
 	${GCOV} $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
 
-coverage.info: sico_specs.h $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
+coverage.info: sico_specs.h $(SRC_SICO) $(SRC_SICO_AD_COST) $(SRC)
 	${LCOV} --gcov-tool $(GCOV) --capture --directory . --output-file coverage.info
 
-sicopolis.o: $(SRC_SICO) $(SRC_SICO_AD) $(SRC) ad_specs.h
+sicopolis.o: $(SRC_SICO) $(SRC_SICO_AD_COST) $(SRC_SICO_AD_CTRL) $(SRC) ad_specs.h
 	sed -i 's/&__NL__//g' sico_specs.h
 	${F90C} -I./ ${F90FLAGS} ${DEFINE_FLAGS_ADJOINT} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
 
@@ -423,3 +425,4 @@ cleanobj:
 
 .PHONY: clean
 .PHONY: cleanobj
+.PRECIOUS: ad_output_m_cpp.f90 nc_check_m_cpp.f90 sico_vars_m_cpp.f90 tapenade_m_cpp.f90 ad_input_m_cpp.f90 sico_maths_m_grad_cpp.f90

@@ -81,19 +81,13 @@ def check_GRL_DISC(sico_specs_file):
 		print('Some error in checking the GRL and DISC case.')
 		print(err)
 		sys.exit(1)
-	
-  
-  
-  
 
 if __name__ == '__main__':
 	
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-f", "--specsFile", help="name of specs file", type=str, required=True)
 	args = parser.parse_args()
-
-	
+		
 	result = check_GRL_DISC(args.specsFile)
 
-	
 	print(int(result))

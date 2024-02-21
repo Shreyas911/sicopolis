@@ -58,7 +58,7 @@ contains
 #ifdef ALLOW_TAPENADE
   subroutine adjoint_master
 
-use sico_variables_m_diff
+  use sico_variables_m_diff
 #if (defined(GRL) && DISC>0)
   use discharge_workers_m_diff
 #endif
@@ -125,7 +125,7 @@ call ad_output()
    real(dp)           :: z_mar
    
    !-------- Variable declarations needed for this routine specifically
-   real(dp)                          :: orig_val, perturb_val = 1.e-3
+   real(dp)                          :: orig_val, perturb_val = 0.001
    real(dp),     dimension(3)        :: fc_collected
    real(dp),     dimension(3)        :: direction
    real(dp)                          :: gfd0,gfd, perturbation
@@ -161,7 +161,7 @@ call ad_output()
        form="FORMATTED", status="REPLACE")
 
 !@ python_automated_grdchk IO begin @
-
+	
    
    !-------- Loop over points
    do p = 1, points !@ python_automated_grdchk limited_or_block_or_full @
@@ -195,7 +195,7 @@ call ad_output()
 
                 
             !@ python_automated_grdchk @
-
+		
             ! Example -- H
             !orig_val = H(j,i)
             !H(j,i) = orig_val * perturbation
@@ -252,7 +252,7 @@ call ad_output()
   
    close(unit=99)
    close(unit=98)
-   !@ python_automated_grdchk IO end @   
+   !@ python_automated_grdchk IO end @
    end subroutine grdchk_main
 
 !!-------------------------------------------------------------------------------
