@@ -1,3 +1,4 @@
+#if defined(ALLOW_GENCTRL)
 module ctrl_init_genarr_m
 
   use sico_types_m
@@ -20,3 +21,4 @@ contains
   end subroutine ctrl_init_genarr
 
 end module ctrl_init_genarr_m
+#endif

@@ -1188,6 +1188,7 @@ real(dp), dimension(0:JMAX,0:IMAX) :: H_unc_BedMachine_data
 
 #endif
 
+#if defined(ALLOW_GENCTRL)
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR2D) :: xx_genarr2d_vars
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR2D) :: xx_genarr2d_bounds
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR2D) :: xx_genarr2d_preproc 
@@ -1212,6 +1213,7 @@ real(dp), dimension(0:JMAX,0:IMAX) :: H_unc_BedMachine_data
    real(dp), dimension(NUM_CTRL_GENTIM2D)                        :: xx_gentim2d_log10initval
    real(dp), dimension(NUM_CTRL_GENTIM2D,0:ADNMAX,0:JMAX,0:IMAX) :: xx_gentim2d
    real(dp), dimension(NUM_CTRL_GENTIM2D,0:ADNMAX,0:JMAX,0:IMAX) :: xx_gentim2d_mask
+#endif
 
 #endif /* Tapenade */
 

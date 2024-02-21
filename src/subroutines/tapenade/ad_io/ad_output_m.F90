@@ -1,3 +1,4 @@
+#if defined(ALLOW_GENCTRL)
 module ad_output_m
 
   use sico_types_m
@@ -479,3 +480,4 @@ module ad_output_m
     end subroutine set_cmode
 
 end module ad_output_m
+#endif

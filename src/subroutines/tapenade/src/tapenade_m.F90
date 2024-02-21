@@ -66,8 +66,10 @@ contains
   use enth_temp_omega_m_diff
   use sico_init_m_diff
   use globals_diff
+#if defined(ALLOW_GENCTRL)
   use ad_input_m
   use ad_output_m
+#endif
 
   implicit none
   integer(i4b)                               :: ndat2d, ndat3d
@@ -81,13 +83,20 @@ contains
   real(dp)                                   :: dxi, deta, dzeta_c, &
                                                 dzeta_t, dzeta_r
   real(dp)                                   :: z_mar
-fcb = 1.
-call ad_input()
-call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
-& dtime_temp, dtime_wss, dtime_out, dtime_ser, time, time_init, time_end&
-& , time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-& z_mar, ndat2d, ndat3d, n_output)
-call ad_output()
+
+  fcb = 1.
+
+#if defined(ALLOW_GENCTRL)
+  call ad_input()
+#endif
+  call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
+  & dtime_temp, dtime_wss, dtime_out, dtime_ser, time, time_init, time_end&
+  & , time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
+  & z_mar, ndat2d, ndat3d, n_output)
+#if defined(ALLOW_GENCTRL)
+  call ad_output()
+#endif
+  print *, SUM(q_geob)
   end subroutine adjoint_master
 #endif
 

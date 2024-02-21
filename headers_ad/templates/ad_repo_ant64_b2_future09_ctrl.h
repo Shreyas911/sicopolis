@@ -2,6 +2,9 @@
 ! Specification file for control variables ad_repo_ant64_b2_future09_ctrl.h
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+#define ALLOW_GENCTRL
+!       Flag to enable specific code for genctrl setup
+
 !-------- Basic settings --------
 
 #define CTRL_STRLENGTH		128

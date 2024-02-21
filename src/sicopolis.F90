@@ -86,8 +86,10 @@
 !
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
+#if defined(ALLOW_TAPENADE)
+#if defined(ALLOW_GENCTRL)
 #include "ad_specs.h"
+#endif
 #endif
 
 !@ begin tapenade_extract @
@@ -147,9 +149,11 @@
 #endif
 #if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE)) /* Tapenade */
 #include "subroutines/tapenade/cost/cost_m.F90"
+#if defined(ALLOW_GENCTRL)
 #include "subroutines/tapenade/ctrl/ctrl_map_genarr_m.F90"
 #include "subroutines/tapenade/ctrl/ctrl_init_genarr_m.F90"
 #include "subroutines/tapenade/ctrl/ctrl_map_gentim_m.F90"
+#endif
 #endif /* Tapenade */
 
 #include "subroutines/general/ice_material_properties_m.F90"

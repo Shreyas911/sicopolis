@@ -1,3 +1,4 @@
+#if defined(ALLOW_GENCTRL)
 module ctrl_map_gentim_m
 
   use sico_types_m
@@ -75,3 +76,4 @@ contains
   end subroutine ctrl_map_gentim2d
 
 end module ctrl_map_gentim_m 
+#endif

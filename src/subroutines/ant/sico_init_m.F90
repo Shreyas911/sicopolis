@@ -36,13 +36,13 @@ module sico_init_m
   use sico_variables_m
   use sico_vars_m
   use error_m
-#if defined(ALLOW_TAPENADE)
+#if defined(ALLOW_TAPENADE) /* TAPENADE */
   use globals
-#endif
-#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
+#if defined(ALLOW_GENCTRL)
   use ctrl_init_genarr_m
   use ctrl_map_gentim_m
 #endif
+#endif /* TAPENADE */
 
   implicit none
 
@@ -247,20 +247,11 @@ time_output = 0.0_dp
 
 !-------- Initialization of Tapenade generic control --------
 
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK)) /* TAPENADE */
+#if defined(ALLOW_TAPENADE) /* TAPENADE */
+#if defined(ALLOW_GENCTRL)
   call ctrl_init_genarr()
-#endif /* TAPENADE */
-
-!-------- Initialisation of the Library of Iterative Solvers Lis,
-!                                                     if required --------
-
-#if (MARGIN==3 || DYNAMICS==2)
-#if !defined(ALLOW_TAPENADE) /* Normal */
-  call lis_initialize(ierr)
-#else /* Tapenade */
-  call lis_init_f(ierr)
-#endif /* Normal vs. Tapenade */
 #endif
+#endif /* TAPENADE */
 
 !-------- Read physical parameters --------
 
@@ -2239,9 +2230,11 @@ end do
 
 !-------- gentim2d setup --------
 
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+#if defined(ALLOW_TAPENADE) /* TAPENADE */
+#if defined(ALLOW_GENCTRL)
   call ctrl_map_ini_gentim2d(time_init, dtime, 0)
 #endif
+#endif /* TAPENADE */
 
 !-------- Definition of initial values --------
 

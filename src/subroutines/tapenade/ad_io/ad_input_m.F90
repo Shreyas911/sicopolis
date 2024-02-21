@@ -1,3 +1,4 @@
+#if defined(ALLOW_GENCTRL)
 module ad_input_m
 
     use sico_types_m
@@ -105,4 +106,4 @@ module ad_input_m
     end subroutine ad_input
   
 end module ad_input_m
-  
+#endif

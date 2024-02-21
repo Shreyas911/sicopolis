@@ -36,10 +36,12 @@ module sico_main_loop_m
   use sico_variables_m
   use sico_vars_m
   use error_m
-#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
+#if defined(ALLOW_TAPENADE) /* TAPENADE */
   use globals
+#if defined(ALLOW_GENCTRL)
   use ctrl_map_gentim_m
 #endif
+#endif /* TAPENADE */
   
   implicit none
  
@@ -143,9 +145,11 @@ contains
   
   !-------- gentim2d setup --------
 
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+#if defined(ALLOW_TAPENADE) /* TAPENADE */
+#if defined(ALLOW_GENCTRL)
   call ctrl_map_ini_gentim2d(time_init, dtime, itercount)
 #endif
+#endif /* TAPENADE */
 
   !-------- Boundary conditions --------
   

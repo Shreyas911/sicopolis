@@ -1,3 +1,4 @@
+#if defined(ALLOW_GENCTRL)
 module ctrl_map_genarr_m
 
   use sico_types_m
@@ -280,3 +281,4 @@ contains
   end subroutine ctrl_map_genarr3d
 
 end module ctrl_map_genarr_m 
+#endif
