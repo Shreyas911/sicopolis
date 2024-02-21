@@ -96,7 +96,6 @@ contains
 #if defined(ALLOW_GENCTRL)
   call ad_output()
 #endif
-  print *, SUM(q_geob)
   end subroutine adjoint_master
 #endif
 
