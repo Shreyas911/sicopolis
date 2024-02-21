@@ -335,7 +335,7 @@ ad_specs.h: ../headers_ad/ad_$(ADHEADER).h
 	cp $^ $@
 
 drivernormal: sico_specs.h $(SRC_SICO) $(SRC)
-	rm -r ${OUT_PATH_NORMAL}
+	rm -rf ${OUT_PATH_NORMAL}
 	sed -i 's/&__NL__//g' sico_specs.h
 	${F90C} -I./ ${F90FLAGS} ${DEFINE_FLAGS_NORMAL} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
 	${F90C} ${F90FLAGS} -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
