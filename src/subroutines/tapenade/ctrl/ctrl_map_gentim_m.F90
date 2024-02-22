@@ -4,7 +4,6 @@ module ctrl_map_gentim_m
   use sico_types_m
   use sico_variables_m
   use error_m
-  use globals
 
   implicit none
 

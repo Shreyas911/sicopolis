@@ -1271,6 +1271,9 @@ character, parameter :: end_of_line = char(10)
 real(dp) :: fc
    !! Scalar cost function
 
+real(dp), dimension(0:JMAX,0:IMAX,12)   :: temp_mm
+real(dp), dimension(0:JMAX,0:IMAX)      :: temp_ma
+
 #if (defined(AGE_COST))
 
 ! Note: for the age cost, CALCMOD!=1 is recommended because

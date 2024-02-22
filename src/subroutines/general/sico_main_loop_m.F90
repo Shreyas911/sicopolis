@@ -37,7 +37,6 @@ module sico_main_loop_m
   use sico_vars_m
   use error_m
 #if defined(ALLOW_TAPENADE) /* TAPENADE */
-  use globals
 #if defined(ALLOW_GENCTRL)
   use ctrl_map_gentim_m
 #endif

@@ -144,9 +144,6 @@
 
 #include "subroutines/general/error_m.F90"
 
-#if defined(ALLOW_GRDCHK)
-#include "subroutines/tapenade/src/globals.F90"
-#endif
 #if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE)) /* Tapenade */
 #include "subroutines/tapenade/cost/cost_m.F90"
 #if defined(ALLOW_GENCTRL)
