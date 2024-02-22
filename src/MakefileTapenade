@@ -13,10 +13,6 @@ ifndef HEADER
 HEADER=repo_grl16_bm5_ss25ka
 endif
 
-ifndef ADHEADER
-ADHEADER=repo_grl16_bm5_ss25ka
-endif
-
 ifndef DOMAIN_SHORT
 DOMAIN_SHORT=grl
 endif
@@ -331,7 +327,7 @@ RESDIR=../sico_out/$(HEADER)
 sico_specs.h: ../headers/sico_specs_$(HEADER).h
 	cp $^ sico_specs.h
 
-ad_specs.h: ../headers_ad/ad_$(ADHEADER).h
+ad_specs.h: ../headers_ad/ad_$(HEADER).h
 	cp $^ $@
 
 drivernormal: sico_specs.h $(SRC_SICO) $(SRC)
