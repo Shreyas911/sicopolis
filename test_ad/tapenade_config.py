@@ -694,16 +694,33 @@ def setup_forward(ind_var, header, domain,
 		print("Wrong options may have been used in TLM setup.")
 		sys.exit(1)
 
-	ref_string = '!@ python_automated_tlm dep_vard @'
+	ref_string = '!@ python_automated_tlm dep_vard set 0 @'
 
 	if (dimension == 2) :
 		new_string = f'''
 		            {ind_var}d = 0.0
-		            {ind_var}d(j,i) = 1.0
 		'''
 	elif (dimension == 3 and z_co_ord is not None and z_co_ord < KCMAX):
 		new_string = f'''
 		            {ind_var}d = 0.0
+		'''
+	else:
+		raise ValueError ("Something wrong with dimension in TLM")
+		sys.exit(1)
+	
+	modify_file(tapenade_m_file, 
+		   ref_string, new_string,
+		   replace_or_append_or_prepend = 'append',
+		   instance_number = 0)	
+
+	ref_string = '!@ python_automated_tlm dep_vard set 1 @'
+
+	if (dimension == 2) :
+		new_string = f'''
+		            {ind_var}d(j,i) = 1.0
+		'''
+	elif (dimension == 3 and z_co_ord is not None and z_co_ord < KCMAX):
+		new_string = f'''
 		            {ind_var}d({z_co_ord},j,i) = 1.0
 		'''
 	else:

@@ -99,20 +99,20 @@ use sico_variables_m_diff
 
 !@ python_automated_tlm IO begin @
 
-
-
    !-------- Loop over points
    do p = 1, points !@ python_automated_tlm limited_or_block_or_full @
      i = ipoints(p)
      j = jpoints(p)
+
+!@ python_automated_tlm dep_vard set 0 @
 
   CALL SICO_INIT_D(delta_ts, glac_index, mean_accum, dtime, dtime_temp, &
 &            dtime_wss, dtime_out, dtime_ser, time, time_init, time_end&
 &            , time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, z_mar&
 &            , ndat2d, ndat3d, n_output)
 
-!@ python_automated_tlm dep_vard @
-
+!@ python_automated_tlm dep_vard set 1 @
+		
 !-------- Main loop --------
   CALL SICO_MAIN_LOOP_D(delta_ts, glac_index, mean_accum, dtime, &
 &                 dtime_temp, dtime_wss, dtime_out, dtime_ser, time, &
@@ -122,13 +122,19 @@ use sico_variables_m_diff
      
   CALL SICO_END()
 
-!@ python_automated_tlm IO write @
+  ! Initialize compatible fields to 0
+  ! 2D fields
+  q_geo        = 0.0
+  c_slide_init = 0.0
+  H            = 0.0 ! Only compatible with ANF_DAT==1
 
+  ! 3D fields
+  temp_c       = 0.0 ! Not compatible with TEMP_INIT==5
+
+  !@ python_automated_tlm IO write @
    end do ! (close loop over points)
 
-
 !@ python_automated_tlm IO end @
-
   end subroutine adjoint_master
 #endif
 
@@ -166,7 +172,7 @@ use sico_variables_m_diff
    real(dp)           :: z_mar
    
    !-------- Variable declarations needed for this routine specifically
-   real(dp)                          :: orig_val, perturb_val = 1.e-3
+   real(dp)                          :: orig_val, perturb_val = 0.001
    real(dp),     dimension(3)        :: fc_collected
    real(dp),     dimension(3)        :: direction
    real(dp)                          :: gfd0,gfd, perturbation
@@ -202,10 +208,10 @@ use sico_variables_m_diff
        form="FORMATTED", status="REPLACE")
 
 !@ python_automated_grdchk IO begin @
-
+	
    
    !-------- Loop over points
-   do p = 1, points !@ python_automated_grdchk limited_or_full @
+   do p = 1, points !@ python_automated_grdchk limited_or_block_or_full @
      i = ipoints(p)
      j = jpoints(p)
 
@@ -236,7 +242,7 @@ use sico_variables_m_diff
 
                 
             !@ python_automated_grdchk @
-
+		
             ! Example -- H
             !orig_val = H(j,i)
             !H(j,i) = orig_val * perturbation
@@ -255,6 +261,15 @@ use sico_variables_m_diff
           
             call cost_final()
             call sico_end
+
+            ! Initialize compatible fields to 0
+            ! 2D fields
+            q_geo        = 0.0
+            c_slide_init = 0.0
+            H            = 0.0 ! Only compatible with ANF_DAT==1
+
+            ! 3D fields
+            temp_c       = 0.0 ! Not compatible with TEMP_INIT==5
        
             ! store cost
             fc_collected(d) = fc
@@ -284,7 +299,7 @@ use sico_variables_m_diff
   
    close(unit=99)
    close(unit=98)
-   !@ python_automated_grdchk IO end @   
+   !@ python_automated_grdchk IO end @
    end subroutine grdchk_main
 
 !!-------------------------------------------------------------------------------
