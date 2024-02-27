@@ -44,11 +44,21 @@ use error_m
 
 implicit none
 
-public
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
-#if defined(ALLOW_TAPENADE) /* Tapenade */
+private
+public :: ice_mat_eqs_pars, &
+          ratefac_c, ratefac_t, ratefac_c_t, kappa_val, c_val, &
+          viscosity, creep
+
+#else /* Tapenade */
+
+public :: ice_mat_eqs_pars, &
+          ratefac_c, ratefac_t, ratefac_c_t, kappa_val, c_val, &
+          viscosity, creep
 private :: myfloor_local
-#endif /* Tapenade */
+
+#endif /* Normal vs. Tapenade */
 
 contains
 
@@ -213,7 +223,7 @@ n_temp_2 = n_temp_1 + 1
 ratefac_c_t = ( RF_imp(n_temp_1) &
                   + (RF_imp(n_temp_2)-RF_imp(n_temp_1)) &
                     * (temp_h_val-real(n_temp_1,dp)) ) &
-              *(1.0_dp+R_T_imp*(omega_val))
+              *(1.0_dp+R_T_imp*(omega_val))   ! Linear interpolation
 
 end function ratefac_c_t
 
@@ -247,11 +257,11 @@ n_temp_2 = n_temp_1 + 1
 #if defined(FRAC_DUST)
 kappa_ice = KAPPA_imp(n_temp_1) &
             + (KAPPA_imp(n_temp_2)-KAPPA_imp(n_temp_1)) &
-              * (temp_val-real(n_temp_1,dp))
+              * (temp_val-real(n_temp_1,dp))   ! Linear interpolation
 #else
 kappa_val = KAPPA_imp(n_temp_1) &
             + (KAPPA_imp(n_temp_2)-KAPPA_imp(n_temp_1)) &
-              * (temp_val-real(n_temp_1,dp))
+              * (temp_val-real(n_temp_1,dp))   ! Linear interpolation
 #endif
 
 !-------- If dust is present (polar caps of Mars):
@@ -293,11 +303,11 @@ n_temp_2 = n_temp_1 + 1
 #if defined(FRAC_DUST)
 c_ice = C_imp(n_temp_1) &
         + (C_imp(n_temp_2)-C_imp(n_temp_1)) &
-          * (temp_val-real(n_temp_1,dp))
+          * (temp_val-real(n_temp_1,dp))   ! Linear interpolation
 #else
 c_val = C_imp(n_temp_1) &
         + (C_imp(n_temp_2)-C_imp(n_temp_1)) &
-          * (temp_val-real(n_temp_1,dp))
+          * (temp_val-real(n_temp_1,dp))   ! Linear interpolation
 #endif
 
 !-------- If dust is present (polar caps of Mars):
