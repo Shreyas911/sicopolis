@@ -450,9 +450,17 @@ alpha = ALPHA_QBM
 lon_d = lambda(j,i) *rad2deg
 lat_d = phi(j,i)    *rad2deg
 
+! SSG: Removing ALLOW_TAPENADE here should be fine
+! SSG: But it results in very slightly different ADJ, TLM values
+! SSG: Further investigation needed in the future
+#if !defined(ALLOW_TAPENADE) /* Normal */
 lon_d = modulo(lon_d+180.0_dp, 360.0_dp)-180.0_dp
                                   ! mapping to interval
                                   ! [-180 deg, +180 deg)
+#else /* Tapenade */
+lon_d = (lon_d+180.0_sp) &
+           - ((360.0_sp * int(lon_d+180.0_sp)/360.0_sp)) - 180.0_sp
+#endif /* Normal vs. Tapenade */
 
 if ((lon_d>=-10.0_dp).and.(lon_d<60.0_dp)) then
                                       ! Western East Antarctica
