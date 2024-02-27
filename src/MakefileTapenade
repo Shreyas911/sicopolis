@@ -126,7 +126,7 @@ DEFINE_FLAGS_GRDCHK= -DALLOW_GRDCHK -DIN_PATH=\"${IN_PATH_GRDCHK}\" -DOUT_PATH=\
 
 IN_PATH_ADJOINT=../sico_in
 OUT_PATH_ADJOINT=../sico_out/ADJOINT_${HEADER}
-DEFINE_FLAGS_ADJOINT= -DDATE=\"14/02/24\" -DVERSION=\"v23.12\" -DALLOW_TAPENADE -DALLOW_TAPENADE_DIFFERENTIATE -DIN_PATH=\"${IN_PATH_ADJOINT}\" -DOUT_PATH=\"${OUT_PATH_ADJOINT}\"
+DEFINE_FLAGS_ADJOINT= -DDATE=\"14/02/24\" -DVERSION=\"v23.12\" -DALLOW_TAPENADE -DIN_PATH=\"${IN_PATH_ADJOINT}\" -DOUT_PATH=\"${OUT_PATH_ADJOINT}\"
 
 SRC_SICO=\
 subroutines/general/sico_types_m.F90\
@@ -188,7 +188,7 @@ SRC_HEADERS=\
 sico_specs.h \
 ad_specs.h
 
-CPPCMD = cat $< |  cpp -DRUN_SPECS_HEADER=\"sico_specs.h\" -DALLOW_TAPENADE_DIFFERENTIATE=1 -DALLOW_TAPENADE=1 -I../ -I./ -traditional-cpp -P 
+CPPCMD = cat $< |  cpp -DRUN_SPECS_HEADER=\"sico_specs.h\" -DALLOW_TAPENADE=1 -I../ -I./ -traditional-cpp -P 
 
 CPPCMD_FILES = cat $< |  cpp -DRUN_SPECS_HEADER=\"sico_specs.h\" -imacros sico_specs.h -imacros ad_specs.h ${DEFINE_FLAGS_ADJOINT} ${LISFLAG} -I${ADFirstAidKit_DIR} -traditional-cpp -P
 

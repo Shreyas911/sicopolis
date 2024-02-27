@@ -156,10 +156,7 @@
 #include "subroutines/general/ice_material_properties_m.F90"
 #include "subroutines/general/stereo_proj_m.F90"
 #include "subroutines/general/metric_m.F90"
-
-#if (!defined(ALLOW_TAPENADE) || defined(ALLOW_TAPENADE_DIFFERENTIATE)) /* Normal */
 #include "subroutines/general/sico_maths_m.F90"
-#endif /* Normal */
 
 #if !defined(ALLOW_TAPENADE) /* Normal */
 #include "subroutines/general/compare_float_m.F90"
