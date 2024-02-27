@@ -1,5 +1,5 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-! Specification file for control variables ad_repo_ant64_b2_future09_ctrl.h
+! Specification file for control variables ad_repo_ant64_bm3_ss25ka.h
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #undef ALLOW_GENCTRL
