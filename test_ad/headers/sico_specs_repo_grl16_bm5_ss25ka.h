@@ -98,7 +98,7 @@
 #define TIME_INIT0 0.0d0
 !                       Initial time of simulation (in a)
 
-#define TIME_END0 25.0d0
+#define TIME_END0 50.0d0
 !                       Final time of simulation (in a)
 
 #define DTIME0 5.0d0
