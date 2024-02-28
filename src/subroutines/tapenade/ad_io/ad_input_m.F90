@@ -49,7 +49,12 @@ module ad_input_m
         !-------- Create file name --------
         
         temp_path = AD_INPUT_PATH
-        filename = 'ad_input'//trim(filename_extension)
+#ifdef TAP_GENCTRL_TLM
+        filename = 'ad_input_tlm'//trim(filename_extension)
+#endif
+#ifdef TAP_GENCTRL_ADJ
+        filename = 'ad_input_adj'//trim(filename_extension)
+#endif
         filename_with_path = trim(temp_path)//'/'//trim(filename)
     
         !  ------ Open NetCDF file

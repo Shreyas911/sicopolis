@@ -35,7 +35,6 @@ module ad_output_m
     !     nc1d:      Dimension of a 1-d array
     !     nc2d:      Vector with the dimensions of a 2-d array
     !     nc3d:      Vector with the dimensions of a 3-d array
-
     integer(i4b) :: nc1cor_i(1), nc1cor_j(1), &
                     nc1cor_kc(1), nc1cor_tad(1), &
                     nc2cor_ij(2), nc2cor_ijtad(3), &
@@ -50,7 +49,6 @@ module ad_output_m
     !     nc1cnt(1): Count of a 1-d array
     !     nc2cnt(2): Count of a 2-d array
     !     nc3cnt(3): Count of a 3-d array
-
 #ifdef TAP_GENCTRL_TLM
     integer(i4b) :: nc0cor_fcd(1)
     integer(i4b) :: nc0cnt_fcd(1)
@@ -113,7 +111,12 @@ module ad_output_m
     !-------- Create file name --------
     
     temp_path = AD_OUTPUT_PATH
-    filename = 'ad_output'//trim(filename_extension)
+#ifdef TAP_GENCTRL_TLM
+    filename = 'ad_output_tlm'//trim(filename_extension)
+#endif
+#ifdef TAP_GENCTRL_ADJ
+    filename = 'ad_output_adj'//trim(filename_extension)
+#endif
     filename_with_path = trim(temp_path)//'/'//trim(filename)
 
     !-------- File initialization --------
