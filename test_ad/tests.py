@@ -31,3 +31,13 @@ def test_repo_grl16_bm5_ss25ka_q_geo():
 	subprocess.run (['cp', 'headers/sico_specs_repo_grl16_bm5_ss25ka.h', '../headers'])
 	subprocess.run (['cp', 'headers/sico_specs_repo_grl16_bm5_ss25ka.h', '../src/sico_specs.h'])
 	subprocess.run('python3 tapenade_config.py -iv q_geo -jsf inputs.json', shell = True, check = True)
+
+def test_repo_ant40_b2_ss25ka_temp_c():
+	subprocess.run (['cp', 'headers/sico_specs_repo_ant40_b2_ss25ka.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_repo_ant40_b2_ss25ka.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -head repo_ant40_b2_ss25ka -dom ant -iv temp_c -dim 3 -z 40 -delta 5.e-2 -jsf inputs.json', shell = True, check = True)
+
+def test_repo_grl16_bm5_ss25ka_temp_c():
+	subprocess.run (['cp', 'headers/sico_specs_repo_grl16_bm5_ss25ka.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_repo_grl16_bm5_ss25ka.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -iv temp_c -dim 3 -z 40 -jsf inputs.json', shell = True, check = True)
