@@ -247,6 +247,8 @@ driverforward:${LIBLIS} \
 	nc_check_m_cpp.o \
 	PHONY_TAP_TLM \
 	${OBJ_AD_TLM} \
+	ad_input_m_cpp.o \
+	ad_output_m_cpp.o \
 	tapenade_m_cpp.o \
 	sicopolis.o
 	${F90C} ${F90FLAGS} -o $@ \
@@ -255,6 +257,8 @@ driverforward:${LIBLIS} \
 		sico_maths_m_tlm_cpp.o \
 		$(patsubst %.c,%.o,$(SRC_TAP)) \
 		${OBJ_AD_TLM} \
+		ad_input_m_cpp.o \
+		ad_output_m_cpp.o \
 		subroutines/tapenade/src/diffsizes.o \
 		sicopolis.o \
 		${LIBLISFLAG} \
