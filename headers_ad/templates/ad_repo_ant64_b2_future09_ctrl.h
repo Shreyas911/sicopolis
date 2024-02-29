@@ -2,8 +2,14 @@
 ! Specification file for control variables ad_repo_ant64_b2_future09_ctrl.h
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#define ALLOW_GENCTRL
+#undef ALLOW_GENCTRL
 !       Flag to enable specific code for genctrl setup
+
+#define TAP_GENCTRL_ADJ
+!       Flag to enable adjoint-specific genctrl setup
+
+#undef TAP_GENCTRL_TLM
+!      Flag to enable TLM-specific genctrl setup
 
 !-------- Basic settings --------
 
@@ -25,12 +31,12 @@
 #define XX_GENARR2D_PREPROC_ARR    (/ 'nnnnnnnnn,bounds', \
 			              			  'nnnnnnnnn,nnnnnn', \
 				      				  'bounds   ,nnnnnn' /) 
-!       Define preprocessing steps for ctrl variables
+!               Define preprocessing steps for ctrl variables
 !		Fill with nnnn... to ensure same length
 
 #define XX_GENARR2D_BOUNDS_ARR  (/ ' ', \
-				   				   ' ', \
-			    	   			   ' ' /)
+				   ' ', \
+				   ' ' /)
 !		2D mask for the 2D time-invariant control variables
 !		If empty, defaults to 0, IMAX, 0, JMAX
 
@@ -38,7 +44,7 @@
 				         				0.00000000000, \
 					 					0.00000000000 /)
 !		log10initval if preproc=log10ctrl
-!       Otherwise has no effect
+!		Otherwise has no effect
 !		WARNING: If for example using for c_slide_init
 !		Set C_SLIDE == 0.0 in the HEADER file
 
@@ -60,7 +66,7 @@
 !		List of 3D time-invariant control variables
 
 #define XX_GENARR3D_PREPROC_ARR    (/ 'bounds' /)
-!       Define preprocessing steps for ctrl variables
+!		Define preprocessing steps for ctrl variables
 !		Fill with nnnn... to ensure same length
 
 #define XX_GENARR3D_BOUNDS_ARR  (/ ' ' /)
@@ -69,7 +75,7 @@
 
 #define XX_GENARR3D_LOG10INITVAL_ARR (/ -1 /)
 !		log10initval if preproc=log10ctrl
-!       Otherwise has no effect
+!		Otherwise has no effect
 !		WARNING: If for example using for temp_c
 !		Set TEMP_INIT_VALUE (or some flag) == 0.0 in the HEADER file
 
@@ -96,7 +102,7 @@
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-!#define AD_INPUT_PATH '/home/shreyas/update_to_develop_sicopolis/sicopolis/src/subroutines/tapenade/ad_io'
+#undef AD_INPUT_PATH '/home/shreyas/update_to_develop_sicopolis/sicopolis/src/subroutines/tapenade/ad_io'
 !		 Absolute input path to read xx_gen* fields
 
 #define AD_OUTPUT_PATH '/home/shreyas/update_to_develop_sicopolis/sicopolis/src/subroutines/tapenade/ad_io'

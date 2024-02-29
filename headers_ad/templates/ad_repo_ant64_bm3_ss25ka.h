@@ -5,6 +5,12 @@
 #undef ALLOW_GENCTRL
 !       Flag to enable specific code for genctrl setup
 
+#define TAP_GENCTRL_ADJ
+!       Flag to enable adjoint-specific genctrl setup
+
+#undef TAP_GENCTRL_TLM
+!      Flag to enable TLM-specific genctrl setup
+
 !-------- Basic settings --------
 
 #define CTRL_STRLENGTH		128
@@ -96,7 +102,7 @@
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-!#define AD_INPUT_PATH '/home/shreyas/update_to_develop_sicopolis/sicopolis/src/subroutines/tapenade/ad_io'
+#undef AD_INPUT_PATH '/home/shreyas/update_to_develop_sicopolis/sicopolis/src/subroutines/tapenade/ad_io'
 !		 Absolute input path to read xx_gen* fields
 
 #define AD_OUTPUT_PATH '/home/shreyas/update_to_develop_sicopolis/sicopolis/src/subroutines/tapenade/ad_io'
