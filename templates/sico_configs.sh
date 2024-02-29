@@ -152,7 +152,7 @@ elif [ "$FC" = "gfortran" ] ; then
 
    case $PROGNAME in
         "sicopolis")
-           FCFLAGS='-O2 -ffree-line-length-none'
+           FCFLAGS='-O3 -ffast-math -ffree-line-length-none'
            ;;
         *)
            FCFLAGS='-O2 -ffree-line-length-none'
