@@ -1,3 +1,35 @@
+function ceiling:
+intrinsic:
+shape: (param 1, result)
+type: (float(), integer())
+ReadNotWritten: (1, 0)
+ReadThenWritten: (0, 0)
+NotReadThenWritten: (0, 1)
+
+function erf:
+intrinsic:
+shape: (param 1, result)
+type: (float(), float())
+ReadNotWritten: (1, 0)
+ReadThenWritten: (0, 0)
+NotReadThenWritten: (0, 1)
+
+function floor:
+intrinsic:
+shape: (param 1, result)
+type: (float(), integer())
+ReadNotWritten: (1, 0)
+ReadThenWritten: (0, 0)
+NotReadThenWritten: (0, 1)
+
+function huge:
+intrinsic:
+shape: (param 1, result)
+type: (float(), float())
+ReadNotWritten: (1, 0)
+ReadThenWritten: (0, 0)
+NotReadThenWritten: (0, 1)
+
 subroutine get_environment_variable:
 intrinsic:
 shape: (param 1, param 2, param 3, param 4)
@@ -17,30 +49,6 @@ type: (float(), float(), float())
 ReadNotWritten: (1, 1, 0)
 ReadThenWritten: (0, 0, 0)
 NotReadThenWritten: (0, 0, 1)
-
-function ceiling:
-intrinsic:
-shape: (param 1, result)
-type: (float(), integer())
-ReadNotWritten: (1, 0)
-ReadThenWritten: (0, 0)
-NotReadThenWritten: (0, 1)
-
-function floor:
-intrinsic:
-shape: (param 1, result)
-type: (float(), integer())
-ReadNotWritten: (1, 0)
-ReadThenWritten: (0, 0)
-NotReadThenWritten: (0, 1)
-
-function erf:
-intrinsic:
-shape: (param 1, result)
-type: (float(), float())
-ReadNotWritten: (1, 0)
-ReadThenWritten: (0, 0)
-NotReadThenWritten: (0, 1)
 
 function real:
 intrinsic:
