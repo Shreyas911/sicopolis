@@ -223,9 +223,7 @@ end if
 if (target_topo_tau*sec2year > no_value_pos_1) then
            ! relaxation time target_topo_tau interpreted as infinity
 
-#if (!defined(ALLOW_GRDCHK) && !defined(ALLOW_TAPENADE)) /* Normal */
    target_topo_tau = huge(1.0_dp)
-#endif
 
    !%% zl_new = zl_new
 
@@ -251,9 +249,7 @@ target_topo_tau = target_topo_tau_0
 if (target_topo_tau*sec2year > no_value_pos_1) then
            ! relaxation time target_topo_tau interpreted as infinity
 
-#if (!defined(ALLOW_GRDCHK) && !defined(ALLOW_TAPENADE)) /* Normal */
    target_topo_tau = huge(1.0_dp)
-#endif
 
    !%% zl_new = zl_new
 

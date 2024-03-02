@@ -1012,8 +1012,6 @@ real(dp), parameter :: eps = 1.0e-05_dp
 real(dp), parameter :: epsi = 1.0e-12_dp
    !! Very small number
 
-#if (!defined(ALLOW_GRDCHK) && !defined(ALLOW_TAPENADE)) /* Normal */
-
 real(sp), parameter :: eps_sp = epsilon(1.0_sp)
    !! Small number to single-precision accuracy
 
@@ -1022,22 +1020,6 @@ real(dp), parameter :: eps_sp_dp = eps_sp
 
 real(dp), parameter :: eps_dp = epsilon(1.0_dp)
    !! Small number to double-precision accuracy
-
-#else /* Tapenade */
-
-real(sp), parameter :: myepsilon_sp  = 1.19209290E-07
-
-real(sp), parameter :: eps_sp = myepsilon_sp
-
-real(dp), parameter :: myepsilon_sp_dp  = 1.1920928955078125E-007
-
-real(dp), parameter :: eps_sp_dp = myepsilon_sp_dp
-
-real(dp), parameter :: myepsilon_dp  = 2.2204460492503131E-016
-
-real(dp), parameter :: eps_dp = myepsilon_dp
-
-#endif /* Normal vs. Tapenade */
 
 !-------- Further quantities -------- 
 

@@ -787,9 +787,7 @@ end subroutine apply_mb_source
   if (target_topo_tau*sec2year > no_value_pos_1) then
              ! relaxation time target_topo_tau interpreted as infinity
 
-#if (!defined(ALLOW_GRDCHK) && !defined(ALLOW_TAPENADE)) /* Normal */
      target_topo_tau = huge(1.0_dp)
-#endif
 
      !%% H_new = H_new
 
@@ -816,9 +814,7 @@ end subroutine apply_mb_source
   if (target_topo_tau*sec2year > no_value_pos_1) then
              ! relaxation time target_topo_tau interpreted as infinity
 
-#if (!defined(ALLOW_GRDCHK) && !defined(ALLOW_TAPENADE)) /* Normal */
      target_topo_tau = huge(1.0_dp)
-#endif
 
      !%% H_new = H_new
 
