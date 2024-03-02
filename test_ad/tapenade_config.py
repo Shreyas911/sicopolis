@@ -386,7 +386,7 @@ def setup_binomial_checkpointing(status = False, number_of_steps = 20,
 	else: raise ValueError('Incorrect status for checkpointing.')
 
 def setup_adjoint(ind_vars, header, domain, ckp_status,
-	numCore_cpp_b_file = 'numCore_cpp_b.f90',
+	sicopolis_tapenade_cpp_b_file = 'sicopolis_tapenade_cpp_b.f90',
 	sico_main_loop_m_cpp_b_file = 'sico_main_loop_m_cpp_b.f90',
 	dimensions = [2], 
 	z_co_ords = [None],
@@ -401,7 +401,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 	header - Name of header, for example repo_grl20_ss25ka
 	domain - grl or ant
 	ckp_status - True if binomial checkpointing is used, else False
-	numCore_cpp_b_file - Location of numCore_cpp_b.f90 file
+	sicopolis_tapenade_cpp_b_file - Location of sicopolis_tapenade_cpp_b.f90 file
 	sico_main_loop_m_cpp_b_file - Location of sico_main_loop_m_cpp_b.f90 file
 	dimensions - List of dimensions of independent vars
 	z_co_ords - List of z co-ordinate for 3D vars
@@ -443,7 +443,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 		   END DO
 		'''
 
-	modify_file(numCore_cpp_b_file, ref_string, new_string, 
+	modify_file(sicopolis_tapenade_cpp_b_file, ref_string, new_string, 
 		   replace_or_append_or_prepend = 'append',
 	           instance_all = True)	
 
@@ -497,7 +497,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 			raise ValueError("Wrong dimensions or z coord for adjoint")
 			sys.exit(1)
 
-	modify_file(numCore_cpp_b_file, ref_string, new_string, 
+	modify_file(sicopolis_tapenade_cpp_b_file, ref_string, new_string, 
 		   replace_or_append_or_prepend = 'prepend',
 	           instance_all = True)	
 
@@ -786,7 +786,7 @@ def simulation(mode, header, domain,
 	      output_vars = [], output_iters = [], output_dims = [],
 	      output_adj_vars = [], output_adj_iters = [], output_adj_dims = [],
 	      ckp_status = False, ckp_num = 10, validation = True,
-	      numCore_cpp_b_file = 'numCore_cpp_b.f90',
+	      sicopolis_tapenade_cpp_b_file = 'sicopolis_tapenade_cpp_b.f90',
 	      sico_main_loop_m_cpp_b_file = 'sico_main_loop_m_cpp_b.f90',
 	      f90c = 'gfortran', cc = 'gcc'):
 
@@ -811,7 +811,7 @@ def simulation(mode, header, domain,
 	ckp_status - True if binomial checkpointing is used, else False
 	ckp_num - Number of checkpointing steps
 	tapenade_m_file - Location of tapenade_m.F90
-	numCore_cpp_b_file - Location of numCore_cpp_b.f90 file
+	sicopolis_tapenade_cpp_b_file - Location of sicopolis_tapenade_cpp_b.f90 file
 	sico_main_loop_m_cpp_b_file - Location of sico_main_loop_m_cpp_b.f90 file
 	cc - C compiler
 	f90c - F90 compiler
@@ -877,7 +877,7 @@ def simulation(mode, header, domain,
 			output_adj_iters = [int(x) for x in output_adj_iters]
 
 		setup_adjoint(ind_vars = [ind_var], header = header, domain = domain, ckp_status = ckp_status,
-			     numCore_cpp_b_file = numCore_cpp_b_file,
+			     sicopolis_tapenade_cpp_b_file = sicopolis_tapenade_cpp_b_file,
 			     sico_main_loop_m_cpp_b_file = sico_main_loop_m_cpp_b_file,
 			     dimensions = [ind_var_dim],
 			     z_co_ords = [ind_var_z_co_ord],

@@ -92,8 +92,6 @@
 #endif
 #endif
 
-!@ begin tapenade_extract @
-
 !-------- Include run specification header --------
 
 #include RUN_SPECS_HEADER
@@ -107,16 +105,12 @@
 #endif
 #endif /* Normal */
 
-!@ end tapenade_extract @
-
 !-------- Include modules --------
 
 #if !defined(ALLOW_TAPENADE) /* Normal */
 #include "subroutines/general/sico_types_m.F90"
 #endif /* Normal */
 #include "subroutines/general/sico_variables_m.F90"
-
-!@ begin tapenade_extract @
 
 #if (defined(ANT))
 #include "subroutines/ant/sico_vars_m.F90"
@@ -139,8 +133,6 @@
 #elif (defined(XYZ))
 #include "subroutines/xyz/sico_vars_m.F90"
 #endif
-
-!@ end tapenade_extract @
 
 #include "subroutines/general/error_m.F90"
 
@@ -271,10 +263,6 @@ program sicopolis
 
 !-------- Declaration of variables --------
 
-!@ begin tapenade_extract @
-
-!tapenade begin subroutine sicopolis_tapenade
-
 use sico_types_m
 use sico_variables_m
 use sico_vars_m
@@ -282,8 +270,6 @@ use sico_vars_m
 use sico_init_m
 use sico_main_loop_m
 use sico_end_m
-
-!@ end tapenade_extract @
 
 #if defined(ALLOW_GRDCHK) /* Tapenade */
 use tapenade_m, only: grdchk_main
@@ -294,8 +280,6 @@ use tapenade_m, only: adjoint_master
 #endif /* Tapenade */
 
 implicit none
-
-!@ begin tapenade_extract @
 
 integer(i4b) :: ndat2d
    !! Counter for the time-slice files
@@ -365,13 +349,9 @@ real(dp) :: dzeta_r
 real(dp) :: z_mar
    !! Minimum bedrock (sea bed) elevation allowed to be covered by marine ice
 
-!@ end tapenade_extract @
-
 #if (!defined(ALLOW_GRDCHK) && !defined(ALLOW_TAPENADE)) /* Normal */
 
 !-------- Initializations --------
-
-!@ begin tapenade_extract @
 
 call sico_init(delta_ts, glac_index, &
      mean_accum, &
@@ -390,10 +370,6 @@ call sico_main_loop(delta_ts, glac_index, &
      dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
      z_mar, &
      ndat2d, ndat3d, n_output)
-
-!tapenade end subroutine sicopolis_tapenade
-
-!@ end tapenade_extract @
 
 !-------- Endings --------
 
