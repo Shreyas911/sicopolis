@@ -370,13 +370,7 @@ contains
           leave_loop=.false.
           cst_dist(j_pos,i_pos)=1.d+20
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
           do l=1, max(IMAX,JMAX)
-#else /* Tapenade */
-          l = 1
-          do while (l<= max(IMAX,JMAX) .and. leave_loop.eqv..false.)
-#endif /* Normal vs. Tapenade */
-
             do i=max(i_pos-l,0), min(i_pos+l,IMAX)
               j=max(j_pos-l,0); j=min(j,JMAX)
               if(mask(j,i).eq.2) then

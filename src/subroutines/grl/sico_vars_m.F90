@@ -90,7 +90,9 @@ integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_mar
 real(dp),     dimension(0:JMAX,0:IMAX) :: c_dis
 real(dp),     dimension(0:JMAX,0:IMAX) :: cst_dist
 real(dp),     dimension(0:JMAX,0:IMAX) :: cos_grad_tc
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 real(dp),     dimension(0:JMAX,0:IMAX) :: dis_perp
+#endif /* NORMAL */
 
 #endif
 
