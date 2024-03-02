@@ -1271,7 +1271,7 @@ character, parameter :: end_of_line = char(10)
 real(dp),     dimension(0:JMAX,0:IMAX) :: dis_perp
 #endif
 #endif /* Tapenade */
-#if (defined(ALLOW_NORMAL) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE)) /* Tapenade */
+#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE)) /* Tapenade */
 
 real(dp) :: fc
    !! Scalar cost function
