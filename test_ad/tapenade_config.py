@@ -53,10 +53,9 @@ def modify_file(filename, ref_string, new_string,
 	
 				if(skip_line is True and ref_string in line and replace_or_append_or_prepend == 'append'):
 					skippy = True
-								
 
 				new_file_lines.append(line)
-	
+
 		with open(filename, "w") as f:
 			f.write(''.join(new_file_lines))
 
@@ -186,8 +185,7 @@ def get_imax_jmax_kcmax_ktmax(specs_file='sico_specs.h'):
 		print(err)
 		sys.exit(1)
 
-def copy_file(original_file = '../test_ad/tapenade_m_templates/tapenade_m_adjoint_template.F90', 
-			destination_file = 'subroutines/tapenade/src/tapenade_m.F90'):
+def copy_file(original_file, destination_file):
 
 	'''
 	Purpose - Copy file from source to destination
@@ -232,7 +230,7 @@ def setup_grdchk(ind_var, header, domain,
 	unit - The unit to be used in FORTRAN-90 code while opening and closing the output file
 	'''
 
-	copy_file(original_file    = '../test_ad/tapenade_m_templates/grdchk_m.F90',
+	copy_file(original_file    = '../test_ad/tapenade_F90_templates/grdchk_m.F90',
 		  	  destination_file = grdchk_m_file)
 
 	IMAX, JMAX, KCMAX, KTMAX = get_imax_jmax_kcmax_ktmax()
@@ -600,7 +598,7 @@ def setup_forward(ind_var, header, domain,
 	dimension = 2, 
 	z_co_ord = None, limited_or_block_or_full = 'limited',
 	block_imin = None, block_imax = None, block_jmin = None, block_jmax = None,
-	tapenade_m_file = 'subroutines/tapenade/src/tapenade_m.F90',
+	tapenade_main_file = 'tapenade_main.F90',
 	unit = '99999'):
 	
 
@@ -617,7 +615,7 @@ def setup_forward(ind_var, header, domain,
 				   block runs for a block on the grid, 
 				   full runs on entire grid	
 	block_imin, block_imax, block_jmin, block_jmax - Specify limits of block if needed
-	tapenade_m_file - Location of tapenade_m file
+	tapenade_main_file - Location of tapenade_main file
 	unit - The unit to be used in FORTRAN-90 code while opening and closing the output file
 
 	'''
@@ -627,8 +625,8 @@ def setup_forward(ind_var, header, domain,
 	else:
 		raise ValueError('Wrong Domain')
 
-	copy_file(original_file = '../test_ad/tapenade_m_templates/tapenade_m_tlm_template.F90',
-		  destination_file = tapenade_m_file)
+	copy_file(original_file = '../test_ad/tapenade_F90_templates/tapenade_main.F90',
+		  	  destination_file = tapenade_main_file)
 
 	IMAX, JMAX, KCMAX, KTMAX = get_imax_jmax_kcmax_ktmax()
 
@@ -638,21 +636,21 @@ def setup_forward(ind_var, header, domain,
 		   do i = 0, {IMAX}
 		   do j = 0, {JMAX}
 		'''
-		modify_file(tapenade_m_file, ref_string, new_string,
+		modify_file(tapenade_main_file, ref_string, new_string,
 			   replace_or_append_or_prepend = 'replace',
 			   instance_number = 0)	
 
-		modify_file(tapenade_m_file, 
+		modify_file(tapenade_main_file, 
 			   'i = ipoints(p)', '',
 			   replace_or_append_or_prepend = 'replace',
 			   instance_number = 0)	
 		
-		modify_file(tapenade_m_file, 
+		modify_file(tapenade_main_file, 
 			   'j = jpoints(p)', '',
 			   replace_or_append_or_prepend = 'replace',
 			   instance_number = 0)	
 
-		modify_file(tapenade_m_file, 
+		modify_file(tapenade_main_file, 
 			   'close loop over points', '   end do\n',
 			   replace_or_append_or_prepend = 'append',
 			   instance_number = 0)	
@@ -668,21 +666,21 @@ def setup_forward(ind_var, header, domain,
 		   do j = {block_jmin}, {block_jmax}
 		'''
 
-		modify_file(tapenade_m_file, ref_string, new_string,
+		modify_file(tapenade_main_file, ref_string, new_string,
 			   replace_or_append_or_prepend = 'replace',
 			   instance_number = 0)	
 
-		modify_file(tapenade_m_file, 
+		modify_file(tapenade_main_file, 
 			   'i = ipoints(p)', '',
 			   replace_or_append_or_prepend = 'replace',
 			   instance_number = 0)	
 		
-		modify_file(tapenade_m_file, 
+		modify_file(tapenade_main_file, 
 			   'j = jpoints(p)', '',
 			   replace_or_append_or_prepend = 'replace',
 			   instance_number = 0)	
 
-		modify_file(tapenade_m_file, 
+		modify_file(tapenade_main_file, 
 			   'close loop over points', '   end do\n',
 			   replace_or_append_or_prepend = 'append',
 			   instance_number = 0)	
@@ -708,7 +706,7 @@ def setup_forward(ind_var, header, domain,
 		raise ValueError ("Something wrong with dimension in TLM")
 		sys.exit(1)
 	
-	modify_file(tapenade_m_file, 
+	modify_file(tapenade_main_file, 
 		   ref_string, new_string,
 		   replace_or_append_or_prepend = 'append',
 		   instance_number = 0)	
@@ -727,7 +725,7 @@ def setup_forward(ind_var, header, domain,
 		raise ValueError ("Something wrong with dimension in TLM")
 		sys.exit(1)
 	
-	modify_file(tapenade_m_file, 
+	modify_file(tapenade_main_file, 
 		   ref_string, new_string,
 		   replace_or_append_or_prepend = 'append',
 		   instance_number = 0)	
@@ -737,18 +735,18 @@ def setup_forward(ind_var, header, domain,
 	   open({unit}, file=\'ForwardVals_{ind_var}_{header}_{limited_or_block_or_full}.dat\',&
 	       form="FORMATTED", status="REPLACE")
 	'''
-	modify_file(tapenade_m_file, 
+	modify_file(tapenade_main_file, 
 		   ref_string, new_string,
 		   replace_or_append_or_prepend = 'append',
 		   instance_number = 0)	
 
-	modify_file(tapenade_m_file, 
+	modify_file(tapenade_main_file, 
 		   '!@ python_automated_tlm IO write @',
 		   f'          write({unit}, fmt=\'(f40.20)\') fcd\n',
 		   replace_or_append_or_prepend = 'append',
 		   instance_number = 0)	
 
-	modify_file(tapenade_m_file, 
+	modify_file(tapenade_main_file, 
 		   '!@ python_automated_tlm IO end @',
 		   f'   close(unit={unit})\n',
 		   replace_or_append_or_prepend = 'append',
@@ -780,7 +778,7 @@ def simulation(mode, header, domain,
 	      ind_var_dim = 2, ind_var_z_co_ord = None,
 	      perturbation = 1.e-3,
 		  grdchk_m_file = 'subroutines/tapenade/grdchk/grdchk_m.F90',
-	      tapenade_m_file = 'subroutines/tapenade/src/tapenade_m.F90',
+	      tapenade_main_file = 'tapenade_main.F90',
 	      run_executable_auto = 'False',
 	      unit = '9999',
 	      block_imin = None, block_imax = None, block_jmin = None, block_jmax = None,
@@ -811,7 +809,7 @@ def simulation(mode, header, domain,
 	output_adj_dims - List of z co-ordinates for adjoint variables that we output
 	ckp_status - True if binomial checkpointing is used, else False
 	ckp_num - Number of checkpointing steps
-	tapenade_m_file - Location of tapenade_m.F90
+	tapenade_main_file - Location of tapenade_main.F90
 	sicopolis_tapenade_cpp_b_file - Location of sicopolis_tapenade_cpp_b.f90 file
 	sico_main_loop_m_cpp_b_file - Location of sico_main_loop_m_cpp_b.f90 file
 	cc - C compiler
@@ -863,8 +861,8 @@ def simulation(mode, header, domain,
 		else: 
 			setup_binomial_checkpointing(status = False)
 
-		copy_file(original_file = '../test_ad/tapenade_m_templates/tapenade_m_adjoint_template.F90',
-		  destination_file = 'subroutines/tapenade/src/tapenade_m.F90')
+		copy_file(original_file = '../test_ad/tapenade_F90_templates/tapenade_main.F90',
+		  		  destination_file = 'tapenade_main.F90')
 
 		compile_code(mode = mode, header = header, domain = domain,
 			    clean = True, dep_var=dep_var, ind_vars = ind_var,
@@ -913,7 +911,7 @@ def simulation(mode, header, domain,
 			     dimension = ind_var_dim,
 			     z_co_ord = ind_var_z_co_ord, limited_or_block_or_full = limited_or_block_or_full,
 			     block_imin = block_imin, block_imax = block_imax, block_jmin = block_jmin, block_jmax = block_jmax,
-			     tapenade_m_file = tapenade_m_file,
+			     tapenade_main_file = tapenade_main_file,
 			     unit = unit)
 
 		compile_code(mode = mode, header = header, domain = domain,

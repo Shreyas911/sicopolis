@@ -126,7 +126,9 @@ DEFINE_FLAGS_GRDCHK= -DALLOW_GRDCHK -DIN_PATH=\"${IN_PATH_GRDCHK}\" -DOUT_PATH=\
 
 IN_PATH_ADJOINT=../sico_in
 OUT_PATH_ADJOINT=../sico_out/ADJOINT_${HEADER}
-DEFINE_FLAGS_ADJOINT= -DDATE=\"14/02/24\" -DVERSION=\"v23.12\" -DALLOW_TAPENADE -DIN_PATH=\"${IN_PATH_ADJOINT}\" -DOUT_PATH=\"${OUT_PATH_ADJOINT}\"
+driveradjoint: TAP_MODE_FLAG=ALLOW_TAP_ADJ
+driverforward: TAP_MODE_FLAG=ALLOW_TAP_TLM
+DEFINE_FLAGS_ADJOINT= -DDATE=\"14/02/24\" -DVERSION=\"v23.12\" -DALLOW_TAPENADE -D${TAP_MODE_FLAG} -DIN_PATH=\"${IN_PATH_ADJOINT}\" -DOUT_PATH=\"${OUT_PATH_ADJOINT}\"
 
 SRC_SICO=\
 subroutines/general/sico_types_m.F90\
@@ -162,8 +164,7 @@ subroutines/tapenade/stubs/sico_maths_m_stub.F90\
 subroutines/grl/sico_init_m.F90\
 subroutines/ant/sico_init_m.F90\
 subroutines/general/error_m.F90\
-subroutines/general/init_temp_water_age_m.F90\
-subroutines/tapenade/src/tapenade_m.F90
+subroutines/general/init_temp_water_age_m.F90
 
 SRC_SICO_AD_GRDCHK=\
 subroutines/tapenade/grdchk/grdchk_m.F90
@@ -252,19 +253,20 @@ driverforward:${LIBLIS} \
 	${OBJ_AD_TLM} \
 	ad_input_m_cpp.o \
 	ad_output_m_cpp.o \
-	tapenade_m_cpp.o \
-	sicopolis.o
+	tapenade_main_cpp.o
 	${F90C} ${F90FLAGS} -o $@ \
+		error_m_cpp.o \
 		sico_types_m_cpp.o \
 		compare_float_m_cpp.o \
 		sico_maths_m_tlm_cpp.o \
 		sico_vars_m_cpp.o \
+		nc_check_m_cpp.o \
 		$(patsubst %.c,%.o,$(SRC_TAP)) \
 		${OBJ_AD_TLM} \
 		ad_input_m_cpp.o \
 		ad_output_m_cpp.o \
 		subroutines/tapenade/src/diffsizes.o \
-		sicopolis.o \
+		tapenade_main_cpp.o \
 		${LIBLISFLAG} \
 		${LIB_NETCDF_F90_FLAG}
 
@@ -292,19 +294,20 @@ driveradjoint:${LIBLIS} \
 	${OBJ_AD_ADJ} \
 	ad_input_m_cpp.o \
 	ad_output_m_cpp.o \
-	tapenade_m_cpp.o \
-	sicopolis.o
+	tapenade_main_cpp.o
 	${F90C} ${F90FLAGS} -o $@ \
+		error_m_cpp.o \
 		sico_types_m_cpp.o \
 		compare_float_m_cpp.o \
 		sico_maths_m_grad_cpp.o \
 		sico_vars_m_cpp.o \
+		nc_check_m_cpp.o \
 		$(patsubst %.c,%.o,$(SRC_TAP)) \
 		${OBJ_AD_ADJ} \
 		ad_input_m_cpp.o \
 		ad_output_m_cpp.o \
 		subroutines/tapenade/src/diffsizes.o \
-		sicopolis.o \
+		tapenade_main_cpp.o \
 		${LIBLISFLAG} \
 		${LIB_NETCDF_F90_FLAG}
 
@@ -357,8 +360,6 @@ subroutines/general/sico_maths_m.o : subroutines/general/sico_maths_m.F90
 	${F90C} -DALLOW_TAPENADE ${LISFLAG} -I./ ${F90FLAGS} -o $@ -c $<
 
 subroutines/tapenade/src/sico_maths_m_grad.o : subroutines/tapenade/src/sico_maths_m_grad.F90
-	${F90C} -DALLOW_TAPENADE ${LISFLAG} -I./ ${F90FLAGS} -o $@ -c $<
-subroutines/tapenade/src/tapenade_m.o: subroutines/tapenade/src/tapenade_m.F90
 	${F90C} -DALLOW_TAPENADE ${LISFLAG} -I./ ${F90FLAGS} -o $@ -c $<
 
 sico_variables_m_cpp.f90: subroutines/general/sico_variables_m.F90
@@ -422,6 +423,8 @@ clean:
 		  subroutines/tapenade/*/*.mod\
           subroutines/general/*.o\
 		  subroutines/general/*.mod\
+		  ../test_ad/tapenade_F90_templates/*.o\
+		  ../test_ad/tapenade_F90_templates/*.mod\
           sicopolis.o\
 	rm -f dummy.f90\
 	      *_cpp.f90\
@@ -444,4 +447,4 @@ cleanobj:
 
 .PHONY: clean
 .PHONY: cleanobj
-.PRECIOUS: ad_output_m_cpp.f90 nc_check_m_cpp.f90 sico_vars_m_cpp.f90 tapenade_m_cpp.f90 ad_input_m_cpp.f90 sico_maths_m_grad_cpp.f90
+.PRECIOUS: ad_output_m_cpp.f90 nc_check_m_cpp.f90 sico_vars_m_cpp.f90 tapenade_main_cpp.f90 ad_input_m_cpp.f90 sico_maths_m_grad_cpp.f90
