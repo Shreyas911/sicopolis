@@ -416,9 +416,11 @@ sico_variables_m_cpp.f90: subroutines/general/sico_variables_m.F90
 	sed -i 's/__NL__/\n/g' $@
 
 clean: 
-	rm -f subroutines/tapenade/*/*.o \
-              subroutines/general/*.o\
-              sicopolis.o\
+	rm -f subroutines/tapenade/*/*.o\
+		  subroutines/tapenade/*/*.mod\
+          subroutines/general/*.o\
+		  subroutines/general/*.mod\
+          sicopolis.o\
 	rm -f dummy.f90\
 	      *_cpp.f90\
 	      *_cpp_b.f90\
