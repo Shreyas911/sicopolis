@@ -116,21 +116,21 @@ program tapenade_main
     end do
 
 !@ python_automated_tlm IO begin @
-	
+
  !-------- Loop over points
     do p = 1, points !@ python_automated_tlm limited_or_block_or_full @
         i = ipoints(p)
         j = jpoints(p)
 
 !@ python_automated_tlm dep_vard set 0 @
-		
+
         CALL SICO_INIT_D(delta_ts, glac_index, mean_accum, dtime, dtime_temp, &
         &            dtime_wss, dtime_out, dtime_ser, time, time_init, time_end&
         &            , time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, z_mar&
         &            , ndat2d, ndat3d, n_output)
 
 !@ python_automated_tlm dep_vard set 1 @
-		      
+      
 !-------- Main loop --------
         CALL SICO_MAIN_LOOP_D(delta_ts, glac_index, mean_accum, dtime, &
         &                 dtime_temp, dtime_wss, dtime_out, dtime_ser, time, &
