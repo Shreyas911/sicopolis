@@ -99,6 +99,7 @@
 
 !-------- Include modules --------
 
+
 #include "subroutines/general/sico_types_m.F90"
 #include "subroutines/general/sico_variables_m.F90"
 
@@ -126,13 +127,16 @@
 
 #include "subroutines/general/error_m.F90"
 
+#if (defined(ALLOW_GRDCHK))
+#include "subroutines/tapenade/cost/cost_m.F90"
+#endif /* ALLOW_GRDCHK */
+
 #include "subroutines/general/ice_material_properties_m.F90"
 #include "subroutines/general/stereo_proj_m.F90"
 #include "subroutines/general/metric_m.F90"
 #include "subroutines/general/sico_maths_m.F90"
 
 #include "subroutines/general/compare_float_m.F90"
-
 #include "subroutines/general/nc_check_m.F90"
 #include "subroutines/general/read_m.F90"
 
@@ -230,6 +234,10 @@
 #include "subroutines/general/sico_main_loop_m.F90"
 #include "subroutines/general/sico_end_m.F90"
 
+#if defined(ALLOW_GRDCHK)
+#include "subroutines/tapenade/grdchk/grdchk_m.F90"
+#endif /* ALLOW_GRDCHK */
+
 !-------------------------------------------------------------------------------
 !> Main program of SICOPOLIS.
 !-------------------------------------------------------------------------------
@@ -244,6 +252,14 @@ use sico_vars_m
 use sico_init_m
 use sico_main_loop_m
 use sico_end_m
+
+#if defined(ALLOW_GRDCHK) /* Tapenade */
+use grdchk_m, only: grdchk_main
+#endif /* Tapenade */
+
+#if defined(ALLOW_TAPENADE) /* Tapenade */
+use tapenade_m, only: adjoint_master
+#endif /* Tapenade */
 
 implicit none
 
@@ -315,6 +331,8 @@ real(dp) :: dzeta_r
 real(dp) :: z_mar
    !! Minimum bedrock (sea bed) elevation allowed to be covered by marine ice
 
+#if !defined(ALLOW_GRDCHK)
+
 !-------- Initializations --------
 
 call sico_init(delta_ts, glac_index, &
@@ -340,6 +358,10 @@ call sico_main_loop(delta_ts, glac_index, &
 call sico_end()
 
 !-------- End of program --------
+
+#else /* ALLOW_GRDCHK */
+call grdchk_main()
+#endif /* ALLOW_GRDCHK */
 
 end program sicopolis
 

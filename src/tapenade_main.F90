@@ -30,20 +30,7 @@
 !-------------------------------------------------------------------------------
 program tapenade_main
 
-#if defined(ALLOW_GRDCHK)
-
-    use sico_variables_m
-#if (defined(GRL) && DISC>0)
-    use discharge_workers_m
-#endif
-    use ice_material_properties_m
-    use enth_temp_omega_m
-    use sico_init_m
-    use cost_m
-    use sico_main_loop_m
-    use sico_end_m
-
-#elif defined(ALLOW_TAPENADE)
+#if defined(ALLOW_TAPENADE)
 
     use sico_variables_m_diff
 #if (defined(GRL) && DISC>0)
@@ -64,7 +51,7 @@ program tapenade_main
     use sico_end_m_diff
 #endif /* ALLOW_TAP_TLM */
 
-#endif /* ALLOW_{GRDCHK,TAPENADE} */
+#endif /* ALLOW_TAPENADE */
 
     implicit none
     integer(i4b)                               :: ndat2d, ndat3d
@@ -79,17 +66,13 @@ program tapenade_main
                                                 dzeta_t, dzeta_r
     real(dp)                                   :: z_mar
 
-#if ((defined(ALLOW_TAPENADE) && defined(ALLOW_TAP_TLM)) || defined (ALLOW_GRDCHK))
+#if (defined(ALLOW_TAPENADE) && defined(ALLOW_TAP_TLM))
     integer(i4b), parameter                    :: points = 5
     integer(i4b), dimension(points)            :: ipoints, jpoints
     integer(i4b)                               :: i, j, p
-#endif
+#endif /* ALLOW_TAPENADE and ALLOW_TAP_TLM */
 
-#if defined(ALLOW_GRDCHK)
-
-    call grdchk_main
-
-#elif defined(ALLOW_TAPENADE)
+#if defined(ALLOW_TAPENADE)
 
 #if defined(ALLOW_GENCTRL)
     call ad_input()
@@ -176,7 +159,7 @@ program tapenade_main
     call ad_output()
 #endif /* ALLOW_GENCTRL */
 
-#endif /* ALLOW_{GRDCHK,TAPENADE} */
+#endif /* ALLOW_TAPENADE */
 end program tapenade_main
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !                       End of tapenade_main.F90
