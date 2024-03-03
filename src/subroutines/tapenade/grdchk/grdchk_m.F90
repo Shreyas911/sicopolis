@@ -107,8 +107,6 @@ module grdchk_m
    end do
 
    !-------- Initialize output files 
-   open(99, file='GradientVals_'//trim(HEADER)//'.dat',&
-       form="FORMATTED", status="REPLACE")
    open(98, file='CostVals_'//trim(HEADER)//'.dat',&
        form="FORMATTED", status="REPLACE")
 
@@ -201,7 +199,6 @@ module grdchk_m
     
    end do ! (close loop over points)
   
-   close(unit=99)
    close(unit=98)
    !@ python_automated_grdchk IO end @
    end subroutine grdchk_main
