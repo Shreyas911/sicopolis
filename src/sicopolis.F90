@@ -127,10 +127,6 @@
 
 #include "subroutines/general/error_m.F90"
 
-#if (defined(ALLOW_GRDCHK))
-#include "subroutines/tapenade/cost/cost_m.F90"
-#endif /* ALLOW_GRDCHK */
-
 #include "subroutines/general/ice_material_properties_m.F90"
 #include "subroutines/general/stereo_proj_m.F90"
 #include "subroutines/general/metric_m.F90"
@@ -235,6 +231,7 @@
 #include "subroutines/general/sico_end_m.F90"
 
 #if defined(ALLOW_GRDCHK)
+#include "subroutines/tapenade/cost/cost_m.F90"
 #include "subroutines/tapenade/grdchk/grdchk_m.F90"
 #endif /* ALLOW_GRDCHK */
 
@@ -255,10 +252,6 @@ use sico_end_m
 
 #if defined(ALLOW_GRDCHK) /* Tapenade */
 use grdchk_m, only: grdchk_main
-#endif /* Tapenade */
-
-#if defined(ALLOW_TAPENADE) /* Tapenade */
-use tapenade_m, only: adjoint_master
 #endif /* Tapenade */
 
 implicit none
