@@ -165,6 +165,9 @@ subroutines/general/error_m.F90\
 subroutines/general/init_temp_water_age_m.F90\
 subroutines/tapenade/src/tapenade_m.F90
 
+SRC_SICO_AD_GRDCHK=\
+subroutines/tapenade/grdchk/grdchk_m.F90
+
 SRC_SICO_AD_COST=\
 subroutines/tapenade/cost/cost_m.F90
 
@@ -330,16 +333,15 @@ drivernormal: sico_specs.h $(SRC_SICO) $(SRC)
 	${F90C} -I./ ${F90FLAGS} ${DEFINE_FLAGS_NORMAL} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
 	${F90C} ${F90FLAGS} -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
 
-
-drivergrdchk: sico_specs.h $(SRC_SICO) $(SRC_SICO_AD_COST) $(SRC)
+drivergrdchk: sico_specs.h $(SRC_SICO) $(SRC_SICO_AD_COST) $(SRC) $(SRC_SICO_AD_GRDCHK)
 	sed -i 's/&__NL__//g' sico_specs.h
 	${F90C} -I./ ${F90FLAGS} ${DEFINE_FLAGS_GRDCHK} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
 	${F90C} ${F90FLAGS} -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
 
-drivergrdchk_cov: sico_specs.h $(SRC_SICO) $(SRC_SICO_AD_COST) $(SRC)
+drivergrdchk_cov: sico_specs.h $(SRC_SICO) $(SRC_SICO_AD_COST) $(SRC) $(SRC_SICO_AD_GRDCHK)
+	sed -i 's/&__NL__//g' sico_specs.h
 	${F90C} -I./ ${F90FLAGS_COV} ${DEFINE_FLAGS_GRDCHK} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
 	${F90C} ${F90FLAGS_COV} -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
-
 
 cov: sico_specs.h $(SRC_SICO) $(SRC_SICO_AD_COST) $(SRC)
 	${GCOV} $(SRC_SICO) $(SRC_SICO_AD) $(SRC)

@@ -254,9 +254,12 @@
 #include "subroutines/general/sico_main_loop_m.F90"
 #include "subroutines/general/sico_end_m.F90"
 
-#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE)) /* Tapenade */
+#if defined(ALLOW_GRDCHK)
+#include "subroutines/tapenade/grdchk/grdchk_m.F90"
+#endif /* ALLOW_GRDCHK */
+#if defined(ALLOW_TAPENADE)
 #include "subroutines/tapenade/src/tapenade_m.F90"
-#endif /* Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 !-------------------------------------------------------------------------------
 !> Main program of SICOPOLIS.
@@ -274,7 +277,7 @@ use sico_main_loop_m
 use sico_end_m
 
 #if defined(ALLOW_GRDCHK) /* Tapenade */
-use tapenade_m, only: grdchk_main
+use grdchk_m, only: grdchk_main
 #endif /* Tapenade */
 
 #if defined(ALLOW_TAPENADE) /* Tapenade */

@@ -211,7 +211,7 @@ def setup_grdchk(ind_var, header, domain,
 	perturbation = 1.e-3,
 	limited_or_block_or_full = 'limited',
 	block_imin = None, block_imax = None, block_jmin = None, block_jmax = None,
-	tapenade_m_file = 'subroutines/tapenade/src/tapenade_m.F90',
+	grdchk_m_file = 'subroutines/tapenade/grdchk/grdchk_m.F90',
 	unit = '9999'):
 
 	'''
@@ -228,12 +228,12 @@ def setup_grdchk(ind_var, header, domain,
 				   block runs for a block on the grid, 
 				   full runs on entire grid	
 	block_imin, block_imax, block_jmin, block_jmax - Specify limits of block if needed
-	tapenade_m_file - Location of tapenade_m file
+	grdchk_m_file - Location of grdchk_m file
 	unit - The unit to be used in FORTRAN-90 code while opening and closing the output file
 	'''
 
-	copy_file(original_file = '../test_ad/tapenade_m_templates/tapenade_m_adjoint_template.F90',
-		  destination_file = 'subroutines/tapenade/src/tapenade_m.F90')
+	copy_file(original_file    = '../test_ad/tapenade_m_templates/grdchk_m.F90',
+		  	  destination_file = grdchk_m_file)
 
 	IMAX, JMAX, KCMAX, KTMAX = get_imax_jmax_kcmax_ktmax()
 
@@ -244,19 +244,19 @@ def setup_grdchk(ind_var, header, domain,
 		   do i = 0, {IMAX}
 		   do j = 0, {JMAX}
 		"""
-		modify_file(tapenade_m_file, ref_string, new_string,
+		modify_file(grdchk_m_file, ref_string, new_string,
 			   replace_or_append_or_prepend = 'replace',
 			   instance_number = 0)	
 
 		ref_string = 'i = ipoints(p)'
 		new_string = ''
-		modify_file(tapenade_m_file, ref_string, new_string,
+		modify_file(grdchk_m_file, ref_string, new_string,
 			   replace_or_append_or_prepend = 'replace',
 			   instance_number = 0)	
 	
 		ref_string = 'j = jpoints(p)'
 		new_string = ''
-		modify_file(tapenade_m_file, ref_string, new_string,
+		modify_file(grdchk_m_file, ref_string, new_string,
 			   replace_or_append_or_prepend = 'replace',
 			   instance_number = 0)	
 
@@ -264,7 +264,7 @@ def setup_grdchk(ind_var, header, domain,
 		new_string = """
 		   end do
 		"""
-		modify_file(tapenade_m_file, ref_string, new_string,
+		modify_file(grdchk_m_file, ref_string, new_string,
 			   replace_or_append_or_prepend = 'append',
 			   instance_number = 0)	
 	
@@ -279,19 +279,19 @@ def setup_grdchk(ind_var, header, domain,
 		   do i = {block_imin}, {block_imax}
 		   do j = {block_jmin}, {block_jmax}
 		"""
-		modify_file(tapenade_m_file, ref_string, new_string,
+		modify_file(grdchk_m_file, ref_string, new_string,
 			   replace_or_append_or_prepend = 'replace',
 			   instance_number = 0)	
 
 		ref_string = 'i = ipoints(p)'
 		new_string = ''
-		modify_file(tapenade_m_file, ref_string, new_string,
+		modify_file(grdchk_m_file, ref_string, new_string,
 			   replace_or_append_or_prepend = 'replace',
 			   instance_number = 0)	
 	
 		ref_string = 'j = jpoints(p)'
 		new_string = ''
-		modify_file(tapenade_m_file, ref_string, new_string,
+		modify_file(grdchk_m_file, ref_string, new_string,
 			   replace_or_append_or_prepend = 'replace',
 			   instance_number = 0)	
 
@@ -299,7 +299,7 @@ def setup_grdchk(ind_var, header, domain,
 		new_string = """
 		   end do
 		"""
-		modify_file(tapenade_m_file, ref_string, new_string,
+		modify_file(grdchk_m_file, ref_string, new_string,
 			   replace_or_append_or_prepend = 'append',
 			   instance_number = 0)	
 	
@@ -325,7 +325,7 @@ def setup_grdchk(ind_var, header, domain,
 		raise ValueError ("Something wrong with dimension in grdchk")
 		sys.exit(1)
 
-	modify_file(tapenade_m_file, ref_string, new_string,
+	modify_file(grdchk_m_file, ref_string, new_string,
 		   replace_or_append_or_prepend = 'append',
 	           instance_number = 0)	
 	
@@ -335,27 +335,27 @@ def setup_grdchk(ind_var, header, domain,
 	   file=\'GradientVals_{ind_var}_{perturbation:.2E}_{header}_{limited_or_block_or_full}.dat\',&
 	   form="FORMATTED", status="REPLACE")
 	'''
-	modify_file(tapenade_m_file, ref_string, new_string,
+	modify_file(grdchk_m_file, ref_string, new_string,
 		   replace_or_append_or_prepend = 'append',
 	           instance_number = 0)	
 	
 	ref_string = '!@ python_automated_grdchk IO write @'
 	new_string = f'          write({unit}, fmt=\'(f40.20)\') gfd\n'
-	modify_file(tapenade_m_file, ref_string, new_string,
+	modify_file(grdchk_m_file, ref_string, new_string,
 		   replace_or_append_or_prepend = 'append',
 	           instance_number = 0)	
 	
 	ref_string = '!@ python_automated_grdchk IO end @'
 	new_string = f'   close(unit={unit})\n'
-	modify_file(tapenade_m_file, ref_string, new_string,
+	modify_file(grdchk_m_file, ref_string, new_string,
 		   replace_or_append_or_prepend = 'append',
 	           instance_number = 0)	
 	
 	ref_string = 'real(dp)                          :: orig_val, perturb_val' 
 	new_string = f'   real(dp)                          :: orig_val, perturb_val = {perturbation}\n'
-	modify_file(tapenade_m_file, ref_string, new_string,
+	modify_file(grdchk_m_file, ref_string, new_string,
 		   replace_or_append_or_prepend = 'replace',
-	           instance_number = 0)	
+	           instance_number = 0)
 
 def setup_binomial_checkpointing(status = False, number_of_steps = 20, 
 	loop_file = 'subroutines/general/sico_main_loop_m.F90'):
@@ -779,6 +779,7 @@ def simulation(mode, header, domain,
 	      limited_or_block_or_full = 'limited',
 	      ind_var_dim = 2, ind_var_z_co_ord = None,
 	      perturbation = 1.e-3,
+		  grdchk_m_file = 'subroutines/tapenade/grdchk/grdchk_m.F90',
 	      tapenade_m_file = 'subroutines/tapenade/src/tapenade_m.F90',
 	      run_executable_auto = 'False',
 	      unit = '9999',
@@ -842,7 +843,7 @@ def simulation(mode, header, domain,
 	        perturbation = perturbation,
 	        limited_or_block_or_full = limited_or_block_or_full,
 	        block_imin = block_imin, block_imax = block_imax, block_jmin = block_jmin, block_jmax = block_jmax,
-	        tapenade_m_file = tapenade_m_file,
+	        grdchk_m_file = grdchk_m_file,
 	        unit = unit)
 	
 		compile_code(mode = mode, header = header, domain = domain,
