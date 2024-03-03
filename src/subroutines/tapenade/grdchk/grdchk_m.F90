@@ -113,11 +113,7 @@ module grdchk_m
        form="FORMATTED", status="REPLACE")
 
 !@ python_automated_grdchk IO begin @
-
-	   open(9999,&
-	   file='GradientVals_H_1.00E-03_repo_grl16_bm5_ss25ka_limited.dat',&
-	   form="FORMATTED", status="REPLACE")
-	   
+   
    !-------- Loop over points
    do p = 1, points !@ python_automated_grdchk limited_or_block_or_full @
      i = ipoints(p)
@@ -151,9 +147,6 @@ module grdchk_m
                 
             !@ python_automated_grdchk @
 
-		            orig_val = H(j,i)
-	                    H(j,i) = orig_val * perturbation
-		
             ! Example -- H
             ! orig_val = H(j,i)
             ! H(j,i) = orig_val * perturbation
@@ -205,14 +198,12 @@ module grdchk_m
           write(98, fmt='(a)') '----------------------------------'
           
           !@ python_automated_grdchk IO write @
-          write(9999, fmt='(f40.20)') gfd
     
    end do ! (close loop over points)
   
    close(unit=99)
    close(unit=98)
    !@ python_automated_grdchk IO end @
-   close(unit=9999)
    end subroutine grdchk_main
 
 !!-------------------------------------------------------------------------------
