@@ -5,12 +5,6 @@
 #undef ALLOW_GENCTRL
 !       Flag to enable specific code for genctrl setup
 
-#define ALLOW_TAP_ADJ
-!       Flag to enable adjoint-specific genctrl setup
-
-#undef ALLOW_TAP_TLM
-!      Flag to enable TLM-specific genctrl setup
-
 !-------- Basic settings --------
 
 #define CTRL_STRLENGTH		128

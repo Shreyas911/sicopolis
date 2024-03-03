@@ -30,24 +30,41 @@
 !-------------------------------------------------------------------------------
 program tapenade_main
 
-#if defined(ALLOW_TAPENADE)
+#if defined(ALLOW_GRDCHK)
+
+    use sico_variables_m
+#if (defined(GRL) && DISC>0)
+    use discharge_workers_m
+#endif
+    use ice_material_properties_m
+    use enth_temp_omega_m
+    use sico_init_m
+    use cost_m
+    use sico_main_loop_m
+    use sico_end_m
+
+#elif defined(ALLOW_TAPENADE)
+
     use sico_variables_m_diff
 #if (defined(GRL) && DISC>0)
     use discharge_workers_m_diff
-#endif
+#endif /* GRL and DISC */
     use ice_material_properties_m_diff
     use enth_temp_omega_m_diff
     use sico_init_m_diff
+
 #if defined(ALLOW_GENCTRL)
     use ad_input_m
     use ad_output_m
-#endif
+#endif /* ALLOW_GENCTRL */
+
 #if defined(ALLOW_TAP_TLM)
     use cost_m_diff
     use sico_main_loop_m_diff
     use sico_end_m_diff
-#endif
-#endif
+#endif /* ALLOW_TAP_TLM */
+
+#endif /* ALLOW_{GRDCHK,TAPENADE} */
 
     implicit none
     integer(i4b)                               :: ndat2d, ndat3d
@@ -68,7 +85,12 @@ program tapenade_main
     integer(i4b)                               :: i, j, p
 #endif
 
-#if defined(ALLOW_TAPENADE)
+#if defined(ALLOW_GRDCHK)
+
+    call grdchk_main
+
+#elif defined(ALLOW_TAPENADE)
+
 #if defined(ALLOW_GENCTRL)
     call ad_input()
 #endif /* ALLOW_GENCTRL */
@@ -94,21 +116,21 @@ program tapenade_main
     end do
 
 !@ python_automated_tlm IO begin @
-
+	
  !-------- Loop over points
     do p = 1, points !@ python_automated_tlm limited_or_block_or_full @
         i = ipoints(p)
         j = jpoints(p)
 
 !@ python_automated_tlm dep_vard set 0 @
-
+		
         CALL SICO_INIT_D(delta_ts, glac_index, mean_accum, dtime, dtime_temp, &
         &            dtime_wss, dtime_out, dtime_ser, time, time_init, time_end&
         &            , time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, z_mar&
         &            , ndat2d, ndat3d, n_output)
 
 !@ python_automated_tlm dep_vard set 1 @
-      
+		      
 !-------- Main loop --------
         CALL SICO_MAIN_LOOP_D(delta_ts, glac_index, mean_accum, dtime, &
         &                 dtime_temp, dtime_wss, dtime_out, dtime_ser, time, &
@@ -153,9 +175,8 @@ program tapenade_main
 #if defined(ALLOW_GENCTRL)
     call ad_output()
 #endif /* ALLOW_GENCTRL */
-#endif /* ALLOW_TAPENADE */
 
-
+#endif /* ALLOW_{GRDCHK,TAPENADE} */
 end program tapenade_main
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !                       End of tapenade_main.F90

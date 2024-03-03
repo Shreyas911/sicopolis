@@ -86,12 +86,6 @@
 !
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#if defined(ALLOW_TAPENADE)
-#if defined(ALLOW_GENCTRL)
-#include "ad_specs.h"
-#endif
-#endif
-
 !-------- Include run specification header --------
 
 #include RUN_SPECS_HEADER
@@ -99,20 +93,15 @@
 !-------- Include header for the Library of Iterative Solvers Lis
 !                                               (only if required) --------
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 #if (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
 #include "lisf.h"
 #endif
-#endif /* Normal */
 
 !-------- Include modules --------
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 #include "subroutines/general/sico_types_m.F90"
-#endif /* Normal */
 #include "subroutines/general/sico_variables_m.F90"
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 #if (defined(ANT))
 #include "subroutines/ant/sico_vars_m.F90"
 #elif (defined(ASF))
@@ -134,30 +123,17 @@
 #elif (defined(XYZ))
 #include "subroutines/xyz/sico_vars_m.F90"
 #endif
-#endif /* Normal */
 
 #include "subroutines/general/error_m.F90"
-
-#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE)) /* Tapenade */
-#include "subroutines/tapenade/cost/cost_m.F90"
-#if defined(ALLOW_GENCTRL)
-#include "subroutines/tapenade/ctrl/ctrl_map_genarr_m.F90"
-#include "subroutines/tapenade/ctrl/ctrl_init_genarr_m.F90"
-#include "subroutines/tapenade/ctrl/ctrl_map_gentim_m.F90"
-#endif
-#endif /* Tapenade */
 
 #include "subroutines/general/ice_material_properties_m.F90"
 #include "subroutines/general/stereo_proj_m.F90"
 #include "subroutines/general/metric_m.F90"
 #include "subroutines/general/sico_maths_m.F90"
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 #include "subroutines/general/compare_float_m.F90"
-#endif /* Normal */
 
 #include "subroutines/general/nc_check_m.F90"
-
 #include "subroutines/general/read_m.F90"
 
 #include "subroutines/general/mask_update_sea_level_m.F90"
@@ -254,13 +230,6 @@
 #include "subroutines/general/sico_main_loop_m.F90"
 #include "subroutines/general/sico_end_m.F90"
 
-#if defined(ALLOW_GRDCHK)
-#include "subroutines/tapenade/grdchk/grdchk_m.F90"
-#endif /* ALLOW_GRDCHK */
-#if defined(ALLOW_TAPENADE)
-#include "subroutines/tapenade/src/tapenade_m.F90"
-#endif /* ALLOW_TAPENADE */
-
 !-------------------------------------------------------------------------------
 !> Main program of SICOPOLIS.
 !-------------------------------------------------------------------------------
@@ -275,14 +244,6 @@ use sico_vars_m
 use sico_init_m
 use sico_main_loop_m
 use sico_end_m
-
-#if defined(ALLOW_GRDCHK) /* Tapenade */
-use grdchk_m, only: grdchk_main
-#endif /* Tapenade */
-
-#if defined(ALLOW_TAPENADE) /* Tapenade */
-use tapenade_m, only: adjoint_master
-#endif /* Tapenade */
 
 implicit none
 
@@ -354,8 +315,6 @@ real(dp) :: dzeta_r
 real(dp) :: z_mar
    !! Minimum bedrock (sea bed) elevation allowed to be covered by marine ice
 
-#if (!defined(ALLOW_GRDCHK) && !defined(ALLOW_TAPENADE)) /* Normal */
-
 !-------- Initializations --------
 
 call sico_init(delta_ts, glac_index, &
@@ -381,15 +340,6 @@ call sico_main_loop(delta_ts, glac_index, &
 call sico_end()
 
 !-------- End of program --------
-
-#else /* Tapenade */
-#if (defined(ALLOW_GRDCHK))
-call grdchk_main()
-#endif
-#if (defined(ALLOW_TAPENADE))
-call adjoint_master()
-#endif
-#endif /* Normal vs. Tapenade */
 
 end program sicopolis
 
