@@ -112,6 +112,7 @@
 #endif /* Normal */
 #include "subroutines/general/sico_variables_m.F90"
 
+#if !defined(ALLOW_TAPENADE) /* Normal */
 #if (defined(ANT))
 #include "subroutines/ant/sico_vars_m.F90"
 #elif (defined(ASF))
@@ -133,6 +134,7 @@
 #elif (defined(XYZ))
 #include "subroutines/xyz/sico_vars_m.F90"
 #endif
+#endif /* Normal */
 
 #include "subroutines/general/error_m.F90"
 
