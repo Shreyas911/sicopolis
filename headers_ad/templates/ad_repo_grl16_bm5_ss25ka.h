@@ -5,10 +5,10 @@
 #undef ALLOW_GENCTRL
 !       Flag to enable specific code for genctrl setup
 
-#define TAP_GENCTRL_ADJ
+#define ALLOW_TAP_ADJ
 !       Flag to enable adjoint-specific genctrl setup
 
-#undef TAP_GENCTRL_TLM
+#undef ALLOW_TAP_TLM
 !      Flag to enable TLM-specific genctrl setup
 
 !-------- Basic settings --------

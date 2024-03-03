@@ -49,7 +49,7 @@ module ad_output_m
     !     nc1cnt(1): Count of a 1-d array
     !     nc2cnt(2): Count of a 2-d array
     !     nc3cnt(3): Count of a 3-d array
-#ifdef TAP_GENCTRL_TLM
+#ifdef ALLOW_TAP_TLM
     integer(i4b) :: nc0cor_fcd(1)
     integer(i4b) :: nc0cnt_fcd(1)
     !     nc0cor_fcd: Defined specially for fcd
@@ -58,7 +58,7 @@ module ad_output_m
 
     real(dp) :: xi_conv(0:IMAX), eta_conv(0:JMAX), &
     sigma_level_c_conv(0:KCMAX), time_ad_conv(0:ADNMAX)
-#ifdef TAP_GENCTRL_TLM
+#ifdef ALLOW_TAP_TLM
     real(dp), dimension(1) :: fcd_arr
 #endif
 
@@ -66,7 +66,7 @@ module ad_output_m
     real(dp), dimension(NUM_CTRL_GENARR3D,0:IMAX,0:JMAX,0:KCMAX) :: xx_genarr3d_conv
     real(dp), dimension(NUM_CTRL_GENTIM2D,0:IMAX,0:JMAX,0:ADNMAX) :: xx_gentim2d_conv
 
-#ifdef TAP_GENCTRL_ADJ
+#ifdef ALLOW_TAP_ADJ
     real(dp), dimension(NUM_CTRL_GENARR2D,0:IMAX,0:JMAX) :: xx_genarr2db_conv
     real(dp), dimension(NUM_CTRL_GENARR2D,0:IMAX,0:JMAX,0:KCMAX) :: xx_genarr3db_conv
     real(dp), dimension(NUM_CTRL_GENARR2D,0:IMAX,0:JMAX,0:ADNMAX) :: xx_gentim2db_conv
@@ -81,7 +81,7 @@ module ad_output_m
     character(len= 16), parameter :: filename_extension = '.nc'
     character(len= 16), allocatable :: coord_id(:)
 
-#ifdef TAP_GENCTRL_TLM
+#ifdef ALLOW_TAP_TLM
     fcd_arr(1) = fcd
     nc0cor_fcd = (/ 1 /)
     nc0cnt_fcd = (/ 1 /)
@@ -111,10 +111,10 @@ module ad_output_m
     !-------- Create file name --------
     
     temp_path = AD_OUTPUT_PATH
-#ifdef TAP_GENCTRL_TLM
+#ifdef ALLOW_TAP_TLM
     filename = 'ad_output_tlm'//trim(filename_extension)
 #endif
-#ifdef TAP_GENCTRL_ADJ
+#ifdef ALLOW_TAP_ADJ
     filename = 'ad_output_adj'//trim(filename_extension)
 #endif
     filename_with_path = trim(temp_path)//'/'//trim(filename)
@@ -228,7 +228,7 @@ module ad_output_m
     call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
           thisroutine )
 
-#ifdef TAP_GENCTRL_TLM
+#ifdef ALLOW_TAP_TLM
     !    ---- Define fcd
     call check( nf90_inq_dimid(ncid, trim(coord_id(5)), nc1d), &
                       thisroutine )
@@ -404,7 +404,7 @@ module ad_output_m
                              start=nc1cor_tad, count=nc1cnt_tad), &
                 thisroutine )
 
-#ifdef TAP_GENCTRL_TLM
+#ifdef ALLOW_TAP_TLM
     call check( nf90_inq_varid(ncid, 'fcd', &
                 ncv), &
                 thisroutine )
@@ -417,7 +417,7 @@ module ad_output_m
     do j=0, JMAX
     do ctrl_index = 1, NUM_CTRL_GENARR2D
       xx_genarr2d_conv(ctrl_index,i,j) = xx_genarr2d(ctrl_index,j,i)
-#ifdef TAP_GENCTRL_ADJ
+#ifdef ALLOW_TAP_ADJ
       xx_genarr2db_conv(ctrl_index,i,j) = xx_genarr2db(ctrl_index,j,i)
 #endif
     end do
@@ -429,7 +429,7 @@ module ad_output_m
     do kc=0, KCMAX
     do ctrl_index = 1, NUM_CTRL_GENARR3D
       xx_genarr3d_conv(ctrl_index,i,j,kc) = xx_genarr3d(ctrl_index,kc,j,i)
-#ifdef TAP_GENCTRL_ADJ
+#ifdef ALLOW_TAP_ADJ
       xx_genarr3db_conv(ctrl_index,i,j,kc) = xx_genarr3db(ctrl_index,kc,j,i)
 #endif
     end do
@@ -442,7 +442,7 @@ module ad_output_m
     do tad=0, ADNMAX
     do ctrl_index = 1, NUM_CTRL_GENTIM2D
       xx_gentim2d_conv(ctrl_index,i,j,tad) = xx_gentim2d(ctrl_index,tad,j,i)
-#ifdef TAP_GENCTRL_ADJ
+#ifdef ALLOW_TAP_ADJ
       xx_gentim2db_conv(ctrl_index,i,j,tad) = xx_gentim2db(ctrl_index,tad,j,i)
 #endif
     end do
@@ -458,7 +458,7 @@ module ad_output_m
       call check( nf90_put_var(ncid, ncv, xx_genarr2d_conv(ctrl_index,:,:), &
                                start=nc2cor_ij, count=nc2cnt_ij), &
                   thisroutine )
-#ifdef TAP_GENCTRL_ADJ
+#ifdef ALLOW_TAP_ADJ
       call check( nf90_inq_varid(ncid, trim(adjustl(xx_genarr2d_vars(ctrl_index)))//'b', &
                   ncv), &
                   thisroutine )
@@ -476,7 +476,7 @@ module ad_output_m
       call check( nf90_put_var(ncid, ncv, xx_genarr3d_conv(ctrl_index,:,:,:), &
                                start=nc3cor_ijkc, count=nc3cnt_ijkc), &
                   thisroutine )
-#ifdef TAP_GENCTRL_ADJ
+#ifdef ALLOW_TAP_ADJ
       call check( nf90_inq_varid(ncid, trim(adjustl(xx_genarr3d_vars(ctrl_index)))//'b', &
                   ncv), &
                   thisroutine )
@@ -494,7 +494,7 @@ module ad_output_m
       call check( nf90_put_var(ncid, ncv, xx_gentim2d_conv(ctrl_index,:,:,:), &
                                start=nc2cor_ijtad, count=nc2cnt_ijtad), &
                   thisroutine )
-#ifdef TAP_GENCTRL_ADJ
+#ifdef ALLOW_TAP_ADJ
       call check( nf90_inq_varid(ncid, trim(adjustl(xx_gentim2d_vars(ctrl_index)))//'b', &
                   ncv), &
                   thisroutine )

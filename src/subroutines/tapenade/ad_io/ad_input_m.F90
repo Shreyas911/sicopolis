@@ -30,7 +30,7 @@ module ad_input_m
         real(dp), dimension(NUM_CTRL_GENARR3D,0:IMAX,0:JMAX,0:KCMAX) :: xx_genarr3d_conv
         real(dp), dimension(NUM_CTRL_GENTIM2D,0:IMAX,0:JMAX,0:ADNMAX) :: xx_gentim2d_conv
 
-#ifdef TAP_GENCTRL_TLM
+#ifdef ALLOW_TAP_TLM
         real(dp), dimension(NUM_CTRL_GENARR2D,0:IMAX,0:JMAX) :: xx_genarr2dd_conv
         real(dp), dimension(NUM_CTRL_GENARR3D,0:IMAX,0:JMAX,0:KCMAX) :: xx_genarr3dd_conv
         real(dp), dimension(NUM_CTRL_GENTIM2D,0:IMAX,0:JMAX,0:ADNMAX) :: xx_gentim2dd_conv
@@ -49,10 +49,10 @@ module ad_input_m
         !-------- Create file name --------
         
         temp_path = AD_INPUT_PATH
-#ifdef TAP_GENCTRL_TLM
+#ifdef ALLOW_TAP_TLM
         filename = 'ad_input_tlm'//trim(filename_extension)
 #endif
-#ifdef TAP_GENCTRL_ADJ
+#ifdef ALLOW_TAP_ADJ
         filename = 'ad_input_adj'//trim(filename_extension)
 #endif
         filename_with_path = trim(temp_path)//'/'//trim(filename)
@@ -70,7 +70,7 @@ module ad_input_m
         do ctrl_index = 1, NUM_CTRL_GENARR2D
             call check( nf90_inq_varid(ncid, trim(adjustl(xx_genarr2d_vars(ctrl_index))), ncv) )
             call check( nf90_get_var(ncid, ncv, xx_genarr2d_conv(ctrl_index,:,:)) )
-#ifdef TAP_GENCTRL_TLM
+#ifdef ALLOW_TAP_TLM
             call check( nf90_inq_varid(ncid, trim(adjustl(xx_genarr2d_vars(ctrl_index)))//'d', ncv) )
             call check( nf90_get_var(ncid, ncv, xx_genarr2dd_conv(ctrl_index,:,:)) )
 #endif
@@ -79,7 +79,7 @@ module ad_input_m
         do ctrl_index = 1, NUM_CTRL_GENARR3D
             call check( nf90_inq_varid(ncid, trim(adjustl(xx_genarr3d_vars(ctrl_index))), ncv) )
             call check( nf90_get_var(ncid, ncv, xx_genarr3d_conv(ctrl_index,:,:,:)) )
-#ifdef TAP_GENCTRL_TLM
+#ifdef ALLOW_TAP_TLM
             call check( nf90_inq_varid(ncid, trim(adjustl(xx_genarr3d_vars(ctrl_index)))//'d', ncv) )
             call check( nf90_get_var(ncid, ncv, xx_genarr3dd_conv(ctrl_index,:,:,:)) )
 #endif
@@ -88,7 +88,7 @@ module ad_input_m
         do ctrl_index = 1, NUM_CTRL_GENTIM2D
             call check( nf90_inq_varid(ncid, trim(adjustl(xx_gentim2d_vars(ctrl_index))), ncv) )
             call check( nf90_get_var(ncid, ncv, xx_gentim2d_conv(ctrl_index,:,:,:)) )
-#ifdef TAP_GENCTRL_TLM
+#ifdef ALLOW_TAP_TLM
             call check( nf90_inq_varid(ncid, trim(adjustl(xx_gentim2d_vars(ctrl_index)))//'d', ncv) )
             call check( nf90_get_var(ncid, ncv, xx_gentim2dd_conv(ctrl_index,:,:,:)) )
 #endif
@@ -100,7 +100,7 @@ module ad_input_m
         do j = 0, JMAX
         do ctrl_index = 1, NUM_CTRL_GENARR2D
             xx_genarr2d(ctrl_index,j,i) = xx_genarr2d_conv(ctrl_index,i,j)
-#ifdef TAP_GENCTRL_TLM
+#ifdef ALLOW_TAP_TLM
             xx_genarr2dd(ctrl_index,j,i) = xx_genarr2dd_conv(ctrl_index,i,j)
 #endif
         end do
@@ -112,7 +112,7 @@ module ad_input_m
         do kc = 0, KCMAX
         do ctrl_index = 1, NUM_CTRL_GENARR3D
             xx_genarr3d(ctrl_index,kc,j,i) = xx_genarr3d_conv(ctrl_index,i,j,kc)
-#ifdef TAP_GENCTRL_TLM
+#ifdef ALLOW_TAP_TLM
             xx_genarr3dd(ctrl_index,kc,j,i) = xx_genarr3dd_conv(ctrl_index,i,j,kc)
 #endif
         end do
@@ -125,7 +125,7 @@ module ad_input_m
         do tad = 0, ADNMAX
         do ctrl_index = 1, NUM_CTRL_GENTIM2D
             xx_gentim2d(ctrl_index,tad,j,i) = xx_gentim2d_conv(ctrl_index,i,j,tad)
-#ifdef TAP_GENCTRL_TLM
+#ifdef ALLOW_TAP_TLM
             xx_gentim2dd(ctrl_index,tad,j,i) = xx_gentim2dd_conv(ctrl_index,i,j,tad)
 #endif
         end do
