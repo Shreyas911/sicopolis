@@ -36,11 +36,11 @@ module sico_main_loop_m
   use sico_variables_m
   use sico_vars_m
   use error_m
-#if defined(ALLOW_TAPENADE) /* TAPENADE */
+#if defined(ALLOW_TAPENADE)
 #if defined(ALLOW_GENCTRL)
   use ctrl_map_gentim_m
-#endif
-#endif /* TAPENADE */
+#endif /* ALLOW_GENCTRL */
+#endif /* ALLOW_TAPENADE */
   
   implicit none
  
@@ -83,21 +83,21 @@ contains
 
   implicit none
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
   integer(i4b),       intent(in)    :: n_output
   real(dp),           intent(in)    :: mean_accum
   real(dp),           intent(in)    :: dtime, dtime_temp, dtime_wss, &
                                        dtime_out, dtime_ser
   real(dp),           intent(in)    :: time_init, time_end, time_output(100)
   real(dp),           intent(in)    :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
-#else
+#else /* ALLOW_TAPENADE */
   integer(i4b),       intent(inout)    :: n_output
   real(dp),           intent(inout)    :: mean_accum
   real(dp),           intent(inout)    :: dtime, dtime_temp, dtime_wss, &
                                           dtime_out, dtime_ser
   real(dp),           intent(inout)    :: time_init, time_end, time_output(100)
   real(dp),           intent(inout)    :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
-#endif  
+#endif /* ALLOW_TAPENADE */
   integer(i4b),       intent(inout) :: ndat2d, ndat3d
   real(dp),           intent(inout) :: delta_ts, glac_index
   real(dp),           intent(inout) :: time
@@ -144,11 +144,11 @@ contains
   
   !-------- gentim2d setup --------
 
-#if defined(ALLOW_TAPENADE) /* TAPENADE */
+#if defined(ALLOW_TAPENADE)
 #if defined(ALLOW_GENCTRL)
   call ctrl_map_ini_gentim2d(time_init, dtime, itercount)
-#endif
-#endif /* TAPENADE */
+#endif /* ALLOW_GENCTRL */
+#endif /* ALLOW_TAPENADE */
 
   !-------- Boundary conditions --------
   
@@ -340,7 +340,7 @@ contains
   call calc_thk_water_bas()
   
   !-------- Data output --------
-#if !(defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
+#if !(defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE)) /* NORMAL */
   !  ------ Time-slice data
   
 #if (OUTPUT==1)
@@ -490,7 +490,7 @@ contains
 
 #endif
 
-#endif   /* !ALLOW_GRDCHK & !ALLOW_TAPENADE */
+#endif /* NORMAL */
   end do main_loop   ! End of main loop (time integration)
 
     end subroutine sico_main_loop

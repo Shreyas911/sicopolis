@@ -39,9 +39,9 @@ module calc_temp_m
 
   implicit none
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
   private
-#endif /* Normal */
+#endif
 
   public :: calc_temp_poly, calc_temp_cold, calc_temp_const
 
@@ -1413,11 +1413,11 @@ subroutine calc_temp1(at1, at2_1, at2_2, at3_1, at3_2, &
 use ice_material_properties_m, only : ratefac_c, kappa_val, c_val, &
                                       creep, viscosity
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 use sico_maths_m, only : tri_sle
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 use sico_maths_m
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 implicit none
 
@@ -1953,11 +1953,11 @@ subroutine calc_temp2(at1, at2_1, at2_2, at3_1, at3_2, &
 
 use ice_material_properties_m, only : ratefac_c, kappa_val, c_val, &
                                       creep, viscosity
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 use sico_maths_m, only : tri_sle
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 use sico_maths_m
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 implicit none
 
@@ -2474,11 +2474,11 @@ subroutine calc_temp3(at1, at2_1, at2_2, at3_1, at3_2, &
 
 use ice_material_properties_m, only : ratefac_c, ratefac_t, kappa_val, c_val, &
                                       creep, viscosity
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 use sico_maths_m, only : tri_sle
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 use sico_maths_m
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 implicit none
 
@@ -3489,11 +3489,11 @@ end subroutine calc_temp3
 !-------------------------------------------------------------------------------
 subroutine calc_temp_r(atr1, alb1, i, j)
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 use sico_maths_m, only : tri_sle
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 use sico_maths_m
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 implicit none
 
@@ -3516,9 +3516,9 @@ clb1 = alb1*q_geo(j,i)
 !-------- Set up the equations for the bedrock temperature --------
 
 kr=0
-#if defined(ALLOW_TAPENADE) /* Tapenade */
+#if defined(ALLOW_TAPENADE)
 lgs_a0(kr) = 0.0_dp
-#endif /* Tapenade */
+#endif /* ALLOW_TAPENADE */
 lgs_a1(kr) = 1.0_dp
 lgs_a2(kr) = -1.0_dp
 lgs_b(kr)    = clb1
@@ -3845,11 +3845,11 @@ subroutine calc_temp_ssa(at1, at2_1, at2_2, at3_1, at3_2, &
 
 use ice_material_properties_m, only : kappa_val, c_val, viscosity
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 use sico_maths_m, only : tri_sle
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 use sico_maths_m
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 implicit none
 

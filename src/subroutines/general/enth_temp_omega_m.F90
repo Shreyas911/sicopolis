@@ -149,7 +149,7 @@ do n=n_enth_min, n_enth_max
 
    enth_val = real(n,dp)
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 
    do
 
@@ -169,7 +169,7 @@ do n=n_enth_min, n_enth_max
 
    end do
 
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 
    enth_1 = c_int_val(real(n_temp_1,dp))
    enth_2 = c_int_val(real(n_temp_2,dp))
@@ -192,7 +192,7 @@ do n=n_enth_min, n_enth_max
 
    end do
 
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
    c_int_inv_table(n) = real(n_temp_1,dp) &
                         + (real(n_temp_2,dp)-real(n_temp_1,dp)) &

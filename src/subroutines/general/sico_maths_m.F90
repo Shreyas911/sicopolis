@@ -267,7 +267,7 @@ contains
 
   end subroutine sico_lis_solver
 
-#endif
+#endif /* ALLOW_TAPENADE */
 
 !-------------------------------------------------------------------------------
 

@@ -34,7 +34,7 @@ module ad_input_m
         real(dp), dimension(NUM_CTRL_GENARR2D,0:IMAX,0:JMAX) :: xx_genarr2dd_conv
         real(dp), dimension(NUM_CTRL_GENARR3D,0:IMAX,0:JMAX,0:KCMAX) :: xx_genarr3dd_conv
         real(dp), dimension(NUM_CTRL_GENTIM2D,0:IMAX,0:JMAX,0:ADNMAX) :: xx_gentim2dd_conv
-#endif    
+#endif /* ALLOW_TAP_TLM */
 
         character(len=64), parameter :: thisroutine = 'ad_input'
         character(len=256) :: filename, filename_with_path, temp_path
@@ -51,10 +51,10 @@ module ad_input_m
         temp_path = AD_INPUT_PATH
 #ifdef ALLOW_TAP_TLM
         filename = 'ad_input_tlm'//trim(filename_extension)
-#endif
+#endif /* ALLOW_TAP_TLM */
 #ifdef ALLOW_TAP_ADJ
         filename = 'ad_input_adj'//trim(filename_extension)
-#endif
+#endif /* ALLOW_TAP_ADJ */
         filename_with_path = trim(temp_path)//'/'//trim(filename)
     
         !  ------ Open NetCDF file
@@ -73,7 +73,7 @@ module ad_input_m
 #ifdef ALLOW_TAP_TLM
             call check( nf90_inq_varid(ncid, trim(adjustl(xx_genarr2d_vars(ctrl_index)))//'d', ncv) )
             call check( nf90_get_var(ncid, ncv, xx_genarr2dd_conv(ctrl_index,:,:)) )
-#endif
+#endif /* ALLOW_TAP_TLM */
         end do
 
         do ctrl_index = 1, NUM_CTRL_GENARR3D
@@ -82,7 +82,7 @@ module ad_input_m
 #ifdef ALLOW_TAP_TLM
             call check( nf90_inq_varid(ncid, trim(adjustl(xx_genarr3d_vars(ctrl_index)))//'d', ncv) )
             call check( nf90_get_var(ncid, ncv, xx_genarr3dd_conv(ctrl_index,:,:,:)) )
-#endif
+#endif /* ALLOW_TAP_TLM */
         end do
 
         do ctrl_index = 1, NUM_CTRL_GENTIM2D
@@ -91,7 +91,7 @@ module ad_input_m
 #ifdef ALLOW_TAP_TLM
             call check( nf90_inq_varid(ncid, trim(adjustl(xx_gentim2d_vars(ctrl_index)))//'d', ncv) )
             call check( nf90_get_var(ncid, ncv, xx_gentim2dd_conv(ctrl_index,:,:,:)) )
-#endif
+#endif /* ALLOW_TAP_TLM */
         end do
 
         call check( nf90_close(ncid) )
@@ -102,7 +102,7 @@ module ad_input_m
             xx_genarr2d(ctrl_index,j,i) = xx_genarr2d_conv(ctrl_index,i,j)
 #ifdef ALLOW_TAP_TLM
             xx_genarr2dd(ctrl_index,j,i) = xx_genarr2dd_conv(ctrl_index,i,j)
-#endif
+#endif /* ALLOW_TAP_TLM */
         end do
         end do
         end do
@@ -114,7 +114,7 @@ module ad_input_m
             xx_genarr3d(ctrl_index,kc,j,i) = xx_genarr3d_conv(ctrl_index,i,j,kc)
 #ifdef ALLOW_TAP_TLM
             xx_genarr3dd(ctrl_index,kc,j,i) = xx_genarr3dd_conv(ctrl_index,i,j,kc)
-#endif
+#endif /* ALLOW_TAP_TLM */
         end do
         end do
         end do
@@ -127,7 +127,7 @@ module ad_input_m
             xx_gentim2d(ctrl_index,tad,j,i) = xx_gentim2d_conv(ctrl_index,i,j,tad)
 #ifdef ALLOW_TAP_TLM
             xx_gentim2dd(ctrl_index,tad,j,i) = xx_gentim2dd_conv(ctrl_index,i,j,tad)
-#endif
+#endif /* ALLOW_TAP_TLM */
         end do
         end do
         end do
@@ -138,4 +138,4 @@ module ad_input_m
     end subroutine ad_input
   
 end module ad_input_m
-#endif
+#endif /* ALLOW_GENCTRL */

@@ -281,4 +281,4 @@ contains
   end subroutine ctrl_map_genarr3d
 
 end module ctrl_map_genarr_m 
-#endif
+#endif /* ALLOW_GENCTRL */

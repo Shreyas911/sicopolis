@@ -46,7 +46,7 @@ module init_temp_water_age_m
 
 #if defined(ALLOW_TAPENADE)
   public :: my_erf
-#endif
+#endif /* ALLOW_TAPENADE */
 
 contains
 
@@ -79,7 +79,7 @@ contains
 
   end function my_erf
 
-#endif 
+#endif /* ALLOW_TAPENADE */
 
 !-------------------------------------------------------------------------------
 !> Initial temperature, water content and age
@@ -97,11 +97,11 @@ contains
 
 #if (defined(TEMP_INIT_VAL))
 
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK)) /* TAPENADE */
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
   temp_c = temp_c + real(TEMP_INIT_VAL,dp)
 #else /* NORMAL */
   temp_c = real(TEMP_INIT_VAL,dp)
-#endif
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
 
 #else
 
@@ -111,11 +111,11 @@ contains
 
 #else   /* all other domains */
 
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK)) /* TAPENADE */
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
   temp_c = temp_c - 10.0_dp   ! default value -10 C
 #else /* NORMAL */
   temp_c = -10.0_dp           ! default value -10 C
-#endif
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
 
 #endif
 #endif
@@ -166,7 +166,7 @@ contains
   do i=0, IMAX
   do j=0, JMAX
 
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK)) /* TAPENADE */
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
      do kc=0, KCMAX
         temp_c(kc,j,i) = temp_c(kc,j,i) + temp_s(j,i)
      end do
@@ -174,7 +174,7 @@ contains
      do kc=0, KCMAX
         temp_c(kc,j,i) = temp_s(j,i)
      end do
-#endif
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
 
   end do
   end do
@@ -234,7 +234,7 @@ contains
   do i=0, IMAX
   do j=0, JMAX
 
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK)) /* TAPENADE */
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
      if (mask(j,i)<=2) then
 
         do kc=0, KCMAX
@@ -304,7 +304,7 @@ contains
         end do
 
      end if
-#endif
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
   end do
   end do
 
@@ -357,20 +357,20 @@ contains
 
      K = sqrt( (kappa_const_val/(RHO*c_const_val)) * (H_val/as_val) )
 
-#if !defined(ALLOW_TAPENADE)
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
      erf_val_1 = erf(H_c(j,i)/(sqrt(2.0_dp)*K))
-#else
+#else /* ALLOW_TAPENADE */
      erf_val_1 = my_erf(H_c(j,i)/(sqrt(2.0_dp)*K))
-#endif
+#endif /* ALLOW_TAPENADE */
 
      do kc=0, KCMAX
         z_above_base   = H_c(j,i)*eaz_c_quotient(kc)
-#if !defined(ALLOW_TAPENADE)
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
         erf_val_2      = erf(z_above_base/(sqrt(2.0_dp)*K))
-#else
+#else /* ALLOW_TAPENADE */
         erf_val_2      = my_erf(z_above_base/(sqrt(2.0_dp)*K))
-#endif
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK)) /* TAPENADE */
+#endif /* ALLOW_TAPENADE */
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
         temp_c(kc,j,i) = temp_c(kc,j,i) + temp_s(j,i) &
                           + (qgeo_val/kappa_const_val) &
                             * sqrt(0.5_dp*pi)*K*(erf_val_1-erf_val_2)
@@ -378,7 +378,7 @@ contains
         temp_c(kc,j,i) = temp_s(j,i) &
                           + (qgeo_val/kappa_const_val) &
                             * sqrt(0.5_dp*pi)*K*(erf_val_1-erf_val_2)
-#endif
+#endif /* ALLOW_TAPENADE */
      end do
 
      if ( (mask(j,i) <= 2).and.(temp_c(0,j,i) >= -BETA*H_c(j,i)) ) then
@@ -528,11 +528,11 @@ contains
   do j=0, JMAX
 
      do kc=0, KCMAX
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK)) /* TAPENADE */
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
         temp_c(kc,j,i) = temp_c(kc,j,i) + temp_s(j,i)
-#else
+#else /* NORMAL */
         temp_c(kc,j,i) = temp_s(j,i)
-#endif
+#endif /* ALLOW_TAPENADE */
      end do
 
   end do

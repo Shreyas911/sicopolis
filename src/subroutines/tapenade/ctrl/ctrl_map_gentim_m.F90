@@ -75,4 +75,4 @@ contains
   end subroutine ctrl_map_gentim2d
 
 end module ctrl_map_gentim_m 
-#endif
+#endif /* ALLOW_GENCTRL */

@@ -81,7 +81,7 @@ contains
 #endif
 #endif
 
-#if !(defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
+#if !(defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE)) /* NORMAL */
 
   do n=0, maxval(mask_region)
      call check( nf90_sync(ncid_ser(n)),  thisroutine )
@@ -95,16 +95,16 @@ contains
           ! Closing of NetCDF time-series output file for the deep ice cores
   end if
 
-#endif
+#endif /* NORMAL */
 
 #if (MARGIN==3 || DYNAMICS==2)
-#if !defined(ALLOW_TAPENADE)
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
   call lis_finalize(ierr)   ! Finalise execution environment of the
                             ! Library of Iterative Solvers Lis, if required
-#else
+#else /* ALLOW_TAPENADE */
   call lis_finalize_f(ierr) ! Finalise execution environment of the
                             ! Library of Iterative Solvers Lis, if required
-#endif
+#endif /* ALLOW_TAPENADE */
 #endif
 
   write(unit=6, fmt='(/a/)') '    * * * sicopolis.F90  r e a d y * * *'

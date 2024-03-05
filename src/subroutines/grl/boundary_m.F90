@@ -55,9 +55,9 @@ contains
 subroutine boundary(time, dtime, dxi, deta, &
                     delta_ts, glac_index, z_mar)
 
-#if defined(ALLOW_TAPENADE) /* Tapenade */
+#if defined(ALLOW_TAPENADE)
   use sico_maths_m, only: my_erfc
-#endif /* Tapenade */
+#endif /* ALLOW_TAPENADE */
 
   use netcdf
   use nc_check_m
@@ -100,11 +100,11 @@ real(dp), dimension(0:JMAX,0:IMAX,0:12) :: precip
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
 real(dp), dimension(12)                 :: temp_mm_help
 real(dp), dimension(0:JMAX,0:IMAX)      :: temp_ampl
-#else
+#else /* NORMAL */
 real(dp), dimension(0:JMAX,0:IMAX,12)   :: temp_mm
 real(dp), dimension(12)                 :: temp_mm_help
 real(dp), dimension(0:JMAX,0:IMAX)      :: temp_ma, temp_ampl
-#endif
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
 real(dp), dimension(0:JMAX,0:IMAX)      :: accum_prescribed, &
                                            runoff_prescribed
 
@@ -161,10 +161,10 @@ real(dp), parameter :: &
 
 character(len=64), parameter :: thisroutine = 'boundary'
 
-#if defined(ALLOW_TAPENADE) /* Tapenade */
+#if defined(ALLOW_TAPENADE)
 integer(i4b) :: i_time_in_years
 real(dp)     :: temp_val
-#endif /* Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 time_in_years = time*sec2year
 n_year_CE     = floor((time_in_years+YEAR_ZERO)+eps_sp_dp)
@@ -779,7 +779,7 @@ do j=0, JMAX
 
 #endif
 
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK)) /* TAPENADE */
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
 
 #if (TSURFACE<=4)
 
@@ -839,7 +839,7 @@ do j=0, JMAX
 
 #endif
 
-#endif
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
 
 !  ------ Amplitude of the annual cycle
 
@@ -1077,13 +1077,13 @@ do j=0, JMAX
 
 #elif (SOLID_PRECIP==3)   /* Huybrechts and de Wolde (1999) */
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
       frac_solid = 1.0_dp &
                    - 0.5_dp*erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat)
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
       call my_erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat, temp_val)
       frac_solid = 1.0_dp - 0.5_dp*temp_val
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 #endif
 
@@ -1241,7 +1241,7 @@ runoff = runoff + runoff_prescribed
 !         including empirical firn-warming correction due to
 !         refreezing meltwater when superimposed ice is formed
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 
 #if (TSURFACE<=5)
 
@@ -1260,7 +1260,7 @@ temp_s = temp_ma
 where (temp_s > -0.001_dp) temp_s = -0.001_dp
                             ! Cut-off of positive air temperatures
 
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 
 #if (TSURFACE<=5)
 
@@ -1288,7 +1288,7 @@ do j=0, JMAX
 end do
 end do
 
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 !-------- Calving --------
 
@@ -1362,7 +1362,7 @@ if (firstcall%boundary) firstcall%boundary = .false.
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
 temp_ma = 0.0_dp
 temp_mm = 0.0_dp
-#endif
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
 
 end subroutine boundary
 

@@ -7924,11 +7924,11 @@ end subroutine output5
   subroutine borehole(field, x_pos, y_pos, dxi, deta, ch_grid, &
                       field_val, flag_in_domain)
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
   use sico_maths_m, only : bilinint
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
   use sico_maths_m
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
   implicit none
 

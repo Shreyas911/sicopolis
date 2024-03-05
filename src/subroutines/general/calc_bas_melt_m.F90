@@ -453,14 +453,14 @@ lat_d = phi(j,i)    *rad2deg
 ! SSG: Removing ALLOW_TAPENADE here should be fine
 ! SSG: But it results in very slightly different ADJ, TLM values
 ! SSG: Further investigation needed in the future
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 lon_d = modulo(lon_d+180.0_dp, 360.0_dp)-180.0_dp
                                   ! mapping to interval
                                   ! [-180 deg, +180 deg)
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 lon_d = (lon_d+180.0_sp) &
            - ((360.0_sp * int(lon_d+180.0_sp)/360.0_sp)) - 180.0_sp
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 if ((lon_d>=-10.0_dp).and.(lon_d<60.0_dp)) then
                                       ! Western East Antarctica
@@ -594,15 +594,15 @@ Q_bm_floating  = Omega*T_forcing**alpha
 
 Phi_par = RHO_SW*c_sw*g_t/(RHO*L)
 
-#if !defined(ALLOW_TAPENADE)
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 Q_bm_floating = Phi_par*Omega*T_forcing*(draft/draft0)**alpha
-#else
+#else /* ALLOW_TAPENADE */
 if (draft.eq.0) then
 Q_bm_floating = 0.0_dp 
 else
 Q_bm_floating = Phi_par*Omega*T_forcing*(draft/draft0)**alpha
 end if
-#endif
+#endif /* ALLOW_TAPENADE */
 #else
 
 Q_bm_floating = 0.0_dp   ! dummy return value

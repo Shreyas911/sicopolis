@@ -21,4 +21,4 @@ contains
   end subroutine ctrl_init_genarr
 
 end module ctrl_init_genarr_m
-#endif
+#endif /* ALLOW_GENCTRL */

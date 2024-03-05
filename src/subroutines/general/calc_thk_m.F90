@@ -55,9 +55,9 @@ subroutine calc_thk_init()
 
 implicit none
 
-#if defined(ALLOW_TAPENADE) /* Tapenade */
+#if defined(ALLOW_TAPENADE)
 integer(i4b) :: i, j
-#endif /* Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 #if (defined(CALCZS))
   errormsg = ' >>> calc_thk_init: Replace CALCZS by CALCTHK in header file!'
@@ -77,7 +77,7 @@ dzb_dtau = dzl_dtau
 
 #elif (MARGIN==3)   /* grounded and floating ice */
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 
 where (mask <= 1)   ! grounded ice or ice-free land
    zb_new   = zl_new
@@ -87,7 +87,7 @@ elsewhere   ! (mask >= 2; ocean or floating ice)
    dzb_dtau = 0.0_dp   ! will be overwritten later
 end where
 
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 
 do i=0, IMAX
 do j=0, JMAX
@@ -101,7 +101,7 @@ do j=0, JMAX
 end do
 end do
 
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 #else
 
@@ -249,13 +249,13 @@ integer(i4b)                            :: nc, nr
 integer(i4b), parameter                 :: nmax   =    (IMAX+1)*(JMAX+1)
 integer(i4b), parameter                 :: n_sprs = 10*(IMAX+1)*(JMAX+1)
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 integer(i4b), allocatable, dimension(:) :: lgs_a_ptr, lgs_a_index
 integer(i4b), allocatable, dimension(:) :: lgs_a_diag_index
 integer(i4b), allocatable, dimension(:) :: lgs_a_index_trim
 real(dp),     allocatable, dimension(:) :: lgs_a_value, lgs_b_value, lgs_x_value
 real(dp),     allocatable, dimension(:) :: lgs_a_value_trim
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 real(dp),             dimension(n_sprs) :: lgs_a_index
 integer(i4b),         dimension(nmax+1) :: lgs_a_ptr
 integer(i4b),           dimension(nmax) :: lgs_a_diag_index
@@ -264,7 +264,7 @@ real(dp),             dimension(n_sprs) :: lgs_a_value
 real(dp),               dimension(nmax) :: lgs_b_value
 real(dp),               dimension(nmax) :: lgs_x_value
 real(dp),             dimension(n_sprs) :: lgs_a_value_trim
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 real(dp)                                :: eps_sor
 
@@ -293,17 +293,17 @@ end do
 !-------- Assembly of the system of linear equations
 !                     (matrix storage: compressed sparse row CSR) --------
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 allocate(lgs_a_value(n_sprs), lgs_a_index(n_sprs), lgs_a_ptr(nmax+1))
 allocate(lgs_a_diag_index(nmax), lgs_b_value(nmax), lgs_x_value(nmax))
-#endif /* Normal */
+#endif /* NORMAL */
 
 lgs_a_value = 0.0_dp
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 lgs_a_index = 0
-#else /* Tapenade */
+#else /*ALLOW_TAPENADE */
 lgs_a_index = 0.0_dp
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 lgs_a_ptr   = 0
 
 lgs_b_value = 0.0_dp
@@ -393,22 +393,22 @@ nnz = k   ! number of non-zero elements of the matrix
 !-------- Solution of the system of linear equations
 !                                   (built-in SOR solver) --------
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 allocate(lgs_a_value_trim(nnz), lgs_a_index_trim(nnz))
-#endif /* Normal */
+#endif /* NORMAL */
 
 do k=1, nnz   ! relocate matrix to trimmed arrays
    lgs_a_value_trim(k) = lgs_a_value(k)
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
    lgs_a_index_trim(k) = lgs_a_index(k)
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
    lgs_a_index_trim(k) = int(lgs_a_index(k))
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 end do
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 deallocate(lgs_a_value, lgs_a_index)
-#endif /* Normal */
+#endif /* NORMAL */
 
 eps_sor = 1.0e-05_dp*mean_accum*dtime   ! convergence parameter
 
@@ -424,10 +424,10 @@ do nr=1, nmax
    zs_new(j,i) = lgs_x_value(nr)
 end do
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 deallocate(lgs_a_value_trim, lgs_a_index_trim, lgs_a_ptr)
 deallocate(lgs_a_diag_index, lgs_b_value, lgs_x_value)
-#endif /* Normal */
+#endif /* NORMAL */
 
 !-------- Ice thickness --------
 
@@ -537,7 +537,7 @@ end do
 
 !-------- Solution of the explicit scheme --------
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 
 where (flag_inner_point)   ! inner point
 
@@ -552,7 +552,7 @@ elsewhere
    H_new = 0.0_dp   ! zero-thickness boundary condition
 end where
 
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 
 do i=0, IMAX
 do j=0, JMAX
@@ -573,7 +573,7 @@ do j=0, JMAX
 end do
 end do
 
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 !-------- Applying the source term --------
 
@@ -678,11 +678,11 @@ end subroutine apply_mb_source
 !-------------------------------------------------------------------------------
   subroutine thk_adjust(time, dtime)
 
-#if defined(ALLOW_TAPENADE) /* Tapenade */
+#if defined(ALLOW_TAPENADE)
 #if (THK_EVOL==2)
   use ctrl_m, only: myfloor, myceiling
 #endif
-#endif /* Tapenade */
+#endif /* ALLOW_TAPENADE */
 
   implicit none
 
@@ -736,27 +736,27 @@ end subroutine apply_mb_source
 
   else if (time_in_years < real(target_topo_tau0_time_max,dp)) then
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
      n1 = floor((time_in_years &
              -real(target_topo_tau0_time_min,dp)) &
                 /real(target_topo_tau0_time_stp,dp))
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
      call myfloor((time_in_years &
              -real(target_topo_tau0_time_min,dp)) &
                 /real(target_topo_tau0_time_stp,dp),n1)
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
      n1 = max(n1, 0)
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
      n2 = ceiling((time_in_years &
              -real(target_topo_tau0_time_min,dp)) &
                 /real(target_topo_tau0_time_stp,dp))
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
      call myceiling(((time_in_years &
               -real(target_topo_tau0_time_min,dp)) &
                  /real(target_topo_tau0_time_stp,dp)),n2)
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
      n2 = min(n2, ndata_target_topo_tau0)
 
@@ -1404,7 +1404,7 @@ end do
 
 #if (ICE_SHELF_CALVING==2)
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 
 do
 
@@ -1436,7 +1436,7 @@ do
 
 end do
 
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 
    flag_calving_event   = .true.
 
@@ -1468,7 +1468,7 @@ do while (flag_calving_event)
 
 end do
 
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 #elif (ICE_SHELF_CALVING==3)
 
@@ -1683,7 +1683,7 @@ do while (flag_change)
    end do
    end do
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 
    mask_connect_diff = abs(mask_connect-mask_connect_save)
 
@@ -1693,7 +1693,7 @@ do while (flag_change)
       flag_change = .false.
    end if
 
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 
    flag_change = .false.
 
@@ -1704,17 +1704,17 @@ do while (flag_change)
    end do
    end do
 
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 end do
 
 !-------- Reset disconnected "ocean islands" to ice-free land --------
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 
 where ((mask == 2).and.(mask_connect == 0)) mask = 1
 
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 
 do i=0, IMAX
 do j=0, JMAX
@@ -1723,7 +1723,7 @@ do j=0, JMAX
 end do
 end do
 
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 end subroutine ocean_connect
 

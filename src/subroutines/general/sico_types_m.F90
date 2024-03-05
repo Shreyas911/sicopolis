@@ -35,7 +35,7 @@ module sico_types_m
 implicit none
 save
 
-#if !defined(ALLOW_TAPENADE)
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 
 integer, parameter :: i4b = selected_int_kind(9)
    !! 4-byte integers
@@ -44,7 +44,7 @@ integer, parameter :: sp  = kind(1.0)
 integer, parameter :: dp  = kind(1.0d0)
    !! Double-precision reals
 
-#else
+#else /* ALLOW_TAPENADE */
 
 integer, parameter :: i4b = 4
    !! 4-byte integers
@@ -53,7 +53,7 @@ integer, parameter :: sp  = 4
 integer, parameter :: dp  = 8
    !! Double-precision reals
 
-#endif
+#endif /* ALLOW_TAPENADE */
 
 type flag_firstcall
    !! First-call flags

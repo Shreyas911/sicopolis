@@ -695,11 +695,11 @@ subroutine calc_temp_enth_1(at1, at2_1, at2_2, at3_1, at3_2, &
                             dtime_temp_inv, &
                             i, j)
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 use sico_maths_m, only : tri_sle
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 use sico_maths_m
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 use enth_temp_omega_m, only : temp_fct_enth
 
@@ -931,12 +931,12 @@ if (.not.flag_shelfy_stream(j,i)) then
 #if (DYNAMICS==2)
 else   ! flag_shelfy_stream(j,i) == .true.
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
    ccb3 = -c_drag(j,i) &
            * sqrt(vx_b_g(j,i)**2  &
                  +vy_b_g(j,i)**2) &
                            **(1.0_dp+p_weert_inv(j,i))
-#else /* Tapenade: guarding against undifferentiable sqrt(0) */
+#else /* ALLOW_TAPENADE: guarding against undifferentiable sqrt(0) */
    if ((vx_b_g(j,i)**2+vy_b_g(j,i)**2) == 0) then
    ccb3 = 0.0_dp 
    else
@@ -945,7 +945,7 @@ else   ! flag_shelfy_stream(j,i) == .true.
                  +vy_b_g(j,i)**2) &
                            **(1.0_dp+p_weert_inv(j,i))
    end if
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
    ccb4 = 0.0_dp
 
 end if
@@ -1485,11 +1485,11 @@ subroutine calc_temp_enth_2(at1, at2_1, at2_2, at3_1, at3_2, &
                             dtime_temp_inv, &
                             i, j)
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 use sico_maths_m, only : tri_sle
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 use sico_maths_m
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 use enth_temp_omega_m, only : enth_fct_temp_omega, &
                               temp_fct_enth, omega_fct_enth
@@ -1523,9 +1523,9 @@ real(dp) :: lgs_a0(0:KCMAX+KTMAX+KRMAX+IMAX+JMAX), &
 
 real(dp), parameter :: eps_omega=1.0e-12_dp
 
-#if defined(ALLOW_TAPENADE) /* Tapenade */
+#if defined(ALLOW_TAPENADE)
 logical :: kcdone
-#endif /* Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 !-------- Check for boundary points --------
 
@@ -1599,7 +1599,7 @@ end do
 
 kc_cts_new(j,i) = 0
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 
 do kc=1, KCMAX-1
    if (omega_c_new(kc,j,i) > eps_omega) then
@@ -1609,7 +1609,7 @@ do kc=1, KCMAX-1
    end if
 end do
 
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 
 kcdone = .false.
 
@@ -1623,7 +1623,7 @@ do kc=1, KCMAX-1
    end if 
 end do
 
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 !-------- Computation of the ice enthalpy
 !         (corrector step for the cold-ice domain only
@@ -2421,11 +2421,11 @@ end subroutine calc_temp_enth_2_d
 !-------------------------------------------------------------------------------
 subroutine calc_temp_enth_r(atr1, alb1, i, j)
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 use sico_maths_m, only : tri_sle
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 use sico_maths_m
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 use enth_temp_omega_m, only : enth_fct_temp_omega
 
@@ -2529,11 +2529,11 @@ subroutine calc_temp_enth_ssa(at1, at2_1, at2_2, at3_1, at3_2, &
 
 use ice_material_properties_m, only : kappa_val, c_val, viscosity
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 use sico_maths_m, only : tri_sle
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 use sico_maths_m
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 use enth_temp_omega_m, only : enth_fct_temp_omega, &
                               temp_fct_enth, omega_fct_enth

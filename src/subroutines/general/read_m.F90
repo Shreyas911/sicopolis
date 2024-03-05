@@ -43,7 +43,7 @@ module read_m
 
 #if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
   public :: read_age_data, read_BedMachine_data
-#endif
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
 
 contains
 
@@ -940,9 +940,9 @@ contains
 
   character(len=64), parameter :: thisroutine = 'read_target_topo_nc'
 
-#if defined(ALLOW_TAPENADE) /* Tapenade */
+#if defined(ALLOW_TAPENADE)
   integer(i4b) :: i, j
-#endif /* Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 !-------- Read target-topography data
 !         (from a time-slice file of a previous simulation) --------
@@ -994,13 +994,13 @@ contains
 
 !-------- Convert data to double precision --------
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
   mask_target = transpose(mask_conv)
   zs_target    = real(transpose(zs_conv),dp)
   zb_target    = real(transpose(zb_conv),dp)
   zl_target    = real(transpose(zl_conv),dp)
   H_target     = real(transpose(H_conv) ,dp)
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
   do i=0, IMAX
   do j=0, JMAX
      mask_target(j,i) = mask_conv(i,j)
@@ -1010,7 +1010,7 @@ contains
      H_target(j,i)     = real(H_conv(i,j) ,dp)
   end do
   end do
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
   end subroutine read_target_topo_nc
 
@@ -1285,11 +1285,11 @@ contains
 
   filename_with_path = trim(IN_PATH)//'/general/kei.dat'
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
   open(unit=11, iostat=ios, file=trim(filename_with_path), status='old')
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
   open(unit=11, iostat=ios, file=trim(filename_with_path))
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
   if (ios /= 0) then
      errormsg = ' >>> read_kei: Error when opening the kei file!'
@@ -1379,11 +1379,11 @@ contains
 
   else   ! ASCII file
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
      open(n_unit, iostat=ios, file=trim(filename_aux), status='old')
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
      open(n_unit, iostat=ios, file=trim(filename_aux))
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
      if (ios /= 0) then
         errormsg = ' >>> read_phys_para: Error when opening the phys_para file!'
@@ -1652,12 +1652,12 @@ contains
 
      if (ch1 /= '%') then   ! no comment line
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
         n_equals = index(ch_line, '=')
-#else /* Tapenade: cannot differentiate through index function */
+#else /* ALLOW_TAPENADE: cannot differentiate through index function */
         n_equals = 15   ! assuming the equals sign to be
                         ! always in row 15 of the phys_para file
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
         ch_para_2a = ch_line(1:n_equals-1)
         ch2        = ch_line(n_equals:n_equals)
@@ -1846,7 +1846,7 @@ open(unit=93, file=path, status='old')
 
 #endif
   end subroutine read_BedMachine_data
-#endif /* inclusion of Tapenade only routine */
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
 
 !-------------------------------------------------------------------------------
 

@@ -36,12 +36,12 @@ module sico_init_m
   use sico_variables_m
   use sico_vars_m
   use error_m
-#if defined(ALLOW_TAPENADE) /* TAPENADE */
+#if defined(ALLOW_TAPENADE)
 #if defined(ALLOW_GENCTRL)
   use ctrl_init_genarr_m
   use ctrl_map_gentim_m
-#endif
-#endif /* TAPENADE */
+#endif /* ALLOW_GENCTRL */
+#endif /* ALLOW_TAPENADE */
 
   implicit none
 
@@ -84,9 +84,9 @@ subroutine sico_init(delta_ts, glac_index, &
   use calc_dxyz_m
   use calc_temp_melt_bas_m
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
   use output_m
-#endif /* Normal */
+#endif /* NORMAL */
 
 implicit none
 
@@ -246,21 +246,21 @@ time_output = 0.0_dp
 
 !-------- Initialization of Tapenade generic control --------
 
-#if defined(ALLOW_TAPENADE) /* TAPENADE */
+#if defined(ALLOW_TAPENADE)
 #if defined(ALLOW_GENCTRL)
   call ctrl_init_genarr()
-#endif
-#endif /* TAPENADE */
+#endif /* ALLOW_GENCTRL */
+#endif /* ALLOW_TAPENADE */
 
 !-------- Initialization of the Library of Iterative Solvers Lis,
 !                                                     if required --------
 
 #if (MARGIN==3 || DYNAMICS==2)
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
   call lis_initialize(ierr)
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
   call lis_init_f(ierr)
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 #endif
 
 !-------- Read physical parameters --------
@@ -772,11 +772,11 @@ call system(trim(shell_command))
 
 filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.log'
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 open(10, iostat=ios, file=trim(filename_with_path), status='new')
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 open(10, iostat=ios, file=trim(filename_with_path))
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 if (ios /= 0) then
    errormsg = ' >>> sico_init: Error when opening the log file!'
@@ -2104,7 +2104,7 @@ else if (n_q_geo_mod==2) then
 
 endif
 
-#else /* TAPENADE */
+#else /* ALLOW_{TAPENADE,GRDCHK} */
 
 if (n_q_geo_mod==1) then
 
@@ -2135,7 +2135,7 @@ else if (n_q_geo_mod==2) then
 
 endif
 
-#endif /* TAPENADE */
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
 
 !-------- Reading of tabulated kei function--------
 
@@ -2240,11 +2240,11 @@ end do
 
 !-------- gentim2d setup --------
 
-#if defined(ALLOW_TAPENADE) /* TAPENADE */
+#if defined(ALLOW_TAPENADE)
 #if defined(ALLOW_GENCTRL)
   call ctrl_map_ini_gentim2d(time_init, dtime, 0)
-#endif
-#endif /* TAPENADE */
+#endif /* ALLOW_GENCTRL */
+#endif /* ALLOW_TAPENADE */
 
 !-------- Definition of initial values --------
 
@@ -2260,7 +2260,7 @@ z_sl_mean = -1.11e+11_dp   ! of subroutine boundary
 call boundary(time_init, dtime, dxi, deta, &
               delta_ts, glac_index, z_mar)
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 
 where ((mask==0).or.(mask==3))
                  ! grounded or floating ice
@@ -2269,7 +2269,7 @@ elsewhere        ! mask==1 or 2, ice-free land or sea
    as_perp_apl = 0.0_dp
 end where
 
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 
 do j=0,JMAX
 do i=0,IMAX
@@ -2281,7 +2281,7 @@ do i=0,IMAX
 end do
 end do
 
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 smb_corr = 0.0_dp
 
@@ -2397,7 +2397,7 @@ call topography3(dxi, deta, anfdatname)
 call boundary(time_init, dtime, dxi, deta, &
               delta_ts, glac_index, z_mar)
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 
 where ((mask==0).or.(mask==3))
                  ! grounded or floating ice
@@ -2406,7 +2406,7 @@ elsewhere        ! mask==1 or 2, ice-free land or sea
    as_perp_apl = 0.0_dp
 end where
 
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 
 do j=0,JMAX
 do i=0,IMAX
@@ -2418,7 +2418,7 @@ do i=0,IMAX
 end do
 end do
 
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 smb_corr = 0.0_dp
 
@@ -2569,7 +2569,7 @@ call error(errormsg)
 
 !  ------ Time-series file for the ice sheet on the whole
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 
 filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.ser'
 
@@ -2612,12 +2612,12 @@ else if (forcing_flag == 2) then
 
 end if
 
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 
 print *, ' >>> sico_init: not writing to the ser file in '
 print *, '                adjoint applications!' 
 
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 !  ------ Time-series file for deep boreholes
 
@@ -2682,11 +2682,11 @@ y_core = phi_core
 
 filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.core'
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 open(14, iostat=ios, file=trim(filename_with_path), status='new')
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 open(14, iostat=ios, file=trim(filename_with_path))
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 if (ios /= 0) then
    errormsg = ' >>> sico_init: Error when opening the core file!'
@@ -2727,7 +2727,7 @@ end if
 
 !-------- Output of the initial state --------
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 
 #if (defined(OUTPUT_INIT))
 
@@ -2804,12 +2804,12 @@ if (flag_init_output) then
    call output4(time_init, dxi, deta, delta_ts, glac_index)
 end if
 
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 
 print *, ' >>> sico_init: not producing initial, typical outputs'
 print *, '                in adjoint mode.'
 
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 end subroutine sico_init
 
@@ -2967,9 +2967,9 @@ do j=0, JMAX
 
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK)) /* NORMAL */
    H(j,i)   = zs(j,i)-zm(j,i)
-#else /* TAPENADE */
+#else /* ALLOW_{TAPENADE,GRDCHK} */
    H(j,i)   = H(j,i) + zs(j,i)-zm(j,i)
-#endif
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
    H_c(j,i) = H(j,i)
    H_t(j,i) = 0.0_dp
 

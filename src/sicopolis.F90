@@ -250,9 +250,9 @@ use sico_init_m
 use sico_main_loop_m
 use sico_end_m
 
-#if defined(ALLOW_GRDCHK) /* Tapenade */
+#if defined(ALLOW_GRDCHK)
 use grdchk_m, only: grdchk_main
-#endif /* Tapenade */
+#endif /* ALLOW_GRDCHK */
 
 implicit none
 
@@ -324,7 +324,7 @@ real(dp) :: dzeta_r
 real(dp) :: z_mar
    !! Minimum bedrock (sea bed) elevation allowed to be covered by marine ice
 
-#if !defined(ALLOW_GRDCHK)
+#if !defined(ALLOW_GRDCHK) /* NORMAL */
 
 !-------- Initializations --------
 

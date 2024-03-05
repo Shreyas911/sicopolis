@@ -53,9 +53,9 @@ contains
 !-------------------------------------------------------------------------------
   subroutine pdd(temp_mm, s_stat, ET)
 
-#if defined(ALLOW_TAPENADE) /* Tapenade */
+#if defined(ALLOW_TAPENADE)
   use sico_maths_m
-#endif /* Tapenade */
+#endif /* ALLOW_TAPENADE */
   
   implicit none
 
@@ -72,9 +72,9 @@ contains
                          time_year_inv = 1.0_dp/time_year, &
                          d_time        = 1.0_dp/12.0_dp   ! time-step 1 month
 
-#if defined(ALLOW_TAPENADE) /* Tapenade */
+#if defined(ALLOW_TAPENADE)
   real(dp)  :: my_erfc_retval
-#endif /* Tapenade */
+#endif /* ALLOW_TAPENADE */
 
   inv_sqrt2pi = 1.0_dp/sqrt(2.0_dp*pi)
   inv_s_stat  = 1.0_dp/s_stat
@@ -84,20 +84,20 @@ contains
 
   do n=1, 12   ! month counter
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
      pdd_sum = pdd_sum &
                + ( s_stat*inv_sqrt2pi*exp(-0.5_dp*(temp_mm(n)*inv_s_stat)**2) &
                    + 0.5_dp*temp_mm(n) &
                            *erfc(-temp_mm(n)*inv_s_stat*inv_sqrt2) ) &
                  *d_time   ! positive degree days (in a*degC)
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
      call my_erfc(-temp_mm(n)*inv_s_stat*inv_sqrt2, my_erfc_retval)
      pdd_sum = pdd_sum &
                + ( s_stat*inv_sqrt2pi*exp(-0.5_dp*(temp_mm(n)*inv_s_stat)**2) &
                    + 0.5_dp*temp_mm(n) &
                            *my_erfc_retval ) &
                  *d_time   ! positive degree days (in a*degC)
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
   end do
 

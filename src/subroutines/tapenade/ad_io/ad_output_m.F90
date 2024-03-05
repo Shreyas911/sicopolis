@@ -54,13 +54,13 @@ module ad_output_m
     integer(i4b) :: nc0cnt_fcd(1)
     !     nc0cor_fcd: Defined specially for fcd
     !     nc0cnt_fcd: Defined specially for fcd
-#endif
+#endif /* ALLOW_TAP_TLM */
 
     real(dp) :: xi_conv(0:IMAX), eta_conv(0:JMAX), &
     sigma_level_c_conv(0:KCMAX), time_ad_conv(0:ADNMAX)
 #ifdef ALLOW_TAP_TLM
     real(dp), dimension(1) :: fcd_arr
-#endif
+#endif /* ALLOW_TAP_TLM */
 
     real(dp), dimension(NUM_CTRL_GENARR2D,0:IMAX,0:JMAX) :: xx_genarr2d_conv
     real(dp), dimension(NUM_CTRL_GENARR3D,0:IMAX,0:JMAX,0:KCMAX) :: xx_genarr3d_conv
@@ -70,7 +70,7 @@ module ad_output_m
     real(dp), dimension(NUM_CTRL_GENARR2D,0:IMAX,0:JMAX) :: xx_genarr2db_conv
     real(dp), dimension(NUM_CTRL_GENARR2D,0:IMAX,0:JMAX,0:KCMAX) :: xx_genarr3db_conv
     real(dp), dimension(NUM_CTRL_GENARR2D,0:IMAX,0:JMAX,0:ADNMAX) :: xx_gentim2db_conv
-#endif
+#endif /* ALLOW_TAP_ADJ */
 
     character(len=64), parameter :: thisroutine = 'ad_output'
 
@@ -85,7 +85,7 @@ module ad_output_m
     fcd_arr(1) = fcd
     nc0cor_fcd = (/ 1 /)
     nc0cnt_fcd = (/ 1 /)
-#endif
+#endif /* ALLOW_TAP_TLM */
 
     nc1cor_i = (/ 1 /)
     nc1cnt_i = (/ IMAX+1 /)
@@ -113,10 +113,10 @@ module ad_output_m
     temp_path = AD_OUTPUT_PATH
 #ifdef ALLOW_TAP_TLM
     filename = 'ad_output_tlm'//trim(filename_extension)
-#endif
+#endif /* ALLOW_TAP_TLM */
 #ifdef ALLOW_TAP_ADJ
     filename = 'ad_output_adj'//trim(filename_extension)
-#endif
+#endif /* ALLOW_TAP_ADJ */
     filename_with_path = trim(temp_path)//'/'//trim(filename)
 
     !-------- File initialization --------
@@ -243,7 +243,7 @@ module ad_output_m
                       NF90_DOUBLE, nc1d, ncv), &
                       thisroutine )     
 #endif
-#endif     
+#endif /* ALLOW_TAP_TLM */
 
     !    ---- Define xx_genarr2d variables
     do ctrl_index = 1, NUM_CTRL_GENARR2D
@@ -411,7 +411,7 @@ module ad_output_m
     call check( nf90_put_var(ncid, ncv, fcd_arr, &
                              start=nc0cor_fcd, count=nc0cnt_fcd), &
                 thisroutine )
-#endif
+#endif /* ALLOW_TAP_TLM */
 
     do i=0, IMAX
     do j=0, JMAX
@@ -419,7 +419,7 @@ module ad_output_m
       xx_genarr2d_conv(ctrl_index,i,j) = xx_genarr2d(ctrl_index,j,i)
 #ifdef ALLOW_TAP_ADJ
       xx_genarr2db_conv(ctrl_index,i,j) = xx_genarr2db(ctrl_index,j,i)
-#endif
+#endif /* ALLOW_TAP_ADJ */
     end do
     end do
     end do
@@ -431,7 +431,7 @@ module ad_output_m
       xx_genarr3d_conv(ctrl_index,i,j,kc) = xx_genarr3d(ctrl_index,kc,j,i)
 #ifdef ALLOW_TAP_ADJ
       xx_genarr3db_conv(ctrl_index,i,j,kc) = xx_genarr3db(ctrl_index,kc,j,i)
-#endif
+#endif /* ALLOW_TAP_ADJ */
     end do
     end do
     end do
@@ -444,7 +444,7 @@ module ad_output_m
       xx_gentim2d_conv(ctrl_index,i,j,tad) = xx_gentim2d(ctrl_index,tad,j,i)
 #ifdef ALLOW_TAP_ADJ
       xx_gentim2db_conv(ctrl_index,i,j,tad) = xx_gentim2db(ctrl_index,tad,j,i)
-#endif
+#endif /* ALLOW_TAP_ADJ */
     end do
     end do
     end do
@@ -465,7 +465,7 @@ module ad_output_m
       call check( nf90_put_var(ncid, ncv, xx_genarr2db_conv(ctrl_index,:,:), &
                                start=nc2cor_ij, count=nc2cnt_ij), &
                   thisroutine )
-#endif
+#endif /* ALLOW_TAP_ADJ */
     end do
 
     do ctrl_index = 1, NUM_CTRL_GENARR3D
@@ -483,7 +483,7 @@ module ad_output_m
       call check( nf90_put_var(ncid, ncv, xx_genarr3db_conv(ctrl_index,:,:,:), &
                                start=nc3cor_ijkc, count=nc3cnt_ijkc), &
                   thisroutine )
-#endif
+#endif /* ALLOW_TAP_ADJ */
     end do
 
     do ctrl_index = 1, NUM_CTRL_GENTIM2D
@@ -501,7 +501,7 @@ module ad_output_m
       call check( nf90_put_var(ncid, ncv, xx_gentim2db_conv(ctrl_index,:,:,:), &
                                start=nc2cor_ijtad, count=nc2cnt_ijtad), &
                   thisroutine )
-#endif
+#endif /* ALLOW_TAP_ADJ */
     end do
 
     call check( nf90_sync(ncid),  thisroutine )
@@ -541,4 +541,4 @@ module ad_output_m
     end subroutine set_cmode
 
 end module ad_output_m
-#endif
+#endif /* ALLOW_GENCTRL */

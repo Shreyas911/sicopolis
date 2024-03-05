@@ -51,11 +51,11 @@ contains
 !-------------------------------------------------------------------------------
 subroutine calc_gia(time, dtime, dxi, deta, itercount, iter_wss)
 
-#if defined(ALLOW_TAPENADE) /* Tapenade */
+#if defined(ALLOW_TAPENADE)
 #if (THK_EVOL==2)
   use ctrl_m, only: myfloor, myceiling
 #endif
-#endif /* Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 implicit none
 
@@ -172,27 +172,27 @@ if (time_in_years < real(target_topo_tau0_time_min,dp)) then
 
 else if (time_in_years < real(target_topo_tau0_time_max,dp)) then
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
    n1 = floor((time_in_years &
            -real(target_topo_tau0_time_min,dp)) &
               /real(target_topo_tau0_time_stp,dp))
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
    call myfloor((time_in_years &
            -real(target_topo_tau0_time_min,dp)) &
               /real(target_topo_tau0_time_stp,dp),n1)
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
    n1 = max(n1, 0)
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
    n2 = ceiling((time_in_years &
            -real(target_topo_tau0_time_min,dp)) &
               /real(target_topo_tau0_time_stp,dp))
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
    call myceiling(((time_in_years &
             -real(target_topo_tau0_time_min,dp)) &
                /real(target_topo_tau0_time_stp,dp)),n2)
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
    n2 = min(n2, ndata_target_topo_tau0)
 
@@ -311,11 +311,11 @@ real(dp)                              :: kei_r_incr_inv
 real(dp), dimension(0:JMAX,0:IMAX)    :: l_r, l_r_inv, fac_wss
 real(dp)                              :: ra_max
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 real(dp), allocatable, dimension(:,:) :: f_0
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 real(dp), dimension(-JMAX:2*JMAX,-IMAX:2*IMAX) :: f_0
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 real(dp), parameter :: r_infl = 8.0_dp
                        ! Radius of non-locality influence of the elastic
@@ -363,9 +363,9 @@ jl_end   = jr_max+JMAX
 
 !-------- Ice/water load --------
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 allocate(f_0(jl_begin:jl_end, il_begin:il_end))
-#endif /* Normal */
+#endif /* NORMAL */
 
 do il=il_begin, il_end
 do jl=jl_begin, jl_end
@@ -411,9 +411,9 @@ do j=0, JMAX
 end do
 end do
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 deallocate (f_0)
-#endif /* Normal */
+#endif /* NORMAL */
 
 end subroutine calc_el
 
@@ -546,9 +546,9 @@ else
    write(ch_resolution, fmt='(f8.2)') dx
 end if
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 ch_resolution = adjustl(ch_resolution)
-#endif /* Normal */
+#endif /* NORMAL */
 
 #if (REBOUND==0)
 ch_model = 'rigid_lithosphere'

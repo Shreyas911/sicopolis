@@ -92,7 +92,7 @@ real(dp),     dimension(0:JMAX,0:IMAX) :: cst_dist
 real(dp),     dimension(0:JMAX,0:IMAX) :: cos_grad_tc
 #if !defined(ALLOW_TAPENADE) /* NORMAL */
 real(dp),     dimension(0:JMAX,0:IMAX) :: dis_perp
-#endif /* NORMAL */
+#endif
 
 #endif
 

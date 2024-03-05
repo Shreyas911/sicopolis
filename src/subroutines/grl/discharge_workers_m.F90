@@ -255,10 +255,10 @@ contains
   real(dp), parameter :: alpha_tc=60.0_dp ! maximal allowed angle
   real(dp) :: cos_tc
 
-#ifdef ALLOW_TAPENADE /* Tapenade */
+#if defined(ALLOW_TAPENADE)
   integer(i4b) :: valmodint
   real(dp)     :: tmp, valmod
-#endif /* Tapenade */
+#endif /* ALLOW_TAPENADE */
 
   n_discharge_call = n_discharge_call + 1
 
