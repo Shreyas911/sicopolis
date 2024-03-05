@@ -695,12 +695,7 @@ subroutine calc_temp_enth_1(at1, at2_1, at2_2, at3_1, at3_2, &
                             dtime_temp_inv, &
                             i, j)
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
 use sico_maths_m, only : tri_sle
-#else /* ALLOW_TAPENADE */
-use sico_maths_m
-#endif /* ALLOW_TAPENADE */
-
 use enth_temp_omega_m, only : temp_fct_enth
 
 implicit none
@@ -1485,12 +1480,7 @@ subroutine calc_temp_enth_2(at1, at2_1, at2_2, at3_1, at3_2, &
                             dtime_temp_inv, &
                             i, j)
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
 use sico_maths_m, only : tri_sle
-#else /* ALLOW_TAPENADE */
-use sico_maths_m
-#endif /* ALLOW_TAPENADE */
-
 use enth_temp_omega_m, only : enth_fct_temp_omega, &
                               temp_fct_enth, omega_fct_enth
 
@@ -1522,10 +1512,6 @@ real(dp) :: lgs_a0(0:KCMAX+KTMAX+KRMAX+IMAX+JMAX), &
             lgs_b(0:KCMAX+KTMAX+KRMAX+IMAX+JMAX)
 
 real(dp), parameter :: eps_omega=1.0e-12_dp
-
-#if defined(ALLOW_TAPENADE)
-logical :: kcdone
-#endif /* ALLOW_TAPENADE */
 
 !-------- Check for boundary points --------
 
@@ -1599,8 +1585,6 @@ end do
 
 kc_cts_new(j,i) = 0
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
-
 do kc=1, KCMAX-1
    if (omega_c_new(kc,j,i) > eps_omega) then
       kc_cts_new(j,i) = kc
@@ -1608,22 +1592,6 @@ do kc=1, KCMAX-1
       exit
    end if
 end do
-
-#else /* ALLOW_TAPENADE */
-
-kcdone = .false.
-
-do kc=1, KCMAX-1
-   if (kcdone.eqv..false.) then
-      if (omega_c_new(kc,j,i) > eps_omega) then
-         kc_cts_new(j,i) = kc
-      else
-         kcdone = .true.
-      end if
-   end if 
-end do
-
-#endif /* ALLOW_TAPENADE */
 
 !-------- Computation of the ice enthalpy
 !         (corrector step for the cold-ice domain only
@@ -2421,12 +2389,7 @@ end subroutine calc_temp_enth_2_d
 !-------------------------------------------------------------------------------
 subroutine calc_temp_enth_r(atr1, alb1, i, j)
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
 use sico_maths_m, only : tri_sle
-#else /* ALLOW_TAPENADE */
-use sico_maths_m
-#endif /* ALLOW_TAPENADE */
-
 use enth_temp_omega_m, only : enth_fct_temp_omega
 
 implicit none
@@ -2528,13 +2491,7 @@ subroutine calc_temp_enth_ssa(at1, at2_1, at2_2, at3_1, at3_2, &
                               i, j)
 
 use ice_material_properties_m, only : kappa_val, c_val, viscosity
-
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
 use sico_maths_m, only : tri_sle
-#else /* ALLOW_TAPENADE */
-use sico_maths_m
-#endif /* ALLOW_TAPENADE */
-
 use enth_temp_omega_m, only : enth_fct_temp_omega, &
                               temp_fct_enth, omega_fct_enth
 

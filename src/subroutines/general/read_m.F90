@@ -1285,11 +1285,7 @@ contains
 
   filename_with_path = trim(IN_PATH)//'/general/kei.dat'
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
   open(unit=11, iostat=ios, file=trim(filename_with_path), status='old')
-#else /* ALLOW_TAPENADE */
-  open(unit=11, iostat=ios, file=trim(filename_with_path))
-#endif /* ALLOW_TAPENADE */
 
   if (ios /= 0) then
      errormsg = ' >>> read_kei: Error when opening the kei file!'
@@ -1379,11 +1375,7 @@ contains
 
   else   ! ASCII file
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
      open(n_unit, iostat=ios, file=trim(filename_aux), status='old')
-#else /* ALLOW_TAPENADE */
-     open(n_unit, iostat=ios, file=trim(filename_aux))
-#endif /* ALLOW_TAPENADE */
 
      if (ios /= 0) then
         errormsg = ' >>> read_phys_para: Error when opening the phys_para file!'
@@ -1652,13 +1644,8 @@ contains
 
      if (ch1 /= '%') then   ! no comment line
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
         n_equals = index(ch_line, '=')
-#else /* ALLOW_TAPENADE: cannot differentiate through index function */
-        n_equals = 15   ! assuming the equals sign to be
-                        ! always in row 15 of the phys_para file
-#endif /* ALLOW_TAPENADE */
-
+        
         ch_para_2a = ch_line(1:n_equals-1)
         ch2        = ch_line(n_equals:n_equals)
 

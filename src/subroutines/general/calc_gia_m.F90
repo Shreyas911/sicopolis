@@ -51,12 +51,6 @@ contains
 !-------------------------------------------------------------------------------
 subroutine calc_gia(time, dtime, dxi, deta, itercount, iter_wss)
 
-#if defined(ALLOW_TAPENADE)
-#if (THK_EVOL==2)
-  use ctrl_m, only: myfloor, myceiling
-#endif
-#endif /* ALLOW_TAPENADE */
-
 implicit none
 
 integer(i4b), intent(in) :: itercount, iter_wss
@@ -172,28 +166,14 @@ if (time_in_years < real(target_topo_tau0_time_min,dp)) then
 
 else if (time_in_years < real(target_topo_tau0_time_max,dp)) then
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
    n1 = floor((time_in_years &
            -real(target_topo_tau0_time_min,dp)) &
               /real(target_topo_tau0_time_stp,dp))
-#else /* ALLOW_TAPENADE */
-   call myfloor((time_in_years &
-           -real(target_topo_tau0_time_min,dp)) &
-              /real(target_topo_tau0_time_stp,dp),n1)
-#endif /* ALLOW_TAPENADE */
-
    n1 = max(n1, 0)
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
    n2 = ceiling((time_in_years &
            -real(target_topo_tau0_time_min,dp)) &
               /real(target_topo_tau0_time_stp,dp))
-#else /* ALLOW_TAPENADE */
-   call myceiling(((time_in_years &
-            -real(target_topo_tau0_time_min,dp)) &
-               /real(target_topo_tau0_time_stp,dp)),n2)
-#endif /* ALLOW_TAPENADE */
-
    n2 = min(n2, ndata_target_topo_tau0)
 
    if (n1 == n2) then

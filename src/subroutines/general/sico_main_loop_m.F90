@@ -83,21 +83,12 @@ contains
 
   implicit none
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
   integer(i4b),       intent(in)    :: n_output
   real(dp),           intent(in)    :: mean_accum
   real(dp),           intent(in)    :: dtime, dtime_temp, dtime_wss, &
                                        dtime_out, dtime_ser
   real(dp),           intent(in)    :: time_init, time_end, time_output(100)
   real(dp),           intent(in)    :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
-#else /* ALLOW_TAPENADE */
-  integer(i4b),       intent(inout)    :: n_output
-  real(dp),           intent(inout)    :: mean_accum
-  real(dp),           intent(inout)    :: dtime, dtime_temp, dtime_wss, &
-                                          dtime_out, dtime_ser
-  real(dp),           intent(inout)    :: time_init, time_end, time_output(100)
-  real(dp),           intent(inout)    :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
-#endif /* ALLOW_TAPENADE */
   integer(i4b),       intent(inout) :: ndat2d, ndat3d
   real(dp),           intent(inout) :: delta_ts, glac_index
   real(dp),           intent(inout) :: time

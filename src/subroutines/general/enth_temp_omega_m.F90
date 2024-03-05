@@ -149,8 +149,6 @@ do n=n_enth_min, n_enth_max
 
    enth_val = real(n,dp)
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
-
    do
 
       if ((n_temp_1 > n_temp_max).or.(n_temp_2 > n_temp_max)) then
@@ -168,31 +166,6 @@ do n=n_enth_min, n_enth_max
       n_temp_2 = n_temp_2+1
 
    end do
-
-#else /* ALLOW_TAPENADE */
-
-   enth_1 = c_int_val(real(n_temp_1,dp))
-   enth_2 = c_int_val(real(n_temp_2,dp))
-
-   do while ( .not.((enth_1 <= enth_val).and.(enth_2 >= enth_val)) ) 
-   
-      if ((n_temp_1 > n_temp_max).or.(n_temp_2 > n_temp_max)) then
-         errormsgg = ' >>> calc_c_int_inv_table: ' &
-                        //'Temperature indices out of allowed range!'
-         call error(errormsgg)
-      end if
-
-      enth_1 = c_int_val(real(n_temp_1,dp))
-      enth_2 = c_int_val(real(n_temp_2,dp))
-
-      if ( .not.((enth_1 <= enth_val).and.(enth_2 >= enth_val)) ) then
-         n_temp_1 = n_temp_1+1
-         n_temp_2 = n_temp_2+1
-      end if 
-
-   end do
-
-#endif /* ALLOW_TAPENADE */
 
    c_int_inv_table(n) = real(n_temp_1,dp) &
                         + (real(n_temp_2,dp)-real(n_temp_1,dp)) &

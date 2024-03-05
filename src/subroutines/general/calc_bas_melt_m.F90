@@ -594,15 +594,8 @@ Q_bm_floating  = Omega*T_forcing**alpha
 
 Phi_par = RHO_SW*c_sw*g_t/(RHO*L)
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
 Q_bm_floating = Phi_par*Omega*T_forcing*(draft/draft0)**alpha
-#else /* ALLOW_TAPENADE */
-if (draft.eq.0) then
-Q_bm_floating = 0.0_dp 
-else
-Q_bm_floating = Phi_par*Omega*T_forcing*(draft/draft0)**alpha
-end if
-#endif /* ALLOW_TAPENADE */
+
 #else
 
 Q_bm_floating = 0.0_dp   ! dummy return value

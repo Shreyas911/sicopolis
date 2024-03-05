@@ -55,10 +55,6 @@ subroutine calc_thk_init()
 
 implicit none
 
-#if defined(ALLOW_TAPENADE)
-integer(i4b) :: i, j
-#endif /* ALLOW_TAPENADE */
-
 #if (defined(CALCZS))
   errormsg = ' >>> calc_thk_init: Replace CALCZS by CALCTHK in header file!'
   call error(errormsg)
@@ -77,8 +73,6 @@ dzb_dtau = dzl_dtau
 
 #elif (MARGIN==3)   /* grounded and floating ice */
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
-
 where (mask <= 1)   ! grounded ice or ice-free land
    zb_new   = zl_new
    dzb_dtau = dzl_dtau
@@ -86,22 +80,6 @@ elsewhere   ! (mask >= 2; ocean or floating ice)
    zb_new   = zb       ! initialisation,
    dzb_dtau = 0.0_dp   ! will be overwritten later
 end where
-
-#else /* ALLOW_TAPENADE */
-
-do i=0, IMAX
-do j=0, JMAX
-   if (mask(j,i) <= 1) then    ! grounded ice or ice-free land
-      zb_new(j,i)   = zl_new(j,i)
-      dzb_dtau(j,i) = dzl_dtau(j,i)
-   else
-      zb_new(j,i)   = zb(j,i)       ! initialisation,
-      dzb_dtau(j,i) = 0.0_dp        ! will be overwritten later
-   endif
-end do
-end do
-
-#endif /* ALLOW_TAPENADE */
 
 #else
 
@@ -537,8 +515,6 @@ end do
 
 !-------- Solution of the explicit scheme --------
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
-
 where (flag_inner_point)   ! inner point
 
    H_new = H + dtime*mb_source &
@@ -551,29 +527,6 @@ where (flag_inner_point)   ! inner point
 elsewhere
    H_new = 0.0_dp   ! zero-thickness boundary condition
 end where
-
-#else /* ALLOW_TAPENADE */
-
-do i=0, IMAX
-do j=0, JMAX
-
-   if (flag_inner_point(j,i)) then   ! inner point
-
-      H_new(j,i) = H(j,i) + dtime*mb_source(j,i) &
-                - dt_darea(j,i) &
-                  * (  ( vx_m_2(j,i)*upH_x_2(j,i)*sq_g22_x_2(j,i)*deta   &
-                        -vx_m_1(j,i)*upH_x_1(j,i)*sq_g22_x_1(j,i)*deta ) &
-                     + ( vy_m_2(j,i)*upH_y_2(j,i)*sq_g11_y_2(j,i)*dxi    &
-                        -vy_m_1(j,i)*upH_y_1(j,i)*sq_g11_y_1(j,i)*dxi  ) )
-
-   else
-      H_new(j,i) = 0.0_dp   ! zero-thickness boundary condition
-   end if
-
-end do
-end do
-
-#endif /* ALLOW_TAPENADE */
 
 !-------- Applying the source term --------
 
@@ -678,12 +631,6 @@ end subroutine apply_mb_source
 !-------------------------------------------------------------------------------
   subroutine thk_adjust(time, dtime)
 
-#if defined(ALLOW_TAPENADE)
-#if (THK_EVOL==2)
-  use ctrl_m, only: myfloor, myceiling
-#endif
-#endif /* ALLOW_TAPENADE */
-
   implicit none
 
   real(dp), intent(in) :: time, dtime
@@ -736,28 +683,14 @@ end subroutine apply_mb_source
 
   else if (time_in_years < real(target_topo_tau0_time_max,dp)) then
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
      n1 = floor((time_in_years &
              -real(target_topo_tau0_time_min,dp)) &
                 /real(target_topo_tau0_time_stp,dp))
-#else /* ALLOW_TAPENADE */
-     call myfloor((time_in_years &
-             -real(target_topo_tau0_time_min,dp)) &
-                /real(target_topo_tau0_time_stp,dp),n1)
-#endif /* ALLOW_TAPENADE */
-
      n1 = max(n1, 0)
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
      n2 = ceiling((time_in_years &
              -real(target_topo_tau0_time_min,dp)) &
                 /real(target_topo_tau0_time_stp,dp))
-#else /* ALLOW_TAPENADE */
-     call myceiling(((time_in_years &
-              -real(target_topo_tau0_time_min,dp)) &
-                 /real(target_topo_tau0_time_stp,dp)),n2)
-#endif /* ALLOW_TAPENADE */
-
      n2 = min(n2, ndata_target_topo_tau0)
 
      if (n1 == n2) then
@@ -1404,8 +1337,6 @@ end do
 
 #if (ICE_SHELF_CALVING==2)
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
-
 do
 
    flag_calving_front_1 = .false.
@@ -1435,40 +1366,6 @@ do
    if (.not.flag_calving_event) exit
 
 end do
-
-#else /* ALLOW_TAPENADE */
-
-   flag_calving_event   = .true.
-
-do while (flag_calving_event)
-
-   flag_calving_front_1 = .false.
-   flag_calving_event   = .false.
-
-   do i=1, IMAX-1
-   do j=1, JMAX-1
-
-      if ( (mask(j,i)==3) &   ! floating ice
-           .and. &
-             (    (mask(j,i+1)==2)   &   ! with
-              .or.(mask(j,i-1)==2)   &   ! one
-              .or.(mask(j+1,i)==2)   &   ! neighbouring
-              .or.(mask(j-1,i)==2) ) &   ! sea point
-         ) &
-         flag_calving_front_1(j,i) = .true.       ! preliminary detection
-                                                  ! of the calving front
-
-      if ( (flag_calving_front_1(j,i)).and.(H_new(j,i) < H_CALV) ) then
-         flag_calving_event = .true.  ! calving event,
-         mask(j,i)          = 2   ! floating ice point changes to sea point
-      end if
-
-   end do
-   end do
-
-end do
-
-#endif /* ALLOW_TAPENADE */
 
 #elif (ICE_SHELF_CALVING==3)
 
@@ -1683,8 +1580,6 @@ do while (flag_change)
    end do
    end do
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
-
    mask_connect_diff = abs(mask_connect-mask_connect_save)
 
    if (maxval(mask_connect_diff) > 0) then
@@ -1693,37 +1588,11 @@ do while (flag_change)
       flag_change = .false.
    end if
 
-#else /* ALLOW_TAPENADE */
-
-   flag_change = .false.
-
-   do i=0, IMAX
-   do j=0, JMAX
-      mask_connect_diff(j,i) = mask_connect(j,i)-mask_connect_save(j,i)
-      if (mask_connect_diff(j,i) /= 0) flag_change = .true.
-   end do
-   end do
-
-#endif /* ALLOW_TAPENADE */
-
 end do
 
 !-------- Reset disconnected "ocean islands" to ice-free land --------
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
-
 where ((mask == 2).and.(mask_connect == 0)) mask = 1
-
-#else /* ALLOW_TAPENADE */
-
-do i=0, IMAX
-do j=0, JMAX
-   if ((mask(j,i) == 2).and.(mask_connect(j,i) == 0)) &
-      mask(j,i) = 1
-end do
-end do
-
-#endif /* ALLOW_TAPENADE */
 
 end subroutine ocean_connect
 

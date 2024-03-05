@@ -39,9 +39,7 @@ module calc_temp_m
 
   implicit none
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
   private
-#endif
 
   public :: calc_temp_poly, calc_temp_cold, calc_temp_const
 
@@ -1412,12 +1410,7 @@ subroutine calc_temp1(at1, at2_1, at2_2, at3_1, at3_2, &
 
 use ice_material_properties_m, only : ratefac_c, kappa_val, c_val, &
                                       creep, viscosity
-
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
 use sico_maths_m, only : tri_sle
-#else /* ALLOW_TAPENADE */
-use sico_maths_m
-#endif /* ALLOW_TAPENADE */
 
 implicit none
 
@@ -1953,11 +1946,7 @@ subroutine calc_temp2(at1, at2_1, at2_2, at3_1, at3_2, &
 
 use ice_material_properties_m, only : ratefac_c, kappa_val, c_val, &
                                       creep, viscosity
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
 use sico_maths_m, only : tri_sle
-#else /* ALLOW_TAPENADE */
-use sico_maths_m
-#endif /* ALLOW_TAPENADE */
 
 implicit none
 
@@ -2474,11 +2463,7 @@ subroutine calc_temp3(at1, at2_1, at2_2, at3_1, at3_2, &
 
 use ice_material_properties_m, only : ratefac_c, ratefac_t, kappa_val, c_val, &
                                       creep, viscosity
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
 use sico_maths_m, only : tri_sle
-#else /* ALLOW_TAPENADE */
-use sico_maths_m
-#endif /* ALLOW_TAPENADE */
 
 implicit none
 
@@ -3489,11 +3474,7 @@ end subroutine calc_temp3
 !-------------------------------------------------------------------------------
 subroutine calc_temp_r(atr1, alb1, i, j)
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
 use sico_maths_m, only : tri_sle
-#else /* ALLOW_TAPENADE */
-use sico_maths_m
-#endif /* ALLOW_TAPENADE */
 
 implicit none
 
@@ -3844,12 +3825,7 @@ subroutine calc_temp_ssa(at1, at2_1, at2_2, at3_1, at3_2, &
    i, j)
 
 use ice_material_properties_m, only : kappa_val, c_val, viscosity
-
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
-use sico_maths_m, only : tri_sle
-#else /* ALLOW_TAPENADE */
 use sico_maths_m
-#endif /* ALLOW_TAPENADE */
 
 implicit none
 

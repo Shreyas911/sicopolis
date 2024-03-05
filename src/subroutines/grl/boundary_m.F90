@@ -162,7 +162,6 @@ real(dp), parameter :: &
 character(len=64), parameter :: thisroutine = 'boundary'
 
 #if defined(ALLOW_TAPENADE)
-integer(i4b) :: i_time_in_years
 real(dp)     :: temp_val
 #endif /* ALLOW_TAPENADE */
 
@@ -1241,8 +1240,6 @@ runoff = runoff + runoff_prescribed
 !         including empirical firn-warming correction due to
 !         refreezing meltwater when superimposed ice is formed
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
-
 #if (TSURFACE<=5)
 
 where (melt_star >= melt)
@@ -1259,36 +1256,6 @@ temp_s = temp_ma
 
 where (temp_s > -0.001_dp) temp_s = -0.001_dp
                             ! Cut-off of positive air temperatures
-
-#else /* ALLOW_TAPENADE */
-
-#if (TSURFACE<=5)
-
-do i=0, IMAX
-do j=0, JMAX
-   if (melt_star(j,i) >= melt(j,i)) then
-      temp_s(j,i) = temp_ma(j,i) + mu*(melt_star(j,i)-melt(j,i))
-   else
-      temp_s(j,i) = temp_ma(j,i)
-   end if
-end do
-end do
-
-#elif (TSURFACE==6)
-
-temp_s = temp_ma
-
-#endif
-
-do i=0, IMAX
-do j=0, JMAX
-   if (temp_s(j,i) > -0.001_dp) then
-      temp_s(j,i) = -0.001_dp   ! Cut-off of positive air temperatures
-   end if
-end do
-end do
-
-#endif /* ALLOW_TAPENADE */
 
 !-------- Calving --------
 

@@ -200,6 +200,7 @@ contains
 
   end function bilinint
 
+#if defined(ALLOW_TAPENADE)
 !-------------------------------------------------------------------------------
 !> Computation of the complementary error function erfc(x) = 1-erf(x)
 !! with a fractional error everywhere less than 1.2 x 10^(-7)
@@ -232,7 +233,6 @@ contains
 
   end subroutine my_erfc
 
-#if defined(ALLOW_TAPENADE)
 !-------------------------------------------------------------------------------
 !> Definition of sico_lis_solver for Tapenade.
 !! The code does nothing because only a definition is needed.
