@@ -1248,11 +1248,6 @@ character(len=256) :: errormsg
 character, parameter :: end_of_line = char(10)
    !! End-of-line string
 
-#if defined(ALLOW_TAPENADE)
-#if defined(GRL)
-real(dp),     dimension(0:JMAX,0:IMAX) :: dis_perp
-#endif
-#endif /* ALLOW_TAPENADE */
 #if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
 
 real(dp) :: fc
