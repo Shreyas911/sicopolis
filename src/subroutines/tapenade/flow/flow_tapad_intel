@@ -14,18 +14,18 @@ ReadNotWritten: (1, 0)
 ReadThenWritten: (0, 0)
 NotReadThenWritten: (0, 1)
 
-function floor:
+function erfc:
 intrinsic:
 shape: (param 1, result)
-type: (float(), integer())
+type: (float(), float())
 ReadNotWritten: (1, 0)
 ReadThenWritten: (0, 0)
 NotReadThenWritten: (0, 1)
 
-function huge:
+function floor:
 intrinsic:
 shape: (param 1, result)
-type: (float(), float())
+type: (float(), integer())
 ReadNotWritten: (1, 0)
 ReadThenWritten: (0, 0)
 NotReadThenWritten: (0, 1)
@@ -41,6 +41,30 @@ deps:  (id,
 	1, 0, 1, 1
 	id,
 	id)	
+
+function huge:
+intrinsic:
+shape: (param 1, result)
+type: (float(), float())
+ReadNotWritten: (1, 0)
+ReadThenWritten: (0, 0)
+NotReadThenWritten: (0, 1)
+
+function index:
+intrinsic:
+shape: (param 1, param 2, result)
+type: (arrayType(character(),dimColons(dimColon(none(),none()))), arrayType(character(),dimColons(dimColon(none(),none()))), integer())
+ReadNotWritten: (1, 0)
+ReadThenWritten: (0, 0)
+NotReadThenWritten: (0, 1)
+
+function kind:
+intrinsic:
+shape: (param 1, result)
+type: (float(), integer())
+ReadNotWritten: (1, 0)
+ReadThenWritten: (0, 0)
+NotReadThenWritten: (0, 1)
 
 function modulo:
 intrinsic:
@@ -58,6 +82,14 @@ type: (arrayType(float(),dimColons(dimColon(none(),none()))), integer(), arrayTy
 ReadNotWritten: (1, 1, 0)
 ReadThenWritten: (0, 0, 0)
 NotReadThenWritten: (0, 0, 1)
+
+function selected_int_kind:
+intrinsic:
+shape: (param 1, result)
+type: (float(), integer())
+ReadNotWritten: (1, 0)
+ReadThenWritten: (0, 0)
+NotReadThenWritten: (0, 1)
 
 subroutine system:
 external:
