@@ -2073,7 +2073,7 @@ call read_scalar_input(filename_with_path, &
 
 !-------- Determination of the geothermal heat flux --------
 
-#if (!defined(ALLOW_TAPENADE) && defined(ALLOW_GRDCHK)) /* NORMAL */
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK)) /* NORMAL */
 
 if (n_q_geo_mod==1) then
 
