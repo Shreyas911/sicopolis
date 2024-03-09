@@ -55,6 +55,10 @@ subroutine calc_thk_init()
 
 implicit none
 
+#if defined(ALLOW_TAPENADE)
+integer(i4b) :: i, j
+#endif /* ALLOW_TAPENADE */
+
 #if (defined(CALCZS))
   errormsg = ' >>> calc_thk_init: Replace CALCZS by CALCTHK in header file!'
   call error(errormsg)
@@ -73,6 +77,8 @@ dzb_dtau = dzl_dtau
 
 #elif (MARGIN==3)   /* grounded and floating ice */
 
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
+
 where (mask <= 1)   ! grounded ice or ice-free land
    zb_new   = zl_new
    dzb_dtau = dzl_dtau
@@ -80,6 +86,22 @@ elsewhere   ! (mask >= 2; ocean or floating ice)
    zb_new   = zb       ! initialisation,
    dzb_dtau = 0.0_dp   ! will be overwritten later
 end where
+
+#else /* ALLOW_TAPENADE */
+
+do i=0, IMAX
+do j=0, JMAX
+   if (mask(j,i) <= 1) then    ! grounded ice or ice-free land
+      zb_new(j,i)   = zl_new(j,i)
+      dzb_dtau(j,i) = dzl_dtau(j,i)
+   else
+      zb_new(j,i)   = zb(j,i)       ! initialisation,
+      dzb_dtau(j,i) = 0.0_dp        ! will be overwritten later
+   endif
+end do
+end do
+
+#endif /* ALLOW_TAPENADE */
 
 #else
 
@@ -515,6 +537,8 @@ end do
 
 !-------- Solution of the explicit scheme --------
 
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
+
 where (flag_inner_point)   ! inner point
 
    H_new = H + dtime*mb_source &
@@ -527,6 +551,29 @@ where (flag_inner_point)   ! inner point
 elsewhere
    H_new = 0.0_dp   ! zero-thickness boundary condition
 end where
+
+#else /* ALLOW_TAPENADE */
+
+do i=0, IMAX
+do j=0, JMAX
+
+   if (flag_inner_point(j,i)) then   ! inner point
+
+      H_new(j,i) = H(j,i) + dtime*mb_source(j,i) &
+                - dt_darea(j,i) &
+                  * (  ( vx_m_2(j,i)*upH_x_2(j,i)*sq_g22_x_2(j,i)*deta   &
+                        -vx_m_1(j,i)*upH_x_1(j,i)*sq_g22_x_1(j,i)*deta ) &
+                     + ( vy_m_2(j,i)*upH_y_2(j,i)*sq_g11_y_2(j,i)*dxi    &
+                        -vy_m_1(j,i)*upH_y_1(j,i)*sq_g11_y_1(j,i)*dxi  ) )
+
+   else
+      H_new(j,i) = 0.0_dp   ! zero-thickness boundary condition
+   end if
+
+end do
+end do
+
+#endif /* ALLOW_TAPENADE */
 
 !-------- Applying the source term --------
 
@@ -1592,7 +1639,20 @@ end do
 
 !-------- Reset disconnected "ocean islands" to ice-free land --------
 
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
+
 where ((mask == 2).and.(mask_connect == 0)) mask = 1
+
+#else /* ALLOW_TAPENADE */
+
+do i=0, IMAX
+do j=0, JMAX
+   if ((mask(j,i) == 2).and.(mask_connect(j,i) == 0)) &
+      mask(j,i) = 1
+end do
+end do
+
+#endif /* ALLOW_TAPENADE */
 
 end subroutine ocean_connect
 
