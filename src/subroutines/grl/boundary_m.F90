@@ -100,6 +100,7 @@ real(dp), dimension(0:JMAX,0:IMAX,0:12) :: precip
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
 real(dp), dimension(12)                 :: temp_mm_help
 real(dp), dimension(0:JMAX,0:IMAX)      :: temp_ampl
+real(dp), dimension(0:JMAX,0:IMAX)      :: precip_fact_arr
 #else /* NORMAL */
 real(dp), dimension(0:JMAX,0:IMAX,12)   :: temp_mm
 real(dp), dimension(12)                 :: temp_mm_help
@@ -992,6 +993,71 @@ do j=0, JMAX
 
 !    ---- Precipitation change related to changing climate
 
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+
+if (flag_ad_sico_init) then
+
+#if (ACCSURFACE==1)
+   precip_fact_arr = ACCFACT
+#elif (ACCSURFACE==2)
+   precip_fact_arr(j,i) = 1.0_dp + (GAMMA_S + gamma_s_arr(j,i))*delta_ts
+#elif (ACCSURFACE==3)
+   precip_fact_arr(j,i) = exp((GAMMA_S + gamma_s_arr(j,i))*delta_ts)
+#endif
+
+else
+
+#if (ACCSURFACE==1)
+   precip_fact_arr = ACCFACT
+#elif (ACCSURFACE==2)
+   precip_fact_arr(j,i) = 1.0_dp + GAMMA_S*delta_ts
+#elif (ACCSURFACE==3)
+   precip_fact_arr(j,i) = exp(GAMMA_S*delta_ts)
+#endif
+
+end if
+
+#if (ACCSURFACE<=3)
+
+   precip(j,i,0) = 0.0_dp   ! initialisation value for mean annual precip
+
+   do n=1, 12   ! month counter
+      precip(j,i,n) = precip(j,i,n)*precip_fact_arr(j,i)   ! monthly precip
+      precip(j,i,0) = precip(j,i,0) + precip(j,i,n)*inv_twelve
+                                                  ! mean annual precip
+   end do
+
+#elif (ACCSURFACE==5)
+
+   precip(j,i,0) = 0.0_dp   ! initialisation value for mean annual precip
+
+   do n=1, 12   ! month counter
+
+#if (PRECIP_ANOM_INTERPOL==1)
+      precip_fact_arr(j,i) = 1.0_dp-glac_index+glac_index*precip_lgm_anom(j,i,n)
+                    ! interpolation with a linear function
+#elif (PRECIP_ANOM_INTERPOL==2)
+      precip_fact_arr(j,i) = exp(-glac_index*gamma_precip_lgm_anom(j,i,n))
+                    ! interpolation with an exponential function
+#endif
+
+      precip(j,i,n) = precip_present(j,i,n)*precip_fact_arr(j,i)   ! monthly precip
+      precip(j,i,0) = precip(j,i,0) + precip(j,i,n)*inv_twelve
+                                                      ! mean annual precip
+   end do
+
+#elif (ACCSURFACE==6 || ACCSURFACE==7)
+
+   precip(j,i,0) = 0.0_dp   ! only total SMB computed (further below)
+
+   do n=1, 12   ! month counter
+      precip(j,i,n) = 0.0_dp   ! only total SMB computed (further below)
+   end do
+
+#endif
+
+#else /* NORMAL */
+
 #if (ACCSURFACE==1)
    precip_fact = ACCFACT
 #elif (ACCSURFACE==2)
@@ -1038,6 +1104,8 @@ do j=0, JMAX
    end do
 
 #endif
+
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
 
 !    ---- Annual accumulation, snowfall and rainfall rates
 

@@ -2742,6 +2742,10 @@ call error(errormsg)   ! actually not an error,
 
 #endif
 
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+   flag_ad_sico_init = .true.
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
+
 end subroutine sico_init
 
 !-------------------------------------------------------------------------------

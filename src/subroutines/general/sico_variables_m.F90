@@ -1256,6 +1256,9 @@ real(dp) :: fc
 real(dp), dimension(0:JMAX,0:IMAX,12)   :: temp_mm
 real(dp), dimension(0:JMAX,0:IMAX)      :: temp_ma
 
+logical :: flag_ad_sico_init
+real(dp), dimension(0:JMAX,0:IMAX)      :: gamma_s_arr
+
 #if (defined(AGE_COST))
 
 ! Note: for the age cost, CALCMOD!=1 is recommended because

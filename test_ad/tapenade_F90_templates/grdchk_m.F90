@@ -134,24 +134,30 @@ module grdchk_m
                  z_mar, &
                  ndat2d, ndat3d, n_output)
 
-            perturbation = 1 + direction(d) * perturb_val 
-
+            perturbation = 1 + direction(d) * perturb_val
 
           !-------- Controls to be perturbed (add your own here and below in
           !         subroutine print_output()
           !         store original value that will be perturbed
           !         and then perturb it (first in +dir then -dir) 
 
-                
             !@ python_automated_grdchk @
 
             ! Example -- H
             ! orig_val = H(j,i)
-            ! H(j,i) = orig_val * perturbation
+            ! if (orig_val .ne. 0) then
+            !   H(j,i) = orig_val * perturbation
+            ! else
+            !   H(j,i) = perturbation-1
+            ! end if
 
             ! -- sanity check
             write(6,fmt='(a,f40.20)') "orig_val = ", orig_val
-            write(6,fmt='(a,f40.20)') "pert_val = ", orig_val*perturbation
+            if (orig_val .ne. 0) then
+              write(6,fmt='(a,f40.20)') "pert_val = ", orig_val * perturbation
+            else
+              write(6,fmt='(a,f40.20)') "pert_val = ", perturbation-1
+            end if
 
             call sico_main_loop(delta_ts, glac_index, &
                  mean_accum, &
@@ -169,6 +175,7 @@ module grdchk_m
             q_geo        = 0.0
             c_slide_init = 0.0
             H            = 0.0 ! Only compatible with ANF_DAT==1
+            gamma_s_arr  = 0.0 ! Only compatible with ACCSURFACE==2 or 3
 
             ! 3D fields
             temp_c       = 0.0 ! Not compatible with TEMP_INIT==5
@@ -181,7 +188,7 @@ module grdchk_m
             if (orig_val .ne. 0) then
                 gfd = (fc_collected(2) - fc_collected(3))/(2.d0 * perturb_val * orig_val)
             else
-                gfd = 0.0
+                gfd = (fc_collected(2) - fc_collected(1))/ perturb_val
             end if          
           end do ! (close perturb loop)
 

@@ -311,13 +311,21 @@ def setup_grdchk(ind_var, header, domain,
 	ref_string = '!@ python_automated_grdchk @'
 	if (dimension == 2) :
 		new_string = f"""
-		            orig_val = {ind_var}(j,i)
-	                    {ind_var}(j,i) = orig_val * perturbation
+			orig_val = {ind_var}(j,i)
+			if (orig_val .ne. 0) then
+				{ind_var}(j,i) = orig_val * perturbation
+			else
+				{ind_var}(j,i) = perturbation-1
+			end if
 		"""
 	elif(dimension == 3 and z_co_ord is not None and z_co_ord < KCMAX):
 		new_string = f"""
-		            orig_val = {ind_var}({z_co_ord},j,i)
-	                    {ind_var}({z_co_ord},j,i) = orig_val * perturbation
+			orig_val = {ind_var}({z_co_ord},j,i)
+			if (orig_val .ne. 0) then
+				{ind_var}({z_co_ord},j,i) = orig_val * perturbation
+			else
+				{ind_var}({z_co_ord},j,i) = perturbation-1
+			end if
 		"""
 	else: 
 		raise ValueError ("Something wrong with dimension in grdchk")
