@@ -88,7 +88,7 @@ The semi-minor axis :math:`B` can be computed from the above parameters via :mat
 
 The components :math:`g_{11}` and :math:`g_{22}` of the metric tensor are computed for simplicity under the assumption of a spherical planet. For case ``0`` (distortion correction neglected), they are set to unity. For the cases ``1`` and ``2``, the derivations are found in ":ref:`Orthogonal coordinates on the Earth's surface/Polar stereographic projection <orthog_coord_pol_ster>`" and ":ref:`Orthogonal coordinates on the Earth's surface/Geographic coordinate system <orthog_coord_geogr>`", respectively. The computations are carried out in the module ``metric_m``.
 
-For the most common case of Cartesian coordinates :math:`x` and :math:`y` in the stereographic plane (or any other projection plane), let the domain be the rectangle described by :math:`[x_0,x_\mathrm{max}]`, :math:`[y_0,y_\mathrm{max}]`. It is discretized by a regular (structured) grid with horizontal resolution :math:`\Delta{x}`, which is the same for the :math:`x`- and :math:`y`-directions. The location of the grid points :math:`x_i` and :math:`y_j` is then given by
+For the most common case of Cartesian coordinates :math:`x` and :math:`y` in the stereographic plane (or any other projection plane), let the domain be the rectangle described by :math:`[x_0,x_\mathrm{max}]`, :math:`[y_0,y_\mathrm{max}]`. It is discretized by a regular (structured) grid with horizontal resolution :math:`\Delta{x}`, which is the same for the :math:`x`- and :math:`y`-directions. SICOPOLIS employs grid-line registration (:numref:`grid_registration`). Hence, the location of the grid points (nodes) :math:`x_i` and :math:`y_j` is given by
 
 .. math::
   :label: eq_discr_x
@@ -107,6 +107,21 @@ where the notation :math:`a\,(b)\,c` means "from :math:`a` to :math:`c` in steps
 * ``DX`` (:math:`=\Delta{}x`, horizontal grid spacing in km),
 * ``IMAX`` (:math:`=i_\mathrm{max}`, maximum value of the index :math:`i`),
 * ``JMAX`` (:math:`=j_\mathrm{max}`, maximum value of the index :math:`j`).
+
+.. _grid_registration:
+.. figure:: figs/Grid_Registration.png
+  :width: 525 px
+  :alt: Grid registration
+  :align: center
+
+  Two grid registration types for a regular (structured) grid.
+  (a) Grid-line registration:
+  the nodes (solid circles) are located at the intersections of the grid lines.
+  (b) Pixel registration:
+  the nodes (solid circles) are centred in the areas between grid lines.
+  The red shades indicate the footprints of the nodes
+  (areas represented by the values at the nodes).
+  SICOPOLIS employs grid-line registration (a).
 
 .. _spatial_grid_vert:
 
