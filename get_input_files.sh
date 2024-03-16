@@ -9,7 +9,7 @@
 #   copying them to the corresponding directories.
 #
 # Author: Ralf Greve
-# Date:   2024-01-02
+# Date:   2024-03-16
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #-------- Settings (to be customized) --------
@@ -23,8 +23,6 @@ ASF_FLAG=1       # Austfonna:
 NHEM_FLAG=1      # Northern hemisphere:
                  #    1 - get files, 0 - don't get files
 SCAND_FLAG=1     # Scandinavia:
-                 #    1 - get files, 0 - don't get files
-TIBET_FLAG=1     # Tibet:
                  #    1 - get files, 0 - don't get files
 NMARS_FLAG=1     # North polar cap of Mars:
                  #    1 - get files, 0 - don't get files
@@ -60,8 +58,6 @@ if [[ $NHEM_FLAG -eq 1 ]]; then
    domains="`echo $domains` nhem"; fi
 if [[ $SCAND_FLAG -eq 1 ]]; then
    domains="`echo $domains` scand"; fi
-if [[ $TIBET_FLAG -eq 1 ]]; then
-   domains="`echo $domains` tibet"; fi
 if [[ $NMARS_FLAG -eq 1 ]]; then
    domains="`echo $domains` nmars"; fi
 if [[ $SMARS_FLAG -eq 1 ]]; then
