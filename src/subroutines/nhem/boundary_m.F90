@@ -96,12 +96,10 @@ real(dp) :: z_sle_present, z_sle_help
 real(dp), dimension(0:JMAX,0:IMAX,0:12) :: precip
 real(dp), dimension(0:JMAX,0:IMAX,12)   :: temp_mm
 real(dp), dimension(12)                 :: temp_mm_help
-real(dp), dimension(0:JMAX,0:IMAX)      :: temp_ma, temp_ampl
+real(dp), dimension(0:JMAX,0:IMAX)      :: temp_ma
 
+real(dp) :: gamma_t, temp_diff
 real(dp) :: temp_jja_help
-real(dp) :: theta_ma, theta_ma_offset, c_ma, kappa_ma, gamma_ma, &
-            theta_mj, theta_mj_offset, c_mj, kappa_mj, gamma_mj
-real(dp) :: sine_factor
 real(dp) :: gamma_p, zs_thresh, &
             temp_rain, temp_snow, &
             inv_delta_temp_rain_snow, coeff(0:5), inv_sqrt2_s_stat, &
@@ -389,137 +387,46 @@ end do
 
 !-------- Surface air temperatures --------
 
-#if (TSURFACE<=5)
-
-#if (TEMP_PRESENT_PARA==1)   /* Parameterization by Ritz et al. (1997) */
-
-#if (defined(TEMP_PRESENT_OFFSET))
-theta_ma_offset = TEMP_PRESENT_OFFSET
-theta_mj_offset = TEMP_PRESENT_OFFSET
-#else
-theta_ma_offset = 0.0_dp
-theta_mj_offset = 0.0_dp
-#endif
-
-theta_ma = 49.13_dp + theta_ma_offset
-gamma_ma = -7.992e-03_dp
-c_ma     = -0.7576_dp
-kappa_ma =  0.0_dp
-
-theta_mj = 30.38_dp + theta_mj_offset
-gamma_mj = -6.277e-03_dp
-c_mj     = -0.3262_dp
-kappa_mj =  0.0_dp
-
-#elif (TEMP_PRESENT_PARA==2)   /* Parameterization by Fausto et al. (2009) */
-
-#if (defined(TEMP_PRESENT_OFFSET))
-theta_ma_offset = TEMP_PRESENT_OFFSET
-theta_mj_offset = TEMP_PRESENT_OFFSET
-#else
-theta_ma_offset = 0.0_dp
-theta_mj_offset = 0.0_dp
-#endif
-
-theta_ma = 41.83_dp + theta_ma_offset
-gamma_ma = -6.309e-03_dp
-c_ma     = -0.7189_dp
-kappa_ma = -0.0672_dp
-
-theta_mj = 14.70_dp + theta_mj_offset
-gamma_mj = -5.426e-03_dp
-c_mj     = -0.1585_dp
-kappa_mj = -0.0518_dp
-
-#else
-
-errormsg = ' >>> boundary: Parameter TEMP_PRESENT_PARA must be either 1 or 2!'
-call error(errormsg)
-
-#endif
-
-#endif
+gamma_t = -6.5e-03_dp   ! atmospheric lapse rate
 
 do i=0, IMAX
 do j=0, JMAX
 
-!  ------ Present-day mean-annual air temperature
-
-#if (TSURFACE<=5)
-
-   temp_ma_present(j,i) = theta_ma &
-                  + gamma_ma*zs(j,i) &
-                  + c_ma*phi(j,i)*rad2deg &
-#if !defined(ALLOW_TAPENADE) /* Normal */
-                  + kappa_ma*(modulo(lambda(j,i)+pi,2.0_dp*pi)-pi)*rad2deg
-                              ! west longitudes counted negatively
-#else /* Tapenade */
-                  + kappa_ma*((lambda(j,i)+pi - &
-                              (2.0_dp*pi * int((lambda(j,i)+pi)/(2.0_dp*pi)))) &
-                              - pi) &
-                            *rad2deg
-#endif /* Normal vs. Tapenade */
-
-#endif
-
-!  ------ Present-day mean-July (summer) air temperature
-
-#if (TSURFACE<=5)
-
-   temp_mj_present(j,i) = theta_mj &
-                    + gamma_mj*zs(j,i) &
-                    + c_mj*phi(j,i)*rad2deg &
-#if !defined(ALLOW_TAPENADE) /* Normal */
-                    + kappa_mj*(modulo(lambda(j,i)+pi,2.0_dp*pi)-pi)*rad2deg
-                                ! west longitudes counted negatively
-#else /* Tapenade */
-                    + kappa_mj*((lambda(j,i)+pi - &
-                                (2.0_dp*pi * int((lambda(j,i)+pi)/(2.0_dp*pi)))) &
-                                - pi) &
-                              *rad2deg
-#endif /* Normal vs. Tapenade */
-
-#endif
-
 #if (TSURFACE<=4)
 
-!  ------ Correction with deviation delta_ts
+!  ------ Correction of present monthly temperatures with elevation changes
+!         and temperature deviation delta_ts
 
-   temp_ma(j,i)   = temp_ma_present(j,i) + delta_ts
-   temp_mm(j,i,7) = temp_mj_present(j,i) + delta_ts
+   temp_diff = gamma_t*(zs(j,i)-zs_ref(j,i)) + delta_ts
+
+   do n=1, 12   ! month counter
+      temp_mm(j,i,n) = temp_present(j,i,n) + temp_diff
+   end do
 
 #elif (TSURFACE==5)
 
-!  ------ Correction with LGM anomaly and glacial index
+!  ------ Correction of present monthly temperatures with LGM anomaly and
+!         glacial index as well as elevation changes
 
-   temp_ma(j,i)   = temp_ma_present(j,i) + glac_index*temp_ma_lgm_anom(j,i)
-   temp_mm(j,i,7) = temp_mj_present(j,i) + glac_index*temp_mj_lgm_anom(j,i)
+   temp_diff = gamma_t*(zs(j,i)-zs_ref(j,i))
+
+   do n=1, 12   ! month counter
+      temp_mm(j,i,n) = temp_present(j,i,n) &
+                       + glac_index*temp_lgm_anom(j,i,n) &
+                       + temp_diff
+   end do
 
 #endif
 
-!  ------ Amplitude of the annual cycle
+!  ------ Mean annual air temperature
 
-   temp_ampl(j,i) = temp_mm(j,i,7) - temp_ma(j,i)
+   temp_ma(j,i) = 0.0_dp   ! initialization value
 
-   if (temp_ampl(j,i) < eps) then
-      temp_ampl(j,i) = eps   ! Correction of amplitude, if required
-   end if
-
-end do
-end do
-
-!  ------ Monthly temperatures
-
-do n=1, 12   ! month counter
-
-   sine_factor = sin((real(n,dp)-4.0_dp)*pi/6.0_dp)
-
-   do i=0, IMAX
-   do j=0, JMAX
-      temp_mm(j,i,n) = temp_ma(j,i) + sine_factor*temp_ampl(j,i)
-   end do
+   do n=1, 12   ! month counter
+      temp_ma(j,i) = temp_ma(j,i) + temp_mm(j,i,n)*inv_twelve
    end do
 
+end do
 end do
 
 !  ------ Save mean-annual air temperature
@@ -659,7 +566,7 @@ do j=0, JMAX
 
 #if (ACCSURFACE<=3)
 
-   precip(j,i,0) = 0.0_dp   ! initialisation value for mean annual precip
+   precip(j,i,0) = 0.0_dp   ! initialization value for mean annual precip
 
    do n=1, 12   ! month counter
       precip(j,i,n) = precip(j,i,n)*precip_fact   ! monthly precip
@@ -669,7 +576,7 @@ do j=0, JMAX
 
 #elif (ACCSURFACE==5)
 
-   precip(j,i,0) = 0.0_dp   ! initialisation value for mean annual precip
+   precip(j,i,0) = 0.0_dp   ! initialization value for mean annual precip
 
    do n=1, 12   ! month counter
 
@@ -694,7 +601,7 @@ do j=0, JMAX
 
    accum(j,i) = precip(j,i,0)
 
-   snowfall(j,i) = 0.0_dp   ! initialisation value
+   snowfall(j,i) = 0.0_dp   ! initialization value
 
    do n=1, 12   ! month counter
 

@@ -666,10 +666,10 @@ real(dp), dimension(0:JMAX,0:IMAX,12) :: precip_lgm_anom
 real(dp), dimension(0:JMAX,0:IMAX,12) :: gamma_precip_lgm_anom
    !! Negative natural logarithm of precip_lgm_anom(j,i,n)
 
-real(dp), dimension(0:JMAX,0:IMAX,12) :: temp_mm_present
+real(dp), dimension(0:JMAX,0:IMAX,12) :: temp_present
    !! Present-day mean monthly surface temperature
 
-real(dp), dimension(0:JMAX,0:IMAX,12) :: temp_mm_lgm_anom
+real(dp), dimension(0:JMAX,0:IMAX,12) :: temp_lgm_anom
    !! LGM anomaly (difference LGM - present) of the mean monthly
    !! surface temperature
 

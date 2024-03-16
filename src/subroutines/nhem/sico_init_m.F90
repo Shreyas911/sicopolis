@@ -121,6 +121,8 @@ character          :: ch_dummy
 logical            :: flag_precip_monthly_mean
 logical            :: flag_init_output, flag_3d_output
 
+integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_ref
+
 real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 real(dp), dimension(0:IMAX,0:JMAX) :: field2d_tra_aux
 
@@ -765,7 +767,7 @@ write(10, fmt=trim(fmt1)) ' '
 write(10, fmt=trim(fmt3)) 'x0 =', X0
 write(10, fmt=trim(fmt3)) 'y0 =', Y0
 write(10, fmt=trim(fmt3)) 'dx =', DX
-#elif GRID==2
+#elif (GRID==2)
 errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
 call error(errormsg)
 #endif
@@ -990,12 +992,7 @@ write(10, fmt=trim(fmt1)) ' '
 
 write(10, fmt=trim(fmt2)) 'TSURFACE = ', TSURFACE
 
-#if (TSURFACE<=5)
-write(10, fmt=trim(fmt2)) 'TEMP_PRESENT_PARA = ', TEMP_PRESENT_PARA
-#if (defined(TEMP_PRESENT_OFFSET))
-write(10, fmt=trim(fmt3))  'TEMP_PRESENT_OFFSET =', TEMP_PRESENT_OFFSET
-#endif
-#endif
+write(10, fmt=trim(fmt1)) 'temp_present file = '//TEMP_PRESENT_FILE
 
 #if (TSURFACE==1)
 write(10, fmt=trim(fmt3)) 'delta_ts0 =', DELTA_TS0
@@ -1007,10 +1004,8 @@ write(10, fmt=trim(fmt1)) 'GRIP file = '//GRIP_TEMP_FILE
 write(10, fmt=trim(fmt3)) 'grip_temp_fact =', GRIP_TEMP_FACT
 #elif (TSURFACE==5)
 write(10, fmt=trim(fmt1)) 'Glacial-index file = '//GLAC_IND_FILE
-write(10, fmt=trim(fmt1)) 'temp_ma_anom file = '//TEMP_MA_ANOM_FILE
-write(10, fmt=trim(fmt3)) 'temp_ma_anom fact = ', TEMP_MA_ANOM_FACT
-write(10, fmt=trim(fmt1)) 'temp_mj_anom file = '//TEMP_MJ_ANOM_FILE
-write(10, fmt=trim(fmt3)) 'temp_mj_anom fact = ', TEMP_MJ_ANOM_FACT
+write(10, fmt=trim(fmt1)) 'temp_anom file  = '//TEMP_ANOM_FILE
+write(10, fmt=trim(fmt3)) 'temp_anom fact  = ', TEMP_ANOM_FACT
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
@@ -1049,12 +1044,6 @@ else
             //'        specified in the header file!'
    call error(errormsg)
 end if
-#endif
-#if (!defined(PRECIP_ZS_REF_FILE))
-errormsg = ' >>> sico_init: PRECIP_ZS_REF_FILE not defined in the header file!'
-call error(errormsg)
-#else
-write(10, fmt=trim(fmt1)) 'precip_zs_ref_file = '//PRECIP_ZS_REF_FILE
 #endif
 #endif
 
@@ -1487,35 +1476,9 @@ end if
 
 #endif
 
-!  ------ Reference topography for present-day precipitation rate
-
-#if (GRID==0 || GRID==1)
-
-#if (defined(PRECIP_ZS_REF_FILE))
-
-filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
-                     trim(PRECIP_ZS_REF_FILE)
-
 #endif
 
-call read_2d_input(filename_with_path, &
-                   ch_var_name='zs', n_var_type=1, n_ascii_header=6, &
-                   field2d_r=field2d_aux)
-
-zs_ref = max(field2d_aux, 0.0_dp)
-         ! resetting negative elevations (bathymetry data)
-         ! to the present-day sea surface
-
-#elif (GRID==2)
-
-errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
-call error(errormsg)
-
-#endif
-
-#endif
-
-!-------- Reading of LGM mean-annual precipitation-rate anomaly --------
+!-------- Reading of LGM monthly-mean precipitation-rate anomalies --------
 
 #if (ACCSURFACE==5)
 
@@ -1524,31 +1487,35 @@ call error(errormsg)
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(PRECIP_ANOM_FILE)
 
-call read_2d_input(filename_with_path, &
-                   ch_var_name='precip_ma_lgm_anom', &
-                   n_var_type=1, n_ascii_header=6, &
-                   field2d_r=field2d_aux)
-
-precip_ma_lgm_anom = field2d_aux
-
-precip_ma_lgm_anom = precip_ma_lgm_anom * PRECIP_ANOM_FACT
-
-#endif
-
-!-------- LGM monthly precipitation-rate anomalies (assumed to be
-!         equal to the mean annual precipitation-rate anomaly) --------
+ch_month = [ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
+             'jul', 'aug', 'sep', 'oct', 'nov', 'dec' ]
 
 do n=1, 12   ! month counter
+
+   ch_var_name = 'precip_lgm_anom_' // trim(ch_month(n))
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name=trim(ch_var_name), &
+                      n_var_type=1, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
+                      field2d_r=field2d_aux)
+
+   precip_lgm_anom(:,:,n) = field2d_aux
+
+end do
+
+precip_lgm_anom = precip_lgm_anom * PRECIP_ANOM_FACT
+
 do i=0, IMAX
 do j=0, JMAX
 
-   precip_lgm_anom(j,i,n) = max(precip_ma_lgm_anom(j,i), eps)
-                            ! positive values ensured
-
 #if (PRECIP_ANOM_INTERPOL==1)
-   gamma_precip_lgm_anom(j,i,n) = 0.0_dp   ! dummy values
+   do n=1, 12   ! month counter
+      gamma_precip_lgm_anom(j,i,n) = 0.0_dp   ! dummy values
+   end do
 #elif (PRECIP_ANOM_INTERPOL==2)
-   gamma_precip_lgm_anom(j,i,n) = -log(precip_lgm_anom(j,i,n))
+   do n=1, 12   ! month counter
+      gamma_precip_lgm_anom(j,i,n) = -log(precip_lgm_anom(j,i,n))
+   end do
 #else
    errormsg = ' >>> sico_init: Wrong value of switch PRECIP_ANOM_INTERPOL!'
    call error(errormsg)
@@ -1556,7 +1523,8 @@ do j=0, JMAX
 
 end do
 end do
-end do
+
+#endif
 
 #endif
 
@@ -1625,37 +1593,113 @@ end if
 
 #endif
 
-!-------- Reading of LGM mean-annual and mean-July surface-temperature 
-!         anomalies --------
+!-------- Reading of present topography mask --------
+
+#if (GRID==0 || GRID==1)
+
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                     trim(MASK_PRESENT_FILE)
+
+call read_2d_input(filename_with_path, &
+                   ch_var_name='mask', n_var_type=3, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
+
+mask_ref = nint(field2d_aux)
+
+#elif (GRID==2)
+
+errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
+call error(errormsg)
+
+#endif
+
+!-------- Reading of data for present monthly-mean surface temperature --------
+
+#if (GRID==0 || GRID==1)
+
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                     trim(TEMP_PRESENT_FILE)
+
+ch_month = [ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
+             'jul', 'aug', 'sep', 'oct', 'nov', 'dec' ]
+
+do n=1, 12   ! month counter
+
+   ch_var_name = 'temp_present_' // trim(ch_month(n))
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name=trim(ch_var_name), &
+                      n_var_type=1, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
+                      field2d_r=field2d_aux)
+
+   temp_present(:,:,n) = field2d_aux
+
+end do
+
+#elif (GRID==2)
+
+errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
+call error(errormsg)
+
+#endif
+
+!-------- Reading of LGM monthly-mean surface-temperature anomalies --------
 
 #if (TSURFACE==5)
 
 #if (GRID==0 || GRID==1)
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
-                     trim(TEMP_MA_ANOM_FILE)
+                     trim(TEMP_ANOM_FILE)
 
-call read_2d_input(filename_with_path, &
-                   ch_var_name='temp_ma_lgm_anom', &
-                   n_var_type=1, n_ascii_header=6, &
-                   field2d_r=field2d_aux)
+ch_month = [ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
+             'jul', 'aug', 'sep', 'oct', 'nov', 'dec' ]
 
-temp_ma_lgm_anom = field2d_aux
+do n=1, 12   ! month counter
 
-filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
-                     trim(TEMP_MJ_ANOM_FILE)
+   ch_var_name = 'temp_lgm_anom_' // trim(ch_month(n))
 
-call read_2d_input(filename_with_path, &
-                   ch_var_name='temp_mj_lgm_anom', &
-                   n_var_type=1, n_ascii_header=6, &
-                   field2d_r=field2d_aux)
+   call read_2d_input(filename_with_path, &
+                      ch_var_name=trim(ch_var_name), &
+                      n_var_type=1, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
+                      field2d_r=field2d_aux)
 
-temp_mj_lgm_anom = field2d_aux
+   temp_lgm_anom(:,:,n) = field2d_aux
 
-temp_ma_lgm_anom = temp_ma_lgm_anom * TEMP_MA_ANOM_FACT
-temp_mj_lgm_anom = temp_mj_lgm_anom * TEMP_MJ_ANOM_FACT
+end do
+
+temp_lgm_anom = temp_lgm_anom * TEMP_ANOM_FACT
 
 #endif
+
+#endif
+
+!-------- Present reference elevation
+!         (for precipitation and surface-temperature data) --------
+
+#if (GRID==0 || GRID==1)
+
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                     trim(ZS_PRESENT_FILE)
+
+call read_2d_input(filename_with_path, &
+                   ch_var_name='zs', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
+
+zs_ref = field2d_aux
+
+do i=0, IMAX
+do j=0, JMAX
+   if (mask_ref(j,i) >= 2) zs_ref(j,i) = 0.0_dp
+                 ! resetting elevations over the ocean
+                 ! to the present-day sea surface
+end do
+end do
+
+#elif (GRID==2)
+
+errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
+call error(errormsg)
 
 #endif
 
@@ -1669,8 +1713,6 @@ call read_scalar_input(filename_with_path, &
                        'delta_ts', ndata_grip_max, &
                        grip_time_min, grip_time_stp, grip_time_max, &
                        ndata_grip, griptemp)
-
-close(21, status='keep')
 
 #endif
 
@@ -2147,8 +2189,7 @@ end if
 
 !  ------ Time-series file for deep boreholes
 
-n_core = 7   ! GRIP, GISP2, Dye3, Camp Century (CC),
-             ! NorthGRIP (NGRIP), NEEM, EastGRIP (EGRIP)
+n_core = 0   ! No boreholes defined
 
 if (n_core > n_core_max) then
    errormsg = ' >>> sico_init: n_core <= n_core_max required!' &
@@ -2157,104 +2198,13 @@ if (n_core > n_core_max) then
    call error(errormsg)
 end if
 
-ch_core(1)     = 'GRIP'
-phi_core(1)    =  72.58722_dp *deg2rad   ! Geographical position of GRIP,
-lambda_core(1) = -37.64222_dp *deg2rad   ! conversion deg -> rad
- 
-ch_core(2)     = 'GISP2'
-phi_core(2)    =  72.58833_dp *deg2rad   ! Geographical position of GISP2
-lambda_core(2) = -38.45750_dp *deg2rad   ! conversion deg -> rad
-
-ch_core(3)     = 'Dye3'
-phi_core(3)    =  65.15139_dp *deg2rad   ! Geographical position of Dye3,
-lambda_core(3) = -43.81722_dp *deg2rad   ! conversion deg -> rad
-
-ch_core(4)     = 'Camp Century'
-phi_core(4)    =  77.17970_dp *deg2rad   ! Geographical position of CC,
-lambda_core(4) = -61.10975_dp *deg2rad   ! conversion deg -> rad
-
-ch_core(5)     = 'NGRIP'
-phi_core(5)    =  75.09694_dp *deg2rad   ! Geographical position of NGRIP,
-lambda_core(5) = -42.31956_dp *deg2rad   ! conversion deg -> rad
-
-ch_core(6)     = 'NEEM'
-phi_core(6)    =  77.5_dp     *deg2rad   ! Geographical position of NEEM,
-lambda_core(6) = -50.9_dp     *deg2rad   ! conversion deg -> rad
-
-ch_core(7)     = 'EGRIP'
-phi_core(7)    =  75.6299_dp  *deg2rad   ! Geographical position of EGRIP,
-lambda_core(7) = -35.9867_dp  *deg2rad   ! conversion deg -> rad
-
-#if (GRID==0 || GRID==1)   /* Stereographic projection */
-
-do n=1, n_core
-
-   if (F_INV > 1.0e+10_dp) then   ! interpreted as infinity, thus no flattening
-                                  ! (spherical planet)
-
-      call stereo_forw_sphere(lambda_core(n), phi_core(n), &
-                              R, LAMBDA0, PHI0, x_core(n), y_core(n))
-
-   else   ! finite inverse flattening (ellipsoidal planet)
-
-      call stereo_forw_ellipsoid(lambda_core(n), phi_core(n), &
-                                 A, B, LAMBDA0, PHI0, x_core(n), y_core(n))
-
-   end if
-
-end do
-
-#elif (GRID==2)   /* Geographical coordinates */
-
-x_core = lambda_core
-y_core = phi_core
-
-#endif
-
 filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.core'
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
 open(14, iostat=ios, file=trim(filename_with_path), status='new')
-#else /* Tapenade */
-open(14, iostat=ios, file=trim(filename_with_path))
-#endif /* Normal vs. Tapenade */
 
-if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the core file!'
-   call error(errormsg)
-end if
-
-if ((forcing_flag == 1).or.(forcing_flag == 3)) then
-
-   write(14,1106)
-   write(14,1107)
-
-   1106 format('         t(a)      D_Ts(C) z_sl_mean(m)',/, &
-               '                   H_GR(m)      H_G2(m)      H_D3(m)', &
-               '      H_CC(m)      H_NG(m)      H_NE(m)      H_EG(m)',/, &
-               '                 v_GR(m/a)    v_G2(m/a)    v_D3(m/a)', &
-               '    v_CC(m/a)    v_NG(m/a)    v_NE(m/a)    v_EG(m/a)',/, &
-               '                   T_GR(C)      T_G2(C)      T_D3(C)', &
-               '      T_CC(C)      T_NG(C)      T_NE(C)      T_EG(C)')
-   1107 format('----------------------------------------------------', &
-               '----------------------------------------------------')
-
-else if (forcing_flag == 2) then
-
-   write(14,1116)
-   write(14,1117)
-
-   1116 format('         t(a)  glac_ind(1) z_sl_mean(m)',/, &
-               '                   H_GR(m)      H_G2(m)      H_D3(m)', &
-               '      H_CC(m)      H_NG(m)      H_NE(m)      H_EG(m)',/, &
-               '                 v_GR(m/a)    v_G2(m/a)    v_D3(m/a)', &
-               '    v_CC(m/a)    v_NG(m/a)    v_NE(m/a)    v_EG(m/a)',/, &
-               '                   T_GR(C)      T_G2(C)      T_D3(C)', &
-               '      T_CC(C)      T_NG(C)      T_NE(C)      T_EG(C)')
-   1117 format('----------------------------------------------------', &
-               '----------------------------------------------------')
-
-end if
+write(14,'(1x,a)') '---------------------'
+write(14,'(1x,a)') 'No boreholes defined.'
+write(14,'(1x,a)') '---------------------'
 
 !-------- Output of the initial state --------
 
