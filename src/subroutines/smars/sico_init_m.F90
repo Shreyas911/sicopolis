@@ -147,14 +147,16 @@ ch_domain_short = 'grl'
 #elif (defined(NHEM))
 ch_domain_long  = 'Northern hemisphere'
 ch_domain_short = 'nhem'
-
-#elif (defined(SCAND))
-ch_domain_long  = 'Scandinavia and Eurasia'
-ch_domain_short = 'scand'
-
-#elif (defined(TIBET))
-ch_domain_long  = 'Tibet'
-ch_domain_short = 'tibet'
+#if (NHEM_SUB==1)
+ch_domain_long  = trim(ch_domain_long) &
+                  // ' (Entire northern hemisphere)'
+#elif (NHEM_SUB==2)
+ch_domain_long  = trim(ch_domain_long) &
+                  // ' (Laurentide and Cordilleran ice sheets)'
+#elif (NHEM_SUB==3)
+ch_domain_long  = trim(ch_domain_long) &
+                  // ' (Fennoscandian and Eurasian ice sheets)'
+#endif
 
 #elif (defined(NMARS))
 ch_domain_long  = 'North polar cap of Mars'
