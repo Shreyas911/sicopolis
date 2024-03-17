@@ -599,7 +599,7 @@
 
 !-------- Surface temperature --------
 
-#define TEMP_MM_PRESENT_FILE 'asf_tempmm_gamma_045_gridfit_smooth5_2k.dat'
+#define TEMP_PRESENT_FILE 'asf_tempmm_gamma_045_gridfit_smooth5_2k.dat'
 !                       Name of the file containing the present-day
 !                       monthly-mean surface-temperature data
 
@@ -649,18 +649,18 @@
 !                       Name of the file containing the glacial-index
 !                       forcing (only for TSURFACE==5)
 
-#define TEMP_MM_ANOM_FILE 'none'
+#define TEMP_ANOM_FILE 'none'
 !                       Name of the file containing the LGM
 !                       monthly-mean surface-temperature-anomaly data
 !                       (difference LGM - present; only for TSURFACE==5
 
-#define TEMP_MM_ANOM_FACT 1.0d0
+#define TEMP_ANOM_FACT 1.0d0
 !                       Modification factor for the anomaly data of
-!                       TEMP_MM_ANOM_FILE (for TSURFACE==5)
+!                       TEMP_ANOM_FILE (for TSURFACE==5)
 
 !-------- Surface precipitation --------
 
-#define PRECIP_MM_PRESENT_FILE 'asf_precmm_2k.dat'
+#define PRECIP_PRESENT_FILE 'asf_precmm_2k.dat'
 !                       Name of the file containing the present-day
 !                       monthly-mean precipitation data
 
@@ -698,14 +698,14 @@
 !                       Elevation threshold for elevation desertification, in m
 !                       (only for ELEV_DESERT==1 and ACCSURFACE==1, 2, 3)
 
-#define PRECIP_MM_ANOM_FILE 'none'
+#define PRECIP_ANOM_FILE 'none'
 !                       Name of the file containing the LGM
 !                       monthly-mean precipitation-anomaly data
 !                       (ratio LGM/present; only for ACCSURFACE==5)
 
-#define PRECIP_MM_ANOM_FACT 1.0d0
+#define PRECIP_ANOM_FACT 1.0d0
 !                       Modification factor for the anomaly data of
-!                       PRECIP_MM_ANOM_FILE (for ACCSURFACE==5)
+!                       PRECIP_ANOM_FILE (for ACCSURFACE==5)
 
 #define PRECIP_ANOM_INTERPOL 2
 !                         1 : Interpolation with a linear function

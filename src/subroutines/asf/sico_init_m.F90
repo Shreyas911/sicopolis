@@ -731,7 +731,7 @@ write(10, fmt=trim(fmt2)) 'iter_max_sor = ', ITER_MAX_SOR
 
 write(10, fmt=trim(fmt1)) ' '
 
-write(10, fmt=trim(fmt1)) 'temp_mm_present file = '//TEMP_MM_PRESENT_FILE
+write(10, fmt=trim(fmt1)) 'temp_present file = '//TEMP_PRESENT_FILE
 #if (TSURFACE==1)
 write(10, fmt=trim(fmt3)) 'delta_ts0      =', DELTA_TS0
 write(10, fmt=trim(fmt1)) 'temp_ma file	   = '//TEMP_MA_PRESENT_FILE
@@ -744,18 +744,18 @@ write(10, fmt=trim(fmt1)) 'GRIP file      = '//GRIP_TEMP_FILE
 write(10, fmt=trim(fmt3)) 'grip_temp_fact =', GRIP_TEMP_FACT
 #elif (TSURFACE==5)
 write(10, fmt=trim(fmt1)) 'Glacial-index file = '//GLAC_IND_FILE
-write(10, fmt=trim(fmt1)) 'temp_mm_anom file  = '//TEMP_MM_ANOM_FILE
-write(10, fmt=trim(fmt3)) 'temp_mm_anom fact  = ', TEMP_MM_ANOM_FACT
+write(10, fmt=trim(fmt1)) 'temp_anom file  = '//TEMP_ANOM_FILE
+write(10, fmt=trim(fmt3)) 'temp_anom fact  = ', TEMP_ANOM_FACT
 #endif
 
-write(10, fmt=trim(fmt1)) 'precip_mm_present file = '//PRECIP_MM_PRESENT_FILE
+write(10, fmt=trim(fmt1)) 'precip_present file = '//PRECIP_PRESENT_FILE
 #if (ACCSURFACE==1)
 write(10, fmt=trim(fmt3)) 'accfact        =', ACCFACT
 #elif (ACCSURFACE==2 || ACCSURFACE==3)
 write(10, fmt=trim(fmt3)) 'gamma_s        =', GAMMA_S
 #elif (ACCSURFACE==5)
-write(10, fmt=trim(fmt1)) 'precip_mm_anom file    = '//PRECIP_MM_ANOM_FILE
-write(10, fmt=trim(fmt3)) 'precip_mm_anom fact    = ', PRECIP_MM_ANOM_FACT
+write(10, fmt=trim(fmt1)) 'precip_anom file    = '//PRECIP_ANOM_FILE
+write(10, fmt=trim(fmt3)) 'precip_anom fact    = ', PRECIP_ANOM_FACT
 #endif
 #if (ACCSURFACE <= 3)
 write(10, fmt=trim(fmt2)) 'ELEV_DESERT = ', ELEV_DESERT
@@ -1171,7 +1171,7 @@ time = time_init
 #if (GRID==0 || GRID==1)
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
-                     trim(PRECIP_MM_PRESENT_FILE)
+                     trim(PRECIP_PRESENT_FILE)
 
 ch_month = [ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
              'jul', 'aug', 'sep', 'oct', 'nov', 'dec' ]
@@ -1204,7 +1204,7 @@ call error(errormsg)
 #if (GRID==0 || GRID==1)
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
-                     trim(PRECIP_ANOM_MM_FILE)
+                     trim(PRECIP_ANOM_FILE)
 
 ch_month = [ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
              'jul', 'aug', 'sep', 'oct', 'nov', 'dec' ]
@@ -1222,7 +1222,7 @@ do n=1, 12   ! month counter
 
 end do
 
-precip_lgm_anom = precip_lgm_anom * PRECIP_MM_ANOM_FACT
+precip_lgm_anom = precip_lgm_anom * PRECIP_ANOM_FACT
 
 #endif
 
@@ -1296,7 +1296,7 @@ n_slide_region = nint(field2d_aux)
 #if (GRID==0 || GRID==1)
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
-                     trim(TEMP_MM_PRESENT_FILE)
+                     trim(TEMP_PRESENT_FILE)
 
 ch_month = [ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
              'jul', 'aug', 'sep', 'oct', 'nov', 'dec' ]
@@ -1310,7 +1310,7 @@ do n=1, 12   ! month counter
                       n_var_type=1, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
                       field2d_r=field2d_aux)
 
-   temp_mm_present(:,:,n) = field2d_aux
+   temp_present(:,:,n) = field2d_aux
 
 end do
 
@@ -1328,7 +1328,7 @@ call error(errormsg)
 #if (GRID==0 || GRID==1)
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
-                     trim(TEMP_MM_ANOM_FILE)
+                     trim(TEMP_ANOM_FILE)
 
 ch_month = [ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
              'jul', 'aug', 'sep', 'oct', 'nov', 'dec' ]
@@ -1342,11 +1342,11 @@ do n=1, 12   ! month counter
                       n_var_type=1, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
                       field2d_r=field2d_aux)
 
-   temp_mm_lgm_anom(:,:,n) = field2d_aux
+   temp_lgm_anom(:,:,n) = field2d_aux
 
 end do
 
-temp_mm_lgm_anom = temp_mm_lgm_anom * TEMP_MM_ANOM_FACT
+temp_lgm_anom = temp_lgm_anom * TEMP_ANOM_FACT
 
 #endif
 

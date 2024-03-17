@@ -328,7 +328,7 @@ do j=0, JMAX
    temp_diff = gamma_t*(zs(j,i)-zs_ref(j,i)) + delta_ts
 
    do n=1, 12   ! month counter
-      temp_mm(j,i,n) = temp_mm_present(j,i,n) + temp_diff
+      temp_mm(j,i,n) = temp_present(j,i,n) + temp_diff
    end do
 
 #elif (TSURFACE == 5)
@@ -339,8 +339,8 @@ do j=0, JMAX
    temp_diff = gamma_t*(zs(j,i)-zs_ref(j,i))
 
    do n=1, 12   ! month counter
-      temp_mm(j,i,n) = temp_mm_present(j,i,n) &
-                       + glac_index*temp_mm_lgm_anom(j,i,n) &
+      temp_mm(j,i,n) = temp_present(j,i,n) &
+                       + glac_index*temp_lgm_anom(j,i,n) &
                        + temp_diff
    end do
 
