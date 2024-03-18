@@ -162,14 +162,6 @@ write(unit=6, fmt='(a)') ' '
 ch_domain_long  = 'Antarctica'
 ch_domain_short = 'ant'
 
-#elif (defined(ASF))
-ch_domain_long  = 'Austfonna'
-ch_domain_short = 'asf'
-
-#elif (defined(EISMINT))
-ch_domain_long  = 'EISMINT'
-ch_domain_short = 'eismint'
-
 #elif (defined(GRL))
 ch_domain_long  = 'Greenland'
 ch_domain_short = 'grl'
@@ -186,7 +178,14 @@ ch_domain_long  = trim(ch_domain_long) &
 #elif (NHEM_SUB==3)
 ch_domain_long  = trim(ch_domain_long) &
                   // ' (Fennoscandian and Eurasian ice sheets)'
+#elif (NHEM_SUB==4)
+ch_domain_long  = trim(ch_domain_long) &
+                  // ' (Austfonna)'
 #endif
+
+#elif (defined(EISMINT))
+ch_domain_long  = 'EISMINT'
+ch_domain_short = 'eismint'
 
 #elif (defined(NMARS))
 ch_domain_long  = 'North polar cap of Mars'
@@ -367,7 +366,35 @@ else
    call error(errormsg)
 end if
 
-#endif /* NHEM_SUB==1, 2 or 3 */
+#elif (NHEM_SUB==4) /* Austfonna */
+
+if (approx_equal(DX, 4.0_dp, eps_sp_dp)) then
+
+   if ((IMAX /= 34).or.(JMAX /= 33)) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 2.0_dp, eps_sp_dp)) then
+
+   if ((IMAX /= 68).or.(JMAX /= 66)) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 1.0_dp, eps_sp_dp)) then
+
+   if ((IMAX /= 136).or.(JMAX /= 132)) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else
+   errormsg = ' >>> sico_init: DX wrong!'
+   call error(errormsg)
+end if
+
+#endif /* NHEM_SUB==1, 2, 3 or 4 */
 
 #elif (GRID==2)
 

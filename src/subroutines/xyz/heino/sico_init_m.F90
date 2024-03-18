@@ -130,14 +130,6 @@ write(unit=6, fmt='(a)') ' '
 ch_domain_long  = 'Antarctica'
 ch_domain_short = 'ant'
 
-#elif (defined(ASF))
-ch_domain_long  = 'Austfonna'
-ch_domain_short = 'asf'
-
-#elif (defined(EISMINT))
-ch_domain_long  = 'EISMINT'
-ch_domain_short = 'eismint'
-
 #elif (defined(GRL))
 ch_domain_long  = 'Greenland'
 ch_domain_short = 'grl'
@@ -154,7 +146,14 @@ ch_domain_long  = trim(ch_domain_long) &
 #elif (NHEM_SUB==3)
 ch_domain_long  = trim(ch_domain_long) &
                   // ' (Fennoscandian and Eurasian ice sheets)'
+#elif (NHEM_SUB==4)
+ch_domain_long  = trim(ch_domain_long) &
+                  // ' (Austfonna)'
 #endif
+
+#elif (defined(EISMINT))
+ch_domain_long  = 'EISMINT'
+ch_domain_short = 'eismint'
 
 #elif (defined(NMARS))
 ch_domain_long  = 'North polar cap of Mars'

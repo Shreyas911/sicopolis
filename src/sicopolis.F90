@@ -5,7 +5,7 @@
 !
 #define       MODEL_SICOPOLIS
 #define       VERSION '24'
-#define       DATE    '2024-03-17'
+#define       DATE    '2024-03-19'
 !
 !! Main program of SICOPOLIS.
 !!
@@ -60,22 +60,16 @@
 
 #if (defined(ANT))
 #include "subroutines/ant/sico_vars_m.F90"
-#elif (defined(ASF))
-#include "subroutines/asf/sico_vars_m.F90"
-#elif (defined(EISMINT))
-#include "subroutines/eismint/sico_vars_m.F90"
 #elif (defined(GRL))
 #include "subroutines/grl/sico_vars_m.F90"
 #elif (defined(NHEM))
 #include "subroutines/nhem/sico_vars_m.F90"
+#elif (defined(EISMINT))
+#include "subroutines/eismint/sico_vars_m.F90"
 #elif (defined(NMARS))
 #include "subroutines/nmars/sico_vars_m.F90"
-#elif (defined(SCAND))
-#include "subroutines/scand/sico_vars_m.F90"
 #elif (defined(SMARS))
 #include "subroutines/smars/sico_vars_m.F90"
-#elif (defined(TIBET))
-#include "subroutines/tibet/sico_vars_m.F90"
 #elif (defined(XYZ))
 #include "subroutines/xyz/sico_vars_m.F90"
 #endif
@@ -152,22 +146,16 @@
 
 #if (defined(ANT))
 #include "subroutines/ant/boundary_m.F90"
-#elif (defined(ASF))
-#include "subroutines/asf/boundary_m.F90"
-#elif (defined(EISMINT))
-#include "subroutines/eismint/boundary_m.F90"
 #elif (defined(GRL))
 #include "subroutines/grl/boundary_m.F90"
 #elif (defined(NHEM))
 #include "subroutines/nhem/boundary_m.F90"
+#elif (defined(EISMINT))
+#include "subroutines/eismint/boundary_m.F90"
 #elif (defined(NMARS))
 #include "subroutines/nmars/boundary_m.F90"
-#elif (defined(SCAND))
-#include "subroutines/scand/boundary_m.F90"
 #elif (defined(SMARS))
 #include "subroutines/smars/boundary_m.F90"
-#elif (defined(TIBET))
-#include "subroutines/tibet/boundary_m.F90"
 #elif (defined(XYZ))
 #include "subroutines/xyz/boundary_m.F90"
 #endif
@@ -175,22 +163,16 @@
 #include "subroutines/general/init_temp_water_age_m.F90"
 #if (defined(ANT))
 #include "subroutines/ant/sico_init_m.F90"
-#elif (defined(ASF))
-#include "subroutines/asf/sico_init_m.F90"
-#elif (defined(EISMINT))
-#include "subroutines/eismint/sico_init_m.F90"
 #elif (defined(GRL))
 #include "subroutines/grl/sico_init_m.F90"
 #elif (defined(NHEM))
 #include "subroutines/nhem/sico_init_m.F90"
+#elif (defined(EISMINT))
+#include "subroutines/eismint/sico_init_m.F90"
 #elif (defined(NMARS))
 #include "subroutines/nmars/sico_init_m.F90"
-#elif (defined(SCAND))
-#include "subroutines/scand/sico_init_m.F90"
 #elif (defined(SMARS))
 #include "subroutines/smars/sico_init_m.F90"
-#elif (defined(TIBET))
-#include "subroutines/tibet/sico_init_m.F90"
 #elif (defined(XYZ))
 #include "subroutines/xyz/sico_init_m.F90"
 #endif
