@@ -615,6 +615,10 @@
 !                       Name of the file containing the present-day
 !                       monthly-mean surface-temperature data
 
+#define TOPO_LAPSE_RATE 6.5d0
+!                       Topographic lapse rate (in K/km)
+!                       (decrease of surface temperature with elevation)
+
 #define DELTA_TS0 0.0d0
 !                       Constant air-temperature deviation for steady
 !                       states (only for TSURFACE==1)

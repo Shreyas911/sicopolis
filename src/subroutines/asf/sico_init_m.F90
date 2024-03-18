@@ -732,6 +732,10 @@ write(10, fmt=trim(fmt2)) 'iter_max_sor = ', ITER_MAX_SOR
 write(10, fmt=trim(fmt1)) ' '
 
 write(10, fmt=trim(fmt1)) 'temp_present file = '//TEMP_PRESENT_FILE
+#if (defined(TOPO_LAPSE_RATE))
+write(10, fmt=trim(fmt3)) 'topo_lapse_rate =', TOPO_LAPSE_RATE
+#endif
+
 #if (TSURFACE==1)
 write(10, fmt=trim(fmt3)) 'delta_ts0      =', DELTA_TS0
 write(10, fmt=trim(fmt1)) 'temp_ma file	   = '//TEMP_MA_PRESENT_FILE

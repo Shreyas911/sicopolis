@@ -387,7 +387,13 @@ end do
 
 !-------- Surface air temperatures --------
 
-gamma_t = -6.5e-03_dp   ! atmospheric lapse rate
+#if (defined(TOPO_LAPSE_RATE))
+gamma_t = TOPO_LAPSE_RATE * 1.0e-03_dp
+             ! topographic lapse rate; K/km -> K/m
+#else
+gamma_t = 6.5e-03_dp
+             ! topographic lapse rate (K/m), default value
+#endif
 
 do i=0, IMAX
 do j=0, JMAX
@@ -397,7 +403,7 @@ do j=0, JMAX
 !  ------ Correction of present monthly temperatures with elevation changes
 !         and temperature deviation delta_ts
 
-   temp_diff = gamma_t*(zs(j,i)-zs_ref(j,i)) + delta_ts
+   temp_diff = gamma_t*(zs_ref(j,i)-zs(j,i)) + delta_ts
 
    do n=1, 12   ! month counter
       temp_mm(j,i,n) = temp_present(j,i,n) + temp_diff
@@ -408,7 +414,7 @@ do j=0, JMAX
 !  ------ Correction of present monthly temperatures with LGM anomaly and
 !         glacial index as well as elevation changes
 
-   temp_diff = gamma_t*(zs(j,i)-zs_ref(j,i))
+   temp_diff = gamma_t*(zs_ref(j,i)-zs(j,i))
 
    do n=1, 12   ! month counter
       temp_mm(j,i,n) = temp_present(j,i,n) &
