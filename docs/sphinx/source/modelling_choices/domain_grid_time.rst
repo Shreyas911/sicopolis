@@ -20,12 +20,10 @@ SICOPOLIS provides several pre-defined model domains. They can be chosen by defi
   #define GRL
   !             Simulated domain:
   !               ANT     - Antarctica
-  !               ASF     - Austfonna
-  !               EISMINT - EISMINT (Phase 2 SGE and modifications)
   !               GRL     - Greenland
   !               NHEM    - Northern hemisphere
-  !               SCAND   - Scandinavia
-  !               TIBET   - Tibet
+  !               ASF     - Austfonna
+  !               EISMINT - EISMINT (Phase 2 SGE and modifications)
   !               NMARS   - North polar cap of Mars
   !               SMARS   - South polar cap of Mars
 
@@ -36,7 +34,7 @@ This example would select the domain for the Greenland ice sheet. Correspondingl
 Setting up a new domain
 -----------------------
 
-In addition to the pre-defined domains, there is an unspecified domain XYZ. This framework allows creating new domains (Laurentide ice sheet, some ice cap, simple testing geometry...) quite easily. The directory ``src/subroutines/xyz``, which hosts the domain-specific subroutines, is by default empty. If you want to create a new domain, copy the subroutines from the most similar existing domain, e.g., starting from Antarctica::
+In addition to the pre-defined domains, there is an unspecified domain XYZ. This framework allows creating new domains (some ice cap, simple testing geometry...) quite easily. The directory ``src/subroutines/xyz``, which hosts the domain-specific subroutines, is by default empty. If you want to create a new domain, copy the subroutines from the most similar existing domain, e.g., starting from Antarctica::
 
   cp src/subroutines/ant/*.F90 src/subroutines/xyz/
 
