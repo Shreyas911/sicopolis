@@ -36,7 +36,7 @@ MOCHO_FLAG=1     # Mocho-Choshuenco ice cap:
 #-------- Initialization --------
 
 # Zenodo repo:
-REPO_URL=https://zenodo.org/record/10449781/files
+REPO_URL=https://zenodo.org/record/10828424/files
 
 # Backup repo:
 # REPO_URL=https://www2.lowtem.hokudai.ac.jp/gisg/repo/sicopolis/sico_in
