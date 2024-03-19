@@ -1317,6 +1317,11 @@ end do
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
+#if (NHEM_SUB==4 && defined(WRITE_SER_FILE_STAKES)) /* Austfonna */
+write(10, fmt=trim(fmt2)) 'WRITE_SER_FILE_STAKES = ', WRITE_SER_FILE_STAKES
+write(10, fmt=trim(fmt1)) ' '
+#endif
+
 call get_environment_variable(name='REPO_REVISION', value=ch_revision, &
                               status=istat, trim_name=.true.)
 write(10, fmt=trim(fmt1)) 'Program version and date: '//VERSION//' / '//DATE
@@ -2236,6 +2241,546 @@ write(14,'(1x,a)') '---------------------'
 write(14,'(1x,a)') 'No boreholes defined.'
 write(14,'(1x,a)') '---------------------'
 
+#if (NHEM_SUB==4 && WRITE_SER_FILE_STAKES==1) /* Austfonna */
+
+!  ------ Time-series file for mass balance stakes etc.
+
+n_surf = 163   ! 19 mass balance stakes + 18 cores (Pinglot) 
+               ! 10 points on flowlines (Duvebreen & B3)
+	       ! 116 points along ELA
+
+if (n_surf > n_surf_max) then
+   errormsg = ' >>> sico_init: n_surf <= n_surf_max required!' &
+            //         end_of_line &
+            //'        Increase value of n_surf_max in sico_vars_m!'
+   call error(errormsg)
+end if
+
+!    ---- Mass balance stakes
+
+phi_surf(1)    =  79.8322_dp *deg2rad    ! Geographical position
+lambda_surf(1) =  24.0043_dp *deg2rad    ! at 79.8322N, 24.0043E
+
+phi_surf(2)    =  79.3613_dp *deg2rad    ! Geographical position
+lambda_surf(2) =  23.5622_dp *deg2rad    ! at 79.3613N, 23.5622E
+
+phi_surf(3)    =  79.4497_dp *deg2rad    ! Geographical position
+lambda_surf(3) =  23.6620_dp *deg2rad    ! at 79.4497N, 23.6620E
+
+phi_surf(4)    =  79.5388_dp *deg2rad    ! Geographical position
+lambda_surf(4) =  23.7644_dp *deg2rad    ! at 79.5388N, 23.7644E
+
+phi_surf(5)    =  79.6421_dp *deg2rad    ! Geographical position
+lambda_surf(5) =  23.8834_dp *deg2rad    ! at 79.6421N, 23.8834E
+
+phi_surf(6)    =  79.7302_dp *deg2rad    ! Geographical position
+lambda_surf(6) =  23.9872_dp *deg2rad    ! at 79.7302N, 23.9872E
+
+phi_surf(7)    =  79.5829_dp *deg2rad    ! Geographical position
+lambda_surf(7) =  24.6716_dp *deg2rad    ! at 79.5829N, 24.6716E
+
+phi_surf(8)    =  79.7171_dp *deg2rad    ! Geographical position
+lambda_surf(8) =  22.1832_dp *deg2rad    ! at 79.7171N, 22.1832E
+
+phi_surf(9)    =  79.7335_dp *deg2rad    ! Geographical position
+lambda_surf(9) =  22.4169_dp *deg2rad    ! at 79.7335N, 22.4169E
+
+phi_surf(10)    =  79.7519_dp *deg2rad   ! Geographical position
+lambda_surf(10) =  22.6407_dp *deg2rad   ! at 79.7519N, 22.6407E
+
+phi_surf(11)    =  79.7670_dp *deg2rad   ! Geographical position
+lambda_surf(11) =  22.8271_dp *deg2rad   ! at 79.7670N, 22.8271E
+
+phi_surf(12)    =  79.7827_dp *deg2rad   ! Geographical position
+lambda_surf(12) =  23.1220_dp *deg2rad   ! at 79.7827N, 23.1220E
+
+phi_surf(13)    =  79.5884_dp *deg2rad   ! Geographical position
+lambda_surf(13) =  25.5511_dp *deg2rad   ! at 79.5884N, 25.5511E
+
+phi_surf(14)    =  79.6363_dp *deg2rad   ! Geographical position
+lambda_surf(14) =  25.3582_dp *deg2rad   ! at 79.6363N, 25.3582E
+
+phi_surf(15)    =  80.0638_dp *deg2rad   ! Geographical position
+lambda_surf(15) =  24.2605_dp *deg2rad   ! at 80.0638N, 24.2605E
+
+phi_surf(16)    =  79.9426_dp *deg2rad   ! Geographical position
+lambda_surf(16) =  24.2433_dp *deg2rad   ! at 79.9426N, 24.2433E
+
+phi_surf(17)    =  79.8498_dp *deg2rad   ! Geographical position
+lambda_surf(17) =  26.6449_dp *deg2rad   ! at 79.8498N, 26.6449E
+
+phi_surf(18)    =  79.8499_dp *deg2rad   ! Geographical position
+lambda_surf(18) =  26.1354_dp *deg2rad   ! at 79.8499N, 26.1354E
+
+phi_surf(19)    =  79.8499_dp *deg2rad   ! Geographical position
+lambda_surf(19) =  25.7261_dp *deg2rad   ! at 79.8499N, 25.7261E
+
+!    ---- Pinglot's shallow cores
+
+phi_surf(20)    =  79.833333_dp *deg2rad    ! Geographical position
+lambda_surf(20) =  24.935833_dp *deg2rad    ! at 79.833333N, 24.935833E
+
+phi_surf(21)    =  79.783333_dp *deg2rad    ! Geographical position
+lambda_surf(21) =  25.400000_dp *deg2rad    ! at 79.783333N, 25.400000E
+
+phi_surf(22)    =  79.750000_dp *deg2rad    ! Geographical position
+lambda_surf(22) =  23.866667_dp *deg2rad    ! at 79.750000N, 23.866667E
+
+phi_surf(23)    =  79.615000_dp *deg2rad    ! Geographical position
+lambda_surf(23) =  23.490556_dp *deg2rad    ! at 79.615000N, 23.490556E
+
+phi_surf(24)    =  79.797778_dp *deg2rad    ! Geographical position
+lambda_surf(24) =  23.997500_dp *deg2rad    ! at 79.797778N, 23.997500E
+
+phi_surf(25)    =  79.765000_dp *deg2rad    ! Geographical position
+lambda_surf(25) =  24.809722_dp *deg2rad    ! at 79.765000N, 24.809722E
+
+phi_surf(26)    =  79.874722_dp *deg2rad    ! Geographical position
+lambda_surf(26) =  23.541667_dp *deg2rad    ! at 79.874722N, 23.541667E
+
+phi_surf(27)    =  79.697778_dp *deg2rad    ! Geographical position
+lambda_surf(27) =  25.096111_dp *deg2rad    ! at 79.697778N, 25.096111E
+
+phi_surf(28)    =  79.897500_dp *deg2rad    ! Geographical position
+lambda_surf(28) =  23.230278_dp *deg2rad    ! at 79.897500N, 23.230278E
+
+phi_surf(29)    =  79.874444_dp *deg2rad    ! Geographical position
+lambda_surf(29) =  24.046111_dp *deg2rad    ! at 79.874444N, 24.046111E
+
+phi_surf(30)    =  79.962500_dp *deg2rad    ! Geographical position
+lambda_surf(30) =  24.169722_dp *deg2rad    ! at 79.962500N, 24.169722E
+
+phi_surf(31)    =  79.664444_dp *deg2rad    ! Geographical position
+lambda_surf(31) =  25.235833_dp *deg2rad    ! at 79.664444N, 25.235833E
+
+phi_surf(32)    =  79.681111_dp *deg2rad    ! Geographical position
+lambda_surf(32) =  23.713056_dp *deg2rad    ! at 79.681111N, 23.713056E
+
+phi_surf(33)    =  79.554167_dp *deg2rad    ! Geographical position
+lambda_surf(33) =  23.796944_dp *deg2rad    ! at 79.554167N, 23.796944E
+
+phi_surf(34)    =  79.511667_dp *deg2rad    ! Geographical position
+lambda_surf(34) =  24.032778_dp *deg2rad    ! at 79.511667N, 24.032778E
+
+phi_surf(35)    =  79.552222_dp *deg2rad    ! Geographical position
+lambda_surf(35) =  22.799167_dp *deg2rad    ! at 79.552222N, 22.799167E
+
+phi_surf(36)    =  79.847778_dp *deg2rad    ! Geographical position
+lambda_surf(36) =  25.788611_dp *deg2rad    ! at 79.847778N, 25.788611E
+
+phi_surf(37)    =  79.830000_dp *deg2rad    ! Geographical position
+lambda_surf(37) =  24.001389_dp *deg2rad    ! at 79.830000N, 24.001389E
+
+!    ---- Flowline points
+
+phi_surf(38)    =  80.1427268586056_dp *deg2rad    ! Geographical position of
+lambda_surf(38) =  23.9534492294493_dp *deg2rad    ! Duve-1
+
+phi_surf(39)    =  80.1124108950185_dp *deg2rad    ! Geographical position of
+lambda_surf(39) =  24.0629399381155_dp *deg2rad    ! Duve-2
+
+phi_surf(40)    =  80.0765637664780_dp *deg2rad    ! Geographical position of
+lambda_surf(40) =  24.0481674197519_dp *deg2rad    ! Duve-3
+
+phi_surf(41)    =  80.0409891299823_dp *deg2rad    ! Geographical position of
+lambda_surf(41) =  24.0074110976581_dp *deg2rad    ! Duve-4
+
+phi_surf(42)    =  80.0049393359201_dp *deg2rad    ! Geographical position of
+lambda_surf(42) =  23.9894145095442_dp *deg2rad    ! Duve-5
+
+phi_surf(43)    =  79.4994665039616_dp *deg2rad    ! Geographical position of
+lambda_surf(43) =  25.4790616341716_dp *deg2rad    ! B3-1
+
+phi_surf(44)    =  79.4973763443781_dp *deg2rad    ! Geographical position of
+lambda_surf(44) =  25.2826485444194_dp *deg2rad    ! B3-2
+
+phi_surf(45)    =  79.5028080484427_dp *deg2rad    ! Geographical position of
+lambda_surf(45) =  25.0844021770897_dp *deg2rad    ! B3-3
+
+phi_surf(46)    =  79.5131051861579_dp *deg2rad    ! Geographical position of
+lambda_surf(46) =  24.8934874838598_dp *deg2rad    ! B3-4
+
+phi_surf(47)    =  79.5275754154375_dp *deg2rad    ! Geographical position of
+lambda_surf(47) =  24.7125320718015_dp *deg2rad    ! B3-5
+
+!    ---- Basin control points on ELA (N:450m, S:300m)
+
+phi_surf(48)    =  79.6232572730302_dp *deg2rad    ! Geographical position of
+lambda_surf(48) =  22.4297425686265_dp *deg2rad    ! Eton-1
+
+phi_surf(49)    =  79.6355048663362_dp *deg2rad    ! Geographical position of
+lambda_surf(49) =  22.5023513660534_dp *deg2rad    ! Eton-2
+
+phi_surf(50)    =  79.6477359930900_dp *deg2rad    ! Geographical position of
+lambda_surf(50) =  22.5751300038166_dp *deg2rad    ! Eton-3
+
+phi_surf(51)    =  79.6599505942585_dp *deg2rad    ! Geographical position of
+lambda_surf(51) =  22.6480788556811_dp *deg2rad    ! Eton-4
+
+phi_surf(52)    =  79.6730674725108_dp *deg2rad    ! Geographical position of
+lambda_surf(52) =  22.7116449352996_dp *deg2rad    ! Eton-5
+
+phi_surf(53)    =  79.6907455504277_dp *deg2rad    ! Geographical position of
+lambda_surf(53) =  22.7278148586532_dp *deg2rad    ! Eton-6
+
+phi_surf(54)    =  79.7084227767215_dp *deg2rad    ! Geographical position of
+lambda_surf(54) =  22.7440404597164_dp *deg2rad    ! Eton-7
+
+phi_surf(55)    =  79.7260991471427_dp *deg2rad    ! Geographical position of
+lambda_surf(55) =  22.7603220234687_dp *deg2rad    ! Eton-8
+
+phi_surf(56)    =  79.7437746574126_dp *deg2rad    ! Geographical position of
+lambda_surf(56) =  22.7766598368173_dp *deg2rad    ! Eton-9
+
+phi_surf(57)    =  79.7615003936967_dp *deg2rad    ! Geographical position of
+lambda_surf(57) =  22.7895141723757_dp *deg2rad    ! Eton-10
+
+phi_surf(58)    =  79.7794141201101_dp *deg2rad    ! Geographical position of
+lambda_surf(58) =  22.7893415392149_dp *deg2rad    ! B-16s-1
+
+phi_surf(59)    =  79.7973278451020_dp *deg2rad    ! Geographical position of
+lambda_surf(59) =  22.7891690597211_dp *deg2rad    ! B-16s-2
+
+phi_surf(60)    =  79.8152415686728_dp *deg2rad    ! Geographical position of
+lambda_surf(60) =  22.7889967333372_dp *deg2rad    ! B-16s-3
+
+phi_surf(61)    =  79.8331552908230_dp *deg2rad    ! Geographical position of
+lambda_surf(61) =  22.7888245595023_dp *deg2rad    ! B-16s-4
+
+phi_surf(62)    =  79.8504448969531_dp *deg2rad    ! Geographical position of
+lambda_surf(62) =  22.8027142916594_dp *deg2rad    ! B-16n-1
+
+phi_surf(63)    =  79.8662041154283_dp *deg2rad    ! Geographical position of
+lambda_surf(63) =  22.8510765245997_dp *deg2rad    ! B-16n-2
+
+phi_surf(64)    =  79.8819561232071_dp *deg2rad    ! Geographical position of
+lambda_surf(64) =  22.8995882814793_dp *deg2rad    ! B-16n-3
+
+phi_surf(65)    =  79.8977008864609_dp *deg2rad    ! Geographical position of
+lambda_surf(65) =  22.9482501953580_dp *deg2rad    ! B-16n-4
+
+phi_surf(66)    =  79.9134383711667_dp *deg2rad    ! Geographical position of
+lambda_surf(66) =  22.9970629023954_dp *deg2rad    ! B-16n-5
+
+phi_surf(67)    =  79.9291685431056_dp *deg2rad    ! Geographical position of
+lambda_surf(67) =  23.0460270418662_dp *deg2rad    ! B-16n-6
+
+phi_surf(68)    =  79.9448913678619_dp *deg2rad    ! Geographical position of
+lambda_surf(68) =  23.0951432561750_dp *deg2rad    ! B-16n-7
+
+phi_surf(69)    =  79.9606068108212_dp *deg2rad    ! Geographical position of
+lambda_surf(69) =  23.1444121908719_dp *deg2rad    ! B-16n-8
+
+phi_surf(70)    =  79.9741572381786_dp *deg2rad    ! Geographical position of
+lambda_surf(70) =  23.2092211687201_dp *deg2rad    ! Botnevika-1
+
+phi_surf(71)    =  79.9859141894524_dp *deg2rad    ! Geographical position of
+lambda_surf(71) =  23.2868821248161_dp *deg2rad    ! Botnevika-2
+
+phi_surf(72)    =  79.9976529206869_dp *deg2rad    ! Geographical position of
+lambda_surf(72) =  23.3647236505600_dp *deg2rad    ! Botnevika-3
+
+phi_surf(73)    =  80.0093733670701_dp *deg2rad    ! Geographical position of
+lambda_surf(73) =  23.4427461021207_dp *deg2rad    ! Botnevika-4
+
+phi_surf(74)    =  80.0201320622880_dp *deg2rad    ! Geographical position of
+lambda_surf(74) =  23.5253067161782_dp *deg2rad    ! Botnevika-5
+
+phi_surf(75)    =  80.0308022109253_dp *deg2rad    ! Geographical position of
+lambda_surf(75) =  23.6083570802514_dp *deg2rad    ! Botnevika-6
+
+phi_surf(76)    =  80.0414516357850_dp *deg2rad    ! Geographical position of
+lambda_surf(76) =  23.6915833394057_dp *deg2rad    ! Botnevika-7
+
+phi_surf(77)    =  80.0520802696857_dp *deg2rad    ! Geographical position of
+lambda_surf(77) =  23.7749857156754_dp *deg2rad    ! Botnevika-8
+
+phi_surf(78)    =  80.0547633949370_dp *deg2rad    ! Geographical position of
+lambda_surf(78) =  23.8736736708044_dp *deg2rad    ! Duvebreen-1
+
+phi_surf(79)    =  80.0548013447126_dp *deg2rad    ! Geographical position of
+lambda_surf(79) =  23.9773687987851_dp *deg2rad    ! Duvebreen-2
+
+phi_surf(80)    =  80.0548073397268_dp *deg2rad    ! Geographical position of
+lambda_surf(80) =  24.0810636270044_dp *deg2rad    ! Duvebreen-3
+
+phi_surf(81)    =  80.0547813803758_dp *deg2rad    ! Geographical position of
+lambda_surf(81) =  24.1847574925018_dp *deg2rad    ! Duvebreen-4
+
+phi_surf(82)    =  80.0646160588300_dp *deg2rad    ! Geographical position of
+lambda_surf(82) =  24.2700368789878_dp *deg2rad    ! Duvebreen-5
+
+phi_surf(83)    =  80.0750999374003_dp *deg2rad    ! Geographical position of
+lambda_surf(83) =  24.3542380951582_dp *deg2rad    ! Duvebreen-6
+
+phi_surf(84)    =  80.0846920877530_dp *deg2rad    ! Geographical position of
+lambda_surf(84) =  24.4407004402100_dp *deg2rad    ! Duvebreen-7
+
+phi_surf(85)    =  80.0875193831616_dp *deg2rad    ! Geographical position of
+lambda_surf(85) =  24.5434121380084_dp *deg2rad    ! Schweigaardbreen-1
+
+phi_surf(86)    =  80.0903153574351_dp *deg2rad    ! Geographical position of
+lambda_surf(86) =  24.6461808494348_dp *deg2rad    ! Schweigaardbreen-2
+
+phi_surf(87)    =  80.0924166470023_dp *deg2rad    ! Geographical position of
+lambda_surf(87) =  24.7486469216956_dp *deg2rad    ! Schweigaardbreen-3
+
+phi_surf(88)    =  80.0864319373603_dp *deg2rad    ! Geographical position of
+lambda_surf(88) =  24.8467147281595_dp *deg2rad    ! Schweigaardbreen-4
+
+phi_surf(89)    =  80.0804188683848_dp *deg2rad    ! Geographical position of
+lambda_surf(89) =  24.9446644540260_dp *deg2rad    ! Schweigaardbreen-5
+
+phi_surf(90)    =  80.0743774931913_dp *deg2rad    ! Geographical position of
+lambda_surf(90) =  25.0424957604751_dp *deg2rad    ! Schweigaardbreen-6
+
+phi_surf(91)    =  80.0713340422000_dp *deg2rad    ! Geographical position of
+lambda_surf(91) =  25.1439126047994_dp *deg2rad    ! Nilsenbreen B-12-1
+
+phi_surf(92)    =  80.0700730909331_dp *deg2rad    ! Geographical position of
+lambda_surf(92) =  25.2475056357563_dp *deg2rad    ! Nilsenbreen B-12-2
+
+phi_surf(93)    =  80.0687803205250_dp *deg2rad    ! Geographical position of
+lambda_surf(93) =  25.3510715226335_dp *deg2rad    ! Nilsenbreen B-12-3
+
+phi_surf(94)    =  80.0647501708291_dp *deg2rad    ! Geographical position of
+lambda_surf(94) =  25.4519066363393_dp *deg2rad    ! Sexebreen B-11-1
+
+phi_surf(95)    =  80.0595181102431_dp *deg2rad    ! Geographical position of
+lambda_surf(95) =  25.5506489732496_dp *deg2rad    ! Leighbreen-1
+
+phi_surf(96)    =  80.0494857323914_dp *deg2rad    ! Geographical position of
+lambda_surf(96) =  25.6365356440635_dp *deg2rad    ! Leighbreen-2
+
+phi_surf(97)    =  80.0394316265850_dp *deg2rad    ! Geographical position of
+lambda_surf(97) =  25.7222505219501_dp *deg2rad    ! Leighbreen-3
+
+phi_surf(98)    =  80.0293558606091_dp *deg2rad    ! Geographical position of
+lambda_surf(98) =  25.8077937609009_dp *deg2rad    ! Leighbreen-4
+
+phi_surf(99)    =  80.0192585021221_dp *deg2rad    ! Geographical position of
+lambda_surf(99) =  25.8931655175225_dp *deg2rad    ! Leighbreen-5
+
+phi_surf(100)    =  80.0091396186553_dp *deg2rad    ! Geographical position of
+lambda_surf(100) =  25.9783659510134_dp *deg2rad    ! Leighbreen-6
+
+phi_surf(101)    =  79.9989992776120_dp *deg2rad    ! Geographical position of
+lambda_surf(101) =  26.0633952231408_dp *deg2rad    ! Leighbreen-7
+
+phi_surf(102)    =  79.9888375462661_dp *deg2rad    ! Geographical position of
+lambda_surf(102) =  26.1482534982178_dp *deg2rad    ! Leighbreen-8
+
+phi_surf(103)    =  79.9786544917617_dp *deg2rad    ! Geographical position of
+lambda_surf(103) =  26.2329409430807_dp *deg2rad    ! Leighbreen-9
+
+phi_surf(104)    =  79.9683923353960_dp *deg2rad    ! Geographical position of
+lambda_surf(104) =  26.3172101192864_dp *deg2rad    ! Leighbreen-10
+
+phi_surf(105)    =  80.0241705082505_dp *deg2rad    ! Geographical position of
+lambda_surf(105) =  26.7558248932553_dp *deg2rad    ! Worsleybreen-1 (B9-1)
+
+phi_surf(106)    =  80.0069243536208_dp *deg2rad    ! Geographical position of
+lambda_surf(106) =  26.7836310921011_dp *deg2rad    ! Worsleybreen-2 (B9-2)
+
+phi_surf(107)    =  79.9896760170551_dp *deg2rad    ! Geographical position of
+lambda_surf(107) =  26.8113433337043_dp *deg2rad    ! Worsleybreen-3 (B9-3)
+
+phi_surf(108)    =  79.9723667157507_dp *deg2rad    ! Geographical position of
+lambda_surf(108) =  26.8350524380302_dp *deg2rad    ! Worsleybreen-4 (B9-4)
+
+phi_surf(109)    =  79.9545472297622_dp *deg2rad    ! Geographical position of
+lambda_surf(109) =  26.8248911276131_dp *deg2rad    ! B8-1
+
+phi_surf(110)    =  79.9367274171506_dp *deg2rad    ! Geographical position of
+lambda_surf(110) =  26.8147665774914_dp *deg2rad    ! B8-2
+
+phi_surf(111)    =  79.9189072796258_dp *deg2rad    ! Geographical position of
+lambda_surf(111) =  26.8046785944172_dp *deg2rad    ! B8-3
+
+phi_surf(112)    =  79.9009446914988_dp *deg2rad    ! Geographical position of
+lambda_surf(112) =  26.7957185084455_dp *deg2rad    ! B7-1
+
+phi_surf(113)    =  79.8843576455373_dp *deg2rad    ! Geographical position of
+lambda_surf(113) =  26.7616970403497_dp *deg2rad    ! B7-2
+
+phi_surf(114)    =  79.8676428266616_dp *deg2rad    ! Geographical position of
+lambda_surf(114) =  26.7251472990965_dp *deg2rad    ! B7-3
+
+phi_surf(115)    =  79.8509238637717_dp *deg2rad    ! Geographical position of
+lambda_surf(115) =  26.6887177159393_dp *deg2rad    ! B7-4
+
+phi_surf(116)    =  79.8342007771708_dp *deg2rad    ! Geographical position of
+lambda_surf(116) =  26.6524077251556_dp *deg2rad    ! B7-5
+
+phi_surf(117)    =  79.8189961177120_dp *deg2rad    ! Geographical position of
+lambda_surf(117) =  26.6017802396904_dp *deg2rad    ! B6-1
+
+phi_surf(118)    =  79.8054200039019_dp *deg2rad    ! Geographical position of
+lambda_surf(118) =  26.5357666498664_dp *deg2rad    ! B6-2
+
+phi_surf(119)    =  79.7918304753589_dp *deg2rad    ! Geographical position of
+lambda_surf(119) =  26.4699273874801_dp *deg2rad    ! B6-3
+
+phi_surf(120)    =  79.7782275858515_dp *deg2rad    ! Geographical position of
+lambda_surf(120) =  26.4042619219016_dp *deg2rad    ! B6-4
+
+phi_surf(121)    =  79.7646113889145_dp *deg2rad    ! Geographical position of
+lambda_surf(121) =  26.3387697236600_dp *deg2rad    ! B6-5
+
+phi_surf(122)    =  79.7518386380187_dp *deg2rad    ! Geographical position of
+lambda_surf(122) =  26.2683717557144_dp *deg2rad    ! B5-1
+
+phi_surf(123)    =  79.7395107596368_dp *deg2rad    ! Geographical position of
+lambda_surf(123) =  26.1954158840248_dp *deg2rad    ! B5-2
+
+phi_surf(124)    =  79.7271664326874_dp *deg2rad    ! Geographical position of
+lambda_surf(124) =  26.1226336416600_dp *deg2rad    ! B5-3
+
+phi_surf(125)    =  79.7148057168060_dp *deg2rad    ! Geographical position of
+lambda_surf(125) =  26.0500246274899_dp *deg2rad    ! B5-4
+
+phi_surf(126)    =  79.7024286714212_dp *deg2rad    ! Geographical position of
+lambda_surf(126) =  25.9775884402940_dp *deg2rad    ! B5-5
+
+phi_surf(127)    =  79.6900353557545_dp *deg2rad    ! Geographical position of
+lambda_surf(127) =  25.9053246787703_dp *deg2rad    ! B5-6
+
+phi_surf(128)    =  79.6776258288211_dp *deg2rad    ! Geographical position of
+lambda_surf(128) =  25.8332329415456_dp *deg2rad    ! B5-7
+
+phi_surf(129)    =  79.6652001494302_dp *deg2rad    ! Geographical position of
+lambda_surf(129) =  25.7613128271851_dp *deg2rad    ! B5-8
+
+phi_surf(130)    =  79.6527583761852_dp *deg2rad    ! Geographical position of
+lambda_surf(130) =  25.6895639342015_dp *deg2rad    ! B5-9
+
+phi_surf(131)    =  79.6403005674845_dp *deg2rad    ! Geographical position of
+lambda_surf(131) =  25.6179858610658_dp *deg2rad    ! B5-10
+
+phi_surf(132)    =  79.6272788783125_dp *deg2rad    ! Geographical position of
+lambda_surf(132) =  25.5497696493382_dp *deg2rad    ! B4-1
+
+phi_surf(133)    =  79.6138476738577_dp *deg2rad    ! Geographical position of
+lambda_surf(133) =  25.4840259325117_dp *deg2rad    ! B4-2
+
+phi_surf(134)    =  79.6004029370116_dp *deg2rad    ! Geographical position of
+lambda_surf(134) =  25.4184506246986_dp *deg2rad    ! B4-3
+
+phi_surf(135)    =  79.5869447205062_dp *deg2rad    ! Geographical position of
+lambda_surf(135) =  25.3530432378053_dp *deg2rad    ! B4-4
+
+phi_surf(136)    =  79.5734730768545_dp *deg2rad    ! Geographical position of
+lambda_surf(136) =  25.2878032846200_dp *deg2rad    ! B4-5
+
+phi_surf(137)    =  79.5599880583521_dp *deg2rad    ! Geographical position of
+lambda_surf(137) =  25.2227302788170_dp *deg2rad    ! B4-6
+
+phi_surf(138)    =  79.5464897170775_dp *deg2rad    ! Geographical position of
+lambda_surf(138) =  25.1578237349623_dp *deg2rad    ! B4-7
+
+phi_surf(139)    =  79.5340825476013_dp *deg2rad    ! Geographical position of
+lambda_surf(139) =  25.0873713598923_dp *deg2rad    ! B3-1
+
+phi_surf(140)    =  79.5231871974923_dp *deg2rad    ! Geographical position of
+lambda_surf(140) =  25.0091720580033_dp *deg2rad    ! B3-2
+
+phi_surf(141)    =  79.5122726145574_dp *deg2rad    ! Geographical position of
+lambda_surf(141) =  24.9311335486110_dp *deg2rad    ! B3-3
+
+phi_surf(142)    =  79.5013388593293_dp *deg2rad    ! Geographical position of
+lambda_surf(142) =  24.8532556096146_dp *deg2rad    ! B3-4
+
+phi_surf(143)    =  79.4881304535468_dp *deg2rad    ! Geographical position of
+lambda_surf(143) =  24.7885573077964_dp *deg2rad    ! B3-5
+
+phi_surf(144)    =  79.4734132097634_dp *deg2rad    ! Geographical position of
+lambda_surf(144) =  24.7326565135170_dp *deg2rad    ! B3-6
+
+phi_surf(145)    =  79.4586860312332_dp *deg2rad    ! Geographical position of
+lambda_surf(145) =  24.6769105936574_dp *deg2rad    ! B3-7
+
+phi_surf(146)    =  79.4439489597131_dp *deg2rad    ! Geographical position of
+lambda_surf(146) =  24.6213190006049_dp *deg2rad    ! B3-8
+
+phi_surf(147)    =  79.4321693404700_dp *deg2rad    ! Geographical position of
+lambda_surf(147) =  24.5500779464491_dp *deg2rad    ! B2-1
+
+phi_surf(148)    =  79.4223453273505_dp *deg2rad    ! Geographical position of
+lambda_surf(148) =  24.4684716320257_dp *deg2rad    ! B2-2
+
+phi_surf(149)    =  79.4125002037095_dp *deg2rad    ! Geographical position of
+lambda_surf(149) =  24.3870150299917_dp *deg2rad    ! B2-3
+
+phi_surf(150)    =  79.4026340289842_dp *deg2rad    ! Geographical position of
+lambda_surf(150) =  24.3057080421768_dp *deg2rad    ! B2-4
+
+phi_surf(151)    =  79.3927468625203_dp *deg2rad    ! Geographical position of
+lambda_surf(151) =  24.2245505685362_dp *deg2rad    ! B2-5
+
+phi_surf(152)    =  79.3909641358607_dp *deg2rad    ! Geographical position of
+lambda_surf(152) =  24.1356247611452_dp *deg2rad    ! Brasvellbreen-1
+
+phi_surf(153)    =  79.3950618239069_dp *deg2rad    ! Geographical position of
+lambda_surf(153) =  24.0409163942958_dp *deg2rad    ! Brasvellbreen-2
+
+phi_surf(154)    =  79.3991312122811_dp *deg2rad    ! Geographical position of
+lambda_surf(154) =  23.9461351693152_dp *deg2rad    ! Brasvellbreen-3
+
+phi_surf(155)    =  79.4031722671433_dp *deg2rad    ! Geographical position of
+lambda_surf(155) =  23.8512815066396_dp *deg2rad    ! Brasvellbreen-4
+
+phi_surf(156)    =  79.4071849548373_dp *deg2rad    ! Geographical position of
+lambda_surf(156) =  23.7563558291274_dp *deg2rad    ! Brasvellbreen-5
+
+phi_surf(157)    =  79.4111692418918_dp *deg2rad    ! Geographical position of
+lambda_surf(157) =  23.6613585620463_dp *deg2rad    ! Brasvellbreen-6
+
+phi_surf(158)    =  79.4127149901435_dp *deg2rad    ! Geographical position of
+lambda_surf(158) =  23.5647431017868_dp *deg2rad    ! Brasvellbreen-7
+
+phi_surf(159)    =  79.4129320057492_dp *deg2rad    ! Geographical position of
+lambda_surf(159) =  23.4672773246991_dp *deg2rad    ! Brasvellbreen-8
+
+phi_surf(160)    =  79.4131190508990_dp *deg2rad    ! Geographical position of
+lambda_surf(160) =  23.3698071241014_dp *deg2rad    ! Brasvellbreen-9
+
+phi_surf(161)    =  79.4132761235192_dp *deg2rad    ! Geographical position of
+lambda_surf(161) =  23.2723330506382_dp *deg2rad    ! Brasvellbreen-10
+
+phi_surf(162)    =  79.4134032217989_dp *deg2rad    ! Geographical position of
+lambda_surf(162) =  23.1748556552727_dp *deg2rad    ! Brasvellbreen-11
+
+phi_surf(163)    =  79.4135003441905_dp *deg2rad    ! Geographical position of
+lambda_surf(163) =  23.0773754892604_dp *deg2rad    ! Brasvellbreen-12
+
+#if (GRID==0 || GRID==1) /* Stereographic projection */
+
+do n=1, n_surf
+
+   if (F_INV > 1.0e+10_dp) then   ! interpreted as infinity, thus no flattening
+                                  ! (spherical planet)
+
+      call stereo_forw_sphere(lambda_surf(n), phi_surf(n), &
+                              R, LAMBDA0, PHI0, x_surf(n), y_surf(n))
+
+   else   ! finite inverse flattening (ellipsoidal planet)
+
+      call stereo_forw_ellipsoid(lambda_surf(n), phi_surf(n), &
+                                 A, B, LAMBDA0, PHI0, x_surf(n), y_surf(n))
+
+   end if
+
+end do
+
+#elif (GRID==2) /* Geographical coordinates */
+
+x_surf = lambda_surf
+y_surf = phi_surf
+
+#endif
+
+#endif /* (NHEM_SUB==4 && WRITE_SER_FILE_STAKES==1) Austfonna */
+
 !-------- Output of the initial state --------
 
 #if !defined(ALLOW_TAPENADE) /* Normal */
@@ -2311,8 +2856,14 @@ end if
 #endif
 
 if (flag_init_output) then
+
    call output2(time_init, dxi, deta, delta_ts, glac_index)
    call output4(time_init, dxi, deta, delta_ts, glac_index)
+
+#if (NHEM_SUB==4 && WRITE_SER_FILE_STAKES==1) /* Austfonna */
+   call output5(time, dxi, deta, delta_ts, glac_index)
+#endif
+
 end if
 
 #else /* Tapenade */
