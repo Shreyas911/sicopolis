@@ -2744,6 +2744,9 @@ call error(errormsg)   ! actually not an error,
 #endif
 
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+#if (ACCSURFACE==2 || ACCSURFACE==3)
+   gamma_s_arr = gamma_s_arr + GAMMA_S
+#endif
    flag_ad_sico_init = .true.
 #endif /* ALLOW_{TAPENADE,GRDCHK} */
 

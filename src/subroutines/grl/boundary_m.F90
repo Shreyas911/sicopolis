@@ -1000,9 +1000,9 @@ if (flag_ad_sico_init) then
 #if (ACCSURFACE==1)
    precip_fact_arr = ACCFACT
 #elif (ACCSURFACE==2)
-   precip_fact_arr(j,i) = 1.0_dp + (GAMMA_S + gamma_s_arr(j,i))*delta_ts
+   precip_fact_arr(j,i) = 1.0_dp + gamma_s_arr(j,i)*delta_ts
 #elif (ACCSURFACE==3)
-   precip_fact_arr(j,i) = exp((GAMMA_S + gamma_s_arr(j,i))*delta_ts)
+   precip_fact_arr(j,i) = exp(gamma_s_arr(j,i)*delta_ts)
 #endif
 
 else

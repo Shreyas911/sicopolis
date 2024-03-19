@@ -128,9 +128,13 @@ program tapenade_main
         q_geo        = 0.0
         c_slide_init = 0.0
         H            = 0.0 ! Only compatible with ANF_DAT==1
+        gamma_s_arr  = 0.0 ! Only compatible with ACCSURFACE==2 or 3
 
         ! 3D fields
         temp_c       = 0.0 ! Not compatible with TEMP_INIT==5
+
+        ! Reset flag_ad_sico_init for next iteration
+        flag_ad_sico_init = .false.
 
 !@ python_automated_tlm IO write @
     end do ! (close loop over points)

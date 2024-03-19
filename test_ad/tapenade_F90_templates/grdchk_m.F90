@@ -179,18 +179,22 @@ module grdchk_m
 
             ! 3D fields
             temp_c       = 0.0 ! Not compatible with TEMP_INIT==5
+
+            ! Reset flag_ad_sico_init for next iteration
+            flag_ad_sico_init = .false.
        
             ! store cost
             fc_collected(d) = fc
         
-            ! --------- calculate simple 2-sided finite difference due to
-            !           perturbation: fc(+) - fc(-) / 2*espsilon
-            if (orig_val .ne. 0) then
-                gfd = (fc_collected(2) - fc_collected(3))/(2.d0 * perturb_val * orig_val)
-            else
-                gfd = (fc_collected(2) - fc_collected(1))/ perturb_val
-            end if          
           end do ! (close perturb loop)
+
+          ! --------- calculate simple 2-sided finite difference due to
+          !           perturbation: fc(+) - fc(-) / 2*espsilon
+          if (orig_val .ne. 0) then
+            gfd = (fc_collected(2) - fc_collected(3))/(2.d0 * perturb_val * orig_val)
+          else
+            gfd = (fc_collected(2) - fc_collected(1))/ perturb_val
+          end if          
 
           ! -- sanity check
           write(6, fmt='(a,f40.20)')   "Finite difference is = ", gfd
