@@ -1181,18 +1181,18 @@ end if
 
 #elif (SOLID_PRECIP==3)   /* Huybrechts and de Wolde (1999) */
 
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+#if defined(ALLOW_TAPENADE)
 if (flag_ad_sico_init) then
    call my_erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat_arr(j,i), temp_val)
    frac_solid = 1.0_dp - 0.5_dp*temp_val
-else
+else 
    call my_erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat, temp_val)
    frac_solid = 1.0_dp - 0.5_dp*temp_val
 end if
-#else /* NORMAL */
+#else /* NORMAL,GRDCHK */
    frac_solid = 1.0_dp &
                 - 0.5_dp*erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat)
-#endif /* ALLOW_{TAPENADE,GRDCHK} */
+#endif /* ALLOW_TAPENADE */
 
 #endif
 
