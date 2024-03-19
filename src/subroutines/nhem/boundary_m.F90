@@ -55,6 +55,14 @@ contains
 subroutine boundary(time, dtime, dxi, deta, &
                     delta_ts, glac_index, z_mar)
 
+#if defined(ALLOW_TAPENADE) /* Tapenade */
+  use ctrl_m, only: myceiling, myfloor
+  use sico_maths_m, only: my_erfc
+#endif /* Tapenade */
+
+  use netcdf
+  use nc_check_m
+
 #if ((MARGIN==2) && (MARINE_ICE_FORMATION==2) && (MARINE_ICE_CALVING==9))
   use calving_m
 #endif
@@ -75,26 +83,55 @@ real(dp), intent(out)   :: delta_ts, glac_index, z_mar
 
 integer(i4b) :: i, j, n
 integer(i4b) :: i_gr, i_kl
+integer(i4b) :: n_year_CE
+integer(i4b) :: ios
 real(dp), dimension(0:JMAX,0:IMAX) :: z_sl_old
 real(dp) :: z_sl_old_mean
 real(dp) :: z_sl_min, t1, t2, t3, t4, t5, t6
+real(dp) :: time_in_years
+real(dp) :: rho_inv
 real(dp) :: time_gr, time_kl
 real(dp) :: z_sle_present, z_sle_help
+
 real(dp), dimension(0:JMAX,0:IMAX,0:12) :: precip
-real(dp), dimension(0:JMAX,0:IMAX,12) :: temp_mm
-real(dp), dimension(0:JMAX,0:IMAX) :: temp_ma
-real(dp), dimension(12) :: temp_mm_help
-real(dp) :: temp_jja_help
+real(dp), dimension(0:JMAX,0:IMAX,12)   :: temp_mm
+real(dp), dimension(12)                 :: temp_mm_help
+real(dp), dimension(0:JMAX,0:IMAX)      :: temp_ma
+
 real(dp) :: gamma_t, temp_diff
+real(dp) :: temp_jja_help
 real(dp) :: gamma_p, zs_thresh, &
             temp_rain, temp_snow, &
             inv_delta_temp_rain_snow, coeff(0:5), inv_sqrt2_s_stat, &
             precip_fact, frac_solid
 real(dp) :: s_stat, beta1, beta2, Pmax, mu, lambda_lti, temp_lti
+real(dp) :: r_aux
+character(len=256) :: ch_aux
 logical, dimension(0:JMAX,0:IMAX) :: check_point
+
+integer(i4b) :: ncid
+!     ncid:      File ID
+integer(i4b) :: ncv
+!     ncv:       Variable ID
+integer(i4b) :: nc3cor(3)
+!     nc3cor(3): Corner of a 3-d array
+integer(i4b) :: nc3cnt(3)
+!     nc3cnt(3): Count of a 3-d array
 
 real(dp), parameter :: &
           inv_twelve = 1.0_dp/12.0_dp, one_third = 1.0_dp/3.0_dp
+
+character(len=64), parameter :: thisroutine = 'boundary'
+
+#if defined(ALLOW_TAPENADE) /* Tapenade */
+integer(i4b) :: i_time_in_years
+real(dp)     :: temp_val
+#endif /* Tapenade */
+
+time_in_years = time*sec2year
+n_year_CE     = floor((time_in_years+YEAR_ZERO)+eps_sp_dp)
+
+rho_inv       = 1.0_dp/RHO
 
 !-------- Initialization of variables --------
 
@@ -109,32 +146,42 @@ z_mar      = 0.0_dp
 
 !-------- Surface-temperature deviation from present values --------
 
-#if TSURFACE==1
+#if (TSURFACE==1)
 delta_ts = DELTA_TS0
 !                           ! Steady state with prescribed constant
 !                           ! air-temperature deviation
-#elif TSURFACE==3
+#elif (TSURFACE==3)
 delta_ts = SINE_AMPLIT &
-           *cos(2.0_dp*pi*time/(SINE_PERIOD*year2sec)) &
+           *cos(2.0_dp*pi*time_in_years/SINE_PERIOD) &
            -SINE_AMPLIT
 !                           ! Sinusoidal air-temperature forcing
-#elif TSURFACE==4
+#elif (TSURFACE==4)
 
 !  ------ delta_ts from ice-core record
 
-if (time*sec2year.lt.real(grip_time_min,dp)) then
+if (time_in_years < real(grip_time_min,dp)) then
    delta_ts = griptemp(0)
-else if (time*sec2year.lt.real(grip_time_max,dp)) then
+else if (time_in_years < real(grip_time_max,dp)) then
 
-   i_kl = floor(((time*sec2year) &
+#if !defined(ALLOW_TAPENADE) /* Normal */
+   i_kl = floor((time_in_years &
           -real(grip_time_min,dp))/real(grip_time_stp,dp))
+#else /* Tapenade */
+   call myfloor((time_in_years &
+                -real(grip_time_min,dp))/real(grip_time_stp,dp),i_kl)
+#endif /* Normal vs. Tapenade */
    i_kl = max(i_kl, 0)
 
-   i_gr = ceiling(((time*sec2year) &
+#if !defined(ALLOW_TAPENADE) /* Normal */
+   i_gr = ceiling((time_in_years &
           -real(grip_time_min,dp))/real(grip_time_stp,dp))
+#else /* Tapenade */
+   call myceiling(((time_in_years &
+          -real(grip_time_min,dp))/real(grip_time_stp,dp)),i_gr)
+#endif /* Normal vs. Tapenade */
    i_gr = min(i_gr, ndata_grip)
 
-   if (i_kl.eq.i_gr) then
+   if (i_kl == i_gr) then
 
       delta_ts = griptemp(i_kl)
 
@@ -159,18 +206,28 @@ delta_ts = delta_ts * GRIP_TEMP_FACT
 
 !-------- Glacial index --------
 
-#elif TSURFACE==5
+#elif (TSURFACE==5)
 
-if (time*sec2year < real(gi_time_min,dp)) then
+if (time_in_years < real(gi_time_min,dp)) then
    glac_index = glacial_index(0)
-else if (time*sec2year < real(gi_time_max,dp)) then
+else if (time_in_years < real(gi_time_max,dp)) then
 
-   i_kl = floor(((time*sec2year) &
+#if !defined(ALLOW_TAPENADE)/* Normal */
+   i_kl = floor((time_in_years &
           -real(gi_time_min,dp))/real(gi_time_stp,dp))
+#else /* Tapenade */
+   call myfloor(((time_in_years &
+          -real(gi_time_min,dp))/real(gi_time_stp,dp)), i_kl)
+#endif /* Normal vs. Tapenade */
    i_kl = max(i_kl, 0)
 
-   i_gr = ceiling(((time*sec2year) &
+#if !defined(ALLOW_TAPENADE)/* Normal */
+   i_gr = ceiling((time_in_years &
           -real(gi_time_min,dp))/real(gi_time_stp,dp))
+#else /* Tapenade */
+   call myceiling(((time_in_years &
+          -real(gi_time_min,dp))/real(gi_time_stp,dp)), i_gr)
+#endif /* Normal vs. Tapenade */
    i_gr = min(i_gr, ndata_gi)
 
    if (i_kl == i_gr) then
@@ -207,19 +264,29 @@ z_sl = Z_SL0
 
 !  ------ Time-dependent sea level from data
 
-if (time*sec2year.lt.real(specmap_time_min,dp)) then
+if (time_in_years < real(specmap_time_min,dp)) then
    z_sl = specmap_zsl(0)
-else if (time*sec2year.lt.real(specmap_time_max,dp)) then
+else if (time_in_years < real(specmap_time_max,dp)) then
 
-   i_kl = floor(((time*sec2year) &
+#if !defined(ALLOW_TAPENADE) /* Normal */
+   i_kl = floor((time_in_years &
           -real(specmap_time_min,dp))/real(specmap_time_stp,dp))
    i_kl = max(i_kl, 0)
 
-   i_gr = ceiling(((time*sec2year) &
+   i_gr = ceiling((time_in_years &
           -real(specmap_time_min,dp))/real(specmap_time_stp,dp))
    i_gr = min(i_gr, ndata_specmap)
+#else /* Tapenade */
+   call myfloor(((time_in_years &
+          -real(specmap_time_min,dp))/real(specmap_time_stp,dp)), i_kl)
+   i_kl = max(i_kl, 0)
 
-   if (i_kl.eq.i_gr) then
+   call myceiling(((time_in_years &
+          -real(specmap_time_min,dp))/real(specmap_time_stp,dp)), i_gr)
+   i_gr = min(i_gr, ndata_specmap)
+#endif /* Normal vs. Tapenade */
+
+   if (i_kl == i_gr) then
 
       z_sl = specmap_zsl(i_kl)
 
@@ -260,13 +327,13 @@ end if
 
 !  ------ Minimum bedrock elevation for extent of marine ice
 
-#if MARGIN==2
+#if (MARGIN==2)
 
-#if ( MARINE_ICE_CALVING==2 || MARINE_ICE_CALVING==3 )
+#if (MARINE_ICE_CALVING==2 || MARINE_ICE_CALVING==3)
 z_mar = Z_MAR
-#elif ( MARINE_ICE_CALVING==4 || MARINE_ICE_CALVING==5 )
+#elif (MARINE_ICE_CALVING==4 || MARINE_ICE_CALVING==5)
 z_mar = FACT_Z_MAR*z_sl_mean
-#elif ( MARINE_ICE_CALVING==6 || MARINE_ICE_CALVING==7 )
+#elif (MARINE_ICE_CALVING==6 || MARINE_ICE_CALVING==7)
 if (z_sl_mean >= -80.0_dp) then
    z_mar = 2.5_dp*z_sl_mean
 else
@@ -320,32 +387,38 @@ end do
 
 !-------- Surface air temperatures --------
 
-gamma_t = -6.5e-03_dp   ! atmospheric lapse rate
+#if (defined(TOPO_LAPSE_RATE))
+gamma_t = TOPO_LAPSE_RATE * 1.0e-03_dp
+             ! topographic lapse rate; K/km -> K/m
+#else
+gamma_t = 6.5e-03_dp
+             ! topographic lapse rate (K/m), default value
+#endif
 
 do i=0, IMAX
 do j=0, JMAX
 
-#if (TSURFACE <= 4)
+#if (TSURFACE<=4)
 
 !  ------ Correction of present monthly temperatures with elevation changes
 !         and temperature deviation delta_ts
 
-   temp_diff = gamma_t*(zs(j,i)-zs_ref(j,i)) + delta_ts
+   temp_diff = gamma_t*(zs_ref(j,i)-zs(j,i)) + delta_ts
 
    do n=1, 12   ! month counter
-      temp_mm(j,i,n) = temp_mm_present(j,i,n) + temp_diff
+      temp_mm(j,i,n) = temp_present(j,i,n) + temp_diff
    end do
 
-#elif (TSURFACE == 5)
+#elif (TSURFACE==5)
 
 !  ------ Correction of present monthly temperatures with LGM anomaly and
 !         glacial index as well as elevation changes
 
-   temp_diff = gamma_t*(zs(j,i)-zs_ref(j,i))
+   temp_diff = gamma_t*(zs_ref(j,i)-zs(j,i))
 
    do n=1, 12   ! month counter
-      temp_mm(j,i,n) = temp_mm_present(j,i,n) &
-                       + glac_index*temp_mm_lgm_anom(j,i,n) &
+      temp_mm(j,i,n) = temp_present(j,i,n) &
+                       + glac_index*temp_lgm_anom(j,i,n) &
                        + temp_diff
    end do
 
@@ -353,7 +426,7 @@ do j=0, JMAX
 
 !  ------ Mean annual air temperature
 
-   temp_ma(j,i) = 0.0_dp   ! initialisation value
+   temp_ma(j,i) = 0.0_dp   ! initialization value
 
    do n=1, 12   ! month counter
       temp_ma(j,i) = temp_ma(j,i) + temp_mm(j,i,n)*inv_twelve
@@ -368,7 +441,9 @@ temp_maat = temp_ma
 
 !-------- Accumulation-ablation function as_perp --------
 
-#if (ELEV_DESERT == 1)
+#if (ACCSURFACE<=3)
+
+#if (ELEV_DESERT==1)
 
 gamma_p   = GAMMA_P*1.0e-03_dp   ! Precipitation lapse rate
                                  ! for elevation desertification, in m^(-1)
@@ -376,7 +451,11 @@ zs_thresh = ZS_THRESH            ! Elevation threshold, in m
 
 #endif
 
-#if (SOLID_PRECIP == 1)     /* Marsiat (1994) */
+#endif
+
+#if (ACCSURFACE<=5)
+
+#if (SOLID_PRECIP==1)     /* Marsiat (1994) */
 
 temp_rain =    7.0_dp   ! Threshold monthly mean temperature for
                         ! precipitation = 100% rain, in degC
@@ -385,7 +464,7 @@ temp_snow =  -10.0_dp   ! Threshold monthly mean temperature for &
 
 inv_delta_temp_rain_snow = 1.0_dp/(temp_rain-temp_snow)
 
-#elif (SOLID_PRECIP == 2)   /* Bales et al. (2009) */
+#elif (SOLID_PRECIP==2)   /* Bales et al. (2009) */
 
 temp_rain =    7.2_dp   ! Threshold monthly mean temperature for &
                         ! precipitation = 100% rain, in degC
@@ -399,7 +478,7 @@ coeff(3) =  4.66e-04_dp     ! fifth-order
 coeff(4) =  3.8e-05_dp      ! polynomial
 coeff(5) =  6.0e-07_dp      ! fit
 
-#elif (SOLID_PRECIP == 3)   /* Huybrechts and de Wolde (1999) */
+#elif (SOLID_PRECIP==3)   /* Huybrechts and de Wolde (1999) */
 
 temp_rain = 2.0_dp      ! Threshold instantaneous temperature for &
                         ! precipitation = 100% rain, in degC
@@ -419,17 +498,19 @@ inv_sqrt2_s_stat = 1.0_dp/(sqrt(2.0_dp)*s_stat)
 
 #endif
 
+#endif
+
 #if (ABLSURFACE==1 || ABLSURFACE==2)
 
 #if (defined(S_STAT_0) && defined(BETA1_0) && defined(BETA2_0) && defined(PMAX_0) && defined(MU_0))
 s_stat = S_STAT_0
 beta1  = BETA1_0  *(0.001_dp/86400.0_dp)*(RHO_W/RHO)
-                        ! (mm WE)/(d*degC) -> (m IE)/(s*degC)
+                           ! (mm WE)/(d*degC) -> (m IE)/(s*degC)
 beta2  = BETA2_0  *(0.001_dp/86400.0_dp)*(RHO_W/RHO)
-                        ! (mm WE)/(d*degC) -> (m IE)/(s*degC)
+                           ! (mm WE)/(d*degC) -> (m IE)/(s*degC)
 Pmax   = PMAX_0
 mu     = MU_0     *(1000.0_dp*86400.0_dp)*(RHO/RHO_W)
-                        ! (d*degC)/(mm WE) -> (s*degC)/(m IE)
+                           ! (d*degC)/(mm WE) -> (s*degC)/(m IE)
 #else
 errormsg = ' >>> boundary: ' &
            // 'Parameters for PDD model not defined in run-specs header!'
@@ -450,15 +531,15 @@ do j=0, JMAX
 
 !  ------ Accumulation
 
-#if (ACCSURFACE <= 3)
+#if (ACCSURFACE<=3)
 
 !    ---- Elevation desertification of precipitation
 
-#if (ELEV_DESERT == 0)
+#if (ELEV_DESERT==0)
 
    precip_fact = 1.0_dp   ! no elevation desertification
 
-#elif (ELEV_DESERT == 1)
+#elif (ELEV_DESERT==1)
 
    if (zs_ref(j,i) < zs_thresh) then
       precip_fact &
@@ -481,27 +562,27 @@ do j=0, JMAX
 
 !    ---- Precipitation change related to changing climate
 
-#if ACCSURFACE==1
+#if (ACCSURFACE==1)
    precip_fact = ACCFACT
-#elif ACCSURFACE==2
+#elif (ACCSURFACE==2)
    precip_fact = 1.0_dp + GAMMA_S*delta_ts
-#elif ACCSURFACE==3
+#elif (ACCSURFACE==3)
    precip_fact = exp(GAMMA_S*delta_ts)
 #endif
 
-#if (ACCSURFACE <= 3)
+#if (ACCSURFACE<=3)
 
-   precip(j,i,0) = 0.0_dp   ! initialisation value for mean annual precip
+   precip(j,i,0) = 0.0_dp   ! initialization value for mean annual precip
 
    do n=1, 12   ! month counter
       precip(j,i,n) = precip(j,i,n)*precip_fact   ! monthly precip
       precip(j,i,0) = precip(j,i,0) + precip(j,i,n)*inv_twelve
-                                              ! mean annual precip
+                                                  ! mean annual precip
    end do
 
-#elif (ACCSURFACE == 5)
+#elif (ACCSURFACE==5)
 
-   precip(j,i,0) = 0.0_dp   ! initialisation value for mean annual precip
+   precip(j,i,0) = 0.0_dp   ! initialization value for mean annual precip
 
    do n=1, 12   ! month counter
 
@@ -522,13 +603,15 @@ do j=0, JMAX
 
 !    ---- Annual accumulation, snowfall and rainfall rates
 
+#if (ACCSURFACE<=5)
+
    accum(j,i) = precip(j,i,0)
 
-   snowfall(j,i) = 0.0_dp   ! initialisation value
+   snowfall(j,i) = 0.0_dp   ! initialization value
 
    do n=1, 12   ! month counter
 
-#if (SOLID_PRECIP == 1)     /* Marsiat (1994) */
+#if (SOLID_PRECIP==1)     /* Marsiat (1994) */
 
       if (temp_mm(j,i,n) >= temp_rain) then
          frac_solid = 0.0_dp
@@ -538,7 +621,7 @@ do j=0, JMAX
          frac_solid = (temp_rain-temp_mm(j,i,n))*inv_delta_temp_rain_snow
       end if
 
-#elif (SOLID_PRECIP == 2)   /* Bales et al. (2009) */
+#elif (SOLID_PRECIP==2)   /* Bales et al. (2009) */
 
       if (temp_mm(j,i,n) >= temp_rain) then
          frac_solid = 0.0_dp
@@ -553,10 +636,15 @@ do j=0, JMAX
                ! evaluation of 5th-order polynomial by Horner scheme
       end if
 
-#elif (SOLID_PRECIP == 3)   /* Huybrechts and de Wolde (1999) */
+#elif (SOLID_PRECIP==3)   /* Huybrechts and de Wolde (1999) */
 
+#if !defined(ALLOW_TAPENADE) /* Normal */
       frac_solid = 1.0_dp &
                    - 0.5_dp*erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat)
+#else /* Tapenade */
+      call my_erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat, temp_val)
+      frac_solid = 1.0_dp - 0.5_dp*temp_val
+#endif /* Normal vs. Tapenade */
 
 #endif
 
@@ -568,6 +656,8 @@ do j=0, JMAX
 
    if (snowfall(j,i) < 0.0_dp) snowfall(j,i) = 0.0_dp   ! correction of
    if (rainfall(j,i) < 0.0_dp) rainfall(j,i) = 0.0_dp   ! negative values
+
+#endif
 
 !  ------ Ablation
 
@@ -638,11 +728,19 @@ end do
 
 !  ------ SMB = precipitation minus runoff
 
+#if (ACCSURFACE<=5 && ABLSURFACE<=5)
+
 as_perp = accum - runoff
+
+#endif
 
 !  ------ Ice-surface temperature (10-m firn temperature) temp_s,
 !         including empirical firn-warming correction due to
 !         refreezing meltwater when superimposed ice is formed
+
+#if !defined(ALLOW_TAPENADE) /* Normal */
+
+#if (TSURFACE<=5)
 
 where (melt_star >= melt)
    temp_s = temp_ma + mu*(melt_star-melt)
@@ -650,8 +748,36 @@ elsewhere
    temp_s = temp_ma
 end where
 
+#endif
+
 where (temp_s > -0.001_dp) temp_s = -0.001_dp
                             ! Cut-off of positive air temperatures
+
+#else /* Tapenade */
+
+#if (TSURFACE<=5)
+
+do i=0, IMAX
+do j=0, JMAX
+   if (melt_star(j,i) >= melt(j,i)) then
+      temp_s(j,i) = temp_ma(j,i) + mu*(melt_star(j,i)-melt(j,i))
+   else
+      temp_s(j,i) = temp_ma(j,i)
+   end if
+end do
+end do
+
+#endif
+
+do i=0, IMAX
+do j=0, JMAX
+   if (temp_s(j,i) > -0.001_dp) then
+      temp_s(j,i) = -0.001_dp   ! Cut-off of positive air temperatures
+   end if
+end do
+end do
+
+#endif /* Normal vs. Tapenade */
 
 !-------- Calving --------
 

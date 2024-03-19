@@ -54,12 +54,27 @@ subroutine sico_init(delta_ts, glac_index, &
                z_mar, &
                ndat2d, ndat3d, n_output)
 
+#if !defined(ALLOW_TAPENADE) /* Normal */
   use compare_float_m
+#endif /* Normal */
+
   use ice_material_properties_m, only : ice_mat_eqs_pars
   use enth_temp_omega_m, only : calc_c_int_table, calc_c_int_inv_table, &
                                 enth_fct_temp_omega
 
-  use read_m, only : read_scalar_input, read_2d_input, read_kei, read_phys_para
+  use netcdf
+  use nc_check_m
+
+#if (GRID==0 || GRID==1)
+  use stereo_proj_m
+#endif
+
+  use read_m, only : read_target_topo_nc, &
+                     read_scalar_input, read_2d_input, read_kei, read_phys_para
+
+#if (defined(ALLOW_NORMAL) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
+  use read_m, only : read_age_data, read_BedMachine_data
+#endif
 
   use boundary_m
   use init_temp_water_age_m
@@ -70,7 +85,9 @@ subroutine sico_init(delta_ts, glac_index, &
   use calc_dxyz_m
   use calc_temp_melt_bas_m
 
+#if !defined(ALLOW_TAPENADE) /* Normal */
   use output_m
+#endif /* Normal */
 
 implicit none
 
@@ -85,26 +102,29 @@ real(dp),           intent(out) :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
 real(dp),           intent(out) :: z_mar
 
 integer(i4b)       :: i, j, kc, kt, kr, m, n, ir, jr, n1, n2
-integer(i4b)       :: ios
+integer(i4b)       :: ios, ios1, ios2, ios3, ios4
 integer(i4b)       :: istat, ierr
 integer(i4b)       :: n_q_geo_mod
-integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_ref
 real(dp)           :: dtime0, dtime_temp0, dtime_wss0, dtime_out0, dtime_ser0
 real(dp)           :: time_init0, time_end0
 #if (OUTPUT==2 || OUTPUT==3)
 real(dp)           :: time_output0(N_OUTPUT)
 #endif
 real(dp)           :: d_dummy
-character(len=256) :: anfdatname
+character(len=256) :: anfdatname, target_topo_dat_name
 character(len=256) :: filename_with_path
 character(len=256) :: shell_command
 character(len=256) :: ch_revision
 character(len= 64) :: ch_var_name
 character(len=  3) :: ch_month(12)
 character          :: ch_dummy
+logical            :: flag_precip_monthly_mean
 logical            :: flag_init_output, flag_3d_output
 
+integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_ref
+
 real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
+real(dp), dimension(0:IMAX,0:JMAX) :: field2d_tra_aux
 
 integer(i4b) :: n_slide_regions
 #if (!defined(N_SLIDE_REGIONS) || N_SLIDE_REGIONS<=1)
@@ -118,6 +138,15 @@ integer(i4b) :: q_weert_aux(N_SLIDE_REGIONS)
 real(dp) :: c_slide_aux(N_SLIDE_REGIONS)
 real(dp) :: gamma_slide_aux(N_SLIDE_REGIONS)
 #endif
+
+integer(i4b) :: dimid, ncid, ncv
+!   dimid:       Dimension ID
+!    ncid:       File ID
+!     ncv:       Variable ID
+
+real(dp), parameter :: inv_twelve = 1.0_dp/12.0_dp
+
+character(len=64), parameter :: thisroutine = 'sico_init'
 
 character(len=64), parameter :: fmt1 = '(a)', &
                                 fmt2 = '(a,i0)', &
@@ -148,14 +177,16 @@ ch_domain_short = 'grl'
 #elif (defined(NHEM))
 ch_domain_long  = 'Northern hemisphere'
 ch_domain_short = 'nhem'
-
-#elif (defined(SCAND))
-ch_domain_long  = 'Scandinavia and Eurasia'
-ch_domain_short = 'scand'
-
-#elif (defined(TIBET))
-ch_domain_long  = 'Tibet'
-ch_domain_short = 'tibet'
+#if (NHEM_SUB==1)
+ch_domain_long  = trim(ch_domain_long) &
+                  // ' (Entire northern hemisphere)'
+#elif (NHEM_SUB==2)
+ch_domain_long  = trim(ch_domain_long) &
+                  // ' (Laurentide and Cordilleran ice sheets)'
+#elif (NHEM_SUB==3)
+ch_domain_long  = trim(ch_domain_long) &
+                  // ' (Fennoscandian and Eurasian ice sheets)'
+#endif
 
 #elif (defined(NMARS))
 ch_domain_long  = 'North polar cap of Mars'
@@ -173,10 +204,8 @@ ch_domain_long  = trim(ch_domain_long)//'/ISMIP HEINO'
 #endif
 
 #else
-
 errormsg = ' >>> sico_init: No valid domain specified!'
 call error(errormsg)
-
 #endif
 
 !-------- Some initial values --------
@@ -198,7 +227,11 @@ time_output = 0.0_dp
 !                                                     if required --------
 
 #if (MARGIN==3 || DYNAMICS==2)
+#if !defined(ALLOW_TAPENADE) /* Normal */
   call lis_initialize(ierr)
+#else /* Tapenade */
+  call lis_init_f(ierr)
+#endif /* Normal vs. Tapenade */
 #endif
 
 !-------- Read physical parameters --------
@@ -244,9 +277,13 @@ call error(errormsg)
 !-------- Compatibility check of the horizontal resolution with the
 !         number of grid points --------
 
+#if !defined(ALLOW_TAPENADE) /* Normal */
+
 #if (!defined(CHECK_RES_IMAX_JMAX) || CHECK_RES_IMAX_JMAX==1)
 
 #if (GRID==0 || GRID==1)
+
+#if (NHEM_SUB==1) /* Entire northern hemisphere */
 
 if (approx_equal(DX, 80.0_dp, eps_sp_dp)) then
 
@@ -270,17 +307,72 @@ else if (approx_equal(DX, 20.0_dp, eps_sp_dp)) then
    end if
 
 else
-
    errormsg = ' >>> sico_init: DX wrong!'
    call error(errormsg)
-
 end if
+
+#elif (NHEM_SUB==2) /* Laurentide and Cordilleran ice sheets */
+
+if (approx_equal(DX, 80.0_dp, eps_sp_dp)) then
+
+   if ((IMAX /= 105).or.(JMAX /= 78)) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 40.0_dp, eps_sp_dp)) then
+
+   if ((IMAX /= 210).or.(JMAX /= 156)) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 20.0_dp, eps_sp_dp)) then
+
+   if ((IMAX /= 420).or.(JMAX /= 312)) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else
+   errormsg = ' >>> sico_init: DX wrong!'
+   call error(errormsg)
+end if
+
+#elif (NHEM_SUB==3) /* Fennoscandian and Eurasian ice sheets */
+
+if (approx_equal(DX, 40.0_dp, eps_sp_dp)) then
+
+   if ((IMAX /= 150).or.(JMAX /= 70)) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 20.0_dp, eps_sp_dp)) then
+
+   if ((IMAX /= 300).or.(JMAX /= 140)) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 10.0_dp, eps_sp_dp)) then
+
+   if ((IMAX /= 600).or.(JMAX /= 280)) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else
+   errormsg = ' >>> sico_init: DX wrong!'
+   call error(errormsg)
+end if
+
+#endif /* NHEM_SUB==1, 2 or 3 */
 
 #elif (GRID==2)
 
-   errormsg = ' >>> sico_init: ' &
-              //'GRID==2 not allowed for the northern hemisphere application!'
-   call error(errormsg)
+errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
+call error(errormsg)
 
 #endif
 
@@ -292,6 +384,13 @@ write(6, fmt='(a)') '         and number of grid points not performed.'
 write(6, fmt='(a)') ' '
 
 #endif /* CHECK_RES_IMAX_JMAX */
+
+#else /* Tapenade */
+
+print *, ' >>> sico_init: grid compatibility check not performed'
+print *, '          in adjoint applications; check manually.' 
+
+#endif /* Normal vs. Tapenade */
 
 !-------- Compatibility check of the thermodynamics mode
 !         (cold vs. polythermal vs. enthalpy method)
@@ -308,9 +407,8 @@ end if
 
 #endif
 
-!-------- Compatibility check of surface-temperature and precipitation
-!         determination by interpolation between present and LGM values
-!         with a glacial index --------
+!-------- Compatibility check of surface-temperature
+!                         and precipitation switches --------
 
 #if (TSURFACE == 5 && ACCSURFACE != 5)
 errormsg = ' >>> sico_init: ' &
@@ -573,6 +671,30 @@ time_output0(20) = TIME_OUT0_20
 
 #endif
 
+!-------- Maximum ice extent yes/no --------
+
+#if (!defined(MASK_MAXEXTENT_FILE) || THK_EVOL==0)
+
+flag_mask_maxextent = .false.   ! no maximum ice extent specified
+
+#else
+
+if ( (trim(adjustl(MASK_MAXEXTENT_FILE)) == 'none') &
+     .or. &
+     (trim(adjustl(MASK_MAXEXTENT_FILE)) == 'None') &
+     .or. &
+     (trim(adjustl(MASK_MAXEXTENT_FILE)) == 'NONE') ) then
+
+   flag_mask_maxextent = .false.   ! no maximum ice extent specified
+
+else
+
+   flag_mask_maxextent = .true.   ! maximum ice extent specified
+
+end if
+
+#endif
+
 !-------- Type of the geothermal heat flux (GHF) --------
 
 #if (!defined(Q_GEO_FILE))
@@ -609,7 +731,11 @@ call system(trim(shell_command))
 
 filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.log'
 
+#if !defined(ALLOW_TAPENADE) /* Normal */
 open(10, iostat=ios, file=trim(filename_with_path), status='new')
+#else /* Tapenade */
+open(10, iostat=ios, file=trim(filename_with_path))
+#endif /* Normal vs. Tapenade */
 
 if (ios /= 0) then
    errormsg = ' >>> sico_init: Error when opening the log file!'
@@ -617,7 +743,7 @@ if (ios /= 0) then
 end if
 
 write(10, fmt=trim(fmt1)) 'Computational domain:'
-write(10, fmt=trim(fmt1)) trim(ch_domain_long)
+write(10, fmt=trim(fmt1)) '   '//trim(ch_domain_long)
 write(10, fmt=trim(fmt1)) ' '
 
 write(10, fmt=trim(fmt1)) 'Physical-parameter file = ' &
@@ -638,9 +764,9 @@ write(10, fmt=trim(fmt3)) 'a =', aa
 write(10, fmt=trim(fmt1)) ' '
 
 #if (GRID==0 || GRID==1)
-write(10, fmt=trim(fmt3)) 'x0      =', X0
-write(10, fmt=trim(fmt3)) 'y0      =', Y0
-write(10, fmt=trim(fmt3)) 'dx      =', DX
+write(10, fmt=trim(fmt3)) 'x0 =', X0
+write(10, fmt=trim(fmt3)) 'y0 =', Y0
+write(10, fmt=trim(fmt3)) 'dx =', DX
 #elif (GRID==2)
 errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
 call error(errormsg)
@@ -662,15 +788,130 @@ write(10, fmt=trim(fmt3)) 'dtime_wss  =', dtime_wss0
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
+write(10, fmt=trim(fmt2)) 'DYNAMICS = ', DYNAMICS
+#if (DYNAMICS==2 && defined(HYB_MODE))
+write(10, fmt=trim(fmt2)) 'HYB_MODE = ', HYB_MODE
+#endif
+#if ((DYNAMICS==1 && MARGIN==3) || DYNAMICS==2)
+#if (defined(LIS_OPTS))
+write(10, fmt=trim(fmt1)) 'lis_opts = '//LIS_OPTS
+#endif
+#if (defined(TOL_ITER_SSA))
+write(10, fmt=trim(fmt3)) 'tol_iter_ssa =', TOL_ITER_SSA
+#endif
+#if (defined(N_ITER_SSA))
+write(10, fmt=trim(fmt2)) 'n_iter_ssa = ', N_ITER_SSA
+#endif
+#if (defined(N_ITER_SSA_MIN))
+write(10, fmt=trim(fmt2)) 'n_iter_ssa_min = ', N_ITER_SSA_MIN
+#endif
+#if (defined(ITER_INIT_SSA))
+write(10, fmt=trim(fmt2)) 'iter_init_ssa = ', ITER_INIT_SSA
+#endif
+#if (defined(VISC_INIT_SSA))
+write(10, fmt=trim(fmt3)) 'visc_init_ssa =', VISC_INIT_SSA
+#endif
+#if (defined(N_VISC_SMOOTH))
+write(10, fmt=trim(fmt2)) 'n_visc_smooth = ', N_VISC_SMOOTH
+#endif
+#if (defined(VISC_SMOOTH_DIFF))
+write(10, fmt=trim(fmt3)) 'visc_smooth_diff =', VISC_SMOOTH_DIFF
+#endif
+#if (defined(RELAX_FACT_SSA))
+write(10, fmt=trim(fmt3)) 'relax_fact_ssa =', RELAX_FACT_SSA
+#endif
+#endif
+#if (DYNAMICS==2 && HYB_MODE==0 && defined(RATIO_SL_THRESH))
+write(10, fmt=trim(fmt3)) 'ratio_sl_thresh =', RATIO_SL_THRESH
+#endif
+#if (DYNAMICS==2 && HYB_MODE==0 && defined(SSTA_SIA_WEIGH_FCT))
+write(10, fmt=trim(fmt2)) 'SSTA_SIA_WEIGH_FCT = ', SSTA_SIA_WEIGH_FCT
+#endif
+#if (DYNAMICS==2 && HYB_MODE==1 && defined(HYB_REF_SPEED))
+write(10, fmt=trim(fmt3)) 'hyb_ref_speed =', HYB_REF_SPEED
+#endif
+write(10, fmt=trim(fmt1)) ' '
+
+write(10, fmt=trim(fmt2)) 'CALCMOD = ', CALCMOD
+#if (CALCMOD==-1 && defined(TEMP_CONST))
+write(10, fmt=trim(fmt3)) 'TEMP_CONST =', TEMP_CONST
+#endif
+#if (CALCMOD==-1 && defined(AGE_CONST))
+write(10, fmt=trim(fmt3)) 'AGE_CONST =', AGE_CONST
+#endif
+#if (CALCMOD==1 && defined(CTS_MELTING_FREEZING))
+write(10, fmt=trim(fmt2)) 'CTS_MELTING_FREEZING = ', CTS_MELTING_FREEZING
+#endif
+write(10, fmt=trim(fmt1)) ' '
+
+write(10, fmt=trim(fmt2)) 'MARGIN = ', MARGIN
+#if (MARGIN==2)
+write(10, fmt=trim(fmt2)) 'MARINE_ICE_FORMATION = ', MARINE_ICE_FORMATION
+write(10, fmt=trim(fmt2)) 'MARINE_ICE_CALVING   = ', MARINE_ICE_CALVING
+#if (MARINE_ICE_CALVING==2 || MARINE_ICE_CALVING==3)
+write(10, fmt=trim(fmt3)) 'z_mar =', Z_MAR
+#elif (MARINE_ICE_CALVING==4 || MARINE_ICE_CALVING==5 || MARINE_ICE_CALVING==6 || MARINE_ICE_CALVING==7)
+write(10, fmt=trim(fmt3)) 'fact_z_mar =', FACT_Z_MAR
+#elif (MARINE_ICE_FORMATION==2 && MARINE_ICE_CALVING==9)
+write(10, fmt=trim(fmt3)) 'calv_uw_coeff =', CALV_UW_COEFF
+write(10, fmt=trim(fmt3)) 'r1_calv_uw    =', R1_CALV_UW
+write(10, fmt=trim(fmt3)) 'r2_calv_uw    =', R2_CALV_UW
+#endif
+#elif (MARGIN==3)
+write(10, fmt=trim(fmt2)) 'ICE_SHELF_CALVING = ', ICE_SHELF_CALVING
+#if (ICE_SHELF_CALVING==2)
+write(10, fmt=trim(fmt3)) 'H_calv =', H_CALV
+#endif
+#endif
+write(10, fmt=trim(fmt1)) ' '
+
+write(10, fmt=trim(fmt2)) 'FLOW_LAW = ', FLOW_LAW
+write(10, fmt=trim(fmt2)) 'FIN_VISC = ', FIN_VISC
+#if (FLOW_LAW==2)
+write(10, fmt=trim(fmt3)) 'gr_size =', GR_SIZE
+#endif
+#if (FIN_VISC==2)
+write(10, fmt=trim(fmt3)) 'sigma_res =', SIGMA_RES
+#endif
+write(10, fmt=trim(fmt1)) ' '
+
+write(10, fmt=trim(fmt2)) 'ENHMOD = ', ENHMOD
+#if (ENHMOD==1 || ENHMOD==2 || ENHMOD==3)
+write(10, fmt=trim(fmt3)) 'enh_fact =', ENH_FACT
+#endif
+#if (ENHMOD==2 || ENHMOD==3)
+write(10, fmt=trim(fmt3)) 'enh_intg =', ENH_INTG
+#endif
+#if (ENHMOD==2)
+write(10, fmt=trim(fmt3)) 'age_trans =', AGE_TRANS_0
+#endif
+#if (ENHMOD==3)
+write(10, fmt=trim(fmt3)) 'date_trans1 =', DATE_TRANS1_0
+write(10, fmt=trim(fmt3)) 'date_trans2 =', DATE_TRANS2_0
+write(10, fmt=trim(fmt3)) 'date_trans3 =', DATE_TRANS3_0
+#endif
+#if (ENHMOD==4 || ENHMOD==5)
+write(10, fmt=trim(fmt3)) 'enh_compr =', ENH_COMPR
+write(10, fmt=trim(fmt3)) 'enh_shear =', ENH_SHEAR
+#endif
+#if (DYNAMICS==2 && defined(ENH_STREAM))
+if (ENH_STREAM >= 0.0_dp) &
+   write(10, fmt=trim(fmt3)) 'enh_stream =', ENH_STREAM
+#endif
+#if ((ENHMOD==1 || ENHMOD==2 || ENHMOD==3 || ENHMOD==4) && MARGIN==3)
+write(10, fmt=trim(fmt3)) 'enh_shelf =', ENH_SHELF
+#endif
+write(10, fmt=trim(fmt1)) ' '
+
 write(10, fmt=trim(fmt2)) 'ANF_DAT = ', ANF_DAT
-write(10, fmt=trim(fmt1)) 'zs_present file   = '//ZS_PRESENT_FILE
+write(10, fmt=trim(fmt1)) 'zs_present file = '//ZS_PRESENT_FILE
 #if (ANF_DAT==1)
 #if (defined(ZB_PRESENT_FILE))
-write(10, fmt=trim(fmt1)) 'zb_present file   = '//ZB_PRESENT_FILE
+write(10, fmt=trim(fmt1)) 'zb_present file = '//ZB_PRESENT_FILE
 #endif
-write(10, fmt=trim(fmt1)) 'zl_present file   = '//ZL_PRESENT_FILE
+write(10, fmt=trim(fmt1)) 'zl_present file = '//ZL_PRESENT_FILE
 #endif
-write(10, fmt=trim(fmt1)) 'zl0 file          = '//ZL0_FILE
+write(10, fmt=trim(fmt1)) 'zl0 file = '//ZL0_FILE
 write(10, fmt=trim(fmt1)) 'mask_present file = '//MASK_PRESENT_FILE
 #if (defined(MASK_REGION_FILE))
 if ( (trim(adjustl(MASK_REGION_FILE)) /= 'none') &
@@ -694,9 +935,6 @@ write(10, fmt=trim(fmt1)) 'Path to initial-value file = '//ANF_DAT_PATH
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
-write(10, fmt=trim(fmt1)) 'Physical-parameter file = '//PHYS_PARA_FILE
-write(10, fmt=trim(fmt1)) ' '
-
 #if (defined(THK_EVOL))
 write(10, fmt=trim(fmt2)) 'THK_EVOL = ', THK_EVOL
 #else
@@ -716,47 +954,125 @@ write(10, fmt=trim(fmt2)) 'OCEAN_CONNECTIVITY = ', OCEAN_CONNECTIVITY
 write(10, fmt=trim(fmt3)) 'H_isol_max =', H_ISOL_MAX
 #endif
 
+#if (THK_EVOL==2)
+write(10, fmt=trim(fmt1)) 'Target-topography relaxation-time file = ' &
+                          //TARGET_TOPO_TAU0_FILE
+write(10, fmt=trim(fmt1)) 'Target-topography file = '//TARGET_TOPO_DAT_NAME
+write(10, fmt=trim(fmt1)) 'Path to target-topography file = '//TARGET_TOPO_PATH
+#endif
+
+#if (THK_EVOL==3)
+write(10, fmt=trim(fmt3)) 'target_topo_tau_0 =', TARGET_TOPO_TAU0
+write(10, fmt=trim(fmt1)) 'Target-topography file = '//TARGET_TOPO_DAT_NAME
+write(10, fmt=trim(fmt1)) 'Path to target-topography file = '//TARGET_TOPO_PATH
+#endif
+
+#if (defined(MASK_MAXEXTENT_FILE))
+if (flag_mask_maxextent) &
+   write(10, fmt=trim(fmt1)) 'Maximum ice extent mask file = ' &
+                             // trim(adjustl(MASK_MAXEXTENT_FILE))
+#endif
+
 #if (CALCTHK==2)
-write(10, fmt=trim(fmt3))  'ovi_weight   =', OVI_WEIGHT
-write(10, fmt=trim(fmt3))  'omega_sor    =', OMEGA_SOR
+write(10, fmt=trim(fmt3))  'ovi_weight =', OVI_WEIGHT
+write(10, fmt=trim(fmt3))  'omega_sor =', OMEGA_SOR
 #if (ITER_MAX_SOR>0)
 write(10, fmt=trim(fmt2)) 'iter_max_sor = ', ITER_MAX_SOR
 #endif
 #endif
-
 write(10, fmt=trim(fmt1)) ' '
 
-write(10, fmt=trim(fmt1)) 'temp_mm_present file = '//TEMP_MM_PRESENT_FILE
+write(10, fmt=trim(fmt2)) 'ADV_HOR  = ', ADV_HOR
+write(10, fmt=trim(fmt2)) 'ADV_VERT = ', ADV_VERT
+write(10, fmt=trim(fmt2)) 'TOPOGRAD = ', TOPOGRAD
+#if (MARGIN==3 && defined(GL_SURF_GRAD))
+write(10, fmt=trim(fmt2)) 'GL_SURF_GRAD = ', GL_SURF_GRAD
+#endif
+write(10, fmt=trim(fmt1)) ' '
+
+write(10, fmt=trim(fmt2)) 'TSURFACE = ', TSURFACE
+
+write(10, fmt=trim(fmt1)) 'temp_present file = '//TEMP_PRESENT_FILE
+#if (defined(TOPO_LAPSE_RATE))
+write(10, fmt=trim(fmt3)) 'topo_lapse_rate =', TOPO_LAPSE_RATE
+#endif
+
 #if (TSURFACE==1)
-write(10, fmt=trim(fmt3)) 'delta_ts0      =', DELTA_TS0
+write(10, fmt=trim(fmt3)) 'delta_ts0 =', DELTA_TS0
 #elif (TSURFACE==3)
-write(10, fmt=trim(fmt3)) 'sine_amplit    =', SINE_AMPLIT
-write(10, fmt=trim(fmt3)) 'sine_period    =', SINE_PERIOD
+write(10, fmt=trim(fmt3)) 'sine_amplit =', SINE_AMPLIT
+write(10, fmt=trim(fmt3)) 'sine_period =', SINE_PERIOD
 #elif (TSURFACE==4)
-write(10, fmt=trim(fmt1)) 'GRIP file      = '//GRIP_TEMP_FILE
+write(10, fmt=trim(fmt1)) 'GRIP file = '//GRIP_TEMP_FILE
 write(10, fmt=trim(fmt3)) 'grip_temp_fact =', GRIP_TEMP_FACT
 #elif (TSURFACE==5)
 write(10, fmt=trim(fmt1)) 'Glacial-index file = '//GLAC_IND_FILE
-write(10, fmt=trim(fmt1)) 'temp_mm_anom file  = '//TEMP_MM_ANOM_FILE
-write(10, fmt=trim(fmt3)) 'temp_mm_anom fact  = ', TEMP_MM_ANOM_FACT
+write(10, fmt=trim(fmt1)) 'temp_anom file  = '//TEMP_ANOM_FILE
+write(10, fmt=trim(fmt3)) 'temp_anom fact  = ', TEMP_ANOM_FACT
+#endif
+write(10, fmt=trim(fmt1)) ' '
+
+write(10, fmt=trim(fmt2)) 'ACCSURFACE = ', ACCSURFACE
+
+#if (ACCSURFACE<=5)
+#if (!defined(PRECIP_PRESENT_FILE))
+errormsg = ' >>> sico_init: PRECIP_PRESENT_FILE not defined in the header file!'
+call error(errormsg)
+#endif
+#if (!defined(PRECIP_MA_PRESENT_FILE))
+errormsg = ' >>> sico_init: ' &
+              //'PRECIP_MA_PRESENT_FILE not defined in the header file!'
+call error(errormsg)
+#endif
+#if (defined(PRECIP_PRESENT_FILE) && defined(PRECIP_MA_PRESENT_FILE))
+if ( (trim(adjustl(PRECIP_PRESENT_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(PRECIP_PRESENT_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(PRECIP_PRESENT_FILE)) /= 'NONE') ) then
+   write(10, fmt=trim(fmt1)) 'precip_present_file = '//PRECIP_PRESENT_FILE
+   flag_precip_monthly_mean = .true.
+else if ( (trim(adjustl(PRECIP_MA_PRESENT_FILE)) /= 'none') &
+          .and. &
+          (trim(adjustl(PRECIP_MA_PRESENT_FILE)) /= 'None') &
+          .and. &
+          (trim(adjustl(PRECIP_MA_PRESENT_FILE)) /= 'NONE') ) then
+   write(10, fmt=trim(fmt1)) 'precip_ma_present_file = '//PRECIP_MA_PRESENT_FILE
+   flag_precip_monthly_mean = .false.
+else
+   errormsg = ' >>> sico_init: Neither PRECIP_PRESENT_FILE' &
+            //         end_of_line &
+            //'        nor PRECIP_MA_PRESENT_FILE' &
+            //         end_of_line &
+            //'        specified in the header file!'
+   call error(errormsg)
+end if
+#endif
 #endif
 
-write(10, fmt=trim(fmt1)) 'precip_mm_present file = '//PRECIP_MM_PRESENT_FILE
 #if (ACCSURFACE==1)
-write(10, fmt=trim(fmt3)) 'accfact        =', ACCFACT
+write(10, fmt=trim(fmt3)) 'accfact =', ACCFACT
 #elif (ACCSURFACE==2 || ACCSURFACE==3)
-write(10, fmt=trim(fmt3)) 'gamma_s        =', GAMMA_S
-#elif (ACCSURFACE==5)
-write(10, fmt=trim(fmt1)) 'precip_mm_anom file    = '//PRECIP_MM_ANOM_FILE
-write(10, fmt=trim(fmt3)) 'precip_mm_anom fact    = ', PRECIP_MM_ANOM_FACT
+write(10, fmt=trim(fmt3)) 'gamma_s =', GAMMA_S
 #endif
-#if (ACCSURFACE <= 3)
+#if (ACCSURFACE<=3)
 write(10, fmt=trim(fmt2)) 'ELEV_DESERT = ', ELEV_DESERT
 #if (ELEV_DESERT == 1)
-write(10, fmt=trim(fmt3)) 'gamma_p     =', GAMMA_P
-write(10, fmt=trim(fmt3)) 'zs_thresh   =', ZS_THRESH
+write(10, fmt=trim(fmt3)) 'gamma_p   =', GAMMA_P
+write(10, fmt=trim(fmt3)) 'zs_thresh =', ZS_THRESH
 #endif
 #endif
+#if (ACCSURFACE==5)
+write(10, fmt=trim(fmt1)) 'precip_anom file = '//PRECIP_ANOM_FILE
+write(10, fmt=trim(fmt3)) 'precip_anom fact = ', PRECIP_ANOM_FACT
+write(10, fmt=trim(fmt2)) 'PRECIP_ANOM_INTERPOL = ', PRECIP_ANOM_INTERPOL
+#endif
+#if (ACCSURFACE<=5)
+write(10, fmt=trim(fmt2)) 'SOLID_PRECIP = ', SOLID_PRECIP
+#endif
+write(10, fmt=trim(fmt1)) ' '
+
+write(10, fmt=trim(fmt2)) 'ABLSURFACE = ', ABLSURFACE
 
 #if (ABLSURFACE==1 || ABLSURFACE==2)
 #if (defined(S_STAT_0) && defined(BETA1_0) && defined(BETA2_0) && defined(PMAX_0) && defined(MU_0))
@@ -775,33 +1091,18 @@ write(10, fmt=trim(fmt3)) 'lambda_lti =', LAMBDA_LTI
 write(10, fmt=trim(fmt3)) 'temp_lti   =', TEMP_LTI
 #endif
 
-write(10, fmt=trim(fmt2)) 'SEA_LEVEL  = ', SEA_LEVEL
+#if (defined(MB_ACCOUNT))
+write(10, fmt=trim(fmt2)) 'MB_ACCOUNT = ', MB_ACCOUNT
+#endif
+write(10, fmt=trim(fmt1)) ' '
+
+write(10, fmt=trim(fmt2)) 'SEA_LEVEL = ', SEA_LEVEL
 #if (SEA_LEVEL==1)
-write(10, fmt=trim(fmt3)) 'z_sl0          =', Z_SL0
+write(10, fmt=trim(fmt3)) 'z_sl0 =', Z_SL0
 #elif (SEA_LEVEL==3)
 write(10, fmt=trim(fmt1)) 'sea-level file = '//SEA_LEVEL_FILE
 #endif
 write(10, fmt=trim(fmt1)) ' '
-
-#if (MARGIN==2)
-#if (MARINE_ICE_CALVING==2 || MARINE_ICE_CALVING==3)
-write(10, fmt=trim(fmt3)) 'z_mar          =', Z_MAR
-write(10, fmt=trim(fmt1)) ' '
-#elif (MARINE_ICE_CALVING==4 || MARINE_ICE_CALVING==5 || MARINE_ICE_CALVING==6 || MARINE_ICE_CALVING==7)
-write(10, fmt=trim(fmt3)) 'fact_z_mar     =', FACT_Z_MAR
-write(10, fmt=trim(fmt1)) ' '
-#elif (MARINE_ICE_FORMATION==2 && MARINE_ICE_CALVING==9)
-write(10, fmt=trim(fmt3)) 'calv_uw_coeff  =', CALV_UW_COEFF
-write(10, fmt=trim(fmt3)) 'r1_calv_uw     =', R1_CALV_UW
-write(10, fmt=trim(fmt3)) 'r2_calv_uw     =', R2_CALV_UW
-write(10, fmt=trim(fmt1)) ' '
-#endif
-#elif (MARGIN==3)
-#if (ICE_SHELF_CALVING==2)
-write(10, fmt=trim(fmt3)) 'H_calv          =', H_CALV
-write(10, fmt=trim(fmt1)) ' '
-#endif
-#endif
 
 #if (defined(BASAL_HYDROLOGY))
 write(10, fmt=trim(fmt2)) 'BASAL_HYDROLOGY = ', BASAL_HYDROLOGY
@@ -869,8 +1170,8 @@ write(10, fmt=trim(fmt3)) 'red_pres_limit_fact =', RED_PRES_LIMIT_FACT
 #endif
 #if (BASAL_HYDROLOGY==1 && defined(HYDRO_SLIDE_SAT_FCT) && defined(C_HW_SLIDE) && defined(HW0_SLIDE))
 write(10, fmt=trim(fmt2)) 'HYDRO_SLIDE_SAT_FCT = ', HYDRO_SLIDE_SAT_FCT
-write(10, fmt=trim(fmt3)) 'c_Hw_slide  =', C_HW_SLIDE
-write(10, fmt=trim(fmt3)) 'Hw0_slide   =', HW0_SLIDE
+write(10, fmt=trim(fmt3)) 'c_Hw_slide =', C_HW_SLIDE
+write(10, fmt=trim(fmt3)) 'Hw0_slide  =', HW0_SLIDE
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
@@ -885,7 +1186,7 @@ write(10, fmt=trim(fmt1)) ' '
 #if (defined(MARINE_ICE_BASAL_MELTING))
 write(10, fmt=trim(fmt2)) 'MARINE_ICE_BASAL_MELTING = ', MARINE_ICE_BASAL_MELTING
 #if (MARINE_ICE_BASAL_MELTING==2 || MARINE_ICE_BASAL_MELTING==3)
-write(10, fmt=trim(fmt3)) 'qbm_marine               =', QBM_MARINE
+write(10, fmt=trim(fmt3)) 'qbm_marine =', QBM_MARINE
 #endif
 write(10, fmt=trim(fmt1)) ' '
 #endif
@@ -906,14 +1207,14 @@ write(10, fmt=trim(fmt3)) 'H_w_0 =', H_W_0
 write(10, fmt=trim(fmt1)) ' '
 #endif
 
-write(10, fmt=trim(fmt2)) 'REBOUND       = ', REBOUND
+write(10, fmt=trim(fmt2)) 'REBOUND = ', REBOUND
 #if (REBOUND==1)
-write(10, fmt=trim(fmt3)) 'frac_llra     =', FRAC_LLRA
+write(10, fmt=trim(fmt3)) 'frac_llra =', FRAC_LLRA
 #endif
 #if (REBOUND==1 || REBOUND==2)
-write(10, fmt=trim(fmt2)) 'TIME_LAG_MOD  = ', TIME_LAG_MOD
+write(10, fmt=trim(fmt2)) 'TIME_LAG_MOD = ', TIME_LAG_MOD
 #if (TIME_LAG_MOD==1)
-write(10, fmt=trim(fmt3)) 'time_lag      =', TIME_LAG
+write(10, fmt=trim(fmt3)) 'time_lag =', TIME_LAG
 #elif (TIME_LAG_MOD==2)
 write(10, fmt=trim(fmt1)) 'time_lag_file = '//TIME_LAG_FILE
 #else
@@ -922,133 +1223,15 @@ call error(errormsg)
 #endif
 #endif
 #if (REBOUND==2)
-write(10, fmt=trim(fmt2)) 'FLEX_RIG_MOD  = ', FLEX_RIG_MOD
+write(10, fmt=trim(fmt2)) 'FLEX_RIG_MOD = ', FLEX_RIG_MOD
 #if (FLEX_RIG_MOD==1)
-write(10, fmt=trim(fmt3)) 'flex_rig      =', FLEX_RIG
+write(10, fmt=trim(fmt3)) 'flex_rig =', FLEX_RIG
 #elif (FLEX_RIG_MOD==2)
 write(10, fmt=trim(fmt1)) 'flex_rig_file = '//FLEX_RIG_FILE
 #else
 errormsg = ' >>> sico_init: FLEX_RIG_MOD must be either 1 or 2!'
 call error(errormsg)
 #endif
-#endif
-write(10, fmt=trim(fmt1)) ' '
-
-#if (FLOW_LAW==2)
-write(10, fmt=trim(fmt3)) 'gr_size   =', GR_SIZE
-write(10, fmt=trim(fmt1)) ' '
-#endif
-#if (FIN_VISC==2)
-write(10, fmt=trim(fmt3)) 'sigma_res =', SIGMA_RES
-write(10, fmt=trim(fmt1)) ' '
-#endif
-
-write(10, fmt=trim(fmt2)) 'ENHMOD = ', ENHMOD
-#if (ENHMOD==1 || ENHMOD==2 || ENHMOD==3)
-write(10, fmt=trim(fmt3)) 'enh_fact    =', ENH_FACT
-#endif
-#if (ENHMOD==2 || ENHMOD==3)
-write(10, fmt=trim(fmt3)) 'enh_intg    =', ENH_INTG
-#endif
-#if (ENHMOD==2)
-write(10, fmt=trim(fmt3)) 'age_trans   =', AGE_TRANS_0
-#endif
-#if (ENHMOD==3)
-write(10, fmt=trim(fmt3)) 'date_trans1 =', DATE_TRANS1_0
-write(10, fmt=trim(fmt3)) 'date_trans2 =', DATE_TRANS2_0
-write(10, fmt=trim(fmt3)) 'date_trans3 =', DATE_TRANS3_0
-#endif
-#if (ENHMOD==4 || ENHMOD==5)
-write(10, fmt=trim(fmt3)) 'enh_compr   =', ENH_COMPR
-write(10, fmt=trim(fmt3)) 'enh_shear   =', ENH_SHEAR
-#endif
-#if (DYNAMICS==2 && defined(ENH_STREAM))
-if (ENH_STREAM >= 0.0_dp) &
-   write(10, fmt=trim(fmt3)) 'enh_stream =', ENH_STREAM
-#endif
-#if ((ENHMOD==1 || ENHMOD==2 || ENHMOD==3 || ENHMOD==4) && MARGIN==3)
-write(10, fmt=trim(fmt3)) 'enh_shelf   =', ENH_SHELF
-#endif
-write(10, fmt=trim(fmt1)) ' '
-
-write(10, fmt=trim(fmt2)) 'DYNAMICS = ', DYNAMICS
-#if (DYNAMICS==2 && defined(HYB_MODE))
-write(10, fmt=trim(fmt2)) 'HYB_MODE = ', HYB_MODE
-#endif
-#if ((DYNAMICS==1 && MARGIN==3) || DYNAMICS==2)
-#if (defined(LIS_OPTS))
-write(10, fmt=trim(fmt1)) 'lis_opts = '//LIS_OPTS
-#endif
-#if (defined(TOL_ITER_SSA))
-write(10, fmt=trim(fmt3)) 'tol_iter_ssa =', TOL_ITER_SSA
-#endif
-#if (defined(N_ITER_SSA))
-write(10, fmt=trim(fmt2)) 'n_iter_ssa = ', N_ITER_SSA
-#endif
-#if (defined(N_ITER_SSA_MIN))
-write(10, fmt=trim(fmt2)) 'n_iter_ssa_min = ', N_ITER_SSA_MIN
-#endif
-#if (defined(ITER_INIT_SSA))
-write(10, fmt=trim(fmt2)) 'iter_init_ssa = ', ITER_INIT_SSA
-#endif
-#if (defined(VISC_INIT_SSA))
-write(10, fmt=trim(fmt3)) 'visc_init_ssa =', VISC_INIT_SSA
-#endif
-#if (defined(N_VISC_SMOOTH))
-write(10, fmt=trim(fmt2)) 'n_visc_smooth = ', N_VISC_SMOOTH
-#endif
-#if (defined(VISC_SMOOTH_DIFF))
-write(10, fmt=trim(fmt3)) 'visc_smooth_diff =', VISC_SMOOTH_DIFF
-#endif
-#if (defined(RELAX_FACT_SSA))
-write(10, fmt=trim(fmt3)) 'relax_fact_ssa =', RELAX_FACT_SSA
-#endif
-#endif
-#if (DYNAMICS==2 && HYB_MODE==0 && defined(RATIO_SL_THRESH))
-write(10, fmt=trim(fmt3)) 'ratio_sl_thresh =', RATIO_SL_THRESH
-#endif
-#if (DYNAMICS==2 && HYB_MODE==0 && defined(SSTA_SIA_WEIGH_FCT))
-write(10, fmt=trim(fmt2)) 'SSTA_SIA_WEIGH_FCT = ', SSTA_SIA_WEIGH_FCT
-#endif
-#if (DYNAMICS==2 && HYB_MODE==1 && defined(HYB_REF_SPEED))
-write(10, fmt=trim(fmt3)) 'hyb_ref_speed =', HYB_REF_SPEED
-#endif
-write(10, fmt=trim(fmt1)) ' '
-
-write(10, fmt=trim(fmt2)) 'CALCMOD    = ', CALCMOD
-#if (CALCMOD==-1 && defined(TEMP_CONST))
-write(10, fmt=trim(fmt3)) 'TEMP_CONST =', TEMP_CONST
-#endif
-#if (CALCMOD==-1 && defined(AGE_CONST))
-write(10, fmt=trim(fmt3)) 'AGE_CONST  =', AGE_CONST
-#endif
-#if (CALCMOD==1 && defined(CTS_MELTING_FREEZING))
-write(10, fmt=trim(fmt2)) 'CTS_MELTING_FREEZING = ', CTS_MELTING_FREEZING
-#endif
-write(10, fmt=trim(fmt2)) 'FLOW_LAW   = ', FLOW_LAW
-write(10, fmt=trim(fmt2)) 'FIN_VISC   = ', FIN_VISC
-write(10, fmt=trim(fmt2)) 'MARGIN     = ', MARGIN
-#if (MARGIN==2)
-write(10, fmt=trim(fmt2)) 'MARINE_ICE_FORMATION = ', MARINE_ICE_FORMATION
-write(10, fmt=trim(fmt2)) 'MARINE_ICE_CALVING   = ', MARINE_ICE_CALVING
-#elif (MARGIN==3)
-write(10, fmt=trim(fmt2)) 'ICE_SHELF_CALVING = ', ICE_SHELF_CALVING
-#endif
-write(10, fmt=trim(fmt2)) 'ADV_HOR    = ', ADV_HOR
-write(10, fmt=trim(fmt2)) 'ADV_VERT   = ', ADV_VERT
-write(10, fmt=trim(fmt2)) 'TOPOGRAD   = ', TOPOGRAD
-#if (MARGIN==3 && defined(GL_SURF_GRAD))
-write(10, fmt=trim(fmt2)) 'GL_SURF_GRAD = ', GL_SURF_GRAD
-#endif
-write(10, fmt=trim(fmt2)) 'TSURFACE   = ', TSURFACE
-write(10, fmt=trim(fmt2)) 'ACCSURFACE = ', ACCSURFACE
-#if (ACCSURFACE==5)
-write(10, fmt=trim(fmt2)) 'PRECIP_ANOM_INTERPOL = ', PRECIP_ANOM_INTERPOL
-#endif
-write(10, fmt=trim(fmt2)) 'SOLID_PRECIP = ', SOLID_PRECIP
-write(10, fmt=trim(fmt2)) 'ABLSURFACE = ', ABLSURFACE
-#if (defined(MB_ACCOUNT))
-write(10, fmt=trim(fmt2)) 'MB_ACCOUNT = ', MB_ACCOUNT
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
@@ -1075,24 +1258,28 @@ write(10, fmt=trim(fmt1)) ' '
 write(10, fmt=trim(fmt2)) 'NETCDF4_ENABLED = ', NETCDF4_ENABLED
 #endif
 #if (defined(OUT_TIMES))
-write(10, fmt=trim(fmt2)) 'OUT_TIMES   = ', OUT_TIMES
+write(10, fmt=trim(fmt2)) 'OUT_TIMES = ', OUT_TIMES
 #endif
 #if (defined(OUTPUT_INIT))
 write(10, fmt=trim(fmt2)) 'OUTPUT_INIT = ', OUTPUT_INIT
 #endif
-write(10, fmt=trim(fmt2)) 'OUTPUT      = ', OUTPUT
+write(10, fmt=trim(fmt2)) 'OUTPUT = ', OUTPUT
 #if (OUTPUT==1 || OUTPUT==3)
-write(10, fmt=trim(fmt3))  'dtime_out   =' , dtime_out0
+write(10, fmt=trim(fmt3))  'dtime_out =' , dtime_out0
 #endif
-write(10, fmt=trim(fmt3))  'dtime_ser   =' , dtime_ser0
+write(10, fmt=trim(fmt3))  'dtime_ser =' , dtime_ser0
 #if (OUTPUT==1 || OUTPUT==2)
-write(10, fmt=trim(fmt2)) 'ERGDAT      = ', ERGDAT
+write(10, fmt=trim(fmt2)) 'ERGDAT = ', ERGDAT
 #endif
 #if (defined(OUTPUT_FLUX_VARS))
 write(10, fmt=trim(fmt2)) 'OUTPUT_FLUX_VARS = ', OUTPUT_FLUX_VARS
 #endif
+#if (defined(CLIMATOLOGY_EXTRACTION_HACK))
+    !%% Climatology extraction hack (must not be used routinely)!
+write(10, fmt=trim(fmt1)) '!!! CLIMATOLOGY_EXTRACTION_HACK defined !!!'
+#endif
 #if (OUTPUT==2 || OUTPUT==3)
-write(10, fmt=trim(fmt2)) 'n_output    = ', n_output
+write(10, fmt=trim(fmt2)) 'n_output = ', n_output
 do n=1, n_output
    if (n==1) then
       write(10, fmt=trim(fmt3))  'time_output =' , time_output0(n)
@@ -1109,6 +1296,23 @@ write(10, fmt=trim(fmt1)) 'Program version and date: '//VERSION//' / '//DATE
 write(10, fmt=trim(fmt1)) 'Git revision identifier : ' // trim(ch_revision)
 
 close(10, status='keep')
+
+#if (defined(CLIMATOLOGY_EXTRACTION_HACK))
+    !%% Climatology extraction hack (must not be used routinely)!
+#if (OUTPUT_FLUX_VARS==2)
+write(6,'(/1x,a)') &
+   '>>> sico_init: CLIMATOLOGY_EXTRACTION_HACK defined!'
+write(6, '(1x,a)') &
+   '               Only for extracting a climatology,'
+write(6, '(1x,a/)') &
+   '               must not be used routinely!'
+#else
+errormsg = ' >>> sico_init: CLIMATOLOGY_EXTRACTION_HACK requires' &
+         //                 end_of_line &
+         //'                OUTPUT_FLUX_VARS==2!'
+call error(errormsg)
+#endif
+#endif
 
 !-------- Conversion of time quantities --------
 
@@ -1129,6 +1333,8 @@ do n=1, n_output
    time_output(n) = time_output0(n)*year2sec  ! a -> s
 end do
 #endif
+
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 if (.not.approx_integer_multiple(dtime_temp, dtime, eps_sp_dp)) then
    errormsg = ' >>> sico_init: dtime_temp must be a multiple of dtime!'
@@ -1154,56 +1360,124 @@ if (.not.approx_integer_multiple(dtime_out, dtime, eps_sp_dp)) then
 end if
 #endif
 
-time = time_init
+#else /* Tapenade */
 
-!-------- Read file defining the regions for the sliding laws --------
+print *, ' >>> sico_init: not checking that time steps are '
+print *, '                multiples of each other in adjoint mode;'
+print *, '                check manually.'
 
-#if (!defined(N_SLIDE_REGIONS) || N_SLIDE_REGIONS<=1)
+#endif /* Normal vs. Tapenade */
 
-n_slide_region = 1
+#if (THK_EVOL==2)
 
-#else
+filename_with_path = trim(IN_PATH)//'/general/'//trim(TARGET_TOPO_TAU0_FILE)
 
-filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
-                     trim(SLIDE_REGIONS_FILE)
+call read_scalar_input(filename_with_path, &
+                       'target_topo_tau0', ndata_target_topo_tau0_max, &
+                       target_topo_tau0_time_min, target_topo_tau0_time_stp, &
+                       target_topo_tau0_time_max, &
+                       ndata_target_topo_tau0, target_topo_tau0)
 
-call read_2d_input(filename_with_path, &
-                   ch_var_name='n_basin', n_var_type=2, n_ascii_header=6, &
-                   field2d_r=field2d_aux)
-
-n_slide_region = nint(field2d_aux)
+target_topo_tau0 = target_topo_tau0 *year2sec   ! a -> s
 
 #endif
 
-!-------- Reading of measurements for present monthly-mean precipitation --------
+#if (THK_EVOL==3)
+target_topo_tau_0 = TARGET_TOPO_TAU0 *year2sec   ! a -> s
+#endif
+
+time = time_init
+
+!-------- Reading of present-day
+!         monthly mean or mean annual precipitation rate --------
+
+#if (ACCSURFACE<=5)
 
 #if (GRID==0 || GRID==1)
 
-filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
-                     trim(PRECIP_MM_PRESENT_FILE)
+#if (defined(PRECIP_PRESENT_FILE) && defined(PRECIP_MA_PRESENT_FILE))
 
-ch_month = [ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
-             'jul', 'aug', 'sep', 'oct', 'nov', 'dec' ]
+if (flag_precip_monthly_mean) then
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(PRECIP_PRESENT_FILE)
+else
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(PRECIP_MA_PRESENT_FILE)
+end if
 
-do n=1, 12   ! month counter
+#endif
 
-   ch_var_name = 'precip_present_' // trim(ch_month(n))
+if (flag_precip_monthly_mean) then
+
+   ch_month = [ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
+                'jul', 'aug', 'sep', 'oct', 'nov', 'dec' ]
+
+   do n=1, 12   ! month counter
+
+      ch_var_name = 'precip_present_' // trim(ch_month(n))
+
+      call read_2d_input(filename_with_path, &
+                         ch_var_name=trim(ch_var_name), &
+                         n_var_type=1, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
+                         field2d_r=field2d_aux)
+
+      precip_present(:,:,n) = field2d_aux *(1.0e-03_dp*sec2year)*(RHO_W/RHO)
+                                           ! mm/a water equiv. -> m/s ice equiv.
+
+   end do
+
+else
 
    call read_2d_input(filename_with_path, &
-                      ch_var_name=trim(ch_var_name), &
-                      n_var_type=1, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
+                      ch_var_name='precip_ma_present', &
+                      n_var_type=1, n_ascii_header=6, &
                       field2d_r=field2d_aux)
 
-   precip_present(:,:,n) = field2d_aux *(1.0e-03_dp*sec2year)*(RHO_W/RHO)
-                                        ! mm/a water equiv. -> m/s ice equiv.
+   precip_ma_present = field2d_aux *(1.0e-03_dp*sec2year)*(RHO_W/RHO)
+                                    ! mm/a water equiv. -> m/s ice equiv.
 
-end do
+end if
 
 #elif (GRID==2)
 
-errormsg = ' >>> sico_init: ' &
-              //'GRID==2 not allowed for the northern hemisphere application!'
+errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
 call error(errormsg)
+
+#endif
+
+!  ------ Computation of the still undefined present-day
+!         mean annual or monthly mean precipitation rate
+
+#if (GRID==0 || GRID==1)
+
+if (flag_precip_monthly_mean) then
+
+   precip_ma_present = 0.0_dp   ! initialization
+
+   do n=1, 12   ! month counter
+      do i=0, IMAX
+      do j=0, JMAX
+         precip_ma_present(j,i) = precip_ma_present(j,i) &
+                                  + precip_present(j,i,n)*inv_twelve
+      end do
+      end do
+   end do
+
+else
+
+   do n=1, 12   ! month counter
+      do i=0, IMAX
+      do j=0, JMAX
+         precip_present(j,i,n) = precip_ma_present(j,i)
+                ! monthly means assumed to be equal
+                ! to the mean annual precipitation rate
+      end do
+      end do
+   end do
+
+end if
+
+#endif
 
 #endif
 
@@ -1214,7 +1488,7 @@ call error(errormsg)
 #if (GRID==0 || GRID==1)
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
-                     trim(PRECIP_MM_ANOM_FILE)
+                     trim(PRECIP_ANOM_FILE)
 
 ch_month = [ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
              'jul', 'aug', 'sep', 'oct', 'nov', 'dec' ]
@@ -1232,9 +1506,7 @@ do n=1, 12   ! month counter
 
 end do
 
-precip_lgm_anom = precip_lgm_anom * PRECIP_MM_ANOM_FACT
-
-#endif
+precip_lgm_anom = precip_lgm_anom * PRECIP_ANOM_FACT
 
 do i=0, IMAX
 do j=0, JMAX
@@ -1257,10 +1529,72 @@ end do
 
 #endif
 
+#endif
+
 !-------- Mean accumulation --------
 
 mean_accum = MEAN_ACCUM*(1.0e-03_dp*sec2year)*(RHO_W/RHO)
                        ! mm/a water equiv. -> m/s ice equiv.
+
+!-------- Read file defining the regions for the sliding laws --------
+
+#if (!defined(N_SLIDE_REGIONS) || N_SLIDE_REGIONS<=1)
+
+n_slide_region = 1
+
+#else
+
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                     trim(SLIDE_REGIONS_FILE)
+
+call read_2d_input(filename_with_path, &
+                   ch_var_name='n_basin', n_var_type=2, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
+
+n_slide_region = nint(field2d_aux)
+
+#endif
+
+!-------- Reading of the prescribed target topography --------
+
+#if (THK_EVOL==2 || THK_EVOL==3)
+
+target_topo_dat_name = trim(TARGET_TOPO_DAT_NAME)
+
+call read_target_topo_nc(target_topo_dat_name)
+
+#endif
+
+!-------- Reading of the maximum ice extent mask --------
+
+mask_maxextent = 1   ! default (no constraint)
+
+#if (defined(MASK_MAXEXTENT_FILE))
+
+if (flag_mask_maxextent) then
+
+#if (GRID==0 || GRID==1)
+
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                     trim(MASK_MAXEXTENT_FILE)
+
+call read_2d_input(filename_with_path, &
+                   ch_var_name='mask_maxextent', &
+                   n_var_type=3, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
+
+mask_maxextent = nint(field2d_aux)
+
+#elif (GRID==2)
+
+errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
+call error(errormsg)
+
+#endif
+
+end if
+
+#endif
 
 !-------- Reading of present topography mask --------
 
@@ -1277,8 +1611,7 @@ mask_ref = nint(field2d_aux)
 
 #elif (GRID==2)
 
-errormsg = ' >>> sico_init: ' &
-              //'GRID==2 not allowed for the northern hemisphere application!'
+errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
 call error(errormsg)
 
 #endif
@@ -1288,7 +1621,7 @@ call error(errormsg)
 #if (GRID==0 || GRID==1)
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
-                     trim(TEMP_MM_PRESENT_FILE)
+                     trim(TEMP_PRESENT_FILE)
 
 ch_month = [ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
              'jul', 'aug', 'sep', 'oct', 'nov', 'dec' ]
@@ -1302,14 +1635,13 @@ do n=1, 12   ! month counter
                       n_var_type=1, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
                       field2d_r=field2d_aux)
 
-   temp_mm_present(:,:,n) = field2d_aux
+   temp_present(:,:,n) = field2d_aux
 
 end do
 
 #elif (GRID==2)
 
-errormsg = ' >>> sico_init: ' &
-              //'GRID==2 not allowed for the northern hemisphere application!'
+errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
 call error(errormsg)
 
 #endif
@@ -1321,7 +1653,7 @@ call error(errormsg)
 #if (GRID==0 || GRID==1)
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
-                     trim(TEMP_MM_ANOM_FILE)
+                     trim(TEMP_ANOM_FILE)
 
 ch_month = [ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', &
              'jul', 'aug', 'sep', 'oct', 'nov', 'dec' ]
@@ -1335,11 +1667,11 @@ do n=1, 12   ! month counter
                       n_var_type=1, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
                       field2d_r=field2d_aux)
 
-   temp_mm_lgm_anom(:,:,n) = field2d_aux
+   temp_lgm_anom(:,:,n) = field2d_aux
 
 end do
 
-temp_mm_lgm_anom = temp_mm_lgm_anom * TEMP_MM_ANOM_FACT
+temp_lgm_anom = temp_lgm_anom * TEMP_ANOM_FACT
 
 #endif
 
@@ -1369,8 +1701,7 @@ end do
 
 #elif (GRID==2)
 
-errormsg = ' >>> sico_init: ' &
-              //'GRID==2 not allowed for the northern hemisphere application!'
+errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
 call error(errormsg)
 
 #endif
@@ -1520,9 +1851,81 @@ flex_rig_lith = 0.0_dp   ! dummy values
 
 #if (ANF_DAT==1)
 
-errormsg = ' >>> sico_init: ' &
-              //'ANF_DAT==1 not allowed for northern hemisphere application!'
-call error(errormsg)
+call topography1(dxi, deta)
+
+z_sl      = -1.11e+11_dp   ! dummy values for initial call
+z_sl_mean = -1.11e+11_dp   ! of subroutine boundary
+
+call boundary(time_init, dtime, dxi, deta, &
+              delta_ts, glac_index, z_mar)
+
+where ((mask==0).or.(mask==3))
+                 ! grounded or floating ice
+   as_perp_apl = as_perp
+elsewhere        ! mask==1 or 2, ice-free land or sea
+   as_perp_apl = 0.0_dp
+end where
+
+smb_corr = 0.0_dp
+
+Q_bm    = 0.0_dp
+Q_tld   = 0.0_dp
+Q_b_tot = 0.0_dp 
+
+p_b_w   = 0.0_dp
+H_w     = 0.0_dp
+
+#if (TEMP_INIT==1)
+  call init_temp_water_age_1_1()
+#elif (TEMP_INIT==2)
+  call init_temp_water_age_1_2()
+#elif (TEMP_INIT==3)
+  call init_temp_water_age_1_3()
+#elif (TEMP_INIT==4)
+  call init_temp_water_age_1_4()
+#elif (TEMP_INIT==5)
+  call init_temp_water_age_1_5(anfdatname)
+#else
+  errormsg = ' >>> sico_init: TEMP_INIT must be between 1 and 5!'
+  call error(errormsg)
+#endif
+
+#if (defined(ALLOW_NORMAL) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
+#if defined(AGE_COST)
+  call read_age_data()
+#endif
+#if defined(BEDMACHINE_COST)
+  call read_BedMachine_data()
+#endif
+#endif
+
+#if (ENHMOD==1)
+   call calc_enhance_1()
+#elif (ENHMOD==2)
+   call calc_enhance_2()
+#elif (ENHMOD==3)
+   call calc_enhance_3(time_init)
+#elif (ENHMOD==4)
+   call calc_enhance_4()
+#elif (ENHMOD==5)
+   call calc_enhance_5()
+#else
+   errormsg = ' >>> sico_init: Parameter ENHMOD must be between 1 and 5!'
+   call error(errormsg)
+#endif
+
+vx_m_sia = 0.0_dp
+vy_m_sia = 0.0_dp
+vx_m_ssa = 0.0_dp
+vy_m_ssa = 0.0_dp
+
+#if (defined(VISC_INIT_SSA))
+  vis_ave_g = VISC_INIT_SSA
+#else
+  vis_ave_g = 1.0e+15_dp   ! Pa s
+#endif
+
+vis_int_g = 0.0_dp
 
 !  ------ Ice-free, relaxed bedrock
 
@@ -1669,10 +2072,8 @@ call calc_vxy_static()
 call calc_vz_static()
 
 #else
-
 errormsg = ' >>> sico_init: DYNAMICS must be either 0, 1 or 2!'
 call error(errormsg)
-
 #endif
 
 call calc_dxyz(dxi, deta, dzeta_c, dzeta_t)
@@ -1746,14 +2147,18 @@ call error(errormsg)
 
 filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.ser'
 
+#if !defined(ALLOW_TAPENADE) /* Normal */
 open(12, iostat=ios, file=trim(filename_with_path), status='new')
+#else /* Tapenade */
+open(12, iostat=ios, file=trim(filename_with_path))
+#endif /* Normal vs. Tapenade */
 
 if (ios /= 0) then
    errormsg = ' >>> sico_init: Error when opening the ser file!'
    call error(errormsg)
 end if
 
-if (forcing_flag == 1) then
+if ((forcing_flag == 1).or.(forcing_flag == 3)) then
 
    write(12,1102)
    write(12,1103)
@@ -1805,6 +2210,8 @@ write(14,'(1x,a)') 'No boreholes defined.'
 write(14,'(1x,a)') '---------------------'
 
 !-------- Output of the initial state --------
+
+#if !defined(ALLOW_TAPENADE) /* Normal */
 
 #if (defined(OUTPUT_INIT))
 
@@ -1872,10 +2279,8 @@ if (time_output(1) <= time_init+eps) then
 end if
 
 #else
-
    errormsg = ' >>> sico_init: OUTPUT must be either 1, 2 or 3!'
    call error(errormsg)
-
 #endif
 
 if (flag_init_output) then
@@ -1883,27 +2288,246 @@ if (flag_init_output) then
    call output4(time_init, dxi, deta, delta_ts, glac_index)
 end if
 
+#else /* Tapenade */
+
+print *, ' >>> sico_init: not producing initial, typical outputs'
+print *, '                in adjoint mode.'
+
+#endif /* Normal vs. Tapenade */
+
 end subroutine sico_init
 
 !-------------------------------------------------------------------------------
 !> Definition of the initial surface and bedrock topography
 !! (including gradients) and of the horizontal grid spacings dxi, deta.
-!! For ice-free initial topography with relaxed lithosphere
-!! (not defined for this domain, thus routine stops execution of SICOPOLIS).
+!! For present-day initial topography.
 !-------------------------------------------------------------------------------
 subroutine topography1(dxi, deta)
+
+  use read_m, only : read_2d_input
+
+#if (GRID==0 || GRID==1)
+  use stereo_proj_m
+#endif
+
+  use metric_m
+  use topograd_m
 
 implicit none
 
 real(dp), intent(out) :: dxi, deta
 
-! integer(i4b) :: i, j
-! real(dp)     :: xi0, eta0
+integer(i4b) :: i, j, n
+real(dp)     :: xi0, eta0
+real(dp)     :: H_ice, freeboard_ratio
 
-dxi=0.0_dp; deta=0.0_dp   ! dummy values
+character(len=256) :: filename_with_path
 
-errormsg = ' >>> topography1: ANF_DAT==1 not defined for this domain!'
-call error(errormsg)
+real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
+
+!-------- Read topography --------
+
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                     trim(ZS_PRESENT_FILE)
+
+call read_2d_input(filename_with_path, &
+                   ch_var_name='zs', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
+
+zs = field2d_aux
+
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                     trim(ZL_PRESENT_FILE)
+
+call read_2d_input(filename_with_path, &
+                   ch_var_name='zl', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
+
+zl = field2d_aux
+
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                     trim(ZL0_FILE)
+
+call read_2d_input(filename_with_path, &
+                   ch_var_name='zl0', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
+
+zl0 = field2d_aux
+
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                     trim(MASK_PRESENT_FILE)
+
+call read_2d_input(filename_with_path, &
+                   ch_var_name='mask', n_var_type=3, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
+
+mask = nint(field2d_aux)
+
+#if (defined(ZB_PRESENT_FILE))
+
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                     trim(ZB_PRESENT_FILE)
+
+call read_2d_input(filename_with_path, &
+                   ch_var_name='zb', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
+
+zb = field2d_aux
+
+#else
+
+write(6, fmt='(a)') ' >>> topography1: ZB_PRESENT_FILE not defined,'
+write(6, fmt='(a)') '                  thus zb = zl assumed.'
+
+zb = zl
+
+#endif
+
+!-------- Further stuff --------
+
+dxi  = DX *1000.0_dp   ! km -> m
+deta = DX *1000.0_dp   ! km -> m
+
+xi0  = X0 *1000.0_dp   ! km -> m
+eta0 = Y0 *1000.0_dp   ! km -> m
+
+freeboard_ratio = (RHO_SW-RHO)/RHO_SW
+
+do i=0, IMAX
+do j=0, JMAX
+
+   if (mask(j,i) <= 1) then
+
+      zb(j,i) = zl(j,i)   ! ensure consistency
+
+   else if (mask(j,i) == 2) then
+
+#if (MARGIN==1 || MARGIN==2)
+      zs(j,i) = zl(j,i)   ! ensure
+      zb(j,i) = zl(j,i)   ! consistency
+#elif (MARGIN==3)
+      zs(j,i) = 0.0_dp    ! present-day
+      zb(j,i) = 0.0_dp    ! sea level
+#endif
+
+   else if (mask(j,i) == 3) then
+
+#if (MARGIN==1 || (MARGIN==2 && MARINE_ICE_FORMATION==1))
+      mask(j,i) = 2   ! floating ice cut off
+      zs(j,i) = zl(j,i)
+      zb(j,i) = zl(j,i)
+#elif (MARGIN==2 && MARINE_ICE_FORMATION==2)
+      mask(j,i) = 0   ! floating ice becomes "underwater ice"
+      H_ice   = zs(j,i)-zb(j,i)   ! ice thickness
+      zs(j,i) = zl(j,i)+H_ice
+      zb(j,i) = zl(j,i)
+#elif (MARGIN==3)
+      H_ice = zs(j,i)-zb(j,i)   ! ice thickness
+      zs(j,i) = freeboard_ratio*H_ice   ! ensure properly
+      zb(j,i) = zs(j,i)-H_ice           ! floating ice
+#endif
+
+   end if
+
+   xi(i)  = xi0  + real(i,dp)*dxi
+   eta(j) = eta0 + real(j,dp)*deta
+
+   zm(j,i) = zb(j,i)
+   n_cts(j,i) = -1
+   kc_cts(j,i) = 0
+
+   H(j,i)   = zs(j,i)-zm(j,i)
+   H_c(j,i) = H(j,i)
+   H_t(j,i) = 0.0_dp
+
+   dzs_dtau(j,i)  = 0.0_dp
+   dzm_dtau(j,i)  = 0.0_dp
+   dzb_dtau(j,i)  = 0.0_dp
+   dzl_dtau(j,i)  = 0.0_dp
+   dH_dtau(j,i)   = 0.0_dp
+   dH_c_dtau(j,i) = 0.0_dp
+   dH_t_dtau(j,i) = 0.0_dp
+
+end do
+end do
+
+mask_old = mask
+
+!-------- Geographic coordinates, metric tensor,
+!                                 gradients of the topography --------
+
+do i=0, IMAX
+do j=0, JMAX
+
+#if (GRID==0 || GRID==1)   /* Stereographic projection */
+
+   if (F_INV > 1.0e+10_dp) then   ! interpreted as infinity, thus no flattening
+                                  ! (spherical planet)
+
+      call stereo_inv_sphere(xi(i), eta(j), R, &
+                             LAMBDA0, PHI0, lambda(j,i), phi(j,i))
+
+   else   ! finite inverse flattening (ellipsoidal planet)
+
+      call stereo_inv_ellipsoid(xi(i), eta(j), A, B, &
+                                LAMBDA0, PHI0, lambda(j,i), phi(j,i))
+
+   end if
+
+#elif (GRID==2)   /* Geographic coordinates */
+
+   lambda(j,i) = xi(i)
+   phi(j,i)    = eta(j)
+
+#endif
+
+end do
+end do
+
+call metric()
+
+#if (TOPOGRAD==0)
+call topograd_1(dxi, deta, 1)
+#elif (TOPOGRAD==1)
+call topograd_2(dxi, deta, 1)
+#endif
+
+!-------- Corresponding area of grid cells --------
+
+do i=0, IMAX
+do j=0, JMAX
+   cell_area(j,i) = sq_g11_g(j,i)*sq_g22_g(j,i)*dxi*deta
+end do
+end do
+
+!-------- Region mask --------
+
+mask_region = -1
+
+#if (defined(MASK_REGION_FILE))
+
+if ( (trim(adjustl(MASK_REGION_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(MASK_REGION_FILE)) /= 'NONE') ) then
+                                      ! read mask_region from file
+
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(MASK_REGION_FILE)
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='mask_region', &
+                      n_var_type=2, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
+
+   mask_region = nint(field2d_aux)
+
+end if
+
+#endif
+
+if (mask_region(0,0) == -1) mask_region = 0   ! regions undefined
 
 end subroutine topography1
 

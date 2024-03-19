@@ -6691,9 +6691,7 @@ end if
 
 #if (defined(ANT) \
       || defined(GRL) \
-      || defined(SCAND) \
       || defined(NHEM) \
-      || defined(TIBET) \
       || defined(ASF) \
       || defined(EISMINT) \
       || defined(XYZ))   /* terrestrial ice sheet */
@@ -6738,9 +6736,7 @@ do j=0, JMAX
 
 #if (defined(ANT) \
       || defined(GRL) \
-      || defined(SCAND) \
       || defined(NHEM) \
-      || defined(TIBET) \
       || defined(ASF) \
       || defined(EISMINT) \
       || defined(XYZ))   /* terrestrial ice sheet */
@@ -6796,9 +6792,7 @@ end do
 
 #if (defined(ANT) \
       || defined(GRL) \
-      || defined(SCAND) \
       || defined(NHEM) \
-      || defined(TIBET) \
       || defined(ASF) \
       || defined(EISMINT) \
       || (defined(XYZ) && !defined(SHMARS)))   /* terrestrial ice sheet */
