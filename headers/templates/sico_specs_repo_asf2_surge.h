@@ -4,28 +4,28 @@
 
 !-------- Basic settings --------
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2024-03-17'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2024-03-19'
 !                      Date of last change
 
 !-------- Domain --------
 
-#define ASF
+#define NHEM
 !                 Simulated domain:
 !                   ANT     - Antarctica
 !                   GRL     - Greenland
 !                   NHEM    - Northern hemisphere
-!                   ASF     - Austfonna
 !                   EISMINT - EISMINT (Phase 2 SGE and modifications)
 !                   NMARS   - North polar cap of Mars
 !                   SMARS   - South polar cap of Mars
 !                   XYZ     - Various domains
 
-#define NHEM_SUB 0
+#define NHEM_SUB 4
 !                 For the case NHEM:
-!                   0 - Unspecified subdomain
+!                   0 - Unspecified
 !                   1 - Entire northern hemisphere
 !                   2 - Laurentide and Cordilleran ice sheets
 !                   3 - Fennoscandian and Eurasian ice sheets
+!                   4 - Austfonna
 
 !-------- Physical parameter file --------
 
@@ -434,7 +434,7 @@
 !                             Name of the file containing the topography
 !                             of the relaxed lithosphere surface
 
-#define MASK_PRESENT_FILE 'asf_2k_mask.dat'
+#define MASK_PRESENT_FILE 'asf_2k_mask.nc'
 !                             Name of the file containing the present-day
 !                             ice-land-ocean mask
 
@@ -609,19 +609,11 @@
 !                             (e.g., GRIP, Vostok)
 !                         5 : Surface temperature interpolated by using
 !                             present values, LGM anomalies and a
-!                             glacial index
+!                             glacial index (requires ACCSURFACE==5)
 
 #define TEMP_PRESENT_FILE 'asf_tempmm_gamma_045_gridfit_smooth5_2k.dat'
 !                       Name of the file containing the present-day
 !                       monthly-mean surface-temperature data
-
-#define TEMP_MA_PRESENT_FILE 'asf_tempma_gamma_045_gridfit_smooth5_2k.dat'
-!                       Name of the file containing the present-day
-!                       mean-annual temperature data (for TSURFACE==6)
-
-#define TEMP_MA_PRESENT_FACT 1.0d0
-!                       Modification factor for the data of
-!                       TEMP_MA_PRESENT_FILE
 
 #define TOPO_LAPSE_RATE 4.5d0
 !                       Topographic lapse rate (in K/km)
@@ -662,10 +654,6 @@
 
 !-------- Surface precipitation --------
 
-#define PRECIP_PRESENT_FILE 'asf_precmm_2k.dat'
-!                       Name of the file containing the present-day
-!                       monthly-mean precipitation data
-
 #define ACCSURFACE 1
 !                         1 : Precipitation is constant factor ACCFACT
 !                             times present distribution
@@ -676,6 +664,23 @@
 !                         5 : Precipitation interpolated by using
 !                             present values, LGM anomalies and a
 !                             glacial index (requires TSURFACE==5)
+
+#define PRECIP_PRESENT_FILE 'asf_precmm_2k.dat'
+!                       Name of the file containing the present-day
+!                       monthly mean precipitation data
+!                       ('none' if no such file is to be specified)
+!                       (for ACCSURFACE<=5)
+
+#define PRECIP_MA_PRESENT_FILE 'none'
+!                       Name of the file containing the present-day
+!                       mean annual precipitation data
+!                       ('none' if no such file is to be specified)
+!                       (for ACCSURFACE<=5)
+
+!                       [Either PRECIP_PRESENT_FILE or PRECIP_MA_PRESENT_FILE
+!                       must be specified. If both are specified,
+!                       PRECIP_PRESENT_FILE will be used,
+!                       while PRECIP_MA_PRESENT_FILE will be ignored.]
 
 #define ACCFACT 1.0d0
 !                       Constant ratio between actual and present
@@ -825,7 +830,7 @@
 #define N_SLIDE_REGIONS 2
 !                       Number of regions with different sliding laws
 
-#define SLIDE_REGIONS_FILE 'asf_gridfit_smooth5_2k_mask_sedi.dat'
+#define SLIDE_REGIONS_FILE 'asf_gridfit_smooth5_2k_mask_sedi.nc'
 !                       File defining the regions for the sliding laws
 !                       (only for N_SLIDE_REGIONS > 1)
 

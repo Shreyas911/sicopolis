@@ -4,7 +4,7 @@
 
 !-------- Basic settings --------
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2024-03-17'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2024-03-19'
 !                      Date of last change
 
 !-------- Domain --------
@@ -14,7 +14,6 @@
 !                   ANT     - Antarctica
 !                   GRL     - Greenland
 !                   NHEM    - Northern hemisphere
-!                   ASF     - Austfonna
 !                   EISMINT - EISMINT (Phase 2 SGE and modifications)
 !                   NMARS   - North polar cap of Mars
 !                   SMARS   - South polar cap of Mars
@@ -22,10 +21,11 @@
 
 #define NHEM_SUB 0
 !                 For the case NHEM:
-!                   0 - Unspecified subdomain
+!                   0 - Unspecified
 !                   1 - Entire northern hemisphere
 !                   2 - Laurentide and Cordilleran ice sheets
 !                   3 - Fennoscandian and Eurasian ice sheets
+!                   4 - Austfonna
 
 !-------- Physical parameter file --------
 
