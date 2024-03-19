@@ -95,11 +95,13 @@ real(dp) :: z_sle_present, z_sle_help
 real(dp), dimension(0:JMAX,0:IMAX,0:12) :: precip
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
 real(dp), dimension(0:JMAX,0:IMAX)      :: temp_ampl
+real(dp), dimension(0:JMAX,0:IMAX)      :: precip_fact_arr
+real(dp), dimension(0:JMAX,0:IMAX)      :: inv_sqrt2_s_stat_arr
 #else /* NORMAL */
 real(dp), dimension(0:JMAX,0:IMAX,12)   :: temp_mm
 real(dp), dimension(0:JMAX,0:IMAX)      :: temp_ma, temp_ampl
 #endif /* ALLOW_{TAPENADE,GRDCHK} */
-real(dp), dimension(12) :: temp_mm_help
+real(dp), dimension(12)                 :: temp_mm_help
 real(dp), dimension(0:JMAX,0:IMAX)      :: accum_prescribed, &
                                            runoff_prescribed
 
@@ -896,15 +898,30 @@ temp_snow = temp_rain   ! Threshold instantaneous temperature for &
                         ! precipitation = 100% snow, in degC
 
 #if (defined(S_STAT_0))
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+if (.not. flag_ad_sico_init) then
 s_stat = S_STAT_0    ! Standard deviation of the air termperature
                      ! (same parameter as in the PDD model)
+end if
+#else  /* NORMAL */
+s_stat = S_STAT_0    ! Standard deviation of the air termperature
+                     ! (same parameter as in the PDD model)
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
 #else
 errormsg = ' >>> boundary: ' &
            // 'Parameters for PDD model not defined in run-specs header!'
 call error(errormsg)
 #endif
 
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+if (flag_ad_sico_init) then
+   inv_sqrt2_s_stat_arr = 1.0_dp/(sqrt(2.0_dp)*s_stat_arr)
+else
+   inv_sqrt2_s_stat = 1.0_dp/(sqrt(2.0_dp)*s_stat)
+end if
+#else  /* NORMAL */
 inv_sqrt2_s_stat = 1.0_dp/(sqrt(2.0_dp)*s_stat)
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
 
 #endif
 
@@ -913,6 +930,16 @@ inv_sqrt2_s_stat = 1.0_dp/(sqrt(2.0_dp)*s_stat)
 #if (ABLSURFACE==1 || ABLSURFACE==2)
 
 #if (defined(S_STAT_0) && defined(BETA1_0) && defined(BETA2_0) && defined(PMAX_0) && defined(MU_0))
+
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+if (flag_ad_sico_init) then
+beta1_arr  = beta1_arr *(0.001_dp/86400.0_dp)*(RHO_W/RHO)
+                           ! (mm WE)/(d*degC) -> (m IE)/(s*degC)
+beta2_arr  = beta2_arr *(0.001_dp/86400.0_dp)*(RHO_W/RHO)
+                           ! (mm WE)/(d*degC) -> (m IE)/(s*degC)
+mu_arr     = mu_arr    *(1000.0_dp*86400.0_dp)*(RHO/RHO_W)
+                           ! (d*degC)/(mm WE) -> (s*degC)/(m IE)
+else
 s_stat = S_STAT_0
 beta1  = BETA1_0  *(0.001_dp/86400.0_dp)*(RHO_W/RHO)
                            ! (mm WE)/(d*degC) -> (m IE)/(s*degC)
@@ -921,6 +948,18 @@ beta2  = BETA2_0  *(0.001_dp/86400.0_dp)*(RHO_W/RHO)
 Pmax   = PMAX_0
 mu     = MU_0     *(1000.0_dp*86400.0_dp)*(RHO/RHO_W)
                            ! (d*degC)/(mm WE) -> (s*degC)/(m IE)
+end if
+#else  /* NORMAL */
+s_stat = S_STAT_0
+beta1  = BETA1_0  *(0.001_dp/86400.0_dp)*(RHO_W/RHO)
+                           ! (mm WE)/(d*degC) -> (m IE)/(s*degC)
+beta2  = BETA2_0  *(0.001_dp/86400.0_dp)*(RHO_W/RHO)
+                           ! (mm WE)/(d*degC) -> (m IE)/(s*degC)
+Pmax   = PMAX_0
+mu     = MU_0     *(1000.0_dp*86400.0_dp)*(RHO/RHO_W)
+                           ! (d*degC)/(mm WE) -> (s*degC)/(m IE)
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
+
 #else
 errormsg = ' >>> boundary: ' &
            // 'Parameters for PDD model not defined in run-specs header!'
@@ -971,6 +1010,88 @@ do j=0, JMAX
 #endif
 
 !    ---- Precipitation change related to changing climate
+
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+
+if (flag_ad_sico_init) then
+
+#if (ACCSURFACE==1)
+   precip_fact_arr(j,i) = ACCFACT
+#elif (ACCSURFACE==2)
+   precip_fact_arr(j,i) = 1.0_dp + gamma_s_arr(j,i)*delta_ts
+#elif (ACCSURFACE==3)
+   precip_fact_arr(j,i) = exp(gamma_s_arr(j,i)*delta_ts)
+#endif
+
+else
+
+#if (ACCSURFACE==1)
+   precip_fact_arr(j,i) = ACCFACT
+#elif (ACCSURFACE==2)
+   precip_fact_arr(j,i) = 1.0_dp + GAMMA_S*delta_ts
+#elif (ACCSURFACE==3)
+   precip_fact_arr(j,i) = exp(GAMMA_S*delta_ts)
+#endif
+
+end if
+
+#if (ACCSURFACE<=3)
+
+   precip(j,i,0) = 0.0_dp   ! initialisation value for mean annual precip
+
+   do n=1, 12   ! month counter
+      precip(j,i,n) = precip(j,i,n)*precip_fact_arr(j,i)   ! monthly precip
+      precip(j,i,0) = precip(j,i,0) + precip(j,i,n)*inv_twelve
+                                                  ! mean annual precip
+   end do
+
+#elif (ACCSURFACE==4)
+
+   precip(j,i,0) = 0.0_dp   ! initialisation value for mean annual precip
+
+   temp_inv         = alpha_t * (temp_ma(j,i)+temp_0)         + beta_t   ! in K
+   temp_inv_present = alpha_t * (temp_ma_present(j,i)+temp_0) + beta_t   ! in K
+
+   precip_fact_arr(j,i) = exp(alpha_p*(temp_0/temp_inv_present-temp_0/temp_inv)) &
+                 *(temp_inv_present/temp_inv)**2 &
+                 *(1.0_dp+beta_p*(temp_inv-temp_inv_present))
+
+   do n=1, 12   ! month counter
+      precip(j,i,n) = precip_present(j,i,n)*precip_fact_arr(j,i)   ! monthly precip
+      precip(j,i,0) = precip(j,i,0) + precip(j,i,n)*inv_twelve
+                                                      ! mean annual precip
+   end do
+
+#elif (ACCSURFACE==5)
+
+   precip(j,i,0) = 0.0_dp   ! initialisation value for mean annual precip
+
+   do n=1, 12   ! month counter
+
+#if (PRECIP_ANOM_INTERPOL==1)
+      precip_fact_arr(j,i) = 1.0_dp-glac_index+glac_index*precip_lgm_anom(j,i,n)
+                    ! interpolation with a linear function
+#elif (PRECIP_ANOM_INTERPOL==2)
+      precip_fact_arr(j,i) = exp(-glac_index*gamma_precip_lgm_anom(j,i,n))
+                    ! interpolation with an exponential function
+#endif
+
+      precip(j,i,n) = precip_present(j,i,n)*precip_fact_arr(j,i)   ! monthly precip
+      precip(j,i,0) = precip(j,i,0) + precip(j,i,n)*inv_twelve
+                                                      ! mean annual precip
+   end do
+
+#elif (ACCSURFACE==6 || ACCSURFACE==7)
+
+   precip(j,i,0) = 0.0_dp   ! only total SMB computed (further below)
+
+   do n=1, 12   ! month counter
+      precip(j,i,n) = 0.0_dp   ! only total SMB computed (further below)
+   end do
+
+#endif
+
+#else /* NORMAL */
 
 #if (ACCSURFACE==1)
    precip_fact = ACCFACT
@@ -1036,6 +1157,8 @@ do j=0, JMAX
 
 #endif
 
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
+
 !    ---- Annual accumulation, snowfall and rainfall rates
 
 #if (ACCSURFACE<=5)
@@ -1073,13 +1196,18 @@ do j=0, JMAX
 
 #elif (SOLID_PRECIP==3)   /* Huybrechts and de Wolde (1999) */
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
-      frac_solid = 1.0_dp &
-                   - 0.5_dp*erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat)
-#else /* ALLOW_TAPENADE */
-      call my_erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat, temp_val)
-      frac_solid = 1.0_dp - 0.5_dp*temp_val
-#endif /* ALLOW_TAPENADE */
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+if (flag_ad_sico_init) then
+   call my_erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat_arr(j,i), temp_val)
+   frac_solid = 1.0_dp - 0.5_dp*temp_val
+else
+   call my_erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat, temp_val)
+   frac_solid = 1.0_dp - 0.5_dp*temp_val
+end if
+#else /* NORMAL */
+   frac_solid = 1.0_dp &
+                - 0.5_dp*erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat)
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
 
 #endif
 
@@ -1112,10 +1240,61 @@ do j=0, JMAX
       temp_mm_help(n) = temp_mm(j,i,n)
    end do
 
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+   if (flag_ad_sico_init) then
+      call pdd(temp_mm_help, s_stat_arr(j,i), ET(j,i))
+   else
+      call pdd(temp_mm_help, s_stat, ET(j,i))
+   end if
+#else /* NORMAL */
    call pdd(temp_mm_help, s_stat, ET(j,i))
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
 
 !      -- Formation rate of superimposed ice (melt_star), melt rate (melt)
 !         and runoff rate (runoff)
+
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+
+if (flag_ad_sico_init) then
+
+#if (ABLSURFACE==1)
+
+   if ((beta1_arr(j,i)*ET(j,i)) <= (Pmax_arr(j,i)*snowfall(j,i))) then
+      melt_star(j,i) = beta1_arr(j,i)*ET(j,i)
+      melt(j,i)      = 0.0_dp
+      runoff(j,i)    = melt(j,i)+rainfall(j,i)
+   else
+      melt_star(j,i) = Pmax_arr(j,i)*snowfall(j,i)
+      melt(j,i)      = beta2_arr(j,i)*(ET(j,i)-melt_star(j,i)/beta1_arr(j,i))
+      runoff(j,i)    = melt(j,i)+rainfall(j,i)
+   end if
+
+#elif (ABLSURFACE==2)
+
+   if ( rainfall(j,i) <= (Pmax_arr(j,i)*snowfall(j,i)) ) then
+
+      if ( (rainfall(j,i)+beta1_arr(j,i)*ET(j,i)) <= (Pmax_arr(j,i)*snowfall(j,i)) ) then
+         melt_star(j,i) = rainfall(j,i)+beta1_arr(j,i)*ET(j,i)
+         melt(j,i)      = 0.0_dp
+         runoff(j,i)    = melt(j,i)
+      else
+         melt_star(j,i) = Pmax_arr(j,i)*snowfall(j,i)
+         melt(j,i)      = beta2_arr(j,i) &
+                          *(ET(j,i)-(melt_star(j,i)-rainfall(j,i))/beta1_arr(j,i))
+         runoff(j,i)    = melt(j,i)
+      end if
+
+   else
+
+      melt_star(j,i) = Pmax_arr(j,i)*snowfall(j,i)
+      melt(j,i)      = beta2_arr(j,i)*ET(j,i)
+      runoff(j,i)    = melt(j,i) + rainfall(j,i)-Pmax_arr(j,i)*snowfall(j,i)
+
+   end if
+
+#endif
+
+else
 
 #if (ABLSURFACE==1)
 
@@ -1153,6 +1332,49 @@ do j=0, JMAX
    end if
 
 #endif
+
+end if
+
+#else /* NORMAL */
+
+#if (ABLSURFACE==1)
+
+   if ((beta1*ET(j,i)) <= (Pmax*snowfall(j,i))) then
+      melt_star(j,i) = beta1*ET(j,i)
+      melt(j,i)      = 0.0_dp
+      runoff(j,i)    = melt(j,i)+rainfall(j,i)
+   else
+      melt_star(j,i) = Pmax*snowfall(j,i)
+      melt(j,i)      = beta2*(ET(j,i)-melt_star(j,i)/beta1)
+      runoff(j,i)    = melt(j,i)+rainfall(j,i)
+   end if
+
+#elif (ABLSURFACE==2)
+
+   if ( rainfall(j,i) <= (Pmax*snowfall(j,i)) ) then
+
+      if ( (rainfall(j,i)+beta1*ET(j,i)) <= (Pmax*snowfall(j,i)) ) then
+         melt_star(j,i) = rainfall(j,i)+beta1*ET(j,i)
+         melt(j,i)      = 0.0_dp
+         runoff(j,i)    = melt(j,i)
+      else
+         melt_star(j,i) = Pmax*snowfall(j,i)
+         melt(j,i)      = beta2 &
+                          *(ET(j,i)-(melt_star(j,i)-rainfall(j,i))/beta1)
+         runoff(j,i)    = melt(j,i)
+      end if
+
+   else
+
+      melt_star(j,i) = Pmax*snowfall(j,i)
+      melt(j,i)      = beta2*ET(j,i)
+      runoff(j,i)    = melt(j,i) + rainfall(j,i)-Pmax*snowfall(j,i)
+
+   end if
+
+#endif
+
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
 
 #elif (ABLSURFACE==3)
 
@@ -1237,33 +1459,18 @@ runoff = runoff + runoff_prescribed
 !         including empirical firn-warming correction due to
 !         refreezing meltwater when superimposed ice is formed
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
-
-#if (TSURFACE<=5)
-
-where (melt_star >= melt)
-   temp_s = temp_ma + mu*(melt_star-melt)
-elsewhere
-   temp_s = temp_ma
-end where
-
-#elif (TSURFACE==6)
-
-temp_s = temp_ma
-
-#endif
-
-where (temp_s > -0.001_dp) temp_s = -0.001_dp
-                            ! Cut-off of positive air temperatures
-
-#else /* ALLOW_TAPENADE */
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
 
 #if (TSURFACE<=5)
 
 do i=0, IMAX
 do j=0, JMAX
    if (melt_star(j,i) >= melt(j,i)) then
+   if (flag_ad_sico_init) then
+      temp_s(j,i) = temp_ma(j,i) + mu_arr(j,i)*(melt_star(j,i)-melt(j,i))
+   else
       temp_s(j,i) = temp_ma(j,i) + mu*(melt_star(j,i)-melt(j,i))
+   end if
    else
       temp_s(j,i) = temp_ma(j,i)
    end if
@@ -1284,7 +1491,26 @@ do j=0, JMAX
 end do
 end do
 
-#endif /* ALLOW_TAPENADE */
+#else /* NORMAL */
+
+#if (TSURFACE<=5)
+
+where (melt_star >= melt)
+   temp_s = temp_ma + mu*(melt_star-melt)
+elsewhere
+   temp_s = temp_ma
+end where
+
+#elif (TSURFACE==6)
+
+temp_s = temp_ma
+
+#endif
+
+where (temp_s > -0.001_dp) temp_s = -0.001_dp
+                            ! Cut-off of positive air temperatures
+
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
 
 !-------- Calving --------
 

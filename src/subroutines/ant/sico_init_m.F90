@@ -2812,6 +2812,28 @@ print *, '                in adjoint mode.'
 
 #endif /* ALLOW_TAPENADE */
 
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+flag_ad_sico_init = .true.
+if (flag_ad_sico_init) then
+#if (ACCSURFACE==2 || ACCSURFACE==3)
+   gamma_s_arr = gamma_s_arr + GAMMA_S
+#endif
+#if (ABLSURFACE==1 || ABLSURFACE==2 || (ACCSURFACE<=5 && SOLID_PRECIP==3))
+#if (defined(S_STAT_0))
+   s_stat_arr  = s_stat_arr + S_STAT_0
+#endif
+#endif
+#if (ABLSURFACE==1 || ABLSURFACE==2)
+#if (defined(BETA1_0) && defined(BETA2_0) && defined(PMAX_0) && defined(MU_0))
+   beta1_arr   = beta1_arr + BETA1_0
+   beta2_arr   = beta2_arr + BETA2_0
+   Pmax_arr    = Pmax_arr  + PMAX_0
+   mu_arr      = mu_arr    + MU_0
+#endif
+#endif
+end if
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
+
 end subroutine sico_init
 
 !-------------------------------------------------------------------------------

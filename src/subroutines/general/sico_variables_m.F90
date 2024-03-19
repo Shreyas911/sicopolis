@@ -1257,7 +1257,19 @@ real(dp), dimension(0:JMAX,0:IMAX,12)   :: temp_mm
 real(dp), dimension(0:JMAX,0:IMAX)      :: temp_ma
 
 logical :: flag_ad_sico_init
+
+#if (ACCSURFACE==2 || ACCSURFACE==3)
 real(dp), dimension(0:JMAX,0:IMAX)      :: gamma_s_arr
+#endif
+#if (ABLSURFACE==1 || ABLSURFACE==2 || (ACCSURFACE<=5 && SOLID_PRECIP==3))
+real(dp), dimension(0:JMAX,0:IMAX)      :: s_stat_arr
+#endif
+#if (ABLSURFACE==1 || ABLSURFACE==2)
+real(dp), dimension(0:JMAX,0:IMAX)      :: beta1_arr
+real(dp), dimension(0:JMAX,0:IMAX)      :: beta2_arr
+real(dp), dimension(0:JMAX,0:IMAX)      :: Pmax_arr
+real(dp), dimension(0:JMAX,0:IMAX)      :: mu_arr
+#endif
 
 #if (defined(AGE_COST))
 

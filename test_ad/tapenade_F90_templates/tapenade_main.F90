@@ -128,7 +128,12 @@ program tapenade_main
         q_geo        = 0.0
         c_slide_init = 0.0
         H            = 0.0 ! Only compatible with ANF_DAT==1
-        gamma_s_arr  = 0.0 ! Only compatible with ACCSURFACE==2 or 3
+        gamma_s_arr  = 0.0 ! ACCSURFACE==2 || ACCSURFACE==3
+        s_stat_arr   = 0.0 ! ABLSURFACE==1 || ABLSURFACE==2 || (ACCSURFACE<=5 && SOLID_PRECIP==3)
+        beta1_arr    = 0.0 ! ABLSURFACE==1 || ABLSURFACE==2
+        beta2_arr    = 0.0 ! ABLSURFACE==1 || ABLSURFACE==2
+        Pmax_arr     = 0.0 ! ABLSURFACE==1 || ABLSURFACE==2
+        mu_arr       = 0.0 ! ABLSURFACE==1 || ABLSURFACE==2
 
         ! 3D fields
         temp_c       = 0.0 ! Not compatible with TEMP_INIT==5
