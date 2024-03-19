@@ -467,7 +467,7 @@ contains
 
      call output4(time, dxi, deta, delta_ts, glac_index)
 
-#if (defined(ASF) && WRITE_SER_FILE_STAKES>0)
+#if (defined(NHEM) && NHEM_SUB==4 && WRITE_SER_FILE_STAKES==1) /* Austfonna */
      call output5(time, dxi, deta, delta_ts, glac_index)
 #endif
 

@@ -62,7 +62,7 @@ contains
   close(unit=12, status='keep')  ! Close time-series files
   close(unit=14, status='keep')
 
-#if (defined(ASF) && WRITE_SER_FILE_STAKES>0)
+#if (defined(NHEM) && NHEM_SUB==4 && WRITE_SER_FILE_STAKES==1) /* Austfonna */
   close(unit=41, status='keep')
   close(unit=42, status='keep')
   close(unit=43, status='keep')

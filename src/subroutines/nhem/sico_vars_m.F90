@@ -37,7 +37,27 @@ use sico_types_m
 implicit none
 save
 
-!-------- None required. --------
+#if (NHEM_SUB==4 && WRITE_SER_FILE_STAKES==1) /* Austfonna */
+
+integer(i4b) :: n_surf
+   !! Number of surface points for which time-series data are written 
+
+integer(i4b), parameter :: n_surf_max = 256
+   !! Maximum allowed value of n_surf
+
+real(dp), dimension(n_surf_max) :: lambda_surf
+   !! Geographical longitude of the prescribed surface points
+
+real(dp), dimension(n_surf_max) :: phi_surf
+   !! Geographical latitude of the prescribed surface points
+
+real(dp), dimension(n_surf_max) :: x_surf
+   !! Coordinate xi (= x) of the prescribed surface points
+
+real(dp), dimension(n_surf_max) :: y_surf
+   !! Coordinate eta (= y) of the prescribed surface points
+
+#endif
 
 end module sico_vars_m
 !

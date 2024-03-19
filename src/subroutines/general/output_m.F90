@@ -41,7 +41,7 @@ module output_m
 
   private
   public :: output1, output2, output4, borehole
-#if (defined(ASF))
+#if (defined(NHEM) && NHEM_SUB==4 && WRITE_SER_FILE_STAKES==1) /* Austfonna */
   public :: output5
 #endif
 
@@ -6692,7 +6692,6 @@ end if
 #if (defined(ANT) \
       || defined(GRL) \
       || defined(NHEM) \
-      || defined(ASF) \
       || defined(EISMINT) \
       || defined(XYZ))   /* terrestrial ice sheet */
 
@@ -6737,7 +6736,6 @@ do j=0, JMAX
 #if (defined(ANT) \
       || defined(GRL) \
       || defined(NHEM) \
-      || defined(ASF) \
       || defined(EISMINT) \
       || defined(XYZ))   /* terrestrial ice sheet */
 
@@ -6793,7 +6791,6 @@ end do
 #if (defined(ANT) \
       || defined(GRL) \
       || defined(NHEM) \
-      || defined(ASF) \
       || defined(EISMINT) \
       || (defined(XYZ) && !defined(SHMARS)))   /* terrestrial ice sheet */
 
@@ -7696,7 +7693,7 @@ if (firstcall%output4) firstcall%output4 = .false.
 
 end subroutine output4
 
-#if (defined(ASF))
+#if (defined(NHEM) && NHEM_SUB==4 && WRITE_SER_FILE_STAKES==1) /* Austfonna */
 
 !-------------------------------------------------------------------------------
 !> Writing of time-series data for all defined surface points on file
@@ -7908,7 +7905,7 @@ deallocate(zl_surf, zs_surf, accum_surf, as_perp_surf, &
 
 end subroutine output5
 
-#endif   /* (defined(ASF)) */
+#endif /* (defined(NHEM) && NHEM_SUB==4 && WRITE_SER_FILE_STAKES==1) Austfonna*/
 
 !-------------------------------------------------------------------------------
 !> Computation of an arbitrary field quantity for a given borehole
