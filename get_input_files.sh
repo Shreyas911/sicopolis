@@ -9,7 +9,7 @@
 #   copying them to the corresponding directories.
 #
 # Author: Ralf Greve
-# Date:   2024-03-17
+# Date:   2024-03-19
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #-------- Settings (to be customized) --------
@@ -20,13 +20,11 @@ GRL_FLAG=1       # Greenland:
                  #    1 - get files, 0 - don't get files
 NHEM_FLAG=1      # Northern hemisphere:
                  #    1 - get files, 0 - don't get files
-ASF_FLAG=1       # Austfonna:
+EISMINT_FLAG=1   # EISMINT:
                  #    1 - get files, 0 - don't get files
 NMARS_FLAG=1     # North polar cap of Mars:
                  #    1 - get files, 0 - don't get files
 SMARS_FLAG=1     # South polar cap of Mars:
-                 #    1 - get files, 0 - don't get files
-EISMINT_FLAG=1   # EISMINT:
                  #    1 - get files, 0 - don't get files
 HEINO_FLAG=1     # ISMIP HEINO:
                  #    1 - get files, 0 - don't get files
@@ -36,7 +34,7 @@ MOCHO_FLAG=1     # Mocho-Choshuenco ice cap:
 #-------- Initialization --------
 
 # Zenodo repo:
-REPO_URL=https://zenodo.org/record/10828424/files
+REPO_URL=https://zenodo.org/record/10836523/files
 
 # Backup repo:
 # REPO_URL=https://www2.lowtem.hokudai.ac.jp/gisg/repo/sicopolis/sico_in
@@ -52,14 +50,12 @@ if [[ $GRL_FLAG -eq 1 ]]; then
    domains="`echo $domains` grl"; fi
 if [[ $NHEM_FLAG -eq 1 ]]; then
    domains="`echo $domains` nhem"; fi
-if [[ $ASF_FLAG -eq 1 ]]; then
-   domains="`echo $domains` asf"; fi
+if [[ $EISMINT_FLAG -eq 1 ]]; then
+   domains="`echo $domains` eismint"; fi
 if [[ $NMARS_FLAG -eq 1 ]]; then
    domains="`echo $domains` nmars"; fi
 if [[ $SMARS_FLAG -eq 1 ]]; then
    domains="`echo $domains` smars"; fi
-if [[ $EISMINT_FLAG -eq 1 ]]; then
-   domains="`echo $domains` eismint"; fi
 if [[ $HEINO_FLAG -eq 1 ]]; then
    domains_xyz="`echo $domains_xyz` heino"; fi
 if [[ $MOCHO_FLAG -eq 1 ]]; then
