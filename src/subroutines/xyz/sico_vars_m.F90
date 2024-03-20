@@ -2,7 +2,7 @@
 !
 !  Module :  s i c o _ v a r s _ m
 !
-!! NHEM domain: Declarations of global variables for SICOPOLIS.
+!! Declarations of global variables for SICOPOLIS.
 !!
 !!##### Authors
 !!
@@ -28,7 +28,7 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
-!> NHEM domain: Declarations of global variables for SICOPOLIS.
+!> Declarations of global variables for SICOPOLIS.
 !-------------------------------------------------------------------------------
 module sico_vars_m
 
@@ -37,7 +37,7 @@ use sico_types_m
 implicit none
 save
 
-#if (NHEM_SUB==4 && WRITE_SER_FILE_STAKES==1) /* Austfonna */
+#if (defined(ASF) && WRITE_SER_FILE_STAKES==1) /* Austfonna */
 
 integer(i4b) :: n_surf
    !! Number of surface points for which time-series data are written 

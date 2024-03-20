@@ -590,7 +590,7 @@ contains
 
   implicit none
 
-#if (defined(NHEM) && NHEM_SUB==4)   /* Austfonna */
+#if (defined(ASF))   /* Austfonna */
 
   age_c =  3500.0_dp*year2sec
   age_t =  3500.0_dp*year2sec

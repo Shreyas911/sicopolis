@@ -22,7 +22,6 @@ SICOPOLIS provides several pre-defined model domains. They can be chosen by defi
   !               ANT     - Antarctica
   !               GRL     - Greenland
   !               NHEM    - Northern hemisphere
-  !               ASF     - Austfonna
   !               EISMINT - EISMINT (Phase 2 SGE and modifications)
   !               NMARS   - North polar cap of Mars
   !               SMARS   - South polar cap of Mars
