@@ -1265,10 +1265,10 @@ real(dp), dimension(0:JMAX,0:IMAX)      :: gamma_s_arr
 real(dp), dimension(0:JMAX,0:IMAX)      :: s_stat_arr
 #endif
 #if (ABLSURFACE==1 || ABLSURFACE==2)
-real(dp), dimension(0:JMAX,0:IMAX)      :: beta1_arr
-real(dp), dimension(0:JMAX,0:IMAX)      :: beta2_arr
+real(dp), dimension(0:JMAX,0:IMAX)      :: beta1_arr_orig
+real(dp), dimension(0:JMAX,0:IMAX)      :: beta2_arr_orig
 real(dp), dimension(0:JMAX,0:IMAX)      :: Pmax_arr
-real(dp), dimension(0:JMAX,0:IMAX)      :: mu_arr
+real(dp), dimension(0:JMAX,0:IMAX)      :: mu_arr_orig
 #endif
 
 #if (defined(AGE_COST))

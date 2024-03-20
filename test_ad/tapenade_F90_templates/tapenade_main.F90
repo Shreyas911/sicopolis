@@ -125,15 +125,21 @@ program tapenade_main
 
         ! Initialize compatible fields to 0
         ! 2D fields
-        q_geo        = 0.0
-        c_slide_init = 0.0
-        H            = 0.0 ! Only compatible with ANF_DAT==1
-        gamma_s_arr  = 0.0 ! ACCSURFACE==2 || ACCSURFACE==3
-        s_stat_arr   = 0.0 ! ABLSURFACE==1 || ABLSURFACE==2 || (ACCSURFACE<=5 && SOLID_PRECIP==3)
-        beta1_arr    = 0.0 ! ABLSURFACE==1 || ABLSURFACE==2
-        beta2_arr    = 0.0 ! ABLSURFACE==1 || ABLSURFACE==2
-        Pmax_arr     = 0.0 ! ABLSURFACE==1 || ABLSURFACE==2
-        mu_arr       = 0.0 ! ABLSURFACE==1 || ABLSURFACE==2
+        q_geo          = 0.0
+        c_slide_init   = 0.0
+        H              = 0.0 ! Only compatible with ANF_DAT==1
+#if (ACCSURFACE==2 || ACCSURFACE==3)
+        gamma_s_arr    = 0.0
+#endif
+#if (ABLSURFACE==1 || ABLSURFACE==2 || (ACCSURFACE<=5 && SOLID_PRECIP==3))
+        s_stat_arr     = 0.0
+#endif
+#if (ABLSURFACE==1 || ABLSURFACE==2)
+        beta1_arr_orig = 0.0
+        beta2_arr_orig = 0.0
+        Pmax_arr       = 0.0
+        mu_arr_orig    = 0.0
+#endif
 
         ! 3D fields
         temp_c       = 0.0 ! Not compatible with TEMP_INIT==5

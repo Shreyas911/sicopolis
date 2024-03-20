@@ -97,6 +97,7 @@ real(dp), dimension(0:JMAX,0:IMAX,0:12) :: precip
 real(dp), dimension(0:JMAX,0:IMAX)      :: temp_ampl
 real(dp), dimension(0:JMAX,0:IMAX)      :: precip_fact_arr
 real(dp), dimension(0:JMAX,0:IMAX)      :: inv_sqrt2_s_stat_arr
+real(dp), dimension(0:JMAX,0:IMAX)      :: beta1_arr, beta2_arr, mu_arr
 #else /* NORMAL */
 real(dp), dimension(0:JMAX,0:IMAX,12)   :: temp_mm
 real(dp), dimension(0:JMAX,0:IMAX)      :: temp_ma, temp_ampl
@@ -933,11 +934,11 @@ inv_sqrt2_s_stat = 1.0_dp/(sqrt(2.0_dp)*s_stat)
 
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
 if (flag_ad_sico_init) then
-beta1_arr  = beta1_arr *(0.001_dp/86400.0_dp)*(RHO_W/RHO)
+beta1_arr  = beta1_arr_orig *(0.001_dp/86400.0_dp)*(RHO_W/RHO)
                            ! (mm WE)/(d*degC) -> (m IE)/(s*degC)
-beta2_arr  = beta2_arr *(0.001_dp/86400.0_dp)*(RHO_W/RHO)
+beta2_arr  = beta2_arr_orig *(0.001_dp/86400.0_dp)*(RHO_W/RHO)
                            ! (mm WE)/(d*degC) -> (m IE)/(s*degC)
-mu_arr     = mu_arr    *(1000.0_dp*86400.0_dp)*(RHO/RHO_W)
+mu_arr     = mu_arr_orig    *(1000.0_dp*86400.0_dp)*(RHO/RHO_W)
                            ! (d*degC)/(mm WE) -> (s*degC)/(m IE)
 else
 s_stat = S_STAT_0
@@ -1200,14 +1201,22 @@ end if
 if (flag_ad_sico_init) then
    call my_erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat_arr(j,i), temp_val)
    frac_solid = 1.0_dp - 0.5_dp*temp_val
-else
+else 
    call my_erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat, temp_val)
    frac_solid = 1.0_dp - 0.5_dp*temp_val
 end if
-#else /* NORMAL,GRDCHK */
+#elif defined(ALLOW_GRDCHK)
+if (flag_ad_sico_init) then
+   frac_solid = 1.0_dp &
+                - 0.5_dp*erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat_arr(j,i))
+else 
    frac_solid = 1.0_dp &
                 - 0.5_dp*erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat)
-#endif /* ALLOW_TAPENADE */
+end if
+#else /* NORMAL */
+   frac_solid = 1.0_dp &
+                - 0.5_dp*erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat)
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
 
 #endif
 

@@ -2756,10 +2756,10 @@ if (flag_ad_sico_init) then
 #endif
 #if (ABLSURFACE==1 || ABLSURFACE==2)
 #if (defined(BETA1_0) && defined(BETA2_0) && defined(PMAX_0) && defined(MU_0))
-   beta1_arr   = beta1_arr + BETA1_0
-   beta2_arr   = beta2_arr + BETA2_0
-   Pmax_arr    = Pmax_arr  + PMAX_0
-   mu_arr      = mu_arr    + MU_0
+   beta1_arr_orig = beta1_arr_orig + BETA1_0
+   beta2_arr_orig = beta2_arr_orig + BETA2_0
+   Pmax_arr       = Pmax_arr       + PMAX_0
+   mu_arr_orig    = mu_arr_orig    + MU_0
 #endif
 #endif
 end if
