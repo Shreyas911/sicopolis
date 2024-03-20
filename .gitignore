@@ -80,6 +80,9 @@ my_*
 !/sico_in/smars/make_*
 !/sico_in/smars/phys_para*
 
+/sico_in/xyz/*
+!/sico_in/xyz/.keep
+
 /sico_out/*
 !/sico_out/.keep
 

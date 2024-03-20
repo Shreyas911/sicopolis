@@ -2,7 +2,7 @@
 !
 !  Module :  s i c o _ i n i t _ m
 !
-!! NHEM domain: Initializations for SICOPOLIS.
+!! Initializations for SICOPOLIS.
 !!
 !!##### Authors
 !!
@@ -28,7 +28,7 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
-!> NHEM domain: Initializations for SICOPOLIS.
+!> Initializations for SICOPOLIS.
 !-------------------------------------------------------------------------------
 module sico_init_m
 
@@ -167,25 +167,36 @@ ch_domain_long  = 'Greenland'
 ch_domain_short = 'grl'
 
 #elif (defined(NHEM))
-ch_domain_long  = 'Northern hemisphere'
+ch_domain_long  = 'Entire northern hemisphere'
 ch_domain_short = 'nhem'
-#if (NHEM_SUB==1)
-ch_domain_long  = trim(ch_domain_long) &
-                  // ' (Entire northern hemisphere)'
-#elif (NHEM_SUB==2)
-ch_domain_long  = trim(ch_domain_long) &
-                  // ' (Laurentide and Cordilleran ice sheets)'
-#elif (NHEM_SUB==3)
-ch_domain_long  = trim(ch_domain_long) &
-                  // ' (Fennoscandian and Eurasian ice sheets)'
-#elif (NHEM_SUB==4)
-ch_domain_long  = trim(ch_domain_long) &
-                  // ' (Austfonna)'
-#endif
+
+#elif (defined(LCIS))
+ch_domain_long  = 'Laurentide and Cordilleran ice sheets'
+ch_domain_short = 'lcis'
+
+#elif (defined(SCAND))
+ch_domain_long  = 'Fennoscandian and Eurasian ice sheets'
+ch_domain_short = 'scand'
+
+#elif (defined(ASF))
+ch_domain_long  = 'Austfonna'
+ch_domain_short = 'asf'
+
+#elif (defined(NPI))
+ch_domain_long  = 'Northern Patagonian ice field'
+ch_domain_short = 'npi'
+
+#elif (defined(MOCHO))
+ch_domain_long  = 'Mocho-Choshuenco ice cap'
+ch_domain_short = 'mocho'
 
 #elif (defined(EISMINT))
 ch_domain_long  = 'EISMINT'
 ch_domain_short = 'eismint'
+
+#elif (defined(HEINO))
+ch_domain_long  = 'ISMIP HEINO'
+ch_domain_short = 'heino'
 
 #elif (defined(NMARS))
 ch_domain_long  = 'North polar cap of Mars'
@@ -195,16 +206,10 @@ ch_domain_short = 'nmars'
 ch_domain_long  = 'South polar cap of Mars'
 ch_domain_short = 'smars'
 
-#elif (defined(XYZ))
-ch_domain_long  = 'XYZ'
-ch_domain_short = 'xyz'
-#if (defined(HEINO))
-ch_domain_long  = trim(ch_domain_long)//'/ISMIP HEINO'
-#endif
-
 #else
-errormsg = ' >>> sico_init: No valid domain specified!'
-call error(errormsg)
+ch_domain_long  = 'Unspecified domain'
+ch_domain_short = 'xyz'
+
 #endif
 
 !-------- Some initial values --------
@@ -282,7 +287,7 @@ call error(errormsg)
 
 #if (GRID==0 || GRID==1)
 
-#if (NHEM_SUB==1) /* Entire northern hemisphere */
+#if (defined(NHEM)) /* Entire northern hemisphere */
 
 if (approx_equal(DX, 80.0_dp, eps_sp_dp)) then
 
@@ -310,7 +315,7 @@ else
    call error(errormsg)
 end if
 
-#elif (NHEM_SUB==2) /* Laurentide and Cordilleran ice sheets */
+#elif (defined(LCIS)) /* Laurentide and Cordilleran ice sheets */
 
 if (approx_equal(DX, 80.0_dp, eps_sp_dp)) then
 
@@ -338,7 +343,7 @@ else
    call error(errormsg)
 end if
 
-#elif (NHEM_SUB==3) /* Fennoscandian and Eurasian ice sheets */
+#elif (defined(SCAND)) /* Fennoscandian and Eurasian ice sheets */
 
 if (approx_equal(DX, 40.0_dp, eps_sp_dp)) then
 
@@ -366,7 +371,7 @@ else
    call error(errormsg)
 end if
 
-#elif (NHEM_SUB==4) /* Austfonna */
+#elif (defined(ASF)) /* Austfonna */
 
 if (approx_equal(DX, 4.0_dp, eps_sp_dp)) then
 
@@ -394,7 +399,7 @@ else
    call error(errormsg)
 end if
 
-#endif /* NHEM_SUB==1, 2, 3 or 4 */
+#endif /* Different computational domains */
 
 #elif (GRID==2)
 
@@ -1317,7 +1322,7 @@ end do
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
-#if (NHEM_SUB==4 && defined(WRITE_SER_FILE_STAKES)) /* Austfonna */
+#if (defined(ASF) && defined(WRITE_SER_FILE_STAKES)) /* Austfonna */
 write(10, fmt=trim(fmt2)) 'WRITE_SER_FILE_STAKES = ', WRITE_SER_FILE_STAKES
 write(10, fmt=trim(fmt1)) ' '
 #endif
@@ -2241,7 +2246,7 @@ write(14,'(1x,a)') '---------------------'
 write(14,'(1x,a)') 'No boreholes defined.'
 write(14,'(1x,a)') '---------------------'
 
-#if (NHEM_SUB==4 && WRITE_SER_FILE_STAKES==1) /* Austfonna */
+#if (defined(ASF) && WRITE_SER_FILE_STAKES==1) /* Austfonna */
 
 !  ------ Time-series file for mass balance stakes etc.
 
@@ -2779,7 +2784,7 @@ y_surf = phi_surf
 
 #endif
 
-#endif /* (NHEM_SUB==4 && WRITE_SER_FILE_STAKES==1) Austfonna */
+#endif /* (defined(ASF) && WRITE_SER_FILE_STAKES==1) Austfonna */
 
 !-------- Output of the initial state --------
 
@@ -2860,7 +2865,7 @@ if (flag_init_output) then
    call output2(time_init, dxi, deta, delta_ts, glac_index)
    call output4(time_init, dxi, deta, delta_ts, glac_index)
 
-#if (NHEM_SUB==4 && WRITE_SER_FILE_STAKES==1) /* Austfonna */
+#if (defined(ASF) && WRITE_SER_FILE_STAKES==1) /* Austfonna */
    call output5(time, dxi, deta, delta_ts, glac_index)
 #endif
 

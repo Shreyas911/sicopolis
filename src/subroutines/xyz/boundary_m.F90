@@ -2,7 +2,6 @@
 !
 !  Module :  b o u n d a r y _ m
 !
-!! NHEM domain:
 !! Computation of the surface temperature (must be less than 0 degC)
 !! and of the accumulation-ablation function.
 !!
@@ -30,8 +29,7 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------------------------------------------------------------------------------
-!> NHEM domain:
-!! Computation of the surface temperature (must be less than 0 degC)
+!> Computation of the surface temperature (must be less than 0 degC)
 !! and of the accumulation-ablation function.
 !-------------------------------------------------------------------------------
 module boundary_m
