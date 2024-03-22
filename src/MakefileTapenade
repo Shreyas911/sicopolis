@@ -283,6 +283,9 @@ PHONY_TAP_TLM: ${SRC_AD_INPUT}
 	else\
 		echo @@@@@@@@@@@@@ TAPENADE FYI @@@@@@@@@@@@@@;\
 		echo Not executing tapenade TLM command again!;\
+		echo Compiling explicitly files with I/O probably added!;\
+		${F90C} ${LISFLAG} ${NETCDF_F90_FLAG} -I./ ${F90FLAGS} -o sicopolis_tapenade_cpp_d.o -c sicopolis_tapenade_cpp_d.f90;\
+		${F90C} ${LISFLAG} ${NETCDF_F90_FLAG} -I./ ${F90FLAGS} -o sico_main_loop_m_cpp_d.o -c sico_main_loop_m_cpp_d.f90;\
 	fi
 
 driveradjoint:${LIBLIS} \
@@ -324,6 +327,9 @@ PHONY_TAP_ADJ: ${SRC_AD_INPUT}
 	else\
 		echo @@@@@@@@@@@@@@@ TAPENADE FYI @@@@@@@@@@@@@@@@;\
 		echo Not executing tapenade adjoint command again!;\
+		echo Compiling explicitly files with I/O probably added!;\
+		${F90C} ${LISFLAG} ${NETCDF_F90_FLAG} -I./ ${F90FLAGS} -o sicopolis_tapenade_cpp_b.o -c sicopolis_tapenade_cpp_b.f90;\
+		${F90C} ${LISFLAG} ${NETCDF_F90_FLAG} -I./ ${F90FLAGS} -o sico_main_loop_m_cpp_b.o -c sico_main_loop_m_cpp_b.f90;\
 	fi
 
 RUN=$(HEADER)
