@@ -736,23 +736,6 @@ as_perp = accum - runoff
 !         including empirical firn-warming correction due to
 !         refreezing meltwater when superimposed ice is formed
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
-
-#if (TSURFACE<=5)
-
-where (melt_star >= melt)
-   temp_s = temp_ma + mu*(melt_star-melt)
-elsewhere
-   temp_s = temp_ma
-end where
-
-#endif
-
-where (temp_s > -0.001_dp) temp_s = -0.001_dp
-                            ! Cut-off of positive air temperatures
-
-#else /* Tapenade */
-
 #if (TSURFACE<=5)
 
 do i=0, IMAX
@@ -774,8 +757,6 @@ do j=0, JMAX
    end if
 end do
 end do
-
-#endif /* Normal vs. Tapenade */
 
 !-------- Calving --------
 
