@@ -95,14 +95,21 @@ real(dp), dimension(0:JMAX,0:IMAX,0:12) :: precip
 real(dp), dimension(0:JMAX,0:IMAX,12)   :: temp_mm
 real(dp), dimension(12)                 :: temp_mm_help
 real(dp), dimension(0:JMAX,0:IMAX)      :: temp_ma
+real(dp), dimension(0:JMAX,0:IMAX)      :: temp_ampl
+
+real(dp), dimension(0:JMAX,0:IMAX)    :: gamma_s
+real(dp), dimension(0:JMAX,0:IMAX)    :: precip_fact
+real(dp), dimension(0:JMAX,0:IMAX,12) :: precip_fact_mm
+
+real(dp), dimension(0:JMAX,0:IMAX) :: s_stat, inv_sqrt2_s_stat, &
+                                      beta1, beta2, Pmax, mu
+real(dp), dimension(0:JMAX,0:IMAX) :: lambda_lti, temp_lti
 
 real(dp) :: gamma_t, temp_diff
 real(dp) :: temp_jja_help
 real(dp) :: gamma_p, zs_thresh, &
             temp_rain, temp_snow, &
-            inv_delta_temp_rain_snow, coeff(0:5), inv_sqrt2_s_stat, &
-            precip_fact, frac_solid
-real(dp) :: s_stat, beta1, beta2, Pmax, mu, lambda_lti, temp_lti
+            inv_delta_temp_rain_snow, coeff(0:5), frac_solid
 real(dp) :: r_aux
 character(len=256) :: ch_aux
 logical, dimension(0:JMAX,0:IMAX) :: check_point
@@ -442,11 +449,15 @@ temp_maat = temp_ma
 #if (ACCSURFACE<=3)
 
 #if (ELEV_DESERT==1)
-
 gamma_p   = GAMMA_P*1.0e-03_dp   ! Precipitation lapse rate
                                  ! for elevation desertification, in m^(-1)
 zs_thresh = ZS_THRESH            ! Elevation threshold, in m
+#endif
 
+#if (ACCSURFACE==2 || ACCSURFACE==3)
+gamma_s = GAMMA_S
+#else
+gamma_s = 0.0_dp
 #endif
 
 #endif
@@ -492,7 +503,11 @@ errormsg = ' >>> boundary: ' &
 call error(errormsg)
 #endif
 
-inv_sqrt2_s_stat = 1.0_dp/(sqrt(2.0_dp)*s_stat)
+do i=0, IMAX
+do j=0, JMAX
+   inv_sqrt2_s_stat(j,i) = 1.0_dp/(sqrt(2.0_dp)*s_stat(j,i))
+end do
+end do
 
 #endif
 
@@ -535,15 +550,15 @@ do j=0, JMAX
 
 #if (ELEV_DESERT==0)
 
-   precip_fact = 1.0_dp   ! no elevation desertification
+   precip_fact(j,i) = 1.0_dp   ! no elevation desertification
 
 #elif (ELEV_DESERT==1)
 
    if (zs_ref(j,i) < zs_thresh) then
-      precip_fact &
+      precip_fact(j,i) &
          = exp(gamma_p*(max(zs(j,i),zs_thresh)-zs_thresh))
    else
-      precip_fact &
+      precip_fact(j,i) &
          = exp(gamma_p*(max(zs(j,i),zs_thresh)-zs_ref(j,i)))
    end if
 
@@ -553,7 +568,7 @@ do j=0, JMAX
 #endif
 
    do n=1, 12   ! month counter
-      precip(j,i,n) = precip_present(j,i,n)*precip_fact
+      precip(j,i,n) = precip_present(j,i,n)*precip_fact(j,i)
    end do
 
 #endif
@@ -561,11 +576,11 @@ do j=0, JMAX
 !    ---- Precipitation change related to changing climate
 
 #if (ACCSURFACE==1)
-   precip_fact = ACCFACT
+   precip_fact(j,i) = ACCFACT
 #elif (ACCSURFACE==2)
-   precip_fact = 1.0_dp + GAMMA_S*delta_ts
+   precip_fact(j,i) = 1.0_dp + gamma_s(j,i)*delta_ts
 #elif (ACCSURFACE==3)
-   precip_fact = exp(GAMMA_S*delta_ts)
+   precip_fact(j,i) = exp(gamma_s(j,i)*delta_ts)
 #endif
 
 #if (ACCSURFACE<=3)
@@ -573,7 +588,7 @@ do j=0, JMAX
    precip(j,i,0) = 0.0_dp   ! initialization value for mean annual precip
 
    do n=1, 12   ! month counter
-      precip(j,i,n) = precip(j,i,n)*precip_fact   ! monthly precip
+      precip(j,i,n) = precip(j,i,n)*precip_fact(j,i)   ! monthly precip
       precip(j,i,0) = precip(j,i,0) + precip(j,i,n)*inv_twelve
                                                   ! mean annual precip
    end do
@@ -585,14 +600,16 @@ do j=0, JMAX
    do n=1, 12   ! month counter
 
 #if (PRECIP_ANOM_INTERPOL==1)
-      precip_fact = 1.0_dp-glac_index+glac_index*precip_lgm_anom(j,i,n)
-                    ! interpolation with a linear function
+      precip_fact_mm(j,i,n) = (1.0_dp-glac_index) &
+                                 + glac_index*precip_lgm_anom(j,i,n)
+                              ! interpolation with a linear function
 #elif (PRECIP_ANOM_INTERPOL==2)
-      precip_fact = exp(-glac_index*gamma_precip_lgm_anom(j,i,n))
-                    ! interpolation with an exponential function
+      precip_fact_mm(j,i,n) = exp(-glac_index*gamma_precip_lgm_anom(j,i,n))
+                              ! interpolation with an exponential function
 #endif
 
-      precip(j,i,n) = precip_present(j,i,n)*precip_fact   ! monthly precip
+      precip(j,i,n) = precip_present(j,i,n)*precip_fact_mm(j,i,n)
+                                                      ! monthly precip
       precip(j,i,0) = precip(j,i,0) + precip(j,i,n)*inv_twelve
                                                       ! mean annual precip
    end do
@@ -638,9 +655,10 @@ do j=0, JMAX
 
 #if !defined(ALLOW_TAPENADE) /* Normal */
       frac_solid = 1.0_dp &
-                   - 0.5_dp*erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat)
+                   - 0.5_dp &
+                       *erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat(j,i))
 #else /* Tapenade */
-      call my_erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat, temp_val)
+      call my_erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat(j,i), temp_val)
       frac_solid = 1.0_dp - 0.5_dp*temp_val
 #endif /* Normal vs. Tapenade */
 
@@ -669,43 +687,44 @@ do j=0, JMAX
       temp_mm_help(n) = temp_mm(j,i,n)
    end do
 
-   call pdd(temp_mm_help, s_stat, ET(j,i))
+   call pdd(temp_mm_help, s_stat(j,i), ET(j,i))
 
 !      -- Formation rate of superimposed ice (melt_star), melt rate (melt)
 !         and runoff rate (runoff)
 
 #if (ABLSURFACE==1)
 
-   if ((beta1*ET(j,i)) <= (Pmax*snowfall(j,i))) then
-      melt_star(j,i) = beta1*ET(j,i)
+   if ((beta1(j,i)*ET(j,i)) <= (Pmax(j,i)*snowfall(j,i))) then
+      melt_star(j,i) = beta1(j,i)*ET(j,i)
       melt(j,i)      = 0.0_dp
       runoff(j,i)    = melt(j,i)+rainfall(j,i)
    else
-      melt_star(j,i) = Pmax*snowfall(j,i)
-      melt(j,i)      = beta2*(ET(j,i)-melt_star(j,i)/beta1)
+      melt_star(j,i) = Pmax(j,i)*snowfall(j,i)
+      melt(j,i)      = beta2(j,i)*(ET(j,i)-melt_star(j,i)/beta1(j,i))
       runoff(j,i)    = melt(j,i)+rainfall(j,i)
    end if
 
 #elif (ABLSURFACE==2)
 
-   if ( rainfall(j,i) <= (Pmax*snowfall(j,i)) ) then
+   if ( rainfall(j,i) <= (Pmax(j,i)*snowfall(j,i)) ) then
 
-      if ( (rainfall(j,i)+beta1*ET(j,i)) <= (Pmax*snowfall(j,i)) ) then
-         melt_star(j,i) = rainfall(j,i)+beta1*ET(j,i)
+      if ( (rainfall(j,i)+beta1(j,i)*ET(j,i)) &
+                 <= (Pmax(j,i)*snowfall(j,i)) ) then
+         melt_star(j,i) = rainfall(j,i)+beta1(j,i)*ET(j,i)
          melt(j,i)      = 0.0_dp
          runoff(j,i)    = melt(j,i)
       else
-         melt_star(j,i) = Pmax*snowfall(j,i)
-         melt(j,i)      = beta2 &
-                          *(ET(j,i)-(melt_star(j,i)-rainfall(j,i))/beta1)
+         melt_star(j,i) = Pmax(j,i)*snowfall(j,i)
+         melt(j,i)      = beta2(j,i) &
+                          *(ET(j,i)-(melt_star(j,i)-rainfall(j,i))/beta1(j,i))
          runoff(j,i)    = melt(j,i)
       end if
 
    else
 
-      melt_star(j,i) = Pmax*snowfall(j,i)
-      melt(j,i)      = beta2*ET(j,i)
-      runoff(j,i)    = melt(j,i) + rainfall(j,i)-Pmax*snowfall(j,i)
+      melt_star(j,i) = Pmax(j,i)*snowfall(j,i)
+      melt(j,i)      = beta2(j,i)*ET(j,i)
+      runoff(j,i)    = melt(j,i) + rainfall(j,i)-Pmax(j,i)*snowfall(j,i)
 
    end if
 
@@ -716,7 +735,7 @@ do j=0, JMAX
    temp_jja_help  = one_third*(temp_mm(j,i,6)+temp_mm(j,i,7)+temp_mm(j,i,8))
 
    melt_star(j,i) = 0.0_dp   ! no superimposed ice considered
-   melt(j,i)      = lambda_lti*max((temp_jja_help-temp_lti), 0.0_dp)
+   melt(j,i)      = lambda_lti(j,i)*max((temp_jja_help-temp_lti(j,i)), 0.0_dp)
    runoff(j,i)    = melt(j,i) + rainfall(j,i)
 
 #endif
@@ -741,7 +760,7 @@ as_perp = accum - runoff
 do i=0, IMAX
 do j=0, JMAX
    if (melt_star(j,i) >= melt(j,i)) then
-      temp_s(j,i) = temp_ma(j,i) + mu*(melt_star(j,i)-melt(j,i))
+      temp_s(j,i) = temp_ma(j,i) + mu(j,i)*(melt_star(j,i)-melt(j,i))
    else
       temp_s(j,i) = temp_ma(j,i)
    end if
