@@ -220,6 +220,7 @@
 #include "subroutines/general/sico_end_m.F90"
 
 #if defined(ALLOW_GRDCHK)
+#include "subroutines/tapenade/cost/cost_io_m.F90"
 #include "subroutines/tapenade/cost/cost_m.F90"
 #include "subroutines/tapenade/grdchk/grdchk_m.F90"
 #endif /* ALLOW_GRDCHK */

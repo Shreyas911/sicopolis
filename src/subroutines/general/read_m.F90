@@ -42,7 +42,7 @@ module read_m
             read_scalar_input, read_2d_input, read_phys_para, read_kei
 
 #if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
-  public :: read_age_data, read_BedMachine_data
+  public :: read_age_data
 #endif /* ALLOW_{TAPENADE,GRDCHK} */
 
 contains
@@ -1790,49 +1790,6 @@ open(unit=1094, file=path, status='old')
 
   end subroutine read_age_data
 
-  subroutine read_BedMachine_data()
-
-  use sico_variables_m
-  use sico_vars_m
-
-  implicit none
-
-    integer(i4b) :: i, j
-! path stores path with filename
-! assume you are in src directory when defining path
-    character(len=256) :: path 
-
-#if (defined(BEDMACHINE_COST)) 
-
-#if (defined(BEDMACHINE_PATH))
-  path = trim(BEDMACHINE_PATH)
-#else
-  errormsg = ' >>> read_tms_nc: BEDMACHINE_PATH must be defined!'
-  call error(errormsg)
-#endif
-
-open(unit=92, file=path, status='old')
-
-#if (defined(BEDMACHINE_UNC_PATH))
-  path = trim(BEDMACHINE_UNC_PATH)
-#else
-  errormsg = ' >>> read_tms_nc: BEDMACHINE_UNC_PATH must be defined!'
-  call error(errormsg)
-#endif
-
-open(unit=93, file=path, status='old')
-
-       do i=0,IMAX
-          do j=0,JMAX
-             read(92, *) H_BedMachine_data(j,i)
-             read(93, *) H_unc_BedMachine_data(j,i)
-          end do
-       end do
-    close(unit=92)
-    close(unit=93)
-
-#endif
-  end subroutine read_BedMachine_data
 #endif /* ALLOW_{TAPENADE,GRDCHK} */
 
 !-------------------------------------------------------------------------------

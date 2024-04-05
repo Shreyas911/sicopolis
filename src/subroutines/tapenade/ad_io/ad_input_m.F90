@@ -94,6 +94,7 @@ module ad_input_m
 #endif /* ALLOW_TAP_TLM */
         end do
 
+        !  ------ Close NetCDF file
         call check( nf90_close(ncid) )
 
         do i = 0, IMAX

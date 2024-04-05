@@ -36,6 +36,7 @@ module cost_m
   use sico_types_m  
   use sico_variables_m
   use sico_vars_m
+  use cost_io_m
 
   implicit none
 
@@ -75,6 +76,9 @@ contains
   !-------- Calculate the difference between the modeled and 'observed' ages:
 fc = 0.0
 
+  !-------- Read any necessary NetCDF cost files:
+call read_cost_data()
+
 #ifdef AGE_COST
 
 #if (CALCMOD!=1)
@@ -110,7 +114,11 @@ print *, '           AGE_COST simulations'
     do i=0, IMAX
       do j=0, JMAX
         fc = fc &
+#ifdef ALLOW_BEDMACHINE_UNCERT
         + (H(j,i) - H_BedMachine_data(j,i))**2/H_unc_BedMachine_data(j,i)**2
+#else
+        + (H(j,i) - H_BedMachine_data(j,i))**2
+#endif
       end do
     end do
 

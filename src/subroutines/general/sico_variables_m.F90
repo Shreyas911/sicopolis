@@ -1296,8 +1296,9 @@ real(dp), dimension(0:JMAX,0:IMAX) :: acc_fact
 #if (defined(BEDMACHINE_COST)) 
 
 real(dp), dimension(0:JMAX,0:IMAX) :: H_BedMachine_data
-
+#ifdef ALLOW_BEDMACHINE_UNCERT
 real(dp), dimension(0:JMAX,0:IMAX) :: H_unc_BedMachine_data
+#endif
 
 #endif
 
