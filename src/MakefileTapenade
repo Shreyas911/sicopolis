@@ -61,10 +61,10 @@ endif
 
 ifndef NETCDF_FORTRAN_DIR
 ifeq ($(F90C),gfortran)
-NETCDF_FORTRAN_DIR=/opt/ohpc/pub/libs/gnu/openmpi/netcdf-fortran/4.4.4
+NETCDF_FORTRAN_DIR=/opt/ohpc/pub/libs/gnu12/openmpi4/netcdf-fortran/4.6.0
 endif
 ifeq ($(F90C),ifort)
-NETCDF_FORTRAN_DIR=/opt/ohpc/pub/libs/intel/openmpi/netcdf-fortran/4.4.4
+NETCDF_FORTRAN_DIR=/opt/ohpc/pub/libs/intel/openmpi4/netcdf-fortran/4.6.0
 endif
 endif
 
