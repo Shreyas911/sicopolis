@@ -5,7 +5,7 @@
 !
 #define       MODEL_SICOPOLIS
 #define       VERSION '24'
-#define       DATE    '2024-04-04'
+#define       DATE    '2024-04-06'
 !
 !! Main program of SICOPOLIS.
 !!
@@ -58,11 +58,7 @@
 
 !@ begin tapenade_extract @
 
-#if (defined(ANT))
-#include "subroutines/ant/sico_vars_m.F90"
-#elif (defined(GRL))
-#include "subroutines/grl/sico_vars_m.F90"
-#elif (defined(EISMINT))
+#if (defined(EISMINT))
 #include "subroutines/eismint/sico_vars_m.F90"
 #elif (defined(HEINO))
 #include "subroutines/heino/sico_vars_m.F90"
@@ -108,10 +104,8 @@
 #include "subroutines/general/calving_m.F90"
 #endif
 
-#if (defined(GRL))
-#if (DISC>0)
+#if (defined(GRL) && DISC>0)
 #include "subroutines/grl/discharge_workers_m.F90"
-#endif
 #endif
 
 #include "subroutines/general/calc_enhance_m.F90"
@@ -146,11 +140,7 @@
 
 #include "subroutines/general/output_m.F90"
 
-#if (defined(ANT))
-#include "subroutines/ant/boundary_m.F90"
-#elif (defined(GRL))
-#include "subroutines/grl/boundary_m.F90"
-#elif (defined(EISMINT))
+#if (defined(EISMINT))
 #include "subroutines/eismint/boundary_m.F90"
 #elif (defined(HEINO))
 #include "subroutines/heino/boundary_m.F90"
@@ -166,11 +156,7 @@
 
 #include "subroutines/general/init_temp_water_age_m.F90"
 
-#if (defined(ANT))
-#include "subroutines/ant/sico_init_m.F90"
-#elif (defined(GRL))
-#include "subroutines/grl/sico_init_m.F90"
-#elif (defined(EISMINT))
+#if (defined(EISMINT))
 #include "subroutines/eismint/sico_init_m.F90"
 #elif (defined(HEINO))
 #include "subroutines/heino/sico_init_m.F90"

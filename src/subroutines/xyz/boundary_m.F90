@@ -82,6 +82,7 @@ real(dp), intent(out)   :: delta_ts, glac_index, z_mar
 integer(i4b) :: i, j, n
 integer(i4b) :: i_gr, i_kl
 integer(i4b) :: n_year_CE
+integer(i4b) :: n_hemisphere
 integer(i4b) :: ios
 real(dp), dimension(0:JMAX,0:IMAX) :: z_sl_old
 real(dp) :: z_sl_old_mean
@@ -95,7 +96,9 @@ real(dp), dimension(0:JMAX,0:IMAX,0:12) :: precip
 real(dp), dimension(0:JMAX,0:IMAX,12)   :: temp_mm
 real(dp), dimension(12)                 :: temp_mm_help
 real(dp), dimension(0:JMAX,0:IMAX)      :: temp_ma
+real(dp), dimension(0:JMAX,0:IMAX)      :: temp_summer
 real(dp), dimension(0:JMAX,0:IMAX)      :: temp_ampl
+real(dp), dimension(0:JMAX,0:IMAX)      :: temp_diff
 
 real(dp), dimension(0:JMAX,0:IMAX)    :: gamma_s
 real(dp), dimension(0:JMAX,0:IMAX)    :: precip_fact
@@ -105,8 +108,14 @@ real(dp), dimension(0:JMAX,0:IMAX) :: s_stat, inv_sqrt2_s_stat, &
                                       beta1, beta2, Pmax, mu
 real(dp), dimension(0:JMAX,0:IMAX) :: lambda_lti, temp_lti
 
-real(dp) :: gamma_t, temp_diff
-real(dp) :: temp_jja_help
+real(dp) :: gamma_t
+real(dp) :: theta_ma, theta_ma_offset, c_ma, kappa_ma, gamma_ma, &
+            theta_ma_1, c_ma_1, gamma_ma_1, &
+            theta_ma_2, c_ma_2, gamma_ma_2, &
+            theta_ma_3, c_ma_3, gamma_ma_3, &
+            zs_sep_1, zs_sep_2, &
+            theta_mj, theta_mj_offset, c_mj, kappa_mj, gamma_mj
+real(dp) :: sine_factor
 real(dp) :: gamma_p, zs_thresh, &
             temp_rain, temp_snow, &
             inv_delta_temp_rain_snow, coeff(0:5), frac_solid
@@ -137,6 +146,16 @@ time_in_years = time*sec2year
 n_year_CE     = floor((time_in_years+YEAR_ZERO)+eps_sp_dp)
 
 rho_inv       = 1.0_dp/RHO
+
+!-------- Detect hemisphere --------
+
+if (PHI0 > eps) then
+   n_hemisphere =  1   ! northern hemisphere
+else if (PHI0 < (-eps)) then
+   n_hemisphere = -1   ! southern hemisphere
+else
+   n_hemisphere =  0
+end if
 
 !-------- Initialization of variables --------
 
@@ -390,7 +409,14 @@ do j=1, JMAX-1
 end do
 end do
 
-!-------- Surface air temperatures --------
+!-------- Surface air temperature --------
+
+#if (defined(ANT) || defined(GRL)) /* Antarctica or Greenland */
+
+gamma_t = 0.0_dp ! topographic lapse rate already part of the parameterization
+                 ! for the present-day temperature
+
+#else /* other than Antarctica or Greenland */
 
 #if (defined(TOPO_LAPSE_RATE))
 gamma_t = TOPO_LAPSE_RATE * 1.0e-03_dp
@@ -400,42 +426,257 @@ gamma_t = 6.5e-03_dp
              ! topographic lapse rate (K/m), default value
 #endif
 
+#endif
+
+!  ------ Parameterized present-day temperature (only Antarctica, Greenland)
+
+#if (TSURFACE<=5)
+
+#if (defined(ANT) || defined(GRL)) /* Antarctica or Greenland */
+
+#if (defined(ANT)) /* Antarctica */
+
+#if (TEMP_PRESENT_PARA==1)   /* Parameterization by Fortuin and Oerlemans */
+                             !  (1990) for the whole ice sheet
+
+#if (defined(TEMP_PRESENT_OFFSET))
+theta_ma_offset = TEMP_PRESENT_OFFSET
+theta_mj_offset = TEMP_PRESENT_OFFSET
+#else
+theta_ma_offset = 0.0_dp
+theta_mj_offset = 0.0_dp
+#endif
+
+theta_ma = 34.461_dp + theta_ma_offset
+gamma_ma = -9.14e-03_dp
+c_ma     = -0.688_dp
+
+theta_mj = 16.81_dp + theta_mj_offset
+gamma_mj = -6.92e-03_dp
+c_mj     = -0.27973_dp
+
+#elif (TEMP_PRESENT_PARA==2)   /* Parameterization by Fortuin and Oerlemans */
+                               !  (1990), separately for three different
+                               !  elevation ranges
+
+#if (defined(TEMP_PRESENT_OFFSET))
+theta_ma_offset = TEMP_PRESENT_OFFSET
+theta_mj_offset = TEMP_PRESENT_OFFSET
+#else
+theta_ma_offset = 0.0_dp
+theta_mj_offset = 0.0_dp
+#endif
+
+zs_sep_1   =  200.0_dp
+zs_sep_2   = 1500.0_dp
+
+theta_ma_1 =  49.642_dp + theta_ma_offset
+gamma_ma_1 =   0.0_dp
+c_ma_1     =  -0.943_dp
+
+theta_ma_2 =  36.689_dp + theta_ma_offset
+gamma_ma_2 =  -5.102e-03_dp
+c_ma_2     =  -0.725_dp
+
+theta_ma_3 =   7.405_dp + theta_ma_offset
+gamma_ma_3 = -14.285e-03_dp
+c_ma_3     =  -0.180_dp
+
+theta_mj   =  16.81_dp + theta_mj_offset
+gamma_mj   =  -6.92e-03_dp
+c_mj       =  -0.27937_dp
+
+#else
+
+errormsg = ' >>> boundary: Parameter TEMP_PRESENT_PARA must be either 1 or 2!'
+call error(errormsg)
+
+#endif
+
+do i=0, IMAX
+do j=0, JMAX
+
+!    ---- Present-day mean-annual temperature
+
+#if (TEMP_PRESENT_PARA==1)
+   temp_ma_present(j,i) = theta_ma + gamma_ma*zs(j,i) &
+                                   + c_ma*abs(phi(j,i))*rad2deg
+#elif (TEMP_PRESENT_PARA==2)
+   if ( zs(j,i) <= zs_sep_1 ) then
+      temp_ma_present(j,i) = theta_ma_1 + gamma_ma_1*zs(j,i) &
+                                        + c_ma_1*abs(phi(j,i))*rad2deg
+   else if ( zs(j,i) <= zs_sep_2 ) then
+      temp_ma_present(j,i) = theta_ma_2 + gamma_ma_2*zs(j,i) &
+                                        + c_ma_2*abs(phi(j,i))*rad2deg
+   else
+      temp_ma_present(j,i) = theta_ma_3 + gamma_ma_3*zs(j,i) &
+                                        + c_ma_3*abs(phi(j,i))*rad2deg
+   end if
+#endif
+
+!    ---- Present-day mean-January (mid-summer) temperature
+
+   temp_mj_present(j,i) = theta_mj + gamma_mj*zs(j,i) &
+                                   + c_mj*abs(phi(j,i))*rad2deg
+
+end do
+end do
+
+#elif (defined(GRL)) /* Greenland */
+
+#if (TEMP_PRESENT_PARA==1)   /* Parameterization by Ritz et al. (1997) */
+
+#if (defined(TEMP_PRESENT_OFFSET))
+theta_ma_offset = TEMP_PRESENT_OFFSET
+theta_mj_offset = TEMP_PRESENT_OFFSET
+#else
+theta_ma_offset = 0.0_dp
+theta_mj_offset = 0.0_dp
+#endif
+
+theta_ma = 49.13_dp + theta_ma_offset
+gamma_ma = -7.992e-03_dp
+c_ma     = -0.7576_dp
+kappa_ma =  0.0_dp
+
+theta_mj = 30.38_dp + theta_mj_offset
+gamma_mj = -6.277e-03_dp
+c_mj     = -0.3262_dp
+kappa_mj =  0.0_dp
+
+#elif (TEMP_PRESENT_PARA==2)   /* Parameterization by Fausto et al. (2009) */
+
+#if (defined(TEMP_PRESENT_OFFSET))
+theta_ma_offset = TEMP_PRESENT_OFFSET
+theta_mj_offset = TEMP_PRESENT_OFFSET
+#else
+theta_ma_offset = 0.0_dp
+theta_mj_offset = 0.0_dp
+#endif
+
+theta_ma = 41.83_dp + theta_ma_offset
+gamma_ma = -6.309e-03_dp
+c_ma     = -0.7189_dp
+kappa_ma = -0.0672_dp
+
+theta_mj = 14.70_dp + theta_mj_offset
+gamma_mj = -5.426e-03_dp
+c_mj     = -0.1585_dp
+kappa_mj = -0.0518_dp
+
+#else
+
+errormsg = ' >>> boundary: Parameter TEMP_PRESENT_PARA must be either 1 or 2!'
+call error(errormsg)
+
+#endif
+
+do i=0, IMAX
+do j=0, JMAX
+
+!  ------ Present-day mean-annual air temperature
+
+   temp_ma_present(j,i) = theta_ma &
+                  + gamma_ma*zs(j,i) &
+                  + c_ma*phi(j,i)*rad2deg &
+                  + kappa_ma*(modulo(lambda(j,i)+pi,2.0_dp*pi)-pi)*rad2deg
+                              ! western longitudes counted negatively
+
+!  ------ Present-day mean-July (mid-summer) air temperature
+
+   temp_mj_present(j,i) = theta_mj &
+                    + gamma_mj*zs(j,i) &
+                    + c_mj*phi(j,i)*rad2deg &
+                    + kappa_mj*(modulo(lambda(j,i)+pi,2.0_dp*pi)-pi)*rad2deg
+                                ! western longitudes counted negatively
+
+end do
+end do
+
+#endif
+
+!    ---- Amplitude of the annual cycle
+
+do i=0, IMAX
+do j=0, JMAX
+
+   temp_ampl(j,i) = temp_mj_present(j,i) - temp_ma_present(j,i)
+
+   if (temp_ampl(j,i) < eps) then
+      temp_ampl(j,i) = eps   ! Correction of amplitude, if required
+   end if
+
+end do
+end do
+
+!    ---- Monthly temperatures
+
+do n=1, 12   ! month counter
+
+   if (n_hemisphere == 1) then   ! northern hemisphere
+      sine_factor = sin((real(n,dp)-4.0_dp)*pi/6.0_dp)
+   else if (n_hemisphere == -1) then   ! southern hemisphere
+      sine_factor = -sin((real(n,dp)-4.0_dp)*pi/6.0_dp)
+   else
+      sine_factor = 0.0_dp
+   end if
+
+   do i=0, IMAX
+   do j=0, JMAX
+      temp_present(j,i,n) = temp_ma_present(j,i) + sine_factor*temp_ampl(j,i)
+   end do
+   end do
+
+end do
+
+#endif /* Antarctica or Greenland */
+
+#endif /* (TSURFACE<=5) */
+
 do i=0, IMAX
 do j=0, JMAX
 
 #if (TSURFACE<=4)
 
-!  ------ Correction of present monthly temperatures with elevation changes
+!  ------ Correction of present monthly temperature with elevation changes
 !         and temperature deviation delta_ts
 
-   temp_diff = gamma_t*(zs_ref(j,i)-zs(j,i)) + delta_ts
+   temp_diff(j,i) = gamma_t*(zs_ref(j,i)-zs(j,i)) + delta_ts
 
    do n=1, 12   ! month counter
-      temp_mm(j,i,n) = temp_present(j,i,n) + temp_diff
+      temp_mm(j,i,n) = temp_present(j,i,n) + temp_diff(j,i)
    end do
 
 #elif (TSURFACE==5)
 
-!  ------ Correction of present monthly temperatures with LGM anomaly and
+!  ------ Correction of present monthly temperature with LGM anomaly and
 !         glacial index as well as elevation changes
 
-   temp_diff = gamma_t*(zs_ref(j,i)-zs(j,i))
+   temp_diff(j,i) = gamma_t*(zs_ref(j,i)-zs(j,i))
 
    do n=1, 12   ! month counter
       temp_mm(j,i,n) = temp_present(j,i,n) &
                        + glac_index*temp_lgm_anom(j,i,n) &
-                       + temp_diff
+                       + temp_diff(j,i)
    end do
 
 #endif
 
 !  ------ Mean annual air temperature
 
+#if (TSURFACE<=5)
+
    temp_ma(j,i) = 0.0_dp   ! initialization value
 
    do n=1, 12   ! month counter
       temp_ma(j,i) = temp_ma(j,i) + temp_mm(j,i,n)*inv_twelve
    end do
+
+#elif (TSURFACE==6)
+
+   ! ...
+
+#endif
 
 end do
 end do
@@ -732,10 +973,19 @@ do j=0, JMAX
 
 #elif (ABLSURFACE==3)
 
-   temp_jja_help  = one_third*(temp_mm(j,i,6)+temp_mm(j,i,7)+temp_mm(j,i,8))
+   if (n_hemisphere == 1) then   ! northern hemisphere
+      temp_summer(j,i) = one_third &
+                            *(temp_mm(j,i,6)+temp_mm(j,i,7)+temp_mm(j,i,8))
+   else if (n_hemisphere == -1) then   ! southern hemisphere
+      temp_summer(j,i) = one_third &
+                            *(temp_mm(j,i,12)+temp_mm(j,i,1)+temp_mm(j,i,2))
+   else
+      temp_summer(j,i) = temp_ma(j,i)
+   end if
 
    melt_star(j,i) = 0.0_dp   ! no superimposed ice considered
-   melt(j,i)      = lambda_lti(j,i)*max((temp_jja_help-temp_lti(j,i)), 0.0_dp)
+   melt(j,i)      = lambda_lti(j,i) &
+                       *max((temp_summer(j,i)-temp_lti(j,i)), 0.0_dp)
    runoff(j,i)    = melt(j,i) + rainfall(j,i)
 
 #endif
@@ -772,7 +1022,7 @@ end do
 do i=0, IMAX
 do j=0, JMAX
    if (temp_s(j,i) > -0.001_dp) then
-      temp_s(j,i) = -0.001_dp   ! Cut-off of positive air temperatures
+      temp_s(j,i) = -0.001_dp   ! Cut-off of positive air temperature
    end if
 end do
 end do

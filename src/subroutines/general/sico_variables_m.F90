@@ -632,25 +632,12 @@ real(dp), dimension(0:JMAX,0:IMAX) :: accum_present
 real(dp), dimension(0:JMAX,0:IMAX) :: precip_ma_present
    !! Present-day mean annual precipitation rate at the ice surface
 
-real(dp), dimension(0:JMAX,0:IMAX) :: precip_ma_lgm_anom
-   !! LGM anomaly (ratio LGM/present) of the mean annual precipitation rate
-   !! at the ice surface
-
 real(dp), dimension(0:JMAX,0:IMAX) :: temp_ma_present
    !! Present-day mean annual surface temperature
 
 real(dp), dimension(0:JMAX,0:IMAX) :: temp_mj_present
    !! Present-day mean summer (northern hemisphere: July,
    !! southern hemisphere: January) surface temperature
-
-real(dp), dimension(0:JMAX,0:IMAX) :: temp_ma_lgm_anom
-   !! LGM anomaly (difference LGM - present) of the
-   !! mean annual surface temperature
-
-real(dp), dimension(0:JMAX,0:IMAX) :: temp_mj_lgm_anom
-   !! LGM anomaly (difference LGM - present) of the mean summer
-   !! (northern hemisphere: July, southern hemisphere: January)
-   !! surface temperature
 
 real(dp), dimension(-JMAX:JMAX,-IMAX:IMAX) :: dist_dxdy
    !! Distance between grid points with delta_i=ir, delta_j=jr

@@ -1024,9 +1024,24 @@ write(10, fmt=trim(fmt1)) ' '
 
 write(10, fmt=trim(fmt2)) 'TSURFACE = ', TSURFACE
 
+#if (TSURFACE<=5)
+
+#if (defined(ANT) || defined(GRL)) /* Antarctica or Greenland */
+
+write(10, fmt=trim(fmt2)) 'TEMP_PRESENT_PARA = ', TEMP_PRESENT_PARA
+#if (defined(TEMP_PRESENT_OFFSET))
+write(10, fmt=trim(fmt3))  'TEMP_PRESENT_OFFSET =', TEMP_PRESENT_OFFSET
+#endif
+
+#else /* other than Antarctica or Greenland */
+
 write(10, fmt=trim(fmt1)) 'temp_present file = '//TEMP_PRESENT_FILE
 #if (defined(TOPO_LAPSE_RATE))
 write(10, fmt=trim(fmt3)) 'topo_lapse_rate =', TOPO_LAPSE_RATE
+#endif
+
+#endif
+
 #endif
 
 #if (TSURFACE==1)
@@ -1633,7 +1648,7 @@ end if
 
 #endif
 
-!-------- Reading of present topography mask --------
+!-------- Reading of present-day topography mask --------
 
 #if (GRID==0 || GRID==1)
 
@@ -1653,7 +1668,11 @@ call error(errormsg)
 
 #endif
 
-!-------- Reading of data for present monthly-mean surface temperature --------
+!-------- Reading of present-day monthly mean surface temperature --------
+
+#if (!defined(ANT) && !defined(GRL)) /* other than Antarctica or Greenland */
+
+#if (TSURFACE<=5)
 
 #if (GRID==0 || GRID==1)
 
@@ -1680,6 +1699,10 @@ end do
 
 errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
 call error(errormsg)
+
+#endif
+
+#endif
 
 #endif
 
@@ -2192,7 +2215,7 @@ call error(errormsg)
 
 !-------- Initialize time-series files --------
 
-!  ------ Time-series file for the ice sheet on the whole
+!  ------ Time-series file for the entire ice sheet
 
 filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.ser'
 
@@ -2241,7 +2264,14 @@ end if
 
 !  ------ Time-series file for deep boreholes
 
+#if (defined(ANT))
+n_core = 6   ! Vostok, Dome A, Dome C, Dome F, Kohnen, Byrd
+#elif (defined(GRL))
+n_core = 7   ! GRIP, GISP2, Dye3, Camp Century (CC),
+             ! NorthGRIP (NGRIP), NEEM, EastGRIP (EGRIP)
+#else
 n_core = 0   ! No boreholes defined
+#endif
 
 if (n_core > n_core_max) then
    errormsg = ' >>> sico_init: n_core <= n_core_max required!' &
@@ -2250,17 +2280,190 @@ if (n_core > n_core_max) then
    call error(errormsg)
 end if
 
+#if (defined(ANT))
+
+ch_core(1)     = 'Vostok'
+phi_core(1)    = -78.467_dp *deg2rad    ! Geographical position of Vostok,
+lambda_core(1) = 106.8_dp   *deg2rad    ! conversion deg -> rad
+ 
+ch_core(2)     = 'Dome A'
+phi_core(2)    = -80.367_dp *deg2rad    ! Geographical position of Dome A,
+lambda_core(2) =  77.35_dp  *deg2rad    ! conversion deg -> rad
+
+ch_core(3)     = 'Dome C'
+phi_core(3)    = -75.1_dp *deg2rad      ! Geographical position of Dome C,
+lambda_core(3) = 123.4_dp *deg2rad      ! conversion deg -> rad
+
+ch_core(4)     = 'Dome F'
+phi_core(4)    = -77.317_dp *deg2rad    ! Geographical position of Dome F,
+lambda_core(4) =  39.7_dp   *deg2rad    ! conversion deg -> rad
+
+ch_core(5)     = 'Kohnen'
+phi_core(5)    = -75.0_dp   *deg2rad    ! Geographical position of Kohnen,
+lambda_core(5) =   0.067_dp *deg2rad    ! conversion deg -> rad
+
+ch_core(6)     = 'Byrd'
+phi_core(6)    =  -80.017_dp *deg2rad   ! Geographical position of Byrd,
+lambda_core(6) = -119.517_dp *deg2rad   ! conversion deg -> rad
+
+#elif (defined(GRL))
+
+ch_core(1)     = 'GRIP'
+phi_core(1)    =  72.58722_dp *deg2rad   ! Geographical position of GRIP,
+lambda_core(1) = -37.64222_dp *deg2rad   ! conversion deg -> rad
+ 
+ch_core(2)     = 'GISP2'
+phi_core(2)    =  72.58833_dp *deg2rad   ! Geographical position of GISP2
+lambda_core(2) = -38.45750_dp *deg2rad   ! conversion deg -> rad
+
+ch_core(3)     = 'Dye3'
+phi_core(3)    =  65.15139_dp *deg2rad   ! Geographical position of Dye3,
+lambda_core(3) = -43.81722_dp *deg2rad   ! conversion deg -> rad
+
+ch_core(4)     = 'Camp Century'
+phi_core(4)    =  77.17970_dp *deg2rad   ! Geographical position of CC,
+lambda_core(4) = -61.10975_dp *deg2rad   ! conversion deg -> rad
+
+ch_core(5)     = 'NGRIP'
+phi_core(5)    =  75.09694_dp *deg2rad   ! Geographical position of NGRIP,
+lambda_core(5) = -42.31956_dp *deg2rad   ! conversion deg -> rad
+
+ch_core(6)     = 'NEEM'
+phi_core(6)    =  77.5_dp     *deg2rad   ! Geographical position of NEEM,
+lambda_core(6) = -50.9_dp     *deg2rad   ! conversion deg -> rad
+
+ch_core(7)     = 'EGRIP'
+phi_core(7)    =  75.6299_dp  *deg2rad   ! Geographical position of EGRIP,
+lambda_core(7) = -35.9867_dp  *deg2rad   ! conversion deg -> rad
+
+#endif
+
+if (n_core > 0) then
+
+#if (GRID==0 || GRID==1)   /* Stereographic projection */
+
+   do n=1, n_core
+
+      if (F_INV > 1.0e+10_dp) then   ! interpreted as infinity,
+                                     ! thus no flattening (spherical planet)
+
+         call stereo_forw_sphere(lambda_core(n), phi_core(n), &
+                                 R, LAMBDA0, PHI0, x_core(n), y_core(n))
+
+      else   ! finite inverse flattening (ellipsoidal planet)
+
+         call stereo_forw_ellipsoid(lambda_core(n), phi_core(n), &
+                                    A, B, LAMBDA0, PHI0, x_core(n), y_core(n))
+
+      end if
+
+   end do
+
+#elif (GRID==2)   /* Geographical coordinates */
+
+   x_core = lambda_core
+   y_core = phi_core
+
+#endif
+
+end if
+
 filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.core'
 
+#if !defined(ALLOW_TAPENADE) /* Normal */
 open(14, iostat=ios, file=trim(filename_with_path), status='new')
+#else /* Tapenade */
+open(14, iostat=ios, file=trim(filename_with_path))
+#endif /* Normal vs. Tapenade */
 
-write(14,'(1x,a)') '---------------------'
-write(14,'(1x,a)') 'No boreholes defined.'
-write(14,'(1x,a)') '---------------------'
+if (ios /= 0) then
+   errormsg = ' >>> sico_init: Error when opening the core file!'
+   call error(errormsg)
+end if
 
-#if (defined(ASF) && WRITE_SER_FILE_STAKES==1) /* Austfonna */
+if (n_core == 0) then
+
+   write(14,'(1x,a)') '---------------------'
+   write(14,'(1x,a)') 'No boreholes defined.'
+   write(14,'(1x,a)') '---------------------'
+
+else
+
+#if (defined(ANT))
+
+   if ((forcing_flag == 1).or.(forcing_flag == 3)) then
+
+      write(14,1106)
+      write(14,1107)
+
+      1106 format('         t(a)      D_Ts(C) z_sl_mean(m)',/, &
+                  '                   H_Vo(m)      H_DA(m)      H_DC(m)', &
+                  '      H_DF(m)      H_Ko(m)      H_By(m)',/, &
+                  '                 v_Vo(m/a)    v_DA(m/a)    v_DC(m/a)', &
+                  '    v_DF(m/a)    v_Ko(m/a)    v_By(m/a)',/, &
+                  '                   T_Vo(C)      T_DA(C)      T_DC(C)', &
+                  '      T_DF(C)      T_Ko(C)      T_By(C)')
+      1107 format('----------------------------------------------------', &
+                  '---------------------------------------')
+
+   else if (forcing_flag == 2) then
+
+      write(14,1116)
+      write(14,1117)
+
+      1116 format('         t(a)  glac_ind(1) z_sl_mean(m)',/, &
+                  '                   H_Vo(m)      H_DA(m)      H_DC(m)', &
+                  '      H_DF(m)      H_Ko(m)      H_By(m)',/, &
+                  '                 v_Vo(m/a)    v_DA(m/a)    v_DC(m/a)', &
+                  '    v_DF(m/a)    v_Ko(m/a)    v_By(m/a)',/, &
+                  '                   T_Vo(C)      T_DA(C)      T_DC(C)', &
+                  '      T_DF(C)      T_Ko(C)      T_By(C)')
+      1117 format('----------------------------------------------------', &
+                  '---------------------------------------')
+
+   end if
+
+#elif (defined(GRL))
+
+   if ((forcing_flag == 1).or.(forcing_flag == 3)) then
+
+      write(14,1106)
+      write(14,1107)
+
+      1106 format('         t(a)      D_Ts(C) z_sl_mean(m)',/, &
+                  '                   H_GR(m)      H_G2(m)      H_D3(m)', &
+                  '      H_CC(m)      H_NG(m)      H_NE(m)      H_EG(m)',/, &
+                  '                 v_GR(m/a)    v_G2(m/a)    v_D3(m/a)', &
+                  '    v_CC(m/a)    v_NG(m/a)    v_NE(m/a)    v_EG(m/a)',/, &
+                  '                   T_GR(C)      T_G2(C)      T_D3(C)', &
+                  '      T_CC(C)      T_NG(C)      T_NE(C)      T_EG(C)')
+      1107 format('----------------------------------------------------', &
+                  '----------------------------------------------------')
+
+   else if (forcing_flag == 2) then
+
+      write(14,1116)
+      write(14,1117)
+
+      1116 format('         t(a)  glac_ind(1) z_sl_mean(m)',/, &
+                  '                   H_GR(m)      H_G2(m)      H_D3(m)', &
+                  '      H_CC(m)      H_NG(m)      H_NE(m)      H_EG(m)',/, &
+                  '                 v_GR(m/a)    v_G2(m/a)    v_D3(m/a)', &
+                  '    v_CC(m/a)    v_NG(m/a)    v_NE(m/a)    v_EG(m/a)',/, &
+                  '                   T_GR(C)      T_G2(C)      T_D3(C)', &
+                  '      T_CC(C)      T_NG(C)      T_NE(C)      T_EG(C)')
+      1117 format('----------------------------------------------------', &
+                  '----------------------------------------------------')
+
+   end if
+
+#endif
+
+end if
 
 !  ------ Time-series file for mass balance stakes etc.
+
+#if (defined(ASF) && WRITE_SER_FILE_STAKES==1) /* Austfonna */
 
 n_surf = 163   ! 19 mass balance stakes + 18 cores (Pinglot) 
                ! 10 points on flowlines (Duvebreen & B3)
