@@ -67,7 +67,9 @@ subroutine read_cost_data()
 
     !-------- Create file name --------
     
+#ifdef COST_INPUT_PATH
     temp_path = COST_INPUT_PATH
+#endif
 
 #ifdef BEDMACHINE_COST
 #if (IMAX==168)
