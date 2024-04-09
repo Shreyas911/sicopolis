@@ -117,6 +117,8 @@ real(dp) :: theta_ma, theta_ma_offset, c_ma, kappa_ma, gamma_ma, &
             theta_mj, theta_mj_offset, c_mj, kappa_mj, gamma_mj
 real(dp) :: sine_factor
 real(dp) :: gamma_p, zs_thresh, &
+            alpha_p, beta_p, temp_0, alpha_t, beta_t, &
+            temp_inv, temp_inv_present, &
             temp_rain, temp_snow, &
             inv_delta_temp_rain_snow, coeff(0:5), frac_solid
 real(dp) :: r_aux
@@ -701,6 +703,14 @@ gamma_s = GAMMA_S
 gamma_s = 0.0_dp
 #endif
 
+#elif (ACCSURFACE==4)
+
+alpha_p =  22.47_dp
+beta_p  =   0.046_dp
+temp_0  = 273.15_dp
+alpha_t =   0.67_dp
+beta_t  =  88.9_dp
+
 #endif
 
 #if (ACCSURFACE<=5)
@@ -829,7 +839,26 @@ do j=0, JMAX
    precip(j,i,0) = 0.0_dp   ! initialization value for mean annual precip
 
    do n=1, 12   ! month counter
-      precip(j,i,n) = precip(j,i,n)*precip_fact(j,i)   ! monthly precip
+      precip(j,i,n) = precip(j,i,n)*precip_fact(j,i)
+                                                  ! monthly precip
+      precip(j,i,0) = precip(j,i,0) + precip(j,i,n)*inv_twelve
+                                                  ! mean annual precip
+   end do
+
+#elif (ACCSURFACE==4)
+
+   precip(j,i,0) = 0.0_dp   ! initialization value for mean annual precip
+
+   temp_inv         = alpha_t * (temp_ma(j,i)+temp_0)         + beta_t   ! in K
+   temp_inv_present = alpha_t * (temp_ma_present(j,i)+temp_0) + beta_t   ! in K
+
+   precip_fact(j,i) = exp(alpha_p*(temp_0/temp_inv_present-temp_0/temp_inv)) &
+                         *(temp_inv_present/temp_inv)**2 &
+                         *(1.0_dp+beta_p*(temp_inv-temp_inv_present))
+
+   do n=1, 12   ! month counter
+      precip(j,i,n) = precip_present(j,i,n)*precip_fact(j,i)
+                                                  ! monthly precip
       precip(j,i,0) = precip(j,i,0) + precip(j,i,n)*inv_twelve
                                                   ! mean annual precip
    end do
