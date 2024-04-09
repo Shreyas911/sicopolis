@@ -40,7 +40,7 @@ module grdchk_m
     implicit none
 
     private :: deldirs
-    public  :: grdchk_main
+    public  :: grdchk_main, grdchk_array, grdchk_scalar
   
   contains
 
@@ -52,7 +52,180 @@ module grdchk_m
 !                 approximations
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   subroutine grdchk_main
+subroutine grdchk_main
+  implicit none
+
+!@ python_automated_grdchk scalar_or_array @
+  
+end subroutine grdchk_main
+
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!   Subroutine :  g r d c h k _ s c a l a r
+!   Purpose    :  Compares the gradients calculated by the adjoint model
+!                 to the gradients calculated by finite difference
+!                 approximations for 2D and 3D arrays
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   subroutine grdchk_scalar
+   
+   use sico_types_m
+   use sico_variables_m
+   use sico_vars_m
+   
+   use sico_init_m
+   use sico_main_loop_m
+   use sico_end_m
+   
+   use cost_m
+   
+   implicit none
+   
+   integer(i4b)       :: ndat2d, ndat3d
+   integer(i4b)       :: n_output
+   real(dp)           :: delta_ts, glac_index
+   real(dp)           :: mean_accum
+   real(dp)           :: dtime, dtime_temp, dtime_wss, &
+                                      dtime_out, dtime_ser
+   real(dp)           :: time, time_init, time_end, time_output(100)
+   real(dp)           :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
+   real(dp)           :: z_mar
+   
+   !-------- Variable declarations needed for this routine specifically
+   real(dp)                          :: orig_val, perturb_val = 0.001
+   real(dp),     dimension(3)        :: fc_collected
+   real(dp),     dimension(3)        :: direction
+   real(dp)                          :: gfd0,gfd, perturbation
+   integer(i4b)                      :: d
+   character(len=100)                :: fname
+   
+   !-------- This array holds the direction of perturbations to follow:
+   direction(1) = 0
+   direction(2) = 1
+   direction(3) = -1
+
+#if (!defined(GRL) && !defined(ANT))
+   print *, ">>> Adjoint only available for GRL and ANT right now; kill code." 
+#endif
+
+   !-------- Initialize output files 
+   open(98, file='CostVals_'//trim(HEADER)//'.dat',&
+       form="FORMATTED", status="REPLACE")
+
+!@ python_automated_grdchk_scalar IO begin @
+
+          !-------- Loop over perturbation direction (0, +, -)
+          do d = 1, 3 
+
+          !-------- Let yourself know where you are:
+          print *, ' direction (d) [ ', d, ' ] '
+
+          !-------- One complete forward run 
+            call deldirs
+        
+            call sico_init(delta_ts, glac_index, &
+                 mean_accum, &
+                 dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
+                 time, time_init, time_end, time_output, &
+                 dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
+                 z_mar, &
+                 ndat2d, ndat3d, n_output)
+
+            perturbation = 1 + direction(d) * perturb_val
+
+          !-------- Controls to be perturbed (add your own here and below in
+          !         subroutine print_output()
+          !         store original value that will be perturbed
+          !         and then perturb it (first in +dir then -dir) 
+
+            !@ python_automated_grdchk_scalar @
+
+            ! Example -- gamma_s_arr
+            ! orig_val = gamma_s_arr(1,1)
+            ! if (orig_val .ne. 0) then
+            !   gamma_s_arr = orig_val * perturbation
+            ! else
+            !   gamma_s_arr = perturbation-1
+            ! end if
+
+            ! -- sanity check
+            write(6,fmt='(a,f40.20)') "orig_val = ", orig_val
+            if (orig_val .ne. 0) then
+              write(6,fmt='(a,f40.20)') "pert_val = ", orig_val * perturbation
+            else
+              write(6,fmt='(a,f40.20)') "pert_val = ", perturbation-1
+            end if
+
+            call sico_main_loop(delta_ts, glac_index, &
+                 mean_accum, &
+                 dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
+                 time, time_init, time_end, time_output, &
+                 dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
+                 z_mar, &
+                 ndat2d, ndat3d, n_output)
+          
+            call cost_final()
+            call sico_end
+
+            ! Initialize compatible fields to 0
+            ! 2D fields
+            q_geo          = 0.0
+            c_slide_init   = 0.0
+            H              = 0.0 ! Only compatible with ANF_DAT==1
+#if (ACCSURFACE==2 || ACCSURFACE==3)
+            gamma_s_arr    = 0.0
+#endif
+#if (ABLSURFACE==1 || ABLSURFACE==2 || (ACCSURFACE<=5 && SOLID_PRECIP==3))
+            s_stat_arr     = 0.0
+#endif
+#if (ABLSURFACE==1 || ABLSURFACE==2)
+            beta1_arr_orig = 0.0
+            beta2_arr_orig = 0.0
+            Pmax_arr       = 0.0
+            mu_arr_orig    = 0.0
+#endif
+            ! 3D fields
+            temp_c       = 0.0 ! Not compatible with TEMP_INIT==5
+
+            ! Reset flag_ad_sico_init for next iteration
+            flag_ad_sico_init = .false.
+       
+            ! store cost
+            fc_collected(d) = fc
+        
+          end do ! (close perturb loop)
+
+          ! --------- calculate simple 2-sided finite difference due to
+          !           perturbation: fc(+) - fc(-) / 2*espsilon
+          if (orig_val .ne. 0) then
+            gfd = (fc_collected(2) - fc_collected(3))/(2.d0 * perturb_val * orig_val)
+          else
+            gfd = (fc_collected(2) - fc_collected(1))/ perturb_val
+          end if          
+
+          ! -- sanity check
+          write(6, fmt='(a,f40.20)')   "Finite difference is = ", gfd
+        
+          ! --------- write these values to output file
+          write(99, fmt='(f40.20)') gfd
+          write(98, fmt='(f40.20)') fc_collected(1)
+          write(98, fmt='(f40.20)') fc_collected(2)
+          write(98, fmt='(f40.20)') fc_collected(3)
+          write(98, fmt='(a)') '----------------------------------'
+          
+          !@ python_automated_grdchk_scalar IO write @
+  
+   close(unit=98)
+   !@ python_automated_grdchk_scalar IO end @
+   end subroutine grdchk_scalar
+
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!   Subroutine :  g r d c h k _ a r r a y
+!   Purpose    :  Compares the gradients calculated by the adjoint model
+!                 to the gradients calculated by finite difference
+!                 approximations for 2D and 3D arrays
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   subroutine grdchk_array
    
    use sico_types_m
    use sico_variables_m
@@ -224,7 +397,7 @@ module grdchk_m
   
    close(unit=98)
    !@ python_automated_grdchk IO end @
-   end subroutine grdchk_main
+   end subroutine grdchk_array
 
 !!-------------------------------------------------------------------------------
 !!> Checks to see if output dir exists. If so, deletes it.

@@ -68,6 +68,8 @@ def modify_file(filename, ref_string, new_string,
 		print(err)
 		sys.exit(1)
 
+	return None
+
 def compile_code(mode, header, domain, 
 	clean = True, dep_var=None, ind_vars = None,
 	f90c = 'gfortran', cc = 'gcc'):
@@ -126,6 +128,8 @@ def compile_code(mode, header, domain,
 		print(error)
 		sys.exit(1)
 
+	return None
+
 def run_executable(mode):
 	
 	'''
@@ -149,6 +153,8 @@ def run_executable(mode):
 		print(f'Error with running executable:')
 		print(error)
 		sys.exit(1)
+
+	return None
 
 def get_imax_jmax_kcmax_ktmax(specs_file='sico_specs.h'):
 	
@@ -185,6 +191,8 @@ def get_imax_jmax_kcmax_ktmax(specs_file='sico_specs.h'):
 		print(err)
 		sys.exit(1)
 
+	return None
+
 def copy_file(original_file, destination_file):
 
 	'''
@@ -202,12 +210,14 @@ def copy_file(original_file, destination_file):
 		print(f"Some issue with copying file {original_file} to {destination_file}.")
 		print(error)			
 		sys.exit(1)
+
+	return None
 	
 def setup_grdchk(ind_var, header, domain, 
 	dimension = 2,
 	z_co_ord = None,
 	perturbation = 1.e-3,
-	limited_or_block_or_full = 'limited',
+	limited_or_block_or_full_or_scalar = 'limited',
 	block_imin = None, block_imax = None, block_jmin = None, block_jmax = None,
 	grdchk_m_file = 'subroutines/tapenade/grdchk/grdchk_m.F90',
 	unit = '9999'):
@@ -222,9 +232,10 @@ def setup_grdchk(ind_var, header, domain,
 	dimension - dimension of variable being perturbed
 	z_co_ord - If 3D variable give z co-ordinate
 	perturbation - Amount of perturbation, generally 0.001 or 0.05
-	limited_or_block_or_full - If limited, checks only 5 points, 
+	limited_or_block_or_full_or_scalar - If limited, checks only 5 points, 
 				   block runs for a block on the grid, 
-				   full runs on entire grid	
+				   full runs on entire grid,
+				   scalar runs only for a single scalar.
 	block_imin, block_imax, block_jmin, block_jmax - Specify limits of block if needed
 	grdchk_m_file - Location of grdchk_m file
 	unit - The unit to be used in FORTRAN-90 code while opening and closing the output file
@@ -235,7 +246,7 @@ def setup_grdchk(ind_var, header, domain,
 
 	IMAX, JMAX, KCMAX, KTMAX = get_imax_jmax_kcmax_ktmax()
 
-	if(limited_or_block_or_full == 'full'):
+	if(limited_or_block_or_full_or_scalar == 'full'):
 
 		ref_string = '!@ python_automated_grdchk limited_or_block_or_full @'
 		new_string = f"""   
@@ -265,8 +276,14 @@ def setup_grdchk(ind_var, header, domain,
 		modify_file(grdchk_m_file, ref_string, new_string,
 			   replace_or_append_or_prepend = 'append',
 			   instance_number = 0)	
+
+		ref_string = '!@ python_automated_grdchk scalar_or_array @'
+		new_string = 'call grdchk_array'
+		modify_file(grdchk_m_file, ref_string, new_string,
+			   replace_or_append_or_prepend = 'replace',
+			   instance_number = 0)
 	
-	elif(limited_or_block_or_full == 'block'
+	elif(limited_or_block_or_full_or_scalar == 'block'
 	   and float(block_imin).is_integer() 
 	   and float(block_imax).is_integer()
 	   and float(block_jmin).is_integer() 
@@ -300,9 +317,26 @@ def setup_grdchk(ind_var, header, domain,
 		modify_file(grdchk_m_file, ref_string, new_string,
 			   replace_or_append_or_prepend = 'append',
 			   instance_number = 0)	
+
+		ref_string = '!@ python_automated_grdchk scalar_or_array @'
+		new_string = 'call grdchk_array'
+		modify_file(grdchk_m_file, ref_string, new_string,
+			   replace_or_append_or_prepend = 'replace',
+			   instance_number = 0)
 	
-	elif(limited_or_block_or_full == 'limited'):
-		pass
+	elif(limited_or_block_or_full_or_scalar == 'limited'):
+		ref_string = '!@ python_automated_grdchk scalar_or_array @'
+		new_string = 'call grdchk_array'
+		modify_file(grdchk_m_file, ref_string, new_string,
+			   replace_or_append_or_prepend = 'replace',
+			   instance_number = 0)
+
+	elif(limited_or_block_or_full_or_scalar == 'scalar'):
+		ref_string = '!@ python_automated_grdchk scalar_or_array @'
+		new_string = 'call grdchk_scalar'
+		modify_file(grdchk_m_file, ref_string, new_string,
+			   replace_or_append_or_prepend = 'replace',
+			   instance_number = 0)
 
 	else:
 		print("Wrong options may have been used in grdchk setup.")
@@ -333,12 +367,49 @@ def setup_grdchk(ind_var, header, domain,
 
 	modify_file(grdchk_m_file, ref_string, new_string,
 		   replace_or_append_or_prepend = 'append',
-	           instance_number = 0)	
+	           instance_number = 0)
+
+	ref_string = '!@ python_automated_grdchk_scalar @'
+	if (dimension == 2) :
+		new_string = f"""
+			orig_val = {ind_var}(1,1)
+			if (orig_val .ne. 0) then
+				{ind_var} = orig_val * perturbation
+			else
+				{ind_var} = perturbation-1
+			end if
+		"""
+	elif(dimension == 3 and z_co_ord is not None and z_co_ord < KCMAX):
+		new_string = f"""
+			orig_val = {ind_var}(1,1,1)
+			if (orig_val .ne. 0) then
+				{ind_var} = orig_val * perturbation
+			else
+				{ind_var} = perturbation-1
+			end if
+		"""
+	else: 
+		raise ValueError ("Something wrong with dimension in grdchk")
+		sys.exit(1)
+
+	modify_file(grdchk_m_file, ref_string, new_string,
+		   replace_or_append_or_prepend = 'append',
+	           instance_number = 0)
 	
 	ref_string = '!@ python_automated_grdchk IO begin @'
 	new_string = f'''
 	   open({unit},&
-	   file=\'GradientVals_{ind_var}_{perturbation:.2E}_{header}_{limited_or_block_or_full}.dat\',&
+	   file=\'GradientVals_{ind_var}_{perturbation:.2E}_{header}_{limited_or_block_or_full_or_scalar}.dat\',&
+	   form="FORMATTED", status="REPLACE")
+	'''
+	modify_file(grdchk_m_file, ref_string, new_string,
+		   replace_or_append_or_prepend = 'append',
+	           instance_number = 0)	
+
+	ref_string = '!@ python_automated_grdchk_scalar IO begin @'
+	new_string = f'''
+	   open({unit},&
+	   file=\'GradientVals_{ind_var}_{perturbation:.2E}_{header}_{limited_or_block_or_full_or_scalar}.dat\',&
 	   form="FORMATTED", status="REPLACE")
 	'''
 	modify_file(grdchk_m_file, ref_string, new_string,
@@ -350,8 +421,20 @@ def setup_grdchk(ind_var, header, domain,
 	modify_file(grdchk_m_file, ref_string, new_string,
 		   replace_or_append_or_prepend = 'append',
 	           instance_number = 0)	
+
+	ref_string = '!@ python_automated_grdchk_scalar IO write @'
+	new_string = f'          write({unit}, fmt=\'(f40.20)\') gfd\n'
+	modify_file(grdchk_m_file, ref_string, new_string,
+		   replace_or_append_or_prepend = 'append',
+	           instance_number = 0)	
 	
 	ref_string = '!@ python_automated_grdchk IO end @'
+	new_string = f'   close(unit={unit})\n'
+	modify_file(grdchk_m_file, ref_string, new_string,
+		   replace_or_append_or_prepend = 'append',
+	           instance_number = 0)	
+
+	ref_string = '!@ python_automated_grdchk_scalar IO end @'
 	new_string = f'   close(unit={unit})\n'
 	modify_file(grdchk_m_file, ref_string, new_string,
 		   replace_or_append_or_prepend = 'append',
@@ -362,6 +445,14 @@ def setup_grdchk(ind_var, header, domain,
 	modify_file(grdchk_m_file, ref_string, new_string,
 		   replace_or_append_or_prepend = 'replace',
 	           instance_number = 0)
+
+	ref_string = 'real(dp)                          :: orig_val, perturb_val' 
+	new_string = f'   real(dp)                          :: orig_val, perturb_val = {perturbation}\n'
+	modify_file(grdchk_m_file, ref_string, new_string,
+		   replace_or_append_or_prepend = 'replace',
+	           instance_number = 1)
+
+	return None
 
 def setup_binomial_checkpointing(status = False, number_of_steps = 20, 
 	loop_file = 'subroutines/general/sico_main_loop_m.F90'):
@@ -391,11 +482,13 @@ def setup_binomial_checkpointing(status = False, number_of_steps = 20,
 
 	else: raise ValueError('Incorrect status for checkpointing.')
 
+	return None
+
 def setup_adjoint(ind_vars, header, domain, ckp_status,
 	sicopolis_tapenade_cpp_b_file = 'sicopolis_tapenade_cpp_b.f90',
 	sico_main_loop_m_cpp_b_file = 'sico_main_loop_m_cpp_b.f90',
 	dimensions = [2], 
-	z_co_ords = [None],
+	z_co_ords = [None], limited_or_block_or_full_or_scalar = 'limited',
 	output_vars = [], output_iters = [], output_dims = [],
 	output_adj_vars = [], output_adj_iters = [], output_adj_dims = []):
 
@@ -428,84 +521,129 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 	IMAX, JMAX, KCMAX, KTMAX = get_imax_jmax_kcmax_ktmax()
 
 	ref_string = 'REAL(dp) :: z_mar'
-	if(domain == 'grl'):
-		new_string = f'''
-		   INTEGER(i4b) :: i, j, p
-		   INTEGER(i4b), parameter :: points = 5
-		   INTEGER(i4b), DIMENSION(points) :: ipoints, jpoints
-		   DO p = 1, points
-		   ipoints(p) = int(real({IMAX}/2))
-		   jpoints(p) = int(real({JMAX}/5)) + (p-1) * points
-		   END DO
-		'''
-	elif(domain == 'ant'):
-		new_string = f'''
-		   INTEGER(i4b) :: i, j, p
-		   INTEGER(i4b), parameter :: points = 5
-		   INTEGER(i4b), DIMENSION(points) :: ipoints, jpoints
-		   DO p = 1, points
-		   ipoints(p) = int(real({IMAX}/3)) + int(real((.85-.33)*{IMAX}/points)) * (p -1)
-		   jpoints(p) = int(real({JMAX}/2))
-		   END DO
-		'''
 
-	modify_file(sicopolis_tapenade_cpp_b_file, ref_string, new_string, 
-		   replace_or_append_or_prepend = 'append',
-	           instance_all = True)	
+	if limited_or_block_or_full_or_scalar != 'scalar':
 
-	ref_string = 'CALL SICO_INIT_B'
-	new_string = ''
-
-	for var_index, (ind_var, dimension, z_co_ord) in enumerate(zip(ind_vars, dimensions, z_co_ords), start = 1):
-
-		unit = [f'{var_index}000', f'{var_index}001']
-
-
-		if(dimension == 2):
-			new_string = new_string + f'''
-			   open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_limited.dat\',&
-			       form="FORMATTED", status="REPLACE")
-			   open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}.dat\',&
-			       form="FORMATTED", status="REPLACE")
-			   do p = 1, points
-			   i = ipoints(p)
-			   j = jpoints(p)
-			   write ({unit[0]}, *) {ind_var}b(j,i)
-			   end do
-			   close(unit={unit[0]})
-			   do i = 0, {IMAX}
-			   do j = 0, {JMAX}
-			   write ({unit[1]}, *) {ind_var}b(j,i)
-			   end do
-			   end do
-			   close(unit={unit[1]})
+		if(domain == 'grl'):
+			new_string = f'''
+			INTEGER(i4b) :: i, j, p
+			INTEGER(i4b), parameter :: points = 5
+			INTEGER(i4b), DIMENSION(points) :: ipoints, jpoints
+			DO p = 1, points
+			ipoints(p) = int(real({IMAX}/2))
+			jpoints(p) = int(real({JMAX}/5)) + (p-1) * points
+			END DO
 			'''
-		elif(dimension == 3 and z_co_ord is not None):
-			new_string = new_string + f'''
-			   open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_limited.dat\',&
-			       form="FORMATTED", status="REPLACE")
-			   open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}.dat\',&
-			       form="FORMATTED", status="REPLACE")
-			   do p = 1, points
-			   i = ipoints(p)
-			   j = jpoints(p)
-			   write ({unit[0]}, *) {ind_var}b({z_co_ord},j,i)
-			   end do
-			   close(unit={unit[0]})
-			   do i = 0, {IMAX}
-			   do j = 0, {JMAX}
-			   write ({unit[1]}, *) {ind_var}b({z_co_ord},j,i)
-			   end do
-			   end do
-			   close(unit={unit[1]})
+		elif(domain == 'ant'):
+			new_string = f'''
+			INTEGER(i4b) :: i, j, p
+			INTEGER(i4b), parameter :: points = 5
+			INTEGER(i4b), DIMENSION(points) :: ipoints, jpoints
+			DO p = 1, points
+			ipoints(p) = int(real({IMAX}/3)) + int(real((.85-.33)*{IMAX}/points)) * (p -1)
+			jpoints(p) = int(real({JMAX}/2))
+			END DO
 			'''
-		else :	
-			raise ValueError("Wrong dimensions or z coord for adjoint")
-			sys.exit(1)
 
-	modify_file(sicopolis_tapenade_cpp_b_file, ref_string, new_string, 
-		   replace_or_append_or_prepend = 'prepend',
-	           instance_all = True)	
+		modify_file(sicopolis_tapenade_cpp_b_file, ref_string, new_string, 
+			replace_or_append_or_prepend = 'append',
+				instance_all = True)
+	
+		ref_string = 'CALL SICO_INIT_B'
+		new_string = ''
+
+		
+		for var_index, (ind_var, dimension, z_co_ord) in enumerate(zip(ind_vars, dimensions, z_co_ords), start = 1):
+
+			unit = [f'{var_index}000', f'{var_index}001']
+
+
+			if(dimension == 2):
+				new_string = new_string + f'''
+				open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}.dat\',&
+					form="FORMATTED", status="REPLACE")
+				open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}.dat\',&
+					form="FORMATTED", status="REPLACE")
+				do p = 1, points
+				i = ipoints(p)
+				j = jpoints(p)
+				write ({unit[0]}, *) {ind_var}b(j,i)
+				end do
+				close(unit={unit[0]})
+				do i = 0, {IMAX}
+				do j = 0, {JMAX}
+				write ({unit[1]}, *) {ind_var}b(j,i)
+				end do
+				end do
+				close(unit={unit[1]})
+				'''
+			elif(dimension == 3 and z_co_ord is not None):
+				new_string = new_string + f'''
+				open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}.dat\',&
+					form="FORMATTED", status="REPLACE")
+				open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}.dat\',&
+					form="FORMATTED", status="REPLACE")
+				do p = 1, points
+				i = ipoints(p)
+				j = jpoints(p)
+				write ({unit[0]}, *) {ind_var}b({z_co_ord},j,i)
+				end do
+				close(unit={unit[0]})
+				do i = 0, {IMAX}
+				do j = 0, {JMAX}
+				write ({unit[1]}, *) {ind_var}b({z_co_ord},j,i)
+				end do
+				end do
+				close(unit={unit[1]})
+				'''
+			else :	
+				raise ValueError("Wrong dimensions or z coord for adjoint")
+				sys.exit(1)
+
+		modify_file(sicopolis_tapenade_cpp_b_file, ref_string, new_string, 
+			replace_or_append_or_prepend = 'prepend',
+				instance_all = True)
+	
+	else:
+	
+		ref_string = 'CALL SICO_INIT_B'
+		new_string = ''
+
+		
+		for var_index, (ind_var, dimension, z_co_ord) in enumerate(zip(ind_vars, dimensions, z_co_ords), start = 1):
+
+			unit = [f'{var_index}000', f'{var_index}001']
+
+
+			if(dimension == 2):
+				new_string = new_string + f'''
+				open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}.dat\',&
+					form="FORMATTED", status="REPLACE")
+				open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}.dat\',&
+					form="FORMATTED", status="REPLACE")
+				write ({unit[0]}, *) SUM({ind_var}b)
+				close(unit={unit[0]})
+				write ({unit[1]}, *) SUM({ind_var}b)
+				close(unit={unit[1]})
+				'''
+			elif(dimension == 3 and z_co_ord is not None):
+				new_string = new_string + f'''
+				open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}.dat\',&
+					form="FORMATTED", status="REPLACE")
+				open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}.dat\',&
+					form="FORMATTED", status="REPLACE")
+				write ({unit[0]}, *) SUM({ind_var}b)
+				close(unit={unit[0]})
+				write ({unit[1]}, *) SUM({ind_var}b)
+				close(unit={unit[1]})
+				'''
+			else :	
+				raise ValueError("Wrong dimensions or z coord for adjoint")
+				sys.exit(1)
+
+		modify_file(sicopolis_tapenade_cpp_b_file, ref_string, new_string, 
+			replace_or_append_or_prepend = 'prepend',
+				instance_all = True)
 
 	if (ckp_status is True):
 		ref_string = 'itercount = itercount + 1'
@@ -521,6 +659,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 			if iteration == -1: iteration = 'itercount_max'
 			unit = [f'{var_index}9000']
 			
+			# 2D array diagnostics
 			if dimension >= 0:
 				new_string = new_string + f'''
 				   if (itercount .EQ. {iteration}) THEN
@@ -534,17 +673,29 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 				   close(unit={unit[0]})
 				   end if
 				'''
-	
+
+			# 3D array diagnostics
 			elif dimension == -1:
 				new_string = new_string + f'''
 				   if (itercount .EQ. {iteration}) THEN
-				      open({unit[0]}, file=\'AdjointVals_{output_var}_iter_{iteration}_{header}.dat\',&
+				      open({unit[0]}, file=\'AdjointVals_{output_var}_{dimension}_iter_{iteration}_{header}.dat\',&
 				       form="FORMATTED", status="REPLACE")
 				   do i = 0, {IMAX}
 				   do j = 0, {JMAX}
 				   write ({unit[0]}, *) {output_var}(j,i)
 				   end do
 				   end do
+				   close(unit={unit[0]})
+				   end if
+				'''
+
+			# Scalar diagnostics
+			elif dimension == -2:
+				new_string = new_string + f'''
+				   if (itercount .EQ. {iteration}) THEN
+				      open({unit[0]}, file=\'AdjointVals_{output_var}_{dimension}_iter_{iteration}_{header}.dat\',&
+				       form="FORMATTED", status="REPLACE")
+				   write ({unit[0]}, *) SUM({output_var}(j,i))
 				   close(unit={unit[0]})
 				   end if
 				'''
@@ -567,6 +718,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 			if iteration == -1: iteration = 'itercount_max'
 			unit = [f'{var_index}8000']
 
+			# 2D arrayb diagnostics
 			if dimension >= 0:
 				new_string = new_string + f'''
 				   if (itercount .EQ. {iteration}) THEN
@@ -580,16 +732,29 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 				   close(unit={unit[0]})
 				   end if	
 				'''
+
+			# 3D arrayb diagnostics
 			elif dimension == -1:
 				new_string = new_string + f'''
 				   if (itercount .EQ. {iteration}) THEN
-				   open({unit[0]}, file=\'AdjointVals_{output_var}b_iter_{iteration}_{header}.dat\',&
+				   open({unit[0]}, file=\'AdjointVals_{output_var}b_{dimension}_iter_{iteration}_{header}.dat\',&
 				       form="FORMATTED", status="REPLACE")
 				   do i = 0, {IMAX}
 				   do j = 0, {JMAX}
 				   write ({unit[0]}, *) {output_var}b(j,i)
 				   end do
 				   end do
+				   close(unit={unit[0]})
+				   end if	
+				'''
+
+			# scalarb diagnostics
+			elif dimension == -2:
+				new_string = new_string + f'''
+				   if (itercount .EQ. {iteration}) THEN
+				   open({unit[0]}, file=\'AdjointVals_{output_var}b_{dimension}_iter_{iteration}_{header}.dat\',&
+				       form="FORMATTED", status="REPLACE")
+				   write ({unit[0]}, *) SUM({output_var}b)
 				   close(unit={unit[0]})
 				   end if	
 				'''
@@ -602,9 +767,11 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 	           replace_or_append_or_prepend = 'append',
 		   instance_number = 0, skip_line = True)
 
+	return None
+
 def setup_forward(ind_var, header, domain,
 	dimension = 2, 
-	z_co_ord = None, limited_or_block_or_full = 'limited',
+	z_co_ord = None, limited_or_block_or_full_or_scalar = 'limited',
 	block_imin = None, block_imax = None, block_jmin = None, block_jmax = None,
 	tapenade_main_file = 'tapenade_main.F90',
 	unit = '99999'):
@@ -619,9 +786,10 @@ def setup_forward(ind_var, header, domain,
 	domain - grl or ant
 	dimension - dimension of variable being perturbed
 	z_co_ord - If 3D variable give z co-ordinate
-	limited_or_block_or_full - If limited, checks only 5 points, 
+	limited_or_block_or_full_or_scalar - If limited, checks only 5 points, 
 				   block runs for a block on the grid, 
-				   full runs on entire grid	
+				   full runs on entire grid,
+				   scalar runs only for a single scalar.
 	block_imin, block_imax, block_jmin, block_jmax - Specify limits of block if needed
 	tapenade_main_file - Location of tapenade_main file
 	unit - The unit to be used in FORTRAN-90 code while opening and closing the output file
@@ -638,8 +806,8 @@ def setup_forward(ind_var, header, domain,
 
 	IMAX, JMAX, KCMAX, KTMAX = get_imax_jmax_kcmax_ktmax()
 
-	if limited_or_block_or_full == 'full':
-		ref_string = '!@ python_automated_tlm limited_or_block_or_full @'
+	if limited_or_block_or_full_or_scalar == 'full':
+		ref_string = '!@ python_automated_tlm limited_or_block_or_full_or_scalar @'
 		new_string = f'''
 		   do i = 0, {IMAX}
 		   do j = 0, {JMAX}
@@ -663,12 +831,12 @@ def setup_forward(ind_var, header, domain,
 			   replace_or_append_or_prepend = 'append',
 			   instance_number = 0)	
 
-	elif (limited_or_block_or_full == 'block'
+	elif (limited_or_block_or_full_or_scalar == 'block'
 	     and float(block_imin).is_integer() 
 	     and float(block_imax).is_integer() 
 	     and float(block_jmin).is_integer() 
 	     and float(block_jmax).is_integer()):
-		ref_string = '!@ python_automated_tlm limited_or_block_or_full @'
+		ref_string = '!@ python_automated_tlm limited_or_block_or_full_or_scalar @'
 		new_string = f'''
 		   do i = {block_imin}, {block_imax}
 		   do j = {block_jmin}, {block_jmax}
@@ -693,8 +861,31 @@ def setup_forward(ind_var, header, domain,
 			   replace_or_append_or_prepend = 'append',
 			   instance_number = 0)	
 
-	elif(limited_or_block_or_full == 'limited'):
+	elif(limited_or_block_or_full_or_scalar == 'limited'):
 		pass
+
+	elif(limited_or_block_or_full_or_scalar == 'scalar'):
+		ref_string = '!@ python_automated_tlm limited_or_block_or_full_or_scalar @'
+		new_string = f'''
+		'''
+		modify_file(tapenade_main_file, ref_string, new_string,
+			   replace_or_append_or_prepend = 'replace',
+			   instance_number = 0)	
+
+		modify_file(tapenade_main_file, 
+			   'i = ipoints(p)', '',
+			   replace_or_append_or_prepend = 'replace',
+			   instance_number = 0)	
+		
+		modify_file(tapenade_main_file, 
+			   'j = jpoints(p)', '',
+			   replace_or_append_or_prepend = 'replace',
+			   instance_number = 0)	
+
+		modify_file(tapenade_main_file, 
+			   'close loop over points', '',
+			   replace_or_append_or_prepend = 'replace',
+			   instance_number = 0)	
 
 	else:
 		print("Wrong options may have been used in TLM setup.")
@@ -721,17 +912,22 @@ def setup_forward(ind_var, header, domain,
 
 	ref_string = '!@ python_automated_tlm dep_vard set 1 @'
 
-	if (dimension == 2) :
-		new_string = f'''
-		            {ind_var}d(j,i) = 1.0
-		'''
-	elif (dimension == 3 and z_co_ord is not None and z_co_ord < KCMAX):
-		new_string = f'''
-		            {ind_var}d({z_co_ord},j,i) = 1.0
-		'''
+	if limited_or_block_or_full_or_scalar != 'scalar':
+		if (dimension == 2) :
+			new_string = f'''
+						{ind_var}d(j,i) = 1.0
+			'''
+		elif (dimension == 3 and z_co_ord is not None and z_co_ord < KCMAX):
+			new_string = f'''
+						{ind_var}d({z_co_ord},j,i) = 1.0
+			'''
+		else:
+			raise ValueError ("Something wrong with dimension in TLM")
+			sys.exit(1)
 	else:
-		raise ValueError ("Something wrong with dimension in TLM")
-		sys.exit(1)
+			new_string = f'''
+						{ind_var}d = 1.0
+			'''
 	
 	modify_file(tapenade_main_file, 
 		   ref_string, new_string,
@@ -740,7 +936,7 @@ def setup_forward(ind_var, header, domain,
 
 	ref_string = '!@ python_automated_tlm IO begin @'
 	new_string = f'''
-	   open({unit}, file=\'ForwardVals_{ind_var}_{header}_{limited_or_block_or_full}.dat\',&
+	   open({unit}, file=\'ForwardVals_{ind_var}_{header}_{limited_or_block_or_full_or_scalar}.dat\',&
 	       form="FORMATTED", status="REPLACE")
 	'''
 	modify_file(tapenade_main_file, 
@@ -758,7 +954,9 @@ def setup_forward(ind_var, header, domain,
 		   '!@ python_automated_tlm IO end @',
 		   f'   close(unit={unit})\n',
 		   replace_or_append_or_prepend = 'append',
-		   instance_number = 0)	
+		   instance_number = 0)
+
+	return None
 
 def validate_FD_AD(grdchk_file, ad_file, tolerance = 0.1):
 
@@ -782,7 +980,7 @@ def validate_FD_AD(grdchk_file, ad_file, tolerance = 0.1):
 
 def simulation(mode, header, domain, 
 	      ind_var, dep_var,
-	      limited_or_block_or_full = 'limited',
+	      limited_or_block_or_full_or_scalar = 'limited',
 	      ind_var_dim = 2, ind_var_z_co_ord = None,
 	      perturbation = 1.e-3,
 		  grdchk_m_file = 'subroutines/tapenade/grdchk/grdchk_m.F90',
@@ -847,7 +1045,7 @@ def simulation(mode, header, domain,
 	        dimension = ind_var_dim,
 	        z_co_ord = ind_var_z_co_ord,
 	        perturbation = perturbation,
-	        limited_or_block_or_full = limited_or_block_or_full,
+	        limited_or_block_or_full_or_scalar = limited_or_block_or_full_or_scalar,
 	        block_imin = block_imin, block_imax = block_imax, block_jmin = block_jmin, block_jmax = block_jmax,
 	        grdchk_m_file = grdchk_m_file,
 	        unit = unit)
@@ -887,7 +1085,7 @@ def simulation(mode, header, domain,
 			     sicopolis_tapenade_cpp_b_file = sicopolis_tapenade_cpp_b_file,
 			     sico_main_loop_m_cpp_b_file = sico_main_loop_m_cpp_b_file,
 			     dimensions = [ind_var_dim],
-			     z_co_ords = [ind_var_z_co_ord],
+			     z_co_ords = [ind_var_z_co_ord], limited_or_block_or_full_or_scalar = limited_or_block_or_full_or_scalar,
 			     output_vars = output_vars, output_iters = output_iters, output_dims = output_dims,
 			     output_adj_vars = output_adj_vars, output_adj_iters = output_adj_iters, output_adj_dims = output_adj_dims)
 
@@ -903,8 +1101,8 @@ def simulation(mode, header, domain,
 
 		if validation is True:
 			pert = f'{perturbation:.2e}'.upper()
-			grdchk_file = f'GradientVals_{ind_var}_{pert}_{header}_limited.dat'
-			adjoint_file = f'AdjointVals_{ind_var}b_{header}_limited.dat'
+			grdchk_file = f'GradientVals_{ind_var}_{pert}_{header}_{limited_or_block_or_full_or_scalar}.dat'
+			adjoint_file = f'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}.dat'
 
 			if os.path.exists(grdchk_file) is False:
 				raise FileNotFoundError (f'{grdchk_file} not found for validation')
@@ -917,7 +1115,7 @@ def simulation(mode, header, domain,
 
 		setup_forward(ind_var = ind_var, header = header, domain = domain,
 			     dimension = ind_var_dim,
-			     z_co_ord = ind_var_z_co_ord, limited_or_block_or_full = limited_or_block_or_full,
+			     z_co_ord = ind_var_z_co_ord, limited_or_block_or_full_or_scalar = limited_or_block_or_full_or_scalar,
 			     block_imin = block_imin, block_imax = block_imax, block_jmin = block_jmin, block_jmax = block_jmax,
 			     tapenade_main_file = tapenade_main_file,
 			     unit = unit)
@@ -934,8 +1132,8 @@ def simulation(mode, header, domain,
 
 		if validation is True:
 			pert = f'{perturbation:.2e}'.upper()
-			grdchk_file = f'GradientVals_{ind_var}_{pert}_{header}_limited.dat'
-			tlm_file = f'ForwardVals_{ind_var}_{header}_limited.dat'
+			grdchk_file = f'GradientVals_{ind_var}_{pert}_{header}_{limited_or_block_or_full_or_scalar}.dat'
+			tlm_file = f'ForwardVals_{ind_var}_{header}_{limited_or_block_or_full_or_scalar}.dat'
 
 			if os.path.exists(grdchk_file) is False:
 				raise FileNotFoundError (f'{grdchk_file} not found for validation')
@@ -964,6 +1162,8 @@ def simulation(mode, header, domain,
 		raise ValueError("Incorrect simulation mode")
 		sys.exit(1)
 
+	return None
+
 if __name__ == "__main__":
 
 
@@ -990,6 +1190,7 @@ if __name__ == "__main__":
 	parser.add_argument("-run", help="Run the executables?", action="store_true")
 	parser.add_argument("-cc", '--c_compiler', help="C compiler", type=str)
 	parser.add_argument("-f90c", '--f90_compiler', help="F90 compiler", type=str)
+	parser.add_argument("-lbfs", '--limited_or_block_or_full_or_scalar', help="limited or block or full or scalar?", type=str)
 
 	args = parser.parse_args()
 
@@ -1019,17 +1220,21 @@ if __name__ == "__main__":
 		      'dimension', 'z_co_ord', 'perturbation', 'output_vars',
 		      'output_iters', 'output_dims', 'output_adj_vars', 
 		      'output_adj_iters', 'output_adj_dims', 'checkpoint', 'run',
-		      'c_compiler', 'f90_compiler']
+		      'c_compiler', 'f90_compiler', 'limited_or_block_or_full_or_scalar']
 
 	for attr in list_attrs:
 		if not hasattr(args, attr):
 			setattr(args, attr, None)
 
+	# Default is 'limited' i.e. checks on 5 points
+	if args.limited_or_block_or_full_or_scalar is None:
+		args.limited_or_block_or_full_or_scalar = 'limited'
+
 	for mode in ['normal', 'grdchk', 'adjoint', 'forward']:
 
 		simulation(mode = mode, header = args.header, domain = args.domain, 
 		      ind_var = args.ind_var, dep_var = args.dep_var,
-		      limited_or_block_or_full = 'limited',
+		      limited_or_block_or_full_or_scalar = args.limited_or_block_or_full_or_scalar,
 		      ind_var_dim = args.dimension, ind_var_z_co_ord = args.z_co_ord,
 		      perturbation = args.perturbation,
 		      run_executable_auto = args.run,

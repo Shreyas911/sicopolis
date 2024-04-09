@@ -101,7 +101,7 @@ program tapenade_main
 !@ python_automated_tlm IO begin @
 
  !-------- Loop over points
-    do p = 1, points !@ python_automated_tlm limited_or_block_or_full @
+    do p = 1, points !@ python_automated_tlm limited_or_block_or_full_or_scalar @
         i = ipoints(p)
         j = jpoints(p)
 
