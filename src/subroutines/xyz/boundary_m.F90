@@ -65,6 +65,10 @@ subroutine boundary(time, dtime, dxi, deta, &
   use calving_m
 #endif
 
+#if (defined(GRL) && DISC>0)
+  use discharge_workers_m, only: discharge, dis_perp, dT_glann
+#endif
+
   use mask_update_sea_level_m
   use pdd_m
 
@@ -275,6 +279,67 @@ else if (time_in_years < real(gi_time_max,dp)) then
 else
    glac_index  = glacial_index(ndata_gi)
 end if
+
+#endif
+
+!-------- Greenland only:
+!         Global annual temperature anomaly
+!         (for parameterizing the sub-ocean temperature anomaly
+!                             for the ice discharge parameterization) --------
+
+#if (defined(GRL))
+
+#if (DISC==1)
+
+dT_glann = 0.0_dp   ! anomaly set to zero
+
+#elif (DISC==2)
+
+!  ------ dT_glann from CLIMBER simulations
+
+if (time_in_years < real(glann_time_min,dp)) then
+   dT_glann = dT_glann_CLIMBER(0)
+else if (time_in_years < real(glann_time_max,dp)) then
+
+#if !defined(ALLOW_TAPENADE) /* Normal */
+   i_kl = floor((time_in_years &
+          -real(glann_time_min,dp))/real(glann_time_stp,dp))
+   i_kl = max(i_kl, 0)
+
+   i_gr = ceiling((time_in_years &
+          -real(glann_time_min,dp))/real(glann_time_stp,dp))
+   i_gr = min(i_gr, ndata_glann)
+#else /* Tapenade */
+   call myfloor(((time_in_years &
+          -real(glann_time_min,dp))/real(glann_time_stp,dp)), i_kl)
+   i_kl = max(i_kl, 0)
+
+   call myceiling(((time_in_years &
+          -real(glann_time_min,dp))/real(glann_time_stp,dp)), i_gr)
+   i_gr = min(i_gr, ndata_glann)
+#endif /* Normal vs. Tapenade */
+
+   if (i_kl == i_gr) then
+
+      dT_glann = dT_glann_CLIMBER(i_kl)
+
+   else
+
+      time_kl = (glann_time_min + i_kl*glann_time_stp) *year2sec
+      time_gr = (glann_time_min + i_gr*glann_time_stp) *year2sec
+
+      dT_glann = dT_glann_CLIMBER(i_kl) &
+                +(dT_glann_CLIMBER(i_gr)-dT_glann_CLIMBER(i_kl)) &
+                *(time-time_kl)/(time_gr-time_kl)
+                 ! linear interpolation of the data
+
+   end if
+
+else
+   dT_glann  = dT_glann_CLIMBER(ndata_glann)
+end if
+
+#endif
 
 #endif
 
@@ -1063,6 +1128,13 @@ calving = 0.0_dp   ! Initialization
 #if ((MARGIN==2) && (MARINE_ICE_FORMATION==2) && (MARINE_ICE_CALVING==9))
 
 call calving_underwater_ice()
+
+#endif
+
+#if (defined(GRL) && DISC>0) /* Ice discharge parameterization for Greenland */
+
+call discharge(dxi, deta)
+calving = calving + dis_perp
 
 #endif
 

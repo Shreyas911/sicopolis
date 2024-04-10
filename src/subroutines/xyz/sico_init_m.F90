@@ -65,6 +65,14 @@ subroutine sico_init(delta_ts, glac_index, &
   use netcdf
   use nc_check_m
 
+#if (defined(GRL) && DISC>0)
+#if (!defined(EXEC_MAKE_C_DIS_0))
+  use discharge_workers_m, only: disc_param, disc_fields
+#else /* defined(EXEC_MAKE_C_DIS_0) */
+  use discharge_workers_m, only: disc_param, disc_fields, calc_c_dis_0
+#endif
+#endif
+
 #if (GRID==0 || GRID==1)
   use stereo_proj_m
 #endif
@@ -818,6 +826,9 @@ write(10, fmt=trim(fmt3)) 'dtime_temp =', dtime_temp0
 #if (REBOUND==2)
 write(10, fmt=trim(fmt3)) 'dtime_wss  =', dtime_wss0
 #endif
+#if (defined(GRL) && DISC>0)
+write(10, fmt=trim(fmt3)) 'dtime_mar_coa =', DTIME_MAR_COA0
+#endif
 write(10, fmt=trim(fmt1)) ' '
 
 write(10, fmt=trim(fmt2)) 'DYNAMICS = ', DYNAMICS
@@ -1142,6 +1153,27 @@ write(10, fmt=trim(fmt3)) 'temp_lti   =', TEMP_LTI
 write(10, fmt=trim(fmt2)) 'MB_ACCOUNT = ', MB_ACCOUNT
 #endif
 write(10, fmt=trim(fmt1)) ' '
+
+#if (defined(GRL) && defined(DISC))
+write(10, fmt=trim(fmt2)) 'DISC = ', DISC
+#if (DISC>0)
+write(10, fmt=trim(fmt3)) 'c_dis_0   =', C_DIS_0
+write(10, fmt=trim(fmt3)) 'c_dis_fac =', C_DIS_FAC
+write(10, fmt=trim(fmt3)) 'm_H       =', M_H
+write(10, fmt=trim(fmt3)) 'm_D       =', M_D
+write(10, fmt=trim(fmt3)) 'r_mar_eff =', R_MAR_EFF
+#if (defined(S_DIS))
+write(10, fmt=trim(fmt3)) 's_dis     =', S_DIS
+#endif
+#if (defined(ALPHA_SUB))
+write(10, fmt=trim(fmt3)) 'alpha_sub =', ALPHA_SUB
+#endif
+#if (defined(ALPHA_O))
+write(10, fmt=trim(fmt3)) 'alpha_o   =', ALPHA_O
+#endif
+#endif
+write(10, fmt=trim(fmt1)) ' '
+#endif
 
 write(10, fmt=trim(fmt2)) 'SEA_LEVEL = ', SEA_LEVEL
 #if (SEA_LEVEL==1)
@@ -1792,6 +1824,22 @@ call read_scalar_input(filename_with_path, &
 
 #endif
 
+!-------- Greenland only:
+!         Reading of the global annual temperature anomaly
+!         (for parameterizing the sub-ocean temperature anomaly
+!         for the ice discharge parameterization)
+
+#if (defined(GRL) && DISC==2)
+
+filename_with_path = trim(IN_PATH)//'/general/dTg_paleo.dat'
+
+call read_scalar_input(filename_with_path, &
+                       'dT_glann', ndata_glann_max, &
+                       glann_time_min, glann_time_stp, glann_time_max, &
+                       ndata_glann, dT_glann_CLIMBER)
+
+#endif
+
 !-------- Read data for z_sl --------
 
 #if (SEA_LEVEL==3)
@@ -1913,6 +1961,11 @@ flex_rig_lith = 0.0_dp   ! dummy values
 
 call topography1(dxi, deta)
 
+#if (defined(GRL) && DISC>0) /* Ice discharge parameterization for Greenland */
+call disc_param(dtime)
+call disc_fields()
+#endif
+
 z_sl      = -1.11e+11_dp   ! dummy values for initial call
 z_sl_mean = -1.11e+11_dp   ! of subroutine boundary
 
@@ -1999,6 +2052,11 @@ vis_int_g = 0.0_dp
 
 call topography2(dxi, deta)
 
+#if (defined(GRL) && DISC>0) /* Ice discharge parameterization for Greenland */
+call disc_param(dtime)
+call disc_fields()
+#endif
+
 z_sl      = -1.11e+11_dp   ! dummy values for initial call
 z_sl_mean = -1.11e+11_dp   ! of subroutine boundary
 
@@ -2051,6 +2109,11 @@ vis_int_g = 0.0_dp
 #elif (ANF_DAT==3)
 
 call topography3(dxi, deta, anfdatname)
+
+#if (defined(GRL) && DISC>0) /* Ice discharge parameterization for Greenland */
+call disc_param(dtime)
+call disc_fields()
+#endif
 
 call boundary(time_init, dtime, dxi, deta, &
               delta_ts, glac_index, z_mar)
@@ -3092,6 +3155,29 @@ print *, ' >>> sico_init: not producing initial, typical outputs'
 print *, '                in adjoint mode.'
 
 #endif /* Normal vs. Tapenade */
+
+#if (defined(GRL) && defined(EXEC_MAKE_C_DIS_0))
+
+#if (DISC>0)
+
+call calc_c_dis_0(dxi, deta)
+
+errormsg = ' >>> sico_init: Routine calc_c_dis_0 successfully completed,' &
+         //         end_of_line &
+         //'        c_dis_0 written on file out_run_name.dat' &
+         //         end_of_line &
+         //'        (in directory specified by OUT_PATH).' &
+         //         end_of_line &
+         //'        Execution of SICOPOLIS stopped.'
+call error(errormsg)   ! actually not an error,
+                       ! just a regular stop with an info message
+
+#else
+  errormsg = ' >>> sico_init: EXEC_MAKE_C_DIS_0 requires DISC>0!'
+  call error(errormsg)
+#endif
+
+#endif
 
 end subroutine sico_init
 
