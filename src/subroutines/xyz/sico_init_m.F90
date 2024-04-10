@@ -99,26 +99,31 @@ subroutine sico_init(delta_ts, glac_index, &
 
 implicit none
 
-integer(i4b),       intent(out) :: ndat2d, ndat3d
-integer(i4b),       intent(out) :: n_output
-real(dp),           intent(out) :: delta_ts, glac_index
-real(dp),           intent(out) :: mean_accum
-real(dp),           intent(out) :: dtime, dtime_temp, dtime_wss, &
-                                   dtime_out, dtime_ser
-real(dp),           intent(out) :: time, time_init, time_end, time_output(100)
-real(dp),           intent(out) :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
-real(dp),           intent(out) :: z_mar
+integer(i4b), intent(out) :: ndat2d, ndat3d
+integer(i4b), intent(out) :: n_output
+real(dp),     intent(out) :: delta_ts, glac_index
+real(dp),     intent(out) :: mean_accum
+real(dp),     intent(out) :: dtime, dtime_temp, dtime_wss
+real(dp),     intent(out) :: dtime_out, dtime_ser
+real(dp),     intent(out) :: time, time_init, time_end, time_output(100)
+real(dp),     intent(out) :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
+real(dp),     intent(out) :: z_mar
 
-integer(i4b)       :: i, j, kc, kt, kr, m, n, ir, jr, n1, n2
-integer(i4b)       :: ios, ios1, ios2, ios3, ios4
-integer(i4b)       :: istat, ierr
-integer(i4b)       :: n_q_geo_mod
-real(dp)           :: dtime0, dtime_temp0, dtime_wss0, dtime_out0, dtime_ser0
-real(dp)           :: time_init0, time_end0
+integer(i4b) :: i, j, kc, kt, kr, m, n, ir, jr, n1, n2
+integer(i4b) :: ios, ios1, ios2, ios3, ios4
+integer(i4b) :: istat, ierr
+integer(i4b) :: n_q_geo_mod
+real(dp) :: dtime0, dtime_temp0, dtime_wss0, dtime_out0, dtime_ser0
+real(dp) :: time_init0, time_end0
 #if (OUTPUT==2 || OUTPUT==3)
-real(dp)           :: time_output0(N_OUTPUT)
+real(dp) :: time_output0(N_OUTPUT)
 #endif
-real(dp)           :: d_dummy
+real(dp) :: d_dummy
+
+#if (defined(ANT))
+real(dp) :: larmip_qbm_anom_aux(5)
+#endif
+
 character(len=256) :: anfdatname, target_topo_dat_name
 character(len=256) :: filename_with_path
 character(len=256) :: shell_command
@@ -145,6 +150,14 @@ integer(i4b) :: p_weert_aux(N_SLIDE_REGIONS)
 integer(i4b) :: q_weert_aux(N_SLIDE_REGIONS)
 real(dp) :: c_slide_aux(N_SLIDE_REGIONS)
 real(dp) :: gamma_slide_aux(N_SLIDE_REGIONS)
+#endif
+
+#if (defined(ANT) || defined(GRL))
+character(len=64) :: ch_initmip_smb_anom_file
+#endif
+#if (defined(ANT))
+character(len=64) :: ch_initmip_bmb_anom_file
+character(len=64) :: ch_larmip_regions_file
 #endif
 
 integer(i4b) :: dimid, ncid, ncv
@@ -517,6 +530,14 @@ ndat2d = 1
 ndat3d = 1
 
 flag_calc_temp = .true.
+
+#if (defined(ANT) || defined(GRL))
+flag_initmip_asmb = .false.
+#endif
+#if (defined(ANT))
+flag_initmip_abmb = .false.
+flag_larmip       = .false.
+#endif
 
 !-------- General abbreviations --------
 
@@ -1154,6 +1175,31 @@ write(10, fmt=trim(fmt2)) 'MB_ACCOUNT = ', MB_ACCOUNT
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
+#if (defined(SMB_CORR_FILE))
+if ( (trim(adjustl(SMB_CORR_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(SMB_CORR_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(SMB_CORR_FILE)) /= 'NONE') ) then
+   write(10, fmt=trim(fmt1)) 'smb_corr_file = '//SMB_CORR_FILE
+   write(10, fmt=trim(fmt1)) ' '
+end if
+#endif
+
+#if ((defined(ANT) || defined(GRL)) && defined(INITMIP_SMB_ANOM_FILE))
+if ( (trim(adjustl(INITMIP_SMB_ANOM_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(INITMIP_SMB_ANOM_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(INITMIP_SMB_ANOM_FILE)) /= 'NONE') ) then
+   flag_initmip_asmb = .true.
+   ch_initmip_smb_anom_file = trim(adjustl(INITMIP_SMB_ANOM_FILE))
+   write(10, fmt=trim(fmt1)) 'initmip_smb_anom file = ' &
+                                // trim(ch_initmip_smb_anom_file)
+   write(10, fmt=trim(fmt1)) ' '
+end if
+#endif
+
 #if (defined(GRL) && defined(DISC))
 write(10, fmt=trim(fmt2)) 'DISC = ', DISC
 #if (DISC>0)
@@ -1271,6 +1317,7 @@ write(10, fmt=trim(fmt1)) ' '
 #endif
 
 #if (MARGIN==3)
+
 write(10, fmt=trim(fmt2)) 'FLOATING_ICE_BASAL_MELTING = ', FLOATING_ICE_BASAL_MELTING
 #if (FLOATING_ICE_BASAL_MELTING==1)
 write(10, fmt=trim(fmt3)) 'qbm_float_1 =', QBM_FLOAT_1
@@ -1284,7 +1331,42 @@ write(10, fmt=trim(fmt3)) 'alpha_qbm  =', ALPHA_QBM
 #endif
 write(10, fmt=trim(fmt3)) 'H_w_0 =', H_W_0
 write(10, fmt=trim(fmt1)) ' '
+
+#if (defined(ANT) && defined(INITMIP_BMB_ANOM_FILE))
+if ( (trim(adjustl(INITMIP_BMB_ANOM_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(INITMIP_BMB_ANOM_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(INITMIP_BMB_ANOM_FILE)) /= 'NONE') ) then
+   flag_initmip_abmb = .true.
+   ch_initmip_bmb_anom_file = trim(adjustl(INITMIP_BMB_ANOM_FILE))
+   write(10, fmt=trim(fmt1)) 'initmip_bmb_anom file = ' &
+                                // trim(ch_initmip_bmb_anom_file)
+   write(10, fmt=trim(fmt1)) ' '
+end if
 #endif
+
+#if (defined(ANT) && defined(LARMIP_REGIONS_FILE))
+if ( (trim(adjustl(LARMIP_REGIONS_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(LARMIP_REGIONS_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(LARMIP_REGIONS_FILE)) /= 'NONE') ) then
+   flag_larmip = .true.
+   ch_larmip_regions_file = trim(adjustl(LARMIP_REGIONS_FILE))
+   write(10, fmt=trim(fmt1)) 'larmip_regions_file = ' &
+                                // trim(ch_larmip_regions_file)
+   larmip_qbm_anom_aux = LARMIP_QBM_ANOM
+   write(10, fmt=trim(fmt3)) 'larmip_qbm_anom_1 =', larmip_qbm_anom_aux(1)
+   write(10, fmt=trim(fmt3)) 'larmip_qbm_anom_2 =', larmip_qbm_anom_aux(2)
+   write(10, fmt=trim(fmt3)) 'larmip_qbm_anom_3 =', larmip_qbm_anom_aux(3)
+   write(10, fmt=trim(fmt3)) 'larmip_qbm_anom_4 =', larmip_qbm_anom_aux(4)
+   write(10, fmt=trim(fmt3)) 'larmip_qbm_anom_5 =', larmip_qbm_anom_aux(5)
+   write(10, fmt=trim(fmt1)) ' '
+end if
+#endif
+
+#endif /* MARGIN==3 */
 
 write(10, fmt=trim(fmt2)) 'REBOUND = ', REBOUND
 #if (REBOUND==1)
@@ -1821,6 +1903,150 @@ call read_scalar_input(filename_with_path, &
                        'gi', ndata_gi_max, &
                        gi_time_min, gi_time_stp, gi_time_max, &
                        ndata_gi, glacial_index)
+
+#endif
+
+!-------- Prescribed surface mass balance correction --------
+
+smb_corr_in = 0.0_dp
+
+#if (defined(SMB_CORR_FILE))
+
+if ( (trim(adjustl(SMB_CORR_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(SMB_CORR_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(SMB_CORR_FILE)) /= 'NONE') ) then
+
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(SMB_CORR_FILE)
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='DSMB', n_var_type=1, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
+
+   smb_corr_in = field2d_aux *sec2year
+                             ! m/a ice equiv. -> m/s ice equiv.
+
+end if
+
+#endif
+
+!-------- Reading of ISMIP6 SMB and BMB anomaly data --------
+
+!  ------ Antarctica or Greenland: SMB (InitMIP)
+
+#if (defined(ANT) || defined(GRL))
+
+if (flag_initmip_asmb) then
+
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)// &
+                                      '/'//trim(ch_initmip_smb_anom_file)
+
+   ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+   if (ios /= nf90_noerr) then
+      errormsg = ' >>> sico_init: Error when opening the file' &
+               //                 end_of_line &
+               //'                for the ISMIP6 SMB anomaly data!'
+      call error(errormsg)
+   end if
+
+#if (defined(GRL))
+   call check( nf90_inq_varid(ncid, 'DSMB', ncv) )
+#else
+   call check( nf90_inq_varid(ncid, 'asmb', ncv) )
+#endif
+
+   call check( nf90_get_var(ncid, ncv, field2d_tra_aux) )
+
+   call check( nf90_close(ncid) )
+
+   do i=0, IMAX
+   do j=0, JMAX
+      smb_anom_initmip(j,i) = field2d_tra_aux(i,j) *sec2year
+                                   ! m/a ice equiv. -> m/s ice equiv.
+   end do
+   end do
+
+else
+   smb_anom_initmip = 0.0_dp
+end if
+
+#endif
+
+!  ------ Antarctica only: BMB (InitMIP)
+
+#if (defined(ANT))
+
+if (flag_initmip_abmb) then
+
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)// &
+                                      '/'//trim(ch_initmip_bmb_anom_file)
+
+   ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+   if (ios /= nf90_noerr) then
+      errormsg = ' >>> sico_init: Error when opening the file' &
+               //                 end_of_line &
+               //'                for the ISMIP6 BMB anomaly data!'
+      call error(errormsg)
+   end if
+
+   call check( nf90_inq_varid(ncid, 'abmb', ncv) )
+   call check( nf90_get_var(ncid, ncv, field2d_tra_aux) )
+
+   call check( nf90_close(ncid) )
+
+   do i=0, IMAX
+   do j=0, JMAX
+      ab_anom_initmip(j,i) = field2d_tra_aux(i,j) *sec2year
+                                   ! m/a ice equiv. -> m/s ice equiv.
+   end do
+   end do
+
+else
+   ab_anom_initmip = 0.0_dp
+end if
+
+#endif
+
+!  ------ Antarctica only: BMB (LARMIP)
+
+#if (defined(ANT))
+
+if (flag_larmip) then
+
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)// &
+                                      '/'//trim(ch_larmip_regions_file)
+
+   ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+   if (ios /= nf90_noerr) then
+      errormsg = ' >>> sico_init: Error when opening the file' &
+               //                 end_of_line &
+               //'                for the LARMIP BMB regions!'
+      call error(errormsg)
+   end if
+
+   call check( nf90_inq_varid(ncid, 'regions', ncv) )
+   call check( nf90_get_var(ncid, ncv, field2d_tra_aux) )
+
+   call check( nf90_close(ncid) )
+
+   do i=0, IMAX
+   do j=0, JMAX
+      n_larmip_region(j,i) = nint(field2d_tra_aux(i,j))
+   end do
+   end do
+
+   ab_anom_larmip      = 0.0_dp
+   ab_anom_larmip(1:5) = larmip_qbm_anom_aux *sec2year
+                                   ! m/a ice equiv. -> m/s ice equiv.
+else
+   n_larmip_region = 0
+   ab_anom_larmip  = 0.0_dp
+end if
 
 #endif
 

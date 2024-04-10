@@ -104,6 +104,9 @@ real(dp), dimension(0:JMAX,0:IMAX)      :: temp_summer
 real(dp), dimension(0:JMAX,0:IMAX)      :: temp_ampl
 real(dp), dimension(0:JMAX,0:IMAX)      :: temp_diff
 
+real(dp), dimension(0:JMAX,0:IMAX) :: accum_prescribed
+real(dp), dimension(0:JMAX,0:IMAX) :: runoff_prescribed
+
 real(dp), dimension(0:JMAX,0:IMAX)    :: gamma_s
 real(dp), dimension(0:JMAX,0:IMAX)    :: precip_fact
 real(dp), dimension(0:JMAX,0:IMAX,12) :: precip_fact_mm
@@ -1094,6 +1097,46 @@ end do
 as_perp = accum - runoff
 
 #endif
+
+!    ---- Prescribed SMB correction
+
+smb_corr_prescribed = smb_corr_in
+
+#if (defined(ANT) || defined(GRL))
+
+if (flag_initmip_asmb) then   ! Correction for ISMIP6 InitMIP
+
+#if defined(ALLOW_TAPENADE) /* Tapenade */
+   call myfloor(time_in_years, i_time_in_years)
+#endif /* Tapenade */
+
+   if ((time_in_years > 0.0_dp).and.(time_in_years <= 40.0_dp)) then
+
+#if !defined(ALLOW_TAPENADE) /* Normal */
+      smb_corr_prescribed = smb_corr_prescribed &
+                              + 0.025_dp*floor(time_in_years) * smb_anom_initmip
+#else /* Tapenade */
+      smb_corr_prescribed = smb_corr_prescribed &
+                              + 0.025_dp*(i_time_in_years) * smb_anom_initmip
+#endif /* Normal vs. Tapenade */
+
+   else if (time_in_years > 40.0_dp) then
+
+      smb_corr_prescribed = smb_corr_prescribed + smb_anom_initmip
+
+   end if
+
+end if
+
+#endif
+
+as_perp = as_perp + smb_corr_prescribed
+
+accum_prescribed  =  max(smb_corr_prescribed, 0.0_dp)
+runoff_prescribed = -min(smb_corr_prescribed, 0.0_dp)
+
+accum  = accum  + accum_prescribed
+runoff = runoff + runoff_prescribed
 
 !  ------ Ice-surface temperature (10-m firn temperature) temp_s,
 !         including empirical firn-warming correction due to
