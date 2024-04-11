@@ -4,7 +4,7 @@
 
 !-------- Basic settings --------
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2024-03-20'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2024-04-10'
 !                      Date of last change
 
 !-------- Domain --------
@@ -730,10 +730,22 @@
 !                         7 : Implied SMB by Calov+ (2018, Cryosphere 12)
 !                             (requires ABLSURFACE==7)
 
-#define PRECIP_PRESENT_FILE 'ant_sr_dev1.0_64_prec_a.dat'
+#define PRECIP_PRESENT_FILE 'none'
 !                       Name of the file containing the present-day
-!                       precipitation data
+!                       monthly mean precipitation data
+!                       ('none' if no such file is to be specified)
 !                       (for ACCSURFACE<=5)
+
+#define PRECIP_MA_PRESENT_FILE 'ant_sr_dev1.0_64_prec_a.dat'
+!                       Name of the file containing the present-day
+!                       mean annual precipitation data
+!                       ('none' if no such file is to be specified)
+!                       (for ACCSURFACE<=5)
+
+!                       [Either PRECIP_PRESENT_FILE or PRECIP_MA_PRESENT_FILE
+!                       must be specified. If both are specified,
+!                       PRECIP_PRESENT_FILE will be used,
+!                       while PRECIP_MA_PRESENT_FILE will be ignored.]
 
 #define ACCFACT 0.0d0
 !                       Constant ratio between actual and present
