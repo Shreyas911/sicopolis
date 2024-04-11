@@ -3,7 +3,6 @@ module ad_input_m
 
     use sico_types_m
     use sico_variables_m_diff
-    use sico_vars_m
     use error_m
   
     implicit none

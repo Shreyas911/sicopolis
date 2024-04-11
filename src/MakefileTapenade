@@ -108,14 +108,16 @@ LCOV=/usr/bin/lcov
 endif
 
 ifeq ($(F90C),gfortran)
-F90FLAGS_COV= --coverage -fprofile-arcs -ftest-coverage -O0 -g -DRUN_SPECS_HEADER=\"sico_specs.h\" -mcmodel=medium -fno-range-check -ffpe-trap=invalid,zero
+F90FLAGS_COV= --coverage -fprofile-arcs -ftest-coverage -O0 -g -DRUN_SPECS_HEADER=\"sico_specs.h\" -mcmodel=medium -fno-range-check -ffpe-trap=invalid,zero -ffree-line-length-none
 CFLAGS_COV= --coverage -fprofile-arcs -ftest-coverage -O0 -g
-F90FLAGS= -O3 -g -DRUN_SPECS_HEADER=\"sico_specs.h\" -mcmodel=medium -fno-range-check -ffpe-trap=invalid,zero
+F90FLAGS= -O3 -g -DRUN_SPECS_HEADER=\"sico_specs.h\" -mcmodel=medium -fno-range-check -ffpe-trap=invalid,zero -ffree-line-length-none
 CFLAGS= -O3 -g
 endif
 
 ifeq ($(F90C),ifort)
-F90FLAGS= -m64 -convert big_endian -assume byterecl -mcmodel=medium -O2 -align -ip -fp-model source -xHost -DRUN_SPECS_HEADER=\"sico_specs.h\" 
+$(info ifort might not work well with the genctrl setup since -extend-source can extend line length limit to max 132 columns.)
+$(info This remains untested, so can consider a higher value than 132 probably.)
+F90FLAGS= -m64 -convert big_endian -assume byterecl -mcmodel=medium -O2 -align -ip -fp-model source -xHost -DRUN_SPECS_HEADER=\"sico_specs.h\" -extend-source 132
 CFLAGS= -O0 -ip -m64 -xHost -mcmodel=medium -DWORDLENGTH=4 -DDEFAULT_R8
 endif
 
@@ -280,7 +282,7 @@ driverforward:${LIBLIS} \
 .PHONY = PHONY_TAP_TLM
 PHONY_TAP_TLM: ${SRC_AD_INPUT}
 	@if [ ! -f ${TAPENADE_CHECK_FILE_TLM} ]; then\
-		${TAPENADECMD} -d -ext "${FLOW_TAPAD_FILE}" -head "${TAPENADE_HEAD_ROUTINE}(${DEP_VAR})/(${IND_VARS})" ${SRC_AD_INPUT};\
+		${TAPENADECMD} -d -ext "${FLOW_TAPAD_FILE}" -linelength 2000 -head "${TAPENADE_HEAD_ROUTINE}(${DEP_VAR})/(${IND_VARS})" ${SRC_AD_INPUT};\
 	else\
 		echo @@@@@@@@@@@@@ TAPENADE FYI @@@@@@@@@@@@@@;\
 		echo Not executing tapenade TLM command again!;\
@@ -324,7 +326,7 @@ driveradjoint:${LIBLIS} \
 .PHONY = PHONY_TAP_ADJ
 PHONY_TAP_ADJ: ${SRC_AD_INPUT}
 	@if [ ! -f ${TAPENADE_CHECK_FILE_ADJ} ]; then\
-		${TAPENADECMD} -b -ext "${FLOW_TAPAD_FILE}" -head "${TAPENADE_HEAD_ROUTINE}(${DEP_VAR})/(${IND_VARS})" ${SRC_AD_INPUT};\
+		${TAPENADECMD} -b -ext "${FLOW_TAPAD_FILE}" -linelength 2000 -head "${TAPENADE_HEAD_ROUTINE}(${DEP_VAR})/(${IND_VARS})" ${SRC_AD_INPUT};\
 	else\
 		echo @@@@@@@@@@@@@@@ TAPENADE FYI @@@@@@@@@@@@@@@@;\
 		echo Not executing tapenade adjoint command again!;\

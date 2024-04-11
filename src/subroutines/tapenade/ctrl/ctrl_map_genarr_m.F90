@@ -18,6 +18,9 @@ contains
 
     integer(i4b)        :: ctrl_index
     integer(i4b)        :: igen_c_slide_init, igen_H, igen_q_geo
+    integer(i4b)        :: igen_gamma_s_arr, igen_s_stat_arr
+    integer(i4b)        :: igen_beta1_arr_orig, igen_beta2_arr_orig
+    integer(i4b)        :: igen_Pmax_arr, igen_mu_arr_orig
 
     xx_genarr2d_vars            = XX_GENARR2D_VARS_ARR
     xx_genarr2d_preproc         = XX_GENARR2D_PREPROC_ARR
@@ -25,9 +28,15 @@ contains
     xx_genarr2d_log10initval    = XX_GENARR2D_LOG10INITVAL_ARR
     xx_genarr2d_weight          = XX_GENARR2D_WEIGHT_ARR
 
-    igen_c_slide_init = 0
-    igen_H           = 0
-    igen_q_geo        = 0
+    igen_c_slide_init   = 0
+    igen_H              = 0
+    igen_q_geo          = 0
+    igen_gamma_s_arr    = 0
+    igen_s_stat_arr     = 0
+    igen_beta1_arr_orig = 0
+    igen_beta2_arr_orig = 0
+    igen_Pmax_arr       = 0
+    igen_mu_arr_orig    = 0
 
     do ctrl_index = 1, NUM_CTRL_GENARR2D
       
@@ -41,7 +50,50 @@ contains
         errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
           //'Initial surface topography as a control param is only compatible with ANF_DAT == 1 !'
         call error(errormsg)
-#endif        
+#endif
+      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_gamma_s_arr') then
+        igen_gamma_s_arr = ctrl_index
+#if (ACCSURFACE != 2 && ACCSURFACE != 3)
+        errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
+        //'gamma_s_arr as a control param is only compatible with ACCSURFACE == 2 or ACCSURFACE == 3 !'
+        call error(errormsg)
+#endif
+      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_s_stat_arr') then
+        igen_s_stat_arr = ctrl_index
+#if (ABLSURFACE != 1 && ABLSURFACE != 2 && (ACCSURFACE > 5 || SOLID_PRECIP != 3))
+        errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
+        //'s_stat_arr as a control param is only compatible with ABLSURFACE == 1 or ABLSURFACE == 2 '&
+        //'or (ACCSURFACE <= 5 && SOLID_PRECIP == 3)!'
+        call error(errormsg)
+#endif
+      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_beta1_arr_orig') then
+        igen_beta1_arr_orig = ctrl_index
+#if (ABLSURFACE != 1 && ABLSURFACE != 2)
+        errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
+        //'beta1_arr_orig as a control param is only compatible with ABLSURFACE == 1 or ABLSURFACE == 2 !'
+        call error(errormsg)
+#endif
+      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_beta2_arr_orig') then
+        igen_beta2_arr_orig = ctrl_index
+#if (ABLSURFACE != 1 && ABLSURFACE != 2)
+        errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
+        //'beta2_arr_orig as a control param is only compatible with ABLSURFACE == 1 or ABLSURFACE == 2 !'
+        call error(errormsg)
+#endif
+      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_Pmax_arr') then
+        igen_Pmax_arr = ctrl_index
+#if (ABLSURFACE != 1 && ABLSURFACE != 2)
+        errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
+        //'Pmax_arr as a control param is only compatible with ABLSURFACE == 1 or ABLSURFACE == 2 !'
+        call error(errormsg)
+#endif
+      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_mu_arr_orig') then
+        igen_mu_arr_orig = ctrl_index
+#if (ABLSURFACE != 1 && ABLSURFACE != 2)
+        errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
+        //'mu_arr_orig as a control param is only compatible with ABLSURFACE == 1 or ABLSURFACE == 2 !'
+        call error(errormsg)
+#endif
       else
         errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
           //"This control variable is not in the genctrl2d setup yet!"
@@ -56,9 +108,35 @@ contains
     if (igen_q_geo .GT. 0) then
       call ctrl_map_genarr2d(q_geo, igen_q_geo)
     end if
+#if (ANF_DAT == 1)
     if (igen_H .GT. 0) then
       call ctrl_map_genarr2d(H, igen_H)
     end if
+#endif
+#if (ACCSURFACE==2 || ACCSURFACE==3)
+    if (igen_gamma_s_arr .GT. 0) then
+      call ctrl_map_genarr2d(gamma_s_arr, igen_gamma_s_arr)
+    end if
+#endif
+#if (ABLSURFACE==1 || ABLSURFACE==2 || (ACCSURFACE<=5 && SOLID_PRECIP==3))
+    if (igen_s_stat_arr .GT. 0) then
+      call ctrl_map_genarr2d(s_stat_arr, igen_s_stat_arr)
+    end if
+#endif
+#if (ABLSURFACE==1 || ABLSURFACE==2)
+    if (igen_beta1_arr_orig .GT. 0) then
+      call ctrl_map_genarr2d(beta1_arr_orig, igen_beta1_arr_orig)
+    end if
+    if (igen_beta2_arr_orig .GT. 0) then
+      call ctrl_map_genarr2d(beta2_arr_orig, igen_beta2_arr_orig)
+    end if
+    if (igen_Pmax_arr .GT. 0) then
+      call ctrl_map_genarr2d(Pmax_arr, igen_Pmax_arr)
+    end if
+    if (igen_mu_arr_orig .GT. 0) then
+      call ctrl_map_genarr2d(mu_arr_orig, igen_mu_arr_orig)
+    end if
+#endif
     
   end subroutine ctrl_map_ini_genarr2d
 

@@ -11,40 +11,56 @@
 !       The fixed string length for individual entries of arrays
 !       like xx_genarr2d_vars, xx_genarr2d_bounds.
 
-#define NUM_CTRL_GENARR2D	3
+#define NUM_CTRL_GENARR2D	9
 !       Number of 2D time-invariant control variables
 
-#define NUMCTRLPROCARR2D	2
+#define NUMCTRLPROCARR2D	1
 !		Maximum number of preprocessing steps for ctrl variables		
 
-#define XX_GENARR2D_VARS_ARR	(/ 'xx_c_slide_init', \
-				   'xx_q_geo       ', \
-			  	   'xx_H           ' /)
+#define XX_GENARR2D_VARS_ARR	[ character(CTRL_STRLENGTH) ::\
+								   'xx_c_slide_init',\
+								   'xx_q_geo',\
+								   'xx_H',\
+								   'xx_gamma_s_arr',\
+								   'xx_s_stat_arr',\
+								   'xx_beta1_arr_orig',\
+								   'xx_beta2_arr_orig',\
+								   'xx_Pmax_arr',\
+								   'xx_mu_arr_orig' ]
 !		List of 2D time-invariant control variables
 
-#define XX_GENARR2D_PREPROC_ARR    (/ 'log10ctrl,bounds', \
-				      'nnnnnnnnn,nnnnnn', \
-				      'bounds   ,nnnnnn' /) 
+#define XX_GENARR2D_PREPROC_ARR    [ character(CTRL_STRLENGTH) ::\
+									  'log10ctrl',\
+									  'none',\
+									  'none',\
+									  'log10ctrl',\
+									  'log10ctrl',\
+									  'log10ctrl',\
+									  'log10ctrl',\
+									  'log10ctrl',\
+									  'log10ctrl' ] 
 !       Define preprocessing steps for ctrl variables
-!		Fill with nnnn... to ensure same length
 
-#define XX_GENARR2D_BOUNDS_ARR  (/ ' ', \
-				   ' ', \
-				   ' ' /)
+#define XX_GENARR2D_BOUNDS_ARR  [ character(CTRL_STRLENGTH) ::\
+								   ' ', ' ', ' ',\
+								   ' ', ' ', ' ',\
+								   ' ', ' ', ' ' ]
 !		2D mask for the 2D time-invariant control variables
 !		If empty, defaults to 0, IMAX, 0, JMAX
 
-#define XX_GENARR2D_LOG10INITVAL_ARR (/ -6.67172541073, \
-					0.00000000000, \
-					0.00000000000 /)
+#define XX_GENARR2D_LOG10INITVAL_ARR [ real :: \
+									 0.39794000867, 0.0, 0.0,\
+									-1.15206968873,  0.69897000434, 0.43616264704,\
+									 0.86213137931, -0.22184874962, 0.98746515611 ]
 !		log10initval if preproc=log10ctrl
 !       Otherwise has no effect
 !		WARNING: If for example using for c_slide_init
 !		Set C_SLIDE == 0.0 in the HEADER file
 
-#define XX_GENARR2D_WEIGHT_ARR       (/ 'w_c_slide_init.dat', \
-				        'w_q_geo.dat       ', \
-					'w_H.dat           ' /)
+#define XX_GENARR2D_WEIGHT_ARR [ character(CTRL_STRLENGTH) ::\
+								' ', ' ', ' ',\
+								' ', ' ', ' ',\
+								' ', ' ', ' ' ]
 !		Weight files to be used if preproc=scaling
 !		Otherwise defaults to weight 1.0 for all indices
 
@@ -56,24 +72,23 @@
 #define NUMCTRLPROCARR3D	1
 !		Maximum number of preprocessing steps for ctrl variables		
 
-#define XX_GENARR3D_VARS_ARR	(/ 'xx_temp_c' /)
+#define XX_GENARR3D_VARS_ARR 		[ character(CTRL_STRLENGTH) :: 'xx_temp_c' ]
 !		List of 3D time-invariant control variables
 
-#define XX_GENARR3D_PREPROC_ARR    (/ 'bounds' /)
-!       	Define preprocessing steps for ctrl variables
-!		Fill with nnnn... to ensure same length
+#define XX_GENARR3D_PREPROC_ARR 	[ character(CTRL_STRLENGTH) :: 'bounds' ]
+!		Define preprocessing steps for ctrl variables
 
-#define XX_GENARR3D_BOUNDS_ARR  (/ ' ' /)
+#define XX_GENARR3D_BOUNDS_ARR 		[ character(CTRL_STRLENGTH) :: ' ' ]
 !		3D mask for the 3D time-invariant control variables
 !		If empty, defaults to 0, IMAX, 0, JMAX, 0, KCMAX 
 
-#define XX_GENARR3D_LOG10INITVAL_ARR (/ -1 /)
+#define XX_GENARR3D_LOG10INITVAL_ARR [ real :: -1 ]
 !		log10initval if preproc=log10ctrl
 !       Otherwise has no effect
 !		WARNING: If for example using for temp_c
 !		Set TEMP_INIT_VALUE (or some flag) == 0.0 in the HEADER file
 
-#define XX_GENARR3D_WEIGHT_ARR       (/ 'w_temp_c.dat' /)
+#define XX_GENARR3D_WEIGHT_ARR 		[ character(CTRL_STRLENGTH) :: 'w_temp_c.dat' ]
 !		Weight files to be used if preproc=scaling
 !		Otherwise defaults to weight 1.0 for all indices
 
@@ -85,7 +100,7 @@
 #define NUMCTRLPROCTIM2D	1
 !		Maximum number of preprocessing steps for ctrl variables		
 
-#define XX_GENTIM2D_VARS_ARR	(/ 'xx_temp' /)
+#define XX_GENTIM2D_VARS_ARR		[ character(CTRL_STRLENGTH) :: 'xx_temp' ]
 !		List of 3D time-varying control variables
 
 #define XX_GENTIM2D_PERIOD	5.0
@@ -97,7 +112,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 !#define AD_INPUT_PATH '/home/shreyas/update_to_develop_sicopolis/sicopolis/src/subroutines/tapenade/ad_io'
-!		 Absolute input path to read xx_gen* fields
+!		Absolute input path to read xx_gen* fields
 
 #define AD_OUTPUT_PATH '/home/shreyas/update_to_develop_sicopolis/sicopolis/src/subroutines/tapenade/ad_io'
 !		Absolute output path to write xx_gen* fields
