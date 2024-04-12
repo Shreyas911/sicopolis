@@ -103,7 +103,7 @@
 #define TIME_END0 0.0d0
 !                       Final time of simulation (in a)
 
-#define DTIME0 5.0d0
+#define DTIME0 (10.0d0/3.0d0)
 !                       Time step (in a) for computation of velocity
 !                       and topography
 
