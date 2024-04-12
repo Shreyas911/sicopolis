@@ -1,8 +1,10 @@
 /*
  * TAPENADE Automatic Differentiation Engine
- * Copyright (C) 1999-2021 Inria
+ * Copyright (C) 1999-2024 Inria
  * See the LICENSE.md file in the project root for more information.
  *
+ * 
+ * This package gathers functions used to profile a piece of (adjoint differentiated) code in terms of memory and time. 
  */
 
 #include <stdio.h>
@@ -13,273 +15,402 @@
 #include <unistd.h>
 #include <time.h>
 #include <unistd.h>
+#include <stdint.h>
+#include <inttypes.h>
 
-// Access to the cycle counter
-#define rdtscll(val) \
-     __asm__ __volatile__ ("rdtsc" : "=A" (val))
+#include <assert.h>
 
-#define ENABLE_LINE_RECORDING 1
+#include "adProfile.h"
+#include "adStack.h"
+/*
+ *Profiling will work as follows
+ * SNPWRITE: 
+ * -> create new record with XXX Some information
+ * -> Caller record id is set to a static variable
+ * -> Save current stack size in current record
+ * BEGIN ADV: 
+ * -> Save current stack size in current record
+ * -> Compute snapshot size (diff from both current stack sizes)
+ * -> Update current caller id to this record
+ * END ADV: 
+ * -> Add current call to the "wait_for_bwd" stack 
+ * 
+ */
 
-unsigned long long int mytime_() {
-        unsigned long long int time;
+// #define DEBUG_PROFILE 1
 
-        rdtscll(time);
-        return time ;
+typedef uint64_t stack_size_t;
+typedef int64_t  delta_size_t;
+
+typedef clock_t cycle_time_t;
+cycle_time_t mytime_() {
+        return clock();
 }
 
-// Access to stacks size
-extern long int bigStackSize;
-extern long int smallstacksize_();
+/** The maximum number of code checkpoint locations that we can handle */
+#define MAX_NB_CHECKPOINTS 2000
 
+/** Elementary cost/benefit data of a (yes/no) checkpointing decision on a static checkpoint location. */
+typedef struct _CostBenefit{
+  unsigned int ckpRank; // Rank of the checkpoint location this cost/benefit applies to. 
+  cycle_time_t deltaT; // The (always >=0) extra runtime cost of checkpointing this location.
+  delta_size_t deltaPM; // The extra peak memory cost of NOT checkpointing this location.
+  struct _CostBenefit *next; // Following CostBenefit infos, about other checkpoint locations.
+} CostBenefit;
 
-// Declaration of the event list data structures
-#define ARRAY_SIZE 100000
-struct event {
-                int kind;
-                char *function;
-                int len;
-                unsigned long long int time;
-                int stacksize;
-#ifdef ENABLE_LINE_RECORDING
-                int line;
-#endif
-};
+/** One element in a list of runtime checkpoints, each with some time/peak memory cost data.
+ * The checkpoint locations in the list are all directly contained in the same parent runtime checkpoint.
+ * The list is ordered from the most recent (downtream) checkpoint till the most upsream. */
+typedef struct _LevelCkpStack {
+  unsigned int ckpRank;
+  cycle_time_t ckpT;
+  cycle_time_t basisCkpT;
+  stack_size_t sizeAfterSnp;
+  struct _LevelCkpStack *previous;
+} LevelCkpStack;
 
-struct list_node {
-        struct event array[ARRAY_SIZE];
-        struct list_node *next;
-};
-static struct list_node hdcell =  { .next = 0 };
-static struct list_node *tlcell = &hdcell;
-static int cell_index = 0;
+/** One element in the list of nested runtime checkpoints at some present time during the profiling run.
+ * The list is ordered from the deepest runtime checkpoint to the topmost enclosing runtime checkpoint. */
+//TODO meilleur nom que CkpStack (stack deja pris!)
+typedef struct _CkpStack {
+  LevelCkpStack *levelCheckpoints;
+  CostBenefit *costBenefits;
+  stack_size_t stackPeak;
+  LevelCkpStack *repeatLevel; // for management of start/reset/end Repeat
+  struct _CkpStack *above;
+  struct _CkpStack *below;
+} CkpStack;
 
-// Function to traverse the list of events
-static void traverse_event_list(void (*process)(struct event *ev, void *data), void *data) {
-        struct list_node *c = &hdcell;
-        
-        while (c) {
-                int max = c->next ? ARRAY_SIZE : cell_index;
-                int i;
-                for (i = 0; i < max; ++i)
-                        process(&c->array[i], data);
-                c = c->next;
-        }
-}
+/** The main global stack of active checkpoints at some present time during the profiling run. */
+CkpStack initialCkpStack = {.levelCheckpoints=NULL, .costBenefits=NULL,
+                            .stackPeak=0, .repeatLevel=NULL,
+                            .above=NULL, .below=NULL};
+CkpStack *curCheckpoints = &initialCkpStack;
 
+/************************* UTILITIES ************************/ 
 
-// Declaration of profiling functions
-#if 1
-#define profiledebug 
-#else
-#define profiledebug(type) \
-        printf("%50s %02u %022llu %010lu %li\n", buffer, type, mytime_(), bigStackSize, smallstacksize_());
-#endif
-enum { BEGIN = 1, END, ENDFWD, BEGINSNAPSHOT, ENDSNAPSHOT, ENDORIG };
+/** Describes one (static) checkpoint location in the code source, with a unique rank attached to it.
+ * A (yes/no) checkpointing decision applies to one static checkpoint location globally. */
+typedef struct {
+  char* fname; // Name of the file in which the checkpoint appears
+  unsigned int line_nb; // Line number in the original code where the checkpoint appears
+  char* callee_name; // Name of the procedure being called (when checkpoint is on a call)
+  unsigned int occurrences;
+  unsigned int ckpRank; // Unique integer rank (from 0 up) attached to this checkpoint location.
+} CkpLocation;
 
-int init = 0;
-unsigned long long int beginning_of_time = 0;
-inline static void profile_real(char *function, int flen, int kind) {
-	static struct list_node *new = 0;
-        if (cell_index >= ARRAY_SIZE) {
-                new = (struct list_node*)calloc(1, sizeof(struct list_node));
-                tlcell->next = new;
-                tlcell = new;
-                new->next = 0;
-                cell_index = 0;
-        }
-        static unsigned long long int time;
-	time = mytime_();
-        if (init == 0)
-          beginning_of_time = time, init = 1;
-        tlcell->array[cell_index].kind = kind;
-        tlcell->array[cell_index].function = function;
-        tlcell->array[cell_index].len = flen;
-        tlcell->array[cell_index].time = time - beginning_of_time;
-        tlcell->array[cell_index].stacksize = bigStackSize + smallstacksize_();
-        #if 0
-        printf("%016llu %09lu %02hhu ", time-beginning_of_time, bigStackSize + smallstacksize_(), kind);
-        fwrite(function, 1, flen, stdout);
-        printf("\n");
-        #endif
-        cell_index++;
-}
+/** The array of all static checkpoint locations encountered so far */
+CkpLocation* allCkpLocations[MAX_NB_CHECKPOINTS] = {};
 
-#define declare_profile(suffix,type) \
-void profile##suffix##_(char *function, int flen) {\
-  profile_real(function, flen, type);\
-}
-
-declare_profile(begin,BEGIN)
-declare_profile(end,END)
-declare_profile(endfwd,ENDFWD)
-declare_profile(beginsnapshot,BEGINSNAPSHOT)
-declare_profile(endsnapshot,ENDSNAPSHOT)
-declare_profile(endorig,ENDORIG)
-
-#ifdef ENABLE_LINE_RECORDING
-static int current_line_number = 0;
-
-void profileline_(int *line) {
-    current_line_number = *line;
-}
-#endif
-
-// Hashtable data structure
-#define hashtbl_size 4093
-struct hash_cell {
-  char *function;
-  int len;
-} hashtbl[hashtbl_size];
-// Count of the used element in the hashtable
-int hashtbl_count;
-
-// Simple hash function
-static inline unsigned int hash(unsigned int u) {
-  return ((u % hashtbl_size) * 1024 ) % hashtbl_size;
-}
-
-// Simple hash function on strings
-static inline unsigned int hash_string(char *string, int flen) {
-  unsigned int ret = 0x55555555;
-  while (flen--)
-    ret *= ((unsigned char)*string++ * hashtbl_size);
-  return hash(ret);
-}
-
-// Min macro
-#define min(a,b) (a < b ? a : b)
-
-// Get the id of a string address, allocate a bucket if new
-static int get(char *function, int flen) {
-  int h = hash_string(function, flen);
-  while (hashtbl[h].function) {
-         if (strncmp(hashtbl[h].function, function, min(flen, hashtbl[h].len)) == 0)
-            break;
-         h = hash(h);
+unsigned int getCheckpointLocationRank(char* callname, char* filename, unsigned int lineno) {
+  unsigned int i = 0;
+  int found = 0;
+  while (i<MAX_NB_CHECKPOINTS && !found) {
+    if (allCkpLocations[i]==NULL) {
+      allCkpLocations[i] = (CkpLocation *)malloc(sizeof(CkpLocation));
+      allCkpLocations[i]->ckpRank = i;
+      allCkpLocations[i]->fname = (char*)malloc((1+strlen(filename))*sizeof(char));
+      strcpy(allCkpLocations[i]->fname, filename);
+      allCkpLocations[i]->line_nb = lineno ;
+      if (callname) {
+        allCkpLocations[i]->callee_name = (char*)malloc((1+strlen(callname))*sizeof(char));
+        strcpy(allCkpLocations[i]->callee_name, callname);
+      } else {
+        allCkpLocations[i]->callee_name = NULL;
+      }
+      allCkpLocations[i]->occurrences = 0;
+      found = 1;
+    } else if (allCkpLocations[i]->line_nb==lineno
+               && 0==strcmp(allCkpLocations[i]->fname, filename)
+               && 0==strcmp(allCkpLocations[i]->callee_name, callname)) {
+      found = 1;
+    }
+    if (!found) ++i ;
   }
-  hashtbl[h].function = function;
-  hashtbl[h].len = flen;
-  return h;
-} 
-
-// Functions to serialize integers and known length strings
-static inline void fwrite_int(FILE *f, int i) {
-  fwrite(&i, sizeof(int), 1, f);
-}
-static inline void fwrite_llint(FILE *f, unsigned long long int i) {
-  fwrite(&i, sizeof(unsigned long long int), 1, f);
-}
-static inline void fwrite_string(FILE *f, char *str, int len) {
-  fwrite_int(f, len);
-  fwrite(str, (unsigned int) len, 1, f);
+  return i;
 }
 
-// Function to build the hashtable of function names
-static void add_event_to_hashtable(struct event *ev, void *data);
-static void build_hashtable() {
-        
-        // Initialize the hashtable
-        memset(hashtbl, 0, sizeof(struct hash_cell)*hashtbl_size);
-        /** Fill the hashtbl */
-        traverse_event_list(add_event_to_hashtable, 0);
-        /** Compute the size of the hashtbl */
-        hashtbl_count = 0;
-        int i;
-        for (i=0; i < hashtbl_size; ++i)
-          if (hashtbl[i].function)
-            hashtbl_count++;
-}
-static void add_event_to_hashtable(struct event *ev, void *data) {
-  int h = get(ev->function, ev->len);
+LevelCkpStack* stackNewLevelCkp(unsigned int ckpRank, LevelCkpStack* levelCheckpoints) {
+  LevelCkpStack* additionalLevelCkp = (LevelCkpStack*)malloc(sizeof(LevelCkpStack));
+  additionalLevelCkp->ckpRank = ckpRank;
+  additionalLevelCkp->ckpT = 0;
+  additionalLevelCkp->basisCkpT = 0;
+  additionalLevelCkp->sizeAfterSnp = 0;
+  additionalLevelCkp->previous = levelCheckpoints;
+  return additionalLevelCkp;
 }
 
-
-// Serialize event list into a file named tapenade.prof
-struct print_args {
-        FILE *prof;
-        struct event **stack;
-        int *stack_counter;
-};
-static void print_an_event(struct event *ev, void *data);
-void printprofile_() {
-        int i = 0;
-        FILE *prof = fopen("tapenade.prof", "w");
-        if (!prof) {
-                perror("Can't open tapenade.prof");
-                exit(1);
-        }
-        // Compress the output;
-        // Generate a hashtable of the functions name
-        // use it to make a map from function name 
-        // to numeric id
-        build_hashtable();
-
-        // Position at the beginning
-        fseek(prof, 0, SEEK_SET);
-        
-        // Dump the hash table
-        fwrite_int(prof, hashtbl_count);
-        for (i=0; i < hashtbl_size; ++i)
-          if (hashtbl[i].function) {
-            fwrite_int(prof, i);
-            char *string = hashtbl[i].function;
-            int string_length = hashtbl[i].len;
-            fwrite_string(prof, string, string_length);
-          }
-          
-        // Dump the events
-        struct list_node *c = &hdcell;
-        struct event *stack[1000];
-        int stack_counter = -1;
-        struct print_args args = { 
-                .prof = prof, 
-                .stack = stack, 
-                .stack_counter = &stack_counter 
-        };
-        traverse_event_list(print_an_event, &args);
-        
-        // For program that aborts too abruptly ( with STOP )
-        // Use the return stack image to recreate EXIT events
-        for (i=stack_counter; i>-1;i--) {
-          struct event *cur = stack[i];
-          int h = get(cur->function, cur->len);
-          fwrite_int(prof, h);
-          fwrite_int(prof, 2); // Explicit ending
-          fwrite_llint(prof, cur->time);
-          fwrite_int(prof, cur->stacksize);
-        }
-        fclose(prof);
-}
-void halt_();
-// Utility function for printprofile
-static void print_an_event(struct event *ev, void *data) {
-        struct print_args *args = (struct print_args*)data;
-        static unsigned long long int last_time = 0;
-        
-        int h = get(ev->function, ev->len);
-        // Keep trace of the return stack depth and values
-        switch (ev->kind) {
-          case 1:
-            *(args->stack_counter) += 1;
-            args->stack[*(args->stack_counter)] = ev;
-            break;
-          case 2:
-            *(args->stack_counter) -= 1;
-            break;
-        }
-//DEBUG        printf("Time: %llu\n", ev->time - begin_time);
-        if (last_time && ev->time <= last_time) {
-                printf("Erreur time <= last_time: %llu <= %llu\n", time, last_time);
-                halt_();
-        }
-        fwrite_int(args->prof, h);
-        fwrite_int(args->prof, ev->kind);
-        fwrite_llint(args->prof, ev->time);
-        fwrite_int(args->prof, ev->stacksize);
-        last_time = ev->time;
+void releaseLevelCkp(CkpStack* checkpoints) {
+  LevelCkpStack* levelCkps = checkpoints->levelCheckpoints;
+  checkpoints->levelCheckpoints = levelCkps->previous;
+  if (checkpoints->repeatLevel==NULL) { // Don't free if we are in Repeat mode!
+    free(levelCkps);
+  }
 }
 
-#include <signal.h>
-void halt_() {
-        kill(getpid(), SIGTRAP);
+CkpStack* openNewCkp(CkpStack* checkpoints) {
+  CkpStack* newCkp = checkpoints->above;
+  if (!newCkp) {
+    newCkp = (CkpStack*)malloc(sizeof(CkpStack));
+    checkpoints->above = newCkp;
+    newCkp->repeatLevel = NULL;
+    newCkp->below = checkpoints;
+    newCkp->above = NULL ;
+  }
+  newCkp->levelCheckpoints = NULL;
+  newCkp->costBenefits = NULL;
+  newCkp->stackPeak = 0;
+  return newCkp;
+}
+
+CkpStack* closeCkp(CkpStack* checkpoints) {
+  return checkpoints->below;
+}
+
+CostBenefit** getSetTCB(CostBenefit **toCostBenefits, unsigned int rank) {
+  while (*toCostBenefits!=NULL && (*toCostBenefits)->ckpRank < rank) {
+    toCostBenefits = &((*toCostBenefits)->next) ;
+  }
+  if (*toCostBenefits==NULL || (*toCostBenefits)->ckpRank > rank) {
+    CostBenefit* additionalCostBenefits = (CostBenefit*)malloc(sizeof(CostBenefit)) ;
+    additionalCostBenefits->ckpRank = rank ;
+    additionalCostBenefits->deltaT = 0;
+    additionalCostBenefits->deltaPM = 0;
+    additionalCostBenefits->next = *toCostBenefits;
+    *toCostBenefits = additionalCostBenefits ;
+  }
+  return toCostBenefits;
+}
+
+#ifdef DEBUG_PROFILE
+
+int depthCkp(CkpStack* checkpoints) {
+  int i = 0;
+  while (checkpoints) {
+    ++i;
+    checkpoints = checkpoints->below ;
+  }
+  return i;
+}
+
+int costBenefitsLength(CostBenefit* costBenefits) {
+  int i = 0;
+  while (costBenefits) {
+    ++i;
+    costBenefits = costBenefits->next;
+  }
+  return i;
+}
+
+void dumpCostBenefits(CostBenefit *costBenefits) {
+  while (costBenefits) {
+    printf(" %u:(%"PRIu64";%"PRId64")",
+           costBenefits->ckpRank, costBenefits->deltaT, costBenefits->deltaPM) ;
+    costBenefits = costBenefits->next;
+  }
+}
+
+#endif
+
+/****************** MAIN PUBLISHED PRIMITIVES ****************/
+
+void adProfileAdj_SNPWrite(char* callname, char* filename, unsigned int lineno) {
+  unsigned int ckpRank = getCheckpointLocationRank(callname, filename, lineno);
+  curCheckpoints->levelCheckpoints = stackNewLevelCkp(ckpRank, curCheckpoints->levelCheckpoints);
+  curCheckpoints->levelCheckpoints->basisCkpT = mytime_();
+}
+
+void adProfileAdj_beginAdvance(char* callname, char* filename, unsigned int lineno) {
+  assert(getCheckpointLocationRank(callname, filename, lineno)==curCheckpoints->levelCheckpoints->ckpRank);
+  curCheckpoints->levelCheckpoints->sizeAfterSnp = adStack_getCurrentStackSize();
+}
+
+void adProfileAdj_endAdvance(char* callname, char* filename, unsigned int lineno) {
+  curCheckpoints->levelCheckpoints->ckpT = mytime_() - curCheckpoints->levelCheckpoints->basisCkpT;
+  assert(getCheckpointLocationRank(callname, filename, lineno)==curCheckpoints->levelCheckpoints->ckpRank);
+}
+
+void adProfileAdj_SNPRead(char* callname, char* filename, unsigned int lineno) {
+  assert(getCheckpointLocationRank(callname, filename, lineno)==curCheckpoints->levelCheckpoints->ckpRank);
+  curCheckpoints->levelCheckpoints->basisCkpT = mytime_();
+}
+
+void adProfileAdj_beginReverse(char* callname, char* filename, unsigned int lineno) {
+  curCheckpoints->levelCheckpoints->ckpT += mytime_() - curCheckpoints->levelCheckpoints->basisCkpT;
+  assert(getCheckpointLocationRank(callname, filename, lineno)==curCheckpoints->levelCheckpoints->ckpRank);
+  ++(allCkpLocations[curCheckpoints->levelCheckpoints->ckpRank]->occurrences);
+  curCheckpoints = openNewCkp(curCheckpoints) ;
+}
+
+void adProfileAdj_endReverse(char* callname, char* filename, unsigned int lineno) {
+  assert(curCheckpoints->levelCheckpoints==NULL);
+  CostBenefit *additionalCostBenefits = curCheckpoints->costBenefits ;
+  stack_size_t peakSize2 = curCheckpoints->stackPeak ;
+  curCheckpoints = closeCkp(curCheckpoints);
+  // Now merge the additional costs from the checkpointed fragment into the current costs:
+  unsigned int localCkpRank = curCheckpoints->levelCheckpoints->ckpRank;
+  cycle_time_t localCkpTimeCost = curCheckpoints->levelCheckpoints->ckpT;
+  stack_size_t peakSize1 = curCheckpoints->stackPeak ;
+  delta_size_t localCkpPeakSizeCost =
+    (peakSize1>peakSize2 ? peakSize2 : peakSize1) - curCheckpoints->levelCheckpoints->sizeAfterSnp;
+  int mergedLocal = 0 ;
+  unsigned int additionalCkpRank;
+  cycle_time_t additionalT;
+  delta_size_t additionalPM;
+#ifdef DEBUG_PROFILE
+  printf("ENDREVERSE OF %s::%i CALL %s, DEPTH:%i, SIZEAFTERSNP:%"PRId64"\n",
+         allCkpLocations[localCkpRank]->fname,
+         allCkpLocations[localCkpRank]->line_nb,
+         (allCkpLocations[localCkpRank]->callee_name ? allCkpLocations[localCkpRank]->callee_name : "MANUAL"),
+         depthCkp(curCheckpoints),
+         curCheckpoints->levelCheckpoints->sizeAfterSnp);
+  printf("  BEFORE (peak:%"PRId64" bytes) :", peakSize1);
+  dumpCostBenefits(curCheckpoints->costBenefits);
+  printf("\n  ADDING (peak:%"PRId64" bytes) :", peakSize2);
+  dumpCostBenefits(additionalCostBenefits);
+  printf("\n") ;
+  int nbProfilesBefore = costBenefitsLength(curCheckpoints->costBenefits);
+  int nbProfilesAdded = costBenefitsLength(additionalCostBenefits);
+#endif
+  CostBenefit **toCostBenefits = &(curCheckpoints->costBenefits) ;
+  // compute merged peak size:
+  if (peakSize2>peakSize1) curCheckpoints->stackPeak = peakSize2 ;
+  // compute merged list of costs/benefits:
+  while (additionalCostBenefits || !mergedLocal) {
+    if (!mergedLocal
+        && (additionalCostBenefits==NULL || additionalCostBenefits->ckpRank>localCkpRank)) {
+      additionalCkpRank = localCkpRank;
+      additionalT = localCkpTimeCost;
+      additionalPM = localCkpPeakSizeCost;
+      mergedLocal = 1;
+    } else if (additionalCostBenefits->ckpRank==localCkpRank) {
+      additionalCkpRank = localCkpRank ;
+      additionalT = additionalCostBenefits->deltaT + localCkpTimeCost ;
+      additionalPM = additionalCostBenefits->deltaPM + localCkpPeakSizeCost ;
+      CostBenefit* tmp = additionalCostBenefits->next ;
+      free(additionalCostBenefits);
+      additionalCostBenefits = tmp ;
+      mergedLocal = 1;
+    } else {
+      additionalCkpRank = additionalCostBenefits->ckpRank;
+      additionalT = additionalCostBenefits->deltaT;
+      additionalPM = additionalCostBenefits->deltaPM;
+      CostBenefit* tmp = additionalCostBenefits->next ;
+      free(additionalCostBenefits);
+      additionalCostBenefits = tmp ;
+    }
+    toCostBenefits = getSetTCB(toCostBenefits, additionalCkpRank) ;
+    if (additionalCkpRank==localCkpRank) {
+      // Do a sum on memory costs:
+      (*toCostBenefits)->deltaPM += additionalPM;
+    } else {
+      // Do a max on memory costs:
+      stack_size_t costPeak1 = peakSize1+(*toCostBenefits)->deltaPM ;
+      stack_size_t costPeak2 = peakSize2+additionalPM ;
+      (*toCostBenefits)->deltaPM = (costPeak1>costPeak2 ? costPeak1: costPeak2) - curCheckpoints->stackPeak ;
+    }
+    (*toCostBenefits)->deltaT += additionalT;
+    toCostBenefits = &((*toCostBenefits)->next) ;
+  }
+#ifdef DEBUG_PROFILE
+  int nbProfilesAfter = costBenefitsLength(curCheckpoints->costBenefits);
+  printf("  ==> MERGE %i COSTBENEFITS INTO %i --> %i\n",
+         nbProfilesAdded,
+         nbProfilesBefore,
+         nbProfilesAfter);
+  printf("  >AFTER (peak:%"PRId64" bytes) :", curCheckpoints->stackPeak);
+  dumpCostBenefits(curCheckpoints->costBenefits);
+  printf("\n") ;
+#endif
+  // merging finished.
+  assert(getCheckpointLocationRank(callname, filename, lineno)==curCheckpoints->levelCheckpoints->ckpRank);
+  releaseLevelCkp(curCheckpoints) ;
+}
+
+void adProfileAdj_turn(char* callname, char* filename) {
+  curCheckpoints->stackPeak = adStack_getCurrentStackSize();
+}
+
+void adProfileAdj_startRepeat() {
+  curCheckpoints->repeatLevel = curCheckpoints->levelCheckpoints;
+}
+
+void adProfileAdj_resetRepeat() {
+  curCheckpoints->levelCheckpoints = curCheckpoints->repeatLevel;
+}
+
+void adProfileAdj_endRepeat() {
+  while (curCheckpoints->repeatLevel != curCheckpoints->levelCheckpoints) {
+    // Now that we are no longer in Repeat mode, free preserved LevelCkpStack's:
+    LevelCkpStack *previousElem = curCheckpoints->repeatLevel->previous ;
+    free(curCheckpoints->repeatLevel) ;
+    curCheckpoints->repeatLevel = previousElem ;
+  }
+  curCheckpoints->repeatLevel = NULL;
+}
+
+void adProfileAdj_showProfiles() {
+  CostBenefit *costBenefits = initialCkpStack.costBenefits;
+  printf("CLOCKS_PER_SEC:%d\n",CLOCKS_PER_SEC) ;
+  printf("PEAK STACK:%"PRId64" bytes\n", initialCkpStack.stackPeak) ;
+  printf("CHECKPOINTING COST/BENEFITS:\n");
+  while (costBenefits) {
+    CkpLocation* ckpLocation = allCkpLocations[costBenefits->ckpRank];
+    cycle_time_t deltaT = costBenefits->deltaT;
+    cycle_time_t deltaPM = costBenefits->deltaPM;
+    if (ckpLocation->callee_name) {
+      printf("  - for call %s (executed %u times) at line %u of file %s:\n", ckpLocation->callee_name, ckpLocation->occurrences, ckpLocation->line_nb, ckpLocation->fname);
+    } else {
+      printf("  - for checkpoint (occurs %u times) starting at line %u of file %s:\n", ckpLocation->occurrences, ckpLocation->line_nb, ckpLocation->fname);
+    }
+    printf("    time cost of checkpointing: %"PRIu64"\n", costBenefits->deltaT);
+    printf("    peak memory cost of NOT checkpointing: %"PRId64" bytes\n", costBenefits->deltaPM);
+    costBenefits = costBenefits->next;
+  }
+}
+
+/****************** INTERFACE CALLED FROM FORTRAN *******************/
+
+void adprofileadj_snpwrite_(char* callname, char* filename, unsigned int *lineno) {
+  adProfileAdj_SNPWrite(callname, filename, *lineno);
+}
+
+void adprofileadj_beginadvance_(char* callname, char* filename, unsigned int *lineno) {
+  adProfileAdj_beginAdvance(callname, filename, *lineno);
+}
+
+void adprofileadj_endadvance_(char* callname, char* filename, unsigned int *lineno) {
+  adProfileAdj_endAdvance(callname, filename, *lineno);
+}
+
+void adprofileadj_snpread_(char* callname, char* filename, unsigned int *lineno) {
+  adProfileAdj_SNPRead(callname, filename, *lineno);
+}
+
+void adprofileadj_beginreverse_(char* callname, char* filename, unsigned int *lineno){
+  adProfileAdj_beginReverse(callname, filename, *lineno);
+}
+
+void adprofileadj_endreverse_(char* callname, char* filename, unsigned int *lineno) {
+  adProfileAdj_endReverse(callname, filename, *lineno);
+}
+
+void adprofileadj_turn_(char* callname, char* filename) {
+  adProfileAdj_turn(callname, filename);
+}
+
+void adprofileadj_startrepeat_() {
+  adProfileAdj_startRepeat();
+}
+
+void adprofileadj_resetrepeat_() {
+  adProfileAdj_resetRepeat();
+}
+
+void adprofileadj_endrepeat_() {
+  adProfileAdj_endRepeat();
+}
+
+void adprofileadj_showprofiles_() {
+  adProfileAdj_showProfiles();
 }

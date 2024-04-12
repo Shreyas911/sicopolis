@@ -15,9 +15,8 @@
 ! symbol in the CODE string.
 ! The test will be identical for identical CODE string and SEED.
 !
-! Syntax: $> testpushpop F "*(* 3[* (*) 5[* (*)]]*) * L(*) *" 49
-!  -- 1st arg is F or C to test with adBuffer.f or adBuffer.c
-!  -- 3rd arg is the SEED for random
+! Syntax: $> testpushpop <T for trace> "<CodeStructure>" <seed>
+!  -- 1st arg forces trace when given T
 !  -- 2nd arg is the CODE structure string
 !    -- * is a plain code portion, causing PUSH and POP of a sequence of variables
 !    -- (CODE) is a checkpointed CODE, implying a snapshot
@@ -26,6 +25,7 @@
 !      * bwd snapshot sequence depends on the position of the "L"
 !    -- n[CODE] tells that the bwd sweep of CODE will be accessed repeatedly n times,
 !      thus reading n times each pushed value.
+!  -- 3rd arg is the SEED for random
 !
 ! Compiling: $> gfortran testpushpop.f90 adStack.c -o testpushpop
 !
@@ -34,6 +34,8 @@
 MODULE TESTPUSHPOPUTILS
 
   LOGICAL :: TRACEON = .false.
+  LOGICAL :: TRACEDRY = .false.
+  LOGICAL :: INTERMEDIATEFILE = .false.
 
   INTEGER*4 :: ARRAYI4(5000), RECVARRAYI4(5000)
   INTEGER*8 :: ARRAYI8(5000), RECVARRAYI8(5000)
@@ -48,7 +50,7 @@ MODULE TESTPUSHPOPUTILS
   CHARACTER(len=500) :: givenCode
   INTEGER :: codeLength
 
-  INTEGER*4 :: givenSeed, seed1, seed2
+  INTEGER*4 :: givenSeed, seed1, seed2, seedForFile
 
   ! proportions in % of int4,+int8,+real4,+real8,+complex8,+complex16,+characters,+bits
   ! the last one, being the total of all, must be 100:
@@ -102,6 +104,7 @@ CONTAINS
   SUBROUTINE fillboolean(seed)
     INTEGER :: seed,tmp
     seed2 = 2+4*seed
+    seedForFile = MOD(seed2,10000)
     CALL nextrandom(seed2)
     if (seed2>=0) then
        tmp=seed2
@@ -114,6 +117,7 @@ CONTAINS
   SUBROUTINE fillcontrolNb(length, seed)
     INTEGER :: length, seed, tmp
     seed2 = 2+4*seed
+    seedForFile = MOD(seed2,10000)
     CALL nextrandom(seed2)
     if (seed2>=0) then
        tmp=seed2
@@ -126,6 +130,7 @@ CONTAINS
   SUBROUTINE fillchararray(length, seed)
     INTEGER :: length, seed, i, tmp
     seed2 = 2+4*seed
+    seedForFile = MOD(seed2,10000)
     do i=1,length
        CALL nextrandom(seed2)
        if (seed2>=0) then
@@ -141,6 +146,7 @@ CONTAINS
     INTEGER :: length, seed, i
     REAL*8 :: rpart, ipart
     seed2 = 2+4*seed
+    seedForFile = MOD(seed2,10000)
     do i=1,length
        CALL nextrandom(seed2)
        rpart = mkr4(seed2,1.2_4) !! Build a vaguely random REAL*4
@@ -154,6 +160,7 @@ CONTAINS
     INTEGER :: length, seed, i
     REAL*8 :: rpart, ipart
     seed2 = 2+4*seed
+    seedForFile = MOD(seed2,10000)
     do i=1,length
        CALL nextrandom(seed2)
        rpart = mkr8(seed2,1.2_8) !! Build a vaguely random REAL*8
@@ -166,6 +173,7 @@ CONTAINS
   SUBROUTINE filli4array(length, seed)
     INTEGER :: length, seed, i
     seed2 = 2+4*seed
+    seedForFile = MOD(seed2,10000)
     do i=1,length
        CALL nextrandom(seed2)
        ARRAYI4(i) = seed2 !! Build a vaguely random INTEGER*4
@@ -175,6 +183,7 @@ CONTAINS
   SUBROUTINE filli8array(length, seed)
     INTEGER :: length, seed, tmo
     seed2 = 2+4*seed
+    seedForFile = MOD(seed2,10000)
     do i=1,length
        CALL nextrandom(seed2)
        if (seed2>=0) then
@@ -189,6 +198,7 @@ CONTAINS
   SUBROUTINE fillr4array(length, seed)
     INTEGER :: length, seed, i
     seed2 = 2+4*seed
+    seedForFile = MOD(seed2,10000)
     do i=1,length
        CALL nextrandom(seed2)
        ARRAYR4(i) = mkr4(seed2,1.2_4) !! Build a vaguely random REAL*4
@@ -198,6 +208,7 @@ CONTAINS
   SUBROUTINE fillr8array(length, seed)
     INTEGER :: length, seed, i
     seed2 = 2+4*seed
+    seedForFile = MOD(seed2,10000)
     do i=1,length
        CALL nextrandom(seed2)
        ARRAYR8(i) = mkr8(seed2,1.1_8) !! Build a vaguely random REAL*8
@@ -213,17 +224,34 @@ PROGRAM testpushpop
   CHARACTER(len=1) :: traceOnString
   CHARACTER(len=10) :: seedstring
   IF (iargc().ne.3) THEN
-     print *,"Usage: testpushpop <T for trace> ""<CodeStructure>"" <seed>"
+     print *,"Usage: testpushpop <0, or T for trace, C for generate C file", &
+ &           ", S for summarize teststructure> ""<CodeStructure>"" <seed>"
   ELSE
      CALL get_command_argument(1,traceOnString)
      CALL get_command_argument(2,givenCode,codeLength)
      CALL get_command_argument(3,seedstring)
      READ (seedstring,'(I10)') givenSeed
      TRACEON = (traceOnString.eq.'T').or.(traceOnString.eq.'t').or.(traceOnString.eq.'1')
+     TRACEDRY = (traceOnString.eq.'S').or.(traceOnString.eq.'s').or.(traceOnString.eq.'2')
+     INTERMEDIATEFILE = (traceOnString.eq.'C').or.(traceOnString.eq.'c')
      WRITE(6,991) givenSeed,givenCode(1:codeLength)
+     IF (INTERMEDIATEFILE) THEN
+        open(1, file='pushPopSequence.c', status='replace')
+        write(1, '("#include ""pushPopPreamble.h""")')
+        write(1, '("")')
+        write(1, '("int main(int argc, char *argv[]) {")')
+     ENDIF
      CALL runsweep(givenCode(1:codeLength), 0, 1)
+     !call adstack_showstacksize(99)
      !CALL EMITSHOWSTACK("middle"//CHAR(0)) !!Trace
      CALL runsweep(givenCode(1:codeLength), 0, -1)
+     !CALL adstack_showpeaksize()
+     IF (INTERMEDIATEFILE) THEN
+        write(1, '("  if (hasError) printf(""Error found!\n""); else printf(""ok!\n"");")')
+        write(1, '("  return hasError;")')
+        write(1, '("}")')
+        close(1)
+     ENDIF
   END IF
  991  FORMAT('seed=',i4,' code=',a)
 END PROGRAM testpushpop
@@ -366,6 +394,13 @@ SUBROUTINE emitpushpopsequence(index, ppmax, proportiontypes, proportionarrays, 
   ! initialize random seed1 using only index & givenSeed
   seed1 = 2+4*index*(givenSeed+index)
   number = drawinteger(ppmax)
+ if (TRACEDRY) then
+    if (action.eq.1) then
+       print *,'PUSH',number,'objects, with random seeds',index,seed1
+    else
+       print *,' POP',number,'objects, with random seeds',index,seed1
+    endif
+ else
   DO i=1,number
      sort = drawinteger(100)
      if (sort<proportiontypes(1)) then
@@ -552,6 +587,7 @@ SUBROUTINE emitpushpopsequence(index, ppmax, proportiontypes, proportionarrays, 
      END SELECT
   END DO
   !CALL EMITSHOWSTACKSIZE() ; !!Trace
+ endif
 END SUBROUTINE emitpushpopsequence
 
 SUBROUTINE emitpushboolean()
@@ -559,20 +595,30 @@ SUBROUTINE emitpushboolean()
   IMPLICIT NONE
   INTEGER*4 LOCSTRB,LOCSTRO
   IF (TRACEON) print *,'PUSHBOOLEAN(',BOOLEAN,') AT ',LOCSTRB(),LOCSTRO()
-  CALL PUSHBOOLEAN(BOOLEAN)
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  fillBoolean(",I4,"); pushBoolean(Boolean);")') &
+ &        seedForFile
+  ELSE
+     CALL PUSHBOOLEAN(BOOLEAN)
+  ENDIF
 END SUBROUTINE emitpushboolean
 
 SUBROUTINE emitpopboolean()
   USE TESTPUSHPOPUTILS
   IMPLICIT NONE
   INTEGER*4 LOCSTRB,LOCSTRO
-  CALL POPBOOLEAN(RECVBOOLEAN)
-  IF (TRACEON) print *,'POPBOOLEAN(',RECVBOOLEAN,') AT ',LOCSTRB(),LOCSTRO()  
-  if (RECVBOOLEAN.neqv.BOOLEAN) then
-     print *,'Error boolean pushed ',BOOLEAN,' popped ',RECVBOOLEAN,   &
- &           ' seed:',givenSeed,' code:',givenCode(1:codeLength)
-     stop
-  end if
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  fillBoolean(",I4,"); popBoolean(&recvBoolean); testBoolean();")') &
+ &        seedForFile
+  ELSE
+     CALL POPBOOLEAN(RECVBOOLEAN)
+     IF (TRACEON) print *,'POPBOOLEAN(',RECVBOOLEAN,') AT ',LOCSTRB(),LOCSTRO()  
+     if (RECVBOOLEAN.neqv.BOOLEAN) then
+        print *,'Error boolean pushed ',BOOLEAN,' popped ',RECVBOOLEAN,   &
+ &              ' seed:',givenSeed,' code:',givenCode(1:codeLength)
+        stop
+     end if
+  ENDIF
 END SUBROUTINE emitpopboolean
 
 SUBROUTINE emitpushcontrolNb(size)
@@ -581,21 +627,61 @@ SUBROUTINE emitpushcontrolNb(size)
   INTEGER size
   SELECT CASE (size)
   CASE (1)
-     CALL PUSHCONTROL1B(FLOWDIRECTION)
+     IF (INTERMEDIATEFILE) THEN
+        write(1,'("  fillCtrl( 1,",I4,"); pushControl1b(Control);")') &
+ &        seedForFile
+     ELSE
+        CALL PUSHCONTROL1B(FLOWDIRECTION)
+     ENDIF
   CASE (2)
-     CALL PUSHCONTROL2B(FLOWDIRECTION)
+     IF (INTERMEDIATEFILE) THEN
+        write(1,'("  fillCtrl( 2,",I4,"); pushControl2b(Control);")') &
+ &        seedForFile
+     ELSE
+        CALL PUSHCONTROL2B(FLOWDIRECTION)
+     ENDIF
   CASE (3)
-     CALL PUSHCONTROL3B(FLOWDIRECTION)
+     IF (INTERMEDIATEFILE) THEN
+        write(1,'("  fillCtrl( 3,",I4,"); pushControl3b(Control);")') &
+ &        seedForFile
+     ELSE
+        CALL PUSHCONTROL3B(FLOWDIRECTION)
+     ENDIF
   CASE (4)
-     CALL PUSHCONTROL4B(FLOWDIRECTION)
+     IF (INTERMEDIATEFILE) THEN
+        write(1,'("  fillCtrl( 4,",I4,"); pushControl4b(Control);")') &
+ &        seedForFile
+     ELSE
+        CALL PUSHCONTROL4B(FLOWDIRECTION)
+     ENDIF
   CASE (5)
-     CALL PUSHCONTROL5B(FLOWDIRECTION)
+     IF (INTERMEDIATEFILE) THEN
+        write(1,'("  fillCtrl( 5,",I4,"); pushControl5b(Control);")') &
+ &        seedForFile
+     ELSE
+        CALL PUSHCONTROL5B(FLOWDIRECTION)
+     ENDIF
   CASE (6)
-     CALL PUSHCONTROL6B(FLOWDIRECTION)
+     IF (INTERMEDIATEFILE) THEN
+        write(1,'("  fillCtrl( 6,",I4,"); pushControl6b(Control);")') &
+ &        seedForFile
+     ELSE
+        CALL PUSHCONTROL6B(FLOWDIRECTION)
+     ENDIF
   CASE (7)
-     CALL PUSHCONTROL7B(FLOWDIRECTION)
+     IF (INTERMEDIATEFILE) THEN
+        write(1,'("  fillCtrl( 7,",I4,"); pushControl7b(Control);")') &
+ &        seedForFile
+     ELSE
+        CALL PUSHCONTROL7B(FLOWDIRECTION)
+     ENDIF
   CASE (8)
-     CALL PUSHCONTROL8B(FLOWDIRECTION)
+     IF (INTERMEDIATEFILE) THEN
+        write(1,'("  fillCtrl( 8,",I4,"); pushControl8b(Control);")') &
+ &        seedForFile
+     ELSE
+        CALL PUSHCONTROL8B(FLOWDIRECTION)
+     ENDIF
   END SELECT
 END SUBROUTINE emitpushcontrolNb
 
@@ -605,63 +691,128 @@ SUBROUTINE emitpopcontrolNb(size)
   INTEGER :: size
   SELECT CASE (size)
   CASE (1)
-     CALL POPCONTROL1B(RECVFLOWDIRECTION)
+     IF (INTERMEDIATEFILE) THEN
+        write(1,'("  fillCtrl( 1,",I4,"); popControl1b(&recvControl); testCtrl(1);")') &
+ &        seedForFile
+     ELSE
+        CALL POPCONTROL1B(RECVFLOWDIRECTION)
+     ENDIF
   CASE (2)
-     CALL POPCONTROL2B(RECVFLOWDIRECTION)
+     IF (INTERMEDIATEFILE) THEN
+        write(1,'("  fillCtrl( 2,",I4,"); popControl2b(&recvControl); testCtrl(2);")') &
+ &        seedForFile
+     ELSE
+        CALL POPCONTROL2B(RECVFLOWDIRECTION)
+     ENDIF
   CASE (3)
-     CALL POPCONTROL3B(RECVFLOWDIRECTION)
+     IF (INTERMEDIATEFILE) THEN
+        write(1,'("  fillCtrl( 3,",I4,"); popControl3b(&recvControl); testCtrl(3);")') &
+ &        seedForFile
+     ELSE
+        CALL POPCONTROL3B(RECVFLOWDIRECTION)
+     ENDIF
   CASE (4)
-     CALL POPCONTROL4B(RECVFLOWDIRECTION)
+     IF (INTERMEDIATEFILE) THEN
+        write(1,'("  fillCtrl( 4,",I4,"); popControl4b(&recvControl); testCtrl(4);")') &
+ &        seedForFile
+     ELSE
+        CALL POPCONTROL4B(RECVFLOWDIRECTION)
+     ENDIF
   CASE (5)
-     CALL POPCONTROL5B(RECVFLOWDIRECTION)
+     IF (INTERMEDIATEFILE) THEN
+        write(1,'("  fillCtrl( 5,",I4,"); popControl5b(&recvControl); testCtrl(5);")') &
+ &        seedForFile
+     ELSE
+        CALL POPCONTROL5B(RECVFLOWDIRECTION)
+     ENDIF
   CASE (6)
-     CALL POPCONTROL6B(RECVFLOWDIRECTION)
+     IF (INTERMEDIATEFILE) THEN
+        write(1,'("  fillCtrl( 6,",I4,"); popControl6b(&recvControl); testCtrl(6);")') &
+ &        seedForFile
+     ELSE
+        CALL POPCONTROL6B(RECVFLOWDIRECTION)
+     ENDIF
   CASE (7)
-     CALL POPCONTROL7B(RECVFLOWDIRECTION)
+     IF (INTERMEDIATEFILE) THEN
+        write(1,'("  fillCtrl( 7,",I4,"); popControl7b(&recvControl); testCtrl(7);")') &
+ &        seedForFile
+     ELSE
+        CALL POPCONTROL7B(RECVFLOWDIRECTION)
+     ENDIF
   CASE (8)
-     CALL POPCONTROL8B(RECVFLOWDIRECTION)
+     IF (INTERMEDIATEFILE) THEN
+        write(1,'("  fillCtrl( 8,",I4,"); popControl8b(&recvControl); testCtrl(8);")') &
+ &        seedForFile
+     ELSE
+        CALL POPCONTROL8B(RECVFLOWDIRECTION)
+     ENDIF
   END SELECT
-  if (RECVFLOWDIRECTION.ne.FLOWDIRECTION) then
-     print *,'Error flow direction pushed ',FLOWDIRECTION,' popped ',RECVFLOWDIRECTION,   &
- &           ' seed:',givenSeed,' code:',givenCode(1:codeLength)
-     stop
-  end if
+  IF (.not.INTERMEDIATEFILE) THEN
+     if (RECVFLOWDIRECTION.ne.FLOWDIRECTION) then
+        print *,'Error flow direction pushed ',FLOWDIRECTION,' popped ',RECVFLOWDIRECTION,   &
+ &              ' seed:',givenSeed,' code:',givenCode(1:codeLength)
+        CALL SHOWERRORCONTEXT()
+        stop
+     end if
+  ENDIF
 END SUBROUTINE emitpopcontrolNb
 
 SUBROUTINE emitpushcharacter()
   USE TESTPUSHPOPUTILS
   IMPLICIT NONE
-  CALL PUSHCHARACTER(ARRAYCHAR(1:1))
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  fillCh(  01,",I4,"); pushCharacter(ArrayChar[0]);")') &
+ &        seedForFile
+  ELSE
+     CALL PUSHCHARACTER(ARRAYCHAR(1:1))
+  ENDIF
 END SUBROUTINE emitpushcharacter
 
 SUBROUTINE emitpopcharacter()
   USE TESTPUSHPOPUTILS
   IMPLICIT NONE
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  fillCh(  01,",I4,"); popCharacter(&recvArrayChar[0]); testCh(1);")') &
+ &        seedForFile
+  ELSE
      CALL POPCHARACTER(RECVARRAYCHAR(1:1))
-  if (RECVARRAYCHAR(1:1).ne.ARRAYCHAR(1:1)) then
-     print *,'Error character pushed ',ARRAYCHAR(1:1),' popped ',RECVARRAYCHAR(1:1),   &
+     if (RECVARRAYCHAR(1:1).ne.ARRAYCHAR(1:1)) then
+        print *,'Error character pushed ',ARRAYCHAR(1:1),' popped ',RECVARRAYCHAR(1:1),   &
  &           ' seed:',givenSeed,' code:',givenCode(1:codeLength)
-     stop
-  end if
+        CALL SHOWERRORCONTEXT()
+        stop
+     end if
+  ENDIF
 END SUBROUTINE emitpopcharacter
 
 SUBROUTINE emitpushcharacterarray(size)
   USE TESTPUSHPOPUTILS
   IMPLICIT NONE
   INTEGER size
-  CALL PUSHCHARACTERARRAY(ARRAYCHAR, size)
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  fillCh(",I4,",",I4,"); pushCharacterArray(ArrayChar,",I4,");")') &
+ &        size,seedForFile,size
+  ELSE
+     CALL PUSHCHARACTERARRAY(ARRAYCHAR, size)
+  ENDIF
 END SUBROUTINE emitpushcharacterarray
 
 SUBROUTINE emitpopcharacterarray(size)
   USE TESTPUSHPOPUTILS
   IMPLICIT NONE
   INTEGER :: size
-  CALL POPCHARACTERARRAY(RECVARRAYCHAR, size)
-  if (RECVARRAYCHAR(1:size).ne.ARRAYCHAR(1:size)) then
-     print *,'Error character array pushed ',ARRAYCHAR(1:size),' popped ',RECVARRAYCHAR(1:size),   &
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  fillCh(",I4,",",I4,"); popCharacterArray(recvArrayChar,",I4,"); testCh(",I4,");")') &
+ &        size,seedForFile,size,size
+  ELSE
+     CALL POPCHARACTERARRAY(RECVARRAYCHAR, size)
+     if (RECVARRAYCHAR(1:size).ne.ARRAYCHAR(1:size)) then
+        print *,'Error character array pushed ',ARRAYCHAR(1:size),' popped ',RECVARRAYCHAR(1:size),   &
  &           ' seed:',givenSeed,' code:',givenCode(1:codeLength)
-     stop
-  end if
+        CALL SHOWERRORCONTEXT()
+        stop
+     end if
+  ENDIF
 END SUBROUTINE emitpopcharacterarray
 
 SUBROUTINE emitpushc8scalar()
@@ -669,79 +820,139 @@ SUBROUTINE emitpushc8scalar()
   IMPLICIT NONE
   INTEGER*4 LOCSTRB,LOCSTRO
   IF (TRACEON) print *,'PUSHCOMPLEX8(',ARRAYC8(1),') AT ',LOCSTRB(),LOCSTRO()
-  CALL PUSHCOMPLEX8(ARRAYC8(1))
+  IF (INTERMEDIATEFILE) THEN
+! Commented out because C has no complex8 (sizeof(complex) == sizeof(double complex) == 16)
+!     write(1,'("  fillc8(  01,",I4,"); pushComplex8(ArrayC8[0]);")') &
+! &        seedForFile
+  ELSE
+     CALL PUSHCOMPLEX8(ARRAYC8(1))
+  ENDIF
 END SUBROUTINE emitpushc8scalar
 
 SUBROUTINE emitpopc8scalar()
   USE TESTPUSHPOPUTILS
   IMPLICIT NONE
   INTEGER*4 LOCSTRB,LOCSTRO
-  CALL POPCOMPLEX8(RECVARRAYC8(1))
-  IF (TRACEON) print *,'POPCOMPLEX8(',RECVARRAYC8(1),') AT ',LOCSTRB(),LOCSTRO()
-  if (RECVARRAYC8(1).ne.ARRAYC8(1)) then
-     print *,'Error complex8 scalar pushed ',ARRAYC8(1),' popped ',RECVARRAYC8(1),   &
- &           ' seed:',givenSeed,' code:',givenCode(1:codeLength)
-     stop
-  end if
+  IF (INTERMEDIATEFILE) THEN
+! Commented out because C has no complex8 (sizeof(complex) == sizeof(double complex) == 16)
+!     write(1,'("  fillc8(  01,",I4,"); popComplex8(&recvArrayC8[0]); testc8(1);")') &
+! &        seedForFile
+  ELSE
+     CALL POPCOMPLEX8(RECVARRAYC8(1))
+     IF (TRACEON) print *,'POPCOMPLEX8(',RECVARRAYC8(1),') AT ',LOCSTRB(),LOCSTRO()
+     if (RECVARRAYC8(1).ne.ARRAYC8(1)) then
+        print *,'Error complex8 scalar pushed ',ARRAYC8(1),' popped ',RECVARRAYC8(1),   &
+             &           ' seed:',givenSeed,' code:',givenCode(1:codeLength)
+        CALL SHOWERRORCONTEXT()
+        stop
+     end if
+  ENDIF
 END SUBROUTINE emitpopc8scalar
 
 SUBROUTINE emitpushc8array(size)
   USE TESTPUSHPOPUTILS
   IMPLICIT NONE
   INTEGER size
-  CALL PUSHCOMPLEX8ARRAY(ARRAYC8, size)
+  INTEGER*4 LOCSTRB,LOCSTRO
+  IF (TRACEON) print *,'PUSHCOMPLEX8ARRAY(',size,":",ARRAYC8(1),'...) AT ',LOCSTRB(),LOCSTRO()
+  IF (INTERMEDIATEFILE) THEN
+! Commented out because C has no complex8 (sizeof(complex) == sizeof(double complex) == 16)
+!     write(1,'("  fillc8(",I4,",",I4,"); pushComplex8Array(ArrayC8,",I4,");")') &
+! &        size,seedForFile,size
+  ELSE
+     CALL PUSHCOMPLEX8ARRAY(ARRAYC8, size)
+  ENDIF
 END SUBROUTINE emitpushc8array
 
 SUBROUTINE emitpopc8array(size)
   USE TESTPUSHPOPUTILS
   IMPLICIT NONE
   INTEGER :: size, i
-  CALL POPCOMPLEX8ARRAY(RECVARRAYC8, size)
-  DO i=1,size
-     if (RECVARRAYC8(i).ne.ARRAYC8(i)) then
-        print *,'Error complex8 array elem ',i,' pushed ',ARRAYC8(i),' popped ',RECVARRAYC8(i),   &
+  INTEGER*4 LOCSTRB,LOCSTRO
+  IF (INTERMEDIATEFILE) THEN
+! Commented out because C has no complex8 (sizeof(complex) == sizeof(double complex) == 16)
+!     write(1,'("  fillc8(",I4,",",I4,"); popComplex8Array(recvArrayC8,",I4,"); testc8(",I4,");")') &
+! &        size,seedForFile,size,size
+  ELSE
+     CALL POPCOMPLEX8ARRAY(RECVARRAYC8, size)
+     IF (TRACEON) print *,'POPCOMPLEX8ARRAY(',size,":",RECVARRAYC8(1),'...) AT ',LOCSTRB(),LOCSTRO()
+     DO i=size,1,-1
+        if (RECVARRAYC8(i).ne.ARRAYC8(i)) then
+           print *,'Error complex8 array elem ',i,' pushed ',ARRAYC8(i),' popped ',RECVARRAYC8(i),   &
  &           ' seed:',givenSeed,' code:',givenCode(1:codeLength)
-        stop
-     end if
-  END DO
+           CALL SHOWERRORCONTEXT()
+           stop
+        end if
+     END DO
+  ENDIF
 END SUBROUTINE emitpopc8array
 
 SUBROUTINE emitpushc16scalar()
   USE TESTPUSHPOPUTILS
   IMPLICIT NONE
-  CALL PUSHCOMPLEX16(ARRAYC16(1))
+  INTEGER*4 LOCSTRB,LOCSTRO
+  IF (TRACEON) print *,'PUSHCOMPLEX16(',ARRAYC16(1),') AT ',LOCSTRB(),LOCSTRO()
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  fillc16(  01,",I4,"); pushComplex16(ArrayC16[0]);")') &
+ &        seedForFile
+  ELSE
+     CALL PUSHCOMPLEX16(ARRAYC16(1))
+  ENDIF
 END SUBROUTINE emitpushc16scalar
 
 SUBROUTINE emitpopc16scalar()
   USE TESTPUSHPOPUTILS
   IMPLICIT NONE
-  CALL POPCOMPLEX16(RECVARRAYC16(1))
-  if (RECVARRAYC16(1).ne.ARRAYC16(1)) then
-     print *,'Error complex16 scalar pushed ',ARRAYC16(1),' popped ',RECVARRAYC16(1),   &
+  INTEGER*4 LOCSTRB,LOCSTRO
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  fillc16(  01,",I4,"); popComplex16(&recvArrayC16[0]); testc16(1);")') &
+ &        seedForFile
+  ELSE
+     CALL POPCOMPLEX16(RECVARRAYC16(1))
+     IF (TRACEON) print *,'POPCOMPLEX16(',RECVARRAYC16(1),') AT ',LOCSTRB(),LOCSTRO()
+     if (RECVARRAYC16(1).ne.ARRAYC16(1)) then
+        print *,'Error complex16 scalar pushed ',ARRAYC16(1),' popped ',RECVARRAYC16(1),   &
  &           ' seed:',givenSeed,' code:',givenCode(1:codeLength)
-     stop
-  end if
+        CALL SHOWERRORCONTEXT()
+        stop
+     end if
+  ENDIF
 END SUBROUTINE emitpopc16scalar
 
 SUBROUTINE emitpushc16array(size)
   USE TESTPUSHPOPUTILS
   IMPLICIT NONE
   INTEGER size
-  CALL PUSHCOMPLEX16ARRAY(ARRAYC16, size)
+  INTEGER*4 LOCSTRB,LOCSTRO
+  IF (TRACEON) print *,'PUSHCOMPLEX16ARRAY(',size,":",ARRAYC16(1),'...) AT ',LOCSTRB(),LOCSTRO()
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  fillc16(",I4,",",I4,"); pushComplex16Array(ArrayC16,",I4,");")') &
+ &        size,seedForFile,size
+  ELSE
+     CALL PUSHCOMPLEX16ARRAY(ARRAYC16, size)
+  ENDIF
 END SUBROUTINE emitpushc16array
 
 SUBROUTINE emitpopc16array(size)
   USE TESTPUSHPOPUTILS
   IMPLICIT NONE
   INTEGER :: size, i
-  CALL POPCOMPLEX16ARRAY(RECVARRAYC16, size)
-  DO i=1,size
-     if (RECVARRAYC16(i).ne.ARRAYC16(i)) then
-        print *,'Error complex16 array elem ',i,' pushed ',ARRAYC16(i),' popped ',RECVARRAYC16(i),   &
+  INTEGER*4 LOCSTRB,LOCSTRO
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  fillc16(",I4,",",I4,"); popComplex16Array(recvArrayC16,",I4,"); testc16(",I4,");")') &
+ &        size,seedForFile,size,size
+  ELSE
+     CALL POPCOMPLEX16ARRAY(RECVARRAYC16, size)
+     IF (TRACEON) print *,'POPCOMPLEX16ARRAY(',size,":",RECVARRAYC16(1),'...) AT ',LOCSTRB(),LOCSTRO()
+     DO i=size,1,-1
+        if (RECVARRAYC16(i).ne.ARRAYC16(i)) then
+           print *,'Error complex16 array elem ',i,' pushed ',ARRAYC16(i),' popped ',RECVARRAYC16(i),   &
  &           ' seed:',givenSeed,' code:',givenCode(1:codeLength)
-        stop
-     end if
-  END DO
+           CALL SHOWERRORCONTEXT()
+           stop
+        end if
+     END DO
+  ENDIF
 END SUBROUTINE emitpopc16array
 
 SUBROUTINE emitpushr4scalar()
@@ -749,20 +960,31 @@ SUBROUTINE emitpushr4scalar()
   IMPLICIT NONE
   INTEGER*4 LOCSTRB,LOCSTRO
   IF (TRACEON) print *,'PUSHREAL4(',ARRAYR4(1),') AT ',LOCSTRB(),LOCSTRO()
-  CALL PUSHREAL4(ARRAYR4(1))
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  fillr4(  01,",I4,"); pushReal4(ArrayR4[0]);")') &
+ &        seedForFile
+  ELSE
+     CALL PUSHREAL4(ARRAYR4(1))
+  ENDIF
 END SUBROUTINE emitpushr4scalar
 
 SUBROUTINE emitpopr4scalar()
   USE TESTPUSHPOPUTILS
   IMPLICIT NONE
   INTEGER*4 LOCSTRB,LOCSTRO
-  CALL POPREAL4(RECVARRAYR4(1))
-  IF (TRACEON) print *,'POPREAL4(',RECVARRAYR4(1),') AT ',LOCSTRB(),LOCSTRO()
-  if (RECVARRAYR4(1).ne.ARRAYR4(1)) then
-     print *,'Error real4 scalar pushed ',ARRAYR4(1),' popped ',RECVARRAYR4(1),   &
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  fillr4(  01,",I4,"); popReal4(&recvArrayR4[0]); testr4(1);")') &
+ &        seedForFile
+  ELSE
+     CALL POPREAL4(RECVARRAYR4(1))
+     IF (TRACEON) print *,'POPREAL4(',RECVARRAYR4(1),') AT ',LOCSTRB(),LOCSTRO()
+     if (RECVARRAYR4(1).ne.ARRAYR4(1)) then
+        print *,'Error real4 scalar pushed ',ARRAYR4(1),' popped ',RECVARRAYR4(1),   &
  &           ' seed:',givenSeed,' code:',givenCode(1:codeLength)
-     stop
-  end if
+        CALL SHOWERRORCONTEXT()
+        stop
+     end if
+  ENDIF
 END SUBROUTINE emitpopr4scalar
 
 SUBROUTINE emitpushr4array(size)
@@ -771,7 +993,12 @@ SUBROUTINE emitpushr4array(size)
   INTEGER size
   INTEGER*4 LOCSTRB,LOCSTRO
   IF (TRACEON) print *,'PUSHREAL4ARRAY(',size,":",ARRAYR4(1),'...) AT ',LOCSTRB(),LOCSTRO()
-  CALL PUSHREAL4ARRAY(ARRAYR4, size)
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  fillr4(",I4,",",I4,"); pushReal4Array(ArrayR4,",I4,");")') &
+ &        size,seedForFile,size
+  ELSE
+     CALL PUSHREAL4ARRAY(ARRAYR4, size)
+  ENDIF
 END SUBROUTINE emitpushr4array
 
 SUBROUTINE emitpopr4array(size)
@@ -779,15 +1006,21 @@ SUBROUTINE emitpopr4array(size)
   IMPLICIT NONE
   INTEGER :: size, i
   INTEGER*4 LOCSTRB,LOCSTRO
-  CALL POPREAL4ARRAY(RECVARRAYR4, size)
-  IF (TRACEON) print *,'POPREAL4ARRAY(',size,":",RECVARRAYR4(1),'...) AT ',LOCSTRB(),LOCSTRO()
-  DO i=1,size
-     if (RECVARRAYR4(i).ne.ARRAYR4(i)) then
-        print *,'Error real4 array elem ',i,' pushed ',ARRAYR4(i),' popped ',RECVARRAYR4(i),   &
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  fillr4(",I4,",",I4,"); popReal4Array(recvArrayR4,",I4,"); testr4(",I4,");")') &
+ &        size,seedForFile,size,size
+  ELSE
+     CALL POPREAL4ARRAY(RECVARRAYR4, size)
+     IF (TRACEON) print *,'POPREAL4ARRAY(',size,":",RECVARRAYR4(1),'...) AT ',LOCSTRB(),LOCSTRO()
+     DO i=size,1,-1
+        if (RECVARRAYR4(i).ne.ARRAYR4(i)) then
+           print *,'Error real4 array elem ',i,' pushed ',ARRAYR4(i),' popped ',RECVARRAYR4(i),   &
  &           ' seed:',givenSeed,' code:',givenCode(1:codeLength)
-        stop
-     end if
-  END DO
+           CALL SHOWERRORCONTEXT()
+           stop
+        end if
+     END DO
+  ENDIF
 END SUBROUTINE emitpopr4array
 
 SUBROUTINE emitpushr8scalar()
@@ -795,20 +1028,31 @@ SUBROUTINE emitpushr8scalar()
   IMPLICIT NONE
   INTEGER*4 LOCSTRB,LOCSTRO
   IF (TRACEON) print *,'PUSHREAL8(',ARRAYR8(1),') AT ',LOCSTRB(),LOCSTRO()
-  CALL PUSHREAL8(ARRAYR8(1))
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  fillr8(  01,",I4,"); pushReal8(ArrayR8[0]);")') &
+ &        seedForFile
+  ELSE
+     CALL PUSHREAL8(ARRAYR8(1))
+  ENDIF
 END SUBROUTINE emitpushr8scalar
 
 SUBROUTINE emitpopr8scalar()
   USE TESTPUSHPOPUTILS
   IMPLICIT NONE
   INTEGER*4 LOCSTRB,LOCSTRO
-  CALL POPREAL8(RECVARRAYR8(1))
-  IF (TRACEON) print *,'POPREAL8(',RECVARRAYR8(1),') AT ',LOCSTRB(),LOCSTRO()
-  if (RECVARRAYR8(1).ne.ARRAYR8(1)) then
-     print *,'Error real8 scalar pushed ',ARRAYR8(1),' popped ',RECVARRAYR8(1),   &
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  fillr8(  01,",I4,"); popReal8(&recvArrayR8[0]); testr8(1);")') &
+ &        seedForFile
+  ELSE
+     CALL POPREAL8(RECVARRAYR8(1))
+     IF (TRACEON) print *,'POPREAL8(',RECVARRAYR8(1),') AT ',LOCSTRB(),LOCSTRO()
+     if (RECVARRAYR8(1).ne.ARRAYR8(1)) then
+        print *,'Error real8 scalar pushed ',ARRAYR8(1),' popped ',RECVARRAYR8(1),   &
  &           ' seed:',givenSeed,' code:',givenCode(1:codeLength)
-     stop
-  end if
+        CALL SHOWERRORCONTEXT()
+        stop
+     end if
+  ENDIF
 END SUBROUTINE emitpopr8scalar
 
 SUBROUTINE emitpushr8array(size)
@@ -817,7 +1061,12 @@ SUBROUTINE emitpushr8array(size)
   INTEGER size
   INTEGER*4 LOCSTRB,LOCSTRO
   IF (TRACEON) print *,'PUSHREAL8ARRAY(',size,":",ARRAYR8(1),'...) AT ',LOCSTRB(),LOCSTRO()
-  CALL PUSHREAL8ARRAY(ARRAYR8, size)
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  fillr8(",I4,",",I4,"); pushReal8Array(ArrayR8,",I4,");")') &
+ &        size,seedForFile,size
+  ELSE
+     CALL PUSHREAL8ARRAY(ARRAYR8, size)
+  ENDIF
 END SUBROUTINE emitpushr8array
 
 SUBROUTINE emitpopr8array(size)
@@ -825,15 +1074,21 @@ SUBROUTINE emitpopr8array(size)
   IMPLICIT NONE
   INTEGER :: size, i
   INTEGER*4 LOCSTRB,LOCSTRO
-  CALL POPREAL8ARRAY(RECVARRAYR8, size)
-  IF (TRACEON) print *,'POPREAL8ARRAY(',size,":",RECVARRAYR8(1),'...) AT ',LOCSTRB(),LOCSTRO()
-  DO i=1,size
-     if (RECVARRAYR8(i).ne.ARRAYR8(i)) then
-        print *,'Error real8 array elem ',i,' pushed ',ARRAYR8(i),' popped ',RECVARRAYR8(i),   &
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  fillr8(",I4,",",I4,"); popReal8Array(recvArrayR8,",I4,"); testr8(",I4,");")') &
+ &        size,seedForFile,size,size
+  ELSE
+     CALL POPREAL8ARRAY(RECVARRAYR8, size)
+     IF (TRACEON) print *,'POPREAL8ARRAY(',size,":",RECVARRAYR8(1),'...) AT ',LOCSTRB(),LOCSTRO()
+     DO i=size,1,-1
+        if (RECVARRAYR8(i).ne.ARRAYR8(i)) then
+           print *,'Error real8 array elem ',i,' pushed ',ARRAYR8(i),' popped ',RECVARRAYR8(i),   &
  &           ' seed:',givenSeed,' code:',givenCode(1:codeLength)
-        stop
-     end if
-  END DO
+           CALL SHOWERRORCONTEXT()
+           stop
+        end if
+     END DO
+  ENDIF
 END SUBROUTINE emitpopr8array
 
 SUBROUTINE emitpushi4scalar()
@@ -841,20 +1096,31 @@ SUBROUTINE emitpushi4scalar()
   IMPLICIT NONE
   INTEGER*4 LOCSTRB,LOCSTRO
   IF (TRACEON) print *,'PUSHINTEGER4(',ARRAYI4(1),') AT ',LOCSTRB(),LOCSTRO()
-  CALL PUSHINTEGER4(ARRAYI4(1))
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  filli4(  01,",I4,"); pushInteger4(ArrayI4[0]);")') &
+ &        seedForFile
+  ELSE
+     CALL PUSHINTEGER4(ARRAYI4(1))
+  ENDIF
 END SUBROUTINE emitpushi4scalar
 
 SUBROUTINE emitpopi4scalar()
   USE TESTPUSHPOPUTILS
   IMPLICIT NONE
   INTEGER*4 LOCSTRB,LOCSTRO
-  CALL POPINTEGER4(RECVARRAYI4(1))
-  IF (TRACEON) print *,'POPINTEGER4(',RECVARRAYI4(1),') AT ',LOCSTRB(),LOCSTRO()
-  if (RECVARRAYI4(1).ne.ARRAYI4(1)) then
-     print *,'Error integer4 scalar pushed ',ARRAYI4(1),' popped ',RECVARRAYI4(1),   &
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  filli4(  01,",I4,"); popInteger4(&recvArrayI4[0]); testi4(1);")') &
+ &        seedForFile
+  ELSE
+     CALL POPINTEGER4(RECVARRAYI4(1))
+     IF (TRACEON) print *,'POPINTEGER4(',RECVARRAYI4(1),') AT ',LOCSTRB(),LOCSTRO()
+     if (RECVARRAYI4(1).ne.ARRAYI4(1)) then
+        print *,'Error integer4 scalar pushed ',ARRAYI4(1),' popped ',RECVARRAYI4(1),   &
  &           ' seed:',givenSeed,' code:',givenCode(1:codeLength)
-     stop
-  end if
+        CALL SHOWERRORCONTEXT()
+        stop
+     end if
+  ENDIF
 END SUBROUTINE emitpopi4scalar
 
 SUBROUTINE emitpushi4array(size)
@@ -863,7 +1129,12 @@ SUBROUTINE emitpushi4array(size)
   INTEGER size
   INTEGER*4 LOCSTRB,LOCSTRO
   IF (TRACEON) print *,'PUSHINTEGER4ARRAY(',size,":",ARRAYI4(1),'...) AT ',LOCSTRB(),LOCSTRO()
-  CALL PUSHINTEGER4ARRAY(ARRAYI4, size)
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  filli4(",I4,",",I4,"); pushInteger4Array(ArrayI4,",I4,");")') &
+ &        size,seedForFile,size
+  ELSE
+     CALL PUSHINTEGER4ARRAY(ARRAYI4, size)
+  ENDIF
 END SUBROUTINE emitpushi4array
 
 SUBROUTINE emitpopi4array(size)
@@ -871,15 +1142,21 @@ SUBROUTINE emitpopi4array(size)
   IMPLICIT NONE
   INTEGER :: size,i
   INTEGER*4 LOCSTRB,LOCSTRO
-  CALL POPINTEGER4ARRAY(RECVARRAYI4, size)
-  IF (TRACEON) print *,'POPINTEGER4ARRAY(',size,":",RECVARRAYI4(1),'...) AT ',LOCSTRB(),LOCSTRO()
-  DO i=1,size
-     if (RECVARRAYI4(i).ne.ARRAYI4(i)) then
-        print *,'Error integer4 array elem ',i,' pushed ',ARRAYI4(i),' popped ',RECVARRAYI4(i),   &
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  filli4(",I4,",",I4,"); popInteger4Array(recvArrayI4,",I4,"); testi4(",I4,");")') &
+ &        size,seedForFile,size,size
+  ELSE
+     CALL POPINTEGER4ARRAY(RECVARRAYI4, size)
+     IF (TRACEON) print *,'POPINTEGER4ARRAY(',size,":",RECVARRAYI4(1),'...) AT ',LOCSTRB(),LOCSTRO()
+     DO i=size,1,-1
+        if (RECVARRAYI4(i).ne.ARRAYI4(i)) then
+           print *,'Error integer4 array elem ',i,' pushed ',ARRAYI4(i),' popped ',RECVARRAYI4(i),   &
  &           ' seed:',givenSeed,' code:',givenCode(1:codeLength)
-        stop
-     end if
-  END DO
+           CALL SHOWERRORCONTEXT()
+           stop
+        end if
+     END DO
+  ENDIF
 END SUBROUTINE emitpopi4array
 
 SUBROUTINE emitpushi8scalar()
@@ -887,55 +1164,93 @@ SUBROUTINE emitpushi8scalar()
   IMPLICIT NONE
   INTEGER*4 LOCSTRB,LOCSTRO
   IF (TRACEON) print *,'PUSHINTEGER8(',ARRAYI8(1),') AT ',LOCSTRB(),LOCSTRO()
-  CALL PUSHINTEGER8(ARRAYI8(1))
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  filli8(  01,",I4,"); pushInteger8(ArrayI8[0]);")') &
+ &        seedForFile
+  ELSE
+     CALL PUSHINTEGER8(ARRAYI8(1))
+  ENDIF
 END SUBROUTINE emitpushi8scalar
 
 SUBROUTINE emitpopi8scalar()
   USE TESTPUSHPOPUTILS
   IMPLICIT NONE
   INTEGER*4 LOCSTRB,LOCSTRO
-  CALL POPINTEGER8(RECVARRAYI8(1))
-  IF (TRACEON) print *,'POPINTEGER8(',RECVARRAYI8(1),') AT ',LOCSTRB(),LOCSTRO()
-  if (RECVARRAYI8(1).ne.ARRAYI8(1)) then
-     print *,'Error integer8 scalar pushed ',ARRAYI8(1),' popped ',RECVARRAYI8(1),   &
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  filli8(  01,",I4,"); popInteger8(&recvArrayI8[0]); testi8(1);")') &
+ &        seedForFile
+  ELSE
+     CALL POPINTEGER8(RECVARRAYI8(1))
+     IF (TRACEON) print *,'POPINTEGER8(',RECVARRAYI8(1),') AT ',LOCSTRB(),LOCSTRO()
+     if (RECVARRAYI8(1).ne.ARRAYI8(1)) then
+        print *,'Error integer8 scalar pushed ',ARRAYI8(1),' popped ',RECVARRAYI8(1),   &
  &           ' seed:',givenSeed,' code:',givenCode(1:codeLength)
-     stop
-  end if
+        CALL SHOWERRORCONTEXT()
+        stop
+     end if
+  ENDIF
 END SUBROUTINE emitpopi8scalar
 
 SUBROUTINE emitpushi8array(size)
   USE TESTPUSHPOPUTILS
   IMPLICIT NONE
   INTEGER size
-  CALL PUSHINTEGER8ARRAY(ARRAYI8, size)
+  INTEGER*4 LOCSTRB,LOCSTRO
+  IF (TRACEON) print *,'PUSHINTEGER8ARRAY(',size,":",ARRAYI8(1),'...) AT ',LOCSTRB(),LOCSTRO()
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  filli8(",I4,",",I4,"); pushInteger8Array(ArrayI8,",I4,");")') &
+ &        size,seedForFile,size
+  ELSE
+     CALL PUSHINTEGER8ARRAY(ARRAYI8, size)
+  ENDIF
 END SUBROUTINE emitpushi8array
 
 SUBROUTINE emitpopi8array(size)
   USE TESTPUSHPOPUTILS
   IMPLICIT NONE
   INTEGER :: size,i
-  CALL POPINTEGER8ARRAY(RECVARRAYI8, size)
-  DO i=1,size
-     if (RECVARRAYI8(i).ne.ARRAYI8(i)) then
-        print *,'Error integer8 array elem ',i,' pushed ',ARRAYI8(i),' popped ',RECVARRAYI8(i),   &
+  INTEGER*4 LOCSTRB,LOCSTRO
+  IF (INTERMEDIATEFILE) THEN
+     write(1,'("  filli8(",I4,",",I4,"); popInteger8Array(recvArrayI8,",I4,"); testi8(",I4,");")') &
+ &        size,seedForFile,size,size
+  ELSE
+     CALL POPINTEGER8ARRAY(RECVARRAYI8, size)
+     IF (TRACEON) print *,'POPINTEGER8ARRAY(',size,":",RECVARRAYI8(1),'...) AT ',LOCSTRB(),LOCSTRO()
+     DO i=size,1,-1
+        if (RECVARRAYI8(i).ne.ARRAYI8(i)) then
+           print *,'Error integer8 array elem ',i,' pushed ',ARRAYI8(i),' popped ',RECVARRAYI8(i),   &
  &           ' seed:',givenSeed,' code:',givenCode(1:codeLength)
-        stop
-     end if
-  END DO
+           CALL SHOWERRORCONTEXT()
+           stop
+        end if
+     END DO
+  ENDIF
 END SUBROUTINE emitpopi8array
 
 SUBROUTINE emitstartrepeat()
   USE TESTPUSHPOPUTILS
   INTEGER*4 LOCSTRB,LOCSTRO
   IF (TRACEON) print *,'adStack_startRepeat() AT ',LOCSTRB(),LOCSTRO()
-  CALL ADSTACK_STARTREPEAT()
+  if (TRACEDRY) then
+     print *,'START REPEAT'
+  else if (INTERMEDIATEFILE) THEN
+     write(1,'("  adStack_startRepeat();")')
+  else
+     CALL ADSTACK_STARTREPEAT()
+  endif
 END SUBROUTINE emitstartrepeat
 
 SUBROUTINE emitresetrepeat()
   USE TESTPUSHPOPUTILS
   INTEGER*4 LOCSTRB,LOCSTRO
   IF (TRACEON) print *,'adStack_resetRepeat() AT ',LOCSTRB(),LOCSTRO()
-  CALL ADSTACK_RESETREPEAT()
+  if (TRACEDRY) then
+     print *,'RESET REPEAT'
+  else if (INTERMEDIATEFILE) THEN
+     write(1, '("  adStack_resetRepeat();")')
+  else
+     CALL ADSTACK_RESETREPEAT()
+  endif
   IF (TRACEON) print *,'-----------------------> ',LOCSTRB(),LOCSTRO()
 END SUBROUTINE emitresetrepeat
 
@@ -943,13 +1258,19 @@ SUBROUTINE emitendrepeat()
   USE TESTPUSHPOPUTILS
   INTEGER*4 LOCSTRB,LOCSTRO
   IF (TRACEON) print *,'adStack_endRepeat() AT ',LOCSTRB(),LOCSTRO()
-  CALL ADSTACK_ENDREPEAT()
+  if (TRACEDRY) then
+     print *,'  END REPEAT'
+  else if (INTERMEDIATEFILE) THEN
+     write(1, '("  adStack_endRepeat();")')
+  else
+     CALL ADSTACK_ENDREPEAT()
+  endif
 END SUBROUTINE emitendrepeat
 
 !! Only for Trace:
 SUBROUTINE emitshowstacksize()
   USE TESTPUSHPOPUTILS
-  CALL ADSTACK_SHOWSTACKSIZE()
+  CALL ADSTACK_SHOWSTACKSIZE(77)
 END SUBROUTINE emitshowstacksize
 
 SUBROUTINE emitshowstack(locationName)
