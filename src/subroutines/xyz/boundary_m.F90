@@ -132,6 +132,20 @@ real(dp) :: r_aux
 character(len=256) :: ch_aux
 logical, dimension(0:JMAX,0:IMAX) :: check_point
 
+#if (defined(ANT) && ICE_SHELF_COLLAPSE_MASK==1)
+integer(i4b)       :: n_year_CE_isc
+character(len= 16) :: ch_year_CE_isc
+character(len=256) :: filename_isc
+real(dp), dimension(0:IMAX,0:JMAX) :: r_mask_retreat_conv
+#endif
+
+#if (defined(GRL) && RETREAT_MASK==1)
+integer(i4b)       :: n_year_CE_rtr
+character(len= 16) :: ch_year_CE_rtr
+character(len=256) :: filename_rtr
+real(dp), dimension(0:IMAX,0:JMAX) :: r_mask_retreat_conv
+#endif
+
 integer(i4b) :: ncid
 !     ncid:      File ID
 integer(i4b) :: ncv
@@ -1180,6 +1194,110 @@ call discharge(dxi, deta)
 calving = calving + dis_perp
 
 #endif
+
+!-------- Antarctica only: Ice-shelf collapse mask --------
+
+#if (defined(ANT) && ICE_SHELF_COLLAPSE_MASK==1)
+
+n_year_CE_isc = n_year_CE
+
+if (n_year_CE_isc > ICE_SHELF_COLLAPSE_MASK_TIME_MAX) &
+                       n_year_CE_isc = ICE_SHELF_COLLAPSE_MASK_TIME_MAX
+
+if (firstcall%boundary) r_mask_retreat = 1.0_dp   ! initialization
+
+if (n_year_CE_isc < ICE_SHELF_COLLAPSE_MASK_TIME_MIN) then
+
+   r_mask_retreat = 1.0_dp
+
+else if (n_year_CE_isc /= n_year_CE_isc_save) then
+
+   write(ch_year_CE_isc, '(i0)') n_year_CE_isc
+
+   filename_isc = trim(ICE_SHELF_COLLAPSE_MASK_DIR)//'/'// &
+                  trim(ICE_SHELF_COLLAPSE_MASK_FILES)// &
+                  trim(ch_year_CE_isc)//'.nc'
+
+   ios = nf90_open(trim(filename_isc), NF90_NOWRITE, ncid)
+
+   if (ios /= nf90_noerr) then
+      errormsg = ' >>> boundary: Error when opening the file for the' &
+               //                end_of_line &
+               //'               ice-shelf collapse mask!'
+      call error(errormsg)
+   end if
+
+   call check( nf90_inq_varid(ncid, 'mask', ncv), thisroutine )
+   call check( nf90_get_var(ncid, ncv, r_mask_retreat_conv), thisroutine )
+
+   call check( nf90_close(ncid), thisroutine )
+
+   do i=0, IMAX
+   do j=0, JMAX
+      r_mask_retreat(j,i) = 1.0_dp - r_mask_retreat_conv(i,j)
+                                    ! swap 0 <-> 1
+      r_mask_retreat(j,i) = max(min(r_mask_retreat(j,i), 1.0_dp), 0.0_dp)
+                                    ! constrain to interval [0,1]
+   end do
+   end do
+
+end if
+
+n_year_CE_isc_save = n_year_CE_isc
+
+#endif
+
+!-------- Greenland only: Retreat mask due to oceanic forcing --------
+
+#if (defined(GRL) && RETREAT_MASK==1)
+
+n_year_CE_rtr = n_year_CE
+
+if (n_year_CE_rtr > RETREAT_MASK_TIME_MAX) &
+                       n_year_CE_rtr = RETREAT_MASK_TIME_MAX
+
+if (firstcall%boundary) r_mask_retreat = 1.0_dp   ! initialization
+
+if (n_year_CE_rtr < RETREAT_MASK_TIME_MIN) then
+
+   r_mask_retreat = 1.0_dp
+
+else if (n_year_CE_rtr /= n_year_CE_rtr_save) then
+
+   write(ch_year_CE_rtr, '(i0)') n_year_CE_rtr
+
+   filename_rtr = trim(RETREAT_MASK_DIR)//'/'// &
+                  trim(RETREAT_MASK_FILES)// &
+                  trim(ch_year_CE_rtr)//'.nc'
+
+   ios = nf90_open(trim(filename_rtr), NF90_NOWRITE, ncid)
+
+   if (ios /= nf90_noerr) then
+      errormsg = ' >>> boundary: Error when opening the file for the' &
+               //                end_of_line &
+               //'               retreat mask due to oceanic forcing!'
+      call error(errormsg)
+   end if
+
+   call check( nf90_inq_varid(ncid, 'sftgif', ncv), thisroutine )
+   call check( nf90_get_var(ncid, ncv, r_mask_retreat_conv), thisroutine )
+
+   call check( nf90_close(ncid), thisroutine )
+
+   do i=0, IMAX
+   do j=0, JMAX
+      r_mask_retreat(j,i) = max(min(r_mask_retreat_conv(i,j), 1.0_dp), 0.0_dp)
+                                    ! constrain to interval [0,1]
+   end do
+   end do
+
+end if
+
+n_year_CE_rtr_save = n_year_CE_rtr
+
+#endif
+
+!-------- First-call flag --------
 
 if (firstcall%boundary) firstcall%boundary = .false.
 
