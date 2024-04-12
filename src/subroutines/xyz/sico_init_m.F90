@@ -152,12 +152,33 @@ real(dp) :: c_slide_aux(N_SLIDE_REGIONS)
 real(dp) :: gamma_slide_aux(N_SLIDE_REGIONS)
 #endif
 
+#if (!defined(N_BM_REGIONS) || N_BM_REGIONS<=1)
+real(dp) :: gamma0_bm_aux(1)
+real(dp) :: delta_tf_bm_aux(1)
+#else
+real(dp) :: gamma0_bm_aux(N_BM_REGIONS)
+real(dp) :: delta_tf_bm_aux(N_BM_REGIONS)
+#endif
+
+#if (TSURFACE==6 && ACCSURFACE==6 && ABLSURFACE==6)
+real(dp), dimension(0:IMAX,0:JMAX) :: temp_maat_climatol_conv, &
+                                      smb_climatol_conv, &
+                                      zs_ref_conv
+integer(i4b)        :: n_st_unit_length, n_smb_unit_length
+character(len=64)   :: ch_st_unit, ch_smb_unit
+real(dp), parameter :: temp_C_to_K = 273.15_dp
+#endif
+
 #if (defined(ANT) || defined(GRL))
 character(len=64) :: ch_initmip_smb_anom_file
 #endif
 #if (defined(ANT))
 character(len=64) :: ch_initmip_bmb_anom_file
 character(len=64) :: ch_larmip_regions_file
+#endif
+
+#if (FLOATING_ICE_BASAL_MELTING==6)
+real(dp), dimension(0:IMAX,0:JMAX,0:NZ_TF_BM) :: tf_bm_present_aux
 #endif
 
 #if (defined(ANT) && ICE_SHELF_COLLAPSE_MASK==1)
@@ -481,6 +502,51 @@ call error(errormsg)
 errormsg = ' >>> sico_init: ' &
               //'Options TSURFACE==5 and ACCSURFACE==5 must be used together!'
 call error(errormsg)
+#endif
+
+#if (TSURFACE == 6)
+#if (ACCSURFACE != 6 || ABLSURFACE != 6)
+errormsg = ' >>> sico_init: Options TSURFACE==6, ACCSURFACE==6, ABLSURFACE==6' &
+         //         end_of_line &
+         //'        must be used together!'
+call error(errormsg)
+#endif
+#endif
+
+#if (ACCSURFACE == 6)
+#if (TSURFACE != 6 || ABLSURFACE != 6)
+errormsg = ' >>> sico_init: Options TSURFACE==6, ACCSURFACE==6, ABLSURFACE==6' &
+         //         end_of_line &
+         //'        must be used together!'
+call error(errormsg)
+#endif
+#endif
+
+#if (ABLSURFACE == 6)
+#if (TSURFACE != 6 || ACCSURFACE != 6)
+errormsg = ' >>> sico_init: Options TSURFACE==6, ACCSURFACE==6, ABLSURFACE==6' &
+         //         end_of_line &
+         //'        must be used together!'
+call error(errormsg)
+#endif
+#endif
+
+#if (ACCSURFACE == 7)
+#if (ABLSURFACE != 7)
+errormsg = ' >>> sico_init: Options ACCSURFACE==7, ABLSURFACE==7' &
+         //         end_of_line &
+         //'        must be used together!'
+call error(errormsg)
+#endif
+#endif
+
+#if (ABLSURFACE == 7)
+#if (ACCSURFACE != 7)
+errormsg = ' >>> sico_init: Options ACCSURFACE==7, ABLSURFACE==7' &
+         //         end_of_line &
+         //'        must be used together!'
+call error(errormsg)
+#endif
 #endif
 
 !-------- Compatibility check of discretization schemes for the horizontal and
@@ -1183,6 +1249,30 @@ write(10, fmt=trim(fmt2)) 'MB_ACCOUNT = ', MB_ACCOUNT
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
+#if (TSURFACE==6 && ACCSURFACE==6 && ABLSURFACE==6)
+write(10, fmt=trim(fmt1)) 'TEMP_SMB_CLIMATOLOGY_FILE = ' &
+                             //TEMP_SMB_CLIMATOLOGY_FILE
+write(10, fmt=trim(fmt1)) 'TEMP_SMB_ANOM_DIR = '//TEMP_SMB_ANOM_DIR
+write(10, fmt=trim(fmt1)) 'TEMP_ANOM_SUBDIR  = '//TEMP_ANOM_SUBDIR
+write(10, fmt=trim(fmt1)) 'TEMP_ANOM_FILES   = '//TEMP_ANOM_FILES
+write(10, fmt=trim(fmt1)) 'dTEMPdz_SUBDIR    = '//dTEMPdz_SUBDIR
+write(10, fmt=trim(fmt1)) 'dTEMPdz_FILES     = '//dTEMPdz_FILES
+write(10, fmt=trim(fmt1)) 'SMB_ANOM_SUBDIR   = '//SMB_ANOM_SUBDIR
+write(10, fmt=trim(fmt1)) 'SMB_ANOM_FILES    = '//SMB_ANOM_FILES
+write(10, fmt=trim(fmt1)) 'dSMBdz_SUBDIR     = '//dSMBdz_SUBDIR
+write(10, fmt=trim(fmt1)) 'dSMBdz_FILES      = '//dSMBdz_FILES
+write(10, fmt=trim(fmt2)) 'TEMP_SMB_ANOM_TIME_MIN = ', TEMP_SMB_ANOM_TIME_MIN
+write(10, fmt=trim(fmt2)) 'TEMP_SMB_ANOM_TIME_MAX = ', TEMP_SMB_ANOM_TIME_MAX
+write(10, fmt=trim(fmt1)) ' '
+#endif
+
+#if (ACCSURFACE==7 && ABLSURFACE==7)
+write(10, fmt=trim(fmt3)) 'target_topo_tau_0 =', TARGET_TOPO_TAU0
+write(10, fmt=trim(fmt1)) 'Target-topography file = '//TARGET_TOPO_DAT_NAME
+write(10, fmt=trim(fmt1)) 'Path to target-topography file = '//TARGET_TOPO_PATH
+write(10, fmt=trim(fmt1)) ' '
+#endif
+
 #if (defined(SMB_CORR_FILE))
 if ( (trim(adjustl(SMB_CORR_FILE)) /= 'none') &
      .and. &
@@ -1368,6 +1458,30 @@ write(10, fmt=trim(fmt3)) 'alpha_qbm  =', ALPHA_QBM
 #endif
 write(10, fmt=trim(fmt3)) 'H_w_0 =', H_W_0
 write(10, fmt=trim(fmt1)) ' '
+
+#if (FLOATING_ICE_BASAL_MELTING==6)
+write(10, fmt=trim(fmt2)) 'n_bm_regions = ', N_BM_REGIONS
+write(10, fmt=trim(fmt1)) 'bm_regions_file = '//BM_REGIONS_FILE
+gamma0_bm_aux   = GAMMA0_BM
+delta_tf_bm_aux = DELTA_TF_BM
+write(10, fmt=trim(fmt3)) 'gamma0_bm =', gamma0_bm_aux(1)
+do n=2, N_BM_REGIONS
+   write(10, fmt=trim(fmt3)) '           ', gamma0_bm_aux(n)
+end do
+write(10, fmt=trim(fmt3)) 'delta_tf_bm =', delta_tf_bm_aux(1)
+do n=2, N_BM_REGIONS
+   write(10, fmt=trim(fmt3)) '             ', delta_tf_bm_aux(n)
+end do
+write(10, fmt=trim(fmt1)) 'tf_bm_present_file = '//TF_BM_PRESENT_FILE
+write(10, fmt=trim(fmt1)) 'tf_bm_dir   = '//TF_BM_DIR
+write(10, fmt=trim(fmt1)) 'tf_bm_files = '//TF_BM_FILES
+write(10, fmt=trim(fmt2)) 'tf_bm_time_min = ', TF_BM_TIME_MIN
+write(10, fmt=trim(fmt2)) 'tf_bm_time_max = ', TF_BM_TIME_MAX
+write(10, fmt=trim(fmt3)) 'zmin_tf_bm =',  ZMIN_TF_BM
+write(10, fmt=trim(fmt2)) 'nz_tf_bm   = ', NZ_TF_BM
+write(10, fmt=trim(fmt3)) 'dz_tf_bm   =',  DZ_TF_BM
+write(10, fmt=trim(fmt1)) ' '
+#endif
 
 #if (defined(ANT) && defined(INITMIP_BMB_ANOM_FILE))
 if ( (trim(adjustl(INITMIP_BMB_ANOM_FILE)) /= 'none') &
@@ -1589,6 +1703,10 @@ target_topo_tau0 = target_topo_tau0 *year2sec   ! a -> s
 target_topo_tau_0 = TARGET_TOPO_TAU0 *year2sec   ! a -> s
 #endif
 
+#if (ACCSURFACE==7 && ABLSURFACE==7)
+target_topo_tau_0 = TARGET_TOPO_TAU0 *year2sec   ! a -> s
+#endif
+
 time = time_init
 
 !-------- Reading of present-day
@@ -1758,9 +1876,95 @@ n_slide_region = nint(field2d_aux)
 
 #endif
 
+!-------- Ice shelf basal melting --------
+
+n_bm_region = 0   ! initialization
+
+#if (FLOATING_ICE_BASAL_MELTING==6)
+
+!  ------ Read file defining the regions for ice shelf basal melting
+
+#if (!defined(N_BM_REGIONS) || N_BM_REGIONS<=1)
+
+n_bm_region = 1
+
+#else
+
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                     trim(BM_REGIONS_FILE)
+
+call read_2d_input(filename_with_path, &
+                   ch_var_name='n_bm_region', n_var_type=2, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
+
+n_bm_region = nint(field2d_aux)
+
+#endif
+
+!  ------ Read file with the present-day thermal forcing data of the ocean
+
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                     trim(TF_BM_PRESENT_FILE)
+
+ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+if (ios /= nf90_noerr) then
+   errormsg = ' >>> sico_init: Error when opening the file' &
+            //                 end_of_line &
+            //'                for the present-day thermal forcing data' &
+            //                 end_of_line &
+            //'                of the ocean!'
+   call error(errormsg)
+end if
+
+call check( nf90_inq_varid(ncid, 'z', ncv) )
+call check( nf90_get_var(ncid, ncv, z_tf_bm_present) )
+
+call check( nf90_inq_varid(ncid, 'thermal_forcing', ncv) )
+call check( nf90_get_var(ncid, ncv, tf_bm_present_aux) )
+
+call check( nf90_close(ncid) )
+
+if ( (z_tf_bm_present(0) < eps_dp).and.(z_tf_bm_present(NZ_TF_BM) < eps_dp) ) &
+   z_tf_bm_present = -z_tf_bm_present   ! ensure positive depth values
+
+do i=0, IMAX
+do j=0, JMAX
+do n=0, NZ_TF_BM
+   if (isnan(tf_bm_present_aux(i,j,n))) then
+      tf_bm_present(n,j,i) = no_value_neg_2
+   else
+      tf_bm_present(n,j,i) = tf_bm_present_aux(i,j,n)
+                             ! swap indices -> SICOPOLIS standard
+   end if
+end do
+end do
+end do
+
+if (.not.(approx_equal(z_tf_bm_present(0), ZMIN_TF_BM, eps_sp_dp))) then
+   errormsg = ' >>> sico_init: Inconsistency between' &
+            //         end_of_line &
+            //'        read z_tf_bm data' &
+            //         end_of_line &
+            //'        and parameter ZMIN_TF_BM!'
+   call error(errormsg)
+end if
+
+if (.not.(approx_equal(z_tf_bm_present(NZ_TF_BM)-z_tf_bm_present(0), &
+                       NZ_TF_BM*DZ_TF_BM, eps_sp_dp))) then
+   errormsg = ' >>> sico_init: Inconsistency between' &
+            //         end_of_line &
+            //'        read z_tf_bm data' &
+            //         end_of_line &
+            //'        and parameters NZ_TF_BM, DZ_TF_BM!'
+   call error(errormsg)
+end if
+
+#endif   /* (FLOATING_ICE_BASAL_MELTING==6) */
+
 !-------- Reading of the prescribed target topography --------
 
-#if (THK_EVOL==2 || THK_EVOL==3)
+#if ( (THK_EVOL==2 || THK_EVOL==3) || (ACCSURFACE==7 && ABLSURFACE==7) )
 
 target_topo_dat_name = trim(TARGET_TOPO_DAT_NAME)
 
@@ -1940,6 +2144,79 @@ call read_scalar_input(filename_with_path, &
                        'gi', ndata_gi_max, &
                        gi_time_min, gi_time_stp, gi_time_max, &
                        ndata_gi, glacial_index)
+
+#endif
+
+!-------- Reading of the surface-temperature and SMB climatology --------
+
+#if (TSURFACE==6 && ACCSURFACE==6 && ABLSURFACE==6)
+
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)// &
+                                   '/'//trim(TEMP_SMB_CLIMATOLOGY_FILE)
+
+ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+if (ios /= nf90_noerr) then
+   errormsg = ' >>> sico_init: Error when opening the file' &
+            //                 end_of_line &
+            //'                for the surface-temperature and SMB climatology!'
+   call error(errormsg)
+end if
+
+call check( nf90_inq_varid(ncid, 'ST_clim', ncv) )
+call check( nf90_get_var(ncid, ncv, temp_maat_climatol_conv) )
+call check( nf90_inquire_attribute(ncid, ncv, 'units', len=n_st_unit_length) )
+call check( nf90_get_att(ncid, ncv, 'units', ch_st_unit) )
+
+call check( nf90_inq_varid(ncid, 'SMB_clim', ncv) )
+call check( nf90_get_var(ncid, ncv, smb_climatol_conv) )
+call check( nf90_inquire_attribute(ncid, ncv, 'units', len=n_smb_unit_length) )
+call check( nf90_get_att(ncid, ncv, 'units', ch_smb_unit) )
+
+ios = nf90_inq_varid(ncid, 'surf_elev_ref', ncv)
+
+if (ios == nf90_noerr) then
+   call check( nf90_get_var(ncid, ncv, zs_ref_conv) )
+else
+   do i=0, IMAX
+   do j=0, JMAX
+      zs_ref_conv(i,j) = zs_ref(j,i)
+                         ! use previously read reference topography
+   end do
+   end do
+end if
+
+call check( nf90_close(ncid) )
+
+do i=0, IMAX
+do j=0, JMAX
+
+   if (trim(adjustl(ch_st_unit))=='K') then
+      temp_maat_climatol(j,i) = temp_maat_climatol_conv(i,j) - temp_C_to_K
+                                       ! K -> degC
+   else if (trim(adjustl(ch_st_unit))=='degC') then
+      temp_maat_climatol(j,i) = temp_maat_climatol_conv(i,j)
+                                       ! degC
+   else
+      errormsg = ' >>> sico_init: Unit of ST_clim could not be determined!'
+      call error(errormsg)
+   end if
+
+   if (trim(adjustl(ch_smb_unit))=='kg m-2 s-1') then
+      smb_climatol(j,i) = smb_climatol_conv(i,j) /RHO
+                                       ! kg/(m2*s) -> m/s ice equiv.
+   else if (trim(adjustl(ch_smb_unit))=='m a-1') then
+      smb_climatol(j,i) = smb_climatol_conv(i,j) *sec2year
+                                       ! m/a ice equiv. -> m/s ice equiv.
+   else
+      errormsg = ' >>> sico_init: Unit of SMB_clim could not be determined!'
+      call error(errormsg)
+   end if
+
+   zs_ref(j,i) = zs_ref_conv(i,j)
+
+end do
+end do
 
 #endif
 

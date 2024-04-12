@@ -132,6 +132,25 @@ real(dp) :: r_aux
 character(len=256) :: ch_aux
 logical, dimension(0:JMAX,0:IMAX) :: check_point
 
+#if (TSURFACE==6 && ACCSURFACE==6 && ABLSURFACE==6)
+integer(i4b)       :: n_year_CE_surf_clim
+integer(i4b)       :: n_cnt
+real(dp)           :: delta_ts_sum
+character(len= 16) :: ch_year_CE
+character(len=256) :: filename_with_path
+real(dp), dimension(0:IMAX,0:JMAX) :: temp_maat_anom_conv, &
+                                      dtemp_maat_dz_conv, &
+                                      smb_anom_conv, &
+                                      dsmb_dz_conv
+integer(i4b)        :: n_smb_anom_unit_length, n_dsmb_dz_unit_length
+character(len=64)   :: ch_smb_anom_unit, ch_dsmb_dz_unit
+#endif
+
+#if (ACCSURFACE==7 && ABLSURFACE==7)
+real(dp) :: target_topo_tau_inv
+real(dp) :: smb_no_ice
+#endif
+
 #if (defined(ANT) && ICE_SHELF_COLLAPSE_MASK==1)
 integer(i4b)       :: n_year_CE_isc
 character(len= 16) :: ch_year_CE_isc
@@ -296,6 +315,257 @@ else if (time_in_years < real(gi_time_max,dp)) then
 else
    glac_index  = glacial_index(ndata_gi)
 end if
+
+!-------- Reading of surface temperature and SMB
+!                                        directly from data --------
+
+#elif (TSURFACE==6 && ACCSURFACE==6 && ABLSURFACE==6)
+
+n_year_CE_surf_clim = n_year_CE
+
+if (n_year_CE_surf_clim < TEMP_SMB_ANOM_TIME_MIN) then
+   n_year_CE_surf_clim = TEMP_SMB_ANOM_TIME_MIN
+else if (n_year_CE_surf_clim > TEMP_SMB_ANOM_TIME_MAX) then
+   n_year_CE_surf_clim = TEMP_SMB_ANOM_TIME_MAX
+end if
+
+if ( firstcall%boundary &
+     .or.(n_year_CE_surf_clim /= n_year_CE_surf_clim_save) ) then
+
+   write(ch_year_CE, '(i0)') n_year_CE_surf_clim
+
+!  ------ Surface-temperature anomaly
+
+   if ( (trim(adjustl(TEMP_ANOM_FILES)) /= 'none') &
+        .and. &
+        (trim(adjustl(TEMP_ANOM_FILES)) /= 'None') &
+        .and. &
+        (trim(adjustl(TEMP_ANOM_FILES)) /= 'NONE') ) then
+
+      filename_with_path = trim(TEMP_SMB_ANOM_DIR)//'/'// &
+                           trim(TEMP_ANOM_SUBDIR)//'/'// &
+                           trim(TEMP_ANOM_FILES)//trim(ch_year_CE)//'.nc'
+
+      ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+      if (ios /= nf90_noerr) then
+         errormsg = ' >>> boundary: Error when opening the file' &
+                  //                end_of_line &
+                  //'               for the surface-temperature anomaly!'
+         call error(errormsg)
+      end if
+
+      call check( nf90_inq_varid(ncid, 'aST', ncv), thisroutine )
+      call check( nf90_get_var(ncid, ncv, temp_maat_anom_conv), thisroutine )
+
+      call check( nf90_close(ncid), thisroutine )
+
+   else
+
+      temp_maat_anom_conv = 0.0_dp
+
+   end if
+
+!  ------ Surface-temperature vertical gradient
+
+   if ( (trim(adjustl(dTEMPdz_FILES)) /= 'none') &
+        .and. &
+        (trim(adjustl(dTEMPdz_FILES)) /= 'None') &
+        .and. &
+        (trim(adjustl(dTEMPdz_FILES)) /= 'NONE') ) then
+
+      if ( (trim(adjustl(dTEMPdz_SUBDIR)) /= 'value') &
+           .and. &
+           (trim(adjustl(dTEMPdz_SUBDIR)) /= 'Value') &
+           .and. &
+           (trim(adjustl(dTEMPdz_SUBDIR)) /= 'VALUE') ) then  ! read from file
+
+         filename_with_path = trim(TEMP_SMB_ANOM_DIR)//'/'// &
+                              trim(dTEMPdz_SUBDIR)//'/'// &
+                              trim(dTEMPdz_FILES)//trim(ch_year_CE)//'.nc'
+
+         ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+         if (ios /= nf90_noerr) then
+            errormsg = ' >>> boundary: Error when opening the file' &
+                     //                end_of_line &
+                     //'        for the surface-temperature vertical gradient!'
+            call error(errormsg)
+         end if
+
+         call check( nf90_inq_varid(ncid, 'dSTdz', ncv), thisroutine )
+         call check( nf90_get_var(ncid, ncv, dtemp_maat_dz_conv), thisroutine )
+
+         call check( nf90_close(ncid), thisroutine )
+
+      else   ! use constant value
+
+         ch_aux = trim(adjustl(dTEMPdz_FILES))
+         read(ch_aux, *) r_aux
+         dtemp_maat_dz_conv = r_aux
+
+      end if
+
+   else
+
+      dtemp_maat_dz_conv = 0.0_dp
+
+   end if
+
+!  ------ SMB anomaly
+
+   if ( (trim(adjustl(SMB_ANOM_FILES)) /= 'none') &
+        .and. &
+        (trim(adjustl(SMB_ANOM_FILES)) /= 'None') &
+        .and. &
+        (trim(adjustl(SMB_ANOM_FILES)) /= 'NONE') ) then
+
+      filename_with_path = trim(TEMP_SMB_ANOM_DIR)//'/'// &
+                           trim(SMB_ANOM_SUBDIR)//'/'// &
+                           trim(SMB_ANOM_FILES)//trim(ch_year_CE)//'.nc'
+
+      ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+      if (ios /= nf90_noerr) then
+         errormsg = ' >>> boundary: Error when opening the file' &
+                  //                end_of_line &
+                  //'               for the SMB anomaly!'
+         call error(errormsg)
+      end if
+
+      call check( nf90_inq_varid(ncid, 'aSMB', ncv), thisroutine )
+      call check( nf90_get_var(ncid, ncv, smb_anom_conv), thisroutine )
+      call check( nf90_inquire_attribute(ncid, ncv, 'units', &
+                                         len=n_smb_anom_unit_length) )
+      call check( nf90_get_att(ncid, ncv, 'units', ch_smb_anom_unit) )
+
+      call check( nf90_close(ncid), thisroutine )
+
+      if (trim(adjustl(ch_smb_anom_unit))=='kg m-2 s-1') then
+         smb_anom_conv = smb_anom_conv *rho_inv
+                                       ! kg/(m2*s) -> m/s ice equiv.
+      else if (trim(adjustl(ch_smb_anom_unit))=='m a-1') then
+         smb_anom_conv = smb_anom_conv *sec2year
+                                       ! m/a ice equiv. -> m/s ice equiv.
+      else
+         errormsg = ' >>> boundary: ' &
+                       //'Unit of smb_anom_conv could not be determined!'
+         call error(errormsg)
+      end if
+
+   else
+
+      smb_anom_conv = 0.0_dp
+
+   end if
+
+!  ------ SMB vertical gradient
+
+   if ( (trim(adjustl(dSMBdz_FILES)) /= 'none') &
+        .and. &
+        (trim(adjustl(dSMBdz_FILES)) /= 'None') &
+        .and. &
+        (trim(adjustl(dSMBdz_FILES)) /= 'NONE') ) then
+
+      if ( (trim(adjustl(dSMBdz_SUBDIR)) /= 'value') &
+           .and. &
+           (trim(adjustl(dSMBdz_SUBDIR)) /= 'Value') &
+           .and. &
+           (trim(adjustl(dSMBdz_SUBDIR)) /= 'VALUE') ) then  ! read from file
+
+         filename_with_path = trim(TEMP_SMB_ANOM_DIR)//'/'// &
+                              trim(dSMBdz_SUBDIR)//'/'// &
+                              trim(dSMBdz_FILES)//trim(ch_year_CE)//'.nc'
+
+         ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+         if (ios /= nf90_noerr) then
+            errormsg = ' >>> boundary: Error when opening the file' &
+                     //                end_of_line &
+                     //'               for the SMB vertical gradient!'
+            call error(errormsg)
+         end if
+
+         call check( nf90_inq_varid(ncid, 'dSMBdz', ncv), thisroutine )
+         call check( nf90_get_var(ncid, ncv, dsmb_dz_conv), thisroutine )
+         call check( nf90_inquire_attribute(ncid, ncv, 'units', &
+                                            len=n_dsmb_dz_unit_length) )
+         call check( nf90_get_att(ncid, ncv, 'units', ch_dsmb_dz_unit) )
+
+         call check( nf90_close(ncid), thisroutine )
+
+         if ( &
+              (trim(adjustl(ch_dsmb_dz_unit))=='kg m-2 s-1 m-1') &
+              .or. &
+              (trim(adjustl(ch_dsmb_dz_unit))=='kg m-3 s-1') &
+            ) then
+            dsmb_dz_conv = dsmb_dz_conv *rho_inv
+                                      ! [kg/(m2*s)]/m -> [m/s ice equiv.]/m
+         else if ( &
+                   (trim(adjustl(ch_dsmb_dz_unit))=='m a-1 m-1') &
+                   .or. &
+                   (trim(adjustl(ch_dsmb_dz_unit))=='a-1') &
+                 ) then
+            dsmb_dz_conv = dsmb_dz_conv *sec2year
+                                      ! [m/a ice equiv.]/m -> [m/s ice equiv.]/m
+         else
+            errormsg = ' >>> boundary: ' &
+                          //'Unit of dsmb_dz_conv could not be determined!'
+            call error(errormsg)
+         end if
+
+      else   ! use constant value
+
+         ch_aux = trim(adjustl(dSMBdz_FILES))
+         read(ch_aux, *) r_aux
+         dsmb_dz_conv = r_aux *sec2year
+                              ! [m/a ice equiv.]/m -> [m/s ice equiv.]/m
+      end if
+
+   else
+
+      dsmb_dz_conv = 0.0_dp
+
+   end if
+
+!  ------ Conversion of all data
+
+   do i=0, IMAX
+   do j=0, JMAX
+      temp_maat_anom(j,i) = temp_maat_anom_conv(i,j)
+      dtemp_maat_dz(j,i)  = dtemp_maat_dz_conv(i,j)
+      smb_anom(j,i)       = smb_anom_conv(i,j)
+      dsmb_dz(j,i)        = dsmb_dz_conv(i,j)
+   end do
+   end do
+
+end if
+
+!  ------ Average surface temperature anomaly
+
+n_cnt        = 0
+delta_ts_sum = 0.0_dp
+
+do i=0, IMAX
+do j=0, JMAX
+
+   if (mask(j,i) /= 2) then   ! no ocean points
+      n_cnt        = n_cnt + 1
+      delta_ts_sum = delta_ts_sum + temp_maat_anom(j,i)
+   end if
+
+end do
+end do
+
+if (n_cnt > 0) then
+   delta_ts = delta_ts_sum/real(n_cnt,dp)
+else
+   delta_ts = no_value_neg_2
+end if
+
+!  ------ Save value of n_year_CE_surf_clim
+
+n_year_CE_surf_clim_save = n_year_CE_surf_clim
 
 #endif
 
@@ -758,7 +1028,15 @@ do j=0, JMAX
 
 #elif (TSURFACE==6)
 
-   ! ...
+   temp_ma(j,i) = temp_maat_climatol(j,i) &
+                     + temp_maat_anom(j,i) &
+                     + dtemp_maat_dz(j,i)*(zs(j,i)-zs_ref(j,i))
+
+   do n=1, 12   ! month counter
+      temp_mm(j,i,n) = temp_ma(j,i)
+                          ! not contained in read data,
+                          ! thus set to mean annual temperature
+   end do
 
 #endif
 
@@ -966,6 +1244,14 @@ do j=0, JMAX
                                                       ! mean annual precip
    end do
 
+#elif (ACCSURFACE==6 || ACCSURFACE==7)
+
+   precip(j,i,0) = 0.0_dp   ! only total SMB computed (further below)
+
+   do n=1, 12   ! month counter
+      precip(j,i,n) = 0.0_dp   ! only total SMB computed (further below)
+   end do
+
 #endif
 
 !    ---- Annual accumulation, snowfall and rainfall rates
@@ -1024,6 +1310,12 @@ do j=0, JMAX
 
    if (snowfall(j,i) < 0.0_dp) snowfall(j,i) = 0.0_dp   ! correction of
    if (rainfall(j,i) < 0.0_dp) rainfall(j,i) = 0.0_dp   ! negative values
+
+#elif (ACCSURFACE==6 || ACCSURFACE==7)
+
+   accum(j,i)    = 0.0_dp   ! only total SMB computed (further below)
+   snowfall(j,i) = 0.0_dp
+   rainfall(j,i) = 0.0_dp
 
 #endif
 
@@ -1099,6 +1391,12 @@ do j=0, JMAX
                        *max((temp_summer(j,i)-temp_lti(j,i)), 0.0_dp)
    runoff(j,i)    = melt(j,i) + rainfall(j,i)
 
+#elif (ABLSURFACE==6 || ABLSURFACE==7)
+
+   melt_star(j,i) = 0.0_dp   ! only total SMB computed (further below)
+   melt(j,i)      = 0.0_dp
+   runoff(j,i)    = 0.0_dp
+
 #endif
 
 end do
@@ -1109,6 +1407,34 @@ end do
 #if (ACCSURFACE<=5 && ABLSURFACE<=5)
 
 as_perp = accum - runoff
+
+#elif (ACCSURFACE==6 && ABLSURFACE==6)
+
+as_perp = smb_climatol  + smb_anom + dsmb_dz*(zs-zs_ref)
+
+accum  =  max(as_perp, 0.0_dp)
+runoff = -min(as_perp, 0.0_dp)
+
+#elif (ACCSURFACE==7 && ABLSURFACE==7)
+
+target_topo_tau_inv = 1.0_dp/target_topo_tau_0
+
+smb_no_ice = -1000.0_dp*sec2year   ! -1000 m/a -> m/s
+
+do i=0, IMAX
+do j=0, JMAX
+
+   if ((mask_target(j,i)==0).or.(mask_target(j,i)==3)) then
+      as_perp(j,i) = (zs_target(j,i)-zs(j,i))*target_topo_tau_inv
+   else
+      as_perp(j,i) = smb_no_ice
+   end if
+
+end do
+end do
+
+accum  =  max(as_perp, 0.0_dp)
+runoff = -min(as_perp, 0.0_dp)
 
 #endif
 
@@ -1167,6 +1493,10 @@ do j=0, JMAX
    end if
 end do
 end do
+
+#elif (TSURFACE==6)
+
+temp_s = temp_ma
 
 #endif
 
