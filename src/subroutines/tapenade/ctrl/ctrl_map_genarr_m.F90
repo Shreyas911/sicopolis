@@ -231,7 +231,7 @@ contains
     implicit none
 
     integer(i4b)        :: ctrl_index
-    integer(i4b)        :: igen_temp_c
+    integer(i4b)        :: igen_temp_c, igen_age_c
 
     xx_genarr3d_vars            = XX_GENARR3D_VARS_ARR
     xx_genarr3d_preproc         = XX_GENARR3D_PREPROC_ARR
@@ -240,6 +240,7 @@ contains
     xx_genarr3d_weight          = XX_GENARR3D_WEIGHT_ARR
 
     igen_temp_c = 0
+    igen_age_c = 0
 
     do ctrl_index = 1, NUM_CTRL_GENARR3D
       
@@ -250,7 +251,9 @@ contains
           //'Initial ice temperature as a control param is only compatible with ' &
           //'ANF_DAT==1 and TEMP_INIT<=5 or ANF_DAT==2!'
         call error(errormsg)
-#endif        
+#endif  
+      else if (trim(adjustl(xx_genarr3d_vars(ctrl_index))) .EQ. 'xx_age_c') then
+        igen_age_c = ctrl_index       
       else
         errormsg = ' >>> ctrl_map_ini_genarr3d: ' &
           //"This control variable is not in the genctrl3d setup yet!"
@@ -261,6 +264,9 @@ contains
 
     if (igen_temp_c .GT. 0) then
       call ctrl_map_genarr3d(temp_c, igen_temp_c)
+    end if
+    if (igen_age_c .GT. 0) then
+      call ctrl_map_genarr3d(age_c, igen_age_c)
     end if
     
   end subroutine ctrl_map_ini_genarr3d

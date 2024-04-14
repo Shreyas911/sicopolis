@@ -185,6 +185,7 @@ end subroutine grdchk_main
 #endif
             ! 3D fields
             temp_c       = 0.0 ! Not compatible with TEMP_INIT==5
+            age_c        = 0.0
 
             ! Reset flag_ad_sico_init for next iteration
             flag_ad_sico_init = .false.
@@ -360,10 +361,9 @@ end subroutine grdchk_main
             Pmax_arr       = 0.0
             mu_arr_orig    = 0.0
 #endif
-
-
             ! 3D fields
             temp_c       = 0.0 ! Not compatible with TEMP_INIT==5
+            age_c        = 0.0
 
             ! Reset flag_ad_sico_init for next iteration
             flag_ad_sico_init = .false.
