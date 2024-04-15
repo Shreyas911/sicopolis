@@ -140,7 +140,10 @@ end subroutine ice_mat_eqs_pars
 function ratefac_c(temp_val, temp_m_val)
 
 use sico_variables_m
-use sico_vars_m
+
+#if (defined(EISMINT) || defined(HEINO) || defined(MOCHO) || defined(NMARS) || defined(SMARS) || defined(XYZ))
+  use sico_vars_m
+#endif
 
 implicit none
 real(dp)             :: ratefac_c
@@ -167,7 +170,10 @@ end function ratefac_c
 function ratefac_t(omega_val)
 
 use sico_variables_m
-use sico_vars_m
+
+#if (defined(EISMINT) || defined(HEINO) || defined(MOCHO) || defined(NMARS) || defined(SMARS) || defined(XYZ))
+  use sico_vars_m
+#endif
 
 implicit none
 real(dp)             :: ratefac_t
@@ -184,7 +190,10 @@ end function ratefac_t
 function ratefac_c_t(temp_val, omega_val, temp_m_val)
 
 use sico_variables_m
-use sico_vars_m
+
+#if (defined(EISMINT) || defined(HEINO) || defined(MOCHO) || defined(NMARS) || defined(SMARS) || defined(XYZ))
+  use sico_vars_m
+#endif
 
 implicit none
 real(dp)             :: ratefac_c_t
@@ -213,7 +222,10 @@ end function ratefac_c_t
 function kappa_val(temp_val)
 
 use sico_variables_m
-use sico_vars_m
+
+#if (defined(EISMINT) || defined(HEINO) || defined(MOCHO) || defined(NMARS) || defined(SMARS) || defined(XYZ))
+  use sico_vars_m
+#endif
 
 implicit none
 real(dp)             :: kappa_val
@@ -254,7 +266,10 @@ end function kappa_val
 function c_val(temp_val)
 
 use sico_variables_m
-use sico_vars_m
+
+#if (defined(EISMINT) || defined(HEINO) || defined(MOCHO) || defined(NMARS) || defined(SMARS) || defined(XYZ))
+  use sico_vars_m
+#endif
 
 implicit none
 real(dp)             :: c_val
@@ -295,7 +310,10 @@ end function c_val
 function creep(sigma_val)
 
 use sico_variables_m
-use sico_vars_m
+
+#if (defined(EISMINT) || defined(HEINO) || defined(MOCHO) || defined(NMARS) || defined(SMARS) || defined(XYZ))
+  use sico_vars_m
+#endif
 
 implicit none
 
@@ -370,7 +388,10 @@ function viscosity(de_val, temp_val, temp_m_val, omega_val, enh_val, &
                    i_flag_cold_temp)
 
 use sico_variables_m
-use sico_vars_m
+
+#if (defined(EISMINT) || defined(HEINO) || defined(MOCHO) || defined(NMARS) || defined(SMARS) || defined(XYZ))
+  use sico_vars_m
+#endif
 
 implicit none
 

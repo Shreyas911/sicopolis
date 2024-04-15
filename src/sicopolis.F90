@@ -5,7 +5,7 @@
 !
 #define       MODEL_SICOPOLIS
 #define       VERSION '24'
-#define       DATE    '2024-04-04'
+#define       DATE    '2024-04-15'
 !
 !! Main program of SICOPOLIS.
 !!
@@ -103,11 +103,7 @@
 #include "subroutines/general/sico_types_m.F90"
 #include "subroutines/general/sico_variables_m.F90"
 
-#if (defined(ANT))
-#include "subroutines/ant/sico_vars_m.F90"
-#elif (defined(GRL))
-#include "subroutines/grl/sico_vars_m.F90"
-#elif (defined(EISMINT))
+#if (defined(EISMINT))
 #include "subroutines/eismint/sico_vars_m.F90"
 #elif (defined(HEINO))
 #include "subroutines/heino/sico_vars_m.F90"
@@ -117,7 +113,7 @@
 #include "subroutines/nmars/sico_vars_m.F90"
 #elif (defined(SMARS))
 #include "subroutines/smars/sico_vars_m.F90"
-#else
+#elif (defined(XYZ))
 #include "subroutines/xyz/sico_vars_m.F90"
 #endif
 
@@ -140,10 +136,8 @@
 #include "subroutines/general/calving_m.F90"
 #endif
 
-#if (defined(GRL))
-#if (DISC>0)
-#include "subroutines/grl/discharge_workers_m.F90"
-#endif
+#if (defined(GRL) && DISC>0)
+#include "subroutines/general/discharge_workers_m.F90"
 #endif
 
 #include "subroutines/general/calc_enhance_m.F90"
@@ -178,11 +172,7 @@
 
 #include "subroutines/general/output_m.F90"
 
-#if (defined(ANT))
-#include "subroutines/ant/boundary_m.F90"
-#elif (defined(GRL))
-#include "subroutines/grl/boundary_m.F90"
-#elif (defined(EISMINT))
+#if (defined(EISMINT))
 #include "subroutines/eismint/boundary_m.F90"
 #elif (defined(HEINO))
 #include "subroutines/heino/boundary_m.F90"
@@ -192,17 +182,15 @@
 #include "subroutines/nmars/boundary_m.F90"
 #elif (defined(SMARS))
 #include "subroutines/smars/boundary_m.F90"
-#else
+#elif (defined(XYZ))
 #include "subroutines/xyz/boundary_m.F90"
+#else
+#include "subroutines/general/boundary_m.F90"
 #endif
 
 #include "subroutines/general/init_temp_water_age_m.F90"
 
-#if (defined(ANT))
-#include "subroutines/ant/sico_init_m.F90"
-#elif (defined(GRL))
-#include "subroutines/grl/sico_init_m.F90"
-#elif (defined(EISMINT))
+#if (defined(EISMINT))
 #include "subroutines/eismint/sico_init_m.F90"
 #elif (defined(HEINO))
 #include "subroutines/heino/sico_init_m.F90"
@@ -212,8 +200,10 @@
 #include "subroutines/nmars/sico_init_m.F90"
 #elif (defined(SMARS))
 #include "subroutines/smars/sico_init_m.F90"
-#else
+#elif (defined(XYZ))
 #include "subroutines/xyz/sico_init_m.F90"
+#else
+#include "subroutines/general/sico_init_m.F90"
 #endif
 
 #include "subroutines/general/sico_main_loop_m.F90"
@@ -234,7 +224,10 @@ program sicopolis
 
 use sico_types_m
 use sico_variables_m
+
+#if (defined(EISMINT) || defined(HEINO) || defined(MOCHO) || defined(NMARS) || defined(SMARS) || defined(XYZ))
 use sico_vars_m
+#endif
 
 use sico_init_m
 use sico_main_loop_m

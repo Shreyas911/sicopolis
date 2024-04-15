@@ -58,7 +58,10 @@ contains
                          opt_flag_temp_age_only)
 
   use sico_variables_m
+
+#if (defined(EISMINT) || defined(HEINO) || defined(MOCHO) || defined(NMARS) || defined(SMARS) || defined(XYZ))
   use sico_vars_m
+#endif
 
   use netcdf
   use nc_check_m
@@ -1022,7 +1025,10 @@ contains
                                scalar_data)
 
   use sico_variables_m
+
+#if (defined(EISMINT) || defined(HEINO) || defined(MOCHO) || defined(NMARS) || defined(SMARS) || defined(XYZ))
   use sico_vars_m
+#endif
 
   use netcdf
   use nc_check_m
@@ -1128,7 +1134,10 @@ contains
                            n_ascii_header, field2d_r)
 
   use sico_variables_m
+
+#if (defined(EISMINT) || defined(HEINO) || defined(MOCHO) || defined(NMARS) || defined(SMARS) || defined(XYZ))
   use sico_vars_m
+#endif
 
   use netcdf
   use nc_check_m
@@ -1322,7 +1331,10 @@ contains
   subroutine read_phys_para()
 
   use sico_variables_m
+
+#if (defined(EISMINT) || defined(HEINO) || defined(MOCHO) || defined(NMARS) || defined(SMARS) || defined(XYZ))
   use sico_vars_m
+#endif
 
   use netcdf
   use nc_check_m
@@ -1616,7 +1628,10 @@ contains
   subroutine read_phys_para_value(n_unit, ch_para, d_para)
 
   use sico_variables_m
+
+#if (defined(EISMINT) || defined(HEINO) || defined(MOCHO) || defined(NMARS) || defined(SMARS) || defined(XYZ))
   use sico_vars_m
+#endif
 
   implicit none
 
@@ -1697,7 +1712,10 @@ contains
   subroutine read_age_data()
 
   use sico_variables_m
+
+#if (defined(EISMINT) || defined(HEINO) || defined(MOCHO) || defined(NMARS) || defined(SMARS) || defined(XYZ))
   use sico_vars_m
+#endif
 
   implicit none
 

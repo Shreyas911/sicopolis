@@ -35,8 +35,10 @@ module cost_m
 
   use sico_types_m  
   use sico_variables_m
-  use sico_vars_m
   use cost_io_m
+#if (defined(EISMINT) || defined(HEINO) || defined(MOCHO) || defined(NMARS) || defined(SMARS) || defined(XYZ))
+  use sico_vars_m
+#endif
 
   implicit none
 

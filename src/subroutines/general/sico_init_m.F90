@@ -34,8 +34,18 @@ module sico_init_m
 
   use sico_types_m
   use sico_variables_m
+
+#if (defined(EISMINT) || defined(HEINO) || defined(MOCHO) || defined(NMARS) || defined(SMARS) || defined(XYZ))
   use sico_vars_m
+#endif
+
   use error_m
+#if defined(ALLOW_TAPENADE)
+#if defined(ALLOW_GENCTRL)
+  use ctrl_init_genarr_m
+  use ctrl_map_gentim_m
+#endif /* ALLOW_GENCTRL */
+#endif /* ALLOW_TAPENADE */
 
   implicit none
 
@@ -54,16 +64,21 @@ subroutine sico_init(delta_ts, glac_index, &
                z_mar, &
                ndat2d, ndat3d, n_output)
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
   use compare_float_m
-#endif /* Normal */
-
   use ice_material_properties_m, only : ice_mat_eqs_pars
   use enth_temp_omega_m, only : calc_c_int_table, calc_c_int_inv_table, &
                                 enth_fct_temp_omega
 
   use netcdf
   use nc_check_m
+
+#if (defined(GRL) && DISC>0)
+#if (!defined(EXEC_MAKE_C_DIS_0))
+  use discharge_workers_m, only: disc_param, disc_fields
+#else /* defined(EXEC_MAKE_C_DIS_0) */
+  use discharge_workers_m, only: disc_param, disc_fields, calc_c_dis_0
+#endif
+#endif
 
 #if (GRID==0 || GRID==1)
   use stereo_proj_m
@@ -85,32 +100,37 @@ subroutine sico_init(delta_ts, glac_index, &
   use calc_dxyz_m
   use calc_temp_melt_bas_m
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
   use output_m
-#endif /* Normal */
+#endif /* NORMAL */
 
 implicit none
 
-integer(i4b),       intent(out) :: ndat2d, ndat3d
-integer(i4b),       intent(out) :: n_output
-real(dp),           intent(out) :: delta_ts, glac_index
-real(dp),           intent(out) :: mean_accum
-real(dp),           intent(out) :: dtime, dtime_temp, dtime_wss, &
-                                   dtime_out, dtime_ser
-real(dp),           intent(out) :: time, time_init, time_end, time_output(100)
-real(dp),           intent(out) :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
-real(dp),           intent(out) :: z_mar
+integer(i4b), intent(out) :: ndat2d, ndat3d
+integer(i4b), intent(out) :: n_output
+real(dp),     intent(out) :: delta_ts, glac_index
+real(dp),     intent(out) :: mean_accum
+real(dp),     intent(out) :: dtime, dtime_temp, dtime_wss
+real(dp),     intent(out) :: dtime_out, dtime_ser
+real(dp),     intent(out) :: time, time_init, time_end, time_output(100)
+real(dp),     intent(out) :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
+real(dp),     intent(out) :: z_mar
 
-integer(i4b)       :: i, j, kc, kt, kr, m, n, ir, jr, n1, n2
-integer(i4b)       :: ios, ios1, ios2, ios3, ios4
-integer(i4b)       :: istat, ierr
-integer(i4b)       :: n_q_geo_mod
-real(dp)           :: dtime0, dtime_temp0, dtime_wss0, dtime_out0, dtime_ser0
-real(dp)           :: time_init0, time_end0
+integer(i4b) :: i, j, kc, kt, kr, m, n, ir, jr, n1, n2
+integer(i4b) :: ios, ios1, ios2, ios3, ios4
+integer(i4b) :: istat, ierr
+integer(i4b) :: n_q_geo_mod
+real(dp) :: dtime0, dtime_temp0, dtime_wss0, dtime_out0, dtime_ser0
+real(dp) :: time_init0, time_end0
 #if (OUTPUT==2 || OUTPUT==3)
-real(dp)           :: time_output0(N_OUTPUT)
+real(dp) :: time_output0(N_OUTPUT)
 #endif
-real(dp)           :: d_dummy
+real(dp) :: d_dummy
+
+#if (defined(ANT))
+real(dp) :: larmip_qbm_anom_aux(5)
+#endif
+
 character(len=256) :: anfdatname, target_topo_dat_name
 character(len=256) :: filename_with_path
 character(len=256) :: shell_command
@@ -137,6 +157,43 @@ integer(i4b) :: p_weert_aux(N_SLIDE_REGIONS)
 integer(i4b) :: q_weert_aux(N_SLIDE_REGIONS)
 real(dp) :: c_slide_aux(N_SLIDE_REGIONS)
 real(dp) :: gamma_slide_aux(N_SLIDE_REGIONS)
+#endif
+
+#if (!defined(N_BM_REGIONS) || N_BM_REGIONS<=1)
+real(dp) :: gamma0_bm_aux(1)
+real(dp) :: delta_tf_bm_aux(1)
+#else
+real(dp) :: gamma0_bm_aux(N_BM_REGIONS)
+real(dp) :: delta_tf_bm_aux(N_BM_REGIONS)
+#endif
+
+#if (TSURFACE==6 && ACCSURFACE==6 && ABLSURFACE==6)
+real(dp), dimension(0:IMAX,0:JMAX) :: temp_maat_climatol_conv, &
+                                      smb_climatol_conv, &
+                                      zs_ref_conv
+integer(i4b)        :: n_st_unit_length, n_smb_unit_length
+character(len=64)   :: ch_st_unit, ch_smb_unit
+real(dp), parameter :: temp_C_to_K = 273.15_dp
+#endif
+
+#if (defined(ANT) || defined(GRL))
+character(len=64) :: ch_initmip_smb_anom_file
+#endif
+#if (defined(ANT))
+character(len=64) :: ch_initmip_bmb_anom_file
+character(len=64) :: ch_larmip_regions_file
+#endif
+
+#if (FLOATING_ICE_BASAL_MELTING==6)
+real(dp), dimension(0:IMAX,0:JMAX,0:NZ_TF_BM) :: tf_bm_present_aux
+#endif
+
+#if (defined(ANT) && ICE_SHELF_COLLAPSE_MASK==1)
+real(dp), dimension(0:IMAX,0:JMAX) :: H_ref_retreat_conv
+#endif
+
+#if (defined(GRL) && RETREAT_MASK==1)
+real(dp), dimension(0:IMAX,0:JMAX) :: H_ref_retreat_conv
 #endif
 
 integer(i4b) :: dimid, ncid, ncv
@@ -227,15 +284,23 @@ time_init   = 0.0_dp
 time_end    = 0.0_dp
 time_output = 0.0_dp
 
+!-------- Initialization of Tapenade generic control --------
+
+#if defined(ALLOW_TAPENADE)
+#if defined(ALLOW_GENCTRL)
+  call ctrl_init_genarr()
+#endif /* ALLOW_GENCTRL */
+#endif /* ALLOW_TAPENADE */
+
 !-------- Initialization of the Library of Iterative Solvers Lis,
 !                                                     if required --------
 
 #if (MARGIN==3 || DYNAMICS==2)
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
   call lis_initialize(ierr)
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
   call lis_init_f(ierr)
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 #endif
 
 !-------- Read physical parameters --------
@@ -280,8 +345,6 @@ call error(errormsg)
 
 !-------- Compatibility check of the horizontal resolution with the
 !         number of grid points --------
-
-#if !defined(ALLOW_TAPENADE) /* Normal */
 
 #if (!defined(CHECK_RES_IMAX_JMAX) || CHECK_RES_IMAX_JMAX==1)
 
@@ -417,13 +480,6 @@ write(6, fmt='(a)') ' '
 
 #endif /* CHECK_RES_IMAX_JMAX */
 
-#else /* Tapenade */
-
-print *, ' >>> sico_init: grid compatibility check not performed'
-print *, '          in adjoint applications; check manually.' 
-
-#endif /* Normal vs. Tapenade */
-
 !-------- Compatibility check of the thermodynamics mode
 !         (cold vs. polythermal vs. enthalpy method)
 !         and the number of grid points in the lower (kt) ice domain --------
@@ -452,6 +508,51 @@ call error(errormsg)
 errormsg = ' >>> sico_init: ' &
               //'Options TSURFACE==5 and ACCSURFACE==5 must be used together!'
 call error(errormsg)
+#endif
+
+#if (TSURFACE == 6)
+#if (ACCSURFACE != 6 || ABLSURFACE != 6)
+errormsg = ' >>> sico_init: Options TSURFACE==6, ACCSURFACE==6, ABLSURFACE==6' &
+         //         end_of_line &
+         //'        must be used together!'
+call error(errormsg)
+#endif
+#endif
+
+#if (ACCSURFACE == 6)
+#if (TSURFACE != 6 || ABLSURFACE != 6)
+errormsg = ' >>> sico_init: Options TSURFACE==6, ACCSURFACE==6, ABLSURFACE==6' &
+         //         end_of_line &
+         //'        must be used together!'
+call error(errormsg)
+#endif
+#endif
+
+#if (ABLSURFACE == 6)
+#if (TSURFACE != 6 || ACCSURFACE != 6)
+errormsg = ' >>> sico_init: Options TSURFACE==6, ACCSURFACE==6, ABLSURFACE==6' &
+         //         end_of_line &
+         //'        must be used together!'
+call error(errormsg)
+#endif
+#endif
+
+#if (ACCSURFACE == 7)
+#if (ABLSURFACE != 7)
+errormsg = ' >>> sico_init: Options ACCSURFACE==7, ABLSURFACE==7' &
+         //         end_of_line &
+         //'        must be used together!'
+call error(errormsg)
+#endif
+#endif
+
+#if (ABLSURFACE == 7)
+#if (ACCSURFACE != 7)
+errormsg = ' >>> sico_init: Options ACCSURFACE==7, ABLSURFACE==7' &
+         //         end_of_line &
+         //'        must be used together!'
+call error(errormsg)
+#endif
 #endif
 
 !-------- Compatibility check of discretization schemes for the horizontal and
@@ -489,6 +590,11 @@ forcing_flag = 1   ! forcing by delta_ts
 
 forcing_flag = 2   ! forcing by glac_index
 
+#elif (TSURFACE == 6)
+
+forcing_flag = 3   ! forcing by time-dependent surface temperature
+                   ! and SMB data
+
 #endif
 
 !-------- Initialization of numerical time steps --------
@@ -509,6 +615,14 @@ ndat2d = 1
 ndat3d = 1
 
 flag_calc_temp = .true.
+
+#if (defined(ANT) || defined(GRL))
+flag_initmip_asmb = .false.
+#endif
+#if (defined(ANT))
+flag_initmip_abmb = .false.
+flag_larmip       = .false.
+#endif
 
 !-------- General abbreviations --------
 
@@ -763,11 +877,11 @@ call system(trim(shell_command))
 
 filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.log'
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 open(10, iostat=ios, file=trim(filename_with_path), status='new')
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 open(10, iostat=ios, file=trim(filename_with_path))
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
 
 if (ios /= 0) then
    errormsg = ' >>> sico_init: Error when opening the log file!'
@@ -817,6 +931,9 @@ write(10, fmt=trim(fmt3)) 'dtime      =', dtime0
 write(10, fmt=trim(fmt3)) 'dtime_temp =', dtime_temp0
 #if (REBOUND==2)
 write(10, fmt=trim(fmt3)) 'dtime_wss  =', dtime_wss0
+#endif
+#if (defined(GRL) && DISC>0)
+write(10, fmt=trim(fmt3)) 'dtime_mar_coa =', DTIME_MAR_COA0
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
@@ -1024,9 +1141,24 @@ write(10, fmt=trim(fmt1)) ' '
 
 write(10, fmt=trim(fmt2)) 'TSURFACE = ', TSURFACE
 
+#if (TSURFACE<=5)
+
+#if (defined(ANT) || defined(GRL)) /* Antarctica or Greenland */
+
+write(10, fmt=trim(fmt2)) 'TEMP_PRESENT_PARA = ', TEMP_PRESENT_PARA
+#if (defined(TEMP_PRESENT_OFFSET))
+write(10, fmt=trim(fmt3))  'TEMP_PRESENT_OFFSET =', TEMP_PRESENT_OFFSET
+#endif
+
+#else /* other than Antarctica or Greenland */
+
 write(10, fmt=trim(fmt1)) 'temp_present file = '//TEMP_PRESENT_FILE
 #if (defined(TOPO_LAPSE_RATE))
 write(10, fmt=trim(fmt3)) 'topo_lapse_rate =', TOPO_LAPSE_RATE
+#endif
+
+#endif
+
 #endif
 
 #if (TSURFACE==1)
@@ -1128,6 +1260,105 @@ write(10, fmt=trim(fmt2)) 'MB_ACCOUNT = ', MB_ACCOUNT
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
+#if (TSURFACE==6 && ACCSURFACE==6 && ABLSURFACE==6)
+write(10, fmt=trim(fmt1)) 'TEMP_SMB_CLIMATOLOGY_FILE = ' &
+                             //TEMP_SMB_CLIMATOLOGY_FILE
+write(10, fmt=trim(fmt1)) 'TEMP_SMB_ANOM_DIR = '//TEMP_SMB_ANOM_DIR
+write(10, fmt=trim(fmt1)) 'TEMP_ANOM_SUBDIR  = '//TEMP_ANOM_SUBDIR
+write(10, fmt=trim(fmt1)) 'TEMP_ANOM_FILES   = '//TEMP_ANOM_FILES
+write(10, fmt=trim(fmt1)) 'dTEMPdz_SUBDIR    = '//dTEMPdz_SUBDIR
+write(10, fmt=trim(fmt1)) 'dTEMPdz_FILES     = '//dTEMPdz_FILES
+write(10, fmt=trim(fmt1)) 'SMB_ANOM_SUBDIR   = '//SMB_ANOM_SUBDIR
+write(10, fmt=trim(fmt1)) 'SMB_ANOM_FILES    = '//SMB_ANOM_FILES
+write(10, fmt=trim(fmt1)) 'dSMBdz_SUBDIR     = '//dSMBdz_SUBDIR
+write(10, fmt=trim(fmt1)) 'dSMBdz_FILES      = '//dSMBdz_FILES
+write(10, fmt=trim(fmt2)) 'TEMP_SMB_ANOM_TIME_MIN = ', TEMP_SMB_ANOM_TIME_MIN
+write(10, fmt=trim(fmt2)) 'TEMP_SMB_ANOM_TIME_MAX = ', TEMP_SMB_ANOM_TIME_MAX
+write(10, fmt=trim(fmt1)) ' '
+#endif
+
+#if (ACCSURFACE==7 && ABLSURFACE==7)
+write(10, fmt=trim(fmt3)) 'target_topo_tau_0 =', TARGET_TOPO_TAU0
+write(10, fmt=trim(fmt1)) 'Target-topography file = '//TARGET_TOPO_DAT_NAME
+write(10, fmt=trim(fmt1)) 'Path to target-topography file = '//TARGET_TOPO_PATH
+write(10, fmt=trim(fmt1)) ' '
+#endif
+
+#if (defined(SMB_CORR_FILE))
+if ( (trim(adjustl(SMB_CORR_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(SMB_CORR_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(SMB_CORR_FILE)) /= 'NONE') ) then
+   write(10, fmt=trim(fmt1)) 'smb_corr_file = '//SMB_CORR_FILE
+   write(10, fmt=trim(fmt1)) ' '
+end if
+#endif
+
+#if ((defined(ANT) || defined(GRL)) && defined(INITMIP_SMB_ANOM_FILE))
+if ( (trim(adjustl(INITMIP_SMB_ANOM_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(INITMIP_SMB_ANOM_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(INITMIP_SMB_ANOM_FILE)) /= 'NONE') ) then
+   flag_initmip_asmb = .true.
+   ch_initmip_smb_anom_file = trim(adjustl(INITMIP_SMB_ANOM_FILE))
+   write(10, fmt=trim(fmt1)) 'initmip_smb_anom file = ' &
+                                // trim(ch_initmip_smb_anom_file)
+   write(10, fmt=trim(fmt1)) ' '
+end if
+#endif
+
+#if (defined(ANT) && defined(ICE_SHELF_COLLAPSE_MASK))
+write(10, fmt=trim(fmt2)) 'ICE_SHELF_COLLAPSE_MASK = ', ICE_SHELF_COLLAPSE_MASK
+#if (ICE_SHELF_COLLAPSE_MASK==1)
+write(10, fmt=trim(fmt1)) 'ICE_SHELF_COLLAPSE_MASK_DIR   = ' &
+                             //ICE_SHELF_COLLAPSE_MASK_DIR
+write(10, fmt=trim(fmt1)) 'ICE_SHELF_COLLAPSE_MASK_FILES = ' &
+                             //ICE_SHELF_COLLAPSE_MASK_FILES
+write(10, fmt=trim(fmt1)) 'ICE_SHELF_COLLAPSE_MASK_H_REF_FILE = ' &
+                             //ICE_SHELF_COLLAPSE_MASK_H_REF_FILE
+write(10, fmt=trim(fmt2)) 'ICE_SHELF_COLLAPSE_MASK_TIME_MIN = ', &
+                             ICE_SHELF_COLLAPSE_MASK_TIME_MIN
+write(10, fmt=trim(fmt2)) 'ICE_SHELF_COLLAPSE_MASK_TIME_MAX = ', &
+                             ICE_SHELF_COLLAPSE_MASK_TIME_MAX
+#endif
+write(10, fmt=trim(fmt1)) ' '
+#endif
+
+#if (defined(GRL) && defined(RETREAT_MASK))
+write(10, fmt=trim(fmt2)) 'RETREAT_MASK = ', RETREAT_MASK
+#if (RETREAT_MASK==1)
+write(10, fmt=trim(fmt1)) 'RETREAT_MASK_DIR   = '//RETREAT_MASK_DIR
+write(10, fmt=trim(fmt1)) 'RETREAT_MASK_FILES = '//RETREAT_MASK_FILES
+write(10, fmt=trim(fmt1)) 'RETREAT_MASK_H_REF_FILE = '//RETREAT_MASK_H_REF_FILE
+write(10, fmt=trim(fmt2)) 'RETREAT_MASK_TIME_MIN = ', RETREAT_MASK_TIME_MIN
+write(10, fmt=trim(fmt2)) 'RETREAT_MASK_TIME_MAX = ', RETREAT_MASK_TIME_MAX
+#endif
+write(10, fmt=trim(fmt1)) ' '
+#endif
+
+#if (defined(GRL) && defined(DISC))
+write(10, fmt=trim(fmt2)) 'DISC = ', DISC
+#if (DISC>0)
+write(10, fmt=trim(fmt3)) 'c_dis_0   =', C_DIS_0
+write(10, fmt=trim(fmt3)) 'c_dis_fac =', C_DIS_FAC
+write(10, fmt=trim(fmt3)) 'm_H       =', M_H
+write(10, fmt=trim(fmt3)) 'm_D       =', M_D
+write(10, fmt=trim(fmt3)) 'r_mar_eff =', R_MAR_EFF
+#if (defined(S_DIS))
+write(10, fmt=trim(fmt3)) 's_dis     =', S_DIS
+#endif
+#if (defined(ALPHA_SUB))
+write(10, fmt=trim(fmt3)) 'alpha_sub =', ALPHA_SUB
+#endif
+#if (defined(ALPHA_O))
+write(10, fmt=trim(fmt3)) 'alpha_o   =', ALPHA_O
+#endif
+#endif
+write(10, fmt=trim(fmt1)) ' '
+#endif
+
 write(10, fmt=trim(fmt2)) 'SEA_LEVEL = ', SEA_LEVEL
 #if (SEA_LEVEL==1)
 write(10, fmt=trim(fmt3)) 'z_sl0 =', Z_SL0
@@ -1224,6 +1455,7 @@ write(10, fmt=trim(fmt1)) ' '
 #endif
 
 #if (MARGIN==3)
+
 write(10, fmt=trim(fmt2)) 'FLOATING_ICE_BASAL_MELTING = ', FLOATING_ICE_BASAL_MELTING
 #if (FLOATING_ICE_BASAL_MELTING==1)
 write(10, fmt=trim(fmt3)) 'qbm_float_1 =', QBM_FLOAT_1
@@ -1237,7 +1469,66 @@ write(10, fmt=trim(fmt3)) 'alpha_qbm  =', ALPHA_QBM
 #endif
 write(10, fmt=trim(fmt3)) 'H_w_0 =', H_W_0
 write(10, fmt=trim(fmt1)) ' '
+
+#if (FLOATING_ICE_BASAL_MELTING==6)
+write(10, fmt=trim(fmt2)) 'n_bm_regions = ', N_BM_REGIONS
+write(10, fmt=trim(fmt1)) 'bm_regions_file = '//BM_REGIONS_FILE
+gamma0_bm_aux   = GAMMA0_BM
+delta_tf_bm_aux = DELTA_TF_BM
+write(10, fmt=trim(fmt3)) 'gamma0_bm =', gamma0_bm_aux(1)
+do n=2, N_BM_REGIONS
+   write(10, fmt=trim(fmt3)) '           ', gamma0_bm_aux(n)
+end do
+write(10, fmt=trim(fmt3)) 'delta_tf_bm =', delta_tf_bm_aux(1)
+do n=2, N_BM_REGIONS
+   write(10, fmt=trim(fmt3)) '             ', delta_tf_bm_aux(n)
+end do
+write(10, fmt=trim(fmt1)) 'tf_bm_present_file = '//TF_BM_PRESENT_FILE
+write(10, fmt=trim(fmt1)) 'tf_bm_dir   = '//TF_BM_DIR
+write(10, fmt=trim(fmt1)) 'tf_bm_files = '//TF_BM_FILES
+write(10, fmt=trim(fmt2)) 'tf_bm_time_min = ', TF_BM_TIME_MIN
+write(10, fmt=trim(fmt2)) 'tf_bm_time_max = ', TF_BM_TIME_MAX
+write(10, fmt=trim(fmt3)) 'zmin_tf_bm =',  ZMIN_TF_BM
+write(10, fmt=trim(fmt2)) 'nz_tf_bm   = ', NZ_TF_BM
+write(10, fmt=trim(fmt3)) 'dz_tf_bm   =',  DZ_TF_BM
+write(10, fmt=trim(fmt1)) ' '
 #endif
+
+#if (defined(ANT) && defined(INITMIP_BMB_ANOM_FILE))
+if ( (trim(adjustl(INITMIP_BMB_ANOM_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(INITMIP_BMB_ANOM_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(INITMIP_BMB_ANOM_FILE)) /= 'NONE') ) then
+   flag_initmip_abmb = .true.
+   ch_initmip_bmb_anom_file = trim(adjustl(INITMIP_BMB_ANOM_FILE))
+   write(10, fmt=trim(fmt1)) 'initmip_bmb_anom file = ' &
+                                // trim(ch_initmip_bmb_anom_file)
+   write(10, fmt=trim(fmt1)) ' '
+end if
+#endif
+
+#if (defined(ANT) && defined(LARMIP_REGIONS_FILE))
+if ( (trim(adjustl(LARMIP_REGIONS_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(LARMIP_REGIONS_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(LARMIP_REGIONS_FILE)) /= 'NONE') ) then
+   flag_larmip = .true.
+   ch_larmip_regions_file = trim(adjustl(LARMIP_REGIONS_FILE))
+   write(10, fmt=trim(fmt1)) 'larmip_regions_file = ' &
+                                // trim(ch_larmip_regions_file)
+   larmip_qbm_anom_aux = LARMIP_QBM_ANOM
+   write(10, fmt=trim(fmt3)) 'larmip_qbm_anom_1 =', larmip_qbm_anom_aux(1)
+   write(10, fmt=trim(fmt3)) 'larmip_qbm_anom_2 =', larmip_qbm_anom_aux(2)
+   write(10, fmt=trim(fmt3)) 'larmip_qbm_anom_3 =', larmip_qbm_anom_aux(3)
+   write(10, fmt=trim(fmt3)) 'larmip_qbm_anom_4 =', larmip_qbm_anom_aux(4)
+   write(10, fmt=trim(fmt3)) 'larmip_qbm_anom_5 =', larmip_qbm_anom_aux(5)
+   write(10, fmt=trim(fmt1)) ' '
+end if
+#endif
+
+#endif /* MARGIN==3 */
 
 write(10, fmt=trim(fmt2)) 'REBOUND = ', REBOUND
 #if (REBOUND==1)
@@ -1371,8 +1662,6 @@ do n=1, n_output
 end do
 #endif
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
-
 if (.not.approx_integer_multiple(dtime_temp, dtime, eps_sp_dp)) then
    errormsg = ' >>> sico_init: dtime_temp must be a multiple of dtime!'
    call error(errormsg)
@@ -1397,14 +1686,6 @@ if (.not.approx_integer_multiple(dtime_out, dtime, eps_sp_dp)) then
 end if
 #endif
 
-#else /* Tapenade */
-
-print *, ' >>> sico_init: not checking that time steps are '
-print *, '                multiples of each other in adjoint mode;'
-print *, '                check manually.'
-
-#endif /* Normal vs. Tapenade */
-
 #if (THK_EVOL==2)
 
 filename_with_path = trim(IN_PATH)//'/general/'//trim(TARGET_TOPO_TAU0_FILE)
@@ -1420,6 +1701,10 @@ target_topo_tau0 = target_topo_tau0 *year2sec   ! a -> s
 #endif
 
 #if (THK_EVOL==3)
+target_topo_tau_0 = TARGET_TOPO_TAU0 *year2sec   ! a -> s
+#endif
+
+#if (ACCSURFACE==7 && ABLSURFACE==7)
 target_topo_tau_0 = TARGET_TOPO_TAU0 *year2sec   ! a -> s
 #endif
 
@@ -1592,9 +1877,95 @@ n_slide_region = nint(field2d_aux)
 
 #endif
 
+!-------- Ice shelf basal melting --------
+
+n_bm_region = 0   ! initialization
+
+#if (FLOATING_ICE_BASAL_MELTING==6)
+
+!  ------ Read file defining the regions for ice shelf basal melting
+
+#if (!defined(N_BM_REGIONS) || N_BM_REGIONS<=1)
+
+n_bm_region = 1
+
+#else
+
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                     trim(BM_REGIONS_FILE)
+
+call read_2d_input(filename_with_path, &
+                   ch_var_name='n_bm_region', n_var_type=2, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
+
+n_bm_region = nint(field2d_aux)
+
+#endif
+
+!  ------ Read file with the present-day thermal forcing data of the ocean
+
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                     trim(TF_BM_PRESENT_FILE)
+
+ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+if (ios /= nf90_noerr) then
+   errormsg = ' >>> sico_init: Error when opening the file' &
+            //                 end_of_line &
+            //'                for the present-day thermal forcing data' &
+            //                 end_of_line &
+            //'                of the ocean!'
+   call error(errormsg)
+end if
+
+call check( nf90_inq_varid(ncid, 'z', ncv) )
+call check( nf90_get_var(ncid, ncv, z_tf_bm_present) )
+
+call check( nf90_inq_varid(ncid, 'thermal_forcing', ncv) )
+call check( nf90_get_var(ncid, ncv, tf_bm_present_aux) )
+
+call check( nf90_close(ncid) )
+
+if ( (z_tf_bm_present(0) < eps_dp).and.(z_tf_bm_present(NZ_TF_BM) < eps_dp) ) &
+   z_tf_bm_present = -z_tf_bm_present   ! ensure positive depth values
+
+do i=0, IMAX
+do j=0, JMAX
+do n=0, NZ_TF_BM
+   if (isnan(tf_bm_present_aux(i,j,n))) then
+      tf_bm_present(n,j,i) = no_value_neg_2
+   else
+      tf_bm_present(n,j,i) = tf_bm_present_aux(i,j,n)
+                             ! swap indices -> SICOPOLIS standard
+   end if
+end do
+end do
+end do
+
+if (.not.(approx_equal(z_tf_bm_present(0), ZMIN_TF_BM, eps_sp_dp))) then
+   errormsg = ' >>> sico_init: Inconsistency between' &
+            //         end_of_line &
+            //'        read z_tf_bm data' &
+            //         end_of_line &
+            //'        and parameter ZMIN_TF_BM!'
+   call error(errormsg)
+end if
+
+if (.not.(approx_equal(z_tf_bm_present(NZ_TF_BM)-z_tf_bm_present(0), &
+                       NZ_TF_BM*DZ_TF_BM, eps_sp_dp))) then
+   errormsg = ' >>> sico_init: Inconsistency between' &
+            //         end_of_line &
+            //'        read z_tf_bm data' &
+            //         end_of_line &
+            //'        and parameters NZ_TF_BM, DZ_TF_BM!'
+   call error(errormsg)
+end if
+
+#endif   /* (FLOATING_ICE_BASAL_MELTING==6) */
+
 !-------- Reading of the prescribed target topography --------
 
-#if (THK_EVOL==2 || THK_EVOL==3)
+#if ( (THK_EVOL==2 || THK_EVOL==3) || (ACCSURFACE==7 && ABLSURFACE==7) )
 
 target_topo_dat_name = trim(TARGET_TOPO_DAT_NAME)
 
@@ -1633,7 +2004,7 @@ end if
 
 #endif
 
-!-------- Reading of present topography mask --------
+!-------- Reading of present-day topography mask --------
 
 #if (GRID==0 || GRID==1)
 
@@ -1653,7 +2024,11 @@ call error(errormsg)
 
 #endif
 
-!-------- Reading of data for present monthly-mean surface temperature --------
+!-------- Reading of present-day monthly mean surface temperature --------
+
+#if (!defined(ANT) && !defined(GRL)) /* other than Antarctica or Greenland */
+
+#if (TSURFACE<=5)
 
 #if (GRID==0 || GRID==1)
 
@@ -1680,6 +2055,10 @@ end do
 
 errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
 call error(errormsg)
+
+#endif
+
+#endif
 
 #endif
 
@@ -1769,6 +2148,239 @@ call read_scalar_input(filename_with_path, &
 
 #endif
 
+!-------- Reading of the surface-temperature and SMB climatology --------
+
+#if (TSURFACE==6 && ACCSURFACE==6 && ABLSURFACE==6)
+
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)// &
+                                   '/'//trim(TEMP_SMB_CLIMATOLOGY_FILE)
+
+ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+if (ios /= nf90_noerr) then
+   errormsg = ' >>> sico_init: Error when opening the file' &
+            //                 end_of_line &
+            //'                for the surface-temperature and SMB climatology!'
+   call error(errormsg)
+end if
+
+call check( nf90_inq_varid(ncid, 'ST_clim', ncv) )
+call check( nf90_get_var(ncid, ncv, temp_maat_climatol_conv) )
+call check( nf90_inquire_attribute(ncid, ncv, 'units', len=n_st_unit_length) )
+call check( nf90_get_att(ncid, ncv, 'units', ch_st_unit) )
+
+call check( nf90_inq_varid(ncid, 'SMB_clim', ncv) )
+call check( nf90_get_var(ncid, ncv, smb_climatol_conv) )
+call check( nf90_inquire_attribute(ncid, ncv, 'units', len=n_smb_unit_length) )
+call check( nf90_get_att(ncid, ncv, 'units', ch_smb_unit) )
+
+ios = nf90_inq_varid(ncid, 'surf_elev_ref', ncv)
+
+if (ios == nf90_noerr) then
+   call check( nf90_get_var(ncid, ncv, zs_ref_conv) )
+else
+   do i=0, IMAX
+   do j=0, JMAX
+      zs_ref_conv(i,j) = zs_ref(j,i)
+                         ! use previously read reference topography
+   end do
+   end do
+end if
+
+call check( nf90_close(ncid) )
+
+do i=0, IMAX
+do j=0, JMAX
+
+   if (trim(adjustl(ch_st_unit))=='K') then
+      temp_maat_climatol(j,i) = temp_maat_climatol_conv(i,j) - temp_C_to_K
+                                       ! K -> degC
+   else if (trim(adjustl(ch_st_unit))=='degC') then
+      temp_maat_climatol(j,i) = temp_maat_climatol_conv(i,j)
+                                       ! degC
+   else
+      errormsg = ' >>> sico_init: Unit of ST_clim could not be determined!'
+      call error(errormsg)
+   end if
+
+   if (trim(adjustl(ch_smb_unit))=='kg m-2 s-1') then
+      smb_climatol(j,i) = smb_climatol_conv(i,j) /RHO
+                                       ! kg/(m2*s) -> m/s ice equiv.
+   else if (trim(adjustl(ch_smb_unit))=='m a-1') then
+      smb_climatol(j,i) = smb_climatol_conv(i,j) *sec2year
+                                       ! m/a ice equiv. -> m/s ice equiv.
+   else
+      errormsg = ' >>> sico_init: Unit of SMB_clim could not be determined!'
+      call error(errormsg)
+   end if
+
+   zs_ref(j,i) = zs_ref_conv(i,j)
+
+end do
+end do
+
+#endif
+
+!-------- Prescribed surface mass balance correction --------
+
+smb_corr_in = 0.0_dp
+
+#if (defined(SMB_CORR_FILE))
+
+if ( (trim(adjustl(SMB_CORR_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(SMB_CORR_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(SMB_CORR_FILE)) /= 'NONE') ) then
+
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(SMB_CORR_FILE)
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='DSMB', n_var_type=1, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
+
+   smb_corr_in = field2d_aux *sec2year
+                             ! m/a ice equiv. -> m/s ice equiv.
+
+end if
+
+#endif
+
+!-------- Reading of ISMIP6 SMB and BMB anomaly data --------
+
+!  ------ Antarctica or Greenland: SMB (InitMIP)
+
+#if (defined(ANT) || defined(GRL))
+
+if (flag_initmip_asmb) then
+
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)// &
+                                      '/'//trim(ch_initmip_smb_anom_file)
+
+   ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+   if (ios /= nf90_noerr) then
+      errormsg = ' >>> sico_init: Error when opening the file' &
+               //                 end_of_line &
+               //'                for the ISMIP6 SMB anomaly data!'
+      call error(errormsg)
+   end if
+
+#if (defined(GRL))
+   call check( nf90_inq_varid(ncid, 'DSMB', ncv) )
+#else
+   call check( nf90_inq_varid(ncid, 'asmb', ncv) )
+#endif
+
+   call check( nf90_get_var(ncid, ncv, field2d_tra_aux) )
+
+   call check( nf90_close(ncid) )
+
+   do i=0, IMAX
+   do j=0, JMAX
+      smb_anom_initmip(j,i) = field2d_tra_aux(i,j) *sec2year
+                                   ! m/a ice equiv. -> m/s ice equiv.
+   end do
+   end do
+
+else
+   smb_anom_initmip = 0.0_dp
+end if
+
+#endif
+
+!  ------ Antarctica only: BMB (InitMIP)
+
+#if (defined(ANT))
+
+if (flag_initmip_abmb) then
+
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)// &
+                                      '/'//trim(ch_initmip_bmb_anom_file)
+
+   ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+   if (ios /= nf90_noerr) then
+      errormsg = ' >>> sico_init: Error when opening the file' &
+               //                 end_of_line &
+               //'                for the ISMIP6 BMB anomaly data!'
+      call error(errormsg)
+   end if
+
+   call check( nf90_inq_varid(ncid, 'abmb', ncv) )
+   call check( nf90_get_var(ncid, ncv, field2d_tra_aux) )
+
+   call check( nf90_close(ncid) )
+
+   do i=0, IMAX
+   do j=0, JMAX
+      ab_anom_initmip(j,i) = field2d_tra_aux(i,j) *sec2year
+                                   ! m/a ice equiv. -> m/s ice equiv.
+   end do
+   end do
+
+else
+   ab_anom_initmip = 0.0_dp
+end if
+
+#endif
+
+!  ------ Antarctica only: BMB (LARMIP)
+
+#if (defined(ANT))
+
+if (flag_larmip) then
+
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)// &
+                                      '/'//trim(ch_larmip_regions_file)
+
+   ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+   if (ios /= nf90_noerr) then
+      errormsg = ' >>> sico_init: Error when opening the file' &
+               //                 end_of_line &
+               //'                for the LARMIP BMB regions!'
+      call error(errormsg)
+   end if
+
+   call check( nf90_inq_varid(ncid, 'regions', ncv) )
+   call check( nf90_get_var(ncid, ncv, field2d_tra_aux) )
+
+   call check( nf90_close(ncid) )
+
+   do i=0, IMAX
+   do j=0, JMAX
+      n_larmip_region(j,i) = nint(field2d_tra_aux(i,j))
+   end do
+   end do
+
+   ab_anom_larmip      = 0.0_dp
+   ab_anom_larmip(1:5) = larmip_qbm_anom_aux *sec2year
+                                   ! m/a ice equiv. -> m/s ice equiv.
+else
+   n_larmip_region = 0
+   ab_anom_larmip  = 0.0_dp
+end if
+
+#endif
+
+!-------- Greenland only:
+!         Reading of the global annual temperature anomaly
+!         (for parameterizing the sub-ocean temperature anomaly
+!         for the ice discharge parameterization)
+
+#if (defined(GRL) && DISC==2)
+
+filename_with_path = trim(IN_PATH)//'/general/dTg_paleo.dat'
+
+call read_scalar_input(filename_with_path, &
+                       'dT_glann', ndata_glann_max, &
+                       glann_time_min, glann_time_stp, glann_time_max, &
+                       ndata_glann, dT_glann_CLIMBER)
+
+#endif
+
 !-------- Read data for z_sl --------
 
 #if (SEA_LEVEL==3)
@@ -1783,6 +2395,8 @@ call read_scalar_input(filename_with_path, &
 #endif
 
 !-------- Determination of the geothermal heat flux --------
+
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK)) /* NORMAL */
 
 if (n_q_geo_mod==1) then
 
@@ -1811,7 +2425,40 @@ else if (n_q_geo_mod==2) then
    end do
    end do
 
-end if
+endif
+
+#else /* ALLOW_{TAPENADE,GRDCHK} */
+
+if (n_q_geo_mod==1) then
+
+!  ------ Constant value
+
+   do i=0, IMAX
+   do j=0, JMAX
+      q_geo(j,i) = q_geo(j,i) + Q_GEO *1.0e-03_dp   ! mW/m2 -> W/m2
+   end do
+   end do
+
+else if (n_q_geo_mod==2) then
+
+!  ------ Read data from file
+
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(Q_GEO_FILE)
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='GHF', n_var_type=1, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
+
+   do i=0, IMAX
+   do j=0, JMAX
+      q_geo(j,i) = q_geo(j,i) + field2d_aux(j,i) *1.0e-03_dp   ! mW/m2 -> W/m2
+   end do
+   end do
+
+endif
+
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
 
 !-------- Reading of tabulated kei function--------
 
@@ -1882,6 +2529,78 @@ flex_rig_lith = 0.0_dp   ! dummy values
 
 #endif
 
+!-------- Antarctica only:
+!         Reading of the reference ice thickness for the
+!                                  ice-shelf collapse masks --------
+
+#if (defined(ANT) && ICE_SHELF_COLLAPSE_MASK==1)
+
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)// &
+                                   '/'//trim(ICE_SHELF_COLLAPSE_MASK_H_REF_FILE)
+
+ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+if (ios /= nf90_noerr) then
+   errormsg = ' >>> sico_init: Error when opening the file' &
+            //                 end_of_line &
+            //'                for the reference ice thickness' &
+            //                 end_of_line &
+            //'                for the ice-shelf collapse masks!'
+   call error(errormsg)
+end if
+
+call check( nf90_inq_varid(ncid, 'H', ncv) )
+call check( nf90_get_var(ncid, ncv, H_ref_retreat_conv) )
+
+call check( nf90_close(ncid) )
+
+do i=0, IMAX
+do j=0, JMAX
+   H_ref_retreat(j,i) = max(H_ref_retreat_conv(i,j), 0.0_dp)
+end do
+end do
+
+#endif
+
+!-------- gentim2d setup --------
+
+#if defined(ALLOW_TAPENADE)
+#if defined(ALLOW_GENCTRL)
+  call ctrl_map_ini_gentim2d(time_init, dtime, 0)
+#endif /* ALLOW_GENCTRL */
+#endif /* ALLOW_TAPENADE */
+!-------- Greenland only:
+!         Reading of the reference ice thickness for the retreat masks --------
+
+#if (defined(GRL) && RETREAT_MASK==1)
+
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)// &
+                                   '/'//trim(RETREAT_MASK_H_REF_FILE)
+
+ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+if (ios /= nf90_noerr) then
+   errormsg = ' >>> sico_init: Error when opening the file' &
+            //                 end_of_line &
+            //'                for the reference ice thickness' &
+            //                 end_of_line &
+            //'                for the retreat masks!'
+   call error(errormsg)
+end if
+
+call check( nf90_inq_varid(ncid, 'H', ncv) )
+call check( nf90_get_var(ncid, ncv, H_ref_retreat_conv) )
+
+call check( nf90_close(ncid) )
+
+do i=0, IMAX
+do j=0, JMAX
+   H_ref_retreat(j,i) = max(H_ref_retreat_conv(i,j), 0.0_dp)
+end do
+end do
+
+#endif
+
 !-------- Definition of initial values --------
 
 !  ------ Present topography
@@ -1889,6 +2608,11 @@ flex_rig_lith = 0.0_dp   ! dummy values
 #if (ANF_DAT==1)
 
 call topography1(dxi, deta)
+
+#if (defined(GRL) && DISC>0) /* Ice discharge parameterization for Greenland */
+call disc_param(dtime)
+call disc_fields()
+#endif
 
 z_sl      = -1.11e+11_dp   ! dummy values for initial call
 z_sl_mean = -1.11e+11_dp   ! of subroutine boundary
@@ -1976,6 +2700,11 @@ vis_int_g = 0.0_dp
 
 call topography2(dxi, deta)
 
+#if (defined(GRL) && DISC>0) /* Ice discharge parameterization for Greenland */
+call disc_param(dtime)
+call disc_fields()
+#endif
+
 z_sl      = -1.11e+11_dp   ! dummy values for initial call
 z_sl_mean = -1.11e+11_dp   ! of subroutine boundary
 
@@ -2028,6 +2757,11 @@ vis_int_g = 0.0_dp
 #elif (ANF_DAT==3)
 
 call topography3(dxi, deta, anfdatname)
+
+#if (defined(GRL) && DISC>0) /* Ice discharge parameterization for Greenland */
+call disc_param(dtime)
+call disc_fields()
+#endif
 
 call boundary(time_init, dtime, dxi, deta, &
               delta_ts, glac_index, z_mar)
@@ -2194,6 +2928,8 @@ call error(errormsg)
 
 !  ------ Time-series file for the ice sheet on the whole
 
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
+
 filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.ser'
 
 #if !defined(ALLOW_TAPENADE) /* Normal */
@@ -2239,9 +2975,23 @@ else if (forcing_flag == 2) then
 
 end if
 
+#else /* ALLOW_TAPENADE */
+
+print *, ' >>> sico_init: not writing to the ser file in '
+print *, '                adjoint applications!' 
+
+#endif /* ALLOW_TAPENADE */
+
 !  ------ Time-series file for deep boreholes
 
+#if (defined(ANT))
+n_core = 6   ! Vostok, Dome A, Dome C, Dome F, Kohnen, Byrd
+#elif (defined(GRL))
+n_core = 7   ! GRIP, GISP2, Dye3, Camp Century (CC),
+             ! NorthGRIP (NGRIP), NEEM, EastGRIP (EGRIP)
+#else
 n_core = 0   ! No boreholes defined
+#endif
 
 if (n_core > n_core_max) then
    errormsg = ' >>> sico_init: n_core <= n_core_max required!' &
@@ -2250,17 +3000,190 @@ if (n_core > n_core_max) then
    call error(errormsg)
 end if
 
+#if (defined(ANT))
+
+ch_core(1)     = 'Vostok'
+phi_core(1)    = -78.467_dp *deg2rad    ! Geographical position of Vostok,
+lambda_core(1) = 106.8_dp   *deg2rad    ! conversion deg -> rad
+ 
+ch_core(2)     = 'Dome A'
+phi_core(2)    = -80.367_dp *deg2rad    ! Geographical position of Dome A,
+lambda_core(2) =  77.35_dp  *deg2rad    ! conversion deg -> rad
+
+ch_core(3)     = 'Dome C'
+phi_core(3)    = -75.1_dp *deg2rad      ! Geographical position of Dome C,
+lambda_core(3) = 123.4_dp *deg2rad      ! conversion deg -> rad
+
+ch_core(4)     = 'Dome F'
+phi_core(4)    = -77.317_dp *deg2rad    ! Geographical position of Dome F,
+lambda_core(4) =  39.7_dp   *deg2rad    ! conversion deg -> rad
+
+ch_core(5)     = 'Kohnen'
+phi_core(5)    = -75.0_dp   *deg2rad    ! Geographical position of Kohnen,
+lambda_core(5) =   0.067_dp *deg2rad    ! conversion deg -> rad
+
+ch_core(6)     = 'Byrd'
+phi_core(6)    =  -80.017_dp *deg2rad   ! Geographical position of Byrd,
+lambda_core(6) = -119.517_dp *deg2rad   ! conversion deg -> rad
+
+#elif (defined(GRL))
+
+ch_core(1)     = 'GRIP'
+phi_core(1)    =  72.58722_dp *deg2rad   ! Geographical position of GRIP,
+lambda_core(1) = -37.64222_dp *deg2rad   ! conversion deg -> rad
+ 
+ch_core(2)     = 'GISP2'
+phi_core(2)    =  72.58833_dp *deg2rad   ! Geographical position of GISP2
+lambda_core(2) = -38.45750_dp *deg2rad   ! conversion deg -> rad
+
+ch_core(3)     = 'Dye3'
+phi_core(3)    =  65.15139_dp *deg2rad   ! Geographical position of Dye3,
+lambda_core(3) = -43.81722_dp *deg2rad   ! conversion deg -> rad
+
+ch_core(4)     = 'Camp Century'
+phi_core(4)    =  77.17970_dp *deg2rad   ! Geographical position of CC,
+lambda_core(4) = -61.10975_dp *deg2rad   ! conversion deg -> rad
+
+ch_core(5)     = 'NGRIP'
+phi_core(5)    =  75.09694_dp *deg2rad   ! Geographical position of NGRIP,
+lambda_core(5) = -42.31956_dp *deg2rad   ! conversion deg -> rad
+
+ch_core(6)     = 'NEEM'
+phi_core(6)    =  77.5_dp     *deg2rad   ! Geographical position of NEEM,
+lambda_core(6) = -50.9_dp     *deg2rad   ! conversion deg -> rad
+
+ch_core(7)     = 'EGRIP'
+phi_core(7)    =  75.6299_dp  *deg2rad   ! Geographical position of EGRIP,
+lambda_core(7) = -35.9867_dp  *deg2rad   ! conversion deg -> rad
+
+#endif
+
+if (n_core > 0) then
+
+#if (GRID==0 || GRID==1)   /* Stereographic projection */
+
+   do n=1, n_core
+
+      if (F_INV > 1.0e+10_dp) then   ! interpreted as infinity,
+                                     ! thus no flattening (spherical planet)
+
+         call stereo_forw_sphere(lambda_core(n), phi_core(n), &
+                                 R, LAMBDA0, PHI0, x_core(n), y_core(n))
+
+      else   ! finite inverse flattening (ellipsoidal planet)
+
+         call stereo_forw_ellipsoid(lambda_core(n), phi_core(n), &
+                                    A, B, LAMBDA0, PHI0, x_core(n), y_core(n))
+
+      end if
+
+   end do
+
+#elif (GRID==2)   /* Geographical coordinates */
+
+   x_core = lambda_core
+   y_core = phi_core
+
+#endif
+
+end if
+
 filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.core'
 
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 open(14, iostat=ios, file=trim(filename_with_path), status='new')
+#else /* ALLOW_TAPENADE */
+open(14, iostat=ios, file=trim(filename_with_path))
+#endif /* ALLOW_TAPENADE */
 
-write(14,'(1x,a)') '---------------------'
-write(14,'(1x,a)') 'No boreholes defined.'
-write(14,'(1x,a)') '---------------------'
+if (ios /= 0) then
+   errormsg = ' >>> sico_init: Error when opening the core file!'
+   call error(errormsg)
+end if
 
-#if (defined(ASF) && WRITE_SER_FILE_STAKES==1) /* Austfonna */
+if (n_core == 0) then
+
+   write(14,'(1x,a)') '---------------------'
+   write(14,'(1x,a)') 'No boreholes defined.'
+   write(14,'(1x,a)') '---------------------'
+
+else
+
+#if (defined(ANT))
+
+   if ((forcing_flag == 1).or.(forcing_flag == 3)) then
+
+      write(14,1106)
+      write(14,1107)
+
+      1106 format('         t(a)      D_Ts(C) z_sl_mean(m)',/, &
+                  '                   H_Vo(m)      H_DA(m)      H_DC(m)', &
+                  '      H_DF(m)      H_Ko(m)      H_By(m)',/, &
+                  '                 v_Vo(m/a)    v_DA(m/a)    v_DC(m/a)', &
+                  '    v_DF(m/a)    v_Ko(m/a)    v_By(m/a)',/, &
+                  '                   T_Vo(C)      T_DA(C)      T_DC(C)', &
+                  '      T_DF(C)      T_Ko(C)      T_By(C)')
+      1107 format('----------------------------------------------------', &
+                  '---------------------------------------')
+
+   else if (forcing_flag == 2) then
+
+      write(14,1116)
+      write(14,1117)
+
+      1116 format('         t(a)  glac_ind(1) z_sl_mean(m)',/, &
+                  '                   H_Vo(m)      H_DA(m)      H_DC(m)', &
+                  '      H_DF(m)      H_Ko(m)      H_By(m)',/, &
+                  '                 v_Vo(m/a)    v_DA(m/a)    v_DC(m/a)', &
+                  '    v_DF(m/a)    v_Ko(m/a)    v_By(m/a)',/, &
+                  '                   T_Vo(C)      T_DA(C)      T_DC(C)', &
+                  '      T_DF(C)      T_Ko(C)      T_By(C)')
+      1117 format('----------------------------------------------------', &
+                  '---------------------------------------')
+
+   end if
+
+#elif (defined(GRL))
+
+   if ((forcing_flag == 1).or.(forcing_flag == 3)) then
+
+      write(14,1106)
+      write(14,1107)
+
+      1106 format('         t(a)      D_Ts(C) z_sl_mean(m)',/, &
+                  '                   H_GR(m)      H_G2(m)      H_D3(m)', &
+                  '      H_CC(m)      H_NG(m)      H_NE(m)      H_EG(m)',/, &
+                  '                 v_GR(m/a)    v_G2(m/a)    v_D3(m/a)', &
+                  '    v_CC(m/a)    v_NG(m/a)    v_NE(m/a)    v_EG(m/a)',/, &
+                  '                   T_GR(C)      T_G2(C)      T_D3(C)', &
+                  '      T_CC(C)      T_NG(C)      T_NE(C)      T_EG(C)')
+      1107 format('----------------------------------------------------', &
+                  '----------------------------------------------------')
+
+   else if (forcing_flag == 2) then
+
+      write(14,1116)
+      write(14,1117)
+
+      1116 format('         t(a)  glac_ind(1) z_sl_mean(m)',/, &
+                  '                   H_GR(m)      H_G2(m)      H_D3(m)', &
+                  '      H_CC(m)      H_NG(m)      H_NE(m)      H_EG(m)',/, &
+                  '                 v_GR(m/a)    v_G2(m/a)    v_D3(m/a)', &
+                  '    v_CC(m/a)    v_NG(m/a)    v_NE(m/a)    v_EG(m/a)',/, &
+                  '                   T_GR(C)      T_G2(C)      T_D3(C)', &
+                  '      T_CC(C)      T_NG(C)      T_NE(C)      T_EG(C)')
+      1117 format('----------------------------------------------------', &
+                  '----------------------------------------------------')
+
+   end if
+
+#endif
+
+end if
 
 !  ------ Time-series file for mass balance stakes etc.
+
+#if (defined(ASF) && WRITE_SER_FILE_STAKES==1) /* Austfonna */
 
 n_surf = 163   ! 19 mass balance stakes + 18 cores (Pinglot) 
                ! 10 points on flowlines (Duvebreen & B3)
@@ -2800,7 +3723,7 @@ y_surf = phi_surf
 
 !-------- Output of the initial state --------
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 
 #if (defined(OUTPUT_INIT))
 
@@ -2883,12 +3806,57 @@ if (flag_init_output) then
 
 end if
 
-#else /* Tapenade */
+#else /* ALLOW_TAPENADE */
 
 print *, ' >>> sico_init: not producing initial, typical outputs'
 print *, '                in adjoint mode.'
 
-#endif /* Normal vs. Tapenade */
+#endif /* ALLOW_TAPENADE */
+
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+flag_ad_sico_init = .true.
+if (flag_ad_sico_init) then
+#if (ACCSURFACE==2 || ACCSURFACE==3)
+   gamma_s_arr = gamma_s_arr + GAMMA_S
+#endif
+#if (ABLSURFACE==1 || ABLSURFACE==2 || (ACCSURFACE<=5 && SOLID_PRECIP==3))
+#if (defined(S_STAT_0))
+   s_stat_arr  = s_stat_arr + S_STAT_0
+#endif
+#endif
+#if (ABLSURFACE==1 || ABLSURFACE==2)
+#if (defined(BETA1_0) && defined(BETA2_0) && defined(PMAX_0) && defined(MU_0))
+   beta1_arr_orig  = beta1_arr_orig + BETA1_0
+   beta2_arr_orig  = beta2_arr_orig + BETA2_0
+   Pmax_arr        = Pmax_arr       + PMAX_0
+   mu_arr_orig     = mu_arr_orig    + MU_0
+#endif
+#endif
+end if
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
+
+#if (defined(GRL) && defined(EXEC_MAKE_C_DIS_0))
+
+#if (DISC>0)
+
+call calc_c_dis_0(dxi, deta)
+
+errormsg = ' >>> sico_init: Routine calc_c_dis_0 successfully completed,' &
+         //         end_of_line &
+         //'        c_dis_0 written on file out_run_name.dat' &
+         //         end_of_line &
+         //'        (in directory specified by OUT_PATH).' &
+         //         end_of_line &
+         //'        Execution of SICOPOLIS stopped.'
+call error(errormsg)   ! actually not an error,
+                       ! just a regular stop with an info message
+
+#else
+  errormsg = ' >>> sico_init: EXEC_MAKE_C_DIS_0 requires DISC>0!'
+  call error(errormsg)
+#endif
+
+#endif
 
 end subroutine sico_init
 
@@ -3031,7 +3999,11 @@ do j=0, JMAX
    n_cts(j,i) = -1
    kc_cts(j,i) = 0
 
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK)) /* NORMAL */
    H(j,i)   = zs(j,i)-zm(j,i)
+#else /* ALLOW_{TAPENADE,GRDCHK} */
+   H(j,i)   = H(j,i) + zs(j,i)-zm(j,i)
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
    H_c(j,i) = H(j,i)
    H_t(j,i) = 0.0_dp
 
