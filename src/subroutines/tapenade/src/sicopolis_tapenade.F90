@@ -11,7 +11,9 @@ subroutine sicopolis_tapenade(delta_ts, glac_index, &
 use cost_m
 use sico_types_m
 use sico_variables_m
+#if (defined(EISMINT) || defined(HEINO) || defined(MOCHO) || defined(NMARS) || defined(SMARS) || defined(XYZ))
 use sico_vars_m
+#endif
 use sico_init_m
 use sico_main_loop_m
 use sico_end_m

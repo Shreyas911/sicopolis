@@ -87,10 +87,6 @@ subroutine sico_init(delta_ts, glac_index, &
   use read_m, only : read_target_topo_nc, &
                      read_scalar_input, read_2d_input, read_kei, read_phys_para
 
-#if (defined(ALLOW_NORMAL) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
-  use read_m, only : read_age_data, read_BedMachine_data
-#endif
-
   use boundary_m
   use init_temp_water_age_m
   use calc_enhance_m
@@ -2657,15 +2653,6 @@ H_w     = 0.0_dp
   call error(errormsg)
 #endif
 
-#if (defined(ALLOW_NORMAL) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
-#if defined(AGE_COST)
-  call read_age_data()
-#endif
-#if defined(BEDMACHINE_COST)
-  call read_BedMachine_data()
-#endif
-#endif
-
 #if (ENHMOD==1)
    call calc_enhance_1()
 #elif (ENHMOD==2)
@@ -3817,19 +3804,19 @@ print *, '                in adjoint mode.'
 flag_ad_sico_init = .true.
 if (flag_ad_sico_init) then
 #if (ACCSURFACE==2 || ACCSURFACE==3)
-   gamma_s_arr = gamma_s_arr + GAMMA_S
+   ! gamma_s_arr = gamma_s_arr + GAMMA_S
 #endif
 #if (ABLSURFACE==1 || ABLSURFACE==2 || (ACCSURFACE<=5 && SOLID_PRECIP==3))
 #if (defined(S_STAT_0))
-   s_stat_arr  = s_stat_arr + S_STAT_0
+   ! s_stat_arr  = s_stat_arr + S_STAT_0
 #endif
 #endif
 #if (ABLSURFACE==1 || ABLSURFACE==2)
 #if (defined(BETA1_0) && defined(BETA2_0) && defined(PMAX_0) && defined(MU_0))
-   beta1_arr_orig  = beta1_arr_orig + BETA1_0
-   beta2_arr_orig  = beta2_arr_orig + BETA2_0
-   Pmax_arr        = Pmax_arr       + PMAX_0
-   mu_arr_orig     = mu_arr_orig    + MU_0
+   ! beta1_arr_orig  = beta1_arr_orig + BETA1_0
+   ! beta2_arr_orig  = beta2_arr_orig + BETA2_0
+   ! Pmax_arr        = Pmax_arr       + PMAX_0
+   ! mu_arr_orig     = mu_arr_orig    + MU_0
 #endif
 #endif
 end if

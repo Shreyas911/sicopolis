@@ -70,7 +70,9 @@ end subroutine grdchk_main
    
    use sico_types_m
    use sico_variables_m
+#if (defined(EISMINT) || defined(HEINO) || defined(MOCHO) || defined(NMARS) || defined(SMARS) || defined(XYZ))
    use sico_vars_m
+#endif
    
    use sico_init_m
    use sico_main_loop_m
@@ -171,18 +173,18 @@ end subroutine grdchk_main
             q_geo          = 0.0
             c_slide_init   = 0.0
             H              = 0.0 ! Only compatible with ANF_DAT==1
-#if (ACCSURFACE==2 || ACCSURFACE==3)
-            gamma_s_arr    = 0.0
-#endif
-#if (ABLSURFACE==1 || ABLSURFACE==2 || (ACCSURFACE<=5 && SOLID_PRECIP==3))
-            s_stat_arr     = 0.0
-#endif
-#if (ABLSURFACE==1 || ABLSURFACE==2)
-            beta1_arr_orig = 0.0
-            beta2_arr_orig = 0.0
-            Pmax_arr       = 0.0
-            mu_arr_orig    = 0.0
-#endif
+! #if (ACCSURFACE==2 || ACCSURFACE==3)
+!             gamma_s_arr    = 0.0
+! #endif
+! #if (ABLSURFACE==1 || ABLSURFACE==2 || (ACCSURFACE<=5 && SOLID_PRECIP==3))
+!             s_stat_arr     = 0.0
+! #endif
+! #if (ABLSURFACE==1 || ABLSURFACE==2)
+!             beta1_arr_orig = 0.0
+!             beta2_arr_orig = 0.0
+!             Pmax_arr       = 0.0
+!             mu_arr_orig    = 0.0
+! #endif
             ! 3D fields
             temp_c       = 0.0 ! Not compatible with TEMP_INIT==5
             age_c        = 0.0
@@ -230,8 +232,9 @@ end subroutine grdchk_main
    
    use sico_types_m
    use sico_variables_m
+#if (defined(EISMINT) || defined(HEINO) || defined(MOCHO) || defined(NMARS) || defined(SMARS) || defined(XYZ))
    use sico_vars_m
-   
+#endif
    use sico_init_m
    use sico_main_loop_m
    use sico_end_m
@@ -349,18 +352,18 @@ end subroutine grdchk_main
             q_geo          = 0.0
             c_slide_init   = 0.0
             H              = 0.0 ! Only compatible with ANF_DAT==1
-#if (ACCSURFACE==2 || ACCSURFACE==3)
-            gamma_s_arr    = 0.0
-#endif
-#if (ABLSURFACE==1 || ABLSURFACE==2 || (ACCSURFACE<=5 && SOLID_PRECIP==3))
-            s_stat_arr     = 0.0
-#endif
-#if (ABLSURFACE==1 || ABLSURFACE==2)
-            beta1_arr_orig = 0.0
-            beta2_arr_orig = 0.0
-            Pmax_arr       = 0.0
-            mu_arr_orig    = 0.0
-#endif
+! #if (ACCSURFACE==2 || ACCSURFACE==3)
+!             gamma_s_arr    = 0.0
+! #endif
+! #if (ABLSURFACE==1 || ABLSURFACE==2 || (ACCSURFACE<=5 && SOLID_PRECIP==3))
+!             s_stat_arr     = 0.0
+! #endif
+! #if (ABLSURFACE==1 || ABLSURFACE==2)
+!             beta1_arr_orig = 0.0
+!             beta2_arr_orig = 0.0
+!             Pmax_arr       = 0.0
+!             mu_arr_orig    = 0.0
+! #endif
             ! 3D fields
             temp_c       = 0.0 ! Not compatible with TEMP_INIT==5
             age_c        = 0.0
