@@ -68,8 +68,8 @@
 #include "subroutines/nmars/sico_vars_m.F90"
 #elif (defined(SMARS))
 #include "subroutines/smars/sico_vars_m.F90"
-#else
-#include "subroutines/general/sico_vars_m.F90"
+#elif (defined(XYZ))
+#include "subroutines/xyz/sico_vars_m.F90"
 #endif
 
 !@ end tapenade_extract @
@@ -150,6 +150,8 @@
 #include "subroutines/nmars/boundary_m.F90"
 #elif (defined(SMARS))
 #include "subroutines/smars/boundary_m.F90"
+#elif (defined(XYZ))
+#include "subroutines/xyz/boundary_m.F90"
 #else
 #include "subroutines/general/boundary_m.F90"
 #endif
@@ -166,6 +168,8 @@
 #include "subroutines/nmars/sico_init_m.F90"
 #elif (defined(SMARS))
 #include "subroutines/smars/sico_init_m.F90"
+#elif (defined(XYZ))
+#include "subroutines/xyz/sico_init_m.F90"
 #else
 #include "subroutines/general/sico_init_m.F90"
 #endif
@@ -190,7 +194,10 @@ program sicopolis
 
 use sico_types_m
 use sico_variables_m
+
+#if (defined(EISMINT) || defined(HEINO) || defined(MOCHO) || defined(NMARS) || defined(SMARS) || defined(XYZ))
 use sico_vars_m
+#endif
 
 use sico_init_m
 use sico_main_loop_m
