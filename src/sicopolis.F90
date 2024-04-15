@@ -105,7 +105,7 @@
 #endif
 
 #if (defined(GRL) && DISC>0)
-#include "subroutines/grl/discharge_workers_m.F90"
+#include "subroutines/general/discharge_workers_m.F90"
 #endif
 
 #include "subroutines/general/calc_enhance_m.F90"
