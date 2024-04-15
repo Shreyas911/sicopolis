@@ -588,6 +588,11 @@ forcing_flag = 1   ! forcing by delta_ts
 
 forcing_flag = 2   ! forcing by glac_index
 
+#elif (TSURFACE == 6)
+
+forcing_flag = 3   ! forcing by time-dependent surface temperature
+                   ! and SMB data
+
 #endif
 
 !-------- Initialization of numerical time steps --------
