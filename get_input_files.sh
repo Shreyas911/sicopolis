@@ -9,7 +9,7 @@
 #   copying them to the corresponding directories.
 #
 # Author: Ralf Greve
-# Date:   2024-03-20
+# Date:   2024-04-15
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #-------- Settings (to be customized) --------
@@ -21,6 +21,8 @@ GRL_FLAG=1       # Greenland:
 NHEM_FLAG=1      # Entire northern hemisphere:
                  #    1 - get files, 0 - don't get files
 SCAND_FLAG=1     # Fennoscandian and Eurasian ice sheets:
+                 #    1 - get files, 0 - don't get files
+TIBET_FLAG=1     # Tibetan ice sheet:
                  #    1 - get files, 0 - don't get files
 ASF_FLAG=1       # Austfonna:
                  #    1 - get files, 0 - don't get files
@@ -55,6 +57,8 @@ if [[ $NHEM_FLAG -eq 1 ]]; then
    domains="`echo $domains` nhem"; fi
 if [[ $SCAND_FLAG -eq 1 ]]; then
    domains="`echo $domains` scand"; fi
+if [[ $TIBET_FLAG -eq 1 ]]; then
+   domains="`echo $domains` tibet"; fi
 if [[ $ASF_FLAG -eq 1 ]]; then
    domains="`echo $domains` asf"; fi
 if [[ $MOCHO_FLAG -eq 1 ]]; then
