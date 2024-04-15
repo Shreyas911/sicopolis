@@ -5,7 +5,7 @@
 !
 #define       MODEL_SICOPOLIS
 #define       VERSION '24'
-#define       DATE    '2024-04-12'
+#define       DATE    '2024-04-15'
 !
 !! Main program of SICOPOLIS.
 !!
@@ -69,7 +69,7 @@
 #elif (defined(SMARS))
 #include "subroutines/smars/sico_vars_m.F90"
 #else
-#include "subroutines/xyz/sico_vars_m.F90"
+#include "subroutines/general/sico_vars_m.F90"
 #endif
 
 !@ end tapenade_extract @
@@ -151,7 +151,7 @@
 #elif (defined(SMARS))
 #include "subroutines/smars/boundary_m.F90"
 #else
-#include "subroutines/xyz/boundary_m.F90"
+#include "subroutines/general/boundary_m.F90"
 #endif
 
 #include "subroutines/general/init_temp_water_age_m.F90"
@@ -167,7 +167,7 @@
 #elif (defined(SMARS))
 #include "subroutines/smars/sico_init_m.F90"
 #else
-#include "subroutines/xyz/sico_init_m.F90"
+#include "subroutines/general/sico_init_m.F90"
 #endif
 
 #include "subroutines/general/sico_main_loop_m.F90"
