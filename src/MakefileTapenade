@@ -107,6 +107,13 @@ ifndef LCOV
 LCOV=/usr/bin/lcov
 endif
 
+$(info TAP_ADJ_PROF is $(TAP_ADJ_PROF).)
+ifeq ($(TAP_ADJ_PROF),1)
+driveradjoint: TAP_PROF_OPTION=-profile
+driveradjoint: CFLAGS_PROF=-D_ADSTACKPROFILE -D_ADSTACKPREFETCH
+driveradjoint: DEFINE_FLAGS_ADJOINT_PROF=-DALLOW_TAP_ADJ_PROF
+endif
+
 ifeq ($(F90C),gfortran)
 F90FLAGS_COV= --coverage -fprofile-arcs -ftest-coverage -O0 -g -DRUN_SPECS_HEADER=\"sico_specs.h\" -mcmodel=medium -fno-range-check -ffpe-trap=invalid,zero -ffree-line-length-none
 CFLAGS_COV= --coverage -fprofile-arcs -ftest-coverage -O0 -g
@@ -133,7 +140,7 @@ IN_PATH_ADJOINT=../sico_in
 OUT_PATH_ADJOINT=../sico_out/ADJOINT_${HEADER}
 driveradjoint: TAP_MODE_FLAG=ALLOW_TAP_ADJ
 driverforward: TAP_MODE_FLAG=ALLOW_TAP_TLM
-DEFINE_FLAGS_ADJOINT= -DDATE=\"14/02/24\" -DVERSION=\"v23.12\" -DALLOW_TAPENADE -D${TAP_MODE_FLAG} -DIN_PATH=\"${IN_PATH_ADJOINT}\" -DOUT_PATH=\"${OUT_PATH_ADJOINT}\"
+DEFINE_FLAGS_ADJOINT= -DDATE=\"14/02/24\" -DVERSION=\"v23.12\" -DALLOW_TAPENADE -D${TAP_MODE_FLAG} ${DEFINE_FLAGS_ADJOINT_PROF} -DIN_PATH=\"${IN_PATH_ADJOINT}\" -DOUT_PATH=\"${OUT_PATH_ADJOINT}\"
 
 SRC_SICO=\
 subroutines/general/sico_types_m.F90\
@@ -195,7 +202,9 @@ tapenade_main.F90
 
 SRC_TAP=\
 ${ADFirstAidKit_DIR}/adStack.c \
-${ADFirstAidKit_DIR}/adBinomial.c
+${ADFirstAidKit_DIR}/adBinomial.c \
+${ADFirstAidKit_DIR}/adProfile.c \
+${ADFirstAidKit_DIR}/adFixedPoint.c
 
 SRC_HEADERS=\
 sico_specs.h \
@@ -326,7 +335,7 @@ driveradjoint:${LIBLIS} \
 .PHONY = PHONY_TAP_ADJ
 PHONY_TAP_ADJ: ${SRC_AD_INPUT}
 	@if [ ! -f ${TAPENADE_CHECK_FILE_ADJ} ]; then\
-		${TAPENADECMD} -b -ext "${FLOW_TAPAD_FILE}" -linelength 2000 -head "${TAPENADE_HEAD_ROUTINE}(${DEP_VAR})/(${IND_VARS})" ${SRC_AD_INPUT};\
+		${TAPENADECMD} ${TAP_PROF_OPTION} -b -ext "${FLOW_TAPAD_FILE}" -linelength 2000 -head "${TAPENADE_HEAD_ROUTINE}(${DEP_VAR})/(${IND_VARS})" ${SRC_AD_INPUT};\
 	else\
 		echo @@@@@@@@@@@@@@@ TAPENADE FYI @@@@@@@@@@@@@@@@;\
 		echo Not executing tapenade adjoint command again!;\
@@ -391,7 +400,7 @@ sico_variables_m_cpp.f90: subroutines/general/sico_variables_m.F90
 	${F90C} ${LISFLAG} ${NETCDF_F90_FLAG} -I./ ${F90FLAGS} -o $@ -c $< 
 
 %.o : %.c
-	${CC} ${CFLAGS} -o $@ -c $< 
+	${CC} ${CFLAGS} ${CFLAGS_PROF} -o $@ -c $<
 
 %_cpp.f90: subroutines/general/%.F90
 	$(CPPCMD_FILES) > dummy.f90
@@ -442,18 +451,19 @@ clean:
 		  ../test_ad/tapenade_F90_templates/*.mod\
           sicopolis.o\
 	rm -f dummy.f90\
-	      *_cpp.f90\
-	      *_cpp_b.f90\
-	      *_cpp_d.f90\
-              *.o\
-	      *.h\
-	      *.msg\
-	      *.gcov\
-	      *.gcda\
-              *.gcno\
-              *.mod*\
-              driver*\
-              *~
+			*_cpp.f90\
+			*_cpp_b.f90\
+			*_cpp_d.f90\
+			*.o\
+			*.h\
+			*.msg\
+			*.gcov\
+			*.gcda\
+			*.gcno\
+			*.mod*\
+			tapStack*\
+			driver*\
+			*~
 
 cleanobj: 
 	rm -f subroutines/tapenade/*/*.o \

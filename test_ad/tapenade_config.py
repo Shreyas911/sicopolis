@@ -72,7 +72,7 @@ def modify_file(filename, ref_string, new_string,
 
 def compile_code(mode, header, domain, 
 	clean = True, dep_var=None, ind_vars = None,
-	f90c = 'gfortran', cc = 'gcc'):
+	f90c = 'gfortran', cc = 'gcc', tap_adj_prof = 1):
 
 
 	'''
@@ -85,6 +85,7 @@ def compile_code(mode, header, domain,
 	ind_vars - Specify independent variables (H, vx_c, vy_c, q_geo, etc.)
 	cc - C compiler
 	f90c - F90 compiler
+	tap_adj_prof - If 1, activate profiling for adjoint
 	'''
 
 	if (mode == 'adjoint' and (dep_var is not None or ind_vars is not None)):
@@ -110,7 +111,8 @@ def compile_code(mode, header, domain,
 			f'DEP_VAR={dep_var} '
 			f'IND_VARS={ind_vars} '
 			f'CC={cc} '
-			f'F90C={f90c} ',
+			f'F90C={f90c} '
+			f'TAP_ADJ_PROF={tap_adj_prof} ',
 			shell = True, 
 			check = True)
 
@@ -993,7 +995,7 @@ def simulation(mode, header, domain,
 	      ckp_status = False, ckp_num = 10, validation = True,
 	      sicopolis_tapenade_cpp_b_file = 'sicopolis_tapenade_cpp_b.f90',
 	      sico_main_loop_m_cpp_b_file = 'sico_main_loop_m_cpp_b.f90',
-	      f90c = 'gfortran', cc = 'gcc'):
+	      f90c = 'gfortran', cc = 'gcc', tap_adj_prof = 1):
 
 	'''
 	Purpose - Sets up everything correctly for compilation of adjoint run
@@ -1020,6 +1022,7 @@ def simulation(mode, header, domain,
 	sico_main_loop_m_cpp_b_file - Location of sico_main_loop_m_cpp_b.f90 file
 	cc - C compiler
 	f90c - F90 compiler
+	tap_adj_prof - If 1, activate profiling for adjoint
 	'''
 
 
@@ -1052,7 +1055,7 @@ def simulation(mode, header, domain,
 	
 		compile_code(mode = mode, header = header, domain = domain,
 			    clean = True, dep_var=dep_var, ind_vars = ind_var,
-			    f90c = f90c, cc = cc)
+			    f90c = f90c, cc = cc, tap_adj_prof = tap_adj_prof)
 	
 		print(f'grdchk compilation complete for {header}.')
 	
@@ -1072,7 +1075,7 @@ def simulation(mode, header, domain,
 
 		compile_code(mode = mode, header = header, domain = domain,
 			    clean = True, dep_var=dep_var, ind_vars = ind_var,
-			    f90c = f90c, cc = cc)	
+			    f90c = f90c, cc = cc, tap_adj_prof = tap_adj_prof)
 	
 		if output_dims is not None and output_iters is not None:
 			output_dims = [int(x) for x in output_dims]	
@@ -1091,7 +1094,7 @@ def simulation(mode, header, domain,
 
 		compile_code(mode = mode, header = header, domain = domain,
 			    clean = False, dep_var=dep_var, ind_vars = ind_var,
-			    f90c = f90c, cc = cc)
+			    f90c = f90c, cc = cc, tap_adj_prof = tap_adj_prof)
 		
 		print(f'adjoint compilation complete for {header}.')
 		
@@ -1122,7 +1125,7 @@ def simulation(mode, header, domain,
 
 		compile_code(mode = mode, header = header, domain = domain,
 			     clean = True, dep_var=dep_var, ind_vars = ind_var,
-			     f90c = f90c, cc = cc)
+			     f90c = f90c, cc = cc, tap_adj_prof = tap_adj_prof)
 
 		print(f'TLM compilation complete for {header}.')
 
@@ -1150,7 +1153,7 @@ def simulation(mode, header, domain,
 			     ['rm', '-r', f'../sico_out/N_{header}'])
 		compile_code(mode = mode, header = header, domain = domain,
 			     clean = True, dep_var=dep_var, ind_vars = ind_var,
-			     f90c = f90c, cc = cc)
+			     f90c = f90c, cc = cc, tap_adj_prof = tap_adj_prof)
 		
 		print(f'normal compilation complete for {header}.')
 		
@@ -1190,6 +1193,7 @@ if __name__ == "__main__":
 	parser.add_argument("-run", help="Run the executables?", action="store_true")
 	parser.add_argument("-cc", '--c_compiler', help="C compiler", type=str)
 	parser.add_argument("-f90c", '--f90_compiler', help="F90 compiler", type=str)
+	parser.add_argument("-prof", '--adj_prof', help="If 1, activate adjoint profiling", type=str)
 	parser.add_argument("-lbfs", '--limited_or_block_or_full_or_scalar', help="limited or block or full or scalar?", type=str)
 
 	args = parser.parse_args()

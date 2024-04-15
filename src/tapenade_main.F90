@@ -84,6 +84,11 @@ program tapenade_main
     & dtime_temp, dtime_wss, dtime_out, dtime_ser, time, time_init, time_end&
     & , time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
     & z_mar, ndat2d, ndat3d, n_output)
+#if defined(ALLOW_TAP_ADJ_PROF)
+    call adstack_showpeaksize()
+    call adstack_showtotaltraffic()
+    call adprofileadj_showprofiles()
+#endif
 
 #elif (defined(ALLOW_TAP_TLM) && !defined(ALLOW_GENCTRL))
 
@@ -101,7 +106,7 @@ program tapenade_main
 !@ python_automated_tlm IO begin @
 
  !-------- Loop over points
-    do p = 1, points !@ python_automated_tlm limited_or_block_or_full @
+    do p = 1, points !@ python_automated_tlm limited_or_block_or_full_or_scalar @
         i = ipoints(p)
         j = jpoints(p)
 
@@ -125,12 +130,27 @@ program tapenade_main
 
         ! Initialize compatible fields to 0
         ! 2D fields
-        q_geo        = 0.0
-        c_slide_init = 0.0
-        H            = 0.0 ! Only compatible with ANF_DAT==1
-
+        q_geo          = 0.0
+        c_slide_init   = 0.0
+        H              = 0.0 ! Only compatible with ANF_DAT==1
+#if (ACCSURFACE==2 || ACCSURFACE==3)
+        gamma_s_arr    = 0.0
+#endif
+#if (ABLSURFACE==1 || ABLSURFACE==2 || (ACCSURFACE<=5 && SOLID_PRECIP==3))
+        s_stat_arr     = 0.0
+#endif
+#if (ABLSURFACE==1 || ABLSURFACE==2)
+        beta1_arr_orig = 0.0
+        beta2_arr_orig = 0.0
+        Pmax_arr       = 0.0
+        mu_arr_orig    = 0.0
+#endif
         ! 3D fields
         temp_c       = 0.0 ! Not compatible with TEMP_INIT==5
+        age_c        = 0.0
+
+        ! Reset flag_ad_sico_init for next iteration
+        flag_ad_sico_init = .false.
 
 !@ python_automated_tlm IO write @
     end do ! (close loop over points)

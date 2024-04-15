@@ -84,6 +84,11 @@ program tapenade_main
     & dtime_temp, dtime_wss, dtime_out, dtime_ser, time, time_init, time_end&
     & , time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
     & z_mar, ndat2d, ndat3d, n_output)
+#if defined(ALLOW_TAP_ADJ_PROF)
+    call adstack_showpeaksize()
+    call adstack_showtotaltraffic()
+    call adprofileadj_showprofiles()
+#endif
 
 #elif (defined(ALLOW_TAP_TLM) && !defined(ALLOW_GENCTRL))
 
