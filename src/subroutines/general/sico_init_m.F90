@@ -347,11 +347,115 @@ call error(errormsg)
 
 #if (defined(ANT)) /* Antarctic ice sheet */
 
-!%%%%%%%  Check for Antarctica still missing %%%%%%%!
+if (approx_equal(DX, 64.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 95).or.(JMAX /= 95) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 40.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 152).or.(JMAX /= 152) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 32.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 190).or.(JMAX /= 190) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 20.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 304).or.(JMAX /= 304) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 16.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 380).or.(JMAX /= 380) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 10.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 608).or.(JMAX /= 608) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 8.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 760).or.(JMAX /= 760) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else
+   errormsg = ' >>> sico_init: DX wrong!'
+   call error(errormsg)
+end if
 
 #elif (defined(GRL)) /* Greenland ice sheet */
 
-!%%%%%%%  Check for Greenland still missing %%%%%%%!
+if (approx_equal(DX, 40.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 42).or.(JMAX /= 72) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 20.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 84).or.(JMAX /= 144) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 16.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 105).or.(JMAX /= 180) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 10.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 168).or.(JMAX /= 288) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 8.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 210).or.(JMAX /= 360) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 5.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 336).or.(JMAX /= 576) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 4.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 420).or.(JMAX /= 720) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else
+   errormsg = ' >>> sico_init: DX wrong!'
+   call error(errormsg)
+end if
 
 #elif (defined(NHEM)) /* Entire northern hemisphere */
 
