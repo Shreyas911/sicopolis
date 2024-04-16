@@ -40,9 +40,9 @@ SMARS_FLAG=1     # South polar cap of Mars:
 #-------- Initialization --------
 
 # Zenodo repo:
-REPO_URL=https://zenodo.org/record/10842096/files
+REPO_URL=https://zenodo.org/record/10976314/files
 
-# Backup repo:
+# Backup repo (no version control, latest version only):
 # REPO_URL=https://www2.lowtem.hokudai.ac.jp/gisg/repo/sicopolis/sico_in
 
 SICOPOLIS_HOME=$PWD

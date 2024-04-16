@@ -118,6 +118,9 @@ function run()
    (./sico.sh ${MULTI_OPTIONS_1} -m repo_scand_test) \
               >${SICO_SH_OUT_DIR}/out_multi_203.dat 2>&1
 
+   (./sico.sh ${MULTI_OPTIONS_1} -m repo_tibet_test) \
+              >${SICO_SH_OUT_DIR}/out_multi_204.dat 2>&1
+
    (./sico.sh ${MULTI_OPTIONS_1} -m repo_nmars10_steady) \
               >${SICO_SH_OUT_DIR}/out_multi_205.dat 2>&1
 
