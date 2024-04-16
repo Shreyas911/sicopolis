@@ -4144,7 +4144,45 @@ end if
 
 #endif
 
-if (mask_region(0,0) == -1) mask_region = 0   ! regions undefined
+if (mask_region(0,0) == -1) then
+
+#if (defined(ANT)) /* Antarctic ice sheet */
+
+   do i=0, IMAX
+   do j=0, JMAX
+
+      ! Set default values for mask_region
+
+      if ( (phi(j,i) > -77.5_dp*deg2rad) &
+           .and. &
+           (lambda(j,i) > 277.5_dp*deg2rad) &
+           .and. &
+           (lambda(j,i) < 307.5_dp*deg2rad) ) then
+
+         mask_region(j,i) = 3   ! AP (Antarctic Peninsula)
+
+      else if ( (lambda(j,i) > 195.0_dp*deg2rad) &
+                .and. &
+                (lambda(j,i) < 315.0_dp*deg2rad) ) then
+
+         mask_region(j,i) = 2   ! WAIS (West-Antarctic ice sheet)
+
+      else
+
+         mask_region(j,i) = 1   ! EAIS (East-Antarctic ice sheet)
+
+      end if
+
+   end do
+   end do
+
+#else /* not Antarctic ice sheet */
+
+   mask_region = 0   ! regions undefined
+
+#endif
+
+end if
 
 end subroutine topography1
 
@@ -4333,7 +4371,45 @@ end if
 
 #endif
 
-if (mask_region(0,0) == -1) mask_region = 0   ! regions undefined
+if (mask_region(0,0) == -1) then
+
+#if (defined(ANT)) /* Antarctic ice sheet */
+
+   do i=0, IMAX
+   do j=0, JMAX
+
+      ! Set default values for mask_region
+
+      if ( (phi(j,i) > -77.5_dp*deg2rad) &
+           .and. &
+           (lambda(j,i) > 277.5_dp*deg2rad) &
+           .and. &
+           (lambda(j,i) < 307.5_dp*deg2rad) ) then
+
+         mask_region(j,i) = 3   ! AP (Antarctic Peninsula)
+
+      else if ( (lambda(j,i) > 195.0_dp*deg2rad) &
+                .and. &
+                (lambda(j,i) < 315.0_dp*deg2rad) ) then
+
+         mask_region(j,i) = 2   ! WAIS (West-Antarctic ice sheet)
+
+      else
+
+         mask_region(j,i) = 1   ! EAIS (East-Antarctic ice sheet)
+
+      end if
+
+   end do
+   end do
+
+#else /* not Antarctic ice sheet */
+
+   mask_region = 0   ! regions undefined
+
+#endif
+
+end if
 
 end subroutine topography2
 
@@ -4468,7 +4544,45 @@ end if
 
 #endif
 
-if (mask_region(0,0) == -1) mask_region = 0   ! regions undefined
+if (mask_region(0,0) == -1) then
+
+#if (defined(ANT)) /* Antarctic ice sheet */
+
+   do i=0, IMAX
+   do j=0, JMAX
+
+      ! Set default values for mask_region
+
+      if ( (phi(j,i) > -77.5_dp*deg2rad) &
+           .and. &
+           (lambda(j,i) > 277.5_dp*deg2rad) &
+           .and. &
+           (lambda(j,i) < 307.5_dp*deg2rad) ) then
+
+         mask_region(j,i) = 3   ! AP (Antarctic Peninsula)
+
+      else if ( (lambda(j,i) > 195.0_dp*deg2rad) &
+                .and. &
+                (lambda(j,i) < 315.0_dp*deg2rad) ) then
+
+         mask_region(j,i) = 2   ! WAIS (West-Antarctic ice sheet)
+
+      else
+
+         mask_region(j,i) = 1   ! EAIS (East-Antarctic ice sheet)
+
+      end if
+
+   end do
+   end do
+
+#else /* not Antarctic ice sheet */
+
+   mask_region = 0   ! regions undefined
+
+#endif
+
+end if
 
 end subroutine topography3
 
