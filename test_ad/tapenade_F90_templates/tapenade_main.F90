@@ -147,9 +147,6 @@ program tapenade_main
         temp_c         = 0.0 ! Not compatible with TEMP_INIT==5
         age_c          = 0.0
 
-        ! Reset flag_ad_sico_init for next iteration
-        flag_ad_sico_init = .false.
-
 !@ python_automated_tlm IO write @
     end do ! (close loop over points)
 
