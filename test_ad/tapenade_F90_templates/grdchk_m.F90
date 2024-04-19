@@ -141,12 +141,12 @@ end subroutine grdchk_main
 
             !@ python_automated_grdchk_scalar @
 
-            ! Example -- gamma_s_arr
-            ! orig_val = gamma_s_arr(1,1)
+            ! Example -- gamma_s
+            ! orig_val = gamma_s(1,1)
             ! if (orig_val .ne. 0) then
-            !   gamma_s_arr = orig_val * perturbation
+            !   gamma_s = orig_val * perturbation
             ! else
-            !   gamma_s_arr = perturbation-1
+            !   gamma_s = perturbation-1
             ! end if
 
             ! -- sanity check

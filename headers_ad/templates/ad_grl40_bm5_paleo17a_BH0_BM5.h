@@ -21,12 +21,12 @@
 								   'xx_c_slide_init',\
 								   'xx_q_geo',\
 								   'xx_H',\
-								   'xx_gamma_s_arr',\
-								   'xx_s_stat_arr',\
-								   'xx_beta1_arr_orig',\
-								   'xx_beta2_arr_orig',\
-								   'xx_Pmax_arr',\
-								   'xx_mu_arr_orig' ]
+								   'xx_gamma_s',\
+								   'xx_s_stat',\
+								   'xx_beta1',\
+								   'xx_beta2',\
+								   'xx_Pmax',\
+								   'xx_mu' ]
 !		List of 2D time-invariant control variables
 
 #define XX_GENARR2D_PREPROC_ARR    [ character(CTRL_STRLENGTH) ::\
