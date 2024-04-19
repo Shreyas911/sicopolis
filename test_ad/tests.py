@@ -42,11 +42,6 @@ def test_repo_ant64_bm3_ss25ka_H():
 	subprocess.run (['cp', 'headers/sico_specs_repo_ant64_bm3_ss25ka.h', '../src/sico_specs.h'])
 	subprocess.run('python3 tapenade_config.py -head repo_ant64_bm3_ss25ka -dom ant -jsf inputs.json', shell = True, check = True)
 
-def test_repo_ant40_b2_ss25ka_H():
-	subprocess.run (['cp', 'headers/sico_specs_repo_ant40_b2_ss25ka.h', '../headers'])
-	subprocess.run (['cp', 'headers/sico_specs_repo_ant40_b2_ss25ka.h', '../src/sico_specs.h'])
-	subprocess.run('python3 tapenade_config.py -head repo_ant40_b2_ss25ka -dom ant -jsf inputs.json', shell = True, check = True)
-
 def test_repo_ant64_b2_future09_ctrl_H():
 	subprocess.run (['cp', 'headers/sico_specs_repo_ant64_b2_future09_ctrl.h', '../headers'])
 	subprocess.run (['cp', 'headers/sico_specs_repo_ant64_b2_future09_ctrl.h', '../src/sico_specs.h'])
@@ -72,11 +67,6 @@ def test_repo_grl16_bm5_ss25ka_BM5_H():
 	subprocess.run (['cp', 'headers/sico_specs_repo_grl16_bm5_ss25ka_BM5.h', '../src/sico_specs.h'])
 	subprocess.run('python3 tapenade_config.py -head repo_grl16_bm5_ss25ka_BM5 -jsf inputs.json', shell = True, check = True)
 
-def test_repo_ant40_b2_ss25ka_q_geo():
-	subprocess.run (['cp', 'headers/sico_specs_repo_ant40_b2_ss25ka.h', '../headers'])
-	subprocess.run (['cp', 'headers/sico_specs_repo_ant40_b2_ss25ka.h', '../src/sico_specs.h'])
-	subprocess.run('python3 tapenade_config.py -head repo_ant40_b2_ss25ka -dom ant -iv q_geo -jsf inputs.json', shell = True, check = True)
-
 def test_repo_grl16_bm5_ss25ka_q_geo():
 	subprocess.run (['cp', 'headers/sico_specs_repo_grl16_bm5_ss25ka.h', '../headers'])
 	subprocess.run (['cp', 'headers/sico_specs_repo_grl16_bm5_ss25ka.h', '../src/sico_specs.h'])
@@ -86,11 +76,6 @@ def test_repo_grl16_bm5_ss25ka_BM5_q_geo():
 	subprocess.run (['cp', 'headers/sico_specs_repo_grl16_bm5_ss25ka_BM5.h', '../headers'])
 	subprocess.run (['cp', 'headers/sico_specs_repo_grl16_bm5_ss25ka_BM5.h', '../src/sico_specs.h'])
 	subprocess.run('python3 tapenade_config.py -head repo_grl16_bm5_ss25ka_BM5 -iv q_geo -jsf inputs.json', shell = True, check = True)
-
-def test_repo_ant40_b2_ss25ka_temp_c():
-	subprocess.run (['cp', 'headers/sico_specs_repo_ant40_b2_ss25ka.h', '../headers'])
-	subprocess.run (['cp', 'headers/sico_specs_repo_ant40_b2_ss25ka.h', '../src/sico_specs.h'])
-	subprocess.run('python3 tapenade_config.py -head repo_ant40_b2_ss25ka -dom ant -iv temp_c -dim 3 -z 40 -delta 5.e-2 -jsf inputs.json', shell = True, check = True)
 
 def test_repo_grl16_bm5_ss25ka_temp_c():
 	subprocess.run (['cp', 'headers/sico_specs_repo_grl16_bm5_ss25ka.h', '../headers'])

@@ -2199,10 +2199,6 @@ end do
 
 #endif
 
-#endif
-
-#endif
-
 !-------- Reading of LGM monthly-mean surface-temperature anomalies --------
 
 #if (TSURFACE==5)
