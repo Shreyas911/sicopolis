@@ -53,6 +53,10 @@ my_*
 !/sico_in/scand/make_*
 !/sico_in/scand/phys_para*
 
+/sico_in/tibet/*
+!/sico_in/tibet/make_*
+!/sico_in/tibet/phys_para*
+
 /sico_in/asf/*
 !/sico_in/asf/make_*
 !/sico_in/asf/phys_para*

@@ -2,40 +2,40 @@ import pytest
 import os
 import subprocess
 
-def test_grl40_bm5_paleo17a_BH0_beta1_arr_orig_scalar():
+def test_grl40_bm5_paleo17a_BH0_beta1_scalar():
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0.h', '../headers'])
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0.h', '../src/sico_specs.h'])
-	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_BH0 -iv beta1_arr_orig -jsf inputs.json -lbfs scalar', shell = True, check = True)
+	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_BH0 -iv beta1 -jsf inputs.json -lbfs scalar', shell = True, check = True)
 
-def test_grl40_bm5_paleo17a_BH0_beta2_arr_orig_scalar():
+def test_grl40_bm5_paleo17a_BH0_beta2_scalar():
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0.h', '../headers'])
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0.h', '../src/sico_specs.h'])
-	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_BH0 -iv beta2_arr_orig -jsf inputs.json -lbfs scalar', shell = True, check = True)
+	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_BH0 -iv beta2 -jsf inputs.json -lbfs scalar', shell = True, check = True)
 
-def test_grl40_bm5_paleo17a_BH0_Pmax_arr_scalar():
+def test_grl40_bm5_paleo17a_BH0_Pmax_scalar():
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0.h', '../headers'])
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0.h', '../src/sico_specs.h'])
-	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_BH0 -iv Pmax_arr -jsf inputs.json -lbfs scalar', shell = True, check = True)
+	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_BH0 -iv Pmax -jsf inputs.json -lbfs scalar', shell = True, check = True)
 
-def test_grl40_bm5_paleo17a_BH0_mu_arr_orig_scalar():
+def test_grl40_bm5_paleo17a_BH0_mu_scalar():
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0.h', '../headers'])
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0.h', '../src/sico_specs.h'])
-	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_BH0 -iv mu_arr_orig -jsf inputs.json -lbfs scalar', shell = True, check = True)
+	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_BH0 -iv mu -jsf inputs.json -lbfs scalar', shell = True, check = True)
 
-def test_grl40_bm5_paleo17a_BH0_s_stat_arr_scalar():
+def test_grl40_bm5_paleo17a_BH0_s_stat_scalar():
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0.h', '../headers'])
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0.h', '../src/sico_specs.h'])
-	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_BH0 -iv s_stat_arr -jsf inputs.json -lbfs scalar', shell = True, check = True)
+	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_BH0 -iv s_stat -jsf inputs.json -lbfs scalar', shell = True, check = True)
 
-def test_grl40_bm5_paleo17a_BH0_gamma_s_arr():
+def test_grl40_bm5_paleo17a_BH0_gamma_s():
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0.h', '../headers'])
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0.h', '../src/sico_specs.h'])
-	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_BH0 -iv gamma_s_arr -delta 1.e-4 -jsf inputs.json', shell = True, check = True)
+	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_BH0 -iv gamma_s -delta 1.e-4 -jsf inputs.json', shell = True, check = True)
 
-def test_grl40_bm5_paleo17a_BH0_BM5_gamma_s_arr():
+def test_grl40_bm5_paleo17a_BH0_BM5_gamma_s():
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0_BM5.h', '../headers'])
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0_BM5.h', '../src/sico_specs.h'])
-	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_BH0_BM5 -iv gamma_s_arr -delta 1.e-4 -jsf inputs.json', shell = True, check = True)
+	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_BH0_BM5 -iv gamma_s -delta 1.e-4 -jsf inputs.json', shell = True, check = True)
 
 def test_repo_ant64_bm3_ss25ka_H():
 	subprocess.run (['cp', 'headers/sico_specs_repo_ant64_bm3_ss25ka.h', '../headers'])

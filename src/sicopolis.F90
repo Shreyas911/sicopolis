@@ -5,7 +5,7 @@
 !
 #define       MODEL_SICOPOLIS
 #define       VERSION '24'
-#define       DATE    '2024-04-15'
+#define       DATE    '2024-04-19'
 !
 !! Main program of SICOPOLIS.
 !!
@@ -109,10 +109,8 @@
 #include "subroutines/heino/sico_vars_m.F90"
 #elif (defined(MOCHO))
 #include "subroutines/mocho/sico_vars_m.F90"
-#elif (defined(NMARS))
-#include "subroutines/nmars/sico_vars_m.F90"
-#elif (defined(SMARS))
-#include "subroutines/smars/sico_vars_m.F90"
+#elif (defined(NMARS) || defined(SMARS))
+#include "subroutines/n_s_mars/sico_vars_m.F90"
 #elif (defined(XYZ))
 #include "subroutines/xyz/sico_vars_m.F90"
 #endif
@@ -178,10 +176,8 @@
 #include "subroutines/heino/boundary_m.F90"
 #elif (defined(MOCHO))
 #include "subroutines/mocho/boundary_m.F90"
-#elif (defined(NMARS))
-#include "subroutines/nmars/boundary_m.F90"
-#elif (defined(SMARS))
-#include "subroutines/smars/boundary_m.F90"
+#elif (defined(NMARS) || defined(SMARS))
+#include "subroutines/n_s_mars/boundary_m.F90"
 #elif (defined(XYZ))
 #include "subroutines/xyz/boundary_m.F90"
 #else
@@ -196,10 +192,8 @@
 #include "subroutines/heino/sico_init_m.F90"
 #elif (defined(MOCHO))
 #include "subroutines/mocho/sico_init_m.F90"
-#elif (defined(NMARS))
-#include "subroutines/nmars/sico_init_m.F90"
-#elif (defined(SMARS))
-#include "subroutines/smars/sico_init_m.F90"
+#elif (defined(NMARS) || defined(SMARS))
+#include "subroutines/n_s_mars/sico_init_m.F90"
 #elif (defined(XYZ))
 #include "subroutines/xyz/sico_init_m.F90"
 #else
@@ -333,11 +327,13 @@ call sico_main_loop(delta_ts, glac_index, &
 
 call sico_end()
 
-!-------- End of program --------
+!-------- Tapenade-specific routines --------
 
 #else /* ALLOW_GRDCHK */
 call grdchk_main()
 #endif /* ALLOW_GRDCHK */
+
+!-------- End of program --------
 
 end program sicopolis
 

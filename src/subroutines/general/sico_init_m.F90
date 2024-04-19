@@ -231,6 +231,10 @@ ch_domain_short = 'lcis'
 ch_domain_long  = 'Fennoscandian and Eurasian ice sheets'
 ch_domain_short = 'scand'
 
+#elif (defined(TIBET))
+ch_domain_long  = 'Tibetan ice sheet'
+ch_domain_short = 'tibet'
+
 #elif (defined(ASF))
 ch_domain_long  = 'Austfonna'
 ch_domain_short = 'asf'
@@ -346,7 +350,119 @@ call error(errormsg)
 
 #if (GRID==0 || GRID==1)
 
-#if (defined(NHEM)) /* Entire northern hemisphere */
+#if (defined(ANT)) /* Antarctic ice sheet */
+
+if (approx_equal(DX, 64.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 95).or.(JMAX /= 95) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 40.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 152).or.(JMAX /= 152) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 32.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 190).or.(JMAX /= 190) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 20.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 304).or.(JMAX /= 304) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 16.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 380).or.(JMAX /= 380) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 10.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 608).or.(JMAX /= 608) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 8.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 760).or.(JMAX /= 760) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else
+   errormsg = ' >>> sico_init: DX wrong!'
+   call error(errormsg)
+end if
+
+#elif (defined(GRL)) /* Greenland ice sheet */
+
+if (approx_equal(DX, 40.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 42).or.(JMAX /= 72) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 20.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 84).or.(JMAX /= 144) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 16.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 105).or.(JMAX /= 180) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 10.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 168).or.(JMAX /= 288) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 8.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 210).or.(JMAX /= 360) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 5.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 336).or.(JMAX /= 576) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 4.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 420).or.(JMAX /= 720) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else
+   errormsg = ' >>> sico_init: DX wrong!'
+   call error(errormsg)
+end if
+
+#elif (defined(NHEM)) /* Entire northern hemisphere */
 
 if (approx_equal(DX, 80.0_dp, eps_sp_dp)) then
 
@@ -458,12 +574,79 @@ else
    call error(errormsg)
 end if
 
+#elif (defined(NPI)) /* Northern Patagonian ice field */
+
+if (approx_equal(DX, 0.45_dp, eps_sp_dp)) then
+
+   if ((IMAX /= 182).or.(JMAX /= 314)) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+   if ( (.not.(approx_equal(X0,   66.082d0, eps_sp_dp))) &
+        .or. &
+        (.not.(approx_equal(Y0, 4288.950d0, eps_sp_dp))) ) then
+      errormsg = ' >>> sico_init: X0 and/or Y0 wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 0.9_dp, eps_sp_dp)) then
+
+   if ((IMAX /=  91).or.(JMAX /= 157)) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+   if ( (.not.(approx_equal(X0,   66.082d0, eps_sp_dp))) &
+        .or. &
+        (.not.(approx_equal(Y0, 4288.950d0, eps_sp_dp))) ) then
+      errormsg = ' >>> sico_init: X0 and/or Y0 wrong!'
+      call error(errormsg)
+   end if
+
+else
+   errormsg = ' >>> sico_init: DX wrong!'
+   call error(errormsg)
+end if
+
 #endif /* Different computational domains */
 
 #elif (GRID==2)
 
-errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
-call error(errormsg)
+#if (defined(TIBET)) /* Tibetan ice sheet */
+
+if (      (approx_equal(DLAMBDA, 1.0_dp/3.0_dp, eps_sp_dp)) &
+     .and.(approx_equal(DPHI   , 1.0_dp/3.0_dp, eps_sp_dp)) ) then
+
+   if ((IMAX /= 135).or.(JMAX /= 51)) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (      (approx_equal(DLAMBDA, 1.0_dp/6.0_dp, eps_sp_dp)) &
+          .and.(approx_equal(DPHI   , 1.0_dp/6.0_dp, eps_sp_dp)) ) then
+
+   if ((IMAX /= 270).or.(JMAX /= 102)) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (      (approx_equal(DLAMBDA, 1.0_dp/12.0_dp, eps_sp_dp)) &
+          .and.(approx_equal(DPHI   , 1.0_dp/12.0_dp, eps_sp_dp)) ) then
+
+   if ((IMAX /= 540).or.(JMAX /= 204)) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else
+
+   errormsg = ' >>> sico_init: DLAMBDA / DPHI wrong!'
+   call error(errormsg)
+
+end if
+
+#endif
 
 #endif
 
@@ -910,8 +1093,10 @@ write(10, fmt=trim(fmt3)) 'x0 =', X0
 write(10, fmt=trim(fmt3)) 'y0 =', Y0
 write(10, fmt=trim(fmt3)) 'dx =', DX
 #elif (GRID==2)
-errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
-call error(errormsg)
+write(10, fmt=trim(fmt3)) 'lambda0 =', LAMBDA_0
+write(10, fmt=trim(fmt3)) 'phi0    =', PHI_0
+write(10, fmt=trim(fmt3)) 'dlambda =', DLAMBDA
+write(10, fmt=trim(fmt3)) 'dphi    =', DPHI
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
@@ -1711,8 +1896,6 @@ time = time_init
 
 #if (ACCSURFACE<=5)
 
-#if (GRID==0 || GRID==1)
-
 #if (defined(PRECIP_PRESENT_FILE) && defined(PRECIP_MA_PRESENT_FILE))
 
 if (flag_precip_monthly_mean) then
@@ -1756,17 +1939,8 @@ else
 
 end if
 
-#elif (GRID==2)
-
-errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
-call error(errormsg)
-
-#endif
-
 !  ------ Computation of the still undefined present-day
 !         mean annual or monthly mean precipitation rate
-
-#if (GRID==0 || GRID==1)
 
 if (flag_precip_monthly_mean) then
 
@@ -1797,13 +1971,9 @@ end if
 
 #endif
 
-#endif
-
 !-------- Reading of LGM monthly-mean precipitation-rate anomalies --------
 
 #if (ACCSURFACE==5)
-
-#if (GRID==0 || GRID==1)
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(PRECIP_ANOM_FILE)
@@ -1844,8 +2014,6 @@ do j=0, JMAX
 
 end do
 end do
-
-#endif
 
 #endif
 
@@ -1977,8 +2145,6 @@ mask_maxextent = 1   ! default (no constraint)
 
 if (flag_mask_maxextent) then
 
-#if (GRID==0 || GRID==1)
-
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(MASK_MAXEXTENT_FILE)
 
@@ -1989,20 +2155,11 @@ call read_2d_input(filename_with_path, &
 
 mask_maxextent = nint(field2d_aux)
 
-#elif (GRID==2)
-
-errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
-call error(errormsg)
-
-#endif
-
 end if
 
 #endif
 
 !-------- Reading of present-day topography mask --------
-
-#if (GRID==0 || GRID==1)
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(MASK_PRESENT_FILE)
@@ -2013,20 +2170,11 @@ call read_2d_input(filename_with_path, &
 
 mask_ref = nint(field2d_aux)
 
-#elif (GRID==2)
-
-errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
-call error(errormsg)
-
-#endif
-
 !-------- Reading of present-day monthly mean surface temperature --------
 
 #if (!defined(ANT) && !defined(GRL)) /* other than Antarctica or Greenland */
 
 #if (TSURFACE<=5)
-
-#if (GRID==0 || GRID==1)
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(TEMP_PRESENT_FILE)
@@ -2047,10 +2195,7 @@ do n=1, 12   ! month counter
 
 end do
 
-#elif (GRID==2)
-
-errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
-call error(errormsg)
+#endif
 
 #endif
 
@@ -2061,8 +2206,6 @@ call error(errormsg)
 !-------- Reading of LGM monthly-mean surface-temperature anomalies --------
 
 #if (TSURFACE==5)
-
-#if (GRID==0 || GRID==1)
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(TEMP_ANOM_FILE)
@@ -2087,12 +2230,8 @@ temp_lgm_anom = temp_lgm_anom * TEMP_ANOM_FACT
 
 #endif
 
-#endif
-
 !-------- Present reference elevation
 !         (for precipitation and surface-temperature data) --------
-
-#if (GRID==0 || GRID==1)
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZS_PRESENT_FILE)
@@ -2110,13 +2249,6 @@ do j=0, JMAX
                  ! to the present-day sea surface
 end do
 end do
-
-#elif (GRID==2)
-
-errormsg = ' >>> sico_init: GRID==2 not allowed for this application!'
-call error(errormsg)
-
-#endif
 
 !-------- Read data for delta_ts --------
 
@@ -2565,6 +2697,7 @@ end do
   call ctrl_map_ini_gentim2d(time_init, dtime, 0)
 #endif /* ALLOW_GENCTRL */
 #endif /* ALLOW_TAPENADE */
+
 !-------- Greenland only:
 !         Reading of the reference ice thickness for the retreat masks --------
 
@@ -2596,6 +2729,12 @@ end do
 end do
 
 #endif
+
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+#if (ACCSURFACE==2 || ACCSURFACE==3)
+   gamma_s = gamma_s + GAMMA_S
+#endif
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
 
 !-------- Definition of initial values --------
 
@@ -2812,6 +2951,20 @@ do jr=-JMAX, JMAX
 end do
 end do
 
+#elif (GRID==2)
+
+do ir=-IMAX, IMAX
+do jr=-JMAX, JMAX
+
+   dist_dxdy(jr,ir) = sqrt( (sq_g11_g(JMAX/2,IMAX/2)*real(ir,dp)*dxi)**2 &
+                          + (sq_g22_g(JMAX/2,IMAX/2)*real(jr,dp)*deta)**2 )
+
+                      ! This uses the metric tensor in the center of the domain
+		      ! for the entire domain; quite DIRTY TRICK!
+
+end do
+end do
+
 #endif
 
 !-------- Initial velocities --------
@@ -2913,7 +3066,7 @@ call error(errormsg)
 
 !-------- Initialize time-series files --------
 
-!  ------ Time-series file for the ice sheet on the whole
+!  ------ Time-series file for the entire ice sheet
 
 #if !defined(ALLOW_TAPENADE) /* NORMAL */
 
@@ -3800,27 +3953,28 @@ print *, '                in adjoint mode.'
 
 #endif /* ALLOW_TAPENADE */
 
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
-flag_ad_sico_init = .true.
-if (flag_ad_sico_init) then
-#if (ACCSURFACE==2 || ACCSURFACE==3)
-   ! gamma_s_arr = gamma_s_arr + GAMMA_S
+#if (defined(GRL) && defined(EXEC_MAKE_C_DIS_0))
+
+#if (DISC>0)
+
+call calc_c_dis_0(dxi, deta)
+
+errormsg = ' >>> sico_init: Routine calc_c_dis_0 successfully completed,' &
+         //         end_of_line &
+         //'        c_dis_0 written on file out_run_name.dat' &
+         //         end_of_line &
+         //'        (in directory specified by OUT_PATH).' &
+         //         end_of_line &
+         //'        Execution of SICOPOLIS stopped.'
+call error(errormsg)   ! actually not an error,
+                       ! just a regular stop with an info message
+
+#else
+  errormsg = ' >>> sico_init: EXEC_MAKE_C_DIS_0 requires DISC>0!'
+  call error(errormsg)
 #endif
-#if (ABLSURFACE==1 || ABLSURFACE==2 || (ACCSURFACE<=5 && SOLID_PRECIP==3))
-#if (defined(S_STAT_0))
-   ! s_stat_arr  = s_stat_arr + S_STAT_0
+
 #endif
-#endif
-#if (ABLSURFACE==1 || ABLSURFACE==2)
-#if (defined(BETA1_0) && defined(BETA2_0) && defined(PMAX_0) && defined(MU_0))
-   ! beta1_arr_orig  = beta1_arr_orig + BETA1_0
-   ! beta2_arr_orig  = beta2_arr_orig + BETA2_0
-   ! Pmax_arr        = Pmax_arr       + PMAX_0
-   ! mu_arr_orig     = mu_arr_orig    + MU_0
-#endif
-#endif
-end if
-#endif /* ALLOW_{TAPENADE,GRDCHK} */
 
 #if (defined(GRL) && defined(EXEC_MAKE_C_DIS_0))
 
@@ -3935,11 +4089,23 @@ zb = zl
 
 !-------- Further stuff --------
 
+#if (GRID==0 || GRID==1)
+
 dxi  = DX *1000.0_dp   ! km -> m
 deta = DX *1000.0_dp   ! km -> m
 
 xi0  = X0 *1000.0_dp   ! km -> m
 eta0 = Y0 *1000.0_dp   ! km -> m
+
+#elif (GRID==2)
+
+dxi  = DLAMBDA *deg2rad
+deta = DPHI    *deg2rad
+
+xi0  = LAMBDA_0 *deg2rad
+eta0 = PHI_0    *deg2rad
+
+#endif
 
 freeboard_ratio = (RHO_SW-RHO)/RHO_SW
 
@@ -4081,7 +4247,45 @@ end if
 
 #endif
 
-if (mask_region(0,0) == -1) mask_region = 0   ! regions undefined
+if (mask_region(0,0) == -1) then
+
+#if (defined(ANT)) /* Antarctic ice sheet */
+
+   do i=0, IMAX
+   do j=0, JMAX
+
+      ! Set default values for mask_region
+
+      if ( (phi(j,i) > -77.5_dp*deg2rad) &
+           .and. &
+           (lambda(j,i) > 277.5_dp*deg2rad) &
+           .and. &
+           (lambda(j,i) < 307.5_dp*deg2rad) ) then
+
+         mask_region(j,i) = 3   ! AP (Antarctic Peninsula)
+
+      else if ( (lambda(j,i) > 195.0_dp*deg2rad) &
+                .and. &
+                (lambda(j,i) < 315.0_dp*deg2rad) ) then
+
+         mask_region(j,i) = 2   ! WAIS (West-Antarctic ice sheet)
+
+      else
+
+         mask_region(j,i) = 1   ! EAIS (East-Antarctic ice sheet)
+
+      end if
+
+   end do
+   end do
+
+#else /* not Antarctic ice sheet */
+
+   mask_region = 0   ! regions undefined
+
+#endif
+
+end if
 
 end subroutine topography1
 
@@ -4134,11 +4338,23 @@ mask = nint(field2d_aux)
 
 !-------- Further stuff --------
 
+#if (GRID==0 || GRID==1)
+
 dxi  = DX *1000.0_dp   ! km -> m
 deta = DX *1000.0_dp   ! km -> m
 
 xi0  = X0 *1000.0_dp   ! km -> m
 eta0 = Y0 *1000.0_dp   ! km -> m
+
+#elif (GRID==2)
+
+dxi  = DLAMBDA *deg2rad
+deta = DPHI    *deg2rad
+
+xi0  = LAMBDA_0 *deg2rad
+eta0 = PHI_0    *deg2rad
+
+#endif
 
 do i=0, IMAX
 do j=0, JMAX
@@ -4258,7 +4474,45 @@ end if
 
 #endif
 
-if (mask_region(0,0) == -1) mask_region = 0   ! regions undefined
+if (mask_region(0,0) == -1) then
+
+#if (defined(ANT)) /* Antarctic ice sheet */
+
+   do i=0, IMAX
+   do j=0, JMAX
+
+      ! Set default values for mask_region
+
+      if ( (phi(j,i) > -77.5_dp*deg2rad) &
+           .and. &
+           (lambda(j,i) > 277.5_dp*deg2rad) &
+           .and. &
+           (lambda(j,i) < 307.5_dp*deg2rad) ) then
+
+         mask_region(j,i) = 3   ! AP (Antarctic Peninsula)
+
+      else if ( (lambda(j,i) > 195.0_dp*deg2rad) &
+                .and. &
+                (lambda(j,i) < 315.0_dp*deg2rad) ) then
+
+         mask_region(j,i) = 2   ! WAIS (West-Antarctic ice sheet)
+
+      else
+
+         mask_region(j,i) = 1   ! EAIS (East-Antarctic ice sheet)
+
+      end if
+
+   end do
+   end do
+
+#else /* not Antarctic ice sheet */
+
+   mask_region = 0   ! regions undefined
+
+#endif
+
+end if
 
 end subroutine topography2
 
@@ -4307,8 +4561,17 @@ zl0 = field2d_aux
 
 !-------- Further stuff --------
 
+#if (GRID==0 || GRID==1)
+
 dxi  = DX *1000.0_dp   ! km -> m
 deta = DX *1000.0_dp   ! km -> m
+
+#elif (GRID==2)
+
+dxi  = DLAMBDA *deg2rad
+deta = DPHI    *deg2rad
+
+#endif
 
 !-------- Geographic coordinates, metric tensor,
 !                                 gradients of the topography --------
@@ -4384,7 +4647,45 @@ end if
 
 #endif
 
-if (mask_region(0,0) == -1) mask_region = 0   ! regions undefined
+if (mask_region(0,0) == -1) then
+
+#if (defined(ANT)) /* Antarctic ice sheet */
+
+   do i=0, IMAX
+   do j=0, JMAX
+
+      ! Set default values for mask_region
+
+      if ( (phi(j,i) > -77.5_dp*deg2rad) &
+           .and. &
+           (lambda(j,i) > 277.5_dp*deg2rad) &
+           .and. &
+           (lambda(j,i) < 307.5_dp*deg2rad) ) then
+
+         mask_region(j,i) = 3   ! AP (Antarctic Peninsula)
+
+      else if ( (lambda(j,i) > 195.0_dp*deg2rad) &
+                .and. &
+                (lambda(j,i) < 315.0_dp*deg2rad) ) then
+
+         mask_region(j,i) = 2   ! WAIS (West-Antarctic ice sheet)
+
+      else
+
+         mask_region(j,i) = 1   ! EAIS (East-Antarctic ice sheet)
+
+      end if
+
+   end do
+   end do
+
+#else /* not Antarctic ice sheet */
+
+   mask_region = 0   ! regions undefined
+
+#endif
+
+end if
 
 end subroutine topography3
 
