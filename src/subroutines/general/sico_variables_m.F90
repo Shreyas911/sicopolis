@@ -1467,15 +1467,8 @@ real(dp) :: fc
 real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: age_data
    !! Array of gridded ages to be used in adjoint mode
 
-real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: age_unc
+real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: age_unc_data
    !! Array of gridded uncertainty in ages to be used in adjoint mode
-
-real(dp), dimension(0:JMAX,0:IMAX) :: H_data
-   !! Array of gridded ice thickness to be used in adjoint mode
-
-real(dp), dimension(0:JMAX,0:IMAX) :: H_unc
-   !! Array of gridded uncertainty in ice thickness to be used
-   !! in adjoint mode
 
 #endif /* No age cost used */
 

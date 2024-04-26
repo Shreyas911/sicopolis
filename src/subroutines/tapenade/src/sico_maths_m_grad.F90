@@ -51,6 +51,7 @@ module sico_maths_m_diff
 
   interface tri_sle_b
       module procedure tri_sle_stub_b
+      module procedure tri_sle_mini_stub_b
   end interface
 
   interface my_erfc
@@ -336,6 +337,40 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
   xb = 0.0
 
   end subroutine tri_sle_stub_b
+
+!-------------------------------------------------------------------------------
+!> Differentiation of tri_sle_stub in reverse (adjoint) mode:
+!! gradient of useful results: x,
+!! with respect to varying inputs: x b.
+!-------------------------------------------------------------------------------
+  subroutine tri_sle_mini_stub_b(a0, a1, a2, x, xb, b, bb, nrows)
+
+  implicit none
+
+  integer(i4b), intent(in) :: nrows
+  real(dp), dimension(0:nrows), intent(in) :: a0, a1, a2, b
+  real(dp), dimension(0:nrows) :: bb
+  real(dp), dimension(0:nrows) :: x, x_copy
+  real(dp), dimension(0:nrows) :: xb
+  integer(i4b) :: n
+
+  real(dp), dimension(0:nrows) :: a0T, a1T, a2T
+  real(dp), dimension(0:nrows) :: incrbb
+  integer(i4b) :: i
+
+  a0T(0) = 0.0   
+  a0T(1:nrows) = a2(0:nrows-1)
+  a1T(0:nrows) = a1(0:nrows)
+  a2T(0:nrows-1) = a0(1:nrows)
+  a2T(nrows) = 0.0
+
+  call tri_sle(a0T, a1T, a2T, incrbb, xb, nrows)
+
+  do i=0,nrows
+     bb(i) = incrbb(i)
+  end do
+
+  end subroutine tri_sle_mini_stub_b
 
 !-------------------------------------------------------------------------------
 !> Solution of a system of linear equations Ax=b with tridiagonal matrix A.

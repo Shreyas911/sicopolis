@@ -43,6 +43,7 @@ module sico_maths_m_diff
 
   interface tri_sle_d
       module procedure tri_sle_stub_d
+      module procedure tri_sle_mini_stub_d
   end interface
 
   interface my_erfc
@@ -239,6 +240,42 @@ contains
   call tri_sle(a0, a1copy, a2, xd, rhs, nrows)
 
   end subroutine tri_sle_stub_d
+
+!-------------------------------------------------------------------------------
+!> Differentiation of tri_sle_stub in forward (tangent) mode:
+!! variations of useful results: x b,
+!! with respect to varying inputs: x b.
+!-------------------------------------------------------------------------------
+  subroutine tri_sle_mini_stub_d(a0, a1, a2, x, xd, b, bd, nrows)
+
+  implicit none
+
+  integer(i4b), intent(in) :: nrows
+  real(dp), dimension(0:nrows), intent(in) :: a0, a2
+  real(dp), dimension(0:nrows), intent(inout) :: a1, b
+  real(dp), dimension(0:nrows), intent(inout) :: bd
+  real(dp), dimension(0:nrows), intent(out) :: x
+  real(dp), dimension(0:nrows), intent(out) :: xd
+  integer(i4b) :: n
+  real(dp), dimension(0:nrows) :: rhs, a1copy
+  integer(i4b) :: n1
+
+  do n1 = 0, nrows
+     a1copy(n1) = a1(n1)
+  end do
+
+  call tri_sle(a0, a1, a2, x, b, nrows)
+
+  rhs(0) = bd(0)
+  rhs(nrows) = bd(nrows)
+
+  do n=1,nrows-1
+     rhs(n) = bd(n)
+  end do
+
+  call tri_sle(a0, a1copy, a2, xd, rhs, nrows)
+
+  end subroutine tri_sle_mini_stub_d
 
 !-------------------------------------------------------------------------------
 !> Solution of a system of linear equations Ax=b with tridiagonal matrix A.

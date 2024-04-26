@@ -36,6 +36,7 @@ module cost_m
   use sico_types_m  
   use sico_variables_m
   use cost_io_m
+  use error_m
 #if (defined(EISMINT) || defined(HEINO) || defined(MOCHO) || defined(NMARS) || defined(SMARS) || defined(XYZ))
   use sico_vars_m
 #endif
@@ -74,7 +75,8 @@ contains
   implicit none
   
   integer(i4b) :: i, j, k, kc, kt, ios, KDATA
-  
+  character(len=64), parameter :: thisroutine = 'cost_final'
+
   !-------- Calculate the difference between the modeled and 'observed' ages:
 fc = 0.0
 
@@ -87,32 +89,31 @@ call read_cost_data()
   KDATA = KCMAX
 #else 
   KDATA = KCMAX + KTMAX
-print *, '>>> error: CALCMOD == 1 but final cost not properly working for '
-print *, '           AGE_COST simulations'
+  errormsg = ' >>> '//trim(thisroutine)//': Age model-data misfit not compatible' &
+  //               end_of_line &
+  //'              with CALCMOD==1!'
+  call error(errormsg)
 #endif
  
-  do k=0, KDATA 
+  do i=0, IMAX 
     do j=0, JMAX
-      do i=0, IMAX
-
+      do k=0, KDATA
         ! only counting points that are real in the data: 
         if (  age_data(k,j,i) .ge. -0.5) then
-
-          fc = fc + 1.e-20*((age_data(k,j,i) - age_c(k,j,i)))**2
-
+          fc = fc &
+#ifdef ALLOW_BEDMACHINE_UNCERT
+          + (age_data(k,j,i) - age_c(k,j,i)/year2sec)**2/age_unc_data(j,i)**2
+#else
+          + (age_data(k,j,i) - age_c(k,j,i)/year2sec)**2
+#endif
         end if
-
       end do
     end do
   end do
 
-  do i=0, IMAX
-    do j=0, JMAX
-      fc = fc + 1.e-20*(H(j,i) - H_data(j,i))**2
-    end do
-  end do
+#endif
 
-#elif defined(BEDMACHINE_COST)
+#if defined(BEDMACHINE_COST)
     do i=0, IMAX
       do j=0, JMAX
         fc = fc &
@@ -123,15 +124,15 @@ print *, '           AGE_COST simulations'
 #endif
       end do
     end do
+#endif
 
-#else
+#if (!defined(BEDMACHINE_COST) && !defined(AGE_COST))
     do i=0, IMAX
       do j=0, JMAX
         !--- Other cost functions:
         fc = fc + (H_c(j,i) + H_t(j,i))*cell_area(j,i)
       end do
     end do
-
 #endif
   
   !-------- Print to screen just in case something gets

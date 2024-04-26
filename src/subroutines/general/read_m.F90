@@ -41,10 +41,6 @@ module read_m
   public :: read_tms_nc, read_target_topo_nc, &
             read_scalar_input, read_2d_input, read_phys_para, read_kei
 
-#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
-  public :: read_age_data
-#endif /* ALLOW_{TAPENADE,GRDCHK} */
-
 contains
 
 !-------------------------------------------------------------------------------
@@ -1704,111 +1700,6 @@ contains
   end if
 
   end subroutine read_phys_para_value
-
-#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
-!-------------------------------------------------------------------------------
-!> Reading in of adjoint related data (only set up for ages right now).
-!-------------------------------------------------------------------------------
-  subroutine read_age_data()
-
-  use sico_variables_m
-
-#if (defined(EISMINT) || defined(HEINO) || defined(MOCHO) || defined(NMARS) || defined(SMARS) || defined(XYZ))
-  use sico_vars_m
-#endif
-
-  implicit none
-
-    integer(i4b) :: ios, i, j, k, kc, kt, KDATA
-    logical      :: debug = .true.
-! path stores path with filename
-! assume you are in src directory when defining path
-    character(len=256) :: path 
-
-#if (defined(AGE_COST)) /* Only designed for AGE_COST right now */
-! Warning: code below is not robust against
-! CALCMOD.NE.3,2
-#if (CALCMOD==3)
-    KDATA = KCMAX
-#else
-    KDATA = KCMAX + KTMAX
-#endif
-
-#if (defined(AGE_DATA_PATH))
-  path = trim(AGE_DATA_PATH)
-#else
-  errormsg = ' >>> read_tms_nc: AGE_DATA_PATH must be defined!'
-  call error(errormsg)
-#endif
-
-open(unit=1092, file=path, status='old')
-
-! Some issues need to be sorted with age_unc data first
-
-!#if (defined(AGE_UNC_PATH))
-!  path = trim(AGE_UNC_PATH)
-!#else
-!  errormsg = ' >>> read_tms_nc: AGE_UNC_PATH must be defined!'
-!  call error(errormsg)
-!#endif
-
-!open(unit=1093, file=path, status='old')
-
-#if (defined(H_DATA_PATH))
-  path = trim(H_DATA_PATH)
-#else
-  errormsg = ' >>> read_tms_nc: H_DATA_PATH must be defined!'
-  call error(errormsg)
-#endif
-
-open(unit=1094, file=path, status='old')
-
-! Age layer data only has H_data, but not H_unc
-! Will have to consider using BedMachine data for H_unc
-
-!#if (defined(H_UNC_PATH))
-!  path = trim(H_UNC_PATH)
-!#else
-!  errormsg = ' >>> read_tms_nc: H_UNC_PATH must be defined!'
-!  call error(errormsg)
-!#endif
-
-!open(unit=1095, file=path, status='old')
-
-    do i=0,IMAX
-       do j=0,JMAX
-          read(1094, *) H_data(j,i)
-          !read(1095, *) H_unc(j,i)
-       end do
-    end do
-
-    do k=0,KDATA
-       do i=0,IMAX
-          do j=0,JMAX
-             read(1092, *) age_data(k,j,i)
-             !read(1093, *) age_unc(k,j,i)
-          end do
-       end do
-    end do
-
-    ! ages a -> s
-    do k=0,KDATA
-       do j=0,JMAX
-          do i=0,IMAX
-                age_data(k,j,i) = age_data(k,j,i) * year2sec
-                !age_unc(k,j,i)  = age_unc(k,j,i)  * year2sec
-          end do
-       end do
-    end do
-    close(unit=1092)
-    !close(unit=1093)
-    close(unit=1094)
-    !close(unit=1095)
-#endif
-
-  end subroutine read_age_data
-
-#endif /* ALLOW_{TAPENADE,GRDCHK} */
 
 !-------------------------------------------------------------------------------
 

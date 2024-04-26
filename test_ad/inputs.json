@@ -25,5 +25,6 @@
                          1, 2, -1],
     "c_compiler": "gcc",
     "f90_compiler": "gfortran",
-    "adj_prof": 1
+    "adj_prof": 1,
+    "low": 0.0 
 }

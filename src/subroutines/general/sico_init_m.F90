@@ -501,14 +501,14 @@ if (approx_equal(DX, 80.0_dp, eps_sp_dp)) then
 
 else if (approx_equal(DX, 40.0_dp, eps_sp_dp)) then
 
-   if ((IMAX /= 210).or.(JMAX /= 156)) then
+   if ((IMAX /= 211).or.(JMAX /= 157)) then
       errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
       call error(errormsg)
    end if
 
 else if (approx_equal(DX, 20.0_dp, eps_sp_dp)) then
 
-   if ((IMAX /= 420).or.(JMAX /= 312)) then
+   if ((IMAX /= 423).or.(JMAX /= 315)) then
       errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
       call error(errormsg)
    end if
@@ -801,6 +801,60 @@ flag_initmip_asmb = .false.
 #if (defined(ANT))
 flag_initmip_abmb = .false.
 flag_larmip       = .false.
+#endif
+
+#if (ACCSURFACE==2 || ACCSURFACE==3)
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+   gamma_s = gamma_s + GAMMA_S
+#else /* NORMAL */
+   gamma_s = GAMMA_S
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
+#endif
+
+#if (ABLSURFACE==1 || ABLSURFACE==2)
+
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+
+#if (defined(S_STAT_0) && defined(BETA1_0) && defined(BETA2_0) && defined(PMAX_0) && defined(MU_0))
+s_stat = s_stat + S_STAT_0
+beta1  = beta1 + BETA1_0 *(0.001_dp/86400.0_dp)*(RHO_W/RHO)
+                          ! (mm WE)/(d*degC) -> (m IE)/(s*degC)
+beta2  = beta2 + BETA2_0 *(0.001_dp/86400.0_dp)*(RHO_W/RHO)
+                          ! (mm WE)/(d*degC) -> (m IE)/(s*degC)
+Pmax   = Pmax + PMAX_0
+mu     = mu + MU_0    *(1000.0_dp*86400.0_dp)*(RHO/RHO_W)
+                          ! (d*degC)/(mm WE) -> (s*degC)/(m IE)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameters for PDD model not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#else /* NORMAL */
+
+#if (defined(S_STAT_0) && defined(BETA1_0) && defined(BETA2_0) && defined(PMAX_0) && defined(MU_0))
+s_stat = S_STAT_0
+beta1  = BETA1_0 *(0.001_dp/86400.0_dp)*(RHO_W/RHO)
+                          ! (mm WE)/(d*degC) -> (m IE)/(s*degC)
+beta2  = BETA2_0 *(0.001_dp/86400.0_dp)*(RHO_W/RHO)
+                          ! (mm WE)/(d*degC) -> (m IE)/(s*degC)
+Pmax   = PMAX_0
+mu     = MU_0    *(1000.0_dp*86400.0_dp)*(RHO/RHO_W)
+                          ! (d*degC)/(mm WE) -> (s*degC)/(m IE)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameters for PDD model not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
+
+#elif (ABLSURFACE==3)
+
+lambda_lti = LAMBDA_LTI *(0.001_dp*sec2year)*(RHO_W/RHO)
+                        ! (mm WE)/(a*degC) -> (m IE)/(s*degC)
+temp_lti   = TEMP_LTI
+
 #endif
 
 !-------- General abbreviations --------
@@ -2725,12 +2779,6 @@ end do
 end do
 
 #endif
-
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
-#if (ACCSURFACE==2 || ACCSURFACE==3)
-   gamma_s = gamma_s + GAMMA_S
-#endif
-#endif /* ALLOW_{TAPENADE,GRDCHK} */
 
 !-------- Definition of initial values --------
 

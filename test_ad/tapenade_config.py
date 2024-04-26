@@ -960,7 +960,7 @@ def setup_forward(ind_var, header, domain,
 
 	return None
 
-def validate_FD_AD(grdchk_file, ad_file, tolerance = 0.1):
+def validate_FD_AD(grdchk_file, ad_file, tolerance = 0.1, low = 0.0):
 
 	'''
 	Purpose - Validate adjoint/tlm output with grdchk output
@@ -969,12 +969,16 @@ def validate_FD_AD(grdchk_file, ad_file, tolerance = 0.1):
 	grdchk_file - Location of grdchk output data
 	ad_file - Location of tlm/adjoint output data
 	tolerance - Acceptable relative tolerance for discrepancies
+	low - abs(values) below maxabs_value*lower_threshold are not checked
 	'''
 
 	grdchk_data = np.loadtxt(grdchk_file, dtype = float)
 	ad_data = np.loadtxt(ad_file, dtype = float)
-	
-	if(np.max(np.abs(ad_data/grdchk_data-1)) >= tolerance):
+
+	maximum = np.max(np.abs(grdchk_data))
+	max_error = np.max(np.abs(ad_data/grdchk_data-1)*(np.abs(grdchk_data)>low*maximum))
+
+	if(max_error >= tolerance):
 		raise Exception("Validation failed.")
 		sys.exit(1)
 	else:
@@ -995,7 +999,7 @@ def simulation(mode, header, domain,
 	      ckp_status = False, ckp_num = 10, validation = True,
 	      sicopolis_tapenade_cpp_b_file = 'sicopolis_tapenade_cpp_b.f90',
 	      sico_main_loop_m_cpp_b_file = 'sico_main_loop_m_cpp_b.f90',
-	      f90c = 'gfortran', cc = 'gcc', tap_adj_prof = 1):
+	      f90c = 'gfortran', cc = 'gcc', tap_adj_prof = 1, low = 0.0):
 
 	'''
 	Purpose - Sets up everything correctly for compilation of adjoint run
@@ -1023,8 +1027,8 @@ def simulation(mode, header, domain,
 	cc - C compiler
 	f90c - F90 compiler
 	tap_adj_prof - If 1, activate profiling for adjoint
+	low - abs(values) below maxabs_value*lower_threshold are not checked
 	'''
-
 
 	try:
 	
@@ -1112,7 +1116,7 @@ def simulation(mode, header, domain,
 			if os.path.exists(adjoint_file) is False:
 				raise FileNotFoundError (f'{adjoint_file} not found for validation')
 
-			validate_FD_AD(grdchk_file, adjoint_file, tolerance = 0.1)
+			validate_FD_AD(grdchk_file, adjoint_file, tolerance = 0.1, low = low)
 
 	elif mode == 'forward':
 
@@ -1143,7 +1147,7 @@ def simulation(mode, header, domain,
 			if os.path.exists(tlm_file) is False:
 				raise FileNotFoundError (f'{tlm_file} not found for validation')
 
-			validate_FD_AD(grdchk_file, tlm_file, tolerance = 0.1)
+			validate_FD_AD(grdchk_file, tlm_file, tolerance = 0.1, low = low)
 	
 	elif mode == 'normal':
 
@@ -1168,7 +1172,6 @@ def simulation(mode, header, domain,
 	return None
 
 if __name__ == "__main__":
-
 
 	### Command line arguments overwrite json arguments
 
@@ -1195,6 +1198,7 @@ if __name__ == "__main__":
 	parser.add_argument("-f90c", '--f90_compiler', help="F90 compiler", type=str)
 	parser.add_argument("-prof", '--adj_prof', help="If 1, activate adjoint profiling", type=str)
 	parser.add_argument("-lbfs", '--limited_or_block_or_full_or_scalar', help="limited or block or full or scalar?", type=str)
+	parser.add_argument("-low", '--low', help="abs(values) below maxabs_value*lower_threshold are not checked", type=str)
 
 	args = parser.parse_args()
 
@@ -1221,10 +1225,10 @@ if __name__ == "__main__":
 		ckp_status = True
 
 	list_attrs = ['json', 'header', 'domain', 'ind_var', 'dep_var',
-		      'dimension', 'z_co_ord', 'perturbation', 'output_vars',
-		      'output_iters', 'output_dims', 'output_adj_vars', 
-		      'output_adj_iters', 'output_adj_dims', 'checkpoint', 'run',
-		      'c_compiler', 'f90_compiler', 'limited_or_block_or_full_or_scalar']
+		      	'dimension', 'z_co_ord', 'perturbation', 'output_vars',
+		      	'output_iters', 'output_dims', 'output_adj_vars',
+		      	'output_adj_iters', 'output_adj_dims', 'checkpoint', 'run',
+		      	'c_compiler', 'f90_compiler', 'limited_or_block_or_full_or_scalar']
 
 	for attr in list_attrs:
 		if not hasattr(args, attr):
@@ -1237,12 +1241,12 @@ if __name__ == "__main__":
 	for mode in ['normal', 'grdchk', 'adjoint', 'forward']:
 
 		simulation(mode = mode, header = args.header, domain = args.domain, 
-		      ind_var = args.ind_var, dep_var = args.dep_var,
-		      limited_or_block_or_full_or_scalar = args.limited_or_block_or_full_or_scalar,
-		      ind_var_dim = args.dimension, ind_var_z_co_ord = args.z_co_ord,
-		      perturbation = args.perturbation,
-		      run_executable_auto = args.run,
-		      output_vars = args.output_vars, output_iters = args.output_iters, output_dims = args.output_dims,
-		      output_adj_vars = args.output_adj_vars, output_adj_iters = args.output_adj_iters, output_adj_dims = args.output_adj_dims,
-		      ckp_status = ckp_status, ckp_num = args.checkpoint,
-		      cc = args.c_compiler, f90c = args.f90_compiler)
+				ind_var = args.ind_var, dep_var = args.dep_var,
+				limited_or_block_or_full_or_scalar = args.limited_or_block_or_full_or_scalar,
+				ind_var_dim = args.dimension, ind_var_z_co_ord = args.z_co_ord,
+				perturbation = args.perturbation,
+				run_executable_auto = args.run,
+				output_vars = args.output_vars, output_iters = args.output_iters, output_dims = args.output_dims,
+				output_adj_vars = args.output_adj_vars, output_adj_iters = args.output_adj_iters, output_adj_dims = args.output_adj_dims,
+				ckp_status = ckp_status, ckp_num = args.checkpoint,
+				cc = args.c_compiler, f90c = args.f90_compiler, tap_adj_prof = args.adj_prof, low = float(args.low))

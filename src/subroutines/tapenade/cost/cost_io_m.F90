@@ -56,7 +56,7 @@ subroutine read_cost_data()
     integer(i4b) :: ncid, ncv
     !     ncid:      ID of the input file
     !     ncv:       Variable ID
-    integer(i4b) :: i, j, kc, tad
+    integer(i4b) :: i, j, kc, tad, KDATA
     integer(i4b) :: ctrl_index
     integer(i4b) :: ios
 
@@ -66,6 +66,8 @@ subroutine read_cost_data()
 
     real(dp), dimension(0:IMAX,0:JMAX) :: H_BedMachine_data_conv
     real(dp), dimension(0:IMAX,0:JMAX) :: H_unc_BedMachine_data_conv
+    real(dp), dimension(0:IMAX,0:JMAX,0:KCMAX) :: age_data_conv
+    real(dp), dimension(0:IMAX,0:JMAX,0:KCMAX) :: age_unc_data_conv
 
     !-------- Create file name --------
     
@@ -113,6 +115,63 @@ subroutine read_cost_data()
 #ifdef ALLOW_BEDMACHINE_UNCERT
             H_unc_BedMachine_data(j,i) = H_unc_BedMachine_data_conv(i,j)
 #endif
+        end do
+    end do
+#endif
+
+#ifdef AGE_COST
+
+#if (CALCMOD!=1)
+  KDATA = KCMAX
+#else 
+  KDATA = KCMAX + KTMAX
+  errormsg = ' >>> '//trim(thisroutine)//': Age model-data misfit not compatible' &
+  //               end_of_line &
+  //'              with CALCMOD==1!'
+  call error(errormsg)
+#endif
+
+#if (IMAX==168)
+    filename = 'age_data_10kms'//trim(filename_extension)
+#elif (IMAX==42)
+    filename = 'age_data_40kms'//trim(filename_extension)
+#elif (IMAX==105)
+    filename = 'age_data_16kms'//trim(filename_extension)
+#else
+    errormsg = ' >>> '//trim(thisroutine)//': Error when looking for a' &
+    //               end_of_line &
+    //'              Age data file!'
+    call error(errormsg)
+#endif
+    filename_with_path = trim(temp_path)//'/'//trim(filename)
+
+    !  ------ Open NetCDF file
+    ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+    if (ios /= nf90_noerr) then
+        errormsg = ' >>> '//trim(thisroutine)//': Error when opening a' &
+        //               end_of_line &
+        //'              NetCDF BedMachine data file!'
+        call error(errormsg)
+    end if
+
+    call check( nf90_inq_varid(ncid, 'age', ncv), thisroutine )
+    call check( nf90_get_var(ncid, ncv, age_data_conv), thisroutine )
+#ifdef ALLOW_AGE_UNCERT
+    call check( nf90_inq_varid(ncid, 'age_uncert', ncv), thisroutine )
+    call check( nf90_get_var(ncid, ncv, age_unc_data_conv), thisroutine )
+#endif
+    !  ------ Close NetCDF file
+    call check( nf90_close(ncid) )
+
+    do kc=0, KDATA
+        do j=0, JMAX
+            do i=0, IMAX
+                age_data(kc,j,i) = age_data_conv(i,j,kc)
+#ifdef ALLOW_AGE_UNCERT
+                age_unc_data(kc,j,i) = age_unc_data_conv(i,j,kc)
+#endif
+            end do
         end do
     end do
 #endif

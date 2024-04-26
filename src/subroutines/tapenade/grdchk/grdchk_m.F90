@@ -70,7 +70,9 @@ end subroutine grdchk_main
    
    use sico_types_m
    use sico_variables_m
+#if (defined(EISMINT) || defined(HEINO) || defined(MOCHO) || defined(NMARS) || defined(SMARS) || defined(XYZ))
    use sico_vars_m
+#endif
    
    use sico_init_m
    use sico_main_loop_m
@@ -139,12 +141,12 @@ end subroutine grdchk_main
 
             !@ python_automated_grdchk_scalar @
 
-            ! Example -- gamma_s_arr
-            ! orig_val = gamma_s_arr(1,1)
+            ! Example -- gamma_s
+            ! orig_val = gamma_s(1,1)
             ! if (orig_val .ne. 0) then
-            !   gamma_s_arr = orig_val * perturbation
+            !   gamma_s = orig_val * perturbation
             ! else
-            !   gamma_s_arr = perturbation-1
+            !   gamma_s = perturbation-1
             ! end if
 
             ! -- sanity check
@@ -172,24 +174,19 @@ end subroutine grdchk_main
             c_slide_init   = 0.0
             H              = 0.0 ! Only compatible with ANF_DAT==1
 #if (ACCSURFACE==2 || ACCSURFACE==3)
-            gamma_s_arr    = 0.0
-#endif
-#if (ABLSURFACE==1 || ABLSURFACE==2 || (ACCSURFACE<=5 && SOLID_PRECIP==3))
-            s_stat_arr     = 0.0
+            gamma_s        = 0.0
 #endif
 #if (ABLSURFACE==1 || ABLSURFACE==2)
-            beta1_arr_orig = 0.0
-            beta2_arr_orig = 0.0
-            Pmax_arr       = 0.0
-            mu_arr_orig    = 0.0
+            s_stat         = 0.0
+            beta1          = 0.0
+            beta2          = 0.0
+            Pmax           = 0.0
+            mu             = 0.0
 #endif
             ! 3D fields
-            temp_c       = 0.0 ! Not compatible with TEMP_INIT==5
-            age_c        = 0.0
+            temp_c         = 0.0 ! Not compatible with TEMP_INIT==5
+            age_c          = 0.0
 
-            ! Reset flag_ad_sico_init for next iteration
-            flag_ad_sico_init = .false.
-       
             ! store cost
             fc_collected(d) = fc
         
@@ -230,8 +227,9 @@ end subroutine grdchk_main
    
    use sico_types_m
    use sico_variables_m
+#if (defined(EISMINT) || defined(HEINO) || defined(MOCHO) || defined(NMARS) || defined(SMARS) || defined(XYZ))
    use sico_vars_m
-   
+#endif
    use sico_init_m
    use sico_main_loop_m
    use sico_end_m
@@ -350,23 +348,18 @@ end subroutine grdchk_main
             c_slide_init   = 0.0
             H              = 0.0 ! Only compatible with ANF_DAT==1
 #if (ACCSURFACE==2 || ACCSURFACE==3)
-            gamma_s_arr    = 0.0
-#endif
-#if (ABLSURFACE==1 || ABLSURFACE==2 || (ACCSURFACE<=5 && SOLID_PRECIP==3))
-            s_stat_arr     = 0.0
+            gamma_s        = 0.0
 #endif
 #if (ABLSURFACE==1 || ABLSURFACE==2)
-            beta1_arr_orig = 0.0
-            beta2_arr_orig = 0.0
-            Pmax_arr       = 0.0
-            mu_arr_orig    = 0.0
+            s_stat         = 0.0
+            beta1          = 0.0
+            beta2          = 0.0
+            Pmax           = 0.0
+            mu             = 0.0
 #endif
             ! 3D fields
-            temp_c       = 0.0 ! Not compatible with TEMP_INIT==5
-            age_c        = 0.0
-
-            ! Reset flag_ad_sico_init for next iteration
-            flag_ad_sico_init = .false.
+            temp_c         = 0.0 ! Not compatible with TEMP_INIT==5
+            age_c          = 0.0
        
             ! store cost
             fc_collected(d) = fc
