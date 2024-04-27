@@ -5,7 +5,7 @@
 !
 #define       MODEL_SICOPOLIS
 #define       VERSION '24'
-#define       DATE    '2024-04-23'
+#define       DATE    '2024-04-27'
 !
 !! Main program of SICOPOLIS.
 !!
@@ -178,7 +178,7 @@
 #include "subroutines/mocho/boundary_m.F90"
 #elif (defined(NMARS) || defined(SMARS))
 #include "subroutines/n_s_mars/boundary_m.F90"
-#elif (defined(XYZ))
+#elif (defined(XYZ) && XYZ_SPECIAL_MODULES != 0)
 #include "subroutines/xyz/boundary_m.F90"
 #else
 #include "subroutines/general/boundary_m.F90"
@@ -194,7 +194,7 @@
 #include "subroutines/mocho/sico_init_m.F90"
 #elif (defined(NMARS) || defined(SMARS))
 #include "subroutines/n_s_mars/sico_init_m.F90"
-#elif (defined(XYZ))
+#elif (defined(XYZ) && XYZ_SPECIAL_MODULES != 0)
 #include "subroutines/xyz/sico_init_m.F90"
 #else
 #include "subroutines/general/sico_init_m.F90"
