@@ -4,7 +4,7 @@
 
 !-------- Basic settings --------
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2024-04-28'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2024-04-30'
 !                      Date of last change
 
 !-------- Domain --------
@@ -652,7 +652,7 @@
 #define TEMP_ANOM_FILE 'none'
 !                       Name of the file containing the LGM
 !                       monthly-mean surface-temperature-anomaly data
-!                       (difference LGM - present; only for TSURFACE==5
+!                       (difference LGM - present; only for TSURFACE==5)
 
 #define TEMP_ANOM_FACT 1.0d0
 !                       Modification factor for the anomaly data of
