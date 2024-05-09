@@ -51,8 +51,8 @@ integer, parameter :: i4b = selected_int_kind(9)   ! 4-byte integers
 integer, parameter :: dp  = kind(1.0d0)            ! double-precision reals
 
 real(dp) :: RHO, RHO_W, RHO_SW, L, G, NUE, BETA, DELTA_TM_SW, OMEGA_MAX, &
-            H_R, RHO_C_R, KAPPA_R, RHO_A, R_T, &
-            R, A, B, F_INV, LOND0, LATD0
+            H_R, RHO_C_R, KAPPA_R, RHO_A, R_T
+! real(dp) :: R, A, B, F_INV, LOND0, LATD0
 
 real(dp), dimension(-190:10) :: RF, KAPPA, C
 
@@ -180,77 +180,77 @@ select case(ch_domain)
       ! for temperate ice = 181.25
 end select
 
-!  ------ Stereographic projection
-
-select case(ch_domain)
-   case ('SHMARS')
-      R = 3.3762e+06_dp
-      ! Radius of Mars = 3376200 m
-   case default
-      R = 6.371e+06_dp
-      ! Radius of the Earth = 6371000 m
-end select
-
-select case(ch_domain)
-   case ('SHMARS')
-      A = 3.3762e+06_dp
-      ! Semi-major axis of Mars = 3376200 m (sphere assumed)
-   case default
-      A = 6.378137e+06_dp
-      ! Semi-major axis of the Earth = 6378137 m
-end select
-
-select case(ch_domain)
-   case ('SHMARS')
-      F_INV = very_large
-      ! Inverse flattening of Mars = inf (sphere assumed)
-   case default
-      F_INV = 298.257223563_dp
-      ! Inverse flattening of the Earth = 298.257223563
-end select
-
-select case(ch_domain)
-   case ('ANT')
-      LATD0 = -71.0_dp
-      LOND0 =   0.0_dp
-   case ('ASF')
-      LATD0 = 79.7208_dp
-      LOND0 = 15.0_dp   ! central median of UTM33
-   case ('GRL')
-      LATD0 =  70.0_dp
-      LOND0 = -45.0_dp
-   case ('NHEM')
-      LATD0 =  71.0_dp
-      LOND0 = -44.0_dp
-   case ('SCAND')
-      LATD0 =  71.0_dp
-      LOND0 =  75.0_dp
-   case ('TIBET')
-      LATD0 =  35.0_dp
-      LOND0 =  90.0_dp
-   case ('LCIS')
-      LATD0 =  60.0_dp
-      LOND0 = -94.0_dp
-   case ('MOCHO')
-      LATD0 = -40.0_dp
-      LOND0 = -72.5_dp
-   case ('NPI')
-      LATD0 = -47.0_dp
-      LOND0 = -75.0_dp   ! central meridian of UTM S18 (72W-78W)
-   case ('SHMARS')
-      LATD0 = -60.0_dp
-      LOND0 =   0.0_dp
-   case ('EISMINT', 'CALVINGMIP', 'VIALOV', 'HEINO')
-      LATD0 =  71.0_dp   ! for simple, "academic" geometry
-      LOND0 =   0.0_dp   ! for simple, "academic" geometry
-   case default
-      write(6,'(/a)') 'Warning: LATD0 and LOND0 undefined!'
-      LATD0 = very_large   ! undefined
-      LOND0 = very_large   ! undefined
-end select
-
-      ! LATD0: standard parallel (degrees N)
-      ! LOND0: Reference longitude (degrees E)
+! !  ------ Stereographic projection
+!
+! select case(ch_domain)
+!    case ('SHMARS')
+!       R = 3.3762e+06_dp
+!       ! Radius of Mars = 3376200 m
+!    case default
+!       R = 6.371e+06_dp
+!       ! Radius of the Earth = 6371000 m
+! end select
+!
+! select case(ch_domain)
+!    case ('SHMARS')
+!       A = 3.3762e+06_dp
+!       ! Semi-major axis of Mars = 3376200 m (sphere assumed)
+!    case default
+!       A = 6.378137e+06_dp
+!       ! Semi-major axis of the Earth = 6378137 m
+! end select
+!
+! select case(ch_domain)
+!    case ('SHMARS')
+!       F_INV = very_large
+!       ! Inverse flattening of Mars = inf (sphere assumed)
+!    case default
+!       F_INV = 298.257223563_dp
+!       ! Inverse flattening of the Earth = 298.257223563
+! end select
+!
+! select case(ch_domain)
+!    case ('ANT')
+!       LATD0 = -71.0_dp
+!       LOND0 =   0.0_dp
+!    case ('ASF')
+!       LATD0 = 79.7208_dp
+!       LOND0 = 15.0_dp   ! central median of UTM33
+!    case ('GRL')
+!       LATD0 =  70.0_dp
+!       LOND0 = -45.0_dp
+!    case ('NHEM')
+!       LATD0 =  71.0_dp
+!       LOND0 = -44.0_dp
+!    case ('SCAND')
+!       LATD0 =  71.0_dp
+!       LOND0 =  75.0_dp
+!    case ('TIBET')
+!       LATD0 =  35.0_dp
+!       LOND0 =  90.0_dp
+!    case ('LCIS')
+!       LATD0 =  60.0_dp
+!       LOND0 = -94.0_dp
+!    case ('MOCHO')
+!       LATD0 = -40.0_dp
+!       LOND0 = -72.5_dp
+!    case ('NPI')
+!       LATD0 = -47.0_dp
+!       LOND0 = -75.0_dp   ! central meridian of UTM S18 (72W-78W)
+!    case ('SHMARS')
+!       LATD0 = -60.0_dp
+!       LOND0 =   0.0_dp
+!    case ('EISMINT', 'CALVINGMIP', 'VIALOV', 'HEINO')
+!       LATD0 =  71.0_dp   ! for simple, "academic" geometry
+!       LOND0 =   0.0_dp   ! for simple, "academic" geometry
+!    case default
+!       write(6,'(/a)') 'Warning: LATD0 and LOND0 undefined!'
+!       LATD0 = very_large   ! undefined
+!       LOND0 = very_large   ! undefined
+! end select
+!
+!       ! LATD0: standard parallel (degrees N)
+!       ! LOND0: Reference longitude (degrees E)
 
 !  ------ Rate factor RF(T)
 !         [RF] = 1/(s*Pa3), [T] = degC
@@ -489,47 +489,47 @@ istat = nf90_put_att(ncid, varid(14), &
    'Coefficient of the water-content dependence ' &
    // 'of the rate factor of ice')
 
-istat = nf90_def_var(ncid, 'R', NF90_DOUBLE, varid(21))
-
-istat = nf90_put_att(ncid, varid(21), 'units', 'm')
-istat = nf90_put_att(ncid, varid(21), &
-   'standard_name', &
-   'earth_radius')
-istat = nf90_put_att(ncid, varid(21), &
-   'long_name', &
-   'Radius of the Earth')
-
-istat = nf90_def_var(ncid, 'A', NF90_DOUBLE, varid(22))
-
-istat = nf90_put_att(ncid, varid(22), 'units', 'm')
-istat = nf90_put_att(ncid, varid(22), &
-   'standard_name', &
-   'earth_semi_major_axis')
-istat = nf90_put_att(ncid, varid(22), &
-   'long_name', &
-   'Semi-major axis of the Earth')
-
-istat = nf90_def_var(ncid, 'F_INV', NF90_DOUBLE, varid(23))
-
-istat = nf90_put_att(ncid, varid(23), 'units', '-')
-istat = nf90_put_att(ncid, varid(23), &
-   'standard_name', &
-   'earth_inverse_flattening')
-istat = nf90_put_att(ncid, varid(23), &
-   'long_name', &
-   'Inverse flattening of the Earth')
-
-istat = nf90_def_var(ncid, 'LATD0', NF90_DOUBLE, varid(24))
-
-istat = nf90_put_att(ncid, varid(24), 'units', 'degrees_N')
-istat = nf90_put_att(ncid, varid(24), 'standard_name', 'standard_parallel')
-istat = nf90_put_att(ncid, varid(24), 'long_name', 'Standard parallel')
-
-istat = nf90_def_var(ncid, 'LOND0', NF90_DOUBLE, varid(25))
-
-istat = nf90_put_att(ncid, varid(25), 'units', 'degrees_E')
-istat = nf90_put_att(ncid, varid(25), 'standard_name', 'central_meridian')
-istat = nf90_put_att(ncid, varid(25), 'long_name', 'Central meridian')
+! istat = nf90_def_var(ncid, 'R', NF90_DOUBLE, varid(21))
+!
+! istat = nf90_put_att(ncid, varid(21), 'units', 'm')
+! istat = nf90_put_att(ncid, varid(21), &
+!    'standard_name', &
+!    'earth_radius')
+! istat = nf90_put_att(ncid, varid(21), &
+!    'long_name', &
+!    'Radius of the Earth')
+!
+! istat = nf90_def_var(ncid, 'A', NF90_DOUBLE, varid(22))
+!
+! istat = nf90_put_att(ncid, varid(22), 'units', 'm')
+! istat = nf90_put_att(ncid, varid(22), &
+!    'standard_name', &
+!    'earth_semi_major_axis')
+! istat = nf90_put_att(ncid, varid(22), &
+!    'long_name', &
+!    'Semi-major axis of the Earth')
+!
+! istat = nf90_def_var(ncid, 'F_INV', NF90_DOUBLE, varid(23))
+!
+! istat = nf90_put_att(ncid, varid(23), 'units', '-')
+! istat = nf90_put_att(ncid, varid(23), &
+!    'standard_name', &
+!    'earth_inverse_flattening')
+! istat = nf90_put_att(ncid, varid(23), &
+!    'long_name', &
+!    'Inverse flattening of the Earth')
+!
+! istat = nf90_def_var(ncid, 'LATD0', NF90_DOUBLE, varid(24))
+!
+! istat = nf90_put_att(ncid, varid(24), 'units', 'degrees_N')
+! istat = nf90_put_att(ncid, varid(24), 'standard_name', 'standard_parallel')
+! istat = nf90_put_att(ncid, varid(24), 'long_name', 'Standard parallel')
+!
+! istat = nf90_def_var(ncid, 'LOND0', NF90_DOUBLE, varid(25))
+!
+! istat = nf90_put_att(ncid, varid(25), 'units', 'degrees_E')
+! istat = nf90_put_att(ncid, varid(25), 'standard_name', 'central_meridian')
+! istat = nf90_put_att(ncid, varid(25), 'long_name', 'Central meridian')
 
 istat = nf90_def_var(ncid, 'RF', NF90_DOUBLE, ncd, varid(51))
 
@@ -568,11 +568,11 @@ istat = nf90_put_var(ncid, varid(12), KAPPA_R)
 istat = nf90_put_var(ncid, varid(13), RHO_A)
 istat = nf90_put_var(ncid, varid(14), R_T)
 
-istat = nf90_put_var(ncid, varid(21), R)
-istat = nf90_put_var(ncid, varid(22), A)
-istat = nf90_put_var(ncid, varid(23), F_INV)
-istat = nf90_put_var(ncid, varid(24), LATD0)
-istat = nf90_put_var(ncid, varid(25), LOND0)
+! istat = nf90_put_var(ncid, varid(21), R)
+! istat = nf90_put_var(ncid, varid(22), A)
+! istat = nf90_put_var(ncid, varid(23), F_INV)
+! istat = nf90_put_var(ncid, varid(24), LATD0)
+! istat = nf90_put_var(ncid, varid(25), LOND0)
 
 istat = nf90_put_var(ncid, varid(51), RF)
 istat = nf90_put_var(ncid, varid(52), KAPPA)
