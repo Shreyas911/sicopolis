@@ -1429,7 +1429,7 @@ contains
 !-------- Determining file type --------
 
 #if (defined(RF_KAPPA_C_FILE))
-  filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+  filename_with_path = trim(IN_PATH)//'/general/'// &
                        trim(RF_KAPPA_C_FILE)
 #endif
 

@@ -4,7 +4,7 @@
 
 !-------- Basic settings --------
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2024-05-09'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2024-05-10'
 !                      Date of last change
 
 !-------- Domain --------
@@ -79,7 +79,7 @@
 !       Coefficient of the water-content dependence in the rate factor
 !       for temperate
 
-#define RF_KAPPA_C_FILE 'phys_para_nhem.dat'
+#define RF_KAPPA_C_FILE 'RF_KAPPA_C_GrWeHu98.dat'
 !       Name of the file containing the tabulated values of the
 !       temperature-dependent rate factor, heat conductivity and specific heat
 
