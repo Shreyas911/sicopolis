@@ -736,6 +736,16 @@ vy_b_g   = 0.0_dp
 ! c_slide and c_drag are not reset because they will be used in the
 ! computation of the SStA velocity components
 
+!-------- Discard basal velocities for DYNAMICS==3 (DIVA) --------
+
+#elif (DYNAMICS==3)
+
+d_help_b = 0.0_dp
+vx_b     = 0.0_dp
+vy_b     = 0.0_dp
+vx_b_g   = 0.0_dp
+vy_b_g   = 0.0_dp
+
 #endif
 
 end subroutine calc_vxy_b_sia
@@ -1343,9 +1353,43 @@ do j=1, JMAX-1
 end do
 end do
 
+#elif (DYNAMICS==3)
+
+ratio_sl_threshold = 1.11e+11_dp   ! dummy value
+
+do i=0, IMAX-1
+do j=0, JMAX
+   if ( (mask(j,i)==0).or.(mask(j,i+1)==0) ) &
+      flag_shelfy_stream_x(j,i) = .true.
+end do
+end do
+
+do i=0, IMAX
+do j=0, JMAX-1
+   if ( (mask(j,i)==0).or.(mask(j+1,i)==0) ) &
+      flag_shelfy_stream_y(j,i) = .true.
+end do
+end do
+
+do i=1, IMAX-1
+do j=1, JMAX-1
+
+   if (mask(j,i) == 0) then   ! grounded ice
+
+      if (     flag_shelfy_stream_x(j,i-1)   &   ! at least
+           .or.flag_shelfy_stream_x(j,i)     &   ! one neighbour
+           .or.flag_shelfy_stream_y(j-1,i)   &   ! on the staggered grid
+           .or.flag_shelfy_stream_y(j,i)   ) &   ! is a shelfy stream point
+               flag_shelfy_stream(j,i) = .true.
+
+   end if
+
+end do
+end do
+
 #else
 
-errormsg = ' >>> calc_vxy_sia: DYNAMICS must be 0, 1 or 2!'
+errormsg = ' >>> calc_vxy_sia: DYNAMICS must be between 0 and 3!'
 call error(errormsg)
 
 #endif
@@ -1447,7 +1491,7 @@ end subroutine calc_vxy_static
 !-------------------------------------------------------------------------------
 subroutine calc_vxy_ssa(dxi, deta, dzeta_c, dzeta_t)
 
-#if (DYNAMICS==2)
+#if (DYNAMICS==2 || DYNAMICS==3)
   use calc_enhance_m, only : calc_enhance_hybrid_weighted
 #endif
 
@@ -1474,7 +1518,7 @@ real(dp) :: pi_inv
 
 pi_inv   = 1.0_dp/pi
 
-#if (MARGIN==3 || DYNAMICS==2)
+#if (MARGIN==3 || DYNAMICS==2 || DYNAMICS==3)
 
 !-------- Parameters for the relaxation scheme --------
 
@@ -1619,7 +1663,7 @@ call calc_vis_ssa(dxi, deta, dzeta_c, dzeta_t)
 
 !-------- 3-D velocities, basal velocities and volume flux --------
 
-#if (DYNAMICS==0 || DYNAMICS==1)
+#if (DYNAMICS==0 || DYNAMICS==1 || DYNAMICS==3)
 
 ratio_sl_threshold = 1.11e+11_dp   ! dummy value
 ratio_help         = 1.11e+11_dp   ! dummy value
@@ -1654,7 +1698,7 @@ v_ref_sq_inv = 1.11e+11_dp   ! dummy value
 
 #else
 
-errormsg = ' >>> calc_vxy_ssa: DYNAMICS must be 0, 1 or 2!'
+errormsg = ' >>> calc_vxy_ssa: DYNAMICS must be between 0 and 3!'
 call error(errormsg)
 
 #endif
@@ -1669,7 +1713,7 @@ do j=0, JMAX
 
    if (flag_shelfy_stream_x(j,i)) then   ! shelfy stream
 
-#if (HYB_MODE==0)
+#if (DYNAMICS==2 && HYB_MODE==0)
              ! Sum of weighted sliding SIA and weighted SStA
              ! (by R. Greve)
 
@@ -1716,7 +1760,7 @@ do j=0, JMAX
       vx_m(j,i) = weigh_ssta_sia_x(j,i)*vx_m_ssa(j,i) &
                   + (1.0_dp-weigh_ssta_sia_x(j,i))*vx_m_sia(j,i)
 
-#elif (HYB_MODE==1)
+#elif (DYNAMICS==2 && HYB_MODE==1)
                ! Sum of weighted non-sliding SIA and full SStA
                ! (by J. Bernales)
 
@@ -1745,7 +1789,7 @@ do j=0, JMAX
       vx_m(j,i) = max(vx_m(j,i), -vh_max)
       vx_m(j,i) = min(vx_m(j,i),  vh_max)
 
-#elif (HYB_MODE==2)   /* Pure SStA (no SIA) */
+#elif (DYNAMICS==2 && HYB_MODE==2)   /* Pure SStA (no SIA) */
 
       do kt=0, KTMAX
          vx_t(kt,j,i) = vx_m_ssa(j,i)
@@ -1759,9 +1803,10 @@ do j=0, JMAX
 
       vx_m(j,i) = vx_m_ssa(j,i)
 
-#else
-      errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0, 1 or 2!'
-      call error(errormsg)
+#elif (DYNAMICS==3)   /* DIVA */
+
+      !%% DIVA stuff to be constructed here...
+
 #endif
 
       qx(j,i) = vx_m(j,i) * 0.5_dp*(H(j,i)+H(j,i+1))
@@ -1798,7 +1843,7 @@ do j=0, JMAX-1
 
    if (flag_shelfy_stream_y(j,i)) then   ! shelfy stream
 
-#if (HYB_MODE==0)
+#if (DYNAMICS==2 && HYB_MODE==0)
              ! Sum of weighted sliding SIA and weighted SStA
              ! (by R. Greve)
 
@@ -1845,7 +1890,7 @@ do j=0, JMAX-1
       vy_m(j,i) = weigh_ssta_sia_y(j,i)*vy_m_ssa(j,i) &
                   + (1.0_dp-weigh_ssta_sia_y(j,i))*vy_m_sia(j,i)
 
-#elif (HYB_MODE==1)
+#elif (DYNAMICS==2 && HYB_MODE==1)
                ! Sum of weighted non-sliding SIA and full SStA
                ! (by J. Bernales)
 
@@ -1874,7 +1919,7 @@ do j=0, JMAX-1
       vy_m(j,i) = max(vy_m(j,i), -vh_max)
       vy_m(j,i) = min(vy_m(j,i),  vh_max)
 
-#elif (HYB_MODE==2)   /* Pure SStA (no SIA) */
+#elif (DYNAMICS==2 && HYB_MODE==2)   /* Pure SStA (no SIA) */
 
       do kt=0, KTMAX
          vy_t(kt,j,i) = vy_m_ssa(j,i)
@@ -1888,9 +1933,10 @@ do j=0, JMAX-1
 
       vy_m(j,i) = vy_m_ssa(j,i)
 
-#else
-      errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0, 1 or 2!'
-      call error(errormsg)
+#elif (DYNAMICS==3)   /* DIVA */
+
+      !%% DIVA stuff to be constructed here...
+
 #endif
 
       qy(j,i) = vy_m(j,i) * 0.5_dp*(H(j,i)+H(j+1,i))
@@ -1924,9 +1970,9 @@ end do
 
 weigh_ssta_sia = 0.0_dp
 
-#if (DYNAMICS==2)
+#if (DYNAMICS==2 || DYNAMICS==3)
 
-#if (HYB_MODE==0)
+#if (DYNAMICS==2 && HYB_MODE==0)
              ! Sum of weighted sliding SIA and weighted SStA
              ! (by R. Greve)
 
@@ -1968,7 +2014,7 @@ do j=0, JMAX
 end do
 end do
 
-#elif (HYB_MODE==1)
+#elif (DYNAMICS==2 && HYB_MODE==1)
                ! Sum of weighted non-sliding SIA and full SStA
                ! (by J. Bernales)
 
@@ -1989,24 +2035,28 @@ do j=1, JMAX-1
 end do
 end do
 
-#elif (HYB_MODE==2)   /* Pure SStA (no SIA) */
+#elif (DYNAMICS==2 && HYB_MODE==2)   /* Pure SStA (no SIA) */
 
 do i=1, IMAX-1
 do j=1, JMAX-1
-
    if (flag_shelfy_stream(j,i)) weigh_ssta_sia(j,i) = 1.0_dp   ! shelfy stream
-
 end do
 end do
 
-#else
-      errormsg = ' >>> calc_vxy_ssa: HYB_MODE must be 0, 1 or 2!'
-      call error(errormsg)
+#elif (DYNAMICS==3)   /* DIVA */
+
+do i=1, IMAX-1
+do j=1, JMAX-1
+   if (flag_shelfy_stream(j,i)) weigh_ssta_sia(j,i) = 1.0_dp   ! shelfy stream
+                                !%% \!/ This needs to be reconsidered. \!/
+end do
+end do
+
 #endif
 
 if (flag_calc_temp) call calc_enhance_hybrid_weighted(weigh_ssta_sia)
 
-#endif   /* (DYNAMICS==2) */
+#endif   /* DYNAMICS==2 or 3 */
 
 !-------- Surface and basal velocities vx_s_g vy_s_g, vx_b_g vy_b_g
 !                                                (defined at (i,j)) --------
@@ -2099,7 +2149,9 @@ end do
 
 #else
 
-errormsg = ' >>> calc_vxy_ssa: Only to be called for MARGIN==3 or DYNAMICS==2!'
+errormsg = ' >>> calc_vxy_ssa: Only to be called for' &
+         //                    end_of_line &
+         //'                   MARGIN==3, DYNAMICS==2 or DYNAMICS==3!'
 call error(errormsg)
 
 #endif
@@ -2113,7 +2165,7 @@ end subroutine calc_vxy_ssa
 subroutine calc_vxy_ssa_matrix(dxi, deta, &
                                flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y)
 
-#if (MARGIN==3 || DYNAMICS==2) 
+#if (MARGIN==3 || DYNAMICS==2 || DYNAMICS==3)
 #if defined(ALLOW_TAPENADE) /* Tapenade */
 use sico_maths_m
 #endif /* Tapenade */
@@ -2134,7 +2186,7 @@ real(dp) :: H_mid, zl_mid, z_sl_mid
 real(dp), dimension(0:JMAX,0:IMAX) :: vis_int_sgxy, beta_drag
 character(len=256) :: ch_solver_set_option
 
-#if (MARGIN==3 || DYNAMICS==2)
+#if (MARGIN==3 || DYNAMICS==2 || DYNAMICS==3)
 
 #if !defined(ALLOW_TAPENADE) /* Normal */
 
@@ -3391,8 +3443,9 @@ deallocate(lgs_b_value, lgs_x_value)
 
 #else
 
-errormsg = ' >>> calc_vxy_ssa_matrix: ' &
-              //'Only to be called for MARGIN==3 or DYNAMICS==2!'
+errormsg = ' >>> calc_vxy_ssa_matrix: Only to be called for' &
+         //                           end_of_line &
+         //'                          MARGIN==3, DYNAMICS==2 or DYNAMICS==3!'
 call error(errormsg)
 
 #endif
@@ -3421,7 +3474,7 @@ real(dp) :: aqxy1(0:KCMAX)
 real(dp) :: cvis0(0:KTMAX), cvis1(0:KCMAX)
 real(dp), dimension(0:JMAX,0:IMAX) :: vis_ave_g_smooth
 
-#if (MARGIN==3 || DYNAMICS==2)
+#if (MARGIN==3 || DYNAMICS==2 || DYNAMICS==3)
 
 !-------- Parameters, term abbreviations --------
 
@@ -3511,7 +3564,7 @@ do j=0, JMAX
 
 !  ------ Term abbreviations
 
-#if (DYNAMICS==2)
+#if (DYNAMICS==2 || DYNAMICS==3)
       if (.not.flag_shelfy_stream(j,i)) then
 #endif
 
@@ -3526,7 +3579,7 @@ do j=0, JMAX
          end do
          ! Ice shelves (floating ice) are assumed to consist of cold ice only
 
-#if (DYNAMICS==2)
+#if (DYNAMICS==2 || DYNAMICS==3)
       else   ! flag_shelfy_stream(j,i) == .true.
 
 #if (CALCMOD==-1 || CALCMOD==0)
@@ -3598,7 +3651,7 @@ do j=0, JMAX
 
       end if
 
-#endif   /* DYNAMICS==2 */
+#endif   /* DYNAMICS==2 or 3 */
 
 !  ------ Depth-integrated viscosity
 
@@ -3672,7 +3725,9 @@ vis_int_g = vis_ave_g*H
 
 #else
 
-errormsg = ' >>> calc_vis_ssa: Only to be called for MARGIN==3 or DYNAMICS==2!'
+errormsg = ' >>> calc_vis_ssa: Only to be called for' &
+         //                    end_of_line &
+         //'                   MARGIN==3, DYNAMICS==2 or DYNAMICS==3!'
 call error(errormsg)
 
 #endif
