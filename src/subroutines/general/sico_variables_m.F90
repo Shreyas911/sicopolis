@@ -726,6 +726,16 @@ real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: strain_heating_c
 real(dp), dimension(0:JMAX,0:IMAX) :: de_ssa
    !! Effective strain rate of the SSA
 
+#if (DYNAMICS==3)   /* DIVA */
+
+real(dp), dimension(KCMAX,0:JMAX,0:IMAX) :: de_c_diva
+   !! Effective strain rate for DIVA in the upper (kc) ice domain
+
+real(dp), dimension(KTMAX,0:JMAX,0:IMAX) :: de_t_diva
+   !! Effective strain rate for DIVA in the lower (kt) ice domain
+
+#endif
+
 real(dp), dimension(0:JMAX,0:IMAX) :: vis_ave_g
    !! Depth-averaged viscosity of the SIA/SSA
 

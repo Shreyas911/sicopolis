@@ -3513,12 +3513,22 @@ do j=0, JMAX
                                                    ! not shelfy stream
       de_ssa(j,i) = 0.0_dp   ! dummy value
 
+#if (DYNAMICS==3)   /* DIVA */
+      de_c_diva(:,j,i) = 0.0_dp   ! dummy values
+      de_t_diva(:,j,i) = 0.0_dp   ! dummy values
+#endif
+
       vis_ave_g(j,i) = 1.0_dp/flui_ave_sia(j,i)
       vis_int_g(j,i) = H(j,i) * vis_ave_g(j,i)
 
    else if ((mask(j,i)==1).or.(mask(j,i)==2)) then
                                                    ! ice-free land or ocean
       de_ssa(j,i) = 0.0_dp   ! dummy value
+
+#if (DYNAMICS==3)   /* DIVA */
+      de_c_diva(:,j,i) = 0.0_dp   ! dummy values
+      de_t_diva(:,j,i) = 0.0_dp   ! dummy values
+#endif
 
       vis_ave_g(j,i) = visc_init   ! dummy value
       vis_int_g(j,i) = 0.0_dp      ! dummy value
@@ -3561,6 +3571,29 @@ do j=0, JMAX
       end if
 
 #endif /* Normal vs. Tapenade */
+
+#if (DYNAMICS==3)   /* DIVA */
+
+      if (flag_shelfy_stream(j,i)) then   ! shelfy stream
+
+         !%% Compute de_c_diva and de_t_diva here
+         !%% by adding the terms with vertical derivatives to de_ssa...
+
+      else if (mask(j,i)==3) then   ! floating ice
+
+         de_c_diva(:,j,i) = de_ssa(j,i)
+         de_t_diva(:,j,i) = de_ssa(j,i)
+
+      else
+         errormsg = ' >>> calc_vis_ssa:' &
+         //                    end_of_line &
+         //'                   Either mask(j,i)==3' &
+         //                    end_of_line &
+         //'                   or flag_shelfy_stream(j,i) must be true here!'
+         call error(errormsg)
+      end if
+
+#endif
 
 !  ------ Term abbreviations
 
