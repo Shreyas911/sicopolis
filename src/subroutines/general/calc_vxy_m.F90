@@ -1483,6 +1483,41 @@ vy_m_sia = 0.0_dp
 q_gl_g = 0.0_dp
 
 end subroutine calc_vxy_static
+!-------------------------------------------------------------------------------
+!> (sub)-subroutine to compute the vertical integral of a given variable,
+!based on the trapezoid rule and discretized as seen in Yelmo.
+!-------------------------------------------------------------------------------
+
+subroutine integrate_trapezoid1D(var_c, var_t, var_int, dzeta_c, dzeta_t,)
+   ! Define the arguments
+   real(dp), intent(in) :: var_c(0:KCMAX) !will need to contain the sigma transformation terms
+   real(dp), intent(in) :: var_t(0:KTMAX) ! same, but easy because = var_t *H_t(j,i)
+   real(dp), intent(out) :: var_int
+   real(dp), intent(in) :: dzeta_c
+   real(dp), intent(in) :: dzeta_t
+
+   ! Local variables
+   integer(i4b) :: kc, kt
+   real(dp) :: var_mid
+
+
+   ! Initialization
+   var_int = 0.0_dp
+
+   ! Loop to perform the trapezoidal integration
+   do kc = 1, KCMAX
+     var_mid = 0.5_dp * (var_c(kc) + var_c(kc-1))
+     if (abs(var_mid) < eps) var_mid = 0.0_dp
+     var_int = var_int + var_mid * dzeta_c
+   end do
+
+   do kt = 1, KTMAX
+      var_mid = 0.5_dp * (var_t(kt) + var_t(kt-1))
+      if (abs(var_mid) < eps) var_mid = 0.0_dp
+      var_int = var_int + var_mid * dzeta_t
+    end do
+
+ end subroutine integrate_trapezoid1D
 
 !-------------------------------------------------------------------------------
 !> Computation of the horizontal velocity vx, vy, the horizontal volume flux
@@ -1805,7 +1840,8 @@ do j=0, JMAX
 
 #elif (DYNAMICS==3)   /* DIVA */
 
-      !%% DIVA stuff to be constructed here...
+      ! define F_2 from eq30 of Liscomb-2019
+      
 
 #endif
 
@@ -3477,7 +3513,7 @@ real(dp), dimension(0:JMAX,0:IMAX) :: vis_ave_g_smooth
 real(dp) :: inv_dzeta_c, inv_dzeta_t
 real(dp) :: dvx_dzeta_c, dvy_dzeta_c, dvx_dzeta_t, dvy_dzeta_t
 real(dp) :: de_ssa_squared, inv_H_c, inv_H_t, H_dzeta_c_dz
-
+real(dp) :: de_tmp
 real(dp) :: vx_c_diva_g(0:KCMAX)
 real(dp) :: vy_c_diva_g(0:KCMAX)
 real(dp) :: vx_t_diva_g(0:KCMAX)
@@ -3589,19 +3625,19 @@ do j=0, JMAX
 #endif /* Normal vs. Tapenade */
 
 #if (DYNAMICS==3)   /* DIVA */ 
-!variables to fully create still :  , vx_c_diva(kc,j,i), vy_c_diva(kc,j,i), vx_t_diva(kc,j,i), vy_t_diva(kc,j,i),
+!variables to redifne for diva still :  , vx_c(kc,j,i), vy_c(kc,j,i), vx_t(kc,j,i), vy_t(kc,j,i),
 
 !variables assigned but still to define : 
 
       if (flag_shelfy_stream(j,i)) then   ! (flag name is missleading, just convenient to re-use) ! Compute de_c_diva and de_t_diva here
 
-         do kc=0, KCMAX ! - Compute  vy & vx_c_diva on the main grid as the mean of the 2 neighboring values
-            vx_c_diva_g(kc) = 0.5_dp * (vx_c_diva(kc ,j, i) + vx_c_diva(kc ,j, i-1))
-            vy_c_diva_g(kc) = 0.5_dp * (vy_c_diva(kc ,j ,i) + vy_c_diva(kc ,j-1 ,i))
+         do kc=0, KCMAX ! - Compute  vy_c & vx_c on the main grid as the mean of the 2 neighboring values
+            vx_c_diva_g(kc) = 0.5_dp * (vx_c(kc ,j, i) + vx_c(kc ,j, i-1))
+            vy_c_diva_g(kc) = 0.5_dp * (vy_c(kc ,j ,i) + vy_c(kc ,j-1 ,i))
          end do
          do kt=0, KTMAX ! - Same for temperate velocities
-            vx_t_diva_g(kt) = 0.5_dp * (vx_t_diva(kt ,j, i) + vx_t_diva(kt ,j, i-1))
-            vy_t_diva_g(kt) = 0.5_dp * (vy_t_diva(kt ,j ,i) + vy_t_diva(kt ,j-1 ,i))
+            vx_t_diva_g(kt) = 0.5_dp * (vx_t(kt ,j, i) + vx_t(kt ,j, i-1))
+            vy_t_diva_g(kt) = 0.5_dp * (vy_t(kt ,j ,i) + vy_t(kt ,j-1 ,i))
          end do
          !H_dzeta_c_dz(kc) defined at the beginning with aqxy(kc)  
    
@@ -3706,7 +3742,7 @@ do j=0, JMAX
 !  ------ Term abbreviations
 
 #if (DYNAMICS==2 || DYNAMICS==3)
-      if (.not.flag_shelfy_stream(j,i)) then
+      if (.not.flag_shelfy_stream(j,i)) then ! for DYN = 3, flag_shelfy_stream is True everywhere on grounded ice
 #endif
 
          do kc=0, KCMAX
@@ -3723,9 +3759,18 @@ do j=0, JMAX
 #if (DYNAMICS==2 || DYNAMICS==3)
       else   ! flag_shelfy_stream(j,i) == .true.
 
+#if (DYNAMICS==2)
+         de_tmp=de_ssa(j,i)
+#endif
+
+         
+
 #if (CALCMOD==-1 || CALCMOD==0)
 
          do kc=0, KCMAX
+#if (DYNAMICS==3)
+            de_tmp=de_c_diva(kc,j,i)
+#endif
 
             if (flag_enh_stream) then
                enh_val = enh_stream
@@ -3734,7 +3779,7 @@ do j=0, JMAX
             end if
 
             cvis1(kc) = aqxy1(kc)*H_c(j,i) &
-                           *viscosity(de_ssa(j,i), &
+                           *viscosity(de_tmp, &
                               temp_c(kc,j,i), temp_c_m(kc,j,i), &
                               0.0_dp, enh_val, 0)
          end do
@@ -3742,6 +3787,9 @@ do j=0, JMAX
 #elif (CALCMOD==1)
 
          do kt=0, KTMAX
+#if (DYNAMICS==3)
+            de_tmp=de_t_diva(kt,j,i)
+#endif
 
             if (flag_enh_stream) then
                enh_val = enh_stream
@@ -3750,12 +3798,15 @@ do j=0, JMAX
             end if
 
             cvis0(kt) = dzeta_t*H_t(j,i) &
-                           *viscosity(de_ssa(j,i), &
+                           *viscosity(de_tmp, &
                               temp_t_m(kt,j,i), temp_t_m(kt,j,i), &
                               omega_t(kt,j,i), enh_val, 1)
          end do
 
          do kc=0, KCMAX
+#if (DYNAMICS==3)
+            de_tmp=de_c_diva(kc,j,i)
+#endif
 
             if (flag_enh_stream) then
                enh_val = enh_stream
@@ -3764,7 +3815,7 @@ do j=0, JMAX
             end if
 
             cvis1(kc) = aqxy1(kc)*H_c(j,i) &
-                           *viscosity(de_ssa(j,i), &
+                           *viscosity(de_tmp, &
                               temp_c(kc,j,i), temp_c_m(kc,j,i), &
                               0.0_dp, enh_val, 0)
          end do
@@ -3772,6 +3823,9 @@ do j=0, JMAX
 #elif (CALCMOD==2 || CALCMOD==3)
 
          do kc=0, KCMAX
+#if (DYNAMICS==3)
+            de_tmp=de_c_diva(kc,j,i)
+#endif
 
             if (flag_enh_stream) then
                enh_val = enh_stream
@@ -3780,7 +3834,7 @@ do j=0, JMAX
             end if
 
             cvis1(kc) = aqxy1(kc)*H_c(j,i) &
-                         *viscosity(de_ssa(j,i), &
+                         *viscosity(de_tmp, &
                            temp_c(kc,j,i), temp_c_m(kc,j,i), &
                            omega_c(kc,j,i), enh_val, 2)
          end do
@@ -3874,6 +3928,8 @@ call error(errormsg)
 #endif
 
 end subroutine calc_vis_ssa
+
+
 
 !-------------------------------------------------------------------------------
 !> Gradual limitation of computed horizontal velocities to the interval
