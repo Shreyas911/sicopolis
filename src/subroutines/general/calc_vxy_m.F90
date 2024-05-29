@@ -780,7 +780,7 @@ real(dp) :: ratio_sl_threshold
 
 do kc=0, KCMAX
    if (flag_aa_nonzero) then
-      avxy3(kc) = aa*eaz_c(kc)/(ea-1.0_dp)*dzeta_c
+      avxy3(kc) = aa*eaz_c(kc)/(ea-1.0_dp)*dzeta_c !== aqxy1 no ?
       aqxy1(kc) = aa/(ea-1.0_dp)*eaz_c(kc)*dzeta_c
    else
       avxy3(kc) = dzeta_c
@@ -1358,9 +1358,9 @@ end do
 ratio_sl_threshold = 1.11e+11_dp   ! dummy value
 
 do i=0, IMAX-1
-do j=0, JMAX
-   if ( (mask(j,i)==0).or.(mask(j,i+1)==0) ) &
-      flag_shelfy_stream_x(j,i) = .true.
+do j=0, JMAX                                       ! set to true the shelfy stream flag
+   if ( (mask(j,i)==0).or.(mask(j,i+1)==0) ) &     !(re-used to compute diva in the calc_vxy_ssa)
+      flag_shelfy_stream_x(j,i) = .true.           !for the whole grounded ice
 end do
 end do
 
@@ -3473,6 +3473,17 @@ real(dp) :: diff_vis
 real(dp) :: aqxy1(0:KCMAX)
 real(dp) :: cvis0(0:KTMAX), cvis1(0:KCMAX)
 real(dp), dimension(0:JMAX,0:IMAX) :: vis_ave_g_smooth
+! ---- variables created for diva :
+real(dp) :: inv_dzeta_c, inv_dzeta_t
+real(dp) :: dvx_dzeta_c, dvy_dzeta_c, dvx_dzeta_t, dvy_dzeta_t
+real(dp) :: de_ssa_squared, inv_H_c, inv_H_t, H_dzeta_c_dz
+
+real(dp) :: vx_c_diva_g(0:KCMAX)
+real(dp) :: vy_c_diva_g(0:KCMAX)
+real(dp) :: vx_t_diva_g(0:KCMAX)
+real(dp) :: vy_t_diva_g(0:KCMAX)
+
+
 
 #if (MARGIN==3 || DYNAMICS==2 || DYNAMICS==3)
 
@@ -3495,11 +3506,16 @@ real(dp), dimension(0:JMAX,0:IMAX) :: vis_ave_g_smooth
 dxi_inv  = 1.0_dp/dxi
 deta_inv = 1.0_dp/deta
 
+inv_dzeta_c = 1.0_dp/dzeta_c
+inv_dzeta_t = 1.0_dp/dzeta_t
+
 do kc=0, KCMAX
    if (flag_aa_nonzero) then
       aqxy1(kc) = aa/(ea-1.0_dp)*eaz_c(kc)*dzeta_c
+      H_dzeta_c_dz(kc) = (ea-1.0_dp)/(aa * eaz_c(kc)) ! dzeta_c_dz(kc) times H_c(j,i), for optimisation
    else
       aqxy1(kc) = dzeta_c
+      H_dzeta_c_dz(kc) = 1.0_dp ! for linear sigma transformation, dzeta_c_dz=1/H_c(j,i)
    end if
 end do
 
@@ -3572,12 +3588,104 @@ do j=0, JMAX
 
 #endif /* Normal vs. Tapenade */
 
-#if (DYNAMICS==3)   /* DIVA */
+#if (DYNAMICS==3)   /* DIVA */ 
+!variables to fully create still :  , vx_c_diva(kc,j,i), vy_c_diva(kc,j,i), vx_t_diva(kc,j,i), vy_t_diva(kc,j,i),
 
-      if (flag_shelfy_stream(j,i)) then   ! shelfy stream
+!variables assigned but still to define : 
 
-         !%% Compute de_c_diva and de_t_diva here
-         !%% by adding the terms with vertical derivatives to de_ssa...
+      if (flag_shelfy_stream(j,i)) then   ! (flag name is missleading, just convenient to re-use) ! Compute de_c_diva and de_t_diva here
+
+         do kc=0, KCMAX ! - Compute  vy & vx_c_diva on the main grid as the mean of the 2 neighboring values
+            vx_c_diva_g(kc) = 0.5_dp * (vx_c_diva(kc ,j, i) + vx_c_diva(kc ,j, i-1))
+            vy_c_diva_g(kc) = 0.5_dp * (vy_c_diva(kc ,j ,i) + vy_c_diva(kc ,j-1 ,i))
+         end do
+         do kt=0, KTMAX ! - Same for temperate velocities
+            vx_t_diva_g(kt) = 0.5_dp * (vx_t_diva(kt ,j, i) + vx_t_diva(kt ,j, i-1))
+            vy_t_diva_g(kt) = 0.5_dp * (vy_t_diva(kt ,j ,i) + vy_t_diva(kt ,j-1 ,i))
+         end do
+         !H_dzeta_c_dz(kc) defined at the beginning with aqxy(kc)  
+   
+         de_ssa_squared = de_ssa(j,i)*de_ssa(j,i)
+
+         ! --------------------- compute de_c_diva : ----------------------
+
+         inv_H_c=1/H_c(j,i) 
+         
+         kc=0           !  bottom boundary kc==0 needs upwind derivative
+         ! --- temporary scalar :
+         dvx_dzeta_c = (vx_c_diva_g(kc+1) - vx_c_diva_g(kc))*inv_dzeta_c *H_dzeta_c_dz(kc)*inv_H_c
+         dvy_dzeta_c = (vy_c_diva_g(kc+1) - vy_c_diva_g(kc))*inv_dzeta_c *H_dzeta_c_dz(kc)*inv_H_c
+
+         ! --- effective strain rate for diva at kc=0 :
+         de_c_diva(kc,j,i) = sqrt(de_ssa_squared + dvx_dzeta_c*dvx_dzeta_c + dvy_dzeta_c*dvy_dzeta_c)
+
+      
+         do kc=1, KCMAX-1     !      central derivative on the bulk
+            ! --- temporary scalar :
+            dvx_dzeta_c = 0.5_dp*(vx_c_diva_g(kc+1) - vx_c_diva_g(kc-1))*inv_dzeta_c *H_dzeta_c_dz(kc)*inv_H_c 
+            dvy_dzeta_c = 0.5_dp*(vy_c_diva_g(kc+1) - vy_c_diva_g(kc-1))*inv_dzeta_c *H_dzeta_c_dz(kc)*inv_H_c
+
+            ! --- effective strain rate for diva in the bulk :
+            de_c_diva(kc,j,i) = sqrt(de_ssa_squared + dvx_dzeta_c*dvx_dzeta_c + dvy_dzeta_c*dvy_dzeta_c)
+
+         end do
+
+         kc=KCMAX          !  top boundary kc==KCMAX needs downwind derivative
+         ! --- temporary scalar :
+         dvx_dzeta_c = (vx_c_diva_g(kc) - vx_c_diva_g(kc-1))*inv_dzeta_c *H_dzeta_c_dz(kc)*inv_H_c
+         dvy_dzeta_c = (vy_c_diva_g(kc) - vy_c_diva_g(kc-1))*inv_dzeta_c *H_dzeta_c_dz(kc)*inv_H_c
+
+         ! --- effective strain rate for diva at kc=KCMAX :
+         de_c_diva(kc,j,i) = sqrt(de_ssa_squared + dvx_dzeta_c*dvx_dzeta_c + dvy_dzeta_c*dvy_dzeta_c)
+
+
+         ! --------------------- compute de_t_diva : ----------------------
+
+
+         
+         if (n_cts(j,i) == 0 .or. n_cts(j,i) == 1) then !ensure that there is a physically existant temperate base 
+            inv_H_t=1.0_dp/H_t(j,i) 
+
+            kt=0           !bottom boundary kt==0 needs upwind derivative
+            ! --- temporary scalar :
+            dvx_dzeta_t = (vx_t_diva_g(kt+1) - vx_t_diva_g(kt))*inv_dzeta_t *inv_H_t
+            dvy_dzeta_t = (vy_t_diva_g(kt+1) - vy_t_diva_g(kt))*inv_dzeta_t *inv_H_t
+
+            ! --- effective strain rate for diva at kt=0 :
+            de_t_diva(kt,j,i) = sqrt(de_ssa_squared + dvx_dzeta_t*dvx_dzeta_t + dvy_dzeta_t*dvy_dzeta_t)
+         
+         
+            do kt=1, KTMAX-1 !central derivative on the bulk
+               ! --- temporary scalar :
+               dvx_dzeta_t = 0.5_dp*(vx_t_diva_g(kt+1) - vx_t_diva_g(kt-1))*inv_dzeta_t *inv_H_t 
+               dvy_dzeta_t = 0.5_dp*(vy_t_diva_g(kt+1) - vy_t_diva_g(kt-1))*inv_dzeta_t *inv_H_t
+
+               ! --- effective strain rate for diva in the bulk :
+               de_t_diva(kt,j,i) = sqrt(de_ssa_squared + dvx_dzeta_t*dvx_dzeta_t + dvy_dzeta_t*dvy_dzeta_t)
+
+            end do               
+
+            kt=KTMAX       !top boundary kt==KTMAX needs downwind derivative
+            ! --- temporary scalar :
+            dvx_dzeta_t = (vx_t_diva_g(kt) - vx_t_diva_g(kt-1))*inv_dzeta_t *inv_H_t
+            dvy_dzeta_t = (vy_t_diva_g(kt) - vy_t_diva_g(kt-1))*inv_dzeta_t *inv_H_t
+
+            ! --- effective strain rate for diva at kt=KTMAX :
+            de_t_diva(kt,j,i) = sqrt(de_ssa_squared + dvx_dzeta_t*dvx_dzeta_t + dvy_dzeta_t*dvy_dzeta_t)
+
+         else if (n_cts(j,i) == -1) then !in the case where there is no physical temperate layer
+            do kt=0, KTMAX
+               de_t_diva(kt,j,i)= de_c_diva(0,j,i) !temperate "slice" collapsed to the bottom 
+            end do
+         else !probably useless
+            errormsg =' >>> calc_vis_ssa: (for DIVA) flag_shelfy_stream(j,i) is True but n_cts(j,i) not defined'
+            call error(errormsg)
+         endif
+               
+       
+
+
+
 
       else if (mask(j,i)==3) then   ! floating ice
 
