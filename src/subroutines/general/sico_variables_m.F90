@@ -728,10 +728,10 @@ real(dp), dimension(0:JMAX,0:IMAX) :: de_ssa
 
 #if (DYNAMICS==3)   /* DIVA */
 
-real(dp), dimension(KCMAX,0:JMAX,0:IMAX) :: de_c_diva
+real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: de_c_diva
    !! Effective strain rate for DIVA in the upper (kc) ice domain
 
-real(dp), dimension(KTMAX,0:JMAX,0:IMAX) :: de_t_diva
+real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX) :: de_t_diva
    !! Effective strain rate for DIVA in the lower (kt) ice domain
 
 #endif
