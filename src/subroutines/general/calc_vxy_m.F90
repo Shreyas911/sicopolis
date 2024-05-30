@@ -1484,11 +1484,70 @@ q_gl_g = 0.0_dp
 
 end subroutine calc_vxy_static
 !-------------------------------------------------------------------------------
-!> (sub)-subroutine to compute the vertical integral of a given variable,
+!> (sub)-subroutine to compute the vertical integral on zeta_c of a given variable,
 !based on the trapezoid rule and discretized as seen in Yelmo.
+! output is a 1D array with integrated value at each level
 !-------------------------------------------------------------------------------
 
-subroutine integrate_trapezoid1D(var_c, var_t, var_int, dzeta_c, dzeta_t,)
+subroutine integrate_trapezoid1D_1D_c(var_c, var_int, dzeta_c)
+   ! Define the arguments
+   real(dp), intent(in) :: var_c(0:KCMAX) !will need to contain the sigma transformation terms
+   real(dp), intent(out) :: var_int(0:KCMAX)
+   real(dp), intent(in) :: dzeta_c
+
+   ! Local variables
+   integer(i4b) :: kc
+   real(dp) :: var_mid
+
+
+   ! Initialization
+   var_int(0:KCMAX) = 0.0_dp
+
+   ! Loop to perform the trapezoidal integration on the zeta_c axis
+   do kc = 1, KCMAX
+     var_mid = 0.5_dp * (var_c(kc) + var_c(kc-1))
+!     if (abs(var_mid) < eps) var_mid = 0.0_dp        dont think it's necessary 
+     var_int(kc:KCMAX) = var_int(kc:KCMAX) + var_mid * dzeta_c
+   end do
+
+ end subroutine integrate_trapezoid1D_1D_c
+
+ !-------------------------------------------------------------------------------
+!> (sub)-subroutine to compute the vertical integral on zeta_t of a given variable,
+!based on the trapezoid rule and discretized as seen in Yelmo.
+! output is a 1D array with integrated value at each level
+!-------------------------------------------------------------------------------
+
+subroutine integrate_trapezoid1D_1D_t(var_t, var_int, dzeta_t)
+   ! Define the arguments
+   real(dp), intent(in) :: var_t(0:KTMAX) !will need to contain the sigma transformation terms
+   real(dp), intent(out) :: var_int(0:KTMAX)
+   real(dp), intent(in) :: dzeta_t
+
+   ! Local variables
+   integer(i4b) :: kt
+   real(dp) :: var_mid
+
+
+   ! Initialization
+   var_int(0:KTMAX) = 0.0_dp
+
+   ! Loop to perform the trapezoidal integration on the zeta_t axis
+   do kt = 1, KTMAX
+     var_mid = 0.5_dp * (var_t(kt) + var_t(kt-1))
+!     if (abs(var_mid) < eps) var_mid = 0.0_dp        dont think it's necessary 
+     var_int(kt:KTMAX) = var_int(kt:KTMAX) + var_mid * dzeta_t
+   end do
+
+ end subroutine integrate_trapezoid1D_1D_t
+
+!-------------------------------------------------------------------------------
+!> (sub)-subroutine to compute the vertical integral over H = H_c + H_t of a given variable,
+!based on the trapezoid rule and discretized as seen in Yelmo.
+! output is a scalar 
+!-------------------------------------------------------------------------------
+
+subroutine integrate_trapezoid1D_pt(var_c, var_t, var_int, dzeta_c, dzeta_t)
    ! Define the arguments
    real(dp), intent(in) :: var_c(0:KCMAX) !will need to contain the sigma transformation terms
    real(dp), intent(in) :: var_t(0:KTMAX) ! same, but easy because = var_t *H_t(j,i)
@@ -1504,10 +1563,10 @@ subroutine integrate_trapezoid1D(var_c, var_t, var_int, dzeta_c, dzeta_t,)
    ! Initialization
    var_int = 0.0_dp
 
-   ! Loop to perform the trapezoidal integration
+   ! Loop to perform the trapezoidal integration on the zeta axis
    do kc = 1, KCMAX
      var_mid = 0.5_dp * (var_c(kc) + var_c(kc-1))
-     if (abs(var_mid) < eps) var_mid = 0.0_dp
+!     if (abs(var_mid) < eps) var_mid = 0.0_dp     dont think it's necessary 
      var_int = var_int + var_mid * dzeta_c
    end do
 
@@ -1517,7 +1576,7 @@ subroutine integrate_trapezoid1D(var_c, var_t, var_int, dzeta_c, dzeta_t,)
       var_int = var_int + var_mid * dzeta_t
     end do
 
- end subroutine integrate_trapezoid1D
+ end subroutine integrate_trapezoid1D_pt
 
 !-------------------------------------------------------------------------------
 !> Computation of the horizontal velocity vx, vy, the horizontal volume flux
@@ -1838,11 +1897,15 @@ do j=0, JMAX
 
       vx_m(j,i) = vx_m_ssa(j,i)
 
-#elif (DYNAMICS==3)   /* DIVA */
+#elif (DYNAMICS==3)   /* DIVA */ 
+! variables used here not defined : F_2
+! ------ Work in progress (aka everything is probably wrong): -----
+      vx_m(j,i) = vx_m_ssa(j,i)
+      !basal velocity :
+      vx_b(j,i) = vx_m(j,i) / (1.0_dp + F_2) ! not sure if i can compute F_2 here, then it can be a constant, or if i need to compute it elsewhere, then F_2(j,i)
 
-      ! define F_2 from eq30 of Liscomb-2019
-      
 
+! -----------------------------------------------------------------------------
 #endif
 
       qx(j,i) = vx_m(j,i) * 0.5_dp*(H(j,i)+H(j,i+1))
