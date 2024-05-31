@@ -1484,15 +1484,15 @@ q_gl_g = 0.0_dp
 
 end subroutine calc_vxy_static
 !-------------------------------------------------------------------------------
-!> (sub)-subroutine to compute the vertical integral on zeta_c of a given variable,
+!> function to compute the vertical integral on zeta_c of a given variable,
 !based on the trapezoid rule and discretized as seen in Yelmo.
 ! output is a 1D array with integrated value at each level
 !-------------------------------------------------------------------------------
 
-subroutine integrate_trapezoid1D_1D_c(var_c, var_int, dzeta_c)
+function integrate_trapezoid1D_1D_c(var_c, dzeta_c)
    ! Define the arguments
    real(dp), intent(in) :: var_c(0:KCMAX) !will need to contain the sigma transformation terms
-   real(dp), intent(out) :: var_int(0:KCMAX)
+   real(dp) :: integrate_trapezoid1D_1D_c(0:KCMAX) ! output of the function
    real(dp), intent(in) :: dzeta_c
 
    ! Local variables
@@ -1501,27 +1501,27 @@ subroutine integrate_trapezoid1D_1D_c(var_c, var_int, dzeta_c)
 
 
    ! Initialization
-   var_int(0:KCMAX) = 0.0_dp
+   integrate_trapezoid1D_1D_c(0:KCMAX) = 0.0_dp
 
    ! Loop to perform the trapezoidal integration on the zeta_c axis
    do kc = 1, KCMAX
      var_mid = 0.5_dp * (var_c(kc) + var_c(kc-1))
 !     if (abs(var_mid) < eps) var_mid = 0.0_dp        dont think it's necessary 
-     var_int(kc:KCMAX) = var_int(kc:KCMAX) + var_mid * dzeta_c
+     integrate_trapezoid1D_1D_c(kc:KCMAX) = var_int(kc:KCMAX) + var_mid * dzeta_c
    end do
 
- end subroutine integrate_trapezoid1D_1D_c
+ end function integrate_trapezoid1D_1D_c
 
  !-------------------------------------------------------------------------------
-!> (sub)-subroutine to compute the vertical integral on zeta_t of a given variable,
+!> function to compute the vertical integral on zeta_t of a given variable,
 !based on the trapezoid rule and discretized as seen in Yelmo.
 ! output is a 1D array with integrated value at each level
 !-------------------------------------------------------------------------------
 
-subroutine integrate_trapezoid1D_1D_t(var_t, var_int, dzeta_t)
+function integrate_trapezoid1D_1D_t(var_t, dzeta_t)
    ! Define the arguments
    real(dp), intent(in) :: var_t(0:KTMAX) !will need to contain the sigma transformation terms
-   real(dp), intent(out) :: var_int(0:KTMAX)
+   real(dp) :: integrate_trapezoid1D_1D_t(0:KTMAX)
    real(dp), intent(in) :: dzeta_t
 
    ! Local variables
@@ -1530,30 +1530,33 @@ subroutine integrate_trapezoid1D_1D_t(var_t, var_int, dzeta_t)
 
 
    ! Initialization
-   var_int(0:KTMAX) = 0.0_dp
+   integrate_trapezoid1D_1D_t(0:KTMAX) = 0.0_dp
 
    ! Loop to perform the trapezoidal integration on the zeta_t axis
    do kt = 1, KTMAX
      var_mid = 0.5_dp * (var_t(kt) + var_t(kt-1))
 !     if (abs(var_mid) < eps) var_mid = 0.0_dp        dont think it's necessary 
-     var_int(kt:KTMAX) = var_int(kt:KTMAX) + var_mid * dzeta_t
+     integrate_trapezoid1D_1D_t(kt:KTMAX) = integrate_trapezoid1D_1D_t(kt:KTMAX) + var_mid * dzeta_t
    end do
 
- end subroutine integrate_trapezoid1D_1D_t
+ end function integrate_trapezoid1D_1D_t
 
 !-------------------------------------------------------------------------------
-!> (sub)-subroutine to compute the vertical integral over H = H_c + H_t of a given variable,
+!> function to compute the vertical integral over H = H_c + H_t of a given variable,
 !based on the trapezoid rule and discretized as seen in Yelmo.
 ! output is a scalar 
 !-------------------------------------------------------------------------------
-
-subroutine integrate_trapezoid1D_pt(var_c, var_t, var_int, dzeta_c, dzeta_t)
+#if (CALCMOD==1) 
+!polythermal mode, the temperate layer can exist
+function integrate_trapezoid1D_pt(var_c, var_t, dzeta_c, dzeta_t)
    ! Define the arguments
-   real(dp), intent(in) :: var_c(0:KCMAX) !will need to contain the sigma transformation terms
-   real(dp), intent(in) :: var_t(0:KTMAX) ! same, but easy because = var_t *H_t(j,i)
-   real(dp), intent(out) :: var_int
-   real(dp), intent(in) :: dzeta_c
+
    real(dp), intent(in) :: dzeta_t
+   real(dp), intent(in) :: var_t(0:KTMAX) ! same, but easy because = var_t *H_t(j,i)
+
+   real(dp) :: integrate_trapezoid1D_pt
+   real(dp), intent(in) :: var_c(0:KCMAX) !will need to contain the sigma transformation terms
+   real(dp), intent(in) :: dzeta_c
 
    ! Local variables
    integer(i4b) :: kc, kt
@@ -1561,23 +1564,48 @@ subroutine integrate_trapezoid1D_pt(var_c, var_t, var_int, dzeta_c, dzeta_t)
 
 
    ! Initialization
-   var_int = 0.0_dp
+   integrate_trapezoid1D_pt = 0.0_dp
 
    ! Loop to perform the trapezoidal integration on the zeta axis
    do kc = 1, KCMAX
      var_mid = 0.5_dp * (var_c(kc) + var_c(kc-1))
 !     if (abs(var_mid) < eps) var_mid = 0.0_dp     dont think it's necessary 
-     var_int = var_int + var_mid * dzeta_c
+     integrate_trapezoid1D_pt = integrate_trapezoid1D_pt + var_mid * dzeta_c
    end do
 
    do kt = 1, KTMAX
       var_mid = 0.5_dp * (var_t(kt) + var_t(kt-1))
-      if (abs(var_mid) < eps) var_mid = 0.0_dp
-      var_int = var_int + var_mid * dzeta_t
+!      if (abs(var_mid) < eps) var_mid = 0.0_dp
+      integrate_trapezoid1D_pt = integrate_trapezoid1D_pt + var_mid * dzeta_t
     end do
 
- end subroutine integrate_trapezoid1D_pt
+ end function integrate_trapezoid1D_pt
+#else 
+! in the other thermodynamics mode (CALCMOD) the temperate layer doesn't physically exist 
+function integrate_trapezoid1D_pt(var_c, dzeta_c)
+   ! Define the arguments
 
+   real(dp) :: integrate_trapezoid1D_pt
+   real(dp), intent(in) :: var_c(0:KCMAX) !will need to contain the sigma transformation terms
+   real(dp), intent(in) :: dzeta_c
+
+   ! Local variables
+   integer(i4b) :: kc
+   real(dp) :: var_mid
+
+
+   ! Initialization
+   integrate_trapezoid1D_pt = 0.0_dp
+
+   ! Loop to perform the trapezoidal integration on the zeta axis
+   do kc = 1, KCMAX
+      var_mid = 0.5_dp * (var_c(kc) + var_c(kc-1))
+!     if (abs(var_mid) < eps) var_mid = 0.0_dp     dont think it's necessary 
+      integrate_trapezoid1D_pt = integrate_trapezoid1D_pt + var_mid * dzeta_c
+   end do
+
+   end function integrate_trapezoid1D_pt
+#endif
 !-------------------------------------------------------------------------------
 !> Computation of the horizontal velocity vx, vy, the horizontal volume flux
 !! qx, qy and the flux across the grounding line q_gl_g in the shallow shelf
@@ -1587,6 +1615,9 @@ subroutine calc_vxy_ssa(dxi, deta, dzeta_c, dzeta_t)
 
 #if (DYNAMICS==2 || DYNAMICS==3)
   use calc_enhance_m, only : calc_enhance_hybrid_weighted
+#endif
+#if (DYNAMICS==3)
+  use ice_material_properties_m, only : viscosity
 #endif
 
 implicit none
@@ -1609,13 +1640,30 @@ logical, dimension(0:JMAX,0:IMAX) :: flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y
 real(dp) :: v_ref, v_ref_sq_inv
 real(dp) :: v_b_sq
 real(dp) :: pi_inv
+!added for DIVA : 
+real(dp) :: flui_tmp_c(0:KCMAX), flui_tmp_t(0:KTMAX)
+real(dp) :: enh_val, inv_H_t, inv_H_c
+real(dp) :: visc_min, visc_max
+real(dp) :: H_dz_c_dzeta(0:KCMAX)
+real(dp) :: F_2
+real(dp) :: F_1_c(0:KCMAX), F_1_t(0:KTMAX)
+real(dp) :: f_2_pre_int_c(0:KCMAX), f_1_pre_int_c(0:KCMAX), f_2_pre_int_t(0:KTMAX), f_1_pre_int_t(0:KTMAX)
 
 pi_inv   = 1.0_dp/pi
 
 #if (MARGIN==3 || DYNAMICS==2 || DYNAMICS==3)
 
+!-------- Parameters for the viscosity computation --------
+#if (DYNAMICS==3) 
+#if (defined(VISC_MIN) && defined(VISC_MAX))
+  visc_min = VISC_MIN
+  visc_max = VISC_MAX
+#else
+  visc_min = 1.0e+10_dp   ! Pa s
+  visc_max = 1.0e+25_dp   ! Pa s
+#endif
+#endif
 !-------- Parameters for the relaxation scheme --------
-
 #if (defined(TOL_ITER_SSA))
    tol_ssa = TOL_ITER_SSA   ! tolerance of iterations 
 #else
@@ -1799,7 +1847,16 @@ call error(errormsg)
 
 weigh_ssta_sia_x = 0.0_dp
 weigh_ssta_sia_y = 0.0_dp
-
+! --- compute constant parameters --- Maybe should define this in sico init even and same for H_dzeta_c_dz(kc) 
+#if (DYNAMICS==3)
+do kc=0, KCMAX
+   if (flag_aa_nonzero) then
+      H_dz_c_dzeta(kc) = (aa * eaz_c(kc))/(ea-1.0_dp) ! dzeta_c_dz(kc) divided by H_c(j,i), for optimisation
+   else
+      H_dz_c_dzeta(kc) = 1.0_dp ! for linear sigma transformation, dz_c_dzeta= 1 * H_c(j,i)
+   end if
+end do
+#endif
 !  ------ x-component
 
 do i=0, IMAX-1
@@ -1898,13 +1955,145 @@ do j=0, JMAX
       vx_m(j,i) = vx_m_ssa(j,i)
 
 #elif (DYNAMICS==3)   /* DIVA */ 
-! variables used here not defined : F_2
 ! ------ Work in progress (aka everything is probably wrong): -----
+
+
+      inv_H_c = 1.0_dp/H_c(j,i)
+      inv_H_t = 1.0_dp/H_t(j,i) !need to implement a check to see if H_t = 0 
+#if (CALCMOD==-1 || CALCMOD==0)
+
+         do kc=0, KCMAX
+
+            if (flag_enh_stream) then
+               enh_val = enh_stream
+            else
+               enh_val = enh_c(kc,j,i)
+            end if
+
+            flui_tmp_c(kc) = 1.0_dp/max(viscosity(de_c_diva(kc,j,i), &
+                              temp_c(kc,j,i), temp_c_m(kc,j,i), &
+                              0.0_dp, enh_val, 0),visc_min)
+
+            f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp-eaz_c_quotient(kc)) &
+                                 * (H_dz_c_dzeta(kc)*H_c(j,i)) ! * sigma transformation 
+            f_2_pre_int_c(kc) = f_1_pre_int_c(kc) * (1.0_dp-eaz_c_quotient(kc)) 
+         end do
+
+         F_2 = integrate_trapezoid1D_pt(f_2_pre_int_c, dzeta_c)
+
+         F_1_c = integrate_trapezoid1D_1D_c(f_1_pre_int_c, dzeta_c) !Not F_1 from liscomb-2019 eq30, 
+         ! array with integrated value at each level (so from L19 : F_1 = F_1(KCMAX))
+               
+#elif (CALCMOD==1) 
+! Polythermal mode 
+         do kt=0, KTMAX
+
+            if (flag_enh_stream) then
+               enh_val = enh_stream
+            else
+               enh_val = enh_t(kt,j,i)
+            end if
+
+            flui_tmp_t(kt) = 1.0_dp/max(viscosity(de_t_diva(kt,j,i), &
+                              temp_t_m(kt,j,i), temp_t_m(kt,j,i), &
+                              omega_t(kt,j,i), enh_val, 1),visc_min)
+            f_1_pre_int_t(kt) = flui_tmp_t(kt) * (1.0_dp-zeta_t(kt)) &
+                                 * (H_t(j,i)) ! * sigma transformation                   
+            f_2_pre_int_t(kt) = f_1_pre_int_t(kt) * (1.0_dp-zeta_t(kt))
+         end do
+
+         F_1_t = integrate_trapezoid1D_1D_t(f_1_pre_int_t, dzeta_t) !Not F_1 from liscomb-2019 eq30, 
+         ! array with integrated value at each level (so from L19 : F_1 = F_1_t(KTMAX)+F_1_c(KCMAX))
+
+         do kc=0, KCMAX
+
+            if (flag_enh_stream) then
+               enh_val = enh_stream
+            else
+               enh_val = enh_c(kc,j,i)
+            end if
+
+            flui_tmp_c(kc) = 1.0_dp/max(viscosity(de_c_diva(kc,j,i), &
+                              temp_c(kc,j,i), temp_c_m(kc,j,i), &
+                              0.0_dp, enh_val, 0),visc_min)
+
+            f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp-eaz_c_quotient(kc)) &
+                              * (H_dz_c_dzeta(kc)*H_c(j,i)) ! * sigma transformation 
+            f_2_pre_int_c(kc) = f_1_pre_int_c(kc) * (1.0_dp-eaz_c_quotient(kc)) 
+         end do
+
+         F_1_c = integrate_trapezoid1D_1D_c(f_1_pre_int_c, dzeta_c) !Not F_1 from liscomb-2019 eq30, 
+         ! array with integrated value at each level (so from L19 : F_1 = F_1_t(KTMAX)+F_1_c(KCMAX))
+
+         F_2 = integrate_trapezoid1D_pt(f_2_pre_int_c, f_2_pre_int_t, dzeta_c, dzeta_t)
+
+#elif (CALCMOD==2 || CALCMOD==3)
+
+         do kc=0, KCMAX
+
+            if (flag_enh_stream) then
+               enh_val = enh_stream
+            else
+               enh_val = enh_c(kc,j,i)
+            end if
+
+            flui_tmp_c(kc) = 1.0_dp/max(viscosity(de_c_diva(kc,j,i), &
+                           temp_c(kc,j,i), temp_c_m(kc,j,i), &
+                           omega_c(kc,j,i), enh_val, 2),visc_min)
+            f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp-eaz_c_quotient(kc)) &
+                                 * (H_dz_c_dzeta(kc)*H_c(j,i)) ! * sigma transformation 
+            f_2_pre_int_c(kc) = f_1_pre_int_c(kc) * (1.0_dp-eaz_c_quotient(kc))
+      end do
+      F_1_c = integrate_trapezoid1D_1D_c(f_1_pre_int_c, dzeta_c) !Not F_1 from liscomb-2019 eq30, 
+      ! array with integrated value at each level (so from L19 : F_1 = F_1_c(KCMAX))
+      F_2 = integrate_trapezoid1D_pt(f_2_pre_int_c, dzeta_c)
+
+#else
+         errormsg = ' >>> calc_vis_ssa: CALCMOD must be -1, 0, 1, 2 or 3!'
+         call error(errormsg)
+#endif
+
+
+
       vx_m(j,i) = vx_m_ssa(j,i)
       !basal velocity :
-      vx_b(j,i) = vx_m(j,i) / (1.0_dp + F_2) ! not sure if i can compute F_2 here, then it can be a constant, or if i need to compute it elsewhere, then F_2(j,i)
+      vx_b(j,i) = vx_m(j,i) / (1.0_dp + F_2)
+
+      ! 3D cold velocity field for DIVA: 
+      if (vx_b(j,i) .gt. eps)
+
+         do kc=0, KCMAX
+            vx_c(kc,j,i) = vx_b(j,i) + beta_drag(j,i) * vx_b(j,i) * inv_H_c(j,i) * F_1_c(kc)
+         end do
+      else ! Handle the case when the basal velocity is zero
+
+         do kc=0, KCMAX
+            vx_c(kc,j,i) =  * inv_H_c(j,i) * flui_tmp_c(kc) !NEED TO HANDLE THE CASE
+         end do
+      endif
+
+      if ((n_cts(j,i) == 0 .or. n_cts(j,i) == 1) .and. (vx_b(j,i) .gt. eps)) then 
+         !ensure that there is a physically existant temperate base   AND   ensure that the basal velocity is not zero
+         inv_H_t = 1.0_dp/H_t(j,i)
+         do kt=0, KTMAX ! by definition, vx_t(0,j,i) = vx_b(j,i) so it shouldn't need special case for kt = 0
+            vx_t(kt,j,i) = vx_b(j,i) + beta_drag(j,i) * vx_b(j,i) * inv_H_t(j,i) * F_1_t(kt)
+         end do
+
+      else if ((n_cts(j,i) == 0 .or. n_cts(j,i) == 1) .and. (vx_b(j,i) .lt. eps)) then 
+         !case where there is a physical temperate layer    and the basal velocity is zero 
+         do kt=0, KTMAX 
+            vx_t(kt,j,i) =  * inv_H_t(j,i) * flui_tmp_t(kt) 
+         end do
+
+      else if (n_cts(j,i) == -1) then !in the case where there is no physical temperate layer
+         do kt=0, KTMAX 
+            vx_t(kt,j,i) = vx_b(j,i) 
+         end do
+      endif
 
 
+
+! ---------- END OF WORK IN PROGRESS ----------------
 ! -----------------------------------------------------------------------------
 #endif
 
@@ -2034,7 +2223,141 @@ do j=0, JMAX-1
 
 #elif (DYNAMICS==3)   /* DIVA */
 
-      !%% DIVA stuff to be constructed here...
+! ------ Work in progress (aka everything is probably wrong): -----
+
+
+      inv_H_c = 1.0_dp/H_c(j,i)
+
+#if (CALCMOD==-1 || CALCMOD==0)
+
+      do kc=0, KCMAX
+
+         if (flag_enh_stream) then
+            enh_val = enh_stream
+         else
+            enh_val = enh_c(kc,j,i)
+         end if
+
+         flui_tmp_c(kc) = 1.0_dp/max(viscosity(de_c_diva(kc,j,i), &
+                           temp_c(kc,j,i), temp_c_m(kc,j,i), &
+                           0.0_dp, enh_val, 0),visc_min)
+
+         f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp-eaz_c_quotient(kc)) &
+                              * (H_dz_c_dzeta(kc)*H_c(j,i)) ! * sigma transformation 
+         f_2_pre_int_c(kc) = f_1_pre_int_c(kc) * (1.0_dp-eaz_c_quotient(kc)) 
+      end do
+
+      F_2 = integrate_trapezoid1D_pt(f_2_pre_int_c, dzeta_c)
+
+      F_1_c = integrate_trapezoid1D_1D_c(f_1_pre_int_c, dzeta_c) !Not F_1 from liscomb-2019 eq30, 
+      ! array with integrated value at each level (so from L19 : F_1 = F_1(KCMAX))
+            
+#elif (CALCMOD==1) 
+   ! Polythermal mode 
+      do kt=0, KTMAX
+
+         if (flag_enh_stream) then
+            enh_val = enh_stream
+         else
+            enh_val = enh_t(kt,j,i)
+         end if
+
+         flui_tmp_t(kt) = 1.0_dp/max(viscosity(de_t_diva(kt,j,i), &
+                           temp_t_m(kt,j,i), temp_t_m(kt,j,i), &
+                           omega_t(kt,j,i), enh_val, 1),visc_min)
+         f_1_pre_int_t(kt) = flui_tmp_t(kt) * (1.0_dp-zeta_t(kt)) &
+                              * (H_t(j,i)) ! * sigma transformation                   
+         f_2_pre_int_t(kt) = f_1_pre_int_t(kt) * (1.0_dp-zeta_t(kt))
+      end do
+
+      F_1_t = integrate_trapezoid1D_1D_t(f_1_pre_int_t, dzeta_t) !Not F_1 from liscomb-2019 eq30, 
+      ! array with integrated value at each level (so from L19 : F_1 = F_1_t(KTMAX)+F_1_c(KCMAX))
+
+      do kc=0, KCMAX
+
+         if (flag_enh_stream) then
+            enh_val = enh_stream
+         else
+            enh_val = enh_c(kc,j,i)
+         end if
+
+         flui_tmp_c(kc) = 1.0_dp/max(viscosity(de_c_diva(kc,j,i), &
+                           temp_c(kc,j,i), temp_c_m(kc,j,i), &
+                           0.0_dp, enh_val, 0),visc_min)
+
+         f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp-eaz_c_quotient(kc)) &
+                           * (H_dz_c_dzeta(kc)*H_c(j,i)) ! * sigma transformation 
+         f_2_pre_int_c(kc) = f_1_pre_int_c(kc) * (1.0_dp-eaz_c_quotient(kc)) 
+      end do
+
+      F_1_c = integrate_trapezoid1D_1D_c(f_1_pre_int_c, dzeta_c) !Not F_1 from liscomb-2019 eq30, 
+      ! array with integrated value at each level (so from L19 : F_1 = F_1_t(KTMAX)+F_1_c(KCMAX))
+
+      F_2 = integrate_trapezoid1D_pt(f_2_pre_int_c, f_2_pre_int_t, dzeta_c, dzeta_t)
+
+#elif (CALCMOD==2 || CALCMOD==3)
+
+      do kc=0, KCMAX
+
+         if (flag_enh_stream) then
+            enh_val = enh_stream
+         else
+            enh_val = enh_c(kc,j,i)
+         end if
+
+         flui_tmp_c(kc) = 1.0_dp/max(viscosity(de_c_diva(kc,j,i), &
+                        temp_c(kc,j,i), temp_c_m(kc,j,i), &
+                        omega_c(kc,j,i), enh_val, 2),visc_min)
+         f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp-eaz_c_quotient(kc)) &
+                              * (H_dz_c_dzeta(kc)*H_c(j,i)) ! * sigma transformation 
+         f_2_pre_int_c(kc) = f_1_pre_int_c(kc) * (1.0_dp-eaz_c_quotient(kc))
+      end do
+      F_1_c = integrate_trapezoid1D_1D_c(f_1_pre_int_c, dzeta_c) !Not F_1 from liscomb-2019 eq30, 
+      ! array with integrated value at each level (so from L19 : F_1 = F_1_c(KCMAX))
+      F_2 = integrate_trapezoid1D_pt(f_2_pre_int_c, dzeta_c)
+
+#else
+      errormsg = ' >>> calc_vis_ssa: CALCMOD must be -1, 0, 1, 2 or 3!'
+      call error(errormsg)
+#endif
+
+      vy_m(j,i) = vy_m_ssa(j,i)
+      !basal velocity :
+      vy_b(j,i) = vy_m(j,i) / (1.0_dp + F_2)
+
+      ! 3D cold velocity field for DIVA: 
+      if (vy_b(j,i) .gt. eps)
+
+         do kc=0, KCMAX
+            vy_c(kc,j,i) = vy_b(j,i) + beta_drag(j,i) * vy_b(j,i) * inv_H_c(j,i) * F_1_c(kc)
+         end do
+      else ! Handle the case when the basal velocity is zero
+
+         do kc=0, KCMAX
+            vy_c(kc,j,i) =  * inv_H_c(j,i) * flui_tmp_c(kc) !NEED TO HANDLE THE CASE
+         end do
+      endif
+
+      if ((n_cts(j,i) == 0 .or. n_cts(j,i) == 1) .and. (vy_b(j,i) .gt. eps)) then 
+         !ensure that there is a physically existant temperate base   AND   ensure that the basal velocity is not zero
+         inv_H_t = 1.0_dp/H_t(j,i)
+         do kt=0, KTMAX ! by definition, vy_t(0,j,i) = vy_b(j,i) so it shouldn't need special case for kt = 0
+            vy_t(kt,j,i) = vy_b(j,i) + beta_drag(j,i) * vy_b(j,i) * inv_H_t(j,i) * F_1_t(kt)
+         end do
+
+      else if ((n_cts(j,i) == 0 .or. n_cts(j,i) == 1) .and. (vy_b(j,i) .lt. eps)) then 
+         !case where there is a physical temperate layer    and the basal velocity is zero 
+         do kt=0, KTMAX 
+            vy_t(kt,j,i) =  * inv_H_t(j,i) * flui_tmp_t(kt) 
+         end do
+
+      else if (n_cts(j,i) == -1) then !in the case where there is no physical temperate layer
+         do kt=0, KTMAX 
+            vy_t(kt,j,i) = vy_b(j,i) 
+         end do
+      endif
+
+! ---------- END OF WORK IN PROGRESS ----------------
 
 #endif
 
@@ -3575,7 +3898,8 @@ real(dp), dimension(0:JMAX,0:IMAX) :: vis_ave_g_smooth
 ! ---- variables created for diva :
 real(dp) :: inv_dzeta_c, inv_dzeta_t
 real(dp) :: dvx_dzeta_c, dvy_dzeta_c, dvx_dzeta_t, dvy_dzeta_t
-real(dp) :: de_ssa_squared, inv_H_c, inv_H_t, H_dzeta_c_dz
+real(dp) :: de_ssa_squared, inv_H_c, inv_H_t
+real(dp) :: H_dzeta_c_dz(0:KCMAX)
 real(dp) :: de_tmp
 real(dp) :: vx_c_diva_g(0:KCMAX)
 real(dp) :: vy_c_diva_g(0:KCMAX)
@@ -3781,10 +4105,6 @@ do j=0, JMAX
             call error(errormsg)
          endif
                
-       
-
-
-
 
       else if (mask(j,i)==3) then   ! floating ice
 
@@ -3825,8 +4145,6 @@ do j=0, JMAX
 #if (DYNAMICS==2)
          de_tmp=de_ssa(j,i)
 #endif
-
-         
 
 #if (CALCMOD==-1 || CALCMOD==0)
 
