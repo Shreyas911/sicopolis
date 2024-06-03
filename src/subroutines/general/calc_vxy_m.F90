@@ -1582,6 +1582,7 @@ function integrate_trapezoid1D_pt(var_c, var_t, dzeta_c, dzeta_t)
  end function integrate_trapezoid1D_pt
 #else 
 ! in the other thermodynamics mode (CALCMOD) the temperate layer doesn't physically exist 
+! although not sure the pre-processor is useful as we multiply by H_t with the sigma transform...
 function integrate_trapezoid1D_pt(var_c, dzeta_c)
    ! Define the arguments
 
@@ -1955,11 +1956,11 @@ do j=0, JMAX
       vx_m(j,i) = vx_m_ssa(j,i)
 
 #elif (DYNAMICS==3)   /* DIVA */ 
-! ------ Work in progress (aka everything is probably wrong): -----
+! ------ Work in progress  -----
 
 
       inv_H_c = 1.0_dp/H_c(j,i)
-      inv_H_t = 1.0_dp/H_t(j,i) !need to implement a check to see if H_t = 0 
+      
 #if (CALCMOD==-1 || CALCMOD==0)
 
          do kc=0, KCMAX
@@ -2082,7 +2083,7 @@ do j=0, JMAX
       else if ((n_cts(j,i) == 0 .or. n_cts(j,i) == 1) .and. (vx_b(j,i) .lt. eps)) then 
          !case where there is a physical temperate layer    and the basal velocity is zero 
          do kt=0, KTMAX 
-            vx_t(kt,j,i) =  * inv_H_t(j,i) * flui_tmp_t(kt) 
+            vx_t(kt,j,i) =  * inv_H_t(j,i) * flui_tmp_t(kt) !NEED TO HANDLE THE CASE
          end do
 
       else if (n_cts(j,i) == -1) then !in the case where there is no physical temperate layer
@@ -2093,7 +2094,7 @@ do j=0, JMAX
 
 
 
-! ---------- END OF WORK IN PROGRESS ----------------
+! ---------- END OF WORK IN PROGRESS FOR X ----------------
 ! -----------------------------------------------------------------------------
 #endif
 
@@ -2223,7 +2224,7 @@ do j=0, JMAX-1
 
 #elif (DYNAMICS==3)   /* DIVA */
 
-! ------ Work in progress (aka everything is probably wrong): -----
+! ------ Work in progress  -----
 
 
       inv_H_c = 1.0_dp/H_c(j,i)
@@ -2357,7 +2358,7 @@ do j=0, JMAX-1
          end do
       endif
 
-! ---------- END OF WORK IN PROGRESS ----------------
+! ---------- END OF WORK IN PROGRESS FOR Y----------------
 
 #endif
 
