@@ -13,6 +13,9 @@ my_*
 /*.dat
 /*.txt
 
+*._*
+*DS_Store*
+
 /headers/*.h
 
 /tools/*
@@ -97,7 +100,5 @@ my_*
 
 /docs/sphinx/build/*
 !/docs/sphinx/build/.keep
-
-**/.DS_Store
 
 /test_ad/tapenade_supported/ADFirstAidKit/*.gch
