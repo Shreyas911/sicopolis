@@ -582,6 +582,13 @@ else if (approx_equal(DX, 4.0_dp, eps_sp_dp)) then
       call error(errormsg)
    end if
 
+else if (approx_equal(DX, 2.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 840).or.(JMAX /= 1440) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
 else
    errormsg = ' >>> sico_init: DX wrong!'
    call error(errormsg)
