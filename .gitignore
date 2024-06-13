@@ -15,6 +15,7 @@ my_*
 
 *._*
 *DS_Store*
+*.nfs*
 
 /headers/*.h
 
