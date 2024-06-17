@@ -1644,6 +1644,7 @@ real(dp) :: pi_inv
 !added for DIVA : 
 real(dp) :: flui_tmp_c(0:KCMAX), flui_tmp_t(0:KTMAX)
 real(dp) :: enh_val, inv_H_t, inv_H_c
+real(dp) :: vx_c_aux, vx_t_aux, vy_c_aux, vy_t_aux
 real(dp) :: visc_min, visc_max
 real(dp) :: H_dz_c_dzeta(0:KCMAX)
 real(dp) :: F_2
@@ -2062,28 +2063,43 @@ do j=0, JMAX
 
       ! 3D cold velocity field for DIVA: 
       if (vx_b(j,i) .gt. eps)
-
+!        compute the verticaly independent part outside the vertical loop :
+         vx_c_aux = vx_b(j,i) + 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * vx_b(j,i) * inv_H_c(j,i)
          do kc=0, KCMAX
-            vx_c(kc,j,i) = vx_b(j,i) + beta_drag(j,i) * vx_b(j,i) * inv_H_c(j,i) * F_1_c(kc)
+            vx_c(kc,j,i) = vx_c_aux * F_1_c(kc)
          end do
-      else ! Handle the case when the basal velocity is zero
-
+      else ! Handle the case when the basal velocity is zero :
+         beta_eff(j,i) = 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) / &
+                        (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * F_2) !eq 33 Lipscomb 2019,  
+ !                                                                                 staggered on the x-velocity grid
+         vx_c_aux = vx_b(j,i) + &       !compute the vertical independent part outside the loop
+                  beta_eff(j,i) * vx_m(j,i) &
+                  * inv_H_c(j,i)
          do kc=0, KCMAX
-            vx_c(kc,j,i) =  * inv_H_c(j,i) * flui_tmp_c(kc) !NEED TO HANDLE THE CASE
+            vx_c(kc,j,i) =  vx_c_aux * F_1_c(kc) 
          end do
       endif
 
       if ((n_cts(j,i) == 0 .or. n_cts(j,i) == 1) .and. (vx_b(j,i) .gt. eps)) then 
          !ensure that there is a physically existant temperate base   AND   ensure that the basal velocity is not zero
          inv_H_t = 1.0_dp/H_t(j,i)
+         vx_t_aux = vx_b(j,i) + 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * vx_b(j,i) * inv_H_t(j,i)
+         
          do kt=0, KTMAX ! by definition, vx_t(0,j,i) = vx_b(j,i) so it shouldn't need special case for kt = 0
-            vx_t(kt,j,i) = vx_b(j,i) + beta_drag(j,i) * vx_b(j,i) * inv_H_t(j,i) * F_1_t(kt)
+            vx_t(kt,j,i) = vx_t_aux * F_1_t(kt)
          end do
 
       else if ((n_cts(j,i) == 0 .or. n_cts(j,i) == 1) .and. (vx_b(j,i) .lt. eps)) then 
          !case where there is a physical temperate layer    and the basal velocity is zero 
+
+         beta_eff(j,i) = 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) / &
+                        (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * F_2) !eq 33 Lipscomb 2019,  
+ !                                                                                 staggered on the x-velocity grid
+         vx_t_aux = vx_b(j,i) + &   !compute the vertical independent part outside the loop
+                   beta_eff(j,i) * vx_m(j,i) &
+                   * inv_H_t(j,i)
          do kt=0, KTMAX 
-            vx_t(kt,j,i) =  * inv_H_t(j,i) * flui_tmp_t(kt) !NEED TO HANDLE THE CASE
+            vx_t(kt,j,i) =  vx_t_aux * F_1_t(kt) 
          end do
 
       else if (n_cts(j,i) == -1) then !in the case where there is no physical temperate layer
@@ -2328,28 +2344,48 @@ do j=0, JMAX-1
 
       ! 3D cold velocity field for DIVA: 
       if (vy_b(j,i) .gt. eps)
+         !compute the z independent part outside the loop :
+         vy_c_aux = vy_b(j,i) + 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * vy_b(j,i) * inv_H_c(j,i)
 
          do kc=0, KCMAX
-            vy_c(kc,j,i) = vy_b(j,i) + beta_drag(j,i) * vy_b(j,i) * inv_H_c(j,i) * F_1_c(kc)
+            vy_c(kc,j,i) = vy_c_aux * F_1_c(kc)
          end do
       else ! Handle the case when the basal velocity is zero
 
+         beta_eff(j,i) = 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) / &
+                        (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * F_2) !eq 33 Lipscomb 2019,  
+ !                                                                                 staggered on the velocity grid
+         vy_c_aux=vy_b(j,i) + &        !compute the vertical independent part outside the loop
+                  beta_eff(j,i) * vy_m(j,i) &
+                  * inv_H_c(j,i)
+
          do kc=0, KCMAX
-            vy_c(kc,j,i) =  * inv_H_c(j,i) * flui_tmp_c(kc) !NEED TO HANDLE THE CASE
+            vy_c(kc,j,i) =  vy_c_aux * F_1_c(kc)
          end do
       endif
 
       if ((n_cts(j,i) == 0 .or. n_cts(j,i) == 1) .and. (vy_b(j,i) .gt. eps)) then 
          !ensure that there is a physically existant temperate base   AND   ensure that the basal velocity is not zero
          inv_H_t = 1.0_dp/H_t(j,i)
+         !compute the z independent part outside the loop :
+         vy_t_aux = vy_b(j,i) + 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * vy_b(j,i) * inv_H_t(j,i)
+
          do kt=0, KTMAX ! by definition, vy_t(0,j,i) = vy_b(j,i) so it shouldn't need special case for kt = 0
-            vy_t(kt,j,i) = vy_b(j,i) + beta_drag(j,i) * vy_b(j,i) * inv_H_t(j,i) * F_1_t(kt)
+            vy_t(kt,j,i) = vy_t_aux * F_1_t(kt)
          end do
 
       else if ((n_cts(j,i) == 0 .or. n_cts(j,i) == 1) .and. (vy_b(j,i) .lt. eps)) then 
          !case where there is a physical temperate layer    and the basal velocity is zero 
+
+         beta_eff(j,i) = 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) / &
+         (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * F_2) !eq 33 Lipscomb 2019,  
+!                                                                   staggered on the velocity grid
+         vy_t_aux = vy_b(j,i) + &
+                  beta_eff(j,i) * vy_m(j,i) &
+                  * inv_H_t(j,i)
+
          do kt=0, KTMAX 
-            vy_t(kt,j,i) =  * inv_H_t(j,i) * flui_tmp_t(kt) 
+            vy_t(kt,j,i) = vy_t_aux * F_1_t(kt)
          end do
 
       else if (n_cts(j,i) == -1) then !in the case where there is no physical temperate layer
