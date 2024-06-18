@@ -1507,7 +1507,7 @@ function integrate_trapezoid1D_1D_c(var_c, dzeta_c)
    do kc = 1, KCMAX
      var_mid = 0.5_dp * (var_c(kc) + var_c(kc-1))
 !     if (abs(var_mid) < eps) var_mid = 0.0_dp        dont think it's necessary 
-     integrate_trapezoid1D_1D_c(kc:KCMAX) = var_int(kc:KCMAX) + var_mid * dzeta_c
+     integrate_trapezoid1D_1D_c(kc:KCMAX) = integrate_trapezoid1D_1D_c(kc:KCMAX) + var_mid * dzeta_c
    end do
 
  end function integrate_trapezoid1D_1D_c
@@ -1642,12 +1642,14 @@ real(dp) :: v_ref, v_ref_sq_inv
 real(dp) :: v_b_sq
 real(dp) :: pi_inv
 !added for DIVA : 
+real(dp), dimension(0:JMAX,0:IMAX) ::  beta_drag
 real(dp) :: flui_tmp_c(0:KCMAX), flui_tmp_t(0:KTMAX)
 real(dp) :: enh_val, inv_H_t, inv_H_c
 real(dp) :: vx_c_aux, vx_t_aux, vy_c_aux, vy_t_aux
 real(dp) :: visc_min, visc_max
 real(dp) :: H_dz_c_dzeta(0:KCMAX)
 real(dp) :: F_2
+real(dp) :: beta_eff
 real(dp) :: F_1_c(0:KCMAX), F_1_t(0:KTMAX)
 real(dp) :: f_2_pre_int_c(0:KCMAX), f_1_pre_int_c(0:KCMAX), f_2_pre_int_t(0:KTMAX), f_1_pre_int_t(0:KTMAX)
 
@@ -1757,7 +1759,7 @@ do while ( (m < iter_ssa_min) &
    flag_calc_vxy_ssa_y = .false.   ! initialization
 
    call calc_vxy_ssa_matrix(dxi, deta, &
-                            flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y)
+                            flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y,beta_drag)
 
 #if !defined(ALLOW_TAPENADE) /* Normal */
 
@@ -2062,42 +2064,42 @@ do j=0, JMAX
       vx_b(j,i) = vx_m(j,i) / (1.0_dp + F_2)
 
       ! 3D cold velocity field for DIVA: 
-      if (vx_b(j,i) .gt. eps)
+      if (vx_b(j,i) .gt. eps_dp) then
 !        compute the verticaly independent part outside the vertical loop :
-         vx_c_aux = vx_b(j,i) + 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * vx_b(j,i) * inv_H_c(j,i)
+         vx_c_aux = vx_b(j,i) + 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * vx_b(j,i) * inv_H_c
          do kc=0, KCMAX
             vx_c(kc,j,i) = vx_c_aux * F_1_c(kc)
          end do
       else ! Handle the case when the basal velocity is zero :
-         beta_eff(j,i) = 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) / &
+         beta_eff = 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) / &
                         (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * F_2) !eq 33 Lipscomb 2019,  
  !                                                                                 staggered on the x-velocity grid
          vx_c_aux = vx_b(j,i) + &       !compute the vertical independent part outside the loop
-                  beta_eff(j,i) * vx_m(j,i) &
-                  * inv_H_c(j,i)
+                  beta_eff * vx_m(j,i) &
+                  * inv_H_c
          do kc=0, KCMAX
             vx_c(kc,j,i) =  vx_c_aux * F_1_c(kc) 
          end do
-      endif
+      end if
 
-      if ((n_cts(j,i) == 0 .or. n_cts(j,i) == 1) .and. (vx_b(j,i) .gt. eps)) then 
+      if ((n_cts(j,i) == 0 .or. n_cts(j,i) == 1) .and. (vx_b(j,i) .gt. eps_dp)) then
          !ensure that there is a physically existant temperate base   AND   ensure that the basal velocity is not zero
          inv_H_t = 1.0_dp/H_t(j,i)
-         vx_t_aux = vx_b(j,i) + 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * vx_b(j,i) * inv_H_t(j,i)
+         vx_t_aux = vx_b(j,i) + 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * vx_b(j,i) * inv_H_t
          
          do kt=0, KTMAX ! by definition, vx_t(0,j,i) = vx_b(j,i) so it shouldn't need special case for kt = 0
             vx_t(kt,j,i) = vx_t_aux * F_1_t(kt)
          end do
 
-      else if ((n_cts(j,i) == 0 .or. n_cts(j,i) == 1) .and. (vx_b(j,i) .lt. eps)) then 
+      else if ((n_cts(j,i) == 0 .or. n_cts(j,i) == 1) .and. (vx_b(j,i) .lt. eps_dp)) then
          !case where there is a physical temperate layer    and the basal velocity is zero 
 
-         beta_eff(j,i) = 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) / &
+         beta_eff = 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) / &
                         (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * F_2) !eq 33 Lipscomb 2019,  
  !                                                                                 staggered on the x-velocity grid
          vx_t_aux = vx_b(j,i) + &   !compute the vertical independent part outside the loop
-                   beta_eff(j,i) * vx_m(j,i) &
-                   * inv_H_t(j,i)
+                   beta_eff * vx_m(j,i) &
+                   * inv_H_t
          do kt=0, KTMAX 
             vx_t(kt,j,i) =  vx_t_aux * F_1_t(kt) 
          end do
@@ -2106,7 +2108,7 @@ do j=0, JMAX
          do kt=0, KTMAX 
             vx_t(kt,j,i) = vx_b(j,i) 
          end do
-      endif
+      end if
 
 
 
@@ -2343,46 +2345,46 @@ do j=0, JMAX-1
       vy_b(j,i) = vy_m(j,i) / (1.0_dp + F_2)
 
       ! 3D cold velocity field for DIVA: 
-      if (vy_b(j,i) .gt. eps)
+      if (vy_b(j,i) .gt. eps_dp) then
          !compute the z independent part outside the loop :
-         vy_c_aux = vy_b(j,i) + 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * vy_b(j,i) * inv_H_c(j,i)
+         vy_c_aux = vy_b(j,i) + 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * vy_b(j,i) * inv_H_c
 
          do kc=0, KCMAX
             vy_c(kc,j,i) = vy_c_aux * F_1_c(kc)
          end do
       else ! Handle the case when the basal velocity is zero
 
-         beta_eff(j,i) = 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) / &
+         beta_eff = 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) / &
                         (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * F_2) !eq 33 Lipscomb 2019,  
  !                                                                                 staggered on the velocity grid
          vy_c_aux=vy_b(j,i) + &        !compute the vertical independent part outside the loop
-                  beta_eff(j,i) * vy_m(j,i) &
-                  * inv_H_c(j,i)
+                  beta_eff * vy_m(j,i) &
+                  * inv_H_c
 
          do kc=0, KCMAX
             vy_c(kc,j,i) =  vy_c_aux * F_1_c(kc)
          end do
       endif
 
-      if ((n_cts(j,i) == 0 .or. n_cts(j,i) == 1) .and. (vy_b(j,i) .gt. eps)) then 
+      if ((n_cts(j,i) == 0 .or. n_cts(j,i) == 1) .and. (vy_b(j,i) .gt. eps_dp)) then
          !ensure that there is a physically existant temperate base   AND   ensure that the basal velocity is not zero
          inv_H_t = 1.0_dp/H_t(j,i)
          !compute the z independent part outside the loop :
-         vy_t_aux = vy_b(j,i) + 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * vy_b(j,i) * inv_H_t(j,i)
+         vy_t_aux = vy_b(j,i) + 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * vy_b(j,i) * inv_H_t
 
          do kt=0, KTMAX ! by definition, vy_t(0,j,i) = vy_b(j,i) so it shouldn't need special case for kt = 0
             vy_t(kt,j,i) = vy_t_aux * F_1_t(kt)
          end do
 
-      else if ((n_cts(j,i) == 0 .or. n_cts(j,i) == 1) .and. (vy_b(j,i) .lt. eps)) then 
+      else if ((n_cts(j,i) == 0 .or. n_cts(j,i) == 1) .and. (vy_b(j,i) .lt. eps_dp)) then
          !case where there is a physical temperate layer    and the basal velocity is zero 
 
-         beta_eff(j,i) = 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) / &
+         beta_eff = 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) / &
          (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * F_2) !eq 33 Lipscomb 2019,  
 !                                                                   staggered on the velocity grid
          vy_t_aux = vy_b(j,i) + &
-                  beta_eff(j,i) * vy_m(j,i) &
-                  * inv_H_t(j,i)
+                  beta_eff * vy_m(j,i) &
+                  * inv_H_t
 
          do kt=0, KTMAX 
             vy_t(kt,j,i) = vy_t_aux * F_1_t(kt)
@@ -2622,7 +2624,7 @@ end subroutine calc_vxy_ssa
 !! vx_m_ssa, vy_m_ssa in the SSA/SStA.
 !-------------------------------------------------------------------------------
 subroutine calc_vxy_ssa_matrix(dxi, deta, &
-                               flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y)
+                               flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y, beta_drag)
 
 #if (MARGIN==3 || DYNAMICS==2 || DYNAMICS==3)
 #if defined(ALLOW_TAPENADE) /* Tapenade */
@@ -2642,7 +2644,8 @@ real(dp) :: inv_dxi, inv_deta, inv_dxi_deta, inv_dxi2, inv_deta2
 real(dp) :: factor_rhs_1, factor_rhs_2, factor_rhs_3a, factor_rhs_3b
 real(dp) :: rhosw_rho_ratio
 real(dp) :: H_mid, zl_mid, z_sl_mid
-real(dp), dimension(0:JMAX,0:IMAX) :: vis_int_sgxy, beta_drag
+real(dp), dimension(0:JMAX,0:IMAX) :: vis_int_sgxy
+real(dp), dimension(0:JMAX,0:IMAX), intent(out) ::  beta_drag
 character(len=256) :: ch_solver_set_option
 
 #if (MARGIN==3 || DYNAMICS==2 || DYNAMICS==3)
