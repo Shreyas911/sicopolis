@@ -782,7 +782,8 @@ end do
 
 !  ------ Term abbreviations
 
-do i=0, IMAX
+!$OMP PARALLEL DO PRIVATE(i,j,kc,kt) SHARED(mask,flag_grounding_line_2,ctxyz1,ctxyz2,RHO,G,H_c,H_t,eaz_c_quotient,zeta_t)
+DO i=0, IMAX
 do j=0, JMAX
 
    if ((mask(j,i) == 0).or.flag_grounding_line_2(j,i)) then
@@ -820,9 +821,10 @@ do j=0, JMAX
 
 end do
 end do
+!$OMP END PARALLEL DO
 
 !  ------ Shear stress txz (defined at (i+1/2,j,kc/t))
-
+!$OMP PARALLEL DO PRIVATE(i,j,kc,kt) SHARED(txz_c,txz_t,ctxyz1,ctxyz2,dzs_dx_aux)
 do i=0, IMAX-1
 do j=0, JMAX
 
@@ -839,9 +841,10 @@ do j=0, JMAX
 
 end do
 end do
+!$OMP END PARALLEL DO
 
 !  ------ Shear stress tyz (defined at (i,j+1/2,kc/t))
-
+!$OMP PARALLEL DO PRIVATE(i,j,kc,kt) SHARED(txz_c,txz_t,ctxyz1,ctxyz2,dzs_dy_aux)
 do i=0, IMAX
 do j=0, JMAX-1
 
@@ -858,10 +861,11 @@ do j=0, JMAX-1
 
 end do
 end do
+!$OMP END PARALLEL DO
 
 !  ------ Effective shear stress sigma (defined at (i,j,kc/t))
-
-do i=0, IMAX
+!$OMP PARALLEL DO PRIVATE(i,j,kc,kt) SHARED(sigma_c,sigma_t,ctxyz1,ctxyz2,dzs_dxi_g,dzs_deta_g)
+DO i=0, IMAX
 do j=0, JMAX
 
    do kc=0, KCMAX
@@ -908,6 +912,7 @@ do j=0, JMAX
 
 end do
 end do
+!$OMP END PARALLEL DO
 
 !-------- Computation of the depth-averaged fluidity
 !                 (defined on the grid points (i,j)) --------

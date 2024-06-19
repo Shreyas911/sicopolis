@@ -352,10 +352,13 @@ contains
   subroutine show (self)
     class (queue), intent(in)     :: self
     integer                       :: i
+
+!$OMP PARALLEL DO PRIVATE(i) SHARED(self)  
   do i=1,self%currentSize
     write (*,'(i4, i4, f7.2, i4)') self%heaplist(i)
   end do
-
+!$OMP END PARALLEL DO
+  
   end subroutine
 
 end module hydro_priority_queue_m

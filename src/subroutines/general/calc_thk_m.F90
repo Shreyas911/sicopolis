@@ -79,6 +79,8 @@ dzb_dtau = dzl_dtau
 
 #elif (MARGIN==3)   /* grounded and floating ice */
 
+
+!$OMP PARALLEL DO PRIVATE(i,j) SHARED(mask,zb_new,dzb_dtau,zl_new,dzl_dtau,zb)
 do i=0, IMAX
 do j=0, JMAX
    if (mask(j,i) <= 1) then   ! grounded ice or ice-free land
@@ -90,6 +92,7 @@ do j=0, JMAX
    end if
 end do
 end do
+!$OMP END PARALLEL DO
 
 #else
 
@@ -153,22 +156,28 @@ azs3 = dtime/(deta*deta)
 czs2 = 0.0_dp
 czs3 = 0.0_dp
 
+
+!$OMP PARALLEL DO PRIVATE(i,j) SHARED(czs2, h_diff, sq_g22_sgx, insq_g11_sgx)
 do i=0, IMAX-1
+!!!!$OMP PRIVATE(j)
 do j=0, JMAX
    czs2(j,i) = azs2*0.5_dp*(h_diff(j,i)+h_diff(j,i+1)) &
                *(sq_g22_sgx(j,i)*insq_g11_sgx(j,i))
 end do
 end do
-
+!$OMP END PARALLEL DO
+!$OMP PARALLEL DO PRIVATE(i,j) SHARED(azs3,h_diff,sq_g11_sgy,insq_g22_sgy)
 do i=0, IMAX
+!!!!$OMP PRIVATE(j)
 do j=0, JMAX-1
    czs3(j,i) = azs3*0.5_dp*(h_diff(j,i)+h_diff(j+1,i)) &
                *(sq_g11_sgy(j,i)*insq_g22_sgy(j,i))
 end do
 end do
+!$OMP END PARALLEL DO
 
 !-------- Solution of the explicit scheme --------
-
+!$OMP PARALLEL DO PRIVATE(i,j) SHARED(zs_new, zs, dtime, mb_source, czs2, czs3, insq_g11_g, insq_g22_g)
 do i=0, IMAX
 do j=0, JMAX
 
@@ -188,10 +197,13 @@ do j=0, JMAX
 
 end do
 end do
+!$OMP END PARALLEL DO
 
 !-------- Ice thickness --------
 
+!$OMP PARALLEL SHARED(H_new, zs_new, zb_new)
 H_new = zs_new - zb_new
+!$OMP END PARALLEL
 
 !-------- Applying the source term --------
 
@@ -525,6 +537,7 @@ end do
 
 !-------- Solution of the explicit scheme --------
 
+!$OMP PARALLEL DO PRIVATE(i,j) SHARED(flag_inner_point,H_new,H,dtime,mb_source,dt_darea,upH_x_1,upH_x_2,upH_y_1, upH_y_2,vx_m_1,vx_m_2,sq_g22_x_1,sq_g22_x_2,sq_g11_y_1,sq_g11_y_2,deta,dxi)
 do i=0, IMAX
 do j=0, JMAX
 
@@ -543,6 +556,7 @@ do j=0, JMAX
 
 end do
 end do
+!$OMP END PARALLEL DO
 
 !-------- Applying the source term --------
 
