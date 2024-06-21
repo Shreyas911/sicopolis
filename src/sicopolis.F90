@@ -42,7 +42,7 @@
 !                                               (only if required) --------
 
 #if !defined(ALLOW_TAPENADE) /* Normal */
-#if (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
+#if (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2 || DYNAMICS==3)
 #include "lisf.h"
 #endif
 #endif /* Normal */
