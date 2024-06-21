@@ -1619,15 +1619,27 @@ Q_b_tot = Q_bm + Q_tld
 
 #endif
 
-!-------- Inner-point flag --------
+!-------- Inner-point and staggered-grid flags --------
 
-flag_inner_point = .true.
+flag_inner_point            = .true.
+flag_inner_point(0   ,:   ) = .false.
+flag_inner_point(JMAX,:   ) = .false.
+flag_inner_point(:   ,0   ) = .false.
+flag_inner_point(:   ,IMAX) = .false.
 
-flag_inner_point(0,:)    = .false.
-flag_inner_point(JMAX,:) = .false.
+flag_sg_x         = .true.
+flag_sg_x(:,IMAX) = .false.
 
-flag_inner_point(:,0)    = .false.
-flag_inner_point(:,IMAX) = .false.
+flag_sg_y         = .true.
+flag_sg_y(JMAX,:) = .false.
+
+flag_sg_x_inner_y         = flag_sg_x
+flag_sg_x_inner_y(0   ,:) = .false.
+flag_sg_x_inner_y(JMAX,:) = .false.
+
+flag_sg_y_inner_x         = flag_sg_y
+flag_sg_y_inner_x(:,0   ) = .false.
+flag_sg_y_inner_x(:,IMAX) = .false.
 
 !-------- Distance between grid points with delta_i=ir, delta_j=jr --------
 

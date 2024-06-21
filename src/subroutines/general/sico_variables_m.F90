@@ -83,7 +83,29 @@ logical :: flag_calc_temp
 logical, dimension(0:JMAX,0:IMAX) :: flag_inner_point
    !! Inner-point flag:
    !!   .true.: inner point,
-   !!  .false.: margin point
+   !!  .false.: otherwise (margin point)
+
+logical, dimension(0:JMAX,0:IMAX) :: flag_sg_x
+   !! Flag for staggered grid in x-direction:
+   !!   .true.: staggered-grid point in x-direction,
+   !!  .false.: otherwise
+
+logical, dimension(0:JMAX,0:IMAX) :: flag_sg_y
+   !! Flag for staggered grid in y-direction:
+   !!   .true.: staggered-grid point in y-direction,
+   !!  .false.: otherwise
+
+logical, dimension(0:JMAX,0:IMAX) :: flag_sg_x_inner_y
+   !! Flag for staggered grid in x-direction and inner point in y-direction:
+   !!   .true.: staggered-grid point in x-direction
+   !!           and inner point in y-direction,
+   !!  .false.: otherwise
+
+logical, dimension(0:JMAX,0:IMAX) :: flag_sg_y_inner_x
+   !! Flag for staggered grid in y-direction and inner point in x-direction:
+   !!   .true.: staggered-grid point in y-direction
+   !!           and inner point in x-direction,
+   !!  .false.: otherwise
 
 logical, dimension(0:JMAX,0:IMAX) :: flag_grounding_line_1
    !! Grounding line flag:
