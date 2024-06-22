@@ -57,9 +57,11 @@ contains
 !-------------------------------------------------------------------------------
 subroutine calc_thk_init()
 
+!$ use omp_lib
+
 implicit none
 
-integer(i4b) :: i, j
+integer(i4b) :: i, j, ij
 
 #if (defined(CALCZS))
   errormsg = ' >>> calc_thk_init: Replace CALCZS by CALCTHK in header file!'
@@ -68,44 +70,6 @@ integer(i4b) :: i, j
   errormsg = ' >>> calc_thk_init: Define CALCTHK in header file!'
   call error(errormsg)
 #endif
-
-!-------- Computation/initialization of the ice base topography
-!                                       and its time derivative --------
-
-#if (MARGIN==1 || MARGIN==2)   /* only grounded ice */
-
-zb_new   = zl_new
-dzb_dtau = dzl_dtau
-
-#elif (MARGIN==3)   /* grounded and floating ice */
-
-
-!$OMP PARALLEL DO PRIVATE(i,j) SHARED(mask,zb_new,dzb_dtau,zl_new,dzl_dtau,zb)
-do i=0, IMAX
-do j=0, JMAX
-   if (mask(j,i) <= 1) then   ! grounded ice or ice-free land
-      zb_new(j,i)   = zl_new(j,i)
-      dzb_dtau(j,i) = dzl_dtau(j,i)
-   else   ! ocean or floating ice
-      zb_new(j,i)   = zb(j,i)  ! initialization,
-      dzb_dtau(j,i) = 0.0_dp   ! will be overwritten later
-   end if
-end do
-end do
-!$OMP END PARALLEL DO
-
-#else
-
-errormsg = ' >>> calc_thk_init: MARGIN must be either 1, 2 or 3!'
-call error(errormsg)
-
-#endif
-
-!-------- Initialization of the ice thickness
-!                               and surface topography --------
-
-zs_new = zs   ! initialization,
-H_new  = H    ! will be overwritten later
 
 !-------- Solver type --------
 
@@ -124,9 +88,51 @@ H_new  = H    ! will be overwritten later
 
 #endif
 
+!-------- Loop over (i,j) --------
+
+!$omp parallel do default(shared) private(ij, i, j)
+do ij=1, (IMAX+1)*(JMAX+1)
+
+   i = n2i(ij)
+   j = n2j(ij)
+
+!-------- Computation/initialization of the ice base topography
+!                                       and its time derivative --------
+
+#if (MARGIN==1 || MARGIN==2)   /* only grounded ice */
+
+   zb_new(j,i)   = zl_new(j,i)
+   dzb_dtau(j,i) = dzl_dtau(j,i)
+
+#elif (MARGIN==3)   /* grounded and floating ice */
+
+   if (mask(j,i) <= 1) then   ! grounded ice or ice-free land
+      zb_new(j,i)   = zl_new(j,i)
+      dzb_dtau(j,i) = dzl_dtau(j,i)
+   else   ! ocean or floating ice
+      zb_new(j,i)   = zb(j,i)  ! initialization,
+      dzb_dtau(j,i) = 0.0_dp   ! will be overwritten later
+   end if
+
+#else
+
+   errormsg = ' >>> calc_thk_init: MARGIN must be either 1, 2 or 3!'
+   call error(errormsg)
+
+#endif
+
+!-------- Initialization of the ice thickness
+!                               and surface topography --------
+
+   zs_new(j,i) = zs(j,i)   ! initialization,
+   H_new(j,i)  = H(j,i)    ! will be overwritten later
+
 !-------- Source term for the ice thickness equation --------
 
-mb_source = as_perp - Q_b_tot - calving
+   mb_source(j,i) = as_perp(j,i) - Q_b_tot(j,i) - calving(j,i)
+
+end do
+!$omp end parallel do
 
 end subroutine calc_thk_init
 
@@ -134,6 +140,8 @@ end subroutine calc_thk_init
 !> Explicit solver for the diffusive SIA ice surface equation.
 !-------------------------------------------------------------------------------
 subroutine calc_thk_sia_expl(time, dtime, dxi, deta, z_mar)
+
+!$ use omp_lib
 
 #if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
   use calving_m
@@ -144,7 +152,7 @@ implicit none
 real(dp), intent(in) :: time, dtime, dxi, deta
 real(dp), intent(in) :: z_mar
 
-integer(i4b)                       :: i, j
+integer(i4b)                       :: i, j, ij
 real(dp)                           :: azs2, azs3
 real(dp), dimension(0:JMAX,0:IMAX) :: czs2, czs3
 
@@ -153,33 +161,38 @@ real(dp), dimension(0:JMAX,0:IMAX) :: czs2, czs3
 azs2 = dtime/(dxi*dxi)
 azs3 = dtime/(deta*deta)
 
-czs2 = 0.0_dp
-czs3 = 0.0_dp
+!-------- Loop over (i,j) --------
 
+!$omp parallel do default(shared) private(ij, i, j)
+do ij=1, (IMAX+1)*(JMAX+1)
 
-!$OMP PARALLEL DO PRIVATE(i,j) SHARED(czs2, h_diff, sq_g22_sgx, insq_g11_sgx)
-do i=0, IMAX-1
-!!!!$OMP PRIVATE(j)
-do j=0, JMAX
-   czs2(j,i) = azs2*0.5_dp*(h_diff(j,i)+h_diff(j,i+1)) &
-               *(sq_g22_sgx(j,i)*insq_g11_sgx(j,i))
+   i = n2i(ij)
+   j = n2j(ij)
+
+   if (flag_sg_x(j,i)) then
+      czs2(j,i) = azs2*0.5_dp*(h_diff(j,i)+h_diff(j,i+1)) &
+                  *(sq_g22_sgx(j,i)*insq_g11_sgx(j,i))
+   else
+      czs2(j,i) = 0.0_dp
+   end if
+
+   if (flag_sg_y(j,i)) then
+      czs3(j,i) = azs3*0.5_dp*(h_diff(j,i)+h_diff(j+1,i)) &
+                  *(sq_g11_sgy(j,i)*insq_g22_sgy(j,i))
+   else
+      czs3(j,i) = 0.0_dp
+   end if
+
 end do
-end do
-!$OMP END PARALLEL DO
-!$OMP PARALLEL DO PRIVATE(i,j) SHARED(azs3,h_diff,sq_g11_sgy,insq_g22_sgy)
-do i=0, IMAX
-!!!!$OMP PRIVATE(j)
-do j=0, JMAX-1
-   czs3(j,i) = azs3*0.5_dp*(h_diff(j,i)+h_diff(j+1,i)) &
-               *(sq_g11_sgy(j,i)*insq_g22_sgy(j,i))
-end do
-end do
-!$OMP END PARALLEL DO
+!$omp end parallel do
 
 !-------- Solution of the explicit scheme --------
-!$OMP PARALLEL DO PRIVATE(i,j) SHARED(zs_new, zs, dtime, mb_source, czs2, czs3, insq_g11_g, insq_g22_g)
-do i=0, IMAX
-do j=0, JMAX
+
+!$omp parallel do default(shared) private(ij, i, j)
+do ij=1, (IMAX+1)*(JMAX+1)
+
+   i = n2i(ij)
+   j = n2j(ij)
 
    if (flag_inner_point(j,i)) then   ! inner point
 
@@ -191,19 +204,15 @@ do j=0, JMAX
                          -czs3(j-1,i)*(zs(j,i)  -zs(j-1,i)) ) ) &
                       *(insq_g11_g(j,i)*insq_g22_g(j,i))
 
+      H_new(j,i) = zs_new(j,i) - zb_new(j,i)
+
    else
-      zs_new(j,i) = zb_new(j,i)   ! zero-thickness boundary condition
+      zs_new(j,i) = zb_new(j,i)   ! zero-thickness
+      H_new(j,i)  = 0.0_dp        ! boundary condition
    end if
 
 end do
-end do
-!$OMP END PARALLEL DO
-
-!-------- Ice thickness --------
-
-!$OMP PARALLEL SHARED(H_new, zs_new, zb_new)
-H_new = zs_new - zb_new
-!$OMP END PARALLEL
+!$omp end parallel do
 
 !-------- Applying the source term --------
 
@@ -454,6 +463,8 @@ end subroutine calc_thk_sia_impl
 !-------------------------------------------------------------------------------
 subroutine calc_thk_expl(time, dtime, dxi, deta, z_mar)
 
+!$ use omp_lib
+
 #if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
   use calving_m
 #endif
@@ -463,21 +474,26 @@ implicit none
 real(dp), intent(in) :: time, dtime, dxi, deta
 real(dp), intent(in) :: z_mar
 
-integer(i4b)                       :: i, j
+integer(i4b)                       :: i, j, ij
 real(dp), dimension(0:JMAX,0:IMAX) :: dt_darea
 real(dp), dimension(0:JMAX,0:IMAX) :: vx_m_1, vx_m_2, vy_m_1, vy_m_2
 real(dp), dimension(0:JMAX,0:IMAX) :: upH_x_1, upH_x_2, upH_y_1, upH_y_2
 real(dp), dimension(0:JMAX,0:IMAX) :: sq_g22_x_1, sq_g22_x_2
 real(dp), dimension(0:JMAX,0:IMAX) :: sq_g11_y_1, sq_g11_y_2
 
-!-------- Abbreviations --------
+!-------- Solution of the explicit scheme --------
 
-dt_darea = dtime/cell_area
+!$omp parallel do default(shared) private(ij, i, j)
+do ij=1, (IMAX+1)*(JMAX+1)
 
-do i=0, IMAX
-do j=0, JMAX
+   i = n2i(ij)
+   j = n2j(ij)
 
-   if (flag_inner_point(j,i)) then
+   if (flag_inner_point(j,i)) then   ! inner point
+
+!  ------ Abbreviations
+
+      dt_darea(j,i) = dtime/cell_area(j,i)
 
       vx_m_1(j,i) = vx_m(j,i-1)
       vx_m_2(j,i) = vx_m(j,i)
@@ -513,7 +529,18 @@ do j=0, JMAX
       sq_g11_y_1(j,i) = sq_g11_sgy(j-1,i)
       sq_g11_y_2(j,i) = sq_g11_sgy(j,i)
 
-   else   ! .not.(flag_inner_point(j,i))
+!  ------ Actual computation
+
+      H_new(j,i) = H(j,i) + dtime*mb_source(j,i) &
+                   - dt_darea(j,i) &
+                     * (  ( vx_m_2(j,i)*upH_x_2(j,i)*sq_g22_x_2(j,i)*deta   &
+                           -vx_m_1(j,i)*upH_x_1(j,i)*sq_g22_x_1(j,i)*deta ) &
+                        + ( vy_m_2(j,i)*upH_y_2(j,i)*sq_g11_y_2(j,i)*dxi    &
+                           -vy_m_1(j,i)*upH_y_1(j,i)*sq_g11_y_1(j,i)*dxi  ) )
+
+   else   ! margin point
+
+      dt_darea(j,i) = dtime/cell_area(j,i)
 
       vx_m_1(j,i) = 0.0_dp
       vx_m_2(j,i) = 0.0_dp
@@ -530,33 +557,12 @@ do j=0, JMAX
       sq_g11_y_1(j,i) = 0.0_dp
       sq_g11_y_2(j,i) = 0.0_dp
 
-   end if
-
-end do
-end do
-
-!-------- Solution of the explicit scheme --------
-
-!$OMP PARALLEL DO PRIVATE(i,j) SHARED(flag_inner_point,H_new,H,dtime,mb_source,dt_darea,upH_x_1,upH_x_2,upH_y_1, upH_y_2,vx_m_1,vx_m_2,sq_g22_x_1,sq_g22_x_2,sq_g11_y_1,sq_g11_y_2,deta,dxi)
-do i=0, IMAX
-do j=0, JMAX
-
-   if (flag_inner_point(j,i)) then   ! inner point
-
-      H_new(j,i) = H(j,i) + dtime*mb_source(j,i) &
-                - dt_darea(j,i) &
-                  * (  ( vx_m_2(j,i)*upH_x_2(j,i)*sq_g22_x_2(j,i)*deta   &
-                        -vx_m_1(j,i)*upH_x_1(j,i)*sq_g22_x_1(j,i)*deta ) &
-                     + ( vy_m_2(j,i)*upH_y_2(j,i)*sq_g11_y_2(j,i)*dxi    &
-                        -vy_m_1(j,i)*upH_y_1(j,i)*sq_g11_y_1(j,i)*dxi  ) )
-
-   else
       H_new(j,i) = 0.0_dp   ! zero-thickness boundary condition
+
    end if
 
 end do
-end do
-!$OMP END PARALLEL DO
+!$omp end parallel do
 
 !-------- Applying the source term --------
 

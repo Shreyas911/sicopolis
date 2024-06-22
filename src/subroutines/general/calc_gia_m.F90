@@ -407,7 +407,7 @@ end do
 
 !-------- Steady-state displacement of the lithosphere --------
 
-!$omp parallel do private(ij,i,j,ir,jr,n)
+!$omp parallel do default(shared) private(ij,i,j,ir,jr,n)
 do ij=1, (IMAX+1)*(JMAX+1)
 
    i = n2i(ij)

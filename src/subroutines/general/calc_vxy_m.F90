@@ -748,13 +748,15 @@ end subroutine calc_vxy_b_sia
 !-------------------------------------------------------------------------------
 subroutine calc_vxy_sia(dzeta_c, dzeta_t)
 
+!$ use omp_lib
+
 use ice_material_properties_m, only : ratefac_c, ratefac_t, ratefac_c_t, creep
 
 implicit none
 
 real(dp), intent(in) :: dzeta_c, dzeta_t
 
-integer(i4b) :: i, j, kc, kt
+integer(i4b) :: i, j, ij, kc, kt
 real(dp) :: avxy3(0:KCMAX), aqxy1(0:KCMAX)
 real(dp) :: ctxyz1(0:KCMAX,0:JMAX,0:IMAX), &
             ctxyz2(0:KTMAX,0:JMAX,0:IMAX)
@@ -782,9 +784,11 @@ end do
 
 !  ------ Term abbreviations
 
-!$OMP PARALLEL DO PRIVATE(i,j,kc,kt) SHARED(mask,flag_grounding_line_2,ctxyz1,ctxyz2,RHO,G,H_c,H_t,eaz_c_quotient,zeta_t)
-DO i=0, IMAX
-do j=0, JMAX
+!$omp parallel do default(shared) private(ij, i, j, kc, kt)
+do ij=1, (IMAX+1)*(JMAX+1)
+
+   i = n2i(ij)
+   j = n2j(ij)
 
    if ((mask(j,i) == 0).or.flag_grounding_line_2(j,i)) then
                      ! grounded ice, or floating ice at the grounding line
@@ -820,53 +824,51 @@ do j=0, JMAX
    end if
 
 end do
-end do
-!$OMP END PARALLEL DO
+!$omp end parallel do
 
-!  ------ Shear stress txz (defined at (i+1/2,j,kc/t))
-!$OMP PARALLEL DO PRIVATE(i,j,kc,kt) SHARED(txz_c,txz_t,ctxyz1,ctxyz2,dzs_dx_aux)
-do i=0, IMAX-1
-do j=0, JMAX
+!  ------ Stresses txz, tyz, sigma
 
-   do kc=0, KCMAX
-      txz_c(kc,j,i) = -0.5_dp*(ctxyz1(kc,j,i)+ctxyz1(kc,j,i+1)) &
-                      *dzs_dx_aux(j,i)
-   end do
+!$omp parallel do default(shared) private(ij, i, j, kc, kt)
+do ij=1, (IMAX+1)*(JMAX+1)
 
-   do kt=0, KTMAX
-      txz_t(kt,j,i) = txz_c(0,j,i) &
-                      -0.5_dp*(ctxyz2(kt,j,i)+ctxyz2(kt,j,i+1)) &
-                      *dzs_dx_aux(j,i)
-   end do
+   i = n2i(ij)
+   j = n2j(ij)
 
-end do
-end do
-!$OMP END PARALLEL DO
+!    ---- Shear stress txz (defined at (i+1/2,j,kc/t))
 
-!  ------ Shear stress tyz (defined at (i,j+1/2,kc/t))
-!$OMP PARALLEL DO PRIVATE(i,j,kc,kt) SHARED(txz_c,txz_t,ctxyz1,ctxyz2,dzs_dy_aux)
-do i=0, IMAX
-do j=0, JMAX-1
+   if (flag_sg_x(j,i)) then
 
-   do kc=0, KCMAX
-      tyz_c(kc,j,i) = -0.5_dp*(ctxyz1(kc,j,i)+ctxyz1(kc,j+1,i)) &
-                      *dzs_dy_aux(j,i)
-   end do
+      do kc=0, KCMAX
+         txz_c(kc,j,i) = -0.5_dp*(ctxyz1(kc,j,i)+ctxyz1(kc,j,i+1)) &
+                         *dzs_dx_aux(j,i)
+      end do
 
-   do kt=0, KTMAX
-      tyz_t(kt,j,i) = tyz_c(0,j,i) &
-                      -0.5_dp*(ctxyz2(kt,j,i)+ctxyz2(kt,j+1,i)) &
-                      *dzs_dy_aux(j,i)
-   end do
+      do kt=0, KTMAX
+         txz_t(kt,j,i) = txz_c(0,j,i) &
+                         -0.5_dp*(ctxyz2(kt,j,i)+ctxyz2(kt,j,i+1)) &
+                         *dzs_dx_aux(j,i)
+      end do
 
-end do
-end do
-!$OMP END PARALLEL DO
+   end if
 
-!  ------ Effective shear stress sigma (defined at (i,j,kc/t))
-!$OMP PARALLEL DO PRIVATE(i,j,kc,kt) SHARED(sigma_c,sigma_t,ctxyz1,ctxyz2,dzs_dxi_g,dzs_deta_g)
-DO i=0, IMAX
-do j=0, JMAX
+!    ---- Shear stress tyz (defined at (i,j+1/2,kc/t))
+
+   if (flag_sg_y(j,i)) then
+
+      do kc=0, KCMAX
+         tyz_c(kc,j,i) = -0.5_dp*(ctxyz1(kc,j,i)+ctxyz1(kc,j+1,i)) &
+                         *dzs_dy_aux(j,i)
+      end do
+
+      do kt=0, KTMAX
+         tyz_t(kt,j,i) = tyz_c(0,j,i) &
+                         -0.5_dp*(ctxyz2(kt,j,i)+ctxyz2(kt,j+1,i)) &
+                         *dzs_dy_aux(j,i)
+      end do
+
+   end if
+
+!    ---- Effective shear stress sigma (defined at (i,j,kc/t))
 
    do kc=0, KCMAX
 
@@ -911,8 +913,7 @@ do j=0, JMAX
    end do
 
 end do
-end do
-!$OMP END PARALLEL DO
+!$omp end parallel do
 
 !-------- Computation of the depth-averaged fluidity
 !                 (defined on the grid points (i,j)) --------
