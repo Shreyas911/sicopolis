@@ -93,8 +93,8 @@ integer(i4b) :: i, j, ij
 !$omp parallel do default(shared) private(ij, i, j)
 do ij=1, (IMAX+1)*(JMAX+1)
 
-   i = n2i(ij)
-   j = n2j(ij)
+   i = n2i(ij)   ! i=0...IMAX
+   j = n2j(ij)   ! j=0...JMAX
 
 !-------- Computation/initialization of the ice base topography
 !                                       and its time derivative --------
@@ -166,8 +166,8 @@ azs3 = dtime/(deta*deta)
 !$omp parallel do default(shared) private(ij, i, j)
 do ij=1, (IMAX+1)*(JMAX+1)
 
-   i = n2i(ij)
-   j = n2j(ij)
+   i = n2i(ij)   ! i=0...IMAX
+   j = n2j(ij)   ! j=0...JMAX
 
    if (flag_sg_x(j,i)) then
       czs2(j,i) = azs2*0.5_dp*(h_diff(j,i)+h_diff(j,i+1)) &
@@ -191,8 +191,8 @@ end do
 !$omp parallel do default(shared) private(ij, i, j)
 do ij=1, (IMAX+1)*(JMAX+1)
 
-   i = n2i(ij)
-   j = n2j(ij)
+   i = n2i(ij)   ! i=0...IMAX
+   j = n2j(ij)   ! j=0...JMAX
 
    if (flag_inner_point(j,i)) then   ! inner point
 
@@ -486,8 +486,8 @@ real(dp), dimension(0:JMAX,0:IMAX) :: sq_g11_y_1, sq_g11_y_2
 !$omp parallel do default(shared) private(ij, i, j)
 do ij=1, (IMAX+1)*(JMAX+1)
 
-   i = n2i(ij)
-   j = n2j(ij)
+   i = n2i(ij)   ! i=0...IMAX
+   j = n2j(ij)   ! j=0...JMAX
 
    if (flag_inner_point(j,i)) then   ! inner point
 

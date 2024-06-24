@@ -410,8 +410,8 @@ end do
 !$omp parallel do default(shared) private(ij,i,j,ir,jr,n)
 do ij=1, (IMAX+1)*(JMAX+1)
 
-   i = n2i(ij)
-   j = n2j(ij)
+   i = n2i(ij)   ! i=0...IMAX
+   j = n2j(ij)   ! j=0...JMAX
 
    wss(j,i) = 0.0_dp
 

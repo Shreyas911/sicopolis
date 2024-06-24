@@ -85,12 +85,12 @@ contains
 !-------- Loop over (i,j) --------
 
   !$omp parallel do default(shared) private(ij, i, j, kc, kt) &
-  !$omp& private(fact_z_c, fact_z_t, H_c_inv, H_t_inv) &
-  !$omp& private(lxy_c, lyx_c, lxz_c, lzx_c, lyz_c, lzy_c) &
-  !$omp& private(lxy_t, lyx_t, lxz_t, lzx_t, lyz_t, lzy_t) &
-  !$omp& private(shear_c_squared, shear_t_squared) &
-  !$omp& private(abs_v_ssa_inv, nx, ny) &
-  !$omp& private(shear_x_help, shear_y_help, lambda_shear_help)
+  !$omp private(fact_z_c, fact_z_t, H_c_inv, H_t_inv) &
+  !$omp private(lxy_c, lyx_c, lxz_c, lzx_c, lyz_c, lzy_c) &
+  !$omp private(lxy_t, lyx_t, lxz_t, lzx_t, lyz_t, lzy_t) &
+  !$omp private(shear_c_squared, shear_t_squared) &
+  !$omp private(abs_v_ssa_inv, nx, ny) &
+  !$omp private(shear_x_help, shear_y_help, lambda_shear_help)
   do ij=1, (IMAX+1)*(JMAX+1)
 
      i = n2i(ij)
