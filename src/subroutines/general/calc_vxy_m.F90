@@ -1961,7 +1961,7 @@ do j=0, JMAX
 #elif (DYNAMICS==3)   /* DIVA */ 
 ! ------ Work in progress  -----
 
-      inv_H = 1.0_dp/( 0.5_dp*(H_c(j,i)+H_c(j,i+1)) + 0.5_dp*(H_t(j,i)+H_t(j,i+1)) ) !on the staggered grid
+      inv_H = 1.0_dp/( 0.5_dp*(H(j,i)+H(j+1,i)) ) !on the staggered grid
       H_c_ratio = 0.5_dp*(H_c(j,i)+H_c(j,i+1)) * inv_H    !on the staggered grid
       H_t_ratio = 0.5_dp*(H_t(j,i)+H_t(j,i+1)) * inv_H    !on the staggered grid
 
@@ -2073,10 +2073,10 @@ do j=0, JMAX
       !ground-up : first determine vx_t :
       if ((n_cts(j,i) == 0 .or. n_cts(j,i) == 1) .and. (abs(vx_b(j,i)) .gt. eps)) then
          !ensure that there is a physically existant temperate base   AND   ensure that the basal velocity is not zero
-         vx_t_aux = vx_b(j,i) + 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * vx_b(j,i) * inv_H
+         vx_t_aux =  0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * vx_b(j,i) * inv_H
 
          do kt=0, KTMAX ! by definition, vx_t(0,j,i) = vx_b(j,i) so it shouldn't need special case for kt = 0
-            vx_t(kt,j,i) = vx_t_aux * F_1_t(kt)
+            vx_t(kt,j,i) = vx_b(j,i) + vx_t_aux * F_1_t(kt)
          end do
 
       else if ((n_cts(j,i) == 0 .or. n_cts(j,i) == 1) .and. (abs(vx_b(j,i)) .lt. eps)) then
@@ -2085,11 +2085,10 @@ do j=0, JMAX
          beta_eff = 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) / &
                         (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * F_2) !eq 33 Lipscomb 2019,
  !                                                                                 staggered on the x-velocity grid
-         vx_t_aux = vx_b(j,i) + &   !compute the vertical independent part outside the loop
-                   beta_eff * vx_m(j,i) &
+         vx_t_aux = beta_eff * vx_m(j,i) & !compute the vertical independent part outside the loop
                    * inv_H
          do kt=0, KTMAX
-            vx_t(kt,j,i) =  vx_t_aux * F_1_t(kt)
+            vx_t(kt,j,i) = vx_b(j,i) + vx_t_aux * F_1_t(kt)
          end do
 
       else if (n_cts(j,i) == -1) then !in the case where there is no physical temperate layer
@@ -2101,19 +2100,18 @@ do j=0, JMAX
       ! then compute vx_c :
       if (abs(vx_b(j,i)) .gt. eps) then
 !        compute the verticaly independent part outside the vertical loop :
-         vx_c_aux = vx_t(KTMAX,j,i) + 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * vx_b(j,i) * inv_H
+         vx_c_aux =  0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * vx_b(j,i) * inv_H
          do kc=0, KCMAX
-            vx_c(kc,j,i) = vx_c_aux * (F_1_c(kc))
+            vx_c(kc,j,i) = vx_t(KTMAX,j,i) + vx_c_aux * (F_1_c(kc))
          end do
       else ! Handle the case when the basal velocity is zero :
          beta_eff = 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) / &
                         (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * F_2) !eq 33 Lipscomb 2019,  
  !                                                                                 staggered on the x-velocity grid
-         vx_c_aux = vx_t(KTMAX,j,i) + &       !compute the vertical independent part outside the loop
-                  beta_eff * vx_m(j,i) &
+         vx_c_aux = beta_eff * vx_m(j,i) & !compute the vertical independent part outside the loop
                   * inv_H
          do kc=0, KCMAX
-            vx_c(kc,j,i) =  vx_c_aux * (F_1_c(kc))
+            vx_c(kc,j,i) = vx_t(KTMAX,j,i) + vx_c_aux * (F_1_c(kc))
          end do
       end if
 
@@ -2253,7 +2251,7 @@ do j=0, JMAX-1
 
 ! ------ Work in progress  -----
 
-      inv_H = 1.0_dp/( 0.5_dp*(H_c(j,i)+H_c(j+1,i)) + 0.5_dp*(H_t(j,i)+H_t(j+1,i)) ) !on the staggered grid
+      inv_H = 1.0_dp/( 0.5_dp*(H(j,i)+H(j+1,i)) ) !on the staggered grid
       H_c_ratio = 0.5_dp*( H_c(j,i)+H_c(j+1,i) ) * inv_H    !on the staggered grid
       H_t_ratio = 0.5_dp*( H_t(j,i)+H_t(j+1,i) ) * inv_H    !on the staggered grid
 
@@ -2366,10 +2364,10 @@ do j=0, JMAX-1
       if ((n_cts(j,i) == 0 .or. n_cts(j,i) == 1) .and. (abs(vy_b(j,i)) .gt. eps)) then
          !ensure that there is a physically existant temperate base   AND   ensure that the basal velocity is not zero
          !compute the z independent part outside the loop :
-         vy_t_aux = vy_b(j,i) + 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * vy_b(j,i) * inv_H
+         vy_t_aux =  0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * vy_b(j,i) * inv_H
 
          do kt=0, KTMAX ! by definition, vy_t(0,j,i) = vy_b(j,i) so it shouldn't need special case for kt = 0
-            vy_t(kt,j,i) = vy_t_aux * F_1_t(kt)
+            vy_t(kt,j,i) = vy_b(j,i) + vy_t_aux * F_1_t(kt)
          end do
 
       else if ((n_cts(j,i) == 0 .or. n_cts(j,i) == 1) .and. (abs(vy_b(j,i)) .lt. eps)) then
@@ -2378,12 +2376,11 @@ do j=0, JMAX-1
          beta_eff = 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) / &
          (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * F_2) !eq 33 Lipscomb 2019,
 !                                                                   staggered on the velocity grid
-         vy_t_aux = vy_b(j,i) + &
-                  beta_eff * vy_m(j,i) &
+         vy_t_aux =  beta_eff * vy_m(j,i) &
                   * inv_H
 
          do kt=0, KTMAX
-            vy_t(kt,j,i) = vy_t_aux * F_1_t(kt)
+            vy_t(kt,j,i) = vy_b(j,i) + vy_t_aux * F_1_t(kt)
          end do
 
       else if (n_cts(j,i) == -1) then !in the case where there is no physical temperate layer
@@ -2395,22 +2392,21 @@ do j=0, JMAX-1
       ! then computation of vy_c :
       if (abs(vy_b(j,i)) .gt. eps) then
          !compute the z independent part outside the loop :
-         vy_c_aux = vy_t(KTMAX,j,i) + 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * vy_b(j,i) * inv_H
+         vy_c_aux =  0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * vy_b(j,i) * inv_H
 
          do kc=0, KCMAX
-            vy_c(kc,j,i) = vy_c_aux * (F_1_c(kc))
+            vy_c(kc,j,i) = vy_t(KTMAX,j,i) + vy_c_aux * (F_1_c(kc))
          end do
       else ! Handle the case when the basal velocity is zero
 
          beta_eff = 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) / &
                         (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * F_2) !eq 33 Lipscomb 2019,  
  !                                                                                 staggered on the velocity grid
-         vy_c_aux = vy_t(KTMAX,j,i) + &        !compute the vertical independent part outside the loop
-                  beta_eff * vy_m(j,i) &
+         vy_c_aux = beta_eff * vy_m(j,i) & !compute the vertical independent part outside the loop
                   * inv_H
 
          do kc=0, KCMAX
-            vy_c(kc,j,i) =  vy_c_aux * (F_1_c(kc))
+            vy_c(kc,j,i) = vy_t(KTMAX,j,i) + vy_c_aux * (F_1_c(kc))
          end do
       endif
 
