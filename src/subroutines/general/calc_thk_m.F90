@@ -501,16 +501,19 @@ implicit none
 real(dp), intent(in) :: time, dtime, dxi, deta
 real(dp), intent(in) :: z_mar
 
-integer(i4b)                       :: i, j, ij
-real(dp), dimension(0:JMAX,0:IMAX) :: dt_darea
-real(dp), dimension(0:JMAX,0:IMAX) :: vx_m_1, vx_m_2, vy_m_1, vy_m_2
-real(dp), dimension(0:JMAX,0:IMAX) :: upH_x_1, upH_x_2, upH_y_1, upH_y_2
-real(dp), dimension(0:JMAX,0:IMAX) :: sq_g22_x_1, sq_g22_x_2
-real(dp), dimension(0:JMAX,0:IMAX) :: sq_g11_y_1, sq_g11_y_2
+integer(i4b) :: i, j, ij
+real(dp)     :: dt_darea
+real(dp)     :: vx_m_1, vx_m_2, vy_m_1, vy_m_2
+real(dp)     :: upH_x_1, upH_x_2, upH_y_1, upH_y_2
+real(dp)     :: sq_g22_x_1, sq_g22_x_2, sq_g11_y_1, sq_g11_y_2
 
 !-------- Solution of the explicit scheme --------
 
-!$omp parallel do default(shared) private(ij, i, j)
+!$omp parallel do default(shared) private(ij, i, j) &
+!$omp private(dt_darea) &
+!$omp private(vx_m_1, vx_m_2, vy_m_1, vy_m_2) &
+!$omp private(upH_x_1, upH_x_2, upH_y_1, upH_y_2) &
+!$omp private(sq_g22_x_1, sq_g22_x_2, sq_g11_y_1, sq_g11_y_2)
 do ij=1, (IMAX+1)*(JMAX+1)
 
    i = n2i(ij)   ! i=0...IMAX
@@ -520,69 +523,69 @@ do ij=1, (IMAX+1)*(JMAX+1)
 
 !  ------ Abbreviations
 
-      dt_darea(j,i) = dtime/cell_area(j,i)
+      dt_darea = dtime/cell_area(j,i)
 
-      vx_m_1(j,i) = vx_m(j,i-1)
-      vx_m_2(j,i) = vx_m(j,i)
-      vy_m_1(j,i) = vy_m(j-1,i)
-      vy_m_2(j,i) = vy_m(j,i)
+      vx_m_1 = vx_m(j,i-1)
+      vx_m_2 = vx_m(j,i)
+      vy_m_1 = vy_m(j-1,i)
+      vy_m_2 = vy_m(j,i)
 
-      if (vx_m_1(j,i) >= 0.0_dp) then
-         upH_x_1(j,i) = H(j,i-1)
+      if (vx_m_1 >= 0.0_dp) then
+         upH_x_1 = H(j,i-1)
       else
-         upH_x_1(j,i) = H(j,i)
+         upH_x_1 = H(j,i)
       end if
 
-      if (vx_m_2(j,i) >= 0.0_dp) then
-         upH_x_2(j,i) = H(j,i)
+      if (vx_m_2 >= 0.0_dp) then
+         upH_x_2 = H(j,i)
       else
-         upH_x_2(j,i) = H(j,i+1)
+         upH_x_2 = H(j,i+1)
       end if
 
-      if (vy_m_1(j,i) >= 0.0_dp) then
-         upH_y_1(j,i) = H(j-1,i)
+      if (vy_m_1 >= 0.0_dp) then
+         upH_y_1 = H(j-1,i)
       else
-         upH_y_1(j,i) = H(j,i)
+         upH_y_1 = H(j,i)
       end if
 
-      if (vy_m_2(j,i) >= 0.0_dp) then
-         upH_y_2(j,i) = H(j,i)
+      if (vy_m_2 >= 0.0_dp) then
+         upH_y_2 = H(j,i)
       else
-         upH_y_2(j,i) = H(j+1,i)
+         upH_y_2 = H(j+1,i)
       end if
 
-      sq_g22_x_1(j,i) = sq_g22_sgx(j,i-1)
-      sq_g22_x_2(j,i) = sq_g22_sgx(j,i)
-      sq_g11_y_1(j,i) = sq_g11_sgy(j-1,i)
-      sq_g11_y_2(j,i) = sq_g11_sgy(j,i)
+      sq_g22_x_1 = sq_g22_sgx(j,i-1)
+      sq_g22_x_2 = sq_g22_sgx(j,i)
+      sq_g11_y_1 = sq_g11_sgy(j-1,i)
+      sq_g11_y_2 = sq_g11_sgy(j,i)
 
 !  ------ Actual computation
 
       H_new(j,i) = H(j,i) + dtime*mb_source(j,i) &
-                   - dt_darea(j,i) &
-                     * (  ( vx_m_2(j,i)*upH_x_2(j,i)*sq_g22_x_2(j,i)*deta   &
-                           -vx_m_1(j,i)*upH_x_1(j,i)*sq_g22_x_1(j,i)*deta ) &
-                        + ( vy_m_2(j,i)*upH_y_2(j,i)*sq_g11_y_2(j,i)*dxi    &
-                           -vy_m_1(j,i)*upH_y_1(j,i)*sq_g11_y_1(j,i)*dxi  ) )
+                          - dt_darea &
+                            * (  ( vx_m_2*upH_x_2*sq_g22_x_2*deta   &
+                                  -vx_m_1*upH_x_1*sq_g22_x_1*deta ) &
+                               + ( vy_m_2*upH_y_2*sq_g11_y_2*dxi    &
+                                  -vy_m_1*upH_y_1*sq_g11_y_1*dxi  ) )
 
    else   ! margin point
 
-      dt_darea(j,i) = dtime/cell_area(j,i)
+      dt_darea = dtime/cell_area(j,i)
 
-      vx_m_1(j,i) = 0.0_dp
-      vx_m_2(j,i) = 0.0_dp
-      vy_m_1(j,i) = 0.0_dp
-      vy_m_2(j,i) = 0.0_dp
+      vx_m_1 = 0.0_dp
+      vx_m_2 = 0.0_dp
+      vy_m_1 = 0.0_dp
+      vy_m_2 = 0.0_dp
 
-      upH_x_1(j,i) = 0.0_dp
-      upH_x_2(j,i) = 0.0_dp
-      upH_y_1(j,i) = 0.0_dp
-      upH_y_2(j,i) = 0.0_dp
+      upH_x_1 = 0.0_dp
+      upH_x_2 = 0.0_dp
+      upH_y_1 = 0.0_dp
+      upH_y_2 = 0.0_dp
 
-      sq_g22_x_1(j,i) = 0.0_dp
-      sq_g22_x_2(j,i) = 0.0_dp
-      sq_g11_y_1(j,i) = 0.0_dp
-      sq_g11_y_2(j,i) = 0.0_dp
+      sq_g22_x_1 = 0.0_dp
+      sq_g22_x_2 = 0.0_dp
+      sq_g11_y_1 = 0.0_dp
+      sq_g11_y_2 = 0.0_dp
 
       H_new(j,i) = 0.0_dp   ! zero-thickness boundary condition
 
