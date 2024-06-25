@@ -1966,7 +1966,7 @@ do j=0, JMAX
       
 #if (CALCMOD==-1 || CALCMOD==0) 
 ! no physical temperate layer :
-         do kt, KTMAX
+         do kt=0, KTMAX
             F_1_t(kt) = 0.0_dp
          end do
          do kc=0, KCMAX
@@ -2036,7 +2036,7 @@ do j=0, JMAX
 
 #elif (CALCMOD==2 || CALCMOD==3)
 !no physical temperate layer
-         do kt, KTMAX
+         do kt=0, KTMAX
             F_1_t(kt) = 0.0_dp
          end do
          do kc=0, KCMAX
@@ -2255,7 +2255,7 @@ do j=0, JMAX-1
 
 #if (CALCMOD==-1 || CALCMOD==0)
 !no physical temperate layer
-      do kt, KTMAX
+      do kt=0, KTMAX
          F_1_t(kt) = 0.0_dp
       end do
 
@@ -2326,7 +2326,7 @@ do j=0, JMAX-1
 
 #elif (CALCMOD==2 || CALCMOD==3)
 !no physical temperate layer
-      do kt, KTMAX
+      do kt=0, KTMAX
          F_1_t(kt) = 0.0_dp
       end do
       do kc=0, KCMAX
