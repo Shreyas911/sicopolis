@@ -93,8 +93,8 @@ contains
   !$omp private(shear_x_help, shear_y_help, lambda_shear_help)
   do ij=1, (IMAX+1)*(JMAX+1)
 
-     i = n2i(ij)
-     j = n2j(ij)
+     i = n2i(ij)   ! i=0...IMAX
+     j = n2j(ij)   ! j=0...JMAX
 
 !-------- Term abbreviations --------
 

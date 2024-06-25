@@ -85,6 +85,11 @@ logical, dimension(0:JMAX,0:IMAX) :: flag_inner_point
    !!   .true.: inner point,
    !!  .false.: otherwise (margin point)
 
+logical, dimension(0:JMAX,0:IMAX) :: flag_inner_inner_point
+   !! Inner-point flag:
+   !!   .true.: inner point (outermost two grid points excepted),
+   !!  .false.: otherwise (margin point, or margin-neighbour point)
+
 logical, dimension(0:JMAX,0:IMAX) :: flag_sg_x
    !! Flag for staggered grid in x-direction:
    !!   .true.: staggered-grid point in x-direction,

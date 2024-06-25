@@ -1780,6 +1780,12 @@ flag_inner_point(JMAX,:   ) = .false.
 flag_inner_point(:   ,0   ) = .false.
 flag_inner_point(:   ,IMAX) = .false.
 
+flag_inner_inner_point                = flag_inner_point
+flag_inner_inner_point(1     ,:     ) = .false.
+flag_inner_inner_point(JMAX-1,:     ) = .false.
+flag_inner_inner_point(:     ,1     ) = .false.
+flag_inner_inner_point(:     ,IMAX-1) = .false.
+
 flag_sg_x         = .true.
 flag_sg_x(:,IMAX) = .false.
 

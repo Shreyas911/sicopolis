@@ -156,14 +156,14 @@ integer(i4b)                       :: i, j, ij
 real(dp)                           :: azs2, azs3
 real(dp), dimension(0:JMAX,0:IMAX) :: czs2, czs3
 
+!$omp parallel default(shared) private(ij, i, j, azs2, azs3)
+
 !-------- Abbreviations --------
 
 azs2 = dtime/(dxi*dxi)
 azs3 = dtime/(deta*deta)
 
-!-------- Loop over (i,j) --------
-
-!$omp parallel do default(shared) private(ij, i, j)
+!$omp do
 do ij=1, (IMAX+1)*(JMAX+1)
 
    i = n2i(ij)   ! i=0...IMAX
@@ -184,11 +184,11 @@ do ij=1, (IMAX+1)*(JMAX+1)
    end if
 
 end do
-!$omp end parallel do
+!$omp end do
 
 !-------- Solution of the explicit scheme --------
 
-!$omp parallel do default(shared) private(ij, i, j)
+!$omp do
 do ij=1, (IMAX+1)*(JMAX+1)
 
    i = n2i(ij)   ! i=0...IMAX
@@ -211,22 +211,24 @@ do ij=1, (IMAX+1)*(JMAX+1)
       H_new(j,i)  = 0.0_dp        ! boundary condition
    end if
 
-end do
-!$omp end parallel do
+!  ------ Applying the source term
 
-!-------- Applying the source term --------
+   call apply_mb_source(dtime, z_mar, i, j)
 
-call apply_mb_source(dtime, z_mar)
+!  ------ Adjusting the ice thickness, if needed
 
-!-------- Adjusting the ice thickness, if needed --------
+   call thk_adjust(time, dtime, i, j)
 
-call thk_adjust(time, dtime)
-
-!-------- Calving due to prescribed retreat mask --------
+!  ------ Calving due to prescribed retreat mask
 
 #if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
-call calving_retreat_mask(time, dtime)
+   call calving_retreat_mask(time, dtime, i, j)
 #endif
+
+end do
+!$omp end do
+
+!$omp end parallel
 
 end subroutine calc_thk_sia_expl
 
@@ -247,7 +249,7 @@ real(dp), intent(in) :: time, dtime, dxi, deta
 real(dp), intent(in) :: z_mar
 real(dp), intent(in) :: mean_accum
 
-integer(i4b)                       :: i, j
+integer(i4b)                       :: i, j, ij
 integer(i4b)                       :: k, nnz
 real(dp)                           :: azs2, azs3
 real(dp), dimension(0:JMAX,0:IMAX) :: czs2, czs3
@@ -277,30 +279,40 @@ real(dp),             dimension(n_sprs) :: lgs_a_value_trim
 
 real(dp)                                :: eps_sor
 
+!$omp parallel default(shared) private(ij, i, j, azs2, azs3)
+
 !-------- Abbreviations --------
 
 azs2 = dtime/(dxi*dxi)
 azs3 = dtime/(deta*deta)
 
-czs2 = 0.0_dp
-czs3 = 0.0_dp
+!$omp do
+do ij=1, (IMAX+1)*(JMAX+1)
 
-do i=0, IMAX-1
-do j=0, JMAX
-  czs2(j,i) = azs2*0.5_dp*(h_diff(j,i)+h_diff(j,i+1)) &
-              *(sq_g22_sgx(j,i)*insq_g11_sgx(j,i))
-end do
-end do
+   i = n2i(ij)   ! i=0...IMAX
+   j = n2j(ij)   ! j=0...JMAX
 
-do i=0, IMAX
-do j=0, JMAX-1
-   czs3(j,i) = azs3*0.5_dp*(h_diff(j,i)+h_diff(j+1,i)) &
-               *(sq_g11_sgy(j,i)*insq_g22_sgy(j,i))
+   if (flag_sg_x(j,i)) then
+      czs2(j,i) = azs2*0.5_dp*(h_diff(j,i)+h_diff(j,i+1)) &
+                  *(sq_g22_sgx(j,i)*insq_g11_sgx(j,i))
+   else
+      czs2(j,i) = 0.0_dp
+   end if
+
+   if (flag_sg_y(j,i)) then
+      czs3(j,i) = azs3*0.5_dp*(h_diff(j,i)+h_diff(j+1,i)) &
+                  *(sq_g11_sgy(j,i)*insq_g22_sgy(j,i))
+   else
+      czs3(j,i) = 0.0_dp
+   end if
+
 end do
-end do
+!$omp end do
 
 !-------- Assembly of the system of linear equations
 !                     (matrix storage: compressed sparse row CSR) --------
+
+!$omp single
 
 #if !defined(ALLOW_TAPENADE) /* Normal */
 allocate(lgs_a_value(n_sprs), lgs_a_index(n_sprs), lgs_a_ptr(nmax+1))
@@ -438,23 +450,38 @@ deallocate(lgs_a_value_trim, lgs_a_index_trim, lgs_a_ptr)
 deallocate(lgs_a_diag_index, lgs_b_value, lgs_x_value)
 #endif /* Normal */
 
-!-------- Ice thickness --------
+!$omp end single
 
-H_new = zs_new - zb_new
+!-------- Loop over (i,j) --------
 
-!-------- Applying the source term --------
+!$omp do
+do ij=1, (IMAX+1)*(JMAX+1)
 
-call apply_mb_source(dtime, z_mar)
+   i = n2i(ij)   ! i=0...IMAX
+   j = n2j(ij)   ! j=0...JMAX
 
-!-------- Adjusting the ice thickness, if needed --------
+!  ------ Ice thickness
 
-call thk_adjust(time, dtime)
+   H_new(j,i) = zs_new(j,i) - zb_new(j,i)
+
+!  ------ Applying the source term
+
+   call apply_mb_source(dtime, z_mar, i, j)
+
+!  ------ Adjusting the ice thickness, if needed
+
+   call thk_adjust(time, dtime, i, j)
 
 !-------- Calving due to prescribed retreat mask --------
 
 #if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
-call calving_retreat_mask(time, dtime)
+   call calving_retreat_mask(time, dtime, i, j)
 #endif
+
+end do
+!$omp end do
+
+!$omp end parallel
 
 end subroutine calc_thk_sia_impl
 
@@ -561,22 +588,22 @@ do ij=1, (IMAX+1)*(JMAX+1)
 
    end if
 
-end do
-!$omp end parallel do
+!  ------ Applying the source term
 
-!-------- Applying the source term --------
+   call apply_mb_source(dtime, z_mar, i, j)
 
-call apply_mb_source(dtime, z_mar)
+!  ------ Adjusting the ice thickness, if needed
 
-!-------- Adjusting the ice thickness, if needed --------
+   call thk_adjust(time, dtime, i, j)
 
-call thk_adjust(time, dtime)
-
-!-------- Calving due to prescribed retreat mask --------
+!  ------ Calving due to prescribed retreat mask
 
 #if (RETREAT_MASK==1 || ICE_SHELF_COLLAPSE_MASK==1)
-call calving_retreat_mask(time, dtime)
+   call calving_retreat_mask(time, dtime, i, j)
 #endif
+
+end do
+!$omp end parallel do
 
 end subroutine calc_thk_expl
 
@@ -584,50 +611,41 @@ end subroutine calc_thk_expl
 !> Ice thickness evolution due to the source term (surface mass balance,
 !! basal mass balance and calving).
 !-------------------------------------------------------------------------------
-subroutine apply_mb_source(dtime, z_mar)
+subroutine apply_mb_source(dtime, z_mar, i, j)
 
   implicit none
 
-  real(dp), intent(in) :: dtime
-  real(dp), intent(in) :: z_mar
-
-  integer(i4b) :: i, j
+  integer(i4b), intent(in) :: i, j
+  real(dp)    , intent(in) :: dtime
+  real(dp)    , intent(in) :: z_mar
 
 !-------- Compute new ice thickness H_new_flow due to glacial flow only
 !         (no source term considered) --------
 
-  H_new_flow = 0.0_dp
-
-  do i=0, IMAX
-  do j=0, JMAX
-     if (flag_inner_point(j,i)) then
-        H_new_flow(j,i) = H_new(j,i) - dtime*mb_source(j,i)
-                          ! new ice thickness due to glacial flow only
-     end if
-  end do
-  end do
+  if (flag_inner_point(j,i)) then
+     H_new_flow(j,i) = H_new(j,i) - dtime*mb_source(j,i)
+                       ! new ice thickness due to glacial flow only
+  else
+     H_new_flow(j,i) = 0.0_dp
+  end if
 
 !-------- Apply source term --------
 
-  H_new = 0.0_dp
-
 #if (MB_ACCOUNT==0)
 
-  do i=0, IMAX
-  do j=0, JMAX
-     if (flag_inner_point(j,i)) then
-        H_new(j,i) = max(H_new_flow(j,i) + dtime*mb_source(j,i), 0.0_dp)
-     end if
-  end do
-  end do
+  if (flag_inner_point(j,i)) then
+     H_new(j,i) = max(H_new_flow(j,i) + dtime*mb_source(j,i), 0.0_dp)
+  else
+     H_new(j,i) = 0.0_dp
+  end if
 
 #elif (MB_ACCOUNT==1)
 
-  do i=2, IMAX-2   ! outermost two grid points excepted,
-  do j=2, JMAX-2   ! required for accurate mass balance accounting
+  if (flag_inner_inner_point(j,i)) then
      H_new(j,i) = max(H_new_flow(j,i) + dtime*mb_source(j,i), 0.0_dp)
-  end do
-  end do
+  else
+     H_new(j,i) = 0.0_dp
+  end if
 
 #else
 
@@ -640,23 +658,15 @@ subroutine apply_mb_source(dtime, z_mar)
 
 #if (MARGIN==1)
 
-  do i=0, IMAX
-  do j=0, JMAX
-     if (mask(j,i) >= 2 .and. H_new(j,i) > eps_H) then
-        H_new(j,i) = 0.0_dp
-     end if
-  end do
-  end do
+  if (mask(j,i) >= 2 .and. H_new(j,i) > eps_H) then
+     H_new(j,i) = 0.0_dp
+  end if
 
 #else   /* MARGIN==2 or 3  */
 
-  do i=0, IMAX
-  do j=0, JMAX
-     if (zl(j,i) <= Z_ABYSS) then
-        H_new(j,i) = 0.0_dp
-     end if
-  end do
-  end do
+  if (zl(j,i) <= Z_ABYSS) then
+     H_new(j,i) = 0.0_dp
+  end if
 
 #endif
 
@@ -665,7 +675,7 @@ end subroutine apply_mb_source
 !-------------------------------------------------------------------------------
 !> Adjustment of the newly computed ice thickness distribution.
 !-------------------------------------------------------------------------------
-  subroutine thk_adjust(time, dtime)
+  subroutine thk_adjust(time, dtime, i, j)
 
 #if defined(ALLOW_TAPENADE) /* Tapenade */
 #if (THK_EVOL==2)
@@ -675,30 +685,24 @@ end subroutine apply_mb_source
 
   implicit none
 
-  real(dp), intent(in) :: time, dtime
+  integer(i4b), intent(in) :: i, j
+  real(dp)    , intent(in) :: time, dtime
 
-  integer(i4b)                       :: i, j
-  integer(i4b)                       :: n1, n2
-  real(dp), dimension(0:JMAX,0:IMAX) :: H_new_tmp
-  real(dp)                           :: time_in_years
-  real(dp)                           :: time1, time2
-  real(dp)                           :: dtime_inv
+  integer(i4b) :: n1, n2
+  real(dp)     :: H_new_tmp
+  real(dp)     :: time_in_years
+  real(dp)     :: time1, time2
+  real(dp)     :: dtime_inv
 
   time_in_years = time*sec2year
 
 !-------- Saving computed H_new before any adjustments --------
 
-  H_new_tmp = H_new
+  H_new_tmp = H_new(j,i)
 
 !-------- Correct negative thickness values --------
 
-  do i=0, IMAX  
-  do j=0, JMAX 
-     if (H_new(j,i) < 0.0_dp) then
-        H_new(j,i) = 0.0_dp
-     end if
-  end do
-  end do
+  if (H_new(j,i) < 0.0_dp) H_new(j,i) = 0.0_dp
 
 !-------- Further adjustments --------
 
@@ -706,7 +710,7 @@ end subroutine apply_mb_source
 
 !  ------ No evolution of the ice thickness
 
-  H_new = H   ! newly computed ice thickness is discarded
+  H_new(j,i) = H(j,i)   ! newly computed ice thickness is discarded
 
 #elif (THK_EVOL==1)
 
@@ -780,18 +784,18 @@ end subroutine apply_mb_source
      target_topo_tau = huge(1.0_dp)
 #endif
 
-     !%% H_new = H_new
+     !%% H_new(j,i) = H_new(j,i)
 
   else if (target_topo_tau*sec2year < epsi) then
              ! relaxation time target_topo_tau interpreted as zero
 
      target_topo_tau = 0.0_dp
-     H_new           = H_target
+     H_new(j,i)      = H_target(j,i)
 
   else
 
-     H_new =   ( target_topo_tau*H_new + dtime*H_target ) &
-             / ( target_topo_tau       + dtime )
+     H_new(j,i) =   ( target_topo_tau*H_new(j,i) + dtime*H_target(j,i) ) &
+                  / ( target_topo_tau            + dtime )
 
   end if
 
@@ -809,18 +813,18 @@ end subroutine apply_mb_source
      target_topo_tau = huge(1.0_dp)
 #endif
 
-     !%% H_new = H_new
+     !%% H_new(j,i) = H_new(j,i)
 
   else if (target_topo_tau*sec2year < epsi) then
              ! relaxation time target_topo_tau interpreted as zero
 
      target_topo_tau = 0.0_dp
-     H_new           = H_target
+     H_new(j,i)      = H_target(j,i)
 
   else
 
-     H_new =   ( target_topo_tau*H_new + dtime*H_target ) &
-             / ( target_topo_tau       + dtime )
+     H_new(j,i) =   ( target_topo_tau*H_new(j,i) + dtime*H_target(j,i) ) &
+                  / ( target_topo_tau            + dtime )
 
   end if
 
@@ -834,26 +838,19 @@ end subroutine apply_mb_source
 !  ------ Maximum ice extent constrained by prescribed mask
 
   if (flag_mask_maxextent) then
-
-     do i=0, IMAX
-     do j=0, JMAX
-        if (mask_maxextent(j,i) == 0) then
-           H_new(j,i) = 0.0_dp   ! not allowed to glaciate
-        end if
-     end do
-     end do
-
+     if (mask_maxextent(j,i) == 0) H_new(j,i) = 0.0_dp
+                                   ! not allowed to glaciate
   end if
 
 !-------- Computation of the mass balance adjustment --------
 
   dtime_inv = 1.0_dp/dtime
 
-  smb_corr = (H_new-H_new_tmp)*dtime_inv
+  smb_corr(j,i) = (H_new(j,i)-H_new_tmp)*dtime_inv
 
-  as_perp = as_perp + smb_corr
-  accum   = accum   + max(smb_corr, 0.0_dp)
-  runoff  = runoff  - min(smb_corr, 0.0_dp)
+  as_perp(j,i) = as_perp(j,i) + smb_corr(j,i)
+  accum(j,i)   = accum(j,i)   + max(smb_corr(j,i), 0.0_dp)
+  runoff(j,i)  = runoff(j,i)  - min(smb_corr(j,i), 0.0_dp)
                     ! runoff is counted as positive for mass loss
 
   end subroutine thk_adjust
