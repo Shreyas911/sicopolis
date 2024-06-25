@@ -1964,8 +1964,11 @@ do j=0, JMAX
 
       inv_H_c = 1.0_dp/H_c(j,i)
       
-#if (CALCMOD==-1 || CALCMOD==0)
-
+#if (CALCMOD==-1 || CALCMOD==0) 
+! no physical temperate layer :
+         do kt, KTMAX
+            F_1_t(kt) = 0.0_dp
+         end do
          do kc=0, KCMAX
 
             if (flag_enh_stream) then
@@ -2032,7 +2035,10 @@ do j=0, JMAX
          F_2 = integrate_trapezoid1D_pt(f_2_pre_int_c, f_2_pre_int_t, dzeta_c, dzeta_t)
 
 #elif (CALCMOD==2 || CALCMOD==3)
-
+!no physical temperate layer
+         do kt, KTMAX
+            F_1_t(kt) = 0.0_dp
+         end do
          do kc=0, KCMAX
 
             if (flag_enh_stream) then
@@ -2068,8 +2074,8 @@ do j=0, JMAX
 !        compute the verticaly independent part outside the vertical loop :
          vx_c_aux = vx_b(j,i) + 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * vx_b(j,i) * inv_H_c
          do kc=0, KCMAX
-            vx_c(kc,j,i) = vx_c_aux * F_1_c(kc)
-         end do
+            vx_c(kc,j,i) = vx_c_aux * (F_1_c(kc)+ F_1_t(KTMAX)) !need to take into account 
+         end do   !                                            the potential temperate layer
       else ! Handle the case when the basal velocity is zero :
          beta_eff = 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) / &
                         (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * F_2) !eq 33 Lipscomb 2019,  
@@ -2078,7 +2084,7 @@ do j=0, JMAX
                   beta_eff * vx_m(j,i) &
                   * inv_H_c
          do kc=0, KCMAX
-            vx_c(kc,j,i) =  vx_c_aux * F_1_c(kc) 
+            vx_c(kc,j,i) =  vx_c_aux * (F_1_c(kc)+ F_1_t(KTMAX))
          end do
       end if
 
@@ -2248,6 +2254,10 @@ do j=0, JMAX-1
       inv_H_c = 1.0_dp/H_c(j,i)
 
 #if (CALCMOD==-1 || CALCMOD==0)
+!no physical temperate layer
+      do kt, KTMAX
+         F_1_t(kt) = 0.0_dp
+      end do
 
       do kc=0, KCMAX
 
@@ -2315,7 +2325,10 @@ do j=0, JMAX-1
       F_2 = integrate_trapezoid1D_pt(f_2_pre_int_c, f_2_pre_int_t, dzeta_c, dzeta_t)
 
 #elif (CALCMOD==2 || CALCMOD==3)
-
+!no physical temperate layer
+      do kt, KTMAX
+         F_1_t(kt) = 0.0_dp
+      end do
       do kc=0, KCMAX
 
          if (flag_enh_stream) then
@@ -2350,7 +2363,7 @@ do j=0, JMAX-1
          vy_c_aux = vy_b(j,i) + 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * vy_b(j,i) * inv_H_c
 
          do kc=0, KCMAX
-            vy_c(kc,j,i) = vy_c_aux * F_1_c(kc)
+            vy_c(kc,j,i) = vy_c_aux * (F_1_c(kc) + F_1_t(KTMAX))
          end do
       else ! Handle the case when the basal velocity is zero
 
@@ -2362,7 +2375,7 @@ do j=0, JMAX-1
                   * inv_H_c
 
          do kc=0, KCMAX
-            vy_c(kc,j,i) =  vy_c_aux * F_1_c(kc)
+            vy_c(kc,j,i) =  vy_c_aux * (F_1_c(kc) + F_1_t(KTMAX))
          end do
       endif
 
@@ -4052,7 +4065,6 @@ do j=0, JMAX
 #endif /* Normal vs. Tapenade */
 
 #if (DYNAMICS==3)   /* DIVA */ 
-!variables to redifne for diva still :  , vx_c(kc,j,i), vy_c(kc,j,i), vx_t(kc,j,i), vy_t(kc,j,i),
 
 !variables assigned but still to define : 
 
