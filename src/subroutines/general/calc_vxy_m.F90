@@ -1644,7 +1644,7 @@ real(dp) :: pi_inv
 !added for DIVA : 
 real(dp), dimension(0:JMAX,0:IMAX) ::  beta_drag
 real(dp) :: flui_tmp_c(0:KCMAX), flui_tmp_t(0:KTMAX)
-real(dp) :: enh_val, inv_H, inv_H_c
+real(dp) :: enh_val, inv_H, H_c_ratio, H_t_ratio
 real(dp) :: vx_c_aux, vx_t_aux, vy_c_aux, vy_t_aux
 real(dp) :: visc_min, visc_max
 real(dp) :: H_dz_c_dzeta(0:KCMAX)
@@ -1961,10 +1961,10 @@ do j=0, JMAX
 #elif (DYNAMICS==3)   /* DIVA */ 
 ! ------ Work in progress  -----
 
-
-      inv_H_c = 1.0_dp/( 0.5_dp*(H_c(j,i)+H_c(j,i+1)) ) !on the staggered grid
       inv_H = 1.0_dp/( 0.5_dp*(H_c(j,i)+H_c(j,i+1)) + 0.5_dp*(H_t(j,i)+H_t(j,i+1)) ) !on the staggered grid
-      
+      H_c_ratio = 0.5_dp*(H_c(j,i)+H_c(j,i+1)) * inv_H    !on the staggered grid
+      H_t_ratio = 0.5_dp*(H_t(j,i)+H_t(j,i+1)) * inv_H    !on the staggered grid
+
 #if (CALCMOD==-1 || CALCMOD==0) 
 ! no physical temperate layer :
          do kt=0, KTMAX
@@ -1981,10 +1981,10 @@ do j=0, JMAX
             flui_tmp_c(kc) = 1.0_dp/max(viscosity(de_c_diva(kc,j,i), &
                               temp_c(kc,j,i), temp_c_m(kc,j,i), &
                               0.0_dp, enh_val, 0),visc_min)
-
-            f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp-eaz_c_quotient(kc)) &
-                                 * (H_dz_c_dzeta(kc)*H_c(j,i)) ! * sigma transformation 
-            f_2_pre_int_c(kc) = f_1_pre_int_c(kc) * (1.0_dp-eaz_c_quotient(kc)) 
+ !           computed on the staggered grid as only used for velocity computation :
+            f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
+                                 * (H_dz_c_dzeta(kc)*(0.5_dp*(H_c(j,i)+H_c(j,i+1))) ! * sigma transformation
+            f_2_pre_int_c(kc) = f_1_pre_int_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc))
          end do
 
          F_2 = integrate_trapezoid1D_pt(f_2_pre_int_c, dzeta_c)
@@ -2005,9 +2005,10 @@ do j=0, JMAX
             flui_tmp_t(kt) = 1.0_dp/max(viscosity(de_t_diva(kt,j,i), &
                               temp_t_m(kt,j,i), temp_t_m(kt,j,i), &
                               omega_t(kt,j,i), enh_val, 1),visc_min)
-            f_1_pre_int_t(kt) = flui_tmp_t(kt) * (1.0_dp-zeta_t(kt)) &
-                                 * (H_t(j,i)) ! * sigma transformation                   
-            f_2_pre_int_t(kt) = f_1_pre_int_t(kt) * (1.0_dp-zeta_t(kt))
+             ! computed on the staggered grid as value used for velocities :
+            f_1_pre_int_t(kt) = flui_tmp_t(kt) * (1.0_dp - H_t_ratio * zeta_t(kt)) &
+                                 * (0.5_dp*(H_t(j,i)+H_t(j,i+1)) ! * sigma transformation
+            f_2_pre_int_t(kt) = f_1_pre_int_t(kt) * (1.0_dp - H_t_ratio * zeta_t(kt))
          end do
 
          F_1_t = integrate_trapezoid1D_1D_t(f_1_pre_int_t, dzeta_t) !Not F_1 from liscomb-2019 eq30, 
@@ -2024,10 +2025,10 @@ do j=0, JMAX
             flui_tmp_c(kc) = 1.0_dp/max(viscosity(de_c_diva(kc,j,i), &
                               temp_c(kc,j,i), temp_c_m(kc,j,i), &
                               0.0_dp, enh_val, 0),visc_min)
-
-            f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp-eaz_c_quotient(kc)) &
-                              * (H_dz_c_dzeta(kc)*H_c(j,i)) ! * sigma transformation 
-            f_2_pre_int_c(kc) = f_1_pre_int_c(kc) * (1.0_dp-eaz_c_quotient(kc)) 
+            ! computed on the staggered grid as value used for velocities :
+            f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
+                                 * (H_dz_c_dzeta(kc)*(0.5_dp*(H_c(j,i)+H_c(j,i+1))) ! * sigma transformation
+            f_2_pre_int_c(kc) = f_1_pre_int_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc))
          end do
 
          F_1_c = integrate_trapezoid1D_1D_c(f_1_pre_int_c, dzeta_c) !Not F_1 from liscomb-2019 eq30, 
@@ -2051,9 +2052,10 @@ do j=0, JMAX
             flui_tmp_c(kc) = 1.0_dp/max(viscosity(de_c_diva(kc,j,i), &
                            temp_c(kc,j,i), temp_c_m(kc,j,i), &
                            omega_c(kc,j,i), enh_val, 2),visc_min)
-            f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp-eaz_c_quotient(kc)) &
-                                 * (H_dz_c_dzeta(kc)*H_c(j,i)) ! * sigma transformation 
-            f_2_pre_int_c(kc) = f_1_pre_int_c(kc) * (1.0_dp-eaz_c_quotient(kc))
+
+            f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
+                                 * (H_dz_c_dzeta(kc))*(0.5_dp*(H_c(j,i)+H_c(j,i+1))) ! * sigma transformation
+            f_2_pre_int_c(kc) = f_1_pre_int_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc))
       end do
       F_1_c = integrate_trapezoid1D_1D_c(f_1_pre_int_c, dzeta_c) !Not F_1 from liscomb-2019 eq30, 
       ! array with integrated value at each level (so from L19 : F_1 = F_1_c(KCMAX))
@@ -2063,7 +2065,6 @@ do j=0, JMAX
          errormsg = ' >>> calc_vis_ssa: CALCMOD must be -1, 0, 1, 2 or 3!'
          call error(errormsg)
 #endif
-
 
 
       vx_m(j,i) = vx_m_ssa(j,i)
@@ -2252,9 +2253,9 @@ do j=0, JMAX-1
 
 ! ------ Work in progress  -----
 
-
-      inv_H_c = 1.0_dp/( 0.5_dp*(H_c(j,i)+H_c(j+1,i)) ) !on the staggered grid
       inv_H = 1.0_dp/( 0.5_dp*(H_c(j,i)+H_c(j+1,i)) + 0.5_dp*(H_t(j,i)+H_t(j+1,i)) ) !on the staggered grid
+      H_c_ratio = 0.5_dp*( H_c(j,i)+H_c(j+1,i) ) * inv_H    !on the staggered grid
+      H_t_ratio = 0.5_dp*( H_t(j,i)+H_t(j+1,i) ) * inv_H    !on the staggered grid
 
 #if (CALCMOD==-1 || CALCMOD==0)
 !no physical temperate layer
@@ -2274,9 +2275,9 @@ do j=0, JMAX-1
                            temp_c(kc,j,i), temp_c_m(kc,j,i), &
                            0.0_dp, enh_val, 0),visc_min)
 
-         f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp-eaz_c_quotient(kc)) &
-                              * (H_dz_c_dzeta(kc)*H_c(j,i)) ! * sigma transformation 
-         f_2_pre_int_c(kc) = f_1_pre_int_c(kc) * (1.0_dp-eaz_c_quotient(kc)) 
+         f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
+                              * (H_dz_c_dzeta(kc)*( 0.5_dp*(H_c(j,i)+H_c(j+1,i)) ) ! * sigma transformation
+         f_2_pre_int_c(kc) = f_1_pre_int_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc))
       end do
 
       F_2 = integrate_trapezoid1D_pt(f_2_pre_int_c, dzeta_c)
@@ -2297,9 +2298,10 @@ do j=0, JMAX-1
          flui_tmp_t(kt) = 1.0_dp/max(viscosity(de_t_diva(kt,j,i), &
                            temp_t_m(kt,j,i), temp_t_m(kt,j,i), &
                            omega_t(kt,j,i), enh_val, 1),visc_min)
-         f_1_pre_int_t(kt) = flui_tmp_t(kt) * (1.0_dp-zeta_t(kt)) &
-                              * (H_t(j,i)) ! * sigma transformation                   
-         f_2_pre_int_t(kt) = f_1_pre_int_t(kt) * (1.0_dp-zeta_t(kt))
+
+         f_1_pre_int_t(kt) = flui_tmp_t(kt) * (1.0_dp - H_t_ratio * zeta_t(kt)) &
+                              * ( 0.5_dp*(H_t(j,i)+H_t(j+1,i)) ) ! * sigma transformation
+         f_2_pre_int_t(kt) = f_1_pre_int_t(kt) * (1.0_dp - H_t_ratio * zeta_t(kt))
       end do
 
       F_1_t = integrate_trapezoid1D_1D_t(f_1_pre_int_t, dzeta_t) !Not F_1 from liscomb-2019 eq30, 
@@ -2317,9 +2319,9 @@ do j=0, JMAX-1
                            temp_c(kc,j,i), temp_c_m(kc,j,i), &
                            0.0_dp, enh_val, 0),visc_min)
 
-         f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp-eaz_c_quotient(kc)) &
-                           * (H_dz_c_dzeta(kc)*H_c(j,i)) ! * sigma transformation 
-         f_2_pre_int_c(kc) = f_1_pre_int_c(kc) * (1.0_dp-eaz_c_quotient(kc)) 
+         f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
+                              * (H_dz_c_dzeta(kc)*( 0.5_dp*(H_c(j,i)+H_c(j+1,i)) ) ! * sigma transformation
+         f_2_pre_int_c(kc) = f_1_pre_int_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc))
       end do
 
       F_1_c = integrate_trapezoid1D_1D_c(f_1_pre_int_c, dzeta_c) !Not F_1 from liscomb-2019 eq30, 
@@ -2343,9 +2345,10 @@ do j=0, JMAX-1
          flui_tmp_c(kc) = 1.0_dp/max(viscosity(de_c_diva(kc,j,i), &
                         temp_c(kc,j,i), temp_c_m(kc,j,i), &
                         omega_c(kc,j,i), enh_val, 2),visc_min)
-         f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp-eaz_c_quotient(kc)) &
-                              * (H_dz_c_dzeta(kc)*H_c(j,i)) ! * sigma transformation 
-         f_2_pre_int_c(kc) = f_1_pre_int_c(kc) * (1.0_dp-eaz_c_quotient(kc))
+
+         f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
+                              * H_dz_c_dzeta(kc)*( 0.5_dp*(H_c(j,i)+H_c(j+1,i)) ) ! * sigma transformation
+         f_2_pre_int_c(kc) = f_1_pre_int_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc))
       end do
       F_1_c = integrate_trapezoid1D_1D_c(f_1_pre_int_c, dzeta_c) !Not F_1 from liscomb-2019 eq30, 
       ! array with integrated value at each level (so from L19 : F_1 = F_1_c(KCMAX))
