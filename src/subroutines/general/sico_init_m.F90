@@ -1221,6 +1221,8 @@ time_output0(20) = TIME_OUT0_20
 
 #endif
 
+call set_flag_grads_nc_tweaks()
+
 !-------- Maximum ice extent yes/no --------
 
 #if (!defined(MASK_MAXEXTENT_FILE) || THK_EVOL==0)
@@ -5024,6 +5026,42 @@ if (mask_region(0,0) == -1) then
 end if
 
 end subroutine topography3
+
+!-------------------------------------------------------------------------------
+!> Set the value of the auxiliary variable flag_grads_nc_tweaks.
+!-------------------------------------------------------------------------------
+  subroutine set_flag_grads_nc_tweaks()
+
+  implicit none
+
+  character(len=16) :: ch_value
+
+  flag_grads_nc_tweaks = .false.   ! default
+
+!-------- Try environment variable --------
+
+  call get_environment_variable('SICO_GRADS_NC_TWEAKS', ch_value)
+
+  if ( (trim(ch_value)=='true') &
+       .or.(trim(ch_value)=='True').or.(trim(ch_value)=='TRUE') ) &
+     flag_grads_nc_tweaks = .true.
+
+  if ( (trim(ch_value)=='yes') &   ! obsolete, but still supported
+       .or.(trim(ch_value)=='Yes').or.(trim(ch_value)=='YES') &
+       .or.(trim(ch_value)=='y').or.(trim(ch_value)=='Y') ) &
+     flag_grads_nc_tweaks = .true.
+
+!-------- Try preprocessor switch --------
+
+#if (defined(GRADS_NC_TWEAKS))
+#if (GRADS_NC_TWEAKS==1)
+  flag_grads_nc_tweaks = .true.
+#else
+  flag_grads_nc_tweaks = .false.
+#endif
+#endif
+
+  end subroutine set_flag_grads_nc_tweaks
 
 !-------------------------------------------------------------------------------
 

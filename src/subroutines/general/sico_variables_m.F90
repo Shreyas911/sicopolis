@@ -1494,6 +1494,11 @@ integer(i4b), dimension((IMAX+1)*(JMAX+1)) :: n2i
 integer(i4b), dimension((IMAX+1)*(JMAX+1)) :: n2j
    !! Conversion from linear index n to 2d index j
 
+logical :: flag_grads_nc_tweaks
+   !! Flag for optimizing NetCDF output for viewing with GrADS:
+   !!   .true.: optimized output,
+   !!  .false.: normal NetCDF output (default)
+
 real(dp), parameter :: no_value_pos_1 =  1.11e+11_dp
    !! Positive no-value parameter
 
