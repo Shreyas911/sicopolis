@@ -1959,7 +1959,7 @@ do j=0, JMAX
       vx_m(j,i) = vx_m_ssa(j,i)
 
 #elif (DYNAMICS==3)   /* DIVA */ 
-! ------ Work in progress  -----
+! ------ Work in progress  ----- x component
 
       inv_H = 1.0_dp/( 0.5_dp*(H(j,i)+H(j+1,i)) ) !on the staggered grid
       H_c_ratio = 0.5_dp*(H_c(j,i)+H_c(j,i+1)) * inv_H    !on the staggered grid
@@ -1975,18 +1975,19 @@ do j=0, JMAX
             if (flag_enh_stream) then
                enh_val = enh_stream
             else
-               enh_val = enh_c(kc,j,i)
+               enh_val = 0.5_dp*(enh_c(kc,j,i) + enh_c(kc,j,i+1))
             end if
 
-            flui_tmp_c(kc) = 1.0_dp/max(viscosity(de_c_diva(kc,j,i), &
-                              temp_c(kc,j,i), temp_c_m(kc,j,i), &
+            flui_tmp_c(kc) = 1.0_dp/max(viscosity(0.5_dp*(de_c_diva(kc,j,i) + de_c_diva(kc,j,i+1)), & !on the staggered grid
+                              0.5_dp*(temp_c(kc,j,i) + temp_c(kc,j,i+1)), &
+                              0.5_dp*(temp_c_m(kc,j,i) + temp_c_m(kc,j,i+1)), &
                               0.0_dp, enh_val, 0),visc_min)
  !           computed on the staggered grid as only used for velocity computation :
             f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
                                  * (H_dz_c_dzeta(kc)*(0.5_dp*(H_c(j,i)+H_c(j,i+1))) ! * sigma transformation
             f_2_pre_int_c(kc) = f_1_pre_int_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc))
          end do
-
+         !on the staggered grid :
          F_2 = integrate_trapezoid1D_pt(f_2_pre_int_c, dzeta_c)
 
          F_1_c = integrate_trapezoid1D_1D_c(f_1_pre_int_c, dzeta_c) !Not F_1 from liscomb-2019 eq30, 
@@ -1999,12 +2000,13 @@ do j=0, JMAX
             if (flag_enh_stream) then
                enh_val = enh_stream
             else
-               enh_val = enh_t(kt,j,i)
+               enh_val = 0.5_dp*(enh_t(kt,j,i) + enh_t(kt,j,i+1))
             end if
 
-            flui_tmp_t(kt) = 1.0_dp/max(viscosity(de_t_diva(kt,j,i), &
-                              temp_t_m(kt,j,i), temp_t_m(kt,j,i), &
-                              omega_t(kt,j,i), enh_val, 1),visc_min)
+            flui_tmp_t(kt) = 1.0_dp/max(viscosity(0.5_dp*(de_t_diva(kt,j,i) + de_t_diva(kt,j,i+1)), & !on the staggered grid
+                              0.5_dp*(temp_t_m(kt,j,i)+ temp_t_m(kt,j,i+1)), &
+                              0.5_dp*(temp_t_m(kt,j,i)+ temp_t_m(kt,j,i+1)), &
+                              0.5_dp*(omega_t(kt,j,i) + omega_t(kt,j,i+1)), enh_val, 1),visc_min)
              ! computed on the staggered grid as value used for velocities :
             f_1_pre_int_t(kt) = flui_tmp_t(kt) * (1.0_dp - H_t_ratio * zeta_t(kt)) &
                                  * (0.5_dp*(H_t(j,i)+H_t(j,i+1)) ! * sigma transformation
@@ -2019,11 +2021,12 @@ do j=0, JMAX
             if (flag_enh_stream) then
                enh_val = enh_stream
             else
-               enh_val = enh_c(kc,j,i)
+               enh_val = 0.5_dp*(enh_c(kc,j,i) + enh_c(kc,j,i+1))
             end if
 
-            flui_tmp_c(kc) = 1.0_dp/max(viscosity(de_c_diva(kc,j,i), &
-                              temp_c(kc,j,i), temp_c_m(kc,j,i), &
+            flui_tmp_c(kc) = 1.0_dp/max(viscosity(0.5_dp*(de_c_diva(kc,j,i) + de_c_diva(kc,j,i+1)), & !on the staggered grid
+                              0.5_dp*(temp_c(kc,j,i) + temp_c(kc,j,i+1)), &
+                              0.5_dp*(temp_c_m(kc,j,i) + temp_c_m(kc,j,i+1)), &
                               0.0_dp, enh_val, 0),visc_min)
             ! computed on the staggered grid as value used for velocities :
             f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
@@ -2046,17 +2049,19 @@ do j=0, JMAX
             if (flag_enh_stream) then
                enh_val = enh_stream
             else
-               enh_val = enh_c(kc,j,i)
+               enh_val = 0.5_dp*(enh_c(kc,j,i) + enh_c(kc,j,i+1))
             end if
 
-            flui_tmp_c(kc) = 1.0_dp/max(viscosity(de_c_diva(kc,j,i), &
-                           temp_c(kc,j,i), temp_c_m(kc,j,i), &
-                           omega_c(kc,j,i), enh_val, 2),visc_min)
+            flui_tmp_c(kc) = 1.0_dp/max(viscosity(0.5_dp*(de_c_diva(kc,j,i) + de_c_diva(kc,j,i+1)), & !on the staggered grid
+                              0.5_dp*(temp_c(kc,j,i) + temp_c(kc,j,i+1)), &
+                              0.5_dp*(temp_c_m(kc,j,i) + temp_c_m(kc,j,i+1)), &
+                              0.5_dp*(omega_c(kc,j,i) + omega_c(kc,j,i+1)), enh_val, 0),visc_min)
 
             f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
                                  * (H_dz_c_dzeta(kc))*(0.5_dp*(H_c(j,i)+H_c(j,i+1))) ! * sigma transformation
             f_2_pre_int_c(kc) = f_1_pre_int_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc))
       end do
+      !on the staggered grid :
       F_1_c = integrate_trapezoid1D_1D_c(f_1_pre_int_c, dzeta_c) !Not F_1 from liscomb-2019 eq30, 
       ! array with integrated value at each level (so from L19 : F_1 = F_1_c(KCMAX))
       F_2 = integrate_trapezoid1D_pt(f_2_pre_int_c, dzeta_c)
@@ -2249,7 +2254,7 @@ do j=0, JMAX-1
 
 #elif (DYNAMICS==3)   /* DIVA */
 
-! ------ Work in progress  -----
+! ------ Work in progress  ----- y component
 
       inv_H = 1.0_dp/( 0.5_dp*(H(j,i)+H(j+1,i)) ) !on the staggered grid
       H_c_ratio = 0.5_dp*( H_c(j,i)+H_c(j+1,i) ) * inv_H    !on the staggered grid
@@ -2266,12 +2271,13 @@ do j=0, JMAX-1
          if (flag_enh_stream) then
             enh_val = enh_stream
          else
-            enh_val = enh_c(kc,j,i)
+            enh_val = 0.5_dp*(enh_c(kc,j,i) + enh_c(kc,j+1,i))
          end if
 
-         flui_tmp_c(kc) = 1.0_dp/max(viscosity(de_c_diva(kc,j,i), &
-                           temp_c(kc,j,i), temp_c_m(kc,j,i), &
-                           0.0_dp, enh_val, 0),visc_min)
+            flui_tmp_c(kc) = 1.0_dp/max(viscosity(0.5_dp*(de_c_diva(kc,j,i) + de_c_diva(kc,j+1,i)), & !on the staggered grid
+                              0.5_dp*(temp_c(kc,j,i) + temp_c(kc,j+1,i)), &
+                              0.5_dp*(temp_c_m(kc,j,i) + temp_c_m(kc,j+1,i)), &
+                              0.0_dp, enh_val, 0),visc_min)
 
          f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
                               * (H_dz_c_dzeta(kc)*( 0.5_dp*(H_c(j,i)+H_c(j+1,i)) ) ! * sigma transformation
@@ -2290,12 +2296,13 @@ do j=0, JMAX-1
          if (flag_enh_stream) then
             enh_val = enh_stream
          else
-            enh_val = enh_t(kt,j,i)
+            enh_val = 0.5_dp*(enh_t(kt,j,i) + enh_t(kt,j+1,i))
          end if
 
-         flui_tmp_t(kt) = 1.0_dp/max(viscosity(de_t_diva(kt,j,i), &
-                           temp_t_m(kt,j,i), temp_t_m(kt,j,i), &
-                           omega_t(kt,j,i), enh_val, 1),visc_min)
+            flui_tmp_t(kt) = 1.0_dp/max(viscosity(0.5_dp*(de_t_diva(kt,j,i) + de_t_diva(kt,j+1,i)), & !on the staggered grid
+                              0.5_dp*(temp_t_m(kt,j,i)+ temp_t_m(kt,j+1,i)), &
+                              0.5_dp*(temp_t_m(kt,j,i)+ temp_t_m(kt,j+1,i)), &
+                              0.5_dp*(omega_t(kt,j,i) + omega_t(kt,j+1,i)), enh_val, 1),visc_min)
 
          f_1_pre_int_t(kt) = flui_tmp_t(kt) * (1.0_dp - H_t_ratio * zeta_t(kt)) &
                               * ( 0.5_dp*(H_t(j,i)+H_t(j+1,i)) ) ! * sigma transformation
@@ -2310,12 +2317,13 @@ do j=0, JMAX-1
          if (flag_enh_stream) then
             enh_val = enh_stream
          else
-            enh_val = enh_c(kc,j,i)
+            enh_val = 0.5_dp*(enh_c(kc,j,i) + enh_c(kc,j+1,i))
          end if
 
-         flui_tmp_c(kc) = 1.0_dp/max(viscosity(de_c_diva(kc,j,i), &
-                           temp_c(kc,j,i), temp_c_m(kc,j,i), &
-                           0.0_dp, enh_val, 0),visc_min)
+            flui_tmp_c(kc) = 1.0_dp/max(viscosity(0.5_dp*(de_c_diva(kc,j,i) + de_c_diva(kc,j+1,i)), & !on the staggered grid
+                              0.5_dp*(temp_c(kc,j,i) + temp_c(kc,j+1,i)), &
+                              0.5_dp*(temp_c_m(kc,j,i) + temp_c_m(kc,j+1,i)), &
+                              0.0_dp, enh_val, 0),visc_min)
 
          f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
                               * (H_dz_c_dzeta(kc)*( 0.5_dp*(H_c(j,i)+H_c(j+1,i)) ) ! * sigma transformation
@@ -2337,12 +2345,13 @@ do j=0, JMAX-1
          if (flag_enh_stream) then
             enh_val = enh_stream
          else
-            enh_val = enh_c(kc,j,i)
+            enh_val = 0.5_dp*(enh_c(kc,j,i) + enh_c(kc,j+1,i))
          end if
 
-         flui_tmp_c(kc) = 1.0_dp/max(viscosity(de_c_diva(kc,j,i), &
-                        temp_c(kc,j,i), temp_c_m(kc,j,i), &
-                        omega_c(kc,j,i), enh_val, 2),visc_min)
+            flui_tmp_c(kc) = 1.0_dp/max(viscosity(0.5_dp*(de_c_diva(kc,j,i) + de_c_diva(kc,j+1,i)), & !on the staggered grid
+                              0.5_dp*(temp_c(kc,j,i) + temp_c(kc,j+1,i)), &
+                              0.5_dp*(temp_c_m(kc,j,i) + temp_c_m(kc,j+1,i)), &
+                              0.5_dp*(omega_c(kc,j,i) + omega_c(kc,j+1,i)), enh_val, 0),visc_min)
 
          f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
                               * H_dz_c_dzeta(kc)*( 0.5_dp*(H_c(j,i)+H_c(j+1,i)) ) ! * sigma transformation
