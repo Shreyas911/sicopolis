@@ -1742,7 +1742,7 @@ write(10, fmt=trim(fmt3)) 'accfact =', ACCFACT
 #elif (ACCSURFACE==2 || ACCSURFACE==3)
 write(10, fmt=trim(fmt3)) 'gamma_s =', GAMMA_S
 #endif
-#if (ACCSURFACE<=3)
+#if (ACCSURFACE<=5)
 write(10, fmt=trim(fmt2)) 'ELEV_DESERT = ', ELEV_DESERT
 #if (ELEV_DESERT == 1)
 write(10, fmt=trim(fmt3)) 'gamma_p   =', GAMMA_P
