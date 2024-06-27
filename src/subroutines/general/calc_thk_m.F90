@@ -1639,74 +1639,77 @@ subroutine ocean_connect()
 
 implicit none
 
-integer(i4b)                           :: i, j
+integer(i4b)                           :: i, j, ij
 integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_connect
 integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_connect_save, mask_connect_diff
 logical                                :: flag_change
 
 !-------- Determine connected area allowed to be ocean --------
 
-mask_connect = 0
+do ij=1, (IMAX+1)*(JMAX+1)
 
-mask_connect(0:1         , :          ) = 1
-mask_connect(JMAX-1:JMAX , :          ) = 1
-mask_connect(:           , 0:1        ) = 1
-mask_connect(:           , IMAX-1:IMAX) = 1
+   i = n2i(ij)   ! i=0...IMAX
+   j = n2j(ij)   ! j=0...JMAX
+
+   if (flag_inner_inner_point(j,i)) then
+      mask_connect(j,i) = 0
+   else
+      mask_connect(j,i) = 1   ! margin point, or margin-neighbour point
+   end if
+
+end do
 
 flag_change = .true.
 
 do while (flag_change)
 
-   mask_connect_save = mask_connect
+   do ij=1, (IMAX+1)*(JMAX+1)
 
-   do i=1, IMAX-1
-   do j=1, JMAX-1
+      i = n2i(ij)   ! i=0...IMAX
+      j = n2j(ij)   ! j=0...JMAX
 
-      if (mask_connect_save(j,i) == 1) then
-         if (mask(j  ,i+1) >= 2) mask_connect(j  ,i+1) = 1
-         if (mask(j  ,i-1) >= 2) mask_connect(j  ,i-1) = 1
-         if (mask(j+1,i  ) >= 2) mask_connect(j+1,i  ) = 1
-         if (mask(j-1,i  ) >= 2) mask_connect(j-1,i  ) = 1
-         if (mask(j+1,i+1) >= 2) mask_connect(j+1,i+1) = 1
-         if (mask(j+1,i-1) >= 2) mask_connect(j+1,i-1) = 1
-         if (mask(j-1,i+1) >= 2) mask_connect(j-1,i+1) = 1
-         if (mask(j-1,i-1) >= 2) mask_connect(j-1,i-1) = 1
+      mask_connect_save(j,i) = mask_connect(j,i)
+
+      if (flag_inner_point(j,i)) then   ! inner point
+
+         if (mask_connect_save(j,i) == 1) then
+            if (mask(j  ,i+1) >= 2) mask_connect(j  ,i+1) = 1
+            if (mask(j  ,i-1) >= 2) mask_connect(j  ,i-1) = 1
+            if (mask(j+1,i  ) >= 2) mask_connect(j+1,i  ) = 1
+            if (mask(j-1,i  ) >= 2) mask_connect(j-1,i  ) = 1
+            if (mask(j+1,i+1) >= 2) mask_connect(j+1,i+1) = 1
+            if (mask(j+1,i-1) >= 2) mask_connect(j+1,i-1) = 1
+            if (mask(j-1,i+1) >= 2) mask_connect(j-1,i+1) = 1
+            if (mask(j-1,i-1) >= 2) mask_connect(j-1,i-1) = 1
+         end if
+
       end if
 
    end do
-   end do
-
-#if !defined(ALLOW_TAPENADE) /* Normal */
-
-   mask_connect_diff = abs(mask_connect-mask_connect_save)
-
-   if (maxval(mask_connect_diff) > 0) then
-      flag_change = .true.
-   else
-      flag_change = .false.
-   end if
-
-#else /* Tapenade */
 
    flag_change = .false.
 
-   do i=0, IMAX
-   do j=0, JMAX
+   do ij=1, (IMAX+1)*(JMAX+1)
+
+      i = n2i(ij)   ! i=0...IMAX
+      j = n2j(ij)   ! j=0...JMAX
+
       mask_connect_diff(j,i) = mask_connect(j,i)-mask_connect_save(j,i)
       if (mask_connect_diff(j,i) /= 0) flag_change = .true.
-   end do
-   end do
 
-#endif /* Normal vs. Tapenade */
+   end do
 
 end do
 
 !-------- Reset disconnected "ocean islands" to ice-free land --------
 
-do i=0, IMAX
-do j=0, JMAX
+do ij=1, (IMAX+1)*(JMAX+1)
+
+   i = n2i(ij)   ! i=0...IMAX
+   j = n2j(ij)   ! j=0...JMAX
+
    if ((mask(j,i) == 2).and.(mask_connect(j,i) == 0)) mask(j,i) = 1
-end do
+
 end do
 
 end subroutine ocean_connect
