@@ -392,6 +392,12 @@ real(dp), dimension(0:JMAX,0:IMAX) :: d_help_b
 real(dp), dimension(0:JMAX,0:IMAX) :: c_drag
    !! Auxiliary quantity for the computation of the basal drag
 
+real(dp), dimension(0:JMAX,0:IMAX) :: beta_drag
+   !! basal drag (for ssta or diva)
+
+real(dp), dimension(0:JMAX,0:IMAX) :: beta_eff
+   !! effective drag (for diva)
+
 real(dp), dimension(0:JMAX,0:IMAX) :: p_b
    !! Basal pressure
 
