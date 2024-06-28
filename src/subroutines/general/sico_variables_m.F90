@@ -734,6 +734,15 @@ real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: de_c_diva
 real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX) :: de_t_diva
    !! Effective strain rate for DIVA in the lower (kt) ice domain
 
+real(dp) :: F_2
+   !! integral used to compute beta_drag and velocities (eq30 Lipscomb 2019)
+
+real(dp), dimension(0:KCMAX) :: f_1_pre_int_c
+   !! pre_integral used to compute velocities (eq30 Lipscomb 2019)
+
+real(dp), dimension(0:KTMAX) :: f_1_pre_int_t
+   !! pre_integral used to compute velocities (eq30 Lipscomb 2019)
+
 #endif
 
 real(dp), dimension(0:JMAX,0:IMAX) :: vis_ave_g
