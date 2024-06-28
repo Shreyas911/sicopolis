@@ -1792,14 +1792,6 @@ end subroutine calc_F_2_DIVA
 !end DYNAMICS == 3
 
 
-
-!-------------------------------------------------------------------------------
-
-!-------------------------------------------------------------------------------
-
-
-
-
 !-------------------------------------------------------------------------------
 !> Computation of the horizontal velocity vx, vy, the horizontal volume flux
 !! qx, qy and the flux across the grounding line q_gl_g in the shallow shelf
@@ -1835,10 +1827,8 @@ real(dp) :: v_ref, v_ref_sq_inv
 real(dp) :: v_b_sq
 real(dp) :: pi_inv
 !added for DIVA : 
-real(dp), dimension(0:JMAX,0:IMAX) ::  beta_drag
 real(dp) :: inv_H ! computed on the staggered grid
 real(dp) :: vx_c_aux, vx_t_aux, vy_c_aux, vy_t_aux
-real(dp) :: beta_eff
 real(dp) :: grid_F_2, stag_F_2
 real(dp) :: F_1_c(0:KCMAX), F_1_t(0:KTMAX)
 real(dp) :: grid_f_1_pre_int_c(0:KCMAX), grid_f_1_pre_int_t(0:KTMAX)
@@ -1941,7 +1931,7 @@ do while ( (m < iter_ssa_min) &
    flag_calc_vxy_ssa_y = .false.   ! initialization
 
    call calc_vxy_ssa_matrix(dxi, deta, &
-                            flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y,beta_drag)
+                            flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y,dzeta_c, dzeta_t)
 
 #if !defined(ALLOW_TAPENADE) /* Normal */
 
@@ -2163,10 +2153,8 @@ do j=0, JMAX
             vx_t_aux =  0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * vx_b(j,i) * inv_H
 
          else ! vb == 0 case :
-            beta_eff = 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) / &
-                        (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * stag_F_2) !eq 33 Lipscomb 2019,
-   !                                                                       staggered on the x-velocity grid
-            vx_t_aux = beta_eff * vx_m(j,i) * inv_H !compute the vertical independent part outside the loop
+
+            vx_t_aux = 0.5_dp*(beta_eff(j,i) + beta_eff(j,i+1)) * vx_m(j,i) * inv_H !compute the vertical independent part outside the loop
          end if
 
          do kt=0, KTMAX
@@ -2187,10 +2175,8 @@ do j=0, JMAX
             vx_c(kc,j,i) = vx_t(KTMAX,j,i) + vx_c_aux * F_1_c(kc)
          end do
       else ! Handle the case when the basal velocity is zero :
-         beta_eff = 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) / &
-                        (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * stag_F_2) !eq 33 Lipscomb 2019,
- !                                                                                 staggered on the x-velocity grid
-         vx_c_aux = beta_eff * vx_m(j,i) & !compute the vertical independent part outside the loop
+
+         vx_c_aux = 0.5_dp*(beta_eff(j,i) + beta_eff(j,i+1)) * vx_m(j,i) & !compute the vertical independent part outside the loop
                   * inv_H
          do kc=0, KCMAX
             vx_c(kc,j,i) = vx_t(KTMAX,j,i) + vx_c_aux * F_1_c(kc)
@@ -2339,7 +2325,7 @@ do j=0, JMAX-1
       grid_F_2 = F_2
       grid_f_1_pre_int_c = f_1_pre_int_c
       grid_f_1_pre_int_t = f_1_pre_int_t
-      call calc_F_2_DIVA(j, i+1, dzeta_c, dzeta_t)
+      call calc_F_2_DIVA(j+1, i, dzeta_c, dzeta_t)
 
       !variables on the staggered grid :
       stag_F_2 = 0.5_dp * (grid_F_2 + F_2)
@@ -2364,10 +2350,8 @@ do j=0, JMAX-1
             vy_t_aux =  0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * vy_b(j,i) * inv_H
 
          else !vy_b is zero :
-            beta_eff = 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) / &
-                     (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * stag_F_2) !eq 33 Lipscomb 2019,
-!                                                                   staggered on the velocity grid
-            vy_t_aux =  beta_eff * vy_m(j,i) * inv_H
+
+            vy_t_aux =  0.5_dp*(beta_eff(j,i) + beta_eff(j+1,i)) * vy_m(j,i) * inv_H
          end if
 
          do kt=0, KTMAX ! by definition, vy_t(0,j,i) = vy_b(j,i) so it shouldn't need special case for kt = 0
@@ -2390,10 +2374,7 @@ do j=0, JMAX-1
          end do
       else ! Handle the case when the basal velocity is zero
 
-         beta_eff = 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) / &
-                        (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * stag_F_2) !eq 33 Lipscomb 2019,
- !                                                                                 staggered on the velocity grid
-         vy_c_aux = beta_eff * vy_m(j,i) & !compute the vertical independent part outside the loop
+         vy_c_aux = 0.5_dp*(beta_eff(j,i) + beta_eff(j+1,i)) * vy_m(j,i) & !compute the vertical independent part outside the loop
                   * inv_H
 
          do kc=0, KCMAX
@@ -2630,7 +2611,7 @@ end subroutine calc_vxy_ssa
 !! vx_m_ssa, vy_m_ssa in the SSA/SStA.
 !-------------------------------------------------------------------------------
 subroutine calc_vxy_ssa_matrix(dxi, deta, &
-                               flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y, beta_drag)
+                               flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y, dzeta_c, dzeta_t)
 
 #if (MARGIN==3 || DYNAMICS==2 || DYNAMICS==3)
 #if defined(ALLOW_TAPENADE) /* Tapenade */
@@ -2641,6 +2622,7 @@ use sico_maths_m
 implicit none
 
 real(dp), intent(in) :: dxi, deta
+real(dp), intent(in) :: dzeta_c, dzeta_t
 logical, dimension(0:JMAX,0:IMAX), intent(inout) :: &
                             flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y
 
@@ -2651,7 +2633,6 @@ real(dp) :: factor_rhs_1, factor_rhs_2, factor_rhs_3a, factor_rhs_3b
 real(dp) :: rhosw_rho_ratio
 real(dp) :: H_mid, zl_mid, z_sl_mid
 real(dp), dimension(0:JMAX,0:IMAX) :: vis_int_sgxy
-real(dp), dimension(0:JMAX,0:IMAX), intent(out) ::  beta_drag
 character(len=256) :: ch_solver_set_option
 
 #if (MARGIN==3 || DYNAMICS==2 || DYNAMICS==3)
@@ -2739,6 +2720,7 @@ end do
 !-------- Basal drag parameter (for shelfy stream) --------
 
 beta_drag = 0.0_dp   ! initialisation
+beta_eff = 0.0_dp    ! initialisation
 
 do i=1, IMAX-1
 do j=1, JMAX-1
@@ -2751,7 +2733,14 @@ do j=1, JMAX-1
                              + eps_dp**2 ) &
                                      **(1.0_dp-p_weert_inv(j,i))
 #if (DYNAMICS==3)
-      beta_drag(j,i) = beta_drag(j,i) ! Work in progress beta_drag becomes beta_eff
+      call calc_F_2_DIVA(j,i,dzeta_c,dzeta_t)
+      if ( sqrt(vx_b_g(j,i)*vx_b_g(j,i) + vy_b_g(j,i)*vy_b_g(j,i)) .gt. eps) then
+         beta_eff(j,i) = beta_drag(j,i)/(1.0_dp + beta_drag(j,i)*F_2)
+
+      else !no slip condition
+         beta_eff(j,i) = 1.0_dp/F_2
+
+      end if
 #endif
    end if
 
@@ -3100,11 +3089,19 @@ do n=1, nmax-1, 2
             end if
             k  = k+1
             ! if (k > n_sprs) stop ' >>> calc_vxy_ssa_matrix: n_sprs too small!'
+#if (DYNAMICS==2)
             lgs_a_value(k) = -4.0_dp*inv_dxi2 &
                                     *(vis_int_g(j,i+1)+vis_int_g(j,i)) &
                              -inv_deta2 &
                                     *(vis_int_sgxy(j,i)+vis_int_sgxy(j-1,i)) &
                              -0.5_dp*(beta_drag(j,i+1)+beta_drag(j,i))
+#elif (DYNAMICS==3)
+            lgs_a_value(k) = -4.0_dp*inv_dxi2 &
+                                    *(vis_int_g(j,i+1)+vis_int_g(j,i)) &
+                             -inv_deta2 &
+                                    *(vis_int_sgxy(j,i)+vis_int_sgxy(j-1,i)) &
+                             -0.5_dp*(beta_eff(j,i+1)+beta_eff(j,i))
+#endif
             lgs_a_index(k) = nc
 
             nc = 2*ij2n(j,i)
@@ -3635,11 +3632,20 @@ do n=1, nmax-1, 2
             end if
             k  = k+1
             ! if (k > n_sprs) stop ' >>> calc_vxy_ssa_matrix: n_sprs too small!'
+
+#if (DYNAMICS==2)
             lgs_a_value(k) = -4.0_dp*inv_deta2 &
                                     *(vis_int_g(j+1,i)+vis_int_g(j,i)) &
                              -inv_dxi2 &
                                     *(vis_int_sgxy(j,i)+vis_int_sgxy(j,i-1)) &
                              -0.5_dp*(beta_drag(j+1,i)+beta_drag(j,i))
+#elif (DYNAMICS==3)
+            lgs_a_value(k) = -4.0_dp*inv_deta2 &
+                                    *(vis_int_g(j+1,i)+vis_int_g(j,i)) &
+                             -inv_dxi2 &
+                                    *(vis_int_sgxy(j,i)+vis_int_sgxy(j,i-1)) &
+                             -0.5_dp*(beta_eff(j+1,i)+beta_eff(j,i))
+#endif
             lgs_a_index(k) = nc
 
             nc = 2*ij2n(j+1,i)-1
