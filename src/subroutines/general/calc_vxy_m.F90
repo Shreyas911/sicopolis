@@ -1501,7 +1501,7 @@ function integrate_trapezoid1D_1D_c(var_c, dzeta_c)
    real(dp), intent(in) :: dzeta_c
 
    ! Local variables
-   integer(i4b) :: kc3
+   integer(i4b) :: kc
    real(dp) :: var_mid
 
 
@@ -1509,10 +1509,10 @@ function integrate_trapezoid1D_1D_c(var_c, dzeta_c)
    integrate_trapezoid1D_1D_c(0:KCMAX) = 0.0_dp
 
    ! Loop to perform the trapezoidal integration on the zeta_c axis
-   do kc3 = 1, KCMAX
-     var_mid = 0.5_dp * (var_c(kc3) + var_c(kc3-1))
+   do kc = 1, KCMAX
+     var_mid = 0.5_dp * (var_c(kc) + var_c(kc-1))
 !     if (abs(var_mid) < eps) var_mid = 0.0_dp        dont think it's necessary 
-     integrate_trapezoid1D_1D_c(kc3:KCMAX) = integrate_trapezoid1D_1D_c(kc3:KCMAX) + var_mid * dzeta_c
+     integrate_trapezoid1D_1D_c(kc:KCMAX) = integrate_trapezoid1D_1D_c(kc:KCMAX) + var_mid * dzeta_c
    end do
 
  end function integrate_trapezoid1D_1D_c
@@ -1533,7 +1533,7 @@ function integrate_trapezoid1D_1D_t(var_t, dzeta_t)
    real(dp), intent(in) :: dzeta_t
 
    ! Local variables
-   integer(i4b) :: kt3
+   integer(i4b) :: kt
    real(dp) :: var_mid
 
 
@@ -1541,10 +1541,10 @@ function integrate_trapezoid1D_1D_t(var_t, dzeta_t)
    integrate_trapezoid1D_1D_t(0:KTMAX) = 0.0_dp
 
    ! Loop to perform the trapezoidal integration on the zeta_t axis
-   do kt3 = 1, KTMAX
-     var_mid = 0.5_dp * (var_t(kt3) + var_t(kt3-1))
+   do kt = 1, KTMAX
+     var_mid = 0.5_dp * (var_t(kt) + var_t(kt-1))
 !     if (abs(var_mid) < eps) var_mid = 0.0_dp        dont think it's necessary 
-     integrate_trapezoid1D_1D_t(kt3:KTMAX) = integrate_trapezoid1D_1D_t(kt3:KTMAX) + var_mid * dzeta_t
+     integrate_trapezoid1D_1D_t(kt:KTMAX) = integrate_trapezoid1D_1D_t(kt:KTMAX) + var_mid * dzeta_t
    end do
 
  end function integrate_trapezoid1D_1D_t
@@ -1568,7 +1568,7 @@ function integrate_trapezoid1D_pt(var_c, var_t, dzeta_c, dzeta_t)
    real(dp), intent(in) :: dzeta_c
 
    ! Local variables
-   integer(i4b) :: kc3, kt3
+   integer(i4b) :: kc, kt
    real(dp) :: var_mid
 
 
@@ -1576,14 +1576,14 @@ function integrate_trapezoid1D_pt(var_c, var_t, dzeta_c, dzeta_t)
    integrate_trapezoid1D_pt = 0.0_dp
 
    ! Loop to perform the trapezoidal integration on the zeta axis
-   do kc3 = 1, KCMAX
-     var_mid = 0.5_dp * (var_c(kc3) + var_c(kc3-1))
+   do kc = 1, KCMAX
+     var_mid = 0.5_dp * (var_c(kc) + var_c(kc-1))
 !     if (abs(var_mid) < eps) var_mid = 0.0_dp     dont think it's necessary 
      integrate_trapezoid1D_pt = integrate_trapezoid1D_pt + var_mid * dzeta_c
    end do
 
-   do kt3 = 1, KTMAX
-      var_mid = 0.5_dp * (var_t(kt3) + var_t(kt3-1))
+   do kt = 1, KTMAX
+      var_mid = 0.5_dp * (var_t(kt) + var_t(kt-1))
 !      if (abs(var_mid) < eps) var_mid = 0.0_dp
       integrate_trapezoid1D_pt = integrate_trapezoid1D_pt + var_mid * dzeta_t
     end do
@@ -1601,7 +1601,7 @@ function integrate_trapezoid1D_pt(var_c, dzeta_c)
    real(dp), intent(in) :: dzeta_c
 
    ! Local variables
-   integer(i4b) :: kc3
+   integer(i4b) :: kc
    real(dp) :: var_mid
 
 
@@ -1609,8 +1609,8 @@ function integrate_trapezoid1D_pt(var_c, dzeta_c)
    integrate_trapezoid1D_pt = 0.0_dp
 
    ! Loop to perform the trapezoidal integration on the zeta axis
-   do kc3 = 1, KCMAX
-      var_mid = 0.5_dp * (var_c(kc3) + var_c(kc3-1))
+   do kc = 1, KCMAX
+      var_mid = 0.5_dp * (var_c(kc) + var_c(kc-1))
 !     if (abs(var_mid) < eps) var_mid = 0.0_dp     dont think it's necessary 
       integrate_trapezoid1D_pt = integrate_trapezoid1D_pt + var_mid * dzeta_c
    end do
@@ -1626,7 +1626,7 @@ function integrate_trapezoid1D_pt(var_c, dzeta_c)
 ! Mathematical integral used to compute beta_drag and the 3D velocities,
 ! F_2 is a scalar, f_2_pre_int_ct are a 1D arrays over kct, on the main grid.
 !-------------------------------------------------------------------------------
-subroutine calc_F_2_DIVA(j_idx, i_idx, dzeta_c, dzeta_t)
+subroutine calc_F_2_DIVA(j_idx, i_idx, dzeta_c, dzeta_t, staggered_x, staggered_y)
 
 use ice_material_properties_m, only : viscosity
 
@@ -1634,8 +1634,9 @@ implicit none
 
 integer(i4b), intent(in) :: j_idx, i_idx
 real(dp), intent(in) :: dzeta_c, dzeta_t
+logical, intent(in) :: staggered_x, staggered_y
 
-integer(i4b) ::i2, j2, kc2, kt2
+integer(i4b) ::i, j, kc, kt
 real(dp) :: H_dz_c_dzeta(0:KCMAX)
 real(dp) :: flui_tmp_c(0:KCMAX), flui_tmp_t(0:KTMAX)
 real(dp), dimension(0:KCMAX) :: f_2_pre_int_c
@@ -1644,11 +1645,16 @@ real(dp) :: H_c_ratio
 real(dp) :: H_t_ratio
 real(dp) :: visc_min, visc_max
 real(dp) :: enh_val
-real(dp) :: inv_H_g
+real(dp) :: inv_H
 
 
-i2 = i_idx
-j2 = j_idx
+i = i_idx
+j = j_idx
+
+if (staggered_x .and. staggered_y ) then !if both are true :
+   errormsg = ' >>> calc_F_2_DIVA: computation is either staggered x or y, not both'
+   call error(errormsg)
+end if
 !-------- Parameters for the viscosity computation --------
 #if (defined(VISC_MIN) && defined(VISC_MAX))
   visc_min = VISC_MIN
@@ -1659,19 +1665,32 @@ j2 = j_idx
 #endif
 
 !-------- Parameters for the sigma transformation computation --------
-do kc2=0, KCMAX
+do kc=0, KCMAX
    if (flag_aa_nonzero) then
-      H_dz_c_dzeta(kc2) = (aa * eaz_c(kc2))/(ea-1.0_dp) ! dzeta_c_dz(kc2) divided by H_c(j2,i2)
+      H_dz_c_dzeta(kc) = (aa * eaz_c(kc))/(ea-1.0_dp) ! dzeta_c_dz(kc) divided by H_c(j,i)
    else
-      H_dz_c_dzeta(kc2) = 1.0_dp ! for linear sigma transformation, dz_c_dzeta= 1 * H_c(j2,i2)
+      H_dz_c_dzeta(kc) = 1.0_dp ! for linear sigma transformation, dz_c_dzeta= 1 * H_c(j,i)
    end if
 end do
 
 F_2 = 0.0_dp !initialisation
 
-inv_H_g = 1.0_dp/H(j2,i2)
-H_c_ratio = H_c(j2,i2) * inv_H_g
-H_t_ratio = H_t(j2,i2) * inv_H_g
+if (.not. staggered_x .and. .not. staggered_y) then !main grid
+   inv_H = 1.0_dp/H(j,i)
+   H_c_ratio = H_c(j,i) * inv_H
+   H_t_ratio = H_t(j,i) * inv_H
+
+else if (staggered_x) then
+   inv_H = 1.0_dp/( 0.5_dp*(H(j,i)+H(j,i+1)) )
+   H_c_ratio = 0.5_dp*(H_c(j,i)+H_c(j,i+1)) * inv_H
+   H_t_ratio = 0.5_dp*(H_t(j,i)+H_t(j,i+1)) * inv_H
+
+else if (staggered_y) then
+   inv_H = 1.0_dp/( 0.5_dp*(H(j,i)+H(j+1,i)) )
+   H_c_ratio = 0.5_dp*(H_c(j,i)+H_c(j+1,i)) * inv_H
+   H_t_ratio = 0.5_dp*(H_t(j,i)+H_t(j+1,i)) * inv_H
+end if
+
 
 !initialisation to ensure values are always define
 f_2_pre_int_t(:) = 0.0_dp
@@ -1685,71 +1704,165 @@ f_1_pre_int_c(:) = 0.0_dp
 #if (CALCMOD==-1 || CALCMOD==0)
 ! no physical temperate layer :
 
-do kc2=0, KCMAX
+do kc=0, KCMAX
 
    if (flag_enh_stream) then
       enh_val = enh_stream
    else
-      enh_val = enh_c(kc2,j2,i2)
+      if (.not. staggered_x .and. .not. staggered_y) then !main grid
+         enh_val = enh_c(kc,j,i)
+
+      else if (staggered_x) then
+         enh_val = 0.5_dp*(enh_c(kc,j,i) + enh_c(kc,j,i+1))
+
+      else if (staggered_y) then
+         enh_val = 0.5_dp*(enh_c(kc,j,i) + enh_c(kc,j+1,i))
+
+      end if
+
    end if
 
-   flui_tmp_c(kc2) = 1.0_dp/max(viscosity(de_c_diva(kc2,j2,i2), &
-                     temp_c(kc2,j2,i2), temp_c_m(kc2,j2,i2), &
+   if (.not. staggered_x .and. .not. staggered_y) then !main grid
+      flui_tmp_c(kc) = 1.0_dp/max(viscosity(de_c_diva(kc,j,i), &
+                     temp_c(kc,j,i), temp_c_m(kc,j,i), &
                      0.0_dp, enh_val, 0),visc_min)
 
-   f_1_pre_int_c(kc2) = flui_tmp_c(kc2) &
-                        *(1.0_dp - H_c_ratio * eaz_c_quotient(kc2)) &
-                        * H_dz_c_dzeta(kc2) * H_c(j2,i2)
-                        ! * sigma transformation
+      f_1_pre_int_c(kc) = flui_tmp_c(kc) &
+                           *(1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
+                           * H_dz_c_dzeta(kc) * H_c(j,i)
+                           ! * sigma transformation
 
-   f_2_pre_int_c(kc2) = f_1_pre_int_c(kc2) &
-                        * (1.0_dp - H_c_ratio * eaz_c_quotient(kc2))
+   else if (staggered_x) then
+      flui_tmp_c(kc) = 1.0_dp/max(viscosity(0.5_dp*(de_c_diva(kc,j,i) + de_c_diva(kc,j,i+1)), &
+                              0.5_dp*(temp_c(kc,j,i) + temp_c(kc,j,i+1)), &
+                              0.5_dp*(temp_c_m(kc,j,i) + temp_c_m(kc,j,i+1)), &
+                              0.0_dp, enh_val, 0),visc_min)
 
+      f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
+                           * (H_dz_c_dzeta(kc)*(0.5_dp*(H_c(j,i)+H_c(j,i+1))) ! * sigma transformation
+
+   else if (staggered_y) then
+      flui_tmp_c(kc) = 1.0_dp/max(viscosity(0.5_dp*(de_c_diva(kc,j,i) + de_c_diva(kc,j+1,i)), &
+                              0.5_dp*(temp_c(kc,j,i) + temp_c(kc,j+1,i)), &
+                              0.5_dp*(temp_c_m(kc,j,i) + temp_c_m(kc,j+1,i)), &
+                              0.0_dp, enh_val, 0),visc_min)
+
+      f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
+                           * (H_dz_c_dzeta(kc)*( 0.5_dp*(H_c(j,i)+H_c(j+1,i)) ) ! * sigma transformation
+   end if
+
+   f_2_pre_int_c(kc) = f_1_pre_int_c(kc) &
+                        * (1.0_dp - H_c_ratio * eaz_c_quotient(kc))
+
+end do
+
+do kt=0, KTMAX !ensure that the temperate coefficient are properly defined
+   f_1_pre_int_t(kt) = f_1_pre_int_c(0)
+   f_2_pre_int_t(kt) = f_2_pre_int_c(0)
 end do
 
 F_2 = integrate_trapezoid1D_pt(f_2_pre_int_c, dzeta_c)
 
 #elif (CALCMOD==1)
 ! Polythermal mode
-do kt2=0, KTMAX
+do kt=0, KTMAX
 
    if (flag_enh_stream) then
       enh_val = enh_stream
    else
-      enh_val = enh_t(kt2,j2,i2)
+      if (.not. staggered_x .and. .not. staggered_y) then !main grid
+         enh_val = enh_t(kt,j,i)
+
+      else if (staggered_x) then
+         enh_val = 0.5_dp*(enh_t(kt,j,i) + enh_t(kt,j,i+1))
+
+      else if (staggered_y) then
+         enh_val = 0.5_dp*(enh_t(kt,j,i) + enh_t(kt,j+1,i))
+
+      end if
    end if
 
-   flui_tmp_t(kt2) = 1.0_dp/max(viscosity(de_t_diva(kt2,j2,i2), &
-                     temp_t_m(kt2,j2,i2), temp_t_m(kt2,j2,i2), &
-                     omega_t(kt2,j2,i2), enh_val, 1) , visc_min)
+   if (.not. staggered_x .and. .not. staggered_y) then !main grid
+      flui_tmp_t(kt) = 1.0_dp/max(viscosity(de_t_diva(kt,j,i), &
+                     temp_t_m(kt,j,i), temp_t_m(kt,j,i), &
+                     omega_t(kt,j,i), enh_val, 1) , visc_min)
 
-   f_1_pre_int_t(kt2) = flui_tmp_t(kt2) &
-                        * (1.0_dp - H_t_ratio * zeta_t(kt2)) &
-                        * H_t(j2,i2)
-                        ! * sigma transformation
+      f_1_pre_int_t(kt) = flui_tmp_t(kt) &
+                           * (1.0_dp - H_t_ratio * zeta_t(kt)) &
+                           * H_t(j,i)
+                           ! * sigma transformation
 
-   f_2_pre_int_t(kt2) = f_1_pre_int_t(kt2) &
-                        * (1.0_dp - H_t_ratio * zeta_t(kt2))
+   else if (staggered_x) then
+      flui_tmp_t(kt) = 1.0_dp/max(viscosity(0.5_dp*(de_t_diva(kt,j,i) + de_t_diva(kt,j,i+1)), &
+                              0.5_dp*(temp_t_m(kt,j,i)+ temp_t_m(kt,j,i+1)), &
+                              0.5_dp*(temp_t_m(kt,j,i)+ temp_t_m(kt,j,i+1)), &
+                              0.5_dp*(omega_t(kt,j,i) + omega_t(kt,j,i+1)), enh_val, 1),visc_min)
 
-do kc2=0, KCMAX
+      f_1_pre_int_t(kt) = flui_tmp_t(kt) * (1.0_dp - H_t_ratio * zeta_t(kt)) &
+                           * (0.5_dp*(H_t(j,i)+H_t(j,i+1)) ! * sigma transformation
+
+   else if (staggered_y) then
+      flui_tmp_t(kt) = 1.0_dp/max(viscosity(0.5_dp*(de_t_diva(kt,j,i) + de_t_diva(kt,j+1,i)), &
+                              0.5_dp*(temp_t_m(kt,j,i)+ temp_t_m(kt,j+1,i)), &
+                              0.5_dp*(temp_t_m(kt,j,i)+ temp_t_m(kt,j+1,i)), &
+                              0.5_dp*(omega_t(kt,j,i) + omega_t(kt,j+1,i)), enh_val, 1),visc_min)
+
+      f_1_pre_int_t(kt) = flui_tmp_t(kt) * (1.0_dp - H_t_ratio * zeta_t(kt)) &
+                           * ( 0.5_dp*(H_t(j,i)+H_t(j+1,i)) ) ! * sigma transformation
+
+   end if
+   f_2_pre_int_t(kt) = f_1_pre_int_t(kt) &
+                        * (1.0_dp - H_t_ratio * zeta_t(kt))
+end do
+do kc=0, KCMAX
 
    if (flag_enh_stream) then
       enh_val = enh_stream
    else
-      enh_val = enh_c(kc2,j2,i2)
+      if (.not. staggered_x .and. .not. staggered_y) then !main grid
+         enh_val = enh_c(kc,j,i)
+
+      else if (staggered_x) then
+         enh_val = 0.5_dp*(enh_c(kc,j,i) + enh_c(kc,j,i+1))
+
+      else if (staggered_y) then
+         enh_val = 0.5_dp*(enh_c(kc,j,i) + enh_c(kc,j+1,i))
+
+      end if
+
    end if
 
-   flui_tmp_c(kc2) = 1.0_dp/max(viscosity(de_c_diva(kc2,j2,i2), &
-                     temp_c(kc2,j2,i2), temp_c_m(kc2,j2,i2), &
+   if (.not. staggered_x .and. .not. staggered_y) then !main grid
+      flui_tmp_c(kc) = 1.0_dp/max(viscosity(de_c_diva(kc,j,i), &
+                     temp_c(kc,j,i), temp_c_m(kc,j,i), &
                      0.0_dp, enh_val, 0),visc_min)
 
-   f_1_pre_int_c(kc2) = flui_tmp_c(kc2) &
-                        *(1.0_dp - H_c_ratio * eaz_c_quotient(kc2)) &
-                        * H_dz_c_dzeta(kc2) * H_c(j2,i2)
-                        ! * sigma transformation
+      f_1_pre_int_c(kc) = flui_tmp_c(kc) &
+                           *(1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
+                           * H_dz_c_dzeta(kc) * H_c(j,i)
+                           ! * sigma transformation
 
-   f_2_pre_int_c(kc2) = f_1_pre_int_c(kc2) &
-                        * (1.0_dp - H_c_ratio * eaz_c_quotient(kc2))
+   else if (staggered_x) then
+      flui_tmp_c(kc) = 1.0_dp/max(viscosity(0.5_dp*(de_c_diva(kc,j,i) + de_c_diva(kc,j,i+1)), &
+                              0.5_dp*(temp_c(kc,j,i) + temp_c(kc,j,i+1)), &
+                              0.5_dp*(temp_c_m(kc,j,i) + temp_c_m(kc,j,i+1)), &
+                              0.0_dp, enh_val, 0),visc_min)
+
+      f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
+                           * (H_dz_c_dzeta(kc)*(0.5_dp*(H_c(j,i)+H_c(j,i+1))) ! * sigma transformation
+
+   else if (staggered_y) then
+      flui_tmp_c(kc) = 1.0_dp/max(viscosity(0.5_dp*(de_c_diva(kc,j,i) + de_c_diva(kc,j+1,i)), &
+                              0.5_dp*(temp_c(kc,j,i) + temp_c(kc,j+1,i)), &
+                              0.5_dp*(temp_c_m(kc,j,i) + temp_c_m(kc,j+1,i)), &
+                              0.0_dp, enh_val, 0),visc_min)
+
+      f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
+                           * (H_dz_c_dzeta(kc)*( 0.5_dp*(H_c(j,i)+H_c(j+1,i)) ) ! * sigma transformation
+   end if
+
+   f_2_pre_int_c(kc) = f_1_pre_int_c(kc) &
+                        * (1.0_dp - H_c_ratio * eaz_c_quotient(kc))
 
 end do
 
@@ -1758,26 +1871,59 @@ F_2 = integrate_trapezoid1D_pt(f_2_pre_int_c, f_2_pre_int_t, dzeta_c, dzeta_t)
 #elif (CALCMOD==2 || CALCMOD==3)
 !no physical temperate layer
 
-do kc2=0, KCMAX
+do kc=0, KCMAX
 
    if (flag_enh_stream) then
       enh_val = enh_stream
    else
-      enh_val = enh_c(kc2,j2,i2)
+      if (.not. staggered_x .and. .not. staggered_y) then !main grid
+         enh_val = enh_c(kc,j,i)
+
+      else if (staggered_x) then
+         enh_val = 0.5_dp*(enh_c(kc,j,i) + enh_c(kc,j,i+1))
+
+      else if (staggered_y) then
+         enh_val = 0.5_dp*(enh_c(kc,j,i) + enh_c(kc,j+1,i))
+
+      end if
    end if
 
-   flui_tmp_c(kc2) = 1.0_dp/max(viscosity(de_c_diva(kc2,j2,i2), &
-                     temp_c(kc2,j2,i2), temp_c_m(kc2,j2,i2), &
-                     omega_c(kc2,j2,i2), enh_val, 0) , visc_min)
+   if (.not. staggered_x .and. .not. staggered_y) then !main grid
+      flui_tmp_c(kc) = 1.0_dp/max(viscosity(de_c_diva(kc,j,i), &
+                        temp_c(kc,j,i), temp_c_m(kc,j,i), &
+                        omega_c(kc,j,i), enh_val, 0) , visc_min)
 
-   f_1_pre_int_c(kc2) = flui_tmp_c(kc2) &
-                        *(1.0_dp - H_c_ratio * eaz_c_quotient(kc2)) &
-                        * H_dz_c_dzeta(kc2) * H_c(j2,i2)
-                        ! * sigma transformation
+      f_1_pre_int_c(kc) = flui_tmp_c(kc) &
+                           *(1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
+                           * H_dz_c_dzeta(kc) * H_c(j,i)
+                           ! * sigma transformation
 
-   f_2_pre_int_c(kc2) = f_1_pre_int_c(kc2) &
-                        * (1.0_dp - H_c_ratio * eaz_c_quotient(kc2))
+   else if (staggered_x) then
+      flui_tmp_c(kc) = 1.0_dp/max(viscosity(0.5_dp*(de_c_diva(kc,j,i) + de_c_diva(kc,j,i+1)), &
+                              0.5_dp*(temp_c(kc,j,i) + temp_c(kc,j,i+1)), &
+                              0.5_dp*(temp_c_m(kc,j,i) + temp_c_m(kc,j,i+1)), &
+                              0.5_dp*(omega_c(kc,j,i) + omega_c(kc,j,i+1)), enh_val, 0),visc_min)
 
+      f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
+                           * (H_dz_c_dzeta(kc))*(0.5_dp*(H_c(j,i)+H_c(j,i+1)))
+                           ! * sigma transformation
+   else if (staggered_y) then
+      flui_tmp_c(kc) = 1.0_dp/max(viscosity(0.5_dp*(de_c_diva(kc,j,i) + de_c_diva(kc,j+1,i)), &
+                              0.5_dp*(temp_c(kc,j,i) + temp_c(kc,j+1,i)), &
+                              0.5_dp*(temp_c_m(kc,j,i) + temp_c_m(kc,j+1,i)), &
+                              0.5_dp*(omega_c(kc,j,i) + omega_c(kc,j+1,i)), enh_val, 0),visc_min)
+
+      f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
+                           * H_dz_c_dzeta(kc)*( 0.5_dp*(H_c(j,i)+H_c(j+1,i)) )
+                           ! * sigma transformation
+   end if
+   f_2_pre_int_c(kc) = f_1_pre_int_c(kc) &
+                        * (1.0_dp - H_c_ratio * eaz_c_quotient(kc))
+
+end do
+do kt=0, KTMAX !ensure that the temperate coefficient are properly defined
+   f_1_pre_int_t(kt) = f_1_pre_int_c(0)
+   f_2_pre_int_t(kt) = f_2_pre_int_c(0)
 end do
 
 F_2 = integrate_trapezoid1D_pt(f_2_pre_int_c, dzeta_c)
@@ -1829,10 +1975,8 @@ real(dp) :: pi_inv
 !added for DIVA : 
 real(dp) :: inv_H ! computed on the staggered grid
 real(dp) :: vx_c_aux, vx_t_aux, vy_c_aux, vy_t_aux
-real(dp) :: grid_F_2, stag_F_2
 real(dp) :: F_1_c(0:KCMAX), F_1_t(0:KTMAX)
-real(dp) :: grid_f_1_pre_int_c(0:KCMAX), grid_f_1_pre_int_t(0:KTMAX)
-real(dp) :: stag_f_1_pre_int_c(0:KCMAX), stag_f_1_pre_int_t(0:KTMAX)
+
 
 
 pi_inv   = 1.0_dp/pi
@@ -2125,35 +2269,27 @@ do j=0, JMAX
 ! ------ Work in progress  ----- x component
       inv_H = 1.0_dp/( 0.5_dp*(H(j,i)+H(j,i+1)) ) !on the staggered grid
 
-      call calc_F_2_DIVA(j, i, dzeta_c, dzeta_t) !compute F_2 on the main grid
-      grid_F_2 = F_2
-      grid_f_1_pre_int_c = f_1_pre_int_c
-      grid_f_1_pre_int_t = f_1_pre_int_t
-      call calc_F_2_DIVA(j, i+1, dzeta_c, dzeta_t)
+      !compute F_2 on the x-staggered grid :
+      call calc_F_2_DIVA(j, i, dzeta_c, dzeta_t, staggered_x=.true., staggered_y=.false.)
 
-      !variables on the staggered grid :
-      stag_F_2 = 0.5_dp * (grid_F_2 + F_2)
-      stag_f_1_pre_int_c = 0.5_dp * (grid_f_1_pre_int_c + f_1_pre_int_c)
-      stag_f_1_pre_int_t = 0.5_dp * (grid_f_1_pre_int_t + f_1_pre_int_t)
-
-      F_1_c = integrate_trapezoid1D_1D_c(stag_f_1_pre_int_c, dzeta_c) !Not F_1 from liscomb-2019 eq30,
+      F_1_c = integrate_trapezoid1D_1D_c(f_1_pre_int_c, dzeta_c) !Not F_1 from lipscomb-2019 eq30,
       if (n_cts(j,i) == 1) then
-         F_1_t = integrate_trapezoid1D_1D_t(stag_f_1_pre_int_t, dzeta_t)
+         F_1_t = integrate_trapezoid1D_1D_t(f_1_pre_int_t, dzeta_t)
          !not defined otherwise so need to be careful
       end if
 
       vx_m(j,i) = vx_m_ssa(j,i) !we used the ssa solver to compute vxy_m
       !basal velocity :
-      vx_b(j,i) = vx_m(j,i) / (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * stag_F_2)
+      vx_b(j,i) = vx_m(j,i) / (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * F_2)
       !ground-up : first determine vx_t :
       if (n_cts(j,i) == 1)  then
          !ensure that there is a physically existant temperate base
          ! then check if the basal velocity is zero :
-         if (abs(vx_b(j,i)) .gt. eps) then !vb /= zero case :
+         if (abs(vx_b(j,i)) .gt. eps_dp) then !vb /= zero case :
             vx_t_aux =  0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * vx_b(j,i) * inv_H
 
          else ! vb == 0 case :
-
+            vx_b(j,i) = 0.0_dp ! for stability, set vb exactly to zero
             vx_t_aux = 0.5_dp*(beta_eff(j,i) + beta_eff(j,i+1)) * vx_m(j,i) * inv_H !compute the vertical independent part outside the loop
          end if
 
@@ -2168,7 +2304,7 @@ do j=0, JMAX
       end if
 
       ! then compute vx_c :
-      if (abs(vx_b(j,i)) .gt. eps) then
+      if (abs(vx_b(j,i)) .gt. eps_dp) then
 !        compute the verticaly independent part outside the vertical loop :
          vx_c_aux =  0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * vx_b(j,i) * inv_H
          do kc=0, KCMAX
@@ -2321,36 +2457,28 @@ do j=0, JMAX-1
 
       inv_H = 1.0_dp/( 0.5_dp*(H(j,i)+H(j+1,i)) ) !on the staggered grid
 
-      call calc_F_2_DIVA(j, i, dzeta_c, dzeta_t) !compute F_2 on the main grid
-      grid_F_2 = F_2
-      grid_f_1_pre_int_c = f_1_pre_int_c
-      grid_f_1_pre_int_t = f_1_pre_int_t
-      call calc_F_2_DIVA(j+1, i, dzeta_c, dzeta_t)
+      call calc_F_2_DIVA(j, i, dzeta_c, dzeta_t, staggered_x=.false., staggered_y=.true.)
 
-      !variables on the staggered grid :
-      stag_F_2 = 0.5_dp * (grid_F_2 + F_2)
-      stag_f_1_pre_int_c = 0.5_dp * (grid_f_1_pre_int_c + f_1_pre_int_c)
-      stag_f_1_pre_int_t = 0.5_dp * (grid_f_1_pre_int_t + f_1_pre_int_t)
 
-      F_1_c = integrate_trapezoid1D_1D_c(stag_f_1_pre_int_c, dzeta_c) !Not F_1 from liscomb-2019 eq30,
+      F_1_c = integrate_trapezoid1D_1D_c(f_1_pre_int_c, dzeta_c) !Not F_1 from liscomb-2019 eq30,
       if (n_cts(j,i) == 1) then
-         F_1_t = integrate_trapezoid1D_1D_t(stag_f_1_pre_int_t, dzeta_t)
+         F_1_t = integrate_trapezoid1D_1D_t(f_1_pre_int_t, dzeta_t)
          !not defined otherwise so need to be careful
       end if
       vy_m(j,i) = vy_m_ssa(j,i)
       !basal velocity :
-      vy_b(j,i) = vy_m(j,i) / (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * stag_F_2)
+      vy_b(j,i) = vy_m(j,i) / (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * F_2)
       ! from the ground-up : computation of vy_t :
       if ( n_cts(j,i) == 1) then
          !ensure that there is a physically existant temperate base
          ! then check if the basal velocity is not zero :
 
-         if (abs(vy_b(j,i)) .gt. eps) then
+         if (abs(vy_b(j,i)) .gt. eps_dp) then
             !compute the z independent part outside the zeta loop :
             vy_t_aux =  0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * vy_b(j,i) * inv_H
 
          else !vy_b is zero :
-
+            vy_b(j,i) = 0.0_dp ! for stability, set vb exactly to zero
             vy_t_aux =  0.5_dp*(beta_eff(j,i) + beta_eff(j+1,i)) * vy_m(j,i) * inv_H
          end if
 
@@ -2365,7 +2493,7 @@ do j=0, JMAX-1
       endif
 
       ! then computation of vy_c :
-      if (abs(vy_b(j,i)) .gt. eps) then
+      if (abs(vy_b(j,i)) .gt. eps_dp) then
          !compute the z independent part outside the loop :
          vy_c_aux =  0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * vy_b(j,i) * inv_H
 
@@ -2543,9 +2671,12 @@ do j=1, JMAX-1
       tau_b(j,i) = 0.0_dp
 
    else if (flag_shelfy_stream(j,i)) then   ! shelfy stream
-
-      v_b_sq =   (0.5_dp*(vx_b_g(j,i)+vx_b_g(j,i-1)))**2  &
-               + (0.5_dp*(vy_b_g(j,i)+vy_b_g(j-1,i)))**2
+! this computation seems weird as vxy_b_g is defined on main grid already
+!      v_b_sq =   (0.5_dp*(vx_b_g(j,i)+vx_b_g(j,i-1)))**2  &
+!               + (0.5_dp*(vy_b_g(j,i)+vy_b_g(j-1,i)))**2
+! i would rather have done :
+      v_b_sq =   (vx_b_g(j,i))**2  &
+               + (vy_b_g(j,i))**2
 
 #if !defined(ALLOW_TAPENADE) /* Normal */
 
@@ -2726,19 +2857,24 @@ do i=1, IMAX-1
 do j=1, JMAX-1
 
    if (flag_shelfy_stream(j,i)) then
-
+ ! This beta_drag is in fact beta_eff from L19 (diva)
       beta_drag(j,i) = c_drag(j,i) &
                      / sqrt( (   (0.5_dp*(vx_m_ssa(j,i)+vx_m_ssa(j,i-1)))**2  &
                                + (0.5_dp*(vy_m_ssa(j,i)+vy_m_ssa(j-1,i)))**2 ) &
                              + eps_dp**2 ) &
                                      **(1.0_dp-p_weert_inv(j,i))
 #if (DYNAMICS==3)
-      call calc_F_2_DIVA(j,i,dzeta_c,dzeta_t)
-      if ( sqrt(vx_b_g(j,i)*vx_b_g(j,i) + vy_b_g(j,i)*vy_b_g(j,i)) .gt. eps) then
-         beta_eff(j,i) = beta_drag(j,i)/(1.0_dp + beta_drag(j,i)*F_2)
+      call calc_F_2_DIVA(j, i, dzeta_c, dzeta_t, staggered_x=.false., staggered_y=.false.)
+
+      if ( sqrt(vx_b_g(j,i)*vx_b_g(j,i) + vy_b_g(j,i)*vy_b_g(j,i)) .gt. eps_dp) then
+      !actually compute beta_drag :
+!         beta_eff(j,i) = beta_drag(j,i)/(1.0_dp + beta_drag(j,i)*F_2)
+         beta_eff(j,i) = beta_drag(j,i)
+         beta_drag(j,i) = beta_eff(j,i)/(1.0_dp - beta_eff(j,i)*F_2) !from L19 eq 32
 
       else !no slip condition
          beta_eff(j,i) = 1.0_dp/F_2
+         beta_drag(j,i) = c_drag(j,i) !seems true for p_weert=1
 
       end if
 #endif
