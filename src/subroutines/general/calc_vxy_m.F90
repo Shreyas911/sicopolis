@@ -1624,7 +1624,7 @@ function integrate_trapezoid1D_pt(var_c, dzeta_c)
 !-------------------------------------------------------------------------------
 !> For DYNAMICS = 3 (DIVA), subroutine to compute F_2 from Lispcomb 2019,
 ! Mathematical integral used to compute beta_drag and the 3D velocities,
-! F_2 is a scalar, f_2_pre_int_ct are a 1D arrays over kct, on the main grid.
+! F_2 is a scalar, f_1_pre_int_ct are 1D arrays over kct, on the main grid.
 !-------------------------------------------------------------------------------
 subroutine calc_F_2_DIVA(j_idx, i_idx, dzeta_c, dzeta_t, staggered_x, staggered_y)
 
@@ -2024,6 +2024,10 @@ vh_max_inv = 1.0_dp/vh_max
 
 write(6,'(10x,a)') 'calc_vxy_ssa:'
 
+!-------- no slip flag initialisation ----
+#if (DYNAMICS==3)
+   no_slip_flag(:,:)=.true. ! no slip everywhere
+#endif
 !-------- Iterations --------
 
 res_vxy_m_ssa = 1.11e+11_dp   ! initial, very large value of the residual
@@ -2284,14 +2288,8 @@ do j=0, JMAX
       !ground-up : first determine vx_t :
       if (n_cts(j,i) == 1)  then
          !ensure that there is a physically existant temperate base
-         ! then check if the basal velocity is zero :
-         if (abs(vx_b(j,i)) .gt. eps_dp) then !vb /= zero case :
-            vx_t_aux =  0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * vx_b(j,i) * inv_H
 
-         else ! vb == 0 case :
-            vx_b(j,i) = 0.0_dp ! for stability, set vb exactly to zero
-            vx_t_aux = 0.5_dp*(beta_eff(j,i) + beta_eff(j,i+1)) * vx_m(j,i) * inv_H !compute the vertical independent part outside the loop
-         end if
+         vx_t_aux = 0.5_dp*(beta_eff(j,i) + beta_eff(j,i+1)) * vx_m(j,i) * inv_H !compute the vertical independent part outside the loop
 
          do kt=0, KTMAX
             vx_t(kt,j,i) = vx_b(j,i) + vx_t_aux * F_1_t(kt)
@@ -2304,21 +2302,13 @@ do j=0, JMAX
       end if
 
       ! then compute vx_c :
-      if (abs(vx_b(j,i)) .gt. eps_dp) then
+
 !        compute the verticaly independent part outside the vertical loop :
-         vx_c_aux =  0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * vx_b(j,i) * inv_H
-         do kc=0, KCMAX
-            vx_c(kc,j,i) = vx_t(KTMAX,j,i) + vx_c_aux * F_1_c(kc)
-         end do
-      else ! Handle the case when the basal velocity is zero :
-
-         vx_c_aux = 0.5_dp*(beta_eff(j,i) + beta_eff(j,i+1)) * vx_m(j,i) & !compute the vertical independent part outside the loop
-                  * inv_H
-         do kc=0, KCMAX
-            vx_c(kc,j,i) = vx_t(KTMAX,j,i) + vx_c_aux * F_1_c(kc)
-         end do
-      end if
-
+      vx_c_aux = 0.5_dp*(beta_eff(j,i) + beta_eff(j,i+1)) * vx_m(j,i) & !compute the vertical independent part outside the loop
+               * inv_H
+      do kc=0, KCMAX
+         vx_c(kc,j,i) = vx_t(KTMAX,j,i) + vx_c_aux * F_1_c(kc)
+      end do
 
 
 
@@ -2470,17 +2460,9 @@ do j=0, JMAX-1
       vy_b(j,i) = vy_m(j,i) / (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * F_2)
       ! from the ground-up : computation of vy_t :
       if ( n_cts(j,i) == 1) then
-         !ensure that there is a physically existant temperate base
-         ! then check if the basal velocity is not zero :
+         !ensure that there is a physically existing temperate base
 
-         if (abs(vy_b(j,i)) .gt. eps_dp) then
-            !compute the z independent part outside the zeta loop :
-            vy_t_aux =  0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * vy_b(j,i) * inv_H
-
-         else !vy_b is zero :
-            vy_b(j,i) = 0.0_dp ! for stability, set vb exactly to zero
-            vy_t_aux =  0.5_dp*(beta_eff(j,i) + beta_eff(j+1,i)) * vy_m(j,i) * inv_H
-         end if
+         vy_t_aux =  0.5_dp*(beta_eff(j,i) + beta_eff(j+1,i)) * vy_m(j,i) * inv_H
 
          do kt=0, KTMAX ! by definition, vy_t(0,j,i) = vy_b(j,i) so it shouldn't need special case for kt = 0
             vy_t(kt,j,i) = vy_b(j,i) + vy_t_aux * F_1_t(kt)
@@ -2493,22 +2475,13 @@ do j=0, JMAX-1
       endif
 
       ! then computation of vy_c :
-      if (abs(vy_b(j,i)) .gt. eps_dp) then
-         !compute the z independent part outside the loop :
-         vy_c_aux =  0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * vy_b(j,i) * inv_H
+      !compute the vertical independent part outside the loop
+      vy_c_aux = 0.5_dp*(beta_eff(j,i) + beta_eff(j+1,i)) * vy_m(j,i) & ! == tau_xb
+               * inv_H
 
-         do kc=0, KCMAX
-            vy_c(kc,j,i) = vy_t(KTMAX,j,i) + vy_c_aux * F_1_c(kc)
-         end do
-      else ! Handle the case when the basal velocity is zero
-
-         vy_c_aux = 0.5_dp*(beta_eff(j,i) + beta_eff(j+1,i)) * vy_m(j,i) & !compute the vertical independent part outside the loop
-                  * inv_H
-
-         do kc=0, KCMAX
-            vy_c(kc,j,i) = vy_t(KTMAX,j,i) + vy_c_aux * F_1_c(kc)
-         end do
-      endif
+      do kc=0, KCMAX
+         vy_c(kc,j,i) = vy_t(KTMAX,j,i) + vy_c_aux * F_1_c(kc)
+      end do
 
 
 ! ---------- END OF WORK IN PROGRESS FOR Y----------------
@@ -2677,7 +2650,13 @@ do j=1, JMAX-1
 ! i would rather have done :
       v_b_sq =   (vx_b_g(j,i))**2  &
                + (vy_b_g(j,i))**2
-
+#if (DYNAMICS==3)
+      if (sqrt(v_b_sq) .lt. eps_dp) then
+         no_slip_flag(j,i) =  .true.
+      else
+         no_slip_flag(j,i) = .false.
+      endif
+#endif
 #if !defined(ALLOW_TAPENADE) /* Normal */
 
       tau_b(j,i) = c_drag(j,i) * sqrt(v_b_sq)**p_weert_inv(j,i)
@@ -2857,7 +2836,7 @@ do i=1, IMAX-1
 do j=1, JMAX-1
 
    if (flag_shelfy_stream(j,i)) then
- ! This beta_drag is in fact beta_eff from L19 (diva)
+ ! This beta_drag is not obviously beta_drag from L19 (diva), maybe more a beta_eff
       beta_drag(j,i) = c_drag(j,i) &
                      / sqrt( (   (0.5_dp*(vx_m_ssa(j,i)+vx_m_ssa(j,i-1)))**2  &
                                + (0.5_dp*(vy_m_ssa(j,i)+vy_m_ssa(j-1,i)))**2 ) &
@@ -2866,17 +2845,17 @@ do j=1, JMAX-1
 #if (DYNAMICS==3)
       call calc_F_2_DIVA(j, i, dzeta_c, dzeta_t, staggered_x=.false., staggered_y=.false.)
 
-      if ( sqrt(vx_b_g(j,i)*vx_b_g(j,i) + vy_b_g(j,i)*vy_b_g(j,i)) .gt. eps_dp) then
-      !actually compute beta_drag :
-!         beta_eff(j,i) = beta_drag(j,i)/(1.0_dp + beta_drag(j,i)*F_2)
-         beta_eff(j,i) = beta_drag(j,i)
-         beta_drag(j,i) = beta_eff(j,i)/(1.0_dp - beta_eff(j,i)*F_2) !from L19 eq 32
+      beta_drag(j,i) = c_drag(j,i) !(true if p=1, otherwise not sure)
 
-      else !no slip condition
+      if (no_slip_flag(j,i)) then
          beta_eff(j,i) = 1.0_dp/F_2
-         beta_drag(j,i) = c_drag(j,i) !seems true for p_weert=1
+      else
+         beta_eff(j,i) = beta_drag(j,i)/(1.0_dp + beta_drag(j,i)*F_2)
+      endif
+      !beta_eff(j,i) = beta_drag(j,i)
+      !beta_drag(j,i) = beta_eff(j,i)/(1.0_dp - beta_eff(j,i)*F_2) !from L19 eq 32
 
-      end if
+
 #endif
    end if
 

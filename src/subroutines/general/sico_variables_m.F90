@@ -158,6 +158,11 @@ logical, dimension(0:JMAX,0:IMAX) :: flag_shelfy_stream
    !!           staggered grid is a shelfy stream point,
    !!  .false.: otherwise
 
+logical, dimension(0:JMAX,0:IMAX) :: no_slip_flag
+   !! no slip condition on the main grid:
+   !!   .true.: no slip condition (v_b=0),
+   !!  .false.: otehrwise,
+
 real(dp), dimension(0:IMAX) :: xi
    !! Coordinate xi (= x) of grid point i
 
