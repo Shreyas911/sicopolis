@@ -2024,10 +2024,7 @@ vh_max_inv = 1.0_dp/vh_max
 
 write(6,'(10x,a)') 'calc_vxy_ssa:'
 
-!-------- no slip flag initialisation ----
-#if (DYNAMICS==3)
-   no_slip_flag(:,:)=.true. ! no slip everywhere
-#endif
+
 !-------- Iterations --------
 
 res_vxy_m_ssa = 1.11e+11_dp   ! initial, very large value of the residual
@@ -2287,7 +2284,7 @@ do j=0, JMAX
       vx_b(j,i) = vx_m(j,i) / (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * F_2)
       !ground-up : first determine vx_t :
       if (n_cts(j,i) == 1)  then
-         !ensure that there is a physically existant temperate base
+         !ensure that there is a physically existing temperate base
 
          vx_t_aux = 0.5_dp*(beta_eff(j,i) + beta_eff(j,i+1)) * vx_m(j,i) * inv_H !compute the vertical independent part outside the loop
 
@@ -2304,7 +2301,7 @@ do j=0, JMAX
       ! then compute vx_c :
 
 !        compute the verticaly independent part outside the vertical loop :
-      vx_c_aux = 0.5_dp*(beta_eff(j,i) + beta_eff(j,i+1)) * vx_m(j,i) & !compute the vertical independent part outside the loop
+      vx_c_aux = 0.5_dp*(beta_eff(j,i) + beta_eff(j,i+1)) * vx_m(j,i) &
                * inv_H
       do kc=0, KCMAX
          vx_c(kc,j,i) = vx_t(KTMAX,j,i) + vx_c_aux * F_1_c(kc)
@@ -2650,13 +2647,7 @@ do j=1, JMAX-1
 ! i would rather have done :
       v_b_sq =   (vx_b_g(j,i))**2  &
                + (vy_b_g(j,i))**2
-#if (DYNAMICS==3)
-      if (sqrt(v_b_sq) .lt. eps_dp) then
-         no_slip_flag(j,i) =  .true.
-      else
-         no_slip_flag(j,i) = .false.
-      endif
-#endif
+
 #if !defined(ALLOW_TAPENADE) /* Normal */
 
       tau_b(j,i) = c_drag(j,i) * sqrt(v_b_sq)**p_weert_inv(j,i)
@@ -2836,24 +2827,27 @@ do i=1, IMAX-1
 do j=1, JMAX-1
 
    if (flag_shelfy_stream(j,i)) then
- ! This beta_drag is not obviously beta_drag from L19 (diva), maybe more a beta_eff
+
+# if (DYNAMICS==2)
       beta_drag(j,i) = c_drag(j,i) &
                      / sqrt( (   (0.5_dp*(vx_m_ssa(j,i)+vx_m_ssa(j,i-1)))**2  &
                                + (0.5_dp*(vy_m_ssa(j,i)+vy_m_ssa(j-1,i)))**2 ) &
                              + eps_dp**2 ) &
                                      **(1.0_dp-p_weert_inv(j,i))
-#if (DYNAMICS==3)
+#elif (DYNAMICS==3)
       call calc_F_2_DIVA(j, i, dzeta_c, dzeta_t, staggered_x=.false., staggered_y=.false.)
 
-      beta_drag(j,i) = c_drag(j,i) !(true if p=1, otherwise not sure)
+      beta_drag(j,i) = c_drag(j,i) &
+                     / sqrt( (   (0.5_dp*(vx_b(j,i)+vx_b(j,i-1)))**2  &
+                               + (0.5_dp*(vy_b(j,i)+vy_b(j-1,i)))**2 ) &
+                             + eps_dp**2 ) &
+                                     **(1.0_dp-p_weert_inv(j,i))
 
-      if (no_slip_flag(j,i)) then
-         beta_eff(j,i) = 1.0_dp/F_2
-      else
-         beta_eff(j,i) = beta_drag(j,i)/(1.0_dp + beta_drag(j,i)*F_2)
-      endif
-      !beta_eff(j,i) = beta_drag(j,i)
-      !beta_drag(j,i) = beta_eff(j,i)/(1.0_dp - beta_eff(j,i)*F_2) !from L19 eq 32
+ !because we have tau_b = beta_drag * v_b = c_drag * v_b**(1-1/p) * v_b
+
+
+      beta_eff(j,i) = beta_drag(j,i)/(1.0_dp + beta_drag(j,i)*F_2)
+
 
 
 #endif
