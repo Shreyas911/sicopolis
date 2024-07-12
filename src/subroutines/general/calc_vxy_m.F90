@@ -2300,7 +2300,7 @@ do j=0, JMAX
       end if
 
       !basal velocity :
-      vx_b(j,i) = vx_m(j,i) / (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * F_2)
+      vx_b(j,i) = vx_m(j,i) - (tau_bx * F_2)
 
       !ground-up : first determine vx_t :
 
@@ -2462,7 +2462,7 @@ do j=0, JMAX-1
       end if
 
       !basal velocity :
-      vy_b(j,i) = vy_m(j,i) / (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * F_2)
+      vy_b(j,i) = vy_m(j,i) - (tau_by * F_2)
 
       ! from the ground-up : computation of vy_t :
 
