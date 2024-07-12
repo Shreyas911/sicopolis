@@ -1555,13 +1555,12 @@ function integrate_trapezoid1D_1D_c(var_c, dzeta_c)
 
 
    ! Initialization
-   integrate_trapezoid1D_1D_c(0:KCMAX) = 0.0_dp
+   integrate_trapezoid1D_1D_c(0) = 0.0_dp
 
    ! Loop to perform the trapezoidal integration on the zeta_c axis
    do kc = 1, KCMAX
-     var_mid = 0.5_dp * (var_c(kc) + var_c(kc-1))
-!     if (abs(var_mid) < eps) var_mid = 0.0_dp        dont think it's necessary 
-     integrate_trapezoid1D_1D_c(kc:KCMAX) = integrate_trapezoid1D_1D_c(kc:KCMAX) + var_mid * dzeta_c
+       var_mid = 0.5_dp * (var_c(kc) + var_c(kc-1))
+       integrate_trapezoid1D_1D_c(kc) = integrate_trapezoid1D_1D_c(kc-1) + var_mid * dzeta_c
    end do
 
  end function integrate_trapezoid1D_1D_c
@@ -1587,13 +1586,12 @@ function integrate_trapezoid1D_1D_t(var_t, dzeta_t)
 
 
    ! Initialization
-   integrate_trapezoid1D_1D_t(0:KTMAX) = 0.0_dp
+   integrate_trapezoid1D_1D_t(0) = 0.0_dp
 
    ! Loop to perform the trapezoidal integration on the zeta_t axis
    do kt = 1, KTMAX
      var_mid = 0.5_dp * (var_t(kt) + var_t(kt-1))
-!     if (abs(var_mid) < eps) var_mid = 0.0_dp        dont think it's necessary 
-     integrate_trapezoid1D_1D_t(kt:KTMAX) = integrate_trapezoid1D_1D_t(kt:KTMAX) + var_mid * dzeta_t
+     integrate_trapezoid1D_1D_t(kt) = integrate_trapezoid1D_1D_t(kt-1) + var_mid * dzeta_t
    end do
 
  end function integrate_trapezoid1D_1D_t
@@ -1603,8 +1601,8 @@ function integrate_trapezoid1D_1D_t(var_t, dzeta_t)
 !based on the trapezoid rule and discretized as seen in Yelmo.
 ! output is a scalar of the integral of the variable over the whole column
 !-------------------------------------------------------------------------------
-#if (CALCMOD==1) 
-!polythermal mode, the temperate layer can exist
+
+!if not in polythermal mode, then var_t ==0 
 function integrate_trapezoid1D_pt(var_c, var_t, dzeta_c, dzeta_t)
    implicit none
    ! Define the arguments
@@ -1627,45 +1625,16 @@ function integrate_trapezoid1D_pt(var_c, var_t, dzeta_c, dzeta_t)
    ! Loop to perform the trapezoidal integration on the zeta axis
    do kc = 1, KCMAX
      var_mid = 0.5_dp * (var_c(kc) + var_c(kc-1))
-!     if (abs(var_mid) < eps) var_mid = 0.0_dp     dont think it's necessary 
      integrate_trapezoid1D_pt = integrate_trapezoid1D_pt + var_mid * dzeta_c
    end do
 
    do kt = 1, KTMAX
       var_mid = 0.5_dp * (var_t(kt) + var_t(kt-1))
-!      if (abs(var_mid) < eps) var_mid = 0.0_dp
       integrate_trapezoid1D_pt = integrate_trapezoid1D_pt + var_mid * dzeta_t
     end do
 
  end function integrate_trapezoid1D_pt
-#else 
-! in the other thermodynamics mode (CALCMOD) the temperate layer doesn't physically exist 
-! although not sure the pre-processor is useful as we multiply by H_t with the sigma transform...
-function integrate_trapezoid1D_pt(var_c, dzeta_c)
-   implicit none
-   ! Define the arguments
-   !var will need to contain the sigma transformation terms
-   real(dp) :: integrate_trapezoid1D_pt
-   real(dp), intent(in) :: var_c(0:KCMAX)
-   real(dp), intent(in) :: dzeta_c
 
-   ! Local variables
-   integer(i4b) :: kc
-   real(dp) :: var_mid
-
-
-   ! Initialization
-   integrate_trapezoid1D_pt = 0.0_dp
-
-   ! Loop to perform the trapezoidal integration on the zeta axis
-   do kc = 1, KCMAX
-      var_mid = 0.5_dp * (var_c(kc) + var_c(kc-1))
-!     if (abs(var_mid) < eps) var_mid = 0.0_dp     dont think it's necessary 
-      integrate_trapezoid1D_pt = integrate_trapezoid1D_pt + var_mid * dzeta_c
-   end do
-
-   end function integrate_trapezoid1D_pt
-#endif
 
 
 
@@ -1777,7 +1746,7 @@ do kc=0, KCMAX
                      0.0_dp, enh_val, 0),visc_min)
 
       f_1_pre_int_c(kc) = flui_tmp_c(kc) &
-                           *(1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
+                           * ( H_c_ratio * (1.0_dp -  eaz_c_quotient(kc)) ) &
                            * H_dz_c_dzeta(kc) * H_c(j,i)
                            ! * sigma transformation
 
@@ -1787,7 +1756,8 @@ do kc=0, KCMAX
                               0.5_dp*(temp_c_m(kc,j,i) + temp_c_m(kc,j,i+1)), &
                               0.0_dp, enh_val, 0),visc_min)
 
-      f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
+      f_1_pre_int_c(kc) = flui_tmp_c(kc) &
+                           * ( H_c_ratio * (1.0_dp -  eaz_c_quotient(kc)) ) &
                            * H_dz_c_dzeta(kc)*(0.5_dp*(H_c(j,i)+H_c(j,i+1))) ! * sigma transformation
 
    else if (staggered_y) then
@@ -1796,21 +1766,22 @@ do kc=0, KCMAX
                               0.5_dp*(temp_c_m(kc,j,i) + temp_c_m(kc,j+1,i)), &
                               0.0_dp, enh_val, 0),visc_min)
 
-      f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
+      f_1_pre_int_c(kc) = flui_tmp_c(kc) &
+                           * ( H_c_ratio * (1.0_dp -  eaz_c_quotient(kc)) ) &
                            * H_dz_c_dzeta(kc)*(0.5_dp*(H_c(j,i)+H_c(j+1,i))) ! * sigma transformation
    end if
 
    f_2_pre_int_c(kc) = f_1_pre_int_c(kc) &
-                        * (1.0_dp - H_c_ratio * eaz_c_quotient(kc))
+                        * ( H_c_ratio * (1.0_dp -  eaz_c_quotient(kc)) )
 
 end do
 
 do kt=0, KTMAX !ensure that the temperate coefficient are properly defined
-   f_1_pre_int_t(kt) = f_1_pre_int_c(0)
-   f_2_pre_int_t(kt) = f_2_pre_int_c(0)
+   f_1_pre_int_t(kt) = 0.0_dp  ! as: ( f(zeta_t) *H_t and H_t = 0 )
+   f_2_pre_int_t(kt) = 0.0_dp
 end do
 
-F_2 = integrate_trapezoid1D_pt(f_2_pre_int_c, dzeta_c)
+F_2 = integrate_trapezoid1D_pt(f_2_pre_int_c, f_2_pre_int_t, dzeta_c, dzeta_t)
 
 #elif (CALCMOD==1)
 ! Polythermal mode
@@ -1887,7 +1858,7 @@ do kc=0, KCMAX
                      0.0_dp, enh_val, 0),visc_min)
 
       f_1_pre_int_c(kc) = flui_tmp_c(kc) &
-                           *(1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
+                           * ( H_c_ratio * (1.0_dp -  eaz_c_quotient(kc)) ) &
                            * H_dz_c_dzeta(kc) * H_c(j,i)
                            ! * sigma transformation
 
@@ -1897,7 +1868,8 @@ do kc=0, KCMAX
                               0.5_dp*(temp_c_m(kc,j,i) + temp_c_m(kc,j,i+1)), &
                               0.0_dp, enh_val, 0),visc_min)
 
-      f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
+      f_1_pre_int_c(kc) = flui_tmp_c(kc) &
+                           * ( H_c_ratio * (1.0_dp -  eaz_c_quotient(kc)) ) &
                            * H_dz_c_dzeta(kc)*(0.5_dp*(H_c(j,i)+H_c(j,i+1))) ! * sigma transformation
 
    else if (staggered_y) then
@@ -1906,12 +1878,13 @@ do kc=0, KCMAX
                               0.5_dp*(temp_c_m(kc,j,i) + temp_c_m(kc,j+1,i)), &
                               0.0_dp, enh_val, 0),visc_min)
 
-      f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
+      f_1_pre_int_c(kc) = flui_tmp_c(kc) &
+                           * ( H_c_ratio * (1.0_dp -  eaz_c_quotient(kc)) ) &
                            * H_dz_c_dzeta(kc)*(0.5_dp*(H_c(j,i)+H_c(j+1,i))) ! * sigma transformation
    end if
 
    f_2_pre_int_c(kc) = f_1_pre_int_c(kc) &
-                        * (1.0_dp - H_c_ratio * eaz_c_quotient(kc))
+                        * ( H_c_ratio * (1.0_dp -  eaz_c_quotient(kc)) )
 
 end do
 
@@ -1943,7 +1916,7 @@ do kc=0, KCMAX
                         omega_c(kc,j,i), enh_val, 0) , visc_min)
 
       f_1_pre_int_c(kc) = flui_tmp_c(kc) &
-                           *(1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
+                           * ( H_c_ratio * (1.0_dp -  eaz_c_quotient(kc)) ) &
                            * H_dz_c_dzeta(kc) * H_c(j,i)
                            ! * sigma transformation
 
@@ -1953,7 +1926,8 @@ do kc=0, KCMAX
                               0.5_dp*(temp_c_m(kc,j,i) + temp_c_m(kc,j,i+1)), &
                               0.5_dp*(omega_c(kc,j,i) + omega_c(kc,j,i+1)), enh_val, 0),visc_min)
 
-      f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
+      f_1_pre_int_c(kc) = flui_tmp_c(kc) &
+                           * ( H_c_ratio * (1.0_dp -  eaz_c_quotient(kc)) ) &
                            * H_dz_c_dzeta(kc)*(0.5_dp*(H_c(j,i)+H_c(j,i+1)))
                            ! * sigma transformation
    else if (staggered_y) then
@@ -1962,20 +1936,21 @@ do kc=0, KCMAX
                               0.5_dp*(temp_c_m(kc,j,i) + temp_c_m(kc,j+1,i)), &
                               0.5_dp*(omega_c(kc,j,i) + omega_c(kc,j+1,i)), enh_val, 0),visc_min)
 
-      f_1_pre_int_c(kc) = flui_tmp_c(kc) * (1.0_dp - H_c_ratio * eaz_c_quotient(kc)) &
+      f_1_pre_int_c(kc) = flui_tmp_c(kc) &
+                           * ( H_c_ratio * (1.0_dp -  eaz_c_quotient(kc)) ) &
                            * H_dz_c_dzeta(kc)*(0.5_dp*(H_c(j,i)+H_c(j+1,i)))
                            ! * sigma transformation
    end if
    f_2_pre_int_c(kc) = f_1_pre_int_c(kc) &
-                        * (1.0_dp - H_c_ratio * eaz_c_quotient(kc))
+                        * ( H_c_ratio * (1.0_dp -  eaz_c_quotient(kc)) )
 
 end do
 do kt=0, KTMAX !ensure that the temperate coefficient are properly defined
-   f_1_pre_int_t(kt) = f_1_pre_int_c(0)
-   f_2_pre_int_t(kt) = f_2_pre_int_c(0)
+   f_1_pre_int_t(kt) = 0.0_dp    ! as: ( f(zeta_t) *H_t and H_t = 0 )
+   f_2_pre_int_t(kt) = 0.0_dp
 end do
 
-F_2 = integrate_trapezoid1D_pt(f_2_pre_int_c, dzeta_c)
+F_2 = integrate_trapezoid1D_pt(f_2_pre_int_c, f_2_pre_int_t, dzeta_c, dzeta_t)
 
 #else
 errormsg = ' >>> calc_vis_ssa: CALCMOD must be -1, 0, 1, 2 or 3!'
@@ -2022,8 +1997,7 @@ real(dp) :: v_ref, v_ref_sq_inv
 real(dp) :: v_b_sq
 real(dp) :: pi_inv
 !added for DIVA : 
-real(dp) :: inv_H ! computed on the staggered grid
-real(dp) :: vx_c_aux, vx_t_aux, vy_c_aux, vy_t_aux
+real(dp) :: tau_bx, tau_by ! computed on the staggered grid
 real(dp) :: F_1_c(0:KCMAX), F_1_t(0:KTMAX)
 
 
@@ -2309,7 +2283,11 @@ do j=0, JMAX
 
 #elif (DYNAMICS==3)   /* DIVA */ 
 ! ------ Work in progress  ----- x component
-      inv_H = 1.0_dp/( 0.5_dp*(H(j,i)+H(j,i+1)) ) !on the staggered grid
+
+      vx_m(j,i) = vx_m_ssa(j,i) !we used the ssa solver to compute vxy_m
+
+      !on the staggered grid:
+      tau_bx = 0.5_dp*(beta_eff(j,i) + beta_eff(j,i+1)) * vx_m(j,i) !shear basal drag in the x direction
 
       !compute F_2 on the x-staggered grid :
       call calc_F_2_DIVA(j, i, dzeta_c, dzeta_t, staggered_x=.true., staggered_y=.false.)
@@ -2317,38 +2295,24 @@ do j=0, JMAX
       F_1_c = integrate_trapezoid1D_1D_c(f_1_pre_int_c, dzeta_c) !Not F_1 from lipscomb-2019 eq30,
       if (n_cts(j,i) == 1) then
          F_1_t = integrate_trapezoid1D_1D_t(f_1_pre_int_t, dzeta_t)
-         !not defined otherwise so need to be careful
+      else ! when there is no temperate layer
+         F_1_t(:) = 0.0_dp
       end if
 
-      vx_m(j,i) = vx_m_ssa(j,i) !we used the ssa solver to compute vxy_m
       !basal velocity :
       vx_b(j,i) = vx_m(j,i) / (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j,i+1)) * F_2)
+
       !ground-up : first determine vx_t :
-      if (n_cts(j,i) == 1)  then
-         !ensure that there is a physically existing temperate base
 
-         vx_t_aux = 0.5_dp*(beta_eff(j,i) + beta_eff(j,i+1)) * vx_m(j,i) * inv_H !compute the vertical independent part outside the loop
-
-         do kt=0, KTMAX
-            vx_t(kt,j,i) = vx_b(j,i) + vx_t_aux * F_1_t(kt)
-         end do
-
-      else if ( (n_cts(j,i) == -1) .or. (n_cts(j,i) == 0) ) then !in the case where there is no physical temperate layer
-         do kt=0, KTMAX
-            vx_t(kt,j,i) = vx_b(j,i)
-         end do
-      end if
+      do kt=0, KTMAX
+         vx_t(kt,j,i) = vx_b(j,i) + tau_bx * F_1_t(kt)
+      end do
 
       ! then compute vx_c :
 
-!        compute the verticaly independent part outside the vertical loop :
-      vx_c_aux = 0.5_dp*(beta_eff(j,i) + beta_eff(j,i+1)) * vx_m(j,i) &
-               * inv_H
       do kc=0, KCMAX
-         vx_c(kc,j,i) = vx_t(KTMAX,j,i) + vx_c_aux * F_1_c(kc)
+         vx_c(kc,j,i) = vx_t(KTMAX,j,i) + tau_bx * F_1_c(kc)
       end do
-
-
 
 
 ! ---------- END OF WORK IN PROGRESS FOR X ----------------
@@ -2483,42 +2447,33 @@ do j=0, JMAX-1
 
 ! ------ Work in progress  ----- y component
 
-      inv_H = 1.0_dp/( 0.5_dp*(H(j,i)+H(j+1,i)) ) !on the staggered grid
+      vy_m(j,i) = vy_m_ssa(j,i) !we used the ssa solver to compute vxy_m
+       !on the staggered grid :
+      tau_by = 0.5_dp*(beta_eff(j,i) + beta_eff(j+1,i)) * vy_m(j,i) !shear basal drag in the y direction
 
       call calc_F_2_DIVA(j, i, dzeta_c, dzeta_t, staggered_x=.false., staggered_y=.true.)
 
+      F_1_c = integrate_trapezoid1D_1D_c(f_1_pre_int_c, dzeta_c) !(Not exactly F_1 from liscomb-2019 eq30)
 
-      F_1_c = integrate_trapezoid1D_1D_c(f_1_pre_int_c, dzeta_c) !Not F_1 from liscomb-2019 eq30,
       if (n_cts(j,i) == 1) then
          F_1_t = integrate_trapezoid1D_1D_t(f_1_pre_int_t, dzeta_t)
-         !not defined otherwise so need to be careful
+      else ! when there is no temperate layer
+         F_1_t(:) = 0.0_dp
       end if
-      vy_m(j,i) = vy_m_ssa(j,i)
+
       !basal velocity :
       vy_b(j,i) = vy_m(j,i) / (1.0_dp + 0.5_dp*(beta_drag(j,i)+beta_drag(j+1,i)) * F_2)
+
       ! from the ground-up : computation of vy_t :
-      if ( n_cts(j,i) == 1) then
-         !ensure that there is a physically existing temperate base
 
-         vy_t_aux =  0.5_dp*(beta_eff(j,i) + beta_eff(j+1,i)) * vy_m(j,i) * inv_H
-
-         do kt=0, KTMAX ! by definition, vy_t(0,j,i) = vy_b(j,i) so it shouldn't need special case for kt = 0
-            vy_t(kt,j,i) = vy_b(j,i) + vy_t_aux * F_1_t(kt)
-         end do
-
-      else if ((n_cts(j,i) == -1) .or. (n_cts(j,i) == 0)) then !in the case where there is no physical temperate layer
-         do kt=0, KTMAX
-            vy_t(kt,j,i) = vy_b(j,i)
-         end do
-      endif
+      do kt=0, KTMAX ! by definition, vy_t(0,j,i) = vy_b(j,i) so it shouldn't need special case for kt = 0
+         vy_t(kt,j,i) = vy_b(j,i) + tau_by * F_1_t(kt)
+      end do
 
       ! then computation of vy_c :
-      !compute the vertical independent part outside the loop
-      vy_c_aux = 0.5_dp*(beta_eff(j,i) + beta_eff(j+1,i)) * vy_m(j,i) & ! == tau_xb
-               * inv_H
 
       do kc=0, KCMAX
-         vy_c(kc,j,i) = vy_t(KTMAX,j,i) + vy_c_aux * F_1_c(kc)
+         vy_c(kc,j,i) = vy_t(KTMAX,j,i) + tau_by * F_1_c(kc)
       end do
 
 
@@ -4143,7 +4098,7 @@ do kc=0, KCMAX
       H_dzeta_c_dz(kc) = (ea-1.0_dp)/(aa * eaz_c(kc)) ! dzeta_c_dz(kc) times H_c(j,i), for optimisation
    else
       aqxy1(kc) = dzeta_c
-      H_dzeta_c_dz(kc) = 1.0_dp ! for linear sigma transformation, dzeta_c_dz=1/H_c(j,i)
+      H_dzeta_c_dz(kc) = 1.0_dp ! for linear sigma transformation, dzeta_c_dz=H_c(j,i)
    end if
 end do
 
