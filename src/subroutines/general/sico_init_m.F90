@@ -3084,7 +3084,10 @@ end do
 #endif
 
 !-------- Definition of initial values --------
-
+#if (DYNAMICS==3)
+tau_bx(:,:) = 0.0_dp
+tau_by(:,:) = 0.0_dp
+#endif
 !  ------ Present topography
 
 #if (ANF_DAT==1)

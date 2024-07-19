@@ -1656,7 +1656,7 @@ logical, intent(in) :: staggered_x, staggered_y
 
 integer(i4b) ::i, j, kc, kt
 real(dp) :: H_dz_c_dzeta(0:KCMAX)
-real(dp) :: flui_tmp_c(0:KCMAX), flui_tmp_t(0:KTMAX)
+real(dp) :: flui_tmp_c, flui_tmp_t
 real(dp), dimension(0:KCMAX) :: f_2_pre_int_c
 real(dp), dimension(0:KTMAX) :: f_2_pre_int_t
 real(dp) :: H_c_ratio
@@ -1692,21 +1692,26 @@ do kc=0, KCMAX
 end do
 
 F_2 = 0.0_dp !initialisation
+H_t_ratio = 0.0_dp
 
 if (.not. staggered_x .and. .not. staggered_y) then !main grid
    inv_H = 1.0_dp/H(j,i)
    H_c_ratio = H_c(j,i) * inv_H
-   H_t_ratio = H_t(j,i) * inv_H
-
+   if ( n_cts(j,i)==1 ) then
+      H_t_ratio = H_t(j,i) * inv_H
+   end if
 else if (staggered_x) then
    inv_H = 1.0_dp/( 0.5_dp*(H(j,i)+H(j,i+1)) )
    H_c_ratio = 0.5_dp*(H_c(j,i)+H_c(j,i+1)) * inv_H
-   H_t_ratio = 0.5_dp*(H_t(j,i)+H_t(j,i+1)) * inv_H
-
+   if ( n_cts(j,i)==1 .or. n_cts(j,i+1)==1) then
+      H_t_ratio = 0.5_dp*(H_t(j,i)+H_t(j,i+1)) * inv_H
+   end if
 else if (staggered_y) then
    inv_H = 1.0_dp/( 0.5_dp*(H(j,i)+H(j+1,i)) )
    H_c_ratio = 0.5_dp*(H_c(j,i)+H_c(j+1,i)) * inv_H
-   H_t_ratio = 0.5_dp*(H_t(j,i)+H_t(j+1,i)) * inv_H
+   if ( n_cts(j,i)==1 .or. n_cts(j+1,i)==1) then
+      H_t_ratio = 0.5_dp*(H_t(j,i)+H_t(j+1,i)) * inv_H
+   end if
 end if
 
 
@@ -1718,167 +1723,66 @@ f_2_pre_int_c(:) = 0.0_dp
 f_1_pre_int_c(:) = 0.0_dp
 
 
-! need to differentiate the calcmod to compute the viscosity :
-#if (CALCMOD==-1 || CALCMOD==0)
-! no physical temperate layer :
+
+
+if (.not. staggered_x .and. .not. staggered_y) then !main grid
+   if ( n_cts(j,i)==1 ) then
+      do kt=0, KTMAX
+         flui_tmp_t = flui_t_diva(kt,j,i)
+
+         f_1_pre_int_t(kt) = flui_tmp_t &
+                              * (1.0_dp - H_t_ratio * zeta_t(kt)) &
+                              * H_t(j,i) ! * sigma transformation
+         f_2_pre_int_t(kt) = f_1_pre_int_t(kt) &
+                              * (1.0_dp - H_t_ratio * zeta_t(kt))
+      end do
+   end if
+else if (staggered_x) then
+   if ( n_cts(j,i)==1 .or. n_cts(j,i+1)==1) then
+      do kt=0, KTMAX
+         flui_tmp_t = 0.5_dp*(flui_t_diva(kt,j,i) + flui_t_diva(kt,j,i+1))
+
+         f_1_pre_int_t(kt) = flui_tmp_t * (1.0_dp - H_t_ratio * zeta_t(kt)) &
+                              * (0.5_dp*(H_t(j,i)+H_t(j,i+1))) ! * sigma transformation
+         f_2_pre_int_t(kt) = f_1_pre_int_t(kt) &
+                              * (1.0_dp - H_t_ratio * zeta_t(kt))
+      end do
+   end if
+else if (staggered_y) then
+   if ( n_cts(j,i)==1 .or. n_cts(j+1,i)==1) then
+      do kt=0, KTMAX
+         flui_tmp_t = 0.5_dp*(flui_t_diva(kt,j,i) + flui_t_diva(kt,j+1,i))
+
+         f_1_pre_int_t(kt) = flui_tmp_t * (1.0_dp - H_t_ratio * zeta_t(kt)) &
+                              * (0.5_dp*(H_t(j,i)+H_t(j+1,i))) ! * sigma transformation
+         f_2_pre_int_t(kt) = f_1_pre_int_t(kt) &
+                              * (1.0_dp - H_t_ratio * zeta_t(kt))
+      end do
+   end if
+end if
+
 
 do kc=0, KCMAX
 
-   if (flag_enh_stream) then
-      enh_val = enh_stream
-   else
-      if (.not. staggered_x .and. .not. staggered_y) then !main grid
-         enh_val = enh_c(kc,j,i)
-
-      else if (staggered_x) then
-         enh_val = 0.5_dp*(enh_c(kc,j,i) + enh_c(kc,j,i+1))
-
-      else if (staggered_y) then
-         enh_val = 0.5_dp*(enh_c(kc,j,i) + enh_c(kc,j+1,i))
-
-      end if
-
-   end if
-
    if (.not. staggered_x .and. .not. staggered_y) then !main grid
-      flui_tmp_c(kc) = 1.0_dp/max(viscosity(de_c_diva(kc,j,i), &
-                     temp_c(kc,j,i), temp_c_m(kc,j,i), &
-                     0.0_dp, enh_val, 0),visc_min)
+      flui_tmp_c = flui_c_diva(kc,j,i)
 
-      f_1_pre_int_c(kc) = flui_tmp_c(kc) &
+      f_1_pre_int_c(kc) = flui_tmp_c &
                            * ( H_c_ratio * (1.0_dp -  eaz_c_quotient(kc)) ) &
                            * H_dz_c_dzeta(kc) * H_c(j,i)
                            ! * sigma transformation
 
    else if (staggered_x) then
-      flui_tmp_c(kc) = 1.0_dp/max(viscosity(0.5_dp*(de_c_diva(kc,j,i) + de_c_diva(kc,j,i+1)), &
-                              0.5_dp*(temp_c(kc,j,i) + temp_c(kc,j,i+1)), &
-                              0.5_dp*(temp_c_m(kc,j,i) + temp_c_m(kc,j,i+1)), &
-                              0.0_dp, enh_val, 0),visc_min)
+      flui_tmp_c = 0.5_dp*(flui_c_diva(kc,j,i) + flui_c_diva(kc,j,i+1))
 
-      f_1_pre_int_c(kc) = flui_tmp_c(kc) &
+      f_1_pre_int_c(kc) = flui_tmp_c &
                            * ( H_c_ratio * (1.0_dp -  eaz_c_quotient(kc)) ) &
                            * H_dz_c_dzeta(kc)*(0.5_dp*(H_c(j,i)+H_c(j,i+1))) ! * sigma transformation
 
    else if (staggered_y) then
-      flui_tmp_c(kc) = 1.0_dp/max(viscosity(0.5_dp*(de_c_diva(kc,j,i) + de_c_diva(kc,j+1,i)), &
-                              0.5_dp*(temp_c(kc,j,i) + temp_c(kc,j+1,i)), &
-                              0.5_dp*(temp_c_m(kc,j,i) + temp_c_m(kc,j+1,i)), &
-                              0.0_dp, enh_val, 0),visc_min)
+      flui_tmp_c = 0.5_dp*(flui_c_diva(kc,j,i) + flui_c_diva(kc,j+1,i))
 
-      f_1_pre_int_c(kc) = flui_tmp_c(kc) &
-                           * ( H_c_ratio * (1.0_dp -  eaz_c_quotient(kc)) ) &
-                           * H_dz_c_dzeta(kc)*(0.5_dp*(H_c(j,i)+H_c(j+1,i))) ! * sigma transformation
-   end if
-
-   f_2_pre_int_c(kc) = f_1_pre_int_c(kc) &
-                        * ( H_c_ratio * (1.0_dp -  eaz_c_quotient(kc)) )
-
-end do
-
-do kt=0, KTMAX !ensure that the temperate coefficient are properly defined
-   f_1_pre_int_t(kt) = 0.0_dp  ! as: ( f(zeta_t) *H_t and H_t = 0 )
-   f_2_pre_int_t(kt) = 0.0_dp
-end do
-
-F_2 = integrate_trapezoid1D_pt(f_2_pre_int_c, f_2_pre_int_t, dzeta_c, dzeta_t)
-
-#elif (CALCMOD==1)
-! Polythermal mode
-do kt=0, KTMAX
-
-   if (flag_enh_stream) then
-      enh_val = enh_stream
-   else
-      if (.not. staggered_x .and. .not. staggered_y) then !main grid
-         enh_val = enh_t(kt,j,i)
-
-      else if (staggered_x) then
-         enh_val = 0.5_dp*(enh_t(kt,j,i) + enh_t(kt,j,i+1))
-
-      else if (staggered_y) then
-         enh_val = 0.5_dp*(enh_t(kt,j,i) + enh_t(kt,j+1,i))
-
-      end if
-   end if
-
-   if (.not. staggered_x .and. .not. staggered_y) then !main grid
-      flui_tmp_t(kt) = 1.0_dp/max(viscosity(de_t_diva(kt,j,i), &
-                     temp_t_m(kt,j,i), temp_t_m(kt,j,i), &
-                     omega_t(kt,j,i), enh_val, 1) , visc_min)
-
-      f_1_pre_int_t(kt) = flui_tmp_t(kt) &
-                           * (1.0_dp - H_t_ratio * zeta_t(kt)) &
-                           * H_t(j,i)
-                           ! * sigma transformation
-
-   else if (staggered_x) then
-      flui_tmp_t(kt) = 1.0_dp/max(viscosity(0.5_dp*(de_t_diva(kt,j,i) + de_t_diva(kt,j,i+1)), &
-                              0.5_dp*(temp_t_m(kt,j,i)+ temp_t_m(kt,j,i+1)), &
-                              0.5_dp*(temp_t_m(kt,j,i)+ temp_t_m(kt,j,i+1)), &
-                              0.5_dp*(omega_t(kt,j,i) + omega_t(kt,j,i+1)), enh_val, 1),visc_min)
-
-      f_1_pre_int_t(kt) = flui_tmp_t(kt) * (1.0_dp - H_t_ratio * zeta_t(kt)) &
-                           * (0.5_dp*(H_t(j,i)+H_t(j,i+1))) ! * sigma transformation
-
-   else if (staggered_y) then
-      flui_tmp_t(kt) = 1.0_dp/max(viscosity(0.5_dp*(de_t_diva(kt,j,i) + de_t_diva(kt,j+1,i)), &
-                              0.5_dp*(temp_t_m(kt,j,i)+ temp_t_m(kt,j+1,i)), &
-                              0.5_dp*(temp_t_m(kt,j,i)+ temp_t_m(kt,j+1,i)), &
-                              0.5_dp*(omega_t(kt,j,i) + omega_t(kt,j+1,i)), enh_val, 1),visc_min)
-
-      f_1_pre_int_t(kt) = flui_tmp_t(kt) * (1.0_dp - H_t_ratio * zeta_t(kt)) &
-                           * (0.5_dp*(H_t(j,i)+H_t(j+1,i))) ! * sigma transformation
-
-   end if
-   f_2_pre_int_t(kt) = f_1_pre_int_t(kt) &
-                        * (1.0_dp - H_t_ratio * zeta_t(kt))
-end do
-do kc=0, KCMAX
-
-   if (flag_enh_stream) then
-      enh_val = enh_stream
-   else
-      if (.not. staggered_x .and. .not. staggered_y) then !main grid
-         enh_val = enh_c(kc,j,i)
-
-      else if (staggered_x) then
-         enh_val = 0.5_dp*(enh_c(kc,j,i) + enh_c(kc,j,i+1))
-
-      else if (staggered_y) then
-         enh_val = 0.5_dp*(enh_c(kc,j,i) + enh_c(kc,j+1,i))
-
-      end if
-
-   end if
-
-   if (.not. staggered_x .and. .not. staggered_y) then !main grid
-      flui_tmp_c(kc) = 1.0_dp/max(viscosity(de_c_diva(kc,j,i), &
-                     temp_c(kc,j,i), temp_c_m(kc,j,i), &
-                     0.0_dp, enh_val, 0),visc_min)
-
-      f_1_pre_int_c(kc) = flui_tmp_c(kc) &
-                           * ( H_c_ratio * (1.0_dp -  eaz_c_quotient(kc)) ) &
-                           * H_dz_c_dzeta(kc) * H_c(j,i)
-                           ! * sigma transformation
-
-   else if (staggered_x) then
-      flui_tmp_c(kc) = 1.0_dp/max(viscosity(0.5_dp*(de_c_diva(kc,j,i) + de_c_diva(kc,j,i+1)), &
-                              0.5_dp*(temp_c(kc,j,i) + temp_c(kc,j,i+1)), &
-                              0.5_dp*(temp_c_m(kc,j,i) + temp_c_m(kc,j,i+1)), &
-                              0.0_dp, enh_val, 0),visc_min)
-
-      f_1_pre_int_c(kc) = flui_tmp_c(kc) &
-                           * ( H_c_ratio * (1.0_dp -  eaz_c_quotient(kc)) ) &
-                           * H_dz_c_dzeta(kc)*(0.5_dp*(H_c(j,i)+H_c(j,i+1))) ! * sigma transformation
-
-   else if (staggered_y) then
-      flui_tmp_c(kc) = 1.0_dp/max(viscosity(0.5_dp*(de_c_diva(kc,j,i) + de_c_diva(kc,j+1,i)), &
-                              0.5_dp*(temp_c(kc,j,i) + temp_c(kc,j+1,i)), &
-                              0.5_dp*(temp_c_m(kc,j,i) + temp_c_m(kc,j+1,i)), &
-                              0.0_dp, enh_val, 0),visc_min)
-
-      f_1_pre_int_c(kc) = flui_tmp_c(kc) &
+      f_1_pre_int_c(kc) = flui_tmp_c &
                            * ( H_c_ratio * (1.0_dp -  eaz_c_quotient(kc)) ) &
                            * H_dz_c_dzeta(kc)*(0.5_dp*(H_c(j,i)+H_c(j+1,i))) ! * sigma transformation
    end if
@@ -1890,72 +1794,11 @@ end do
 
 F_2 = integrate_trapezoid1D_pt(f_2_pre_int_c, f_2_pre_int_t, dzeta_c, dzeta_t)
 
-#elif (CALCMOD==2 || CALCMOD==3)
-!no physical temperate layer
+if (F_2 .lt. 0.0_dp ) then
+   errormsg = ' >>> F_2 est negative'
+   call error(errormsg)
+end if
 
-do kc=0, KCMAX
-
-   if (flag_enh_stream) then
-      enh_val = enh_stream
-   else
-      if (.not. staggered_x .and. .not. staggered_y) then !main grid
-         enh_val = enh_c(kc,j,i)
-
-      else if (staggered_x) then
-         enh_val = 0.5_dp*(enh_c(kc,j,i) + enh_c(kc,j,i+1))
-
-      else if (staggered_y) then
-         enh_val = 0.5_dp*(enh_c(kc,j,i) + enh_c(kc,j+1,i))
-
-      end if
-   end if
-
-   if (.not. staggered_x .and. .not. staggered_y) then !main grid
-      flui_tmp_c(kc) = 1.0_dp/max(viscosity(de_c_diva(kc,j,i), &
-                        temp_c(kc,j,i), temp_c_m(kc,j,i), &
-                        omega_c(kc,j,i), enh_val, 0) , visc_min)
-
-      f_1_pre_int_c(kc) = flui_tmp_c(kc) &
-                           * ( H_c_ratio * (1.0_dp -  eaz_c_quotient(kc)) ) &
-                           * H_dz_c_dzeta(kc) * H_c(j,i)
-                           ! * sigma transformation
-
-   else if (staggered_x) then
-      flui_tmp_c(kc) = 1.0_dp/max(viscosity(0.5_dp*(de_c_diva(kc,j,i) + de_c_diva(kc,j,i+1)), &
-                              0.5_dp*(temp_c(kc,j,i) + temp_c(kc,j,i+1)), &
-                              0.5_dp*(temp_c_m(kc,j,i) + temp_c_m(kc,j,i+1)), &
-                              0.5_dp*(omega_c(kc,j,i) + omega_c(kc,j,i+1)), enh_val, 0),visc_min)
-
-      f_1_pre_int_c(kc) = flui_tmp_c(kc) &
-                           * ( H_c_ratio * (1.0_dp -  eaz_c_quotient(kc)) ) &
-                           * H_dz_c_dzeta(kc)*(0.5_dp*(H_c(j,i)+H_c(j,i+1)))
-                           ! * sigma transformation
-   else if (staggered_y) then
-      flui_tmp_c(kc) = 1.0_dp/max(viscosity(0.5_dp*(de_c_diva(kc,j,i) + de_c_diva(kc,j+1,i)), &
-                              0.5_dp*(temp_c(kc,j,i) + temp_c(kc,j+1,i)), &
-                              0.5_dp*(temp_c_m(kc,j,i) + temp_c_m(kc,j+1,i)), &
-                              0.5_dp*(omega_c(kc,j,i) + omega_c(kc,j+1,i)), enh_val, 0),visc_min)
-
-      f_1_pre_int_c(kc) = flui_tmp_c(kc) &
-                           * ( H_c_ratio * (1.0_dp -  eaz_c_quotient(kc)) ) &
-                           * H_dz_c_dzeta(kc)*(0.5_dp*(H_c(j,i)+H_c(j+1,i)))
-                           ! * sigma transformation
-   end if
-   f_2_pre_int_c(kc) = f_1_pre_int_c(kc) &
-                        * ( H_c_ratio * (1.0_dp -  eaz_c_quotient(kc)) )
-
-end do
-do kt=0, KTMAX !ensure that the temperate coefficient are properly defined
-   f_1_pre_int_t(kt) = 0.0_dp    ! as: ( f(zeta_t) *H_t and H_t = 0 )
-   f_2_pre_int_t(kt) = 0.0_dp
-end do
-
-F_2 = integrate_trapezoid1D_pt(f_2_pre_int_c, f_2_pre_int_t, dzeta_c, dzeta_t)
-
-#else
-errormsg = ' >>> calc_vis_ssa: CALCMOD must be -1, 0, 1, 2 or 3!'
-call error(errormsg)
-#endif
 end subroutine calc_F_2_DIVA
 
 #endif
@@ -1997,7 +1840,6 @@ real(dp) :: v_ref, v_ref_sq_inv
 real(dp) :: v_b_sq
 real(dp) :: pi_inv
 !added for DIVA : 
-real(dp) :: tau_bx, tau_by ! computed on the staggered grid
 real(dp) :: F_1_c(0:KCMAX), F_1_t(0:KTMAX)
 
 
@@ -2287,31 +2129,31 @@ do j=0, JMAX
       vx_m(j,i) = vx_m_ssa(j,i) !we used the ssa solver to compute vxy_m
 
       !on the staggered grid:
-      tau_bx = 0.5_dp*(beta_eff(j,i) + beta_eff(j,i+1)) * vx_m(j,i) !shear basal drag in the x direction
+      tau_bx(j,i) = 0.5_dp*(beta_eff(j,i) + beta_eff(j,i+1)) * vx_m(j,i) !shear basal drag in the x direction
 
       !compute F_2 on the x-staggered grid :
       call calc_F_2_DIVA(j, i, dzeta_c, dzeta_t, staggered_x=.true., staggered_y=.false.)
 
-      F_1_c = integrate_trapezoid1D_1D_c(f_1_pre_int_c, dzeta_c) !Not F_1 from lipscomb-2019 eq30,
-      if (n_cts(j,i) == 1) then
-         F_1_t = integrate_trapezoid1D_1D_t(f_1_pre_int_t, dzeta_t)
-      else ! when there is no temperate layer
-         F_1_t(:) = 0.0_dp
-      end if
+      F_1_c(:) = integrate_trapezoid1D_1D_c(f_1_pre_int_c, dzeta_c) !Not F_1 from lipscomb-2019 eq30,
+
+      F_1_t(:) = integrate_trapezoid1D_1D_t(f_1_pre_int_t, dzeta_t)
+
 
       !basal velocity :
-      vx_b(j,i) = vx_m(j,i) - (tau_bx * F_2)
-
+      vx_b(j,i) = vx_m(j,i) - (tau_bx(j,i) * F_2)
+      if (abs(vx_b(j,i)) .lt. eps_dp) then
+         vx_b(j,i) = 0.0_dp
+      endif
       !ground-up : first determine vx_t :
 
       do kt=0, KTMAX
-         vx_t(kt,j,i) = vx_b(j,i) + tau_bx * F_1_t(kt)
+         vx_t(kt,j,i) = vx_b(j,i) + tau_bx(j,i) * F_1_t(kt)
       end do
 
       ! then compute vx_c :
 
       do kc=0, KCMAX
-         vx_c(kc,j,i) = vx_t(KTMAX,j,i) + tau_bx * F_1_c(kc)
+         vx_c(kc,j,i) = vx_t(KTMAX,j,i) + tau_bx(j,i) * F_1_c(kc)
       end do
 
 
@@ -2337,6 +2179,9 @@ do j=0, JMAX
 
       qx(j,i) = vx_m(j,i) * 0.5_dp*(H(j,i)+H(j,i+1))
 
+#if (DYNAMICS==3)
+      tau_bx(j,i) = 0.0_dp
+#endif
 !  else
 !     In all other cases, the depth-averaged velocities vx_m_ssa(j,i) computed
 !     by the SSA/SStA solver are discarded.
@@ -2449,31 +2294,30 @@ do j=0, JMAX-1
 
       vy_m(j,i) = vy_m_ssa(j,i) !we used the ssa solver to compute vxy_m
        !on the staggered grid :
-      tau_by = 0.5_dp*(beta_eff(j,i) + beta_eff(j+1,i)) * vy_m(j,i) !shear basal drag in the y direction
+      tau_by(j,i) =  0.5_dp*(beta_eff(j,i) + beta_eff(j+1,i)) * vy_m(j,i) !shear basal drag in the y direction
 
       call calc_F_2_DIVA(j, i, dzeta_c, dzeta_t, staggered_x=.false., staggered_y=.true.)
 
-      F_1_c = integrate_trapezoid1D_1D_c(f_1_pre_int_c, dzeta_c) !(Not exactly F_1 from liscomb-2019 eq30)
+      F_1_c(:) = integrate_trapezoid1D_1D_c(f_1_pre_int_c, dzeta_c) !(Not exactly F_1 from liscomb-2019 eq30)
 
-      if (n_cts(j,i) == 1) then
-         F_1_t = integrate_trapezoid1D_1D_t(f_1_pre_int_t, dzeta_t)
-      else ! when there is no temperate layer
-         F_1_t(:) = 0.0_dp
-      end if
+      F_1_t(:) = integrate_trapezoid1D_1D_t(f_1_pre_int_t, dzeta_t)
+
 
       !basal velocity :
-      vy_b(j,i) = vy_m(j,i) - (tau_by * F_2)
-
+      vy_b(j,i) = vy_m(j,i) - (tau_by(j,i) * F_2)
+      if (abs(vy_b(j,i)) .lt. eps_dp) then
+         vy_b(j,i) = 0.0_dp
+      endif
       ! from the ground-up : computation of vy_t :
 
       do kt=0, KTMAX ! by definition, vy_t(0,j,i) = vy_b(j,i) so it shouldn't need special case for kt = 0
-         vy_t(kt,j,i) = vy_b(j,i) + tau_by * F_1_t(kt)
+         vy_t(kt,j,i) = vy_b(j,i) + tau_by(j,i) * F_1_t(kt)
       end do
 
       ! then computation of vy_c :
 
       do kc=0, KCMAX
-         vy_c(kc,j,i) = vy_t(KTMAX,j,i) + tau_by * F_1_c(kc)
+         vy_c(kc,j,i) = vy_t(KTMAX,j,i) + tau_by(j,i) * F_1_c(kc)
       end do
 
 
@@ -2498,6 +2342,10 @@ do j=0, JMAX-1
       vy_m(j,i) = vy_m_ssa(j,i)
 
       qy(j,i) = vy_m(j,i) * 0.5_dp*(H(j,i)+H(j+1,i))
+
+#if (DYNAMICS==3)
+      tau_by(j,i) = 0.0_dp
+#endif
 
 !  else
 !     In all other cases, the depth-averaged velocities vy_m_ssa(j,i) computed
@@ -2835,15 +2683,27 @@ do j=1, JMAX-1
       call calc_F_2_DIVA(j, i, dzeta_c, dzeta_t, staggered_x=.false., staggered_y=.false.)
 
       beta_drag(j,i) = c_drag(j,i) &
-                     / sqrt( (   (0.5_dp*(vx_b(j,i)+vx_b(j,i-1)))**2  &
+                     * (sqrt( (   (0.5_dp*(vx_b(j,i)+vx_b(j,i-1)))**2  &
                                + (0.5_dp*(vy_b(j,i)+vy_b(j-1,i)))**2 ) &
-                             + eps_dp**2 ) &
-                                     **(1.0_dp-p_weert_inv(j,i))
+                             + eps_dp**2 )) &
+                                     **(p_weert_inv(j,i)-1.0_dp)
 
- !because we have tau_b = beta_drag * v_b = c_drag * v_b**(1-1/p) * v_b
+ !because we have tau_b = beta_drag * v_b = c_drag * v_b**-(1-1/p) * v_b
 
 
       beta_eff(j,i) = beta_drag(j,i)/(1.0_dp + beta_drag(j,i)*F_2)
+
+
+      if ( beta_drag(j,i) .lt. 0.0) then  !try to catch potential issues with beta
+
+                write(*,*)
+                write(*,"(a)") "calc_vxy_ssa_matrix:: Error: beta appears to be negative for grounded ice."
+                write(*,*) "range(beta_drag): ", minval(beta_drag), maxval(beta_drag)
+                write(*,*) "Stopping."
+                write(*,*)
+                stop
+
+            end if
 
 
 
@@ -4056,15 +3916,12 @@ real(dp) :: aqxy1(0:KCMAX)
 real(dp) :: cvis0(0:KTMAX), cvis1(0:KCMAX)
 real(dp), dimension(0:JMAX,0:IMAX) :: vis_ave_g_smooth
 ! ---- variables created for diva :
-real(dp) :: inv_dzeta_c, inv_dzeta_t
 real(dp) :: dvx_dzeta_c, dvy_dzeta_c, dvx_dzeta_t, dvy_dzeta_t
-real(dp) :: de_ssa_squared, inv_H_c, inv_H_t
-real(dp) :: H_dzeta_c_dz(0:KCMAX)
+real(dp) :: de_ssa_squared, H_t_ratio, inv_H
+real(dp) :: H_dzeta_c_dz(0:KCMAX), H_dz_c_dzeta(0:KCMAX)
 real(dp) :: de_tmp
-real(dp) :: vx_c_diva_g(0:KCMAX)
-real(dp) :: vy_c_diva_g(0:KCMAX)
-real(dp) :: vx_t_diva_g(0:KCMAX)
-real(dp) :: vy_t_diva_g(0:KCMAX)
+real(dp) :: tau_by_g, tau_bx_g
+
 
 
 
@@ -4089,18 +3946,23 @@ real(dp) :: vy_t_diva_g(0:KCMAX)
 dxi_inv  = 1.0_dp/dxi
 deta_inv = 1.0_dp/deta
 
-inv_dzeta_c = 1.0_dp/dzeta_c
-inv_dzeta_t = 1.0_dp/dzeta_t
+!-------- Parameters for the sigma transformation computation --------
 
 do kc=0, KCMAX
    if (flag_aa_nonzero) then
       aqxy1(kc) = aa/(ea-1.0_dp)*eaz_c(kc)*dzeta_c
       H_dzeta_c_dz(kc) = (ea-1.0_dp)/(aa * eaz_c(kc)) ! dzeta_c_dz(kc) times H_c(j,i), for optimisation
+
+      H_dz_c_dzeta(kc) = (aa * eaz_c(kc))/(ea-1.0_dp) ! dzeta_c_dz(kc) divided by H_c(j,i)
    else
       aqxy1(kc) = dzeta_c
       H_dzeta_c_dz(kc) = 1.0_dp ! for linear sigma transformation, dzeta_c_dz=H_c(j,i)
+
+      H_dz_c_dzeta(kc) = 1.0_dp ! for linear sigma transformation, dz_c_dzeta= 1 * H_c(j,i)
    end if
 end do
+
+
 
 !-------- Computation of the depth-integrated viscosity --------
 
@@ -4175,92 +4037,39 @@ do j=0, JMAX
 
       if (flag_shelfy_stream(j,i)) then   ! (flag name is missleading, just convenient to re-use) ! Compute de_c_diva and de_t_diva here
 
-         do kc=0, KCMAX ! - Compute  vy_c & vx_c on the main grid as the mean of the 2 neighboring values
-            vx_c_diva_g(kc) = 0.5_dp * (vx_c(kc ,j, i) + vx_c(kc ,j, i-1))
-            vy_c_diva_g(kc) = 0.5_dp * (vy_c(kc ,j ,i) + vy_c(kc ,j-1 ,i))
-         end do
-         do kt=0, KTMAX ! - Same for temperate velocities
-            vx_t_diva_g(kt) = 0.5_dp * (vx_t(kt ,j, i) + vx_t(kt ,j, i-1))
-            vy_t_diva_g(kt) = 0.5_dp * (vy_t(kt ,j ,i) + vy_t(kt ,j-1 ,i))
-         end do
-         !H_dzeta_c_dz(kc) defined at the beginning with aqxy(kc)  
-   
+         !needed 2D values :
          de_ssa_squared = de_ssa(j,i)*de_ssa(j,i)
+         inv_H = 1.0_dp/H(j,i)
+         tau_bx_g = 0.5_dp * (tau_bx(j,i) + tau_bx(j,i-1))
+         tau_by_g = 0.5_dp * (tau_by(j,i) + tau_by(j-1,i))
 
-         ! --------------------- compute de_t_diva for the temperate layer: ----------------------
+         ! compute de_c_diva : 
 
+         do kc=0, KCMAX
+            dvx_dzeta_c = flui_c_diva(kc,j,i) * inv_H * tau_bx_g * (H_c(j,i)) * (1.0_dp - eaz_c_quotient(kc))! * H_dz_c_dzeta(kc)*H_c(j,i)
+            dvy_dzeta_c = flui_c_diva(kc,j,i) * inv_H * tau_by_g * (H_c(j,i)) * (1.0_dp - eaz_c_quotient(kc))! * H_dz_c_dzeta(kc)*H_c(j,i)
 
+            de_c_diva(kc,j,i) = sqrt(de_ssa_squared + 0.25_dp*(dvx_dzeta_c*dvx_dzeta_c) + 0.25_dp*(dvy_dzeta_c*dvy_dzeta_c))
+         end do   
+
+         ! compute de_t_diva : 
+         
          if (n_cts(j,i) == 1) then !ensure that there is a physically existant temperate base
-            inv_H_t=1.0_dp/H_t(j,i) !needed for the linear sigma transformation
+            H_t_ratio=H_t(j,i)*inv_H
 
-            kt=0           !bottom boundary kt==0 needs upwind derivative
-            ! --- temporary scalar :
-            dvx_dzeta_t = (vx_t_diva_g(kt+1) - vx_t_diva_g(kt))*inv_dzeta_t *inv_H_t
-            dvy_dzeta_t = (vy_t_diva_g(kt+1) - vy_t_diva_g(kt))*inv_dzeta_t *inv_H_t
+            do kt=0, KTMAX
+               dvx_dzeta_t = flui_t_diva(kt,j,i) * tau_bx_g  * ( 1.0_dp - zeta_t(kt) * H_t_ratio ) !* H_t(j,i)
+               dvy_dzeta_t = flui_t_diva(kt,j,i) * tau_by_g  * ( 1.0_dp - zeta_t(kt) * H_t_ratio ) !* H_t(j,i)
 
-            ! --- effective strain rate for diva at kt=0 :
-            de_t_diva(kt,j,i) = sqrt(de_ssa_squared + 0.25_dp*dvx_dzeta_t*dvx_dzeta_t + 0.25_dp*dvy_dzeta_t*dvy_dzeta_t)
-
-
-            do kt=1, KTMAX-1 !central derivative on the bulk
-               ! --- temporary scalar :
-               dvx_dzeta_t = 0.5_dp*(vx_t_diva_g(kt+1) - vx_t_diva_g(kt-1))*inv_dzeta_t *inv_H_t
-               dvy_dzeta_t = 0.5_dp*(vy_t_diva_g(kt+1) - vy_t_diva_g(kt-1))*inv_dzeta_t *inv_H_t
-
-               ! --- effective strain rate for diva in the bulk :
-               de_t_diva(kt,j,i) = sqrt(de_ssa_squared + 0.25_dp*dvx_dzeta_t*dvx_dzeta_t + 0.25_dp*dvy_dzeta_t*dvy_dzeta_t)
-
+               de_t_diva(kt,j,i) = sqrt(de_ssa_squared + 0.25_dp*(dvx_dzeta_t*dvx_dzeta_t) + 0.25_dp*(dvy_dzeta_t*dvy_dzeta_t))
             end do
 
-            kt=KTMAX       !top boundary kt==KTMAX needs downwind derivative
-            ! --- temporary scalar :
-            dvx_dzeta_t = (vx_t_diva_g(kt) - vx_t_diva_g(kt-1))*inv_dzeta_t *inv_H_t
-            dvy_dzeta_t = (vy_t_diva_g(kt) - vy_t_diva_g(kt-1))*inv_dzeta_t *inv_H_t
-
-            ! --- effective strain rate for diva at kt=KTMAX :
-            de_t_diva(kt,j,i) = sqrt(de_ssa_squared + 0.25_dp*dvx_dzeta_t*dvx_dzeta_t + 0.25_dp*dvy_dzeta_t*dvy_dzeta_t)
-
-         endif
-
-
-         ! --------------------- compute de_c_diva : ----------------------
-         ! for the sigma transformation
-         inv_H_c=1/H_c(j,i) 
-         
-         kc=0           !  bottom boundary kc==0 needs upwind derivative
-         ! --- temporary scalar :
-         dvx_dzeta_c = (vx_c_diva_g(kc+1) - vx_c_diva_g(kc))*inv_dzeta_c *H_dzeta_c_dz(kc)*inv_H_c
-         dvy_dzeta_c = (vy_c_diva_g(kc+1) - vy_c_diva_g(kc))*inv_dzeta_c *H_dzeta_c_dz(kc)*inv_H_c
-
-         ! --- effective strain rate for diva at kc=0 :
-         de_c_diva(kc,j,i) = sqrt(de_ssa_squared + 0.25_dp*dvx_dzeta_c*dvx_dzeta_c + 0.25_dp*dvy_dzeta_c*dvy_dzeta_c)
-
-      
-         do kc=1, KCMAX-1     !      central derivative on the bulk
-            ! --- temporary scalar :
-            dvx_dzeta_c = 0.5_dp*(vx_c_diva_g(kc+1) - vx_c_diva_g(kc-1))*inv_dzeta_c *H_dzeta_c_dz(kc)*inv_H_c 
-            dvy_dzeta_c = 0.5_dp*(vy_c_diva_g(kc+1) - vy_c_diva_g(kc-1))*inv_dzeta_c *H_dzeta_c_dz(kc)*inv_H_c
-
-            ! --- effective strain rate for diva in the bulk :
-            de_c_diva(kc,j,i) = sqrt(de_ssa_squared + 0.25_dp*dvx_dzeta_c*dvx_dzeta_c + 0.25_dp*dvy_dzeta_c*dvy_dzeta_c)
-
-         end do
-
-         kc=KCMAX          !  top boundary kc==KCMAX needs downwind derivative
-         ! --- temporary scalar :
-         dvx_dzeta_c = (vx_c_diva_g(kc) - vx_c_diva_g(kc-1))*inv_dzeta_c *H_dzeta_c_dz(kc)*inv_H_c
-         dvy_dzeta_c = (vy_c_diva_g(kc) - vy_c_diva_g(kc-1))*inv_dzeta_c *H_dzeta_c_dz(kc)*inv_H_c
-
-         ! --- effective strain rate for diva at kc=KCMAX :
-         de_c_diva(kc,j,i) = sqrt(de_ssa_squared + 0.25_dp*dvx_dzeta_c*dvx_dzeta_c + 0.25_dp*dvy_dzeta_c*dvy_dzeta_c)
-
-         ! ---------------- Handle de_t_diva for n_cts == 0 or -1
-
-         if ((n_cts(j,i) == -1) .or. n_cts(j,i) == 0) then !in the case where there is no physical temperate layer
+         else ! no physical temperate layer
             do kt=0, KTMAX
                de_t_diva(kt,j,i)= de_c_diva(0,j,i) !temperate "slice" collapsed to the bottom
             end do
-         end if
+         endif
+   
 
       else if (mask(j,i)==3) then   ! floating ice
 
@@ -4292,6 +4101,12 @@ do j=0, JMAX
                            *viscosity(de_ssa(j,i), &
                               temp_c(kc,j,i), temp_c_m(kc,j,i), &
                               0.0_dp, enh_val, 0)
+
+#if (DYNAMICS==3)
+            flui_c_diva(kc,j,i)=1.0_dp/min(max(viscosity(de_ssa(j,i), &
+                              temp_c(kc,j,i), temp_c_m(kc,j,i), &
+                              0.0_dp, enh_val, 0),visc_min),visc_max)
+#endif
          end do
          ! Ice shelves (floating ice) are assumed to consist of cold ice only
 
@@ -4319,6 +4134,12 @@ do j=0, JMAX
                            *viscosity(de_tmp, &
                               temp_c(kc,j,i), temp_c_m(kc,j,i), &
                               0.0_dp, enh_val, 0)
+
+#if (DYNAMICS==3)
+            flui_c_diva(kc,j,i)=1.0_dp/min(max(viscosity(de_tmp, &
+                             temp_c(kc,j,i), temp_c_m(kc,j,i), &
+                             0.0_dp, enh_val, 0),visc_min),visc_max)
+#endif
          end do
 
 #elif (CALCMOD==1)
@@ -4338,6 +4159,12 @@ do j=0, JMAX
                            *viscosity(de_tmp, &
                               temp_t_m(kt,j,i), temp_t_m(kt,j,i), &
                               omega_t(kt,j,i), enh_val, 1)
+
+#if (DYNAMICS==3)
+            flui_t_diva(kt,j,i)=1.0_dp/min(max(viscosity(de_tmp, &
+                                 temp_t_m(kt,j,i), temp_t_m(kt,j,i), &
+                                 omega_t(kt,j,i), enh_val, 1),visc_min),visc_max)
+#endif
          end do
 
          do kc=0, KCMAX
@@ -4355,6 +4182,13 @@ do j=0, JMAX
                            *viscosity(de_tmp, &
                               temp_c(kc,j,i), temp_c_m(kc,j,i), &
                               0.0_dp, enh_val, 0)
+
+#if (DYNAMICS==3)
+            flui_c_diva(kc,j,i)=1.0_dp/min(max(viscosity(de_tmp, &
+                                 temp_c(kc,j,i), temp_c_m(kc,j,i), &
+                                 0.0_dp, enh_val, 0),visc_min),visc_max)
+#endif
+                              
          end do
 
 #elif (CALCMOD==2 || CALCMOD==3)
@@ -4374,6 +4208,12 @@ do j=0, JMAX
                          *viscosity(de_tmp, &
                            temp_c(kc,j,i), temp_c_m(kc,j,i), &
                            omega_c(kc,j,i), enh_val, 2)
+
+#if (DYNAMICS==3)
+            flui_c_diva(kc,j,i)=1.0_dp/min(max(viscosity(de_tmp, &
+                              temp_c(kc,j,i), temp_c_m(kc,j,i), &
+                              omega_c(kc,j,i), enh_val, 2),visc_min),visc_max)
+#endif
          end do
 
 #else
