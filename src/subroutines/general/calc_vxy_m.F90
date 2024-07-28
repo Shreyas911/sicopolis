@@ -1852,25 +1852,16 @@ do j=0, JMAX
 
 #elif (DYNAMICS==3)   /* DIVA */ 
 
-! ------ Work in progress  ----- x component
+!  ------ x-component (for DIVA)
 
-      vx_m(j,i) = vx_m_ssa(j,i) !we used the ssa solver to compute vxy_m
+      vx_m(j,i) = vx_m_ssa(j,i)   ! we used the ssa solver to compute vxy_m
 
-      !on the staggered grid:
-      tau_bx(j,i) = 0.5_dp*(beta_eff(j,i) + beta_eff(j,i+1)) * vx_m(j,i) !shear basal drag in the x direction
+      tau_bx(j,i) = 0.5_dp*(beta_eff(j,i) + beta_eff(j,i+1)) * vx_m(j,i)
+                    ! shear basal drag in the x-direction (on the staggered grid)
 
-      !compute F_2 on the x-staggered grid :
       call calc_F_2_DIVA(i, j, dzeta_c, dzeta_t, &
                          flag_staggered_x=.true., flag_staggered_y=.false.)
-
-      F_1_c(0) = 0.0_dp
-      !%% \!/ Shouldn't this be something like F_1_c(0) = F_1_t(KTMAX) ? \!/
-
-      do kc=1, KCMAX
-         var_mid   = 0.5_dp * (f_1_pre_int_c(kc) + f_1_pre_int_c(kc-1))
-         F_1_c(kc) = F_1_c(kc-1) + var_mid * dzeta_c
-              ! not exactly F_1 from lipscomb-2019 eq30
-      end do
+                    ! F_2 on the x-staggered grid
 
       F_1_t(0) = 0.0_dp
 
@@ -1879,24 +1870,29 @@ do j=0, JMAX
          F_1_t(kt) = F_1_t(kt-1) + var_mid * dzeta_t
       end do
 
-      !basal velocity :
+      F_1_c(0) = F_1_t(KTMAX)
+
+      do kc=1, KCMAX
+         var_mid   = 0.5_dp * (f_1_pre_int_c(kc) + f_1_pre_int_c(kc-1))
+         F_1_c(kc) = F_1_c(kc-1) + var_mid * dzeta_c
+      end do
+
+!    ---- Basal velocity
+
       vx_b(j,i) = vx_m(j,i) - (tau_bx(j,i) * F_2)
       if (abs(vx_b(j,i)) < eps_dp) then
          vx_b(j,i) = 0.0_dp
       endif
-      !ground-up : first determine vx_t :
+
+!    ---- 3D velocity
 
       do kt=0, KTMAX
          vx_t(kt,j,i) = vx_b(j,i) + tau_bx(j,i) * F_1_t(kt)
       end do
 
-      ! then compute vx_c :
-
       do kc=0, KCMAX
-         vx_c(kc,j,i) = vx_t(KTMAX,j,i) + tau_bx(j,i) * F_1_c(kc)
+         vx_c(kc,j,i) = vx_b(j,i) + tau_bx(j,i) * F_1_c(kc)
       end do
-
-! ---------- END OF WORK IN PROGRESS FOR X ----------------
 
 #endif
 
@@ -2030,23 +2026,16 @@ do j=0, JMAX-1
 
 #elif (DYNAMICS==3)   /* DIVA */
 
-! ------ Work in progress  ----- y component
+!  ------ y-component (for DIVA)
 
-      vy_m(j,i) = vy_m_ssa(j,i) !we used the ssa solver to compute vxy_m
-       !on the staggered grid :
-      tau_by(j,i) =  0.5_dp*(beta_eff(j,i) + beta_eff(j+1,i)) * vy_m(j,i) !shear basal drag in the y direction
+      vy_m(j,i) = vy_m_ssa(j,i)   ! we used the ssa solver to compute vxy_m
+
+      tau_by(j,i) =  0.5_dp*(beta_eff(j,i) + beta_eff(j+1,i)) * vy_m(j,i)
+                    ! shear basal drag in the y-direction (on the staggered grid)
 
       call calc_F_2_DIVA(i, j, dzeta_c, dzeta_t, &
                          flag_staggered_x=.false., flag_staggered_y=.true.)
-
-      F_1_c(0) = 0.0_dp
-      !%% \!/ Shouldn't this be something like F_1_c(0) = F_1_t(KTMAX) ? \!/
-
-      do kc=1, KCMAX
-         var_mid   = 0.5_dp * (f_1_pre_int_c(kc) + f_1_pre_int_c(kc-1))
-         F_1_c(kc) = F_1_c(kc-1) + var_mid * dzeta_c
-              ! not exactly F_1 from lipscomb-2019 eq30
-      end do
+                    ! F_2 on the y-staggered grid
 
       F_1_t(0) = 0.0_dp
 
@@ -2055,24 +2044,29 @@ do j=0, JMAX-1
          F_1_t(kt) = F_1_t(kt-1) + var_mid * dzeta_t
       end do
 
-      !basal velocity :
+      F_1_c(0) = F_1_t(KTMAX)
+
+      do kc=1, KCMAX
+         var_mid   = 0.5_dp * (f_1_pre_int_c(kc) + f_1_pre_int_c(kc-1))
+         F_1_c(kc) = F_1_c(kc-1) + var_mid * dzeta_c
+      end do
+
+!    ---- Basal velocity
+
       vy_b(j,i) = vy_m(j,i) - (tau_by(j,i) * F_2)
       if (abs(vy_b(j,i)) < eps_dp) then
          vy_b(j,i) = 0.0_dp
       endif
-      ! from the ground-up : computation of vy_t :
 
-      do kt=0, KTMAX ! by definition, vy_t(0,j,i) = vy_b(j,i) so it shouldn't need special case for kt = 0
+!    ---- 3D velocity
+
+      do kt=0, KTMAX
          vy_t(kt,j,i) = vy_b(j,i) + tau_by(j,i) * F_1_t(kt)
       end do
 
-      ! then computation of vy_c :
-
       do kc=0, KCMAX
-         vy_c(kc,j,i) = vy_t(KTMAX,j,i) + tau_by(j,i) * F_1_c(kc)
+         vy_c(kc,j,i) = vy_b(j,i) + tau_by(j,i) * F_1_c(kc)
       end do
-
-! ---------- END OF WORK IN PROGRESS FOR Y ----------------
 
 #endif
 
@@ -2444,7 +2438,7 @@ do j=1, JMAX-1
                                      **(p_weert_inv(j,i)-1.0_dp)
 
       ! because we have tau_b = beta_drag * v_b = c_drag * v_b**-(1-1/p) * v_b
-      !%% \!/ '**(1.0_dp-p_weert_inv(j,i))' vs. '**(p_weert_inv(j,i)-1.0_dp)' to be checked \!/
+      !  \!/ '**(1.0_dp-p_weert_inv(j,i))' vs. '**(p_weert_inv(j,i)-1.0_dp)' to be checked \!/
 
       beta_eff(j,i) = beta_drag(j,i)/(1.0_dp + beta_drag(j,i)*F_2)
 
