@@ -2432,13 +2432,12 @@ do j=1, JMAX-1
                          flag_staggered_x=.false., flag_staggered_y=.false.)
 
       beta_drag(j,i) = c_drag(j,i) &
-                     * (sqrt( (  (0.5_dp*(vx_b(j,i)+vx_b(j,i-1)))**2  &
+                     / sqrt( (   (0.5_dp*(vx_b(j,i)+vx_b(j,i-1)))**2  &
                                + (0.5_dp*(vy_b(j,i)+vy_b(j-1,i)))**2 ) &
-                             + eps_dp**2 )) &
-                                     **(p_weert_inv(j,i)-1.0_dp)
+                             + eps_dp**2 ) &
+                                     **(1.0_dp-p_weert_inv(j,i))
 
       ! because we have tau_b = beta_drag * v_b = c_drag * v_b**-(1-1/p) * v_b
-      !  \!/ '**(1.0_dp-p_weert_inv(j,i))' vs. '**(p_weert_inv(j,i)-1.0_dp)' to be checked \!/
 
       beta_eff(j,i) = beta_drag(j,i)/(1.0_dp + beta_drag(j,i)*F_2)
 
