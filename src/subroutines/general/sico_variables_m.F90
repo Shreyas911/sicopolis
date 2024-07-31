@@ -773,14 +773,20 @@ real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: flui_c_diva
 real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX) :: flui_t_diva
    !! Ice viscosity for DIVA in the lower (kt) ice domain
 
-real(dp) :: F_2
-   !! integral used to compute beta_drag and velocities (eq30 Lipscomb 2019)
+real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: F_1_c_g
+   !! integral used to compute beta_drag and velocities (eq30 Lipscomb 2019) (at (i,j))
 
-real(dp), dimension(0:KCMAX) :: f_1_pre_int_c
-   !! pre_integral used to compute velocities (eq30 Lipscomb 2019)
+real(dp), dimension(0:KTMAX,0:JMAX,0:IMAX) :: F_1_t_g
+   !! integral used to compute beta_drag and velocities (eq30 Lipscomb 2019) (at (i,j))
 
-real(dp), dimension(0:KTMAX) :: f_1_pre_int_t
-   !! pre_integral used to compute velocities (eq30 Lipscomb 2019)
+real(dp), dimension(0:JMAX,0:IMAX) :: F_2_g
+   !! integral used to compute beta_drag and velocities (eq30 Lipscomb 2019) (at (i,j))
+
+real(dp), dimension(0:JMAX,0:IMAX) :: F_2_x
+   !! integral used to compute beta_drag and velocities (eq30 Lipscomb 2019) (at (i+1/2,j))
+
+real(dp), dimension(0:JMAX,0:IMAX) :: F_2_y
+   !! integral used to compute beta_drag and velocities (eq30 Lipscomb 2019) (at (i,j+1/2))
 
 real(dp), dimension(0:JMAX,0:IMAX) :: tau_bx
    !! x-component of the basal shear stress, on the staggered grid

@@ -1565,11 +1565,6 @@ real(dp) :: v_ref, v_ref_sq_inv
 real(dp) :: v_b_sq
 real(dp) :: pi_inv
 
-#if (DYNAMICS==3)   /* DIVA */
-real(dp), dimension(0:KCMAX) :: F_1_c
-real(dp), dimension(0:KTMAX) :: F_1_t
-real(dp) :: var_mid
-#endif
 
 pi_inv   = 1.0_dp/pi
 
@@ -1662,6 +1657,10 @@ do while ( (m < iter_ssa_min) &
 
    end if
 
+#if (DYNAMICS==3)
+   call calc_F_int_DIVA( dzeta_c, dzeta_t)
+#endif
+
 !  ------ Horizontal velocity vx_m_ssa, vy_m_ssa
 
    flag_calc_vxy_ssa_x = .false.   ! initialization
@@ -1752,6 +1751,7 @@ call error(errormsg)
 
 weigh_ssta_sia_x = 0.0_dp
 weigh_ssta_sia_y = 0.0_dp
+
 
 !  ------ x-component
 
@@ -1859,39 +1859,18 @@ do j=0, JMAX
       tau_bx(j,i) = 0.5_dp*(beta_eff(j,i) + beta_eff(j,i+1)) * vx_m(j,i)
                     ! shear basal drag in the x-direction (on the staggered grid)
 
-      call calc_F_2_DIVA(i, j, dzeta_c, dzeta_t, &
-                         flag_staggered_x=.true., flag_staggered_y=.false.)
-                    ! F_2 on the x-staggered grid
-
-      F_1_t(0) = 0.0_dp
-
-      do kt=1, KTMAX
-         var_mid   = 0.5_dp * (f_1_pre_int_t(kt) + f_1_pre_int_t(kt-1))
-         F_1_t(kt) = F_1_t(kt-1) + var_mid * dzeta_t
-      end do
-
-      F_1_c(0) = F_1_t(KTMAX)
-
-      do kc=1, KCMAX
-         var_mid   = 0.5_dp * (f_1_pre_int_c(kc) + f_1_pre_int_c(kc-1))
-         F_1_c(kc) = F_1_c(kc-1) + var_mid * dzeta_c
-      end do
-
 !    ---- Basal velocity
 
-      vx_b(j,i) = vx_m(j,i) - (tau_bx(j,i) * F_2)
-      if (abs(vx_b(j,i)) < eps_dp) then
-         vx_b(j,i) = 0.0_dp
-      endif
+      vx_b(j,i) = vx_m(j,i) - (tau_bx(j,i) * F_2_x(j,i))
 
 !    ---- 3D velocity
 
       do kt=0, KTMAX
-         vx_t(kt,j,i) = vx_b(j,i) + tau_bx(j,i) * F_1_t(kt)
+         vx_t(kt,j,i) = vx_b(j,i) + tau_bx(j,i) * 0.5_dp*(F_1_t_g(kt,j,i)+F_1_t_g(kt,j,i+1))
       end do
 
       do kc=0, KCMAX
-         vx_c(kc,j,i) = vx_b(j,i) + tau_bx(j,i) * F_1_c(kc)
+         vx_c(kc,j,i) = vx_b(j,i) + tau_bx(j,i) * 0.5_dp*(F_1_c_g(kc,j,i)+F_1_c_g(kc,j,i+1))
       end do
 
 #endif
@@ -2033,39 +2012,19 @@ do j=0, JMAX-1
       tau_by(j,i) =  0.5_dp*(beta_eff(j,i) + beta_eff(j+1,i)) * vy_m(j,i)
                     ! shear basal drag in the y-direction (on the staggered grid)
 
-      call calc_F_2_DIVA(i, j, dzeta_c, dzeta_t, &
-                         flag_staggered_x=.false., flag_staggered_y=.true.)
-                    ! F_2 on the y-staggered grid
-
-      F_1_t(0) = 0.0_dp
-
-      do kt=1, KTMAX
-         var_mid   = 0.5_dp * (f_1_pre_int_t(kt) + f_1_pre_int_t(kt-1))
-         F_1_t(kt) = F_1_t(kt-1) + var_mid * dzeta_t
-      end do
-
-      F_1_c(0) = F_1_t(KTMAX)
-
-      do kc=1, KCMAX
-         var_mid   = 0.5_dp * (f_1_pre_int_c(kc) + f_1_pre_int_c(kc-1))
-         F_1_c(kc) = F_1_c(kc-1) + var_mid * dzeta_c
-      end do
 
 !    ---- Basal velocity
 
-      vy_b(j,i) = vy_m(j,i) - (tau_by(j,i) * F_2)
-      if (abs(vy_b(j,i)) < eps_dp) then
-         vy_b(j,i) = 0.0_dp
-      endif
+      vy_b(j,i) = vy_m(j,i) - (tau_by(j,i) * F_2_y(j,i))
 
 !    ---- 3D velocity
 
       do kt=0, KTMAX
-         vy_t(kt,j,i) = vy_b(j,i) + tau_by(j,i) * F_1_t(kt)
+         vy_t(kt,j,i) = vy_b(j,i) + tau_by(j,i) * 0.5_dp*(F_1_t_g(kt,j,i)+F_1_t_g(kt,j+1,i))
       end do
 
       do kc=0, KCMAX
-         vy_c(kc,j,i) = vy_b(j,i) + tau_by(j,i) * F_1_c(kc)
+         vy_c(kc,j,i) = vy_b(j,i) + tau_by(j,i) * 0.5_dp*(F_1_c_g(kc,j,i)+F_1_c_g(kc,j+1,i))
       end do
 
 #endif
@@ -2428,29 +2387,23 @@ do j=1, JMAX-1
 
 #elif (DYNAMICS==3)
 
-      call calc_F_2_DIVA(i, j, dzeta_c, dzeta_t, &
-                         flag_staggered_x=.false., flag_staggered_y=.false.)
-
       beta_drag(j,i) = c_drag(j,i) &
                      / sqrt( (   (0.5_dp*(vx_b(j,i)+vx_b(j,i-1)))**2  &
                                + (0.5_dp*(vy_b(j,i)+vy_b(j-1,i)))**2 ) &
                              + eps_dp**2 ) &
                                      **(1.0_dp-p_weert_inv(j,i))
 
-      ! because we have tau_b = beta_drag * v_b = c_drag * v_b**-(1-1/p) * v_b
+      ! because we have tau_b = beta_drag * v_b = c_drag * |v_b|**-(1-1/p) * v_b
 
-      beta_eff(j,i) = beta_drag(j,i)/(1.0_dp + beta_drag(j,i)*F_2)
+      if (n_cts(j,i) == -1) then   ! cold ice base
 
-      if (beta_drag(j,i) < 0.0_dp) then  ! try to catch potential issues with beta
+         if (.not. sub_melt_flag(j,i)) then
+            beta_eff(j,i) = 1.0_dp/F_2_g(j,i)
+         endif
+      endif
 
-         write(*,*)
-         write(*,"(a)") "calc_vxy_ssa_matrix:: Error: beta appears to be negative for grounded ice."
-         write(*,*) "range(beta_drag): ", minval(beta_drag), maxval(beta_drag)
-         write(*,*) "Stopping."
-         write(*,*)
-         stop
+      beta_eff(j,i) = beta_drag(j,i)/(1.0_dp + beta_drag(j,i)*F_2_g(j,i))
 
-      end if
 
 #endif
 
@@ -3788,9 +3741,9 @@ do j=0, JMAX
 
          ! compute de_c_diva : 
 
-         do kc=0, KCMAX
-            dvx_dzeta_c = flui_c_diva(kc,j,i) * inv_H * tau_bx_g * (H_c(j,i)) * (1.0_dp - eaz_c_quotient(kc))! * H_dz_c_dzeta(kc)*H_c(j,i)
-            dvy_dzeta_c = flui_c_diva(kc,j,i) * inv_H * tau_by_g * (H_c(j,i)) * (1.0_dp - eaz_c_quotient(kc))! * H_dz_c_dzeta(kc)*H_c(j,i)
+         do kc=0, KCMAX ! from eq 36 Lipscomb-2019
+            dvx_dzeta_c = flui_c_diva(kc,j,i) * inv_H * tau_bx_g * (H_c(j,i)) * (1.0_dp - eaz_c_quotient(kc))
+            dvy_dzeta_c = flui_c_diva(kc,j,i) * inv_H * tau_by_g * (H_c(j,i)) * (1.0_dp - eaz_c_quotient(kc))
 
             de_c_diva(kc,j,i) = sqrt(de_ssa_squared + 0.25_dp*(dvx_dzeta_c*dvx_dzeta_c) + 0.25_dp*(dvy_dzeta_c*dvy_dzeta_c))
          end do   
@@ -3800,9 +3753,9 @@ do j=0, JMAX
          if (n_cts(j,i) == 1) then !ensure that there is a physically existant temperate base
             H_t_ratio=H_t(j,i)*inv_H
 
-            do kt=0, KTMAX
-               dvx_dzeta_t = flui_t_diva(kt,j,i) * tau_bx_g  * ( 1.0_dp - zeta_t(kt) * H_t_ratio ) !* H_t(j,i)
-               dvy_dzeta_t = flui_t_diva(kt,j,i) * tau_by_g  * ( 1.0_dp - zeta_t(kt) * H_t_ratio ) !* H_t(j,i)
+            do kt=0, KTMAX ! from eq 36 Lipscomb-2019
+               dvx_dzeta_t = flui_t_diva(kt,j,i) * tau_bx_g  * ( 1.0_dp - zeta_t(kt) * H_t_ratio )
+               dvy_dzeta_t = flui_t_diva(kt,j,i) * tau_by_g  * ( 1.0_dp - zeta_t(kt) * H_t_ratio )
 
                de_t_diva(kt,j,i) = sqrt(de_ssa_squared + 0.25_dp*(dvx_dzeta_t*dvx_dzeta_t) + 0.25_dp*(dvy_dzeta_t*dvy_dzeta_t))
             end do
@@ -4052,37 +4005,27 @@ end subroutine calc_vis_ssa
 #if (DYNAMICS==3)
 
 !-------------------------------------------------------------------------------
-!> For DYNAMICS==3 (DIVA), subroutine to compute F_2 from Lispcomb 2019,
+!> For DYNAMICS==3 (DIVA), subroutine to compute F_2 and F_1 from Lispcomb 2019,
 !! Mathematical integral used to compute beta_drag and the 3D velocities,
-!! F_2 is a scalar, f_1_pre_int_ct are 1D arrays over kct, on the main grid.
+!! F_2 is 2D, F_1 are 3D, on the main grid.
 !-------------------------------------------------------------------------------
-subroutine calc_F_2_DIVA(i_idx, j_idx, dzeta_c, dzeta_t, &
-                         flag_staggered_x, flag_staggered_y)
+subroutine calc_F_int_DIVA( dzeta_c, dzeta_t)
 
 implicit none
 
-integer(i4b), intent(in) :: i_idx, j_idx
 real(dp), intent(in) :: dzeta_c, dzeta_t
-logical, intent(in) :: flag_staggered_x, flag_staggered_y
 
 integer(i4b) ::i, j, kc, kt
 real(dp) :: H_dz_c_dzeta(0:KCMAX)
-real(dp) :: flui_tmp_c, flui_tmp_t
-real(dp), dimension(0:KCMAX) :: f_2_pre_int_c
-real(dp), dimension(0:KTMAX) :: f_2_pre_int_t
+real(dp), dimension(0:KCMAX) :: f_2_pre_int_c, f_1_pre_int_c
+real(dp), dimension(0:KTMAX) :: f_2_pre_int_t, f_1_pre_int_t
 real(dp) :: H_c_ratio
 real(dp) :: H_t_ratio
 real(dp) :: enh_val
 real(dp) :: inv_H
 real(dp) :: var_mid
 
-i = i_idx
-j = j_idx
 
-if (flag_staggered_x .and. flag_staggered_y ) then
-   errormsg = ' >>> calc_F_2_DIVA: computation is either staggered x or y, not both'
-   call error(errormsg)
-end if
 
 !-------- Parameters for the sigma transformation computation --------
 
@@ -4094,143 +4037,96 @@ do kc=0, KCMAX
    end if
 end do
 
-H_t_ratio = 0.0_dp
+do i=0, IMAX
+do j=0, JMAX
 
-if (.not. flag_staggered_x .and. .not. flag_staggered_y) then ! main grid
+   if (flag_shelfy_stream(j,i)) then
 
-   inv_H = 1.0_dp/H(j,i)
-   H_c_ratio = H_c(j,i) * inv_H
-   if ( n_cts(j,i)==1 ) then
-      H_t_ratio = H_t(j,i) * inv_H
-   end if
+      ! initialisation to ensure values are always defined
+      f_2_pre_int_t(:) = 0.0_dp
+      f_1_pre_int_t(:) = 0.0_dp
 
-else if (flag_staggered_x) then
+      f_2_pre_int_c(:) = 0.0_dp
+      f_1_pre_int_c(:) = 0.0_dp
 
-   inv_H = 1.0_dp/( 0.5_dp*(H(j,i)+H(j,i+1)) )
-   H_c_ratio = 0.5_dp*(H_c(j,i)+H_c(j,i+1)) * inv_H
-   if ( n_cts(j,i)==1 .or. n_cts(j,i+1)==1) then
-      H_t_ratio = 0.5_dp*(H_t(j,i)+H_t(j,i+1)) * inv_H
-   end if
+      H_t_ratio = 0.0_dp
 
-else if (flag_staggered_y) then
+      inv_H = 1.0_dp/H(j,i)
+      H_c_ratio = H_c(j,i) * inv_H
+      if ( n_cts(j,i)==1 ) then
+         H_t_ratio = H_t(j,i) * inv_H
+      end if
 
-   inv_H = 1.0_dp/( 0.5_dp*(H(j,i)+H(j+1,i)) )
-   H_c_ratio = 0.5_dp*(H_c(j,i)+H_c(j+1,i)) * inv_H
-   if ( n_cts(j,i)==1 .or. n_cts(j+1,i)==1) then
-      H_t_ratio = 0.5_dp*(H_t(j,i)+H_t(j+1,i)) * inv_H
-   end if
 
-end if
+      if ( n_cts(j,i)==1 ) then
 
-! initialisation to ensure values are always defined
-f_2_pre_int_t(:) = 0.0_dp
-f_1_pre_int_t(:) = 0.0_dp
+         do kt=0, KTMAX
 
-f_2_pre_int_c(:) = 0.0_dp
-f_1_pre_int_c(:) = 0.0_dp
+            f_1_pre_int_t(kt) = flui_t_diva(kt,j,i) &
+                                 * (1.0_dp - H_t_ratio * zeta_t(kt)) &
+                                 * H_t(j,i) ! * sigma transformation
 
-if (.not. flag_staggered_x .and. .not. flag_staggered_y) then ! main grid
+            f_2_pre_int_t(kt) = f_1_pre_int_t(kt) &
+                                 * (1.0_dp - H_t_ratio * zeta_t(kt))
 
-   if ( n_cts(j,i)==1 ) then
+         end do
 
-      do kt=0, KTMAX
-         flui_tmp_t = flui_t_diva(kt,j,i)
+      end if
 
-         f_1_pre_int_t(kt) = flui_tmp_t &
-                              * (1.0_dp - H_t_ratio * zeta_t(kt)) &
-                              * H_t(j,i) ! * sigma transformation
-         f_2_pre_int_t(kt) = f_1_pre_int_t(kt) &
-                              * (1.0_dp - H_t_ratio * zeta_t(kt))
+
+      do kc=0, KCMAX
+
+         f_1_pre_int_c(kc) = flui_c_diva(kc,j,i) &
+                              * ( H_c_ratio * (1.0_dp - eaz_c_quotient(kc)) ) &
+                              * H_dz_c_dzeta(kc) * H_c(j,i)! * sigma transformation
+
+         f_2_pre_int_c(kc) = f_1_pre_int_c(kc) &
+                              * ( H_c_ratio * (1.0_dp - eaz_c_quotient(kc)) )
+
       end do
 
-   end if
+      !-------- Integration --------
+      F_2_g(j,i) = 0.0_dp
+      F_1_t_g(0,j,i) = 0.0_dp
 
-else if (flag_staggered_x) then
+      do kt=1, KTMAX
+         var_mid = 0.5_dp * (f_2_pre_int_t(kt) + f_2_pre_int_t(kt-1))
+         F_2_g(j,i)     = F_2_g(j,i) + var_mid * dzeta_t
 
-   if ( n_cts(j,i)==1 .or. n_cts(j,i+1)==1) then
-
-      do kt=0, KTMAX
-         flui_tmp_t = 0.5_dp*(flui_t_diva(kt,j,i) + flui_t_diva(kt,j,i+1))
-
-         f_1_pre_int_t(kt) = flui_tmp_t * (1.0_dp - H_t_ratio * zeta_t(kt)) &
-                              * (0.5_dp*(H_t(j,i)+H_t(j,i+1))) ! * sigma transformation
-         f_2_pre_int_t(kt) = f_1_pre_int_t(kt) &
-                              * (1.0_dp - H_t_ratio * zeta_t(kt))
+         var_mid = 0.5_dp * (f_1_pre_int_t(kt) + f_1_pre_int_t(kt-1))
+         F_1_t_g(kt,j,i) = F_1_t_g(kt-1,j,i) + var_mid * dzeta_t
       end do
 
-   end if
+      F_1_c_g(0,j,i) = F_1_t_g(KTMAX,j,i)
 
-else if (flag_staggered_y) then
+      do kc=1, KCMAX
+         var_mid = 0.5_dp * (f_2_pre_int_c(kc) + f_2_pre_int_c(kc-1))
+         F_2_g(j,i)     = F_2_g(j,i) + var_mid * dzeta_c
 
-   if ( n_cts(j,i)==1 .or. n_cts(j+1,i)==1) then
-
-      do kt=0, KTMAX
-         flui_tmp_t = 0.5_dp*(flui_t_diva(kt,j,i) + flui_t_diva(kt,j+1,i))
-
-         f_1_pre_int_t(kt) = flui_tmp_t * (1.0_dp - H_t_ratio * zeta_t(kt)) &
-                              * (0.5_dp*(H_t(j,i)+H_t(j+1,i))) ! * sigma transformation
-         f_2_pre_int_t(kt) = f_1_pre_int_t(kt) &
-                              * (1.0_dp - H_t_ratio * zeta_t(kt))
+         var_mid = 0.5_dp * (f_1_pre_int_c(kc) + f_1_pre_int_c(kc-1))
+         F_1_c_g(kc,j,i) = F_1_c_g(kc-1,j,i) + var_mid * dzeta_c
       end do
 
+      if (F_2_g(j,i) < 0.0_dp) then
+         errormsg = ' >>> calc_F_int_DIVA: F_2_g is negative!'
+         call error(errormsg)
+      end if
+
+      !-------- Stagger on x and y grid ---------
+      !if (flag_shelfy_stream(j,i) .and. flag_shelfy_stream(j,i+1)) then
+      F_2_x(j,i) = 0.5_dp*(F_2_g(j,i) + F_2_g(j,i+1))
+      F_2_y(j,i) = 0.5_dp*(F_2_g(j,i) + F_2_g(j+1,i))
+
+   else !not shelfy stream :
+      F_2_g(j,i)     = 0.0_dp
+      F_2_x(j,i)     = 0.0_dp
+      F_2_y(j,i)     = 0.0_dp
+      F_1_c_g(:,j,i) = 0.0_dp
    end if
-
-end if
-
-do kc=0, KCMAX
-
-   if (.not. flag_staggered_x .and. .not. flag_staggered_y) then ! main grid
-
-      flui_tmp_c = flui_c_diva(kc,j,i)
-
-      f_1_pre_int_c(kc) = flui_tmp_c &
-                           * ( H_c_ratio * (1.0_dp - eaz_c_quotient(kc)) ) &
-                           * H_dz_c_dzeta(kc) * H_c(j,i)
-                           ! * sigma transformation
-
-
-   else if (flag_staggered_x) then
-
-      flui_tmp_c = 0.5_dp*(flui_c_diva(kc,j,i) + flui_c_diva(kc,j,i+1))
-
-      f_1_pre_int_c(kc) = flui_tmp_c &
-                           * ( H_c_ratio * (1.0_dp - eaz_c_quotient(kc)) ) &
-                           * H_dz_c_dzeta(kc)*(0.5_dp*(H_c(j,i)+H_c(j,i+1))) ! * sigma transformation
-
-   else if (flag_staggered_y) then
-
-      flui_tmp_c = 0.5_dp*(flui_c_diva(kc,j,i) + flui_c_diva(kc,j+1,i))
-
-      f_1_pre_int_c(kc) = flui_tmp_c &
-                           * ( H_c_ratio * (1.0_dp - eaz_c_quotient(kc)) ) &
-                           * H_dz_c_dzeta(kc)*(0.5_dp*(H_c(j,i)+H_c(j+1,i))) ! * sigma transformation
-   end if
-
-   f_2_pre_int_c(kc) = f_1_pre_int_c(kc) &
-                        * ( H_c_ratio * (1.0_dp - eaz_c_quotient(kc)) )
-
+end do
 end do
 
-!-------- Integration --------
-
-F_2 = 0.0_dp
-
-do kt=1, KTMAX
-   var_mid = 0.5_dp * (f_2_pre_int_t(kt) + f_2_pre_int_t(kt-1))
-   F_2     = F_2 + var_mid * dzeta_t
-end do
-
-do kc=1, KCMAX
-   var_mid = 0.5_dp * (f_2_pre_int_c(kc) + f_2_pre_int_c(kc-1))
-   F_2     = F_2 + var_mid * dzeta_c
-end do
-
-if (F_2 < 0.0_dp) then
-   errormsg = ' >>> calc_F_2_DIVA: F_2 is negative!'
-   call error(errormsg)
-end if
-
-end subroutine calc_F_2_DIVA
+end subroutine calc_F_int_DIVA
 
 #endif   /* DYNAMICS==3 */
 
