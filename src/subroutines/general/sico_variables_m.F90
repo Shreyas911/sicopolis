@@ -794,6 +794,9 @@ real(dp), dimension(0:JMAX,0:IMAX) :: tau_bx
 real(dp), dimension(0:JMAX,0:IMAX) :: tau_by
    !! y-component of the basal shear stress, on the staggered grid
 
+real(dp), dimension(0:JMAX,0:IMAX) :: vb_sq_prev
+   !! squared basal velocity of the previous iteration (main grid)
+
 #endif
 
 real(dp), dimension(0:JMAX,0:IMAX) :: vis_ave_g

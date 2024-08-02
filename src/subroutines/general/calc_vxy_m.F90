@@ -1753,6 +1753,11 @@ weigh_ssta_sia_x = 0.0_dp
 weigh_ssta_sia_y = 0.0_dp
 
 
+
+
+
+
+
 !  ------ x-component
 
 do i=0, IMAX-1
@@ -1872,6 +1877,7 @@ do j=0, JMAX
       do kc=0, KCMAX
          vx_c(kc,j,i) = vx_b(j,i) + tau_bx(j,i) * 0.5_dp*(F_1_c_g(kc,j,i)+F_1_c_g(kc,j,i+1))
       end do
+
 
 #endif
 
@@ -2175,6 +2181,9 @@ do j=1, JMAX-1
       vy_b_g(j,i) = vy_s_g(j,i)
 
    end if
+   !save the norm of the basal velocity to use in calc_vxy_ssa_matrix :
+   vb_sq_prev(j,i) = (vx_b_g(j,i))**2  &
+                   + (vy_b_g(j,i))**2
 
 end do
 end do
@@ -2386,24 +2395,11 @@ do j=1, JMAX-1
                                      **(1.0_dp-p_weert_inv(j,i))
 
 #elif (DYNAMICS==3)
-
       beta_drag(j,i) = c_drag(j,i) &
-                     / sqrt( (   (0.5_dp*(vx_b(j,i)+vx_b(j,i-1)))**2  &
-                               + (0.5_dp*(vy_b(j,i)+vy_b(j-1,i)))**2 ) &
-                             + eps_dp**2 ) &
-                                     **(1.0_dp-p_weert_inv(j,i))
-
-      ! because we have tau_b = beta_drag * v_b = c_drag * |v_b|**-(1-1/p) * v_b
-
-      if (n_cts(j,i) == -1) then   ! cold ice base
-
-         if (.not. sub_melt_flag(j,i)) then
-            beta_eff(j,i) = 1.0_dp/F_2_g(j,i)
-         endif
-      endif
+                     / ((sqrt(vb_sq_prev(j,i)+ eps_dp**2))**(1.0_dp-p_weert_inv(j,i)))
+      ! because tau_b = beta_drag * v_b = c_drag * |v_b|**-(1-1/p) * v_b
 
       beta_eff(j,i) = beta_drag(j,i)/(1.0_dp + beta_drag(j,i)*F_2_g(j,i))
-
 
 #endif
 
@@ -2411,7 +2407,6 @@ do j=1, JMAX-1
 
 end do
 end do
-
 !-------- Assembly of the system of linear equations
 !                         (matrix storage: compressed sparse row CSR) --------
 
