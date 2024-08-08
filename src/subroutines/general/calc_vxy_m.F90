@@ -382,6 +382,8 @@ end subroutine calc_dzs_dxy_aux
 !-------------------------------------------------------------------------------
 subroutine calc_vxy_b_sia(time)
 
+use calc_pressure_water_bas_m
+
 implicit none
 
 real(dp), intent(in) :: time
@@ -465,14 +467,15 @@ end if
 !  ------ Basal pressure p_b, basal water pressure p_b_w,
 !         reduced pressure p_b_red
 
+call calc_pressure_water_bas()   ! compute p_b_w
+
 do i=0, IMAX
 do j=0, JMAX
 
    if ((mask(j,i) == 0).or.(mask(j,i) == 3)) then
                      ! grounded or floating ice
 
-      p_b(j,i)   = max(RHO*G*H(j,i), 0.0_dp)
-      p_b_w(j,i) = RHO_SW*G*max((z_sl(j,i)-zb(j,i)), 0.0_dp)
+      p_b(j,i) = max(RHO*G*H(j,i), 0.0_dp)
 
       if (mask(j,i) == 0) then
          p_b_red(j,i) = max(p_b(j,i)-p_b_w(j,i), 0.0_dp)
@@ -487,7 +490,6 @@ do j=0, JMAX
    else   ! ice-free land or ocean
 
       p_b(j,i)         = 0.0_dp
-      p_b_w(j,i)       = 0.0_dp
       p_b_red(j,i)     = 0.0_dp
       p_b_red_lim(j,i) = 0.0_dp
 
@@ -1410,6 +1412,8 @@ end subroutine calc_vxy_sia
 !-------------------------------------------------------------------------------
 subroutine calc_vxy_static()
 
+use calc_pressure_water_bas_m
+
 implicit none
 
 real(dp) :: flui_init
@@ -1423,7 +1427,8 @@ real(dp) :: flui_init
 c_slide = 0.0_dp
 p_weert = 0
 q_weert = 0
-p_b_w   = 0.0_dp
+
+call calc_pressure_water_bas()   ! compute p_b_w
 
 d_help_b = 0.0_dp
 c_drag   = 0.0_dp
