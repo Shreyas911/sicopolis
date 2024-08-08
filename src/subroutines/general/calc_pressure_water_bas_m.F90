@@ -64,22 +64,17 @@ contains
      i = n2i(ij)   ! i=0...IMAX
      j = n2j(ij)   ! j=0...JMAX
 
-#if (!defined(BASAL_WATER_PRESSURE))
-
-     p_b_w(j,i) = RHO_SW*G*max((z_sl(j,i)-zb(j,i)), 0.0_dp)
-                   ! ocean pressure with cut-off (default)
-
-#elif (BASAL_WATER_PRESSURE==1)
+#if (!defined(BASAL_WATER_PRESSURE) || BASAL_WATER_PRESSURE==0)
 
      p_b_w(j,i) = 0.0_dp
                    ! zero everywhere
 
-#elif (BASAL_WATER_PRESSURE==2)
+#elif (BASAL_WATER_PRESSURE==1)
 
      p_b_w(j,i) = RHO_SW*G*(z_sl(j,i)-zb(j,i))
                    ! ocean pressure without cut-off (can become negative)
 
-#elif (BASAL_WATER_PRESSURE==3)
+#elif (BASAL_WATER_PRESSURE==2)
 
      p_b_w(j,i) = RHO_SW*G*max((z_sl(j,i)-zb(j,i)), 0.0_dp)
                    ! ocean pressure with cut-off
@@ -87,7 +82,7 @@ contains
 #else
 
      errormsg = ' >>> calc_pressure_water_bas: ' &
-              // 'Parameter BASAL_WATER_PRESSURE must be 1, 2 or 3!'
+              // 'Parameter BASAL_WATER_PRESSURE must be 0, 1 or 2!'
      call error(errormsg)
 
 #endif

@@ -87,10 +87,30 @@ n_slide_regions = 1
 n_slide_regions = N_SLIDE_REGIONS
 #endif
 
+#if (SLIDE_LAW==0)
+
+p_weert_aux = 1
+q_weert_aux = 0
+c_slide_aux = 0.0_dp   ! no-slip
+gamma_slide_aux = 1.0_dp
+
+#elif (SLIDE_LAW==1)
+
 p_weert_aux = P_WEERT
 q_weert_aux = Q_WEERT
 c_slide_aux = C_SLIDE
 gamma_slide_aux = GAMMA_SLIDE
+
+#else
+
+errormsg = ' >>> calc_vxy_b_init: SLIDE_LAW must be 0 or 1!' &
+         //         end_of_line &
+         //'        Change obsolete SLIDE_LAW = 2 or 3' &
+         //         end_of_line &
+         //'        to SLIDE_LAW = 1, BASAL_WATER_PRESSURE = 2.'
+call error(errormsg)
+
+#endif
 
 do n=1, n_slide_regions
    gamma_slide_inv_aux(n) = 1.0_dp/max(gamma_slide_aux(n), eps)
@@ -547,23 +567,13 @@ do j=0, JMAX
 
 !  ------ Abbreviations
 
-#if (SLIDE_LAW==1)
-      cvxy1 = c_slide(j,i) &
-              * ( (tau_b(j,i)+eps_dp)**(p_weert(j,i)-1) &
-                  /(p_b(j,i)+eps_dp)**q_weert(j,i) ) &
-              * p_b(j,i)
-      ctau1 = 1.0_dp/(c_slide(j,i)+eps_dp)**p_weert_inv(j,i) &
-              * (p_b(j,i)+eps_dp)**(q_weert(j,i)*p_weert_inv(j,i))
-              ! Basal sliding at pressure melting
-#elif (SLIDE_LAW==2)
-      cvxy1 = c_slide(j,i) &
-              * ( (tau_b(j,i)+eps_dp)**(p_weert(j,i)-1) &
-                  /(p_b_red_lim(j,i)+eps_dp)**q_weert(j,i) ) &
-              * p_b(j,i)
-      ctau1 = 1.0_dp/(c_slide(j,i)+eps_dp)**p_weert_inv(j,i) &
-              * (p_b_red_lim(j,i)+eps_dp)**(q_weert(j,i)*p_weert_inv(j,i))
-              ! Basal sliding at pressure melting
-#elif (SLIDE_LAW==3)
+#if (SLIDE_LAW==0)
+
+      cvxy1 = 0.0_dp   ! No-slip
+      ctau1 = 1.0_dp/eps_dp
+
+#elif (SLIDE_LAW==1)
+
       cvxy1 = c_slide(j,i) &
               * ( (tau_b(j,i)+eps_dp)**(p_weert(j,i)-1) &
                   /(p_b_red_lim(j,i)+eps_dp)**q_weert(j,i) ) &
@@ -571,10 +581,16 @@ do j=0, JMAX
       ctau1 = 1.0_dp/(c_slide(j,i)+eps_dp)**p_weert_inv(j,i) &
               * (p_b_red(j,i)+eps_dp)**(q_weert(j,i)*p_weert_inv(j,i))
               ! Basal sliding at pressure melting
+
 #else
-      errormsg = ' >>> calc_vxy_b_sia: ' &
-                    //'SLIDE_LAW must be 1, 2 or 3!'
+
+      errormsg = ' >>> calc_vxy_b_sia: SLIDE_LAW must be 0 or 1!' &
+               //         end_of_line &
+               //'        Change obsolete SLIDE_LAW = 2 or 3' &
+               //         end_of_line &
+               //'        to SLIDE_LAW = 1, BASAL_WATER_PRESSURE = 2.'
       call error(errormsg)
+
 #endif
 
 !  ------ d_help_b, c_drag
