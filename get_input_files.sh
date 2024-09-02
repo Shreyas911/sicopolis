@@ -9,7 +9,7 @@
 #   copying them to the corresponding directories.
 #
 # Author: Ralf Greve
-# Date:   2024-04-15
+# Date:   2024-06-04
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #-------- Settings (to be customized) --------
@@ -40,9 +40,9 @@ SMARS_FLAG=1     # South polar cap of Mars:
 #-------- Initialization --------
 
 # Zenodo repo:
-REPO_URL=https://zenodo.org/record/10976314/files
+REPO_URL=https://zenodo.org/record/11465581/files
 
-# Backup repo (no version control, latest version only):
+# Backup repo (no versioning, latest version only):
 # REPO_URL=https://www2.lowtem.hokudai.ac.jp/gisg/repo/sicopolis/sico_in
 
 SICOPOLIS_HOME=$PWD

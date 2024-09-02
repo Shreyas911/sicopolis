@@ -4,7 +4,7 @@
 
 !-------- Basic settings --------
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2024-04-15'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2024-08-08'
 !                      Date of last change
 
 !-------- Domain --------
@@ -24,11 +24,64 @@
 !                   HEINO   - ISMIP HEINO
 !                   NMARS   - North polar cap of Mars
 !                   SMARS   - South polar cap of Mars
+!                   XYZ     - Unspecified domain
 
-!-------- Physical parameter file --------
+#define XYZ_SPECIAL_MODULES 0
+!                   Only for unspecified domain XYZ:
+!                       0 : Common modules will be used
+!                       1 : Special modules 'boundary_m', 'sico_init_m'
+!                           and 'sico_vars_m' (in 'src/subroutines/xyz/')
+!                           will be used
 
-#define PHYS_PARA_FILE 'phys_para_tibet.dat'
-!                       Name of the file containing the physical parameters
+!-------- Physical parameters --------
+
+#define PARAM_RHO 910.0d0
+!       Density of ice (in kg/m3)
+
+#define PARAM_RHO_W 1000.0d0
+!       Density of pure water (in kg/m3)
+
+#define PARAM_RHO_SW 1028.0d0
+!       Density of sea water (in kg/m3)
+
+#define PARAM_L 3.35d+05
+!       Latent heat (in J/kg)
+
+#define PARAM_G 9.81d0
+!       Gravity acceleration (in m/s2)
+
+#define PARAM_NUE 1.0d-06
+!       Water diffusivity (in kg/(m*s)) 
+
+#define PARAM_BETA 8.7d-04
+!       Clausius-Clapeyron gradient (in K/m)
+
+#define PARAM_DELTA_TM_SW 1.85d0
+!       Melting point depression of sea water
+!       due to its average salinity (in degC)
+
+#define PARAM_OMEGA_MAX 0.01d0
+!       Threshold value for the water content
+
+#define PARAM_H_R 2000.0d0
+!       Thickness of the modelled lithosphere layer (in m)
+
+#define PARAM_RHO_C_R 2.0d+06
+!       Density times specific heat of the lithosphere (in J/(m3*K))
+
+#define PARAM_KAPPA_R 3.0d0
+!       Heat conductivity of the lithosphere (in W/(m*K))
+
+#define PARAM_RHO_A 3300.0d0
+!       Density of the asthenosphere (in kg/m3)
+
+#define PARAM_R_T 181.25d0
+!       Coefficient of the water-content dependence in the rate factor
+!       for temperate
+
+#define RF_KAPPA_C_FILE 'RF_KAPPA_C_GrWeHu98.nc'
+!       Name of the file containing the tabulated values of the
+!       temperature-dependent rate factor, heat conductivity and specific heat
 
 !-------- Type of grid, spatial resolution --------
 
@@ -40,6 +93,23 @@
 !                           with distortion correction
 !                           [not allowed for this application]
 !                       2 : Geographical coordinates (longitude/latitude)
+
+#define PLANET_R 6371000.0d0
+!                       Radius of the Earth (in m)
+
+#define PLANET_A 6378137.0d0
+!                       Semi-major axis of the Earth (in m)
+
+#define PLANET_F_INV 298.257223563d0
+!                       Inverse flattening of the Earth
+
+#define STEREO_PROJ_LATD0 35.0d0
+!                       Standard parallel (in degN)
+!                       (only for GRID==0, 1)
+
+#define STEREO_PROJ_LOND0 90.0d0
+!                       Central meridian (in degE)
+!                       (only for GRID==0, 1)
 
 #define LAMBDA_0 65.0d0
 !                       x coordinate (longitude, in deg) of the origin point
@@ -698,19 +768,19 @@
 !                       between precipitation and delta_ts
 !                       (in 1/C, only for ACCSURFACE==2, 3)
 
-#define ELEV_DESERT 1
-!                         0 : No elevation desertification
-!                         1 : Elevation desertification accounted for
-!                             (only for ACCSURFACE==1, 2, 3)
+#define ELEV_DESERT 0
+!                       0 : No elevation desertification
+!                       1 : Elevation desertification accounted for
+!                           (only for ACCSURFACE<=5)
 
-#define GAMMA_P     -log(2.0d0)
+#define GAMMA_P -log(2.0d0)
 !                       Precipitation lapse rate for elevation desertification,
 !                       in km^(-1)
-!                       (only for ELEV_DESERT==1 and ACCSURFACE==1, 2, 3)
+!                       (only for ELEV_DESERT==1 and ACCSURFACE<=5)
 
-#define ZS_THRESH   2000.0d0
+#define ZS_THRESH 2000.0d0
 !                       Elevation threshold for elevation desertification, in m
-!                       (only for ELEV_DESERT==1 and ACCSURFACE==1, 2, 3)
+!                       (only for ELEV_DESERT==1 and ACCSURFACE<=5)
 
 #define PRECIP_ANOM_FILE 'tibet_uk_20_precmm_anom.dat'
 !                       Name of the file containing the LGM
@@ -825,14 +895,8 @@
 !-------- Basal sliding --------
 
 #define SLIDE_LAW 1
-!                       1 : Weertman-type sliding,
-!                           full ice pressure in denominator
-!                       2 : Weertman-type sliding,
-!                           reduced pressure (ice minus water) in denominator,
-!                           limiter RED_PRES_LIMIT_FACT applied for SIA and SStA
-!                       3 : Weertman-type sliding,
-!                           reduced pressure (ice minus water) in denominator,
-!                           limiter RED_PRES_LIMIT_FACT applied for SIA only
+!                       0 : No-slip
+!                       1 : Weertman-Budd sliding law
 
 #define N_SLIDE_REGIONS 1
 !                       Number of regions with different sliding laws
@@ -841,10 +905,15 @@
 !                       File defining the regions for the sliding laws
 !                       (only for N_SLIDE_REGIONS > 1)
 
+#define BASAL_WATER_PRESSURE 0
+!                       Basal water pressure:
+!                       0 : Zero everywhere
+!                       1 : Ocean pressure without cut-off (can become negative)
+!                       2 : Ocean pressure with cut-off
+
 #define C_SLIDE 11.2d0
 !                       Sliding coefficient, in m/[a*Pa^(p-q)]
 !                       (N_SLIDE_REGIONS separate values).
-!                       Set to 0.0d0 for no-slip conditions.
 
 #define C_SLIDE_FILTER_WIDTH 0.0d0
 !                       Filtering width (spatial smoothing by Gaussian filter)
@@ -877,10 +946,10 @@
 !                       (no gradual ramp-up).
 
 #define RED_PRES_LIMIT_FACT 0.35d0
-!                       Limiter for the reduced pressure (ice minus water),
-!                       ensures that the reduced pressure cannot become smaller
+!                       Limiter for the reduced pressure (ice minus water);
+!                       ensures that, for SIA dynamics,
+!                       the reduced pressure cannot become smaller
 !                       than RED_PRES_LIMIT_FACT times the ice pressure
-!                       (for SLIDE_LAW==2,3)
 
 #define HYDRO_SLIDE_SAT_FCT 0
 !                       Saturation function for water-film-enhanced basal sliding
@@ -915,8 +984,7 @@
 !                           (GHF imposed directly at the grounded ice base)
 !                       1 : Coupled heat-conducting bedrock
 !                           (GHF imposed at the base of the
-!                           thermal lithosphere layer of thickness H_R,
-!                           defined in the physical-parameter file)
+!                           thermal lithosphere layer of thickness PARAM_H_R)
 
 !-------- Basal melting at the marine ice front --------
 

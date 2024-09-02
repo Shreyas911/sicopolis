@@ -83,7 +83,34 @@ logical :: flag_calc_temp
 logical, dimension(0:JMAX,0:IMAX) :: flag_inner_point
    !! Inner-point flag:
    !!   .true.: inner point,
-   !!  .false.: margin point
+   !!  .false.: otherwise (margin point)
+
+logical, dimension(0:JMAX,0:IMAX) :: flag_inner_inner_point
+   !! Inner-point flag:
+   !!   .true.: inner point (outermost two grid points excepted),
+   !!  .false.: otherwise (margin point, or margin-neighbour point)
+
+logical, dimension(0:JMAX,0:IMAX) :: flag_sg_x
+   !! Flag for staggered grid in x-direction:
+   !!   .true.: staggered-grid point in x-direction,
+   !!  .false.: otherwise
+
+logical, dimension(0:JMAX,0:IMAX) :: flag_sg_y
+   !! Flag for staggered grid in y-direction:
+   !!   .true.: staggered-grid point in y-direction,
+   !!  .false.: otherwise
+
+logical, dimension(0:JMAX,0:IMAX) :: flag_sg_x_inner_y
+   !! Flag for staggered grid in x-direction and inner point in y-direction:
+   !!   .true.: staggered-grid point in x-direction
+   !!           and inner point in y-direction,
+   !!  .false.: otherwise
+
+logical, dimension(0:JMAX,0:IMAX) :: flag_sg_y_inner_x
+   !! Flag for staggered grid in y-direction and inner point in x-direction:
+   !!   .true.: staggered-grid point in y-direction
+   !!           and inner point in x-direction,
+   !!  .false.: otherwise
 
 logical, dimension(0:JMAX,0:IMAX) :: flag_grounding_line_1
    !! Grounding line flag:
@@ -628,8 +655,20 @@ logical :: flag_thk_solver_explicit
    !!   .true.: explicit solver,
    !!  .false.: implicit solver
 
-real(dp), dimension(0:JMAX,0:IMAX) :: zs_ref
+#if (TSURFACE<=5)
+real(dp), dimension(0:JMAX,0:IMAX) :: zs_ref_temp
+   !! Reference elevation for the present-day surface temperature
+#endif
+
+#if (ACCSURFACE<=5)
+real(dp), dimension(0:JMAX,0:IMAX) :: zs_ref_precip
+   !! Reference elevation for the present-day precipitation
+#endif
+
+#if (TSURFACE==6 && ACCSURFACE==6 && ABLSURFACE==6)
+real(dp), dimension(0:JMAX,0:IMAX) :: zs_ref_climatol
    !! Reference elevation for the present-day climatology
+#endif
 
 real(dp), dimension(0:JMAX,0:IMAX) :: accum_present
    !! Present-day accumulation rate at the ice surface
@@ -1256,27 +1295,27 @@ integer(i4b) :: forcing_flag
    !!  3: forcing by time-dependent surface temperature
    !!     and precipitation data
 
-integer(i4b) :: n_core
+integer(i4b) :: n_site
    !! Number of positions to be considered in the time-series file
-   !! for deep boreholes
+   !! for specified sites (i.e., ice cores)
 
-integer(i4b), parameter :: n_core_max = 256
-   !! Maximum allowed value of n_core
+integer(i4b), parameter :: n_site_max = 256
+   !! Maximum allowed value of n_site
 
-real(dp), dimension(n_core_max) :: lambda_core
-   !! Geographical longitude of the prescribed borehole positions
+real(dp), dimension(n_site_max) :: lambda_site
+   !! Geographical longitude of the prescribed sites
 
-real(dp), dimension(n_core_max) :: phi_core
-   !! Geographical latitude of the prescribed borehole positions
+real(dp), dimension(n_site_max) :: phi_site
+   !! Geographical latitude of the prescribed sites
 
-real(dp), dimension(n_core_max) :: x_core
-   !! Coordinate xi (= x) of the prescribed borehole positions
+real(dp), dimension(n_site_max) :: x_site
+   !! Coordinate xi (= x) of the prescribed sites
 
-real(dp), dimension(n_core_max) :: y_core
-   !! Coordinate eta (= y) of the prescribed borehole positions
+real(dp), dimension(n_site_max) :: y_site
+   !! Coordinate eta (= y) of the prescribed sites
 
-character(len=16), dimension(n_core_max) :: ch_core
-   !! Names of the prescribed borehole positions
+character(len=16), dimension(n_site_max) :: ch_site
+   !! Names of the prescribed sites
 
 integer(i4b) :: grip_time_min
    !! Minimum time of the data values for the surface temperature anomaly
@@ -1404,8 +1443,9 @@ integer(i4b) :: n_year_CE_rtr_save = -9999
 integer(i4b), dimension(0:99) :: ncid_ser
    !! IDs of the NetCDF time-series output files
 
-integer(i4b) :: ncid_core
-   !! ID of the NetCDF time-series output file for the deep ice cores
+integer(i4b) :: ncid_site
+   !! ID of the NetCDF time-series output file for the specified sites
+   !! (i.e., ice cores)
 
 real(dp), dimension(-10000:10000) :: kei
    !! Tabulated values of the kei function (Kelvin function of zero order)
@@ -1435,6 +1475,11 @@ integer(i4b), dimension((IMAX+1)*(JMAX+1)) :: n2i
 
 integer(i4b), dimension((IMAX+1)*(JMAX+1)) :: n2j
    !! Conversion from linear index n to 2d index j
+
+logical :: flag_grads_nc_tweaks
+   !! Flag for optimizing NetCDF output for viewing with GrADS:
+   !!   .true.: optimized output,
+   !!  .false.: normal NetCDF output (default)
 
 real(dp), parameter :: no_value_pos_1 =  1.11e+11_dp
    !! Positive no-value parameter

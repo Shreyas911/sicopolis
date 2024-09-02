@@ -118,7 +118,8 @@ real(dp) :: gamma_slide_aux(N_SLIDE_REGIONS)
 
 character(len=64), parameter :: fmt1 = '(a)', &
                                 fmt2 = '(a,i0)', &
-                                fmt3 = '(a,es12.4)'
+                                fmt3 = '(a,es13.5)', &
+                                fmt4 = '(a,es20.12)'
 
 write(unit=6, fmt='(a)') ' '
 write(unit=6, fmt='(a)') ' -------- sico_init --------'
@@ -202,7 +203,7 @@ time_output = 0.0_dp
   call lis_initialize(ierr)
 #endif
 
-!-------- Read physical parameters --------
+!-------- Physical parameters --------
 
 #if (defined(YEAR_SEC))
 year2sec = YEAR_SEC
@@ -214,7 +215,127 @@ year2sec = 3.1556925445e+07_dp
 
 sec2year = 1.0_dp/year2sec
 
+#if (defined(PARAM_RHO))
+RHO = real(PARAM_RHO,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_RHO not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_RHO_W))
+RHO_W = real(PARAM_RHO_W,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_RHO_W not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_RHO_SW))
+RHO_SW = real(PARAM_RHO_SW,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_RHO_SW not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_L))
+L = real(PARAM_L,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_L not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_G))
+G = real(PARAM_G,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_G not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_NUE))
+NUE = real(PARAM_NUE,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_NUE not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_BETA))
+BETA = real(PARAM_BETA,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_BETA not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_DELTA_TM_SW))
+DELTA_TM_SW = real(PARAM_DELTA_TM_SW,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_DELTA_TM_SW not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_OMEGA_MAX))
+OMEGA_MAX = real(PARAM_OMEGA_MAX,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_OMEGA_MAX not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_H_R))
+H_R = real(PARAM_H_R,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_H_R not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_RHO_C_R))
+RHO_C_R = real(PARAM_RHO_C_R,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_RHO_C_R not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_KAPPA_R))
+KAPPA_R = real(PARAM_KAPPA_R,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_KAPPA_R not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_RHO_A))
+RHO_A = real(PARAM_RHO_A,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_RHO_A not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_R_T))
+R_T = real(PARAM_R_T,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_R_T not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (!defined(RF_KAPPA_C_FILE))
+errormsg = ' >>> sico_init: ' &
+           // 'File RF_KAPPA_C_FILE not defined in run-specs header!'
+call error(errormsg)
+#endif
+
 call read_phys_para()
+     ! read tabulated values of the
+     ! rate factor, heat conductivity and specific heat
 
 call ice_mat_eqs_pars(RF, R_T, KAPPA, C, -190, 10)
 
@@ -433,6 +554,63 @@ dtime_temp0 = DTIME_TEMP0
 
 !-------- Further initializations --------
 
+#if (defined(PLANET_R))
+R = real(PLANET_R,dp)   ! mean radius of the planet
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PLANET_R not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PLANET_A))
+A = real(PLANET_A,dp)   ! semi-major axis of the planet
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PLANET_A not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PLANET_F_INV))
+F_INV = real(PLANET_F_INV,dp)  ! inverse flattening of the planet
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PLANET_F_INV not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+if (F_INV > 1.0e+10_dp) then   ! interpreted as infinity -> no flattening
+   B = A
+else   ! finite inverse flattening
+   B = A - A/F_INV
+end if
+
+#if (GRID==0 || GRID==1)
+
+#if (defined(STEREO_PROJ_LATD0))
+PHI0 = real(STEREO_PROJ_LATD0,dp) *deg2rad   ! deg -> rad
+              ! central meridian of the stereographic projection
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter STEREO_PROJ_LATD0 not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(STEREO_PROJ_LOND0))
+LAMBDA0 = real(STEREO_PROJ_LOND0,dp) *deg2rad   ! deg -> rad
+              ! standard parallel of the stereographic projection
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter STEREO_PROJ_LOND0 not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#else
+
+PHI0    = 0.0_dp   ! dummy value
+LAMBDA0 = 0.0_dp   ! dummy value
+
+#endif
+
 dzeta_c = 1.0_dp/real(KCMAX,dp)
 dzeta_t = 1.0_dp/real(KTMAX,dp)
 dzeta_r = 1.0_dp/real(KRMAX,dp)
@@ -635,6 +813,8 @@ time_output0(20) = TIME_OUT0_20
 
 #endif
 
+call set_flag_grads_nc_tweaks()
+
 !-------- Maximum ice extent yes/no --------
 
 #if (!defined(MASK_MAXEXTENT_FILE) || THK_EVOL==0)
@@ -706,11 +886,97 @@ write(10, fmt=trim(fmt1)) 'Computational domain:'
 write(10, fmt=trim(fmt1)) trim(ch_domain_long)
 write(10, fmt=trim(fmt1)) ' '
 
-write(10, fmt=trim(fmt1)) 'Physical-parameter file = ' &
-                          // trim(adjustl(PHYS_PARA_FILE))
+#if (defined(PARAM_RHO))
+write(10, fmt=trim(fmt3)) 'RHO         =', PARAM_RHO
+#endif
+
+#if (defined(PARAM_RHO_W))
+write(10, fmt=trim(fmt3)) 'RHO_W       =', PARAM_RHO_W
+#endif
+
+#if (defined(PARAM_RHO_SW))
+write(10, fmt=trim(fmt3)) 'RHO_SW      =', PARAM_RHO_SW
+#endif
+
+#if (defined(PARAM_L))
+write(10, fmt=trim(fmt3)) 'L           =', PARAM_L
+#endif
+
+#if (defined(PARAM_G))
+write(10, fmt=trim(fmt3)) 'G           =', PARAM_G
+#endif
+
+#if (defined(PARAM_NUE))
+write(10, fmt=trim(fmt3)) 'NUE         =', PARAM_NUE
+#endif
+
+#if (defined(PARAM_BETA))
+write(10, fmt=trim(fmt3)) 'BETA        =', PARAM_BETA
+#endif
+
+#if (defined(PARAM_DELTA_TM_SW))
+write(10, fmt=trim(fmt3)) 'DELTA_TM_SW =', PARAM_DELTA_TM_SW
+#endif
+
+#if (defined(PARAM_OMEGA_MAX))
+write(10, fmt=trim(fmt3)) 'OMEGA_MAX   =', PARAM_OMEGA_MAX
+#endif
+
+#if (defined(PARAM_H_R))
+write(10, fmt=trim(fmt3)) 'H_R         =', PARAM_H_R
+#endif
+
+#if (defined(PARAM_RHO_C_R))
+write(10, fmt=trim(fmt3)) 'RHO_C_R     =', PARAM_RHO_C_R
+#endif
+
+#if (defined(PARAM_KAPPA_R))
+write(10, fmt=trim(fmt3)) 'KAPPA_R     =', PARAM_KAPPA_R
+#endif
+
+#if (defined(PARAM_RHO_A))
+write(10, fmt=trim(fmt3)) 'RHO_A       =', PARAM_RHO_A
+#endif
+
+#if (defined(PARAM_R_T))
+write(10, fmt=trim(fmt3)) 'R_T         =', PARAM_R_T
+#endif
+
+write(10, fmt=trim(fmt1)) ' '
+
+#if (defined(RF_KAPPA_C_FILE))
+write(10, fmt=trim(fmt1)) 'RF_KAPPA_C_FILE = ' &
+                          // trim(adjustl(RF_KAPPA_C_FILE))
+#endif
 write(10, fmt=trim(fmt1)) ' '
 
 write(10, fmt=trim(fmt2)) 'GRID = ', GRID
+write(10, fmt=trim(fmt1)) ' '
+
+#if (defined(PLANET_R))
+write(10, fmt=trim(fmt4)) 'R =', PLANET_R
+#endif
+
+#if (defined(PLANET_A))
+write(10, fmt=trim(fmt4)) 'A =', PLANET_A
+#endif
+
+#if (defined(PLANET_F_INV))
+write(10, fmt=trim(fmt4)) 'F_INV =', PLANET_F_INV
+#endif
+
+#if (GRID==0 || GRID==1)
+
+#if (defined(STEREO_PROJ_LATD0))
+write(10, fmt=trim(fmt3)) 'LATD0 =', STEREO_PROJ_LATD0
+#endif
+
+#if (defined(STEREO_PROJ_LOND0))
+write(10, fmt=trim(fmt3)) 'LOND0 =', STEREO_PROJ_LOND0
+#endif
+
+#endif
+
 write(10, fmt=trim(fmt1)) ' '
 
 write(10, fmt=trim(fmt2)) 'imax  = ', IMAX
@@ -997,6 +1263,8 @@ write(10, fmt=trim(fmt2)) 'MELT_DRAIN = ', MELT_DRAIN
 
 write(10, fmt=trim(fmt2)) 'SLIDE_LAW = ', SLIDE_LAW
 
+#if (SLIDE_LAW==1)
+
 #if (defined(N_SLIDE_REGIONS))
 write(10, fmt=trim(fmt2)) 'N_SLIDE_REGIONS = ', N_SLIDE_REGIONS
 #if (N_SLIDE_REGIONS>1)
@@ -1008,6 +1276,10 @@ write(10, fmt=trim(fmt1)) 'SLIDE_REGIONS_FILE = '//SLIDE_REGIONS_FILE
 n_slide_regions = 1
 #else
 n_slide_regions = N_SLIDE_REGIONS
+#endif
+
+#if (defined(BASAL_WATER_PRESSURE))
+write(10, fmt=trim(fmt2)) 'BASAL_WATER_PRESSURE = ', BASAL_WATER_PRESSURE
 #endif
 
 c_slide_aux = C_SLIDE
@@ -1049,14 +1321,15 @@ write(10, fmt=trim(fmt3)) 'c_slide_filter_width =', C_SLIDE_FILTER_WIDTH
 #if (defined(TIME_RAMP_UP_SLIDE))
 write(10, fmt=trim(fmt3)) 'time_ramp_up_slide =', TIME_RAMP_UP_SLIDE
 #endif
-#if (SLIDE_LAW==2 || SLIDE_LAW==3)
 write(10, fmt=trim(fmt3)) 'red_pres_limit_fact =', RED_PRES_LIMIT_FACT
-#endif
 #if (BASAL_HYDROLOGY==1 && defined(HYDRO_SLIDE_SAT_FCT) && defined(C_HW_SLIDE) && defined(HW0_SLIDE))
 write(10, fmt=trim(fmt2)) 'HYDRO_SLIDE_SAT_FCT = ', HYDRO_SLIDE_SAT_FCT
 write(10, fmt=trim(fmt3)) 'c_Hw_slide =', C_HW_SLIDE
 write(10, fmt=trim(fmt3)) 'Hw0_slide  =', HW0_SLIDE
 #endif
+
+#endif
+
 write(10, fmt=trim(fmt1)) ' '
 
 if (n_q_geo_mod==1) then
@@ -1508,15 +1781,33 @@ Q_b_tot = Q_bm + Q_tld
 
 #endif
 
-!-------- Inner-point flag --------
+!-------- Inner-point and staggered-grid flags --------
 
-flag_inner_point = .true.
+flag_inner_point            = .true.
+flag_inner_point(0   ,:   ) = .false.
+flag_inner_point(JMAX,:   ) = .false.
+flag_inner_point(:   ,0   ) = .false.
+flag_inner_point(:   ,IMAX) = .false.
 
-flag_inner_point(0,:)    = .false.
-flag_inner_point(JMAX,:) = .false.
+flag_inner_inner_point                = flag_inner_point
+flag_inner_inner_point(1     ,:     ) = .false.
+flag_inner_inner_point(JMAX-1,:     ) = .false.
+flag_inner_inner_point(:     ,1     ) = .false.
+flag_inner_inner_point(:     ,IMAX-1) = .false.
 
-flag_inner_point(:,0)    = .false.
-flag_inner_point(:,IMAX) = .false.
+flag_sg_x         = .true.
+flag_sg_x(:,IMAX) = .false.
+
+flag_sg_y         = .true.
+flag_sg_y(JMAX,:) = .false.
+
+flag_sg_x_inner_y         = flag_sg_x
+flag_sg_x_inner_y(0   ,:) = .false.
+flag_sg_x_inner_y(JMAX,:) = .false.
+
+flag_sg_y_inner_x         = flag_sg_y
+flag_sg_y_inner_x(:,0   ) = .false.
+flag_sg_y_inner_x(:,IMAX) = .false.
 
 !-------- Distance between grid points with delta_i=ir, delta_j=jr --------
 
@@ -1656,35 +1947,35 @@ write(12,1103)
    1103 format('----------------------------------------------------', &
                '---------------------------------------')
 
-!  ------ Time-series file for selected positions ("deep boreholes")
+!  ------ Time-series file for specified sites (i.e., ice cores)
 
-n_core = 2   ! central dome, position halfway to coast
+n_site = 2   ! central dome, position halfway to coast
 
-if (n_core > n_core_max) then
-   errormsg = ' >>> sico_init: n_core <= n_core_max required!' &
+if (n_site > n_site_max) then
+   errormsg = ' >>> sico_init: n_site <= n_site_max required!' &
             //         end_of_line &
-            //'        Increase value of n_core_max in sico_variables_m!'
+            //'        Increase value of n_site_max in sico_variables_m!'
    call error(errormsg)
 end if
 
-ch_core(1)     = 'P1'
-lambda_core(1) = 0.0_dp   ! dummy
-phi_core(1)    = 0.0_dp   ! dummy
-x_core(1)      = 0.5_dp*xi(0) +0.5_dp*xi(IMAX)    ! Position of the centre
-y_core(1)      = 0.5_dp*eta(0)+0.5_dp*eta(JMAX)   ! of the domain
+ch_site(1)     = 'P1'
+lambda_site(1) = 0.0_dp   ! dummy
+phi_site(1)    = 0.0_dp   ! dummy
+x_site(1)      = 0.5_dp*xi(0) +0.5_dp*xi(IMAX)    ! Position of the centre
+y_site(1)      = 0.5_dp*eta(0)+0.5_dp*eta(JMAX)   ! of the domain
 
-ch_core(2)     = 'P2'
-lambda_core(2) = 0.0_dp   ! dummy
-phi_core(2)    = 0.0_dp   ! dummy
-x_core(2)      = 0.25_dp*xi(0) +0.75_dp*xi(IMAX)    ! Position halfway to the
-y_core(2)      = 0.5_dp *eta(0)+0.5_dp *eta(JMAX)   ! right margin of the domain
+ch_site(2)     = 'P2'
+lambda_site(2) = 0.0_dp   ! dummy
+phi_site(2)    = 0.0_dp   ! dummy
+x_site(2)      = 0.25_dp*xi(0) +0.75_dp*xi(IMAX)    ! Position halfway to the
+y_site(2)      = 0.5_dp *eta(0)+0.5_dp *eta(JMAX)   ! right margin of the domain
 
-filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.core'
+filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.site'
 
 open(14, iostat=ios, file=trim(filename_with_path), status='new')
 
 if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the core file!'
+   errormsg = ' >>> sico_init: Error when opening the site file!'
    call error(errormsg)
 end if
 
@@ -2124,6 +2415,42 @@ end if
 if (mask_region(0,0) == -1) mask_region = 0   ! regions undefined
 
 end subroutine topography3
+
+!-------------------------------------------------------------------------------
+!> Set the value of the auxiliary variable flag_grads_nc_tweaks.
+!-------------------------------------------------------------------------------
+  subroutine set_flag_grads_nc_tweaks()
+
+  implicit none
+
+  character(len=16) :: ch_value
+
+  flag_grads_nc_tweaks = .false.   ! default
+
+!-------- Try environment variable --------
+
+  call get_environment_variable('SICO_GRADS_NC_TWEAKS', ch_value)
+
+  if ( (trim(ch_value)=='true') &
+       .or.(trim(ch_value)=='True').or.(trim(ch_value)=='TRUE') ) &
+     flag_grads_nc_tweaks = .true.
+
+  if ( (trim(ch_value)=='yes') &   ! obsolete, but still supported
+       .or.(trim(ch_value)=='Yes').or.(trim(ch_value)=='YES') &
+       .or.(trim(ch_value)=='y').or.(trim(ch_value)=='Y') ) &
+     flag_grads_nc_tweaks = .true.
+
+!-------- Try preprocessor switch --------
+
+#if (defined(GRADS_NC_TWEAKS))
+#if (GRADS_NC_TWEAKS==1)
+  flag_grads_nc_tweaks = .true.
+#else
+  flag_grads_nc_tweaks = .false.
+#endif
+#endif
+
+  end subroutine set_flag_grads_nc_tweaks
 
 !-------------------------------------------------------------------------------
 

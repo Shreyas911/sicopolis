@@ -25,9 +25,10 @@ Clone the Git repository (recommended)
 
     git clone https://gitlab.awi.de/sicopolis/sicopolis.git
 
-  (Cloning with SSH instead of HTTPS is also available. See the above GitLab front page link for details.)
-
   You should then have a new directory ``sicopolis`` that contains the entire program package.
+
+  .. note::
+    Cloning with SSH instead of HTTPS is also available. See the above GitLab front page link for details.
 
 Download an archive
   Go to https://gitlab.awi.de/sicopolis/sicopolis/-/tree/main, click on the download symbol and choose the desired format (zip, tar.gz, tar.bz2, tar).
@@ -85,34 +86,26 @@ Directory ``headers``
 Directory ``src``
   Main program file ``sicopolis.F90``.
 
-  Subdirectory ``subroutines/general``: general subroutines, for any modelled domain.
+  Subdirectory ``subroutines/general``: general modules, for any modelled domain.
   
-  Subdirectory ``subroutines/ant``: subroutines specific for the Antarctic ice sheet.
+  Subdirectories ``subroutines/eismint``, ``subroutines/heino``, ``subroutines/mocho``, ``subroutines/n_s_mars``: special modules for EISMINT (Huybrechts et al. :cite:`huybrechts_etal_1996`, Payne et al. :cite:`payne_etal_2000`), ISMIP HEINO (Calov et al. :cite:`calov_etal_2010`), the Mocho-Choshuenco ice cap, and the north and south polar caps of Mars, respectively.
 
-  Subdirectory ``subroutines/grl``: subroutines specific for the Greenland ice sheet.
+  Subdirectory ``subroutines/tapenade``: AD-specific modules, scripts and files.
 
-  Subdirectory ``subroutines/eismint``: subroutines specific for the EISMINT simplified geometry experiments.
-
-  Accordingly subdirectories ``subroutines/nhem``, ``nmars`` and ``smars`` for the northern hemisphere, and the north and south polar caps of Mars, respectively.
-
-  Subdirectory ``subroutines/tapenade``: AD-specific subroutines and files.
-
-  Subdirectory ``subroutines/xyz``: For :ref:`creating new domains <new_domain>`.
+  Subdirectory ``subroutines/xyz``: For :ref:`creating new domains <new_domain>` (by default contains only placeholder files).
 
 Directory ``sico_in``
   Input data files for SICOPOLIS.
 
   Subdirectory ``general``: general input files, for any modelled domain.
 
-  Subdirectory ``ant``: input files specific for the Antarctic ice sheet. 
+  Subdirectory ``ant``: input files for the Antarctic ice sheet. 
 
-  Subdirectory ``grl``: input files specific for the Greenland ice sheet.
+  Subdirectory ``grl``: input files for the Greenland ice sheet.
 
-  Subdirectory ``eismint``: input files specific for the EISMINT simplified geometry experiments.
+  Subdirectories ``nhem``, ``lcis``, ``scand``, ``tibet``, ``asf``, ``npi``, ``mocho``, ``eismint``, ``heino``, ``nmars``, ``smars``: input files for the other :ref:`pre-defined domains <defined_domain>`.
 
-  Accordingly subdirectories ``nhem``, ``nmars`` and ``smars`` for the northern hemisphere, and the north and south polar caps of Mars, respectively.
-
-  Subdirectory ``xyz``: For :ref:`creating new domains <new_domain>`.
+  Subdirectory ``xyz``: For :ref:`creating new domains <new_domain>` (by default empty).
 
   .. note::
     These subdirectories also contain README files that describe the input data and provide the corresponding references.
@@ -145,22 +138,9 @@ A header consists of a pretty large number of preprocessor directives of the for
 
   #define PARAMETER value
 
-These allow specifying many aspects of a simulation and are documented in the headers themselves. See also the ":ref:`modelling_choices`" section.
+These allow specifying many aspects of a simulation (domain, physical parameters, grid, resolution, times, ...) and are documented in the headers themselves. See also the ":ref:`modelling_choices`" section.
 
 For a number of :ref:`test simulations <test_simulations>`, the run-specs header files are contained in the SICOPOLIS repository. Further examples can be found in the several paper-accompanying datasets on `Zenodo <https://zenodo.org/communities/sicopolis/>`__.
-
-.. _getting_started-phys_para:
-
-Physical-parameter files
-========================
-
-In these files, a number of physical parameters (densities, acceleration due to gravity, heat conductivity, specific heat, latent heat, etc.) are defined. SICOPOLIS expects them in the respective directory for the input files (``sico_in/ant`` for Antarctica, ``sico_in/grl`` for Greenland, etc.) If the name of the file is ``phys_para_xxx.dat``, it must be specified in the run-specs header file as
-
-.. code-block:: fortran
-
-  #define PHYS_PARA_FILE 'phys_para_xxx.dat'
-
-The physical-parameter files can be provided in either ASCII or NetCDF format. The file type is recognized automatically by the extension (``*.nc`` for NetCDF, otherwise ASCII is assumed).
 
 .. _getting_started-run_simulation:
 
@@ -222,8 +202,8 @@ Output files are written by default to the directory ``sico_out/<run_name>``. Th
   * Maximum basal temperature (relative to pmp), Tbh\_max
   * (Some more in the NetCDF file, execute ``ncdump -h <run_name>_ser.nc`` for a listing)
 
-``<run_name>.core``, ``<run_name>_core.nc``:
-  Time-series files (ASCII, NetCDF) that contain for selected locations xxx:
+``<run_name>.site``, ``<run_name>_site.nc``:
+  Time-series files (ASCII, NetCDF) that contain for selected sites (i.e., ice cores) xxx:
 
   * Time, t
   * Surface temperature anomaly, D\_Ts, or glacial index, glac\_ind (forcing)
@@ -231,7 +211,7 @@ Output files are written by default to the directory ``sico_out/<run_name>``. Th
   * Thickness, H\_xxx
   * Surface velocity, v\_xxx
   * Basal temperature, T\_xxx
-  * (Some more in the NetCDF file, execute ``ncdump -h <run_name>_core.nc`` for a listing)
+  * (Some more in the NetCDF file, execute ``ncdump -h <run_name>_site.nc`` for a listing)
 
   | For the Greenland ice sheet, these data are written for seven locations:
   | GRIP (xxx=GR), GISP2 (xxx=G2), Dye 3 (xxx=D3), Camp Century (xxx=CC), NorthGRIP (xxx=NG), NEEM (xxx=NE), EastGRIP (xxx=EG).
@@ -242,7 +222,7 @@ Output files are written by default to the directory ``sico_out/<run_name>``. Th
 ``<run_name>0001.nc``, ``<run_name>0002.nc``, ...:
   Complete set of fields (topography, velocity, temperature etc., written in NetCDF format) for selected time slices.
 
-Writing of output files can be controlled by the several parameters in the "Data output" section of the run-specs headers. For example, simulation ``repo_emtp2sge25_expA`` writes scalar variables into the time-series files ``repo_emtp2sge25_expA{.ser,.core,_ser.nc,_core.nc}`` every 100 years. In addition, it produces three time-slice files ``repo_emtp2sge25_expA0001.nc``, ``repo_emtp2sge25_expA0002.nc`` and ``repo_emtp2sge25_expA0003.nc``, which correspond to the times :math:`t=5\,\mathrm{ka}`, :math:`50\,\mathrm{ka}` and :math:`200\,\mathrm{ka}`, respectively.
+Writing of output files can be controlled by the several parameters in the "Data output" section of the run-specs headers. For example, simulation ``repo_emtp2sge25_expA`` writes scalar variables into the time-series files ``repo_emtp2sge25_expA{.ser,.site,_ser.nc,_site.nc}`` every 100 years. In addition, it produces three time-slice files ``repo_emtp2sge25_expA0001.nc``, ``repo_emtp2sge25_expA0002.nc`` and ``repo_emtp2sge25_expA0003.nc``, which correspond to the times :math:`t=5\,\mathrm{ka}`, :math:`50\,\mathrm{ka}` and :math:`200\,\mathrm{ka}`, respectively.
 
 .. note::
   By default, when trying to re-run a simulation, already existing output will not be overwritten, and an error message will be produced. However, overwriting can be enforced by executing ``sico.sh`` (or ``multi_sico_*.sh``) with the option ``-f``.

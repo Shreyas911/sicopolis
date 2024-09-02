@@ -87,10 +87,30 @@ n_slide_regions = 1
 n_slide_regions = N_SLIDE_REGIONS
 #endif
 
+#if (SLIDE_LAW==0)
+
+p_weert_aux = 1
+q_weert_aux = 0
+c_slide_aux = 0.0_dp   ! no-slip
+gamma_slide_aux = 1.0_dp
+
+#elif (SLIDE_LAW==1)
+
 p_weert_aux = P_WEERT
 q_weert_aux = Q_WEERT
 c_slide_aux = C_SLIDE
 gamma_slide_aux = GAMMA_SLIDE
+
+#else
+
+errormsg = ' >>> calc_vxy_b_init: SLIDE_LAW must be 0 or 1!' &
+         //         end_of_line &
+         //'        Change obsolete SLIDE_LAW = 2 or 3' &
+         //         end_of_line &
+         //'        to SLIDE_LAW = 1, BASAL_WATER_PRESSURE = 2.'
+call error(errormsg)
+
+#endif
 
 do n=1, n_slide_regions
    gamma_slide_inv_aux(n) = 1.0_dp/max(gamma_slide_aux(n), eps)
@@ -386,6 +406,8 @@ end subroutine calc_dzs_dxy_aux
 !-------------------------------------------------------------------------------
 subroutine calc_vxy_b_sia(time)
 
+use calc_pressure_water_bas_m
+
 implicit none
 
 real(dp), intent(in) :: time
@@ -469,14 +491,15 @@ end if
 !  ------ Basal pressure p_b, basal water pressure p_b_w,
 !         reduced pressure p_b_red
 
+call calc_pressure_water_bas()   ! compute p_b_w
+
 do i=0, IMAX
 do j=0, JMAX
 
    if ((mask(j,i) == 0).or.(mask(j,i) == 3)) then
                      ! grounded or floating ice
 
-      p_b(j,i)   = max(RHO*G*H(j,i), 0.0_dp)
-      p_b_w(j,i) = RHO_SW*G*max((z_sl(j,i)-zb(j,i)), 0.0_dp)
+      p_b(j,i) = max(RHO*G*H(j,i), 0.0_dp)
 
       if (mask(j,i) == 0) then
          p_b_red(j,i) = max(p_b(j,i)-p_b_w(j,i), 0.0_dp)
@@ -491,7 +514,6 @@ do j=0, JMAX
    else   ! ice-free land or ocean
 
       p_b(j,i)         = 0.0_dp
-      p_b_w(j,i)       = 0.0_dp
       p_b_red(j,i)     = 0.0_dp
       p_b_red_lim(j,i) = 0.0_dp
 
@@ -549,23 +571,13 @@ do j=0, JMAX
 
 !  ------ Abbreviations
 
-#if (SLIDE_LAW==1)
-      cvxy1 = c_slide(j,i) &
-              * ( (tau_b(j,i)+eps_dp)**(p_weert(j,i)-1) &
-                  /(p_b(j,i)+eps_dp)**q_weert(j,i) ) &
-              * p_b(j,i)
-      ctau1 = 1.0_dp/(c_slide(j,i)+eps_dp)**p_weert_inv(j,i) &
-              * (p_b(j,i)+eps_dp)**(q_weert(j,i)*p_weert_inv(j,i))
-              ! Basal sliding at pressure melting
-#elif (SLIDE_LAW==2)
-      cvxy1 = c_slide(j,i) &
-              * ( (tau_b(j,i)+eps_dp)**(p_weert(j,i)-1) &
-                  /(p_b_red_lim(j,i)+eps_dp)**q_weert(j,i) ) &
-              * p_b(j,i)
-      ctau1 = 1.0_dp/(c_slide(j,i)+eps_dp)**p_weert_inv(j,i) &
-              * (p_b_red_lim(j,i)+eps_dp)**(q_weert(j,i)*p_weert_inv(j,i))
-              ! Basal sliding at pressure melting
-#elif (SLIDE_LAW==3)
+#if (SLIDE_LAW==0)
+
+      cvxy1 = 0.0_dp   ! No-slip
+      ctau1 = 1.0_dp/eps_dp
+
+#elif (SLIDE_LAW==1)
+
       cvxy1 = c_slide(j,i) &
               * ( (tau_b(j,i)+eps_dp)**(p_weert(j,i)-1) &
                   /(p_b_red_lim(j,i)+eps_dp)**q_weert(j,i) ) &
@@ -573,10 +585,16 @@ do j=0, JMAX
       ctau1 = 1.0_dp/(c_slide(j,i)+eps_dp)**p_weert_inv(j,i) &
               * (p_b_red(j,i)+eps_dp)**(q_weert(j,i)*p_weert_inv(j,i))
               ! Basal sliding at pressure melting
+
 #else
-      errormsg = ' >>> calc_vxy_b_sia: ' &
-                    //'SLIDE_LAW must be 1, 2 or 3!'
+
+      errormsg = ' >>> calc_vxy_b_sia: SLIDE_LAW must be 0 or 1!' &
+               //         end_of_line &
+               //'        Change obsolete SLIDE_LAW = 2 or 3' &
+               //         end_of_line &
+               //'        to SLIDE_LAW = 1, BASAL_WATER_PRESSURE = 2.'
       call error(errormsg)
+
 #endif
 
 !  ------ d_help_b, c_drag
@@ -703,16 +721,6 @@ end do
 vh_max     = max(VH_MAX, eps_dp)*sec2year
 vh_max_inv = 1.0_dp/vh_max
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
-
-call velocity_limiter_gradual(vx_b, vh_max, vh_max_inv)
-call velocity_limiter_gradual(vy_b, vh_max, vh_max_inv)
-
-call velocity_limiter_gradual(vx_b_g, vh_max, vh_max_inv)
-call velocity_limiter_gradual(vy_b_g, vh_max, vh_max_inv)
-
-#else /* ALLOW_TAPENADE */
-
 do i=0, IMAX
 do j=0, JMAX
 
@@ -724,8 +732,6 @@ do j=0, JMAX
 
 end do
 end do
-
-#endif /* ALLOW_TAPENADE */
 
 !-------- Discard basal velocities for HYB_MODE==[1,2] --------
 
@@ -752,13 +758,15 @@ end subroutine calc_vxy_b_sia
 !-------------------------------------------------------------------------------
 subroutine calc_vxy_sia(dzeta_c, dzeta_t)
 
+!$ use omp_lib
+
 use ice_material_properties_m, only : ratefac_c, ratefac_t, ratefac_c_t, creep
 
 implicit none
 
 real(dp), intent(in) :: dzeta_c, dzeta_t
 
-integer(i4b) :: i, j, kc, kt
+integer(i4b) :: i, j, ij, kc, kt
 real(dp) :: avxy3(0:KCMAX), aqxy1(0:KCMAX)
 real(dp) :: ctxyz1(0:KCMAX,0:JMAX,0:IMAX), &
             ctxyz2(0:KTMAX,0:JMAX,0:IMAX)
@@ -769,6 +777,14 @@ real(dp) :: cqxy0(0:KTMAX), cqxy1(0:KCMAX)
 real(dp) :: vh_max, vh_max_inv
 real(dp) :: flui_min, flui_max, flui_init
 real(dp) :: ratio_sl_threshold
+
+!$omp parallel default(shared) private(ij, i, j, kc, kt) &
+!$omp private(avxy3, aqxy1) &
+!$omp private(flui_t, flui_c, cflui0, cflui1) &
+!$omp private(cvxy2, cvxy3, cqxy0, cqxy1) &
+!$omp private(vh_max, vh_max_inv) &
+!$omp private(flui_min, flui_max, flui_init) &
+!$omp private(ratio_sl_threshold)
 
 !-------- Term abbreviations --------
 
@@ -786,8 +802,11 @@ end do
 
 !  ------ Term abbreviations
 
-do i=0, IMAX
-do j=0, JMAX
+!$omp do
+do ij=1, (IMAX+1)*(JMAX+1)
+
+   i = n2i(ij)   ! i=0...IMAX
+   j = n2j(ij)   ! j=0...JMAX
 
    if ((mask(j,i) == 0).or.flag_grounding_line_2(j,i)) then
                      ! grounded ice, or floating ice at the grounding line
@@ -823,50 +842,51 @@ do j=0, JMAX
    end if
 
 end do
-end do
+!$omp end do
 
-!  ------ Shear stress txz (defined at (i+1/2,j,kc/t))
+!  ------ Stresses txz, tyz, sigma
 
-do i=0, IMAX-1
-do j=0, JMAX
+!$omp do
+do ij=1, (IMAX+1)*(JMAX+1)
 
-   do kc=0, KCMAX
-      txz_c(kc,j,i) = -0.5_dp*(ctxyz1(kc,j,i)+ctxyz1(kc,j,i+1)) &
-                      *dzs_dx_aux(j,i)
-   end do
+   i = n2i(ij)   ! i=0...IMAX
+   j = n2j(ij)   ! j=0...JMAX
 
-   do kt=0, KTMAX
-      txz_t(kt,j,i) = txz_c(0,j,i) &
-                      -0.5_dp*(ctxyz2(kt,j,i)+ctxyz2(kt,j,i+1)) &
-                      *dzs_dx_aux(j,i)
-   end do
+!    ---- Shear stress txz (defined at (i+1/2,j,kc/t))
 
-end do
-end do
+   if (flag_sg_x(j,i)) then
 
-!  ------ Shear stress tyz (defined at (i,j+1/2,kc/t))
+      do kc=0, KCMAX
+         txz_c(kc,j,i) = -0.5_dp*(ctxyz1(kc,j,i)+ctxyz1(kc,j,i+1)) &
+                         *dzs_dx_aux(j,i)
+      end do
 
-do i=0, IMAX
-do j=0, JMAX-1
+      do kt=0, KTMAX
+         txz_t(kt,j,i) = txz_c(0,j,i) &
+                         -0.5_dp*(ctxyz2(kt,j,i)+ctxyz2(kt,j,i+1)) &
+                         *dzs_dx_aux(j,i)
+      end do
 
-   do kc=0, KCMAX
-      tyz_c(kc,j,i) = -0.5_dp*(ctxyz1(kc,j,i)+ctxyz1(kc,j+1,i)) &
-                      *dzs_dy_aux(j,i)
-   end do
+   end if
 
-   do kt=0, KTMAX
-      tyz_t(kt,j,i) = tyz_c(0,j,i) &
-                      -0.5_dp*(ctxyz2(kt,j,i)+ctxyz2(kt,j+1,i)) &
-                      *dzs_dy_aux(j,i)
-   end do
+!    ---- Shear stress tyz (defined at (i,j+1/2,kc/t))
 
-end do
-end do
+   if (flag_sg_y(j,i)) then
 
-!  ------ Effective shear stress sigma (defined at (i,j,kc/t))
+      do kc=0, KCMAX
+         tyz_c(kc,j,i) = -0.5_dp*(ctxyz1(kc,j,i)+ctxyz1(kc,j+1,i)) &
+                         *dzs_dy_aux(j,i)
+      end do
 
-do i=0, IMAX
-do j=0, JMAX
+      do kt=0, KTMAX
+         tyz_t(kt,j,i) = tyz_c(0,j,i) &
+                         -0.5_dp*(ctxyz2(kt,j,i)+ctxyz2(kt,j+1,i)) &
+                         *dzs_dy_aux(j,i)
+      end do
+
+   end if
+
+!    ---- Effective shear stress sigma (defined at (i,j,kc/t))
 
    do kc=0, KCMAX
 
@@ -911,7 +931,7 @@ do j=0, JMAX
    end do
 
 end do
-end do
+!$omp end do
 
 !-------- Computation of the depth-averaged fluidity
 !                 (defined on the grid points (i,j)) --------
@@ -930,8 +950,11 @@ end do
   flui_init = 1.0e-15_dp   ! 1/(Pa s)
 #endif
 
-do i=0, IMAX
-do j=0, JMAX
+!$omp do
+do ij=1, (IMAX+1)*(JMAX+1)
+
+   i = n2i(ij)   ! i=0...IMAX
+   j = n2j(ij)   ! j=0...JMAX
 
    if ((mask(j,i) == 0).or.flag_grounding_line_2(j,i)) then
                      ! grounded ice, or floating ice at the grounding line
@@ -986,13 +1009,16 @@ do j=0, JMAX
    end if
 
 end do
-end do
+!$omp end do
 
 !-------- Computation of d_help_c/t
 !         (defined on the grid points (i,j,kc/t)) --------
 
-do i=0, IMAX
-do j=0, JMAX
+!$omp do
+do ij=1, (IMAX+1)*(JMAX+1)
+
+   i = n2i(ij)   ! i=0...IMAX
+   j = n2j(ij)   ! j=0...JMAX
 
    if ((mask(j,i) == 0).or.flag_grounding_line_2(j,i)) then
                      ! grounded ice, or floating ice at the grounding line
@@ -1080,53 +1106,62 @@ do j=0, JMAX
    end if
 
 end do
+!$omp end do
+
+!-------- Computation of vx_c/t (defined at (i+1/2,j,kc/t))
+!                 and of vy_c/t (defined at (i,j+1/2,kc/t)) --------
+
+!$omp do
+do ij=1, (IMAX+1)*(JMAX+1)
+
+   i = n2i(ij)   ! i=0...IMAX
+   j = n2j(ij)   ! j=0...JMAX
+
+   if (flag_sg_x_inner_y(j,i)) then
+
+      do kt=0, KTMAX
+         vx_t(kt,j,i) = -0.5_dp*(d_help_t(kt,j,i)+d_help_t(kt,j,i+1)) &
+                        *dzs_dx_aux(j,i)
+      end do
+
+      do kc=0, KCMAX
+         vx_c(kc,j,i) = -0.5_dp*(d_help_c(kc,j,i)+d_help_c(kc,j,i+1)) &
+                        *dzs_dx_aux(j,i)
+      end do
+
+   end if
+
+   if (flag_sg_y_inner_x(j,i)) then
+
+      do kt=0, KTMAX
+         vy_t(kt,j,i) = -0.5_dp*(d_help_t(kt,j,i)+d_help_t(kt,j+1,i)) &
+                        *dzs_dy_aux(j,i)
+      end do
+
+      do kc=0, KCMAX
+         vy_c(kc,j,i) = -0.5_dp*(d_help_c(kc,j,i)+d_help_c(kc,j+1,i)) &
+                        *dzs_dy_aux(j,i)
+      end do
+
+   end if
+
 end do
-
-!-------- Computation of vx_c/t (defined at (i+1/2,j,kc/t)) --------
-
-do i=0, IMAX-1
-do j=1, JMAX-1
-
-   do kt=0, KTMAX
-      vx_t(kt,j,i) = -0.5_dp*(d_help_t(kt,j,i)+d_help_t(kt,j,i+1)) &
-                     *dzs_dx_aux(j,i)
-   end do
-
-   do kc=0, KCMAX
-      vx_c(kc,j,i) = -0.5_dp*(d_help_c(kc,j,i)+d_help_c(kc,j,i+1)) &
-                     *dzs_dx_aux(j,i)
-   end do
-
-end do
-end do
-
-!-------- Computation of vy_c/t (defined at (i,j+1/2,kc/t)) --------
-
-do i=1, IMAX-1
-do j=0, JMAX-1
-
-   do kt=0, KTMAX
-      vy_t(kt,j,i) = -0.5_dp*(d_help_t(kt,j,i)+d_help_t(kt,j+1,i)) &
-                     *dzs_dy_aux(j,i)
-   end do
-
-   do kc=0, KCMAX
-      vy_c(kc,j,i) = -0.5_dp*(d_help_c(kc,j,i)+d_help_c(kc,j+1,i)) &
-                     *dzs_dy_aux(j,i)
-   end do
-
-end do
-end do
+!$omp end do
 
 !-------- Computation of the surface velocities vx_s_g and vy_s_g
 !                                              (defined at (i,j)) --------
 
-do i=0, IMAX
-do j=0, JMAX
+!$omp do
+do ij=1, (IMAX+1)*(JMAX+1)
+
+   i = n2i(ij)   ! i=0...IMAX
+   j = n2j(ij)   ! j=0...JMAX
+
    vx_s_g(j,i) = -d_help_c(KCMAX,j,i)*dzs_dxi_g(j,i)
    vy_s_g(j,i) = -d_help_c(KCMAX,j,i)*dzs_deta_g(j,i)
+
 end do
-end do
+!$omp end do
 
 !-------- Limitation of computed vx_c/t, vy_c/t, vx_s_g, vy_s_g
 !         to the interval [-VH_MAX, VH_MAX] --------
@@ -1134,20 +1169,11 @@ end do
 vh_max     = max(VH_MAX, eps_dp)*sec2year
 vh_max_inv = 1.0_dp/vh_max
 
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
+!$omp do
+do ij=1, (IMAX+1)*(JMAX+1)
 
-call velocity_limiter_gradual(vx_s_g, vh_max, vh_max_inv)
-call velocity_limiter_gradual(vy_s_g, vh_max, vh_max_inv)
-
-call velocity_limiter_gradual(vx_t, vh_max, vh_max_inv)
-call velocity_limiter_gradual(vy_t, vh_max, vh_max_inv)
-call velocity_limiter_gradual(vx_c, vh_max, vh_max_inv)
-call velocity_limiter_gradual(vy_c, vh_max, vh_max_inv)
-
-#else /* ALLOW_TAPENADE */
-
-do i=0, IMAX
-do j=0, JMAX
+   i = n2i(ij)   ! i=0...IMAX
+   j = n2j(ij)   ! j=0...JMAX
 
    call velocity_limiter_gradual(vx_s_g(j,i), vh_max, vh_max_inv)
    call velocity_limiter_gradual(vy_s_g(j,i), vh_max, vh_max_inv)
@@ -1163,15 +1189,16 @@ do j=0, JMAX
    end do
 
 end do
-end do
-
-#endif /* ALLOW_TAPENADE */
+!$omp end do
 
 !-------- Computation of h_diff
 !         (defined on the grid points (i,j)) --------
 
-do i=0, IMAX
-do j=0, JMAX
+!$omp do
+do ij=1, (IMAX+1)*(JMAX+1)
+
+   i = n2i(ij)   ! i=0...IMAX
+   j = n2j(ij)   ! j=0...JMAX
 
    if ((mask(j,i) == 0).or.flag_grounding_line_2(j,i)) then
                      ! grounded ice, or floating ice at the grounding line
@@ -1214,76 +1241,87 @@ do j=0, JMAX
    end if
 
 end do
-end do
+!$omp end do
 
 !-------- Computation of the horizontal volume flux
 !                            and the depth-averaged velocity --------
 
-do i=0, IMAX-1
-do j=0, JMAX
+!$omp do
+do ij=1, (IMAX+1)*(JMAX+1)
 
-   qx(j,i) = -0.5_dp*(h_diff(j,i)+h_diff(j,i+1))*dzs_dx_aux(j,i)
+   i = n2i(ij)   ! i=0...IMAX
+   j = n2j(ij)   ! j=0...JMAX
 
-   if ( (mask(j,i)==0).or.(mask(j,i+1)==0) ) then
+   if (flag_sg_x(j,i)) then
+
+      qx(j,i) = -0.5_dp*(h_diff(j,i)+h_diff(j,i+1))*dzs_dx_aux(j,i)
+
+      if ( (mask(j,i)==0).or.(mask(j,i+1)==0) ) then
                                ! at least one neighbour point is grounded ice
 
-      vx_m(j,i) = qx(j,i) / ( 0.5_dp*(H(j,i)+H(j,i+1)) )
+         vx_m(j,i) = qx(j,i) / ( 0.5_dp*(H(j,i)+H(j,i+1)) )
 
-      call velocity_limiter_gradual(vx_m(j,i), vh_max, vh_max_inv)
+         call velocity_limiter_gradual(vx_m(j,i), vh_max, vh_max_inv)
 
-      ratio_sl_x(j,i) = abs(vx_t(0,j,i)) / max(abs(vx_c(KCMAX,j,i)), eps_dp)
+         ratio_sl_x(j,i) = abs(vx_t(0,j,i)) / max(abs(vx_c(KCMAX,j,i)), eps_dp)
 
-   else 
+      else 
 
-      vx_m(j,i)       = 0.0_dp
-      ratio_sl_x(j,i) = 0.0_dp
+         vx_m(j,i)       = 0.0_dp
+         ratio_sl_x(j,i) = 0.0_dp
+
+      end if
 
    end if
 
-end do
-end do
+   if (flag_sg_y(j,i)) then
 
-do i=0, IMAX
-do j=0, JMAX-1
+      qy(j,i) = -0.5_dp*(h_diff(j,i)+h_diff(j+1,i))*dzs_dy_aux(j,i)
 
-   qy(j,i) = -0.5_dp*(h_diff(j,i)+h_diff(j+1,i))*dzs_dy_aux(j,i)
-
-   if ( (mask(j,i)==0).or.(mask(j+1,i)==0) ) then
+      if ( (mask(j,i)==0).or.(mask(j+1,i)==0) ) then
                                ! at least one neighbour point is grounded ice
 
-      vy_m(j,i) = qy(j,i) / ( 0.5_dp*(H(j,i)+H(j+1,i)) )
+         vy_m(j,i) = qy(j,i) / ( 0.5_dp*(H(j,i)+H(j+1,i)) )
 
-      call velocity_limiter_gradual(vy_m(j,i), vh_max, vh_max_inv)
+         call velocity_limiter_gradual(vy_m(j,i), vh_max, vh_max_inv)
 
-      ratio_sl_y(j,i) = abs(vy_t(0,j,i)) / max(abs(vy_c(KCMAX,j,i)), eps_dp)
+         ratio_sl_y(j,i) = abs(vy_t(0,j,i)) / max(abs(vy_c(KCMAX,j,i)), eps_dp)
 
-   else 
+      else 
 
-      vy_m(j,i)       = 0.0_dp
-      ratio_sl_y(j,i) = 0.0_dp
+         vy_m(j,i)       = 0.0_dp
+         ratio_sl_y(j,i) = 0.0_dp
+
+      end if
 
    end if
 
-end do
-end do
-
-ratio_sl = 0.0_dp
-
-do i=1, IMAX-1
-do j=1, JMAX-1
-
-   if (mask(j,i) == 0) &   ! grounded ice
+   if (flag_inner_point(j,i).and.(mask(j,i) == 0)) then
+                                       ! inner point, grounded ice
       ratio_sl(j,i) = 0.25_dp &
                         * (   ratio_sl_x(j,i-1) + ratio_sl_x(j,i) &
                             + ratio_sl_y(j-1,i) + ratio_sl_y(j,i) )
+   else
+      ratio_sl(j,i) = 0.0_dp
+   end if
+
 end do
-end do
+!$omp end do
 
 !-------- Detection of shelfy stream points --------
 
-flag_shelfy_stream_x = .false.
-flag_shelfy_stream_y = .false.
-flag_shelfy_stream   = .false.
+!$omp do
+do ij=1, (IMAX+1)*(JMAX+1)
+
+   i = n2i(ij)   ! i=0...IMAX
+   j = n2j(ij)   ! j=0...JMAX
+
+   flag_shelfy_stream_x(j,i) = .false.
+   flag_shelfy_stream_y(j,i) = .false.
+   flag_shelfy_stream(j,i)   = .false.
+
+end do
+!$omp end do
 
 #if (DYNAMICS==0 || DYNAMICS==1)
 
@@ -1301,51 +1339,58 @@ ratio_sl_threshold = 0.5_dp   ! default value
 ratio_sl_threshold = 1.11e+11_dp   ! dummy value
 #endif
 
-do i=0, IMAX-1
-do j=0, JMAX
+!$omp do
+do ij=1, (IMAX+1)*(JMAX+1)
+
+   i = n2i(ij)   ! i=0...IMAX
+   j = n2j(ij)   ! j=0...JMAX
+
+   if (flag_sg_x(j,i)) then
+
 #if (HYB_MODE==0)
-   if (ratio_sl_x(j,i) > ratio_sl_threshold) &
-      flag_shelfy_stream_x(j,i) = .true.
+      if (ratio_sl_x(j,i) > ratio_sl_threshold) &
+         flag_shelfy_stream_x(j,i) = .true.
 #elif (HYB_MODE==1 || HYB_MODE==2)
-   if ( (mask(j,i)==0).or.(mask(j,i+1)==0) ) &
-      flag_shelfy_stream_x(j,i) = .true.
+      if ( (mask(j,i)==0).or.(mask(j,i+1)==0) ) &
+         flag_shelfy_stream_x(j,i) = .true.
 #else
-   errormsg = ' >>> calc_vxy_sia: HYB_MODE must be 0, 1 or 2!'
-   call error(errormsg)
+      errormsg = ' >>> calc_vxy_sia: HYB_MODE must be 0, 1 or 2!'
+      call error(errormsg)
 #endif
-end do
-end do
 
-do i=0, IMAX
-do j=0, JMAX-1
+   end if
+
+   if (flag_sg_y(j,i)) then
+
 #if (HYB_MODE==0)
-   if (ratio_sl_y(j,i) > ratio_sl_threshold) &
-      flag_shelfy_stream_y(j,i) = .true.
+      if (ratio_sl_y(j,i) > ratio_sl_threshold) &
+         flag_shelfy_stream_y(j,i) = .true.
 #elif (HYB_MODE==1 || HYB_MODE==2)
-   if ( (mask(j,i)==0).or.(mask(j+1,i)==0) ) &
-      flag_shelfy_stream_y(j,i) = .true.
+      if ( (mask(j,i)==0).or.(mask(j+1,i)==0) ) &
+         flag_shelfy_stream_y(j,i) = .true.
 #else
-   errormsg = ' >>> calc_vxy_sia: HYB_MODE must be 0, 1 or 2!'
-   call error(errormsg)
+      errormsg = ' >>> calc_vxy_sia: HYB_MODE must be 0, 1 or 2!'
+      call error(errormsg)
 #endif
-end do
-end do
 
-do i=1, IMAX-1
-do j=1, JMAX-1
+   end if
 
-   if (mask(j,i) == 0) then   ! grounded ice
+   if (flag_inner_point(j,i)) then
 
-      if (     flag_shelfy_stream_x(j,i-1)   &   ! at least
-           .or.flag_shelfy_stream_x(j,i)     &   ! one neighbour
-           .or.flag_shelfy_stream_y(j-1,i)   &   ! on the staggered grid
-           .or.flag_shelfy_stream_y(j,i)   ) &   ! is a shelfy stream point
-               flag_shelfy_stream(j,i) = .true.
+      if (mask(j,i) == 0) then   ! grounded ice
+
+         if (     flag_shelfy_stream_x(j,i-1)   &   ! at least
+              .or.flag_shelfy_stream_x(j,i)     &   ! one neighbour
+              .or.flag_shelfy_stream_y(j-1,i)   &   ! on the staggered grid
+              .or.flag_shelfy_stream_y(j,i)   ) &   ! is a shelfy stream point
+                  flag_shelfy_stream(j,i) = .true.
+
+      end if
 
    end if
 
 end do
-end do
+!$omp end do
 
 #else
 
@@ -1354,17 +1399,30 @@ call error(errormsg)
 
 #endif
 
+!-------- Loop over (i,j) --------
+
+!$omp do
+do ij=1, (IMAX+1)*(JMAX+1)
+
+   i = n2i(ij)   ! i=0...IMAX
+   j = n2j(ij)   ! j=0...JMAX
+
 !-------- Save mean (depth-averaged) horizontal velocities from SIA --------
 
-vx_m_sia = vx_m
-vy_m_sia = vy_m
+   vx_m_sia(j,i) = vx_m(j,i)
+   vy_m_sia(j,i) = vy_m(j,i)
 
 !-------- Initialisation of the variable q_gl_g
 !         (volume flux across the grounding line, to be
 !         computed in the routine calc_vxy_ssa
 !         if ice shelves are present)
 
-q_gl_g = 0.0_dp
+   q_gl_g(j,i) = 0.0_dp
+
+end do
+!$omp end do
+
+!$omp end parallel
 
 end subroutine calc_vxy_sia
 
@@ -1373,6 +1431,8 @@ end subroutine calc_vxy_sia
 !> qx, qy etc. for static ice.
 !-------------------------------------------------------------------------------
 subroutine calc_vxy_static()
+
+use calc_pressure_water_bas_m
 
 implicit none
 
@@ -1387,7 +1447,8 @@ real(dp) :: flui_init
 c_slide = 0.0_dp
 p_weert = 0
 q_weert = 0
-p_b_w   = 0.0_dp
+
+call calc_pressure_water_bas()   ! compute p_b_w
 
 d_help_b = 0.0_dp
 c_drag   = 0.0_dp
@@ -1574,22 +1635,12 @@ do while ( (m < iter_ssa_min) &
 
    call calc_vxy_ssa_matrix(dxi, deta, &
                             flag_calc_vxy_ssa_x, flag_calc_vxy_ssa_y)
-
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
-
-   call velocity_limiter_gradual(vx_m_ssa, vh_max, vh_max_inv)
-   call velocity_limiter_gradual(vy_m_ssa, vh_max, vh_max_inv)
-
-#else /* ALLOW_TAPENADE */
-
    do i=0, IMAX
    do j=0, JMAX
       call velocity_limiter_gradual(vx_m_ssa(j,i), vh_max, vh_max_inv)
       call velocity_limiter_gradual(vy_m_ssa(j,i), vh_max, vh_max_inv)
    end do
    end do
-
-#endif /* ALLOW_TAPENADE */
 
 !  ------ Relaxation scheme
 
@@ -3687,9 +3738,6 @@ end subroutine calc_vis_ssa
 !> Gradual limitation of computed horizontal velocities to the interval
 !! [-vel_max, vel_max].
 !-------------------------------------------------------------------------------
-#if !defined(ALLOW_TAPENADE) /* NORMAL */
-elemental &
-#endif /* NORMAL */
 subroutine velocity_limiter_gradual(velocity, vel_max, vel_max_inv)
 
 implicit none

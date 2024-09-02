@@ -137,7 +137,16 @@ character          :: ch_dummy
 logical            :: flag_precip_monthly_mean
 logical            :: flag_init_output, flag_3d_output
 
-integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_ref
+integer(i4b), dimension(0:JMAX,0:IMAX) :: mask_present
+real(dp),     dimension(0:JMAX,0:IMAX) :: zs_present
+
+#if (TSURFACE<=5)
+logical :: flag_temp_zs_ref_file
+#endif
+
+#if (ACCSURFACE<=5)
+logical :: flag_precip_zs_ref_file
+#endif
 
 real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 real(dp), dimension(0:IMAX,0:JMAX) :: field2d_tra_aux
@@ -203,7 +212,8 @@ character(len=64), parameter :: thisroutine = 'sico_init'
 
 character(len=64), parameter :: fmt1 = '(a)', &
                                 fmt2 = '(a,i0)', &
-                                fmt3 = '(a,es12.4)'
+                                fmt3 = '(a,es13.5)', &
+                                fmt4 = '(a,es20.12)'
 
 write(unit=6, fmt='(a)') ' '
 write(unit=6, fmt='(a)') ' -------- sico_init --------'
@@ -303,7 +313,7 @@ time_output = 0.0_dp
 #endif /* ALLOW_TAPENADE */
 #endif
 
-!-------- Read physical parameters --------
+!-------- Physical parameters --------
 
 #if (defined(YEAR_SEC))
 year2sec = YEAR_SEC
@@ -315,7 +325,127 @@ year2sec = 3.1556925445e+07_dp
 
 sec2year = 1.0_dp/year2sec
 
+#if (defined(PARAM_RHO))
+RHO = real(PARAM_RHO,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_RHO not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_RHO_W))
+RHO_W = real(PARAM_RHO_W,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_RHO_W not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_RHO_SW))
+RHO_SW = real(PARAM_RHO_SW,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_RHO_SW not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_L))
+L = real(PARAM_L,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_L not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_G))
+G = real(PARAM_G,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_G not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_NUE))
+NUE = real(PARAM_NUE,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_NUE not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_BETA))
+BETA = real(PARAM_BETA,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_BETA not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_DELTA_TM_SW))
+DELTA_TM_SW = real(PARAM_DELTA_TM_SW,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_DELTA_TM_SW not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_OMEGA_MAX))
+OMEGA_MAX = real(PARAM_OMEGA_MAX,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_OMEGA_MAX not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_H_R))
+H_R = real(PARAM_H_R,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_H_R not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_RHO_C_R))
+RHO_C_R = real(PARAM_RHO_C_R,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_RHO_C_R not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_KAPPA_R))
+KAPPA_R = real(PARAM_KAPPA_R,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_KAPPA_R not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_RHO_A))
+RHO_A = real(PARAM_RHO_A,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_RHO_A not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PARAM_R_T))
+R_T = real(PARAM_R_T,dp)
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PARAM_R_T not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (!defined(RF_KAPPA_C_FILE))
+errormsg = ' >>> sico_init: ' &
+           // 'File RF_KAPPA_C_FILE not defined in run-specs header!'
+call error(errormsg)
+#endif
+
 call read_phys_para()
+     ! read tabulated values of the
+     ! rate factor, heat conductivity and specific heat
 
 call ice_mat_eqs_pars(RF, R_T, KAPPA, C, -190, 10)
 
@@ -453,6 +583,13 @@ else if (approx_equal(DX, 5.0_dp, eps_sp_dp)) then
 else if (approx_equal(DX, 4.0_dp, eps_sp_dp)) then
 
    if ( (IMAX /= 420).or.(JMAX /= 720) ) then
+      errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
+      call error(errormsg)
+   end if
+
+else if (approx_equal(DX, 2.0_dp, eps_sp_dp)) then
+
+   if ( (IMAX /= 840).or.(JMAX /= 1440) ) then
       errormsg = ' >>> sico_init: IMAX and/or JMAX wrong!'
       call error(errormsg)
    end if
@@ -786,6 +923,63 @@ dtime_wss0  = DTIME_WSS0
 
 !-------- Further initializations --------
 
+#if (defined(PLANET_R))
+R = real(PLANET_R,dp)   ! mean radius of the planet
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PLANET_R not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PLANET_A))
+A = real(PLANET_A,dp)   ! semi-major axis of the planet
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PLANET_A not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(PLANET_F_INV))
+F_INV = real(PLANET_F_INV,dp)  ! inverse flattening of the planet
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter PLANET_F_INV not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+if (F_INV > 1.0e+10_dp) then   ! interpreted as infinity -> no flattening
+   B = A
+else   ! finite inverse flattening
+   B = A - A/F_INV
+end if
+
+#if (GRID==0 || GRID==1)
+
+#if (defined(STEREO_PROJ_LATD0))
+PHI0 = real(STEREO_PROJ_LATD0,dp) *deg2rad   ! deg -> rad
+              ! central meridian of the stereographic projection
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter STEREO_PROJ_LATD0 not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#if (defined(STEREO_PROJ_LOND0))
+LAMBDA0 = real(STEREO_PROJ_LOND0,dp) *deg2rad   ! deg -> rad
+              ! standard parallel of the stereographic projection
+#else
+errormsg = ' >>> sico_init: ' &
+           // 'Parameter STEREO_PROJ_LOND0 not defined in run-specs header!'
+call error(errormsg)
+#endif
+
+#else
+
+PHI0    = 0.0_dp   ! dummy value
+LAMBDA0 = 0.0_dp   ! dummy value
+
+#endif
+
 dzeta_c = 1.0_dp/real(KCMAX,dp)
 dzeta_t = 1.0_dp/real(KTMAX,dp)
 dzeta_r = 1.0_dp/real(KRMAX,dp)
@@ -1050,6 +1244,8 @@ time_output0(20) = TIME_OUT0_20
 
 #endif
 
+call set_flag_grads_nc_tweaks()
+
 !-------- Maximum ice extent yes/no --------
 
 #if (!defined(MASK_MAXEXTENT_FILE) || THK_EVOL==0)
@@ -1125,11 +1321,97 @@ write(10, fmt=trim(fmt1)) 'Computational domain:'
 write(10, fmt=trim(fmt1)) '   '//trim(ch_domain_long)
 write(10, fmt=trim(fmt1)) ' '
 
-write(10, fmt=trim(fmt1)) 'Physical-parameter file = ' &
-                          // trim(adjustl(PHYS_PARA_FILE))
+#if (defined(PARAM_RHO))
+write(10, fmt=trim(fmt3)) 'RHO         =', PARAM_RHO
+#endif
+
+#if (defined(PARAM_RHO_W))
+write(10, fmt=trim(fmt3)) 'RHO_W       =', PARAM_RHO_W
+#endif
+
+#if (defined(PARAM_RHO_SW))
+write(10, fmt=trim(fmt3)) 'RHO_SW      =', PARAM_RHO_SW
+#endif
+
+#if (defined(PARAM_L))
+write(10, fmt=trim(fmt3)) 'L           =', PARAM_L
+#endif
+
+#if (defined(PARAM_G))
+write(10, fmt=trim(fmt3)) 'G           =', PARAM_G
+#endif
+
+#if (defined(PARAM_NUE))
+write(10, fmt=trim(fmt3)) 'NUE         =', PARAM_NUE
+#endif
+
+#if (defined(PARAM_BETA))
+write(10, fmt=trim(fmt3)) 'BETA        =', PARAM_BETA
+#endif
+
+#if (defined(PARAM_DELTA_TM_SW))
+write(10, fmt=trim(fmt3)) 'DELTA_TM_SW =', PARAM_DELTA_TM_SW
+#endif
+
+#if (defined(PARAM_OMEGA_MAX))
+write(10, fmt=trim(fmt3)) 'OMEGA_MAX   =', PARAM_OMEGA_MAX
+#endif
+
+#if (defined(PARAM_H_R))
+write(10, fmt=trim(fmt3)) 'H_R         =', PARAM_H_R
+#endif
+
+#if (defined(PARAM_RHO_C_R))
+write(10, fmt=trim(fmt3)) 'RHO_C_R     =', PARAM_RHO_C_R
+#endif
+
+#if (defined(PARAM_KAPPA_R))
+write(10, fmt=trim(fmt3)) 'KAPPA_R     =', PARAM_KAPPA_R
+#endif
+
+#if (defined(PARAM_RHO_A))
+write(10, fmt=trim(fmt3)) 'RHO_A       =', PARAM_RHO_A
+#endif
+
+#if (defined(PARAM_R_T))
+write(10, fmt=trim(fmt3)) 'R_T         =', PARAM_R_T
+#endif
+
+write(10, fmt=trim(fmt1)) ' '
+
+#if (defined(RF_KAPPA_C_FILE))
+write(10, fmt=trim(fmt1)) 'RF_KAPPA_C_FILE = ' &
+                          // trim(adjustl(RF_KAPPA_C_FILE))
+#endif
 write(10, fmt=trim(fmt1)) ' '
 
 write(10, fmt=trim(fmt2)) 'GRID = ', GRID
+write(10, fmt=trim(fmt1)) ' '
+
+#if (defined(PLANET_R))
+write(10, fmt=trim(fmt4)) 'R =', PLANET_R
+#endif
+
+#if (defined(PLANET_A))
+write(10, fmt=trim(fmt4)) 'A =', PLANET_A
+#endif
+
+#if (defined(PLANET_F_INV))
+write(10, fmt=trim(fmt4)) 'F_INV =', PLANET_F_INV
+#endif
+
+#if (GRID==0 || GRID==1)
+
+#if (defined(STEREO_PROJ_LATD0))
+write(10, fmt=trim(fmt3)) 'LATD0 =', STEREO_PROJ_LATD0
+#endif
+
+#if (defined(STEREO_PROJ_LOND0))
+write(10, fmt=trim(fmt3)) 'LOND0 =', STEREO_PROJ_LOND0
+#endif
+
+#endif
+
 write(10, fmt=trim(fmt1)) ' '
 
 write(10, fmt=trim(fmt2)) 'imax  = ', IMAX
@@ -1378,6 +1660,8 @@ write(10, fmt=trim(fmt2)) 'TSURFACE = ', TSURFACE
 
 #if (TSURFACE<=5)
 
+flag_temp_zs_ref_file = .false.
+
 #if (defined(ANT) || defined(GRL)) /* Antarctica or Greenland */
 
 write(10, fmt=trim(fmt2)) 'TEMP_PRESENT_PARA = ', TEMP_PRESENT_PARA
@@ -1390,6 +1674,17 @@ write(10, fmt=trim(fmt3))  'TEMP_PRESENT_OFFSET =', TEMP_PRESENT_OFFSET
 write(10, fmt=trim(fmt1)) 'temp_present file = '//TEMP_PRESENT_FILE
 #if (defined(TOPO_LAPSE_RATE))
 write(10, fmt=trim(fmt3)) 'topo_lapse_rate =', TOPO_LAPSE_RATE
+#endif
+
+#if (defined(TEMP_ZS_REF_FILE))
+if ( (trim(adjustl(TEMP_ZS_REF_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(TEMP_ZS_REF_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(TEMP_ZS_REF_FILE)) /= 'NONE') ) then
+   flag_temp_zs_ref_file = .true.
+   write(10, fmt=trim(fmt1)) 'temp_zs_ref_file = '//TEMP_ZS_REF_FILE
+end if
 #endif
 
 #endif
@@ -1414,15 +1709,18 @@ write(10, fmt=trim(fmt1)) ' '
 write(10, fmt=trim(fmt2)) 'ACCSURFACE = ', ACCSURFACE
 
 #if (ACCSURFACE<=5)
+
 #if (!defined(PRECIP_PRESENT_FILE))
 errormsg = ' >>> sico_init: PRECIP_PRESENT_FILE not defined in the header file!'
 call error(errormsg)
 #endif
+
 #if (!defined(PRECIP_MA_PRESENT_FILE))
 errormsg = ' >>> sico_init: ' &
               //'PRECIP_MA_PRESENT_FILE not defined in the header file!'
 call error(errormsg)
 #endif
+
 #if (defined(PRECIP_PRESENT_FILE) && defined(PRECIP_MA_PRESENT_FILE))
 if ( (trim(adjustl(PRECIP_PRESENT_FILE)) /= 'none') &
      .and. &
@@ -1447,6 +1745,19 @@ else
    call error(errormsg)
 end if
 #endif
+
+flag_precip_zs_ref_file = .false.
+#if (defined(PRECIP_ZS_REF_FILE))
+if ( (trim(adjustl(PRECIP_ZS_REF_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(PRECIP_ZS_REF_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(PRECIP_ZS_REF_FILE)) /= 'NONE') ) then
+   flag_precip_zs_ref_file = .true.
+   write(10, fmt=trim(fmt1)) 'precip_zs_ref_file = '//PRECIP_ZS_REF_FILE
+end if
+#endif
+
 #endif
 
 #if (ACCSURFACE==1)
@@ -1454,7 +1765,7 @@ write(10, fmt=trim(fmt3)) 'accfact =', ACCFACT
 #elif (ACCSURFACE==2 || ACCSURFACE==3)
 write(10, fmt=trim(fmt3)) 'gamma_s =', GAMMA_S
 #endif
-#if (ACCSURFACE<=3)
+#if (ACCSURFACE<=5)
 write(10, fmt=trim(fmt2)) 'ELEV_DESERT = ', ELEV_DESERT
 #if (ELEV_DESERT == 1)
 write(10, fmt=trim(fmt3)) 'gamma_p   =', GAMMA_P
@@ -1611,6 +1922,8 @@ write(10, fmt=trim(fmt2)) 'MELT_DRAIN = ', MELT_DRAIN
 
 write(10, fmt=trim(fmt2)) 'SLIDE_LAW = ', SLIDE_LAW
 
+#if (SLIDE_LAW==1)
+
 #if (defined(N_SLIDE_REGIONS))
 write(10, fmt=trim(fmt2)) 'N_SLIDE_REGIONS = ', N_SLIDE_REGIONS
 #if (N_SLIDE_REGIONS>1)
@@ -1622,6 +1935,10 @@ write(10, fmt=trim(fmt1)) 'SLIDE_REGIONS_FILE = '//SLIDE_REGIONS_FILE
 n_slide_regions = 1
 #else
 n_slide_regions = N_SLIDE_REGIONS
+#endif
+
+#if (defined(BASAL_WATER_PRESSURE))
+write(10, fmt=trim(fmt2)) 'BASAL_WATER_PRESSURE = ', BASAL_WATER_PRESSURE
 #endif
 
 c_slide_aux = C_SLIDE
@@ -1663,14 +1980,15 @@ write(10, fmt=trim(fmt3)) 'c_slide_filter_width =', C_SLIDE_FILTER_WIDTH
 #if (defined(TIME_RAMP_UP_SLIDE))
 write(10, fmt=trim(fmt3)) 'time_ramp_up_slide =', TIME_RAMP_UP_SLIDE
 #endif
-#if (SLIDE_LAW==2 || SLIDE_LAW==3)
 write(10, fmt=trim(fmt3)) 'red_pres_limit_fact =', RED_PRES_LIMIT_FACT
-#endif
 #if (BASAL_HYDROLOGY==1 && defined(HYDRO_SLIDE_SAT_FCT) && defined(C_HW_SLIDE) && defined(HW0_SLIDE))
 write(10, fmt=trim(fmt2)) 'HYDRO_SLIDE_SAT_FCT = ', HYDRO_SLIDE_SAT_FCT
 write(10, fmt=trim(fmt3)) 'c_Hw_slide =', C_HW_SLIDE
 write(10, fmt=trim(fmt3)) 'Hw0_slide  =', HW0_SLIDE
 #endif
+
+#endif
+
 write(10, fmt=trim(fmt1)) ' '
 
 if (n_q_geo_mod==1) then
@@ -1945,6 +2263,35 @@ target_topo_tau_0 = TARGET_TOPO_TAU0 *year2sec   ! a -> s
 
 time = time_init
 
+!-------- Reading of present-day ice-land-ocean mask mask
+!                                and surface elevation --------
+
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                     trim(MASK_PRESENT_FILE)
+
+call read_2d_input(filename_with_path, &
+                   ch_var_name='mask', n_var_type=3, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
+
+mask_present = nint(field2d_aux)
+
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                     trim(ZS_PRESENT_FILE)
+
+call read_2d_input(filename_with_path, &
+                   ch_var_name='zs', n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
+
+zs_present = field2d_aux
+
+do i=0, IMAX
+do j=0, JMAX
+   if (mask_present(j,i) >= 2) zs_present(j,i) = max(zs_present(j,i), 0.0_dp)
+                 ! resetting negative elevations (bathymetry data)
+                 ! to the present-day sea surface
+end do
+end do
+
 !-------- Reading of present-day
 !         monthly mean or mean annual precipitation rate --------
 
@@ -1973,7 +2320,7 @@ if (flag_precip_monthly_mean) then
 
       call read_2d_input(filename_with_path, &
                          ch_var_name=trim(ch_var_name), &
-                         n_var_type=1, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
+                         n_var_type=0, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
                          field2d_r=field2d_aux)
 
       precip_present(:,:,n) = field2d_aux *(1.0e-03_dp*sec2year)*(RHO_W/RHO)
@@ -2041,7 +2388,7 @@ do n=1, 12   ! month counter
 
    call read_2d_input(filename_with_path, &
                       ch_var_name=trim(ch_var_name), &
-                      n_var_type=1, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
+                      n_var_type=0, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
                       field2d_r=field2d_aux)
 
    precip_lgm_anom(:,:,n) = field2d_aux
@@ -2213,17 +2560,6 @@ end if
 
 #endif
 
-!-------- Reading of present-day topography mask --------
-
-filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
-                     trim(MASK_PRESENT_FILE)
-
-call read_2d_input(filename_with_path, &
-                   ch_var_name='mask', n_var_type=3, n_ascii_header=6, &
-                   field2d_r=field2d_aux)
-
-mask_ref = nint(field2d_aux)
-
 !-------- Reading of present-day monthly mean surface temperature --------
 
 #if (!defined(ANT) && !defined(GRL)) /* other than Antarctica or Greenland */
@@ -2242,7 +2578,7 @@ do n=1, 12   ! month counter
 
    call read_2d_input(filename_with_path, &
                       ch_var_name=trim(ch_var_name), &
-                      n_var_type=1, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
+                      n_var_type=0, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
                       field2d_r=field2d_aux)
 
    temp_present(:,:,n) = field2d_aux
@@ -2269,7 +2605,7 @@ do n=1, 12   ! month counter
 
    call read_2d_input(filename_with_path, &
                       ch_var_name=trim(ch_var_name), &
-                      n_var_type=1, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
+                      n_var_type=0, n_ascii_header=6+3*n+(JMAX+1)*(n-1), &
                       field2d_r=field2d_aux)
 
    temp_lgm_anom(:,:,n) = field2d_aux
@@ -2280,25 +2616,55 @@ temp_lgm_anom = temp_lgm_anom * TEMP_ANOM_FACT
 
 #endif
 
-!-------- Present reference elevation
-!         (for precipitation and surface-temperature data) --------
+!-------- Reference elevations
+!         (for surface-temperature and precipitation data) --------
 
-filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
-                     trim(ZS_PRESENT_FILE)
+#if (TSURFACE<=5)
 
-call read_2d_input(filename_with_path, &
-                   ch_var_name='zs', n_var_type=1, n_ascii_header=6, &
-                   field2d_r=field2d_aux)
+if (flag_temp_zs_ref_file) then
 
-zs_ref = field2d_aux
+#if (defined(TEMP_ZS_REF_FILE))
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(TEMP_ZS_REF_FILE)
+#endif
 
-do i=0, IMAX
-do j=0, JMAX
-   if (mask_ref(j,i) >= 2) zs_ref(j,i) = 0.0_dp
-                 ! resetting elevations over the ocean
-                 ! to the present-day sea surface
-end do
-end do
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='zs', n_var_type=1, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
+
+   zs_ref_temp = max(field2d_aux, 0.0_dp)
+            ! resetting negative elevations (bathymetry data)
+            ! to the present-day sea surface
+
+
+else
+   zs_ref_temp = zs_present
+end if
+
+#endif
+
+#if (ACCSURFACE<=5)
+
+if (flag_precip_zs_ref_file) then
+
+#if (defined(PRECIP_ZS_REF_FILE))
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(PRECIP_ZS_REF_FILE)
+#endif
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='zs', n_var_type=1, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
+
+   zs_ref_precip = max(field2d_aux, 0.0_dp)
+            ! resetting negative elevations (bathymetry data)
+            ! to the present-day sea surface
+
+else
+   zs_ref_precip = zs_present
+end if
+
+#endif
 
 !-------- Read data for delta_ts --------
 
@@ -2359,8 +2725,8 @@ if (ios == nf90_noerr) then
 else
    do i=0, IMAX
    do j=0, JMAX
-      zs_ref_conv(i,j) = zs_ref(j,i)
-                         ! use previously read reference topography
+      zs_ref_conv(i,j) = zs_present(j,i)
+                         ! use previously read present-day topography
    end do
    end do
 end if
@@ -2392,7 +2758,7 @@ do j=0, JMAX
       call error(errormsg)
    end if
 
-   zs_ref(j,i) = zs_ref_conv(i,j)
+   zs_ref_climatol(j,i) = zs_ref_conv(i,j)
 
 end do
 end do
@@ -2974,15 +3340,33 @@ Q_b_tot = Q_bm + Q_tld
 
 #endif
 
-!-------- Inner-point flag --------
+!-------- Inner-point and staggered-grid flags --------
 
-flag_inner_point = .true.
+flag_inner_point            = .true.
+flag_inner_point(0   ,:   ) = .false.
+flag_inner_point(JMAX,:   ) = .false.
+flag_inner_point(:   ,0   ) = .false.
+flag_inner_point(:   ,IMAX) = .false.
 
-flag_inner_point(0,:)    = .false.
-flag_inner_point(JMAX,:) = .false.
+flag_inner_inner_point                = flag_inner_point
+flag_inner_inner_point(1     ,:     ) = .false.
+flag_inner_inner_point(JMAX-1,:     ) = .false.
+flag_inner_inner_point(:     ,1     ) = .false.
+flag_inner_inner_point(:     ,IMAX-1) = .false.
 
-flag_inner_point(:,0)    = .false.
-flag_inner_point(:,IMAX) = .false.
+flag_sg_x         = .true.
+flag_sg_x(:,IMAX) = .false.
+
+flag_sg_y         = .true.
+flag_sg_y(JMAX,:) = .false.
+
+flag_sg_x_inner_y         = flag_sg_x
+flag_sg_x_inner_y(0   ,:) = .false.
+flag_sg_x_inner_y(JMAX,:) = .false.
+
+flag_sg_y_inner_x         = flag_sg_y
+flag_sg_y_inner_x(:,0   ) = .false.
+flag_sg_y_inner_x(:,IMAX) = .false.
 
 !-------- Distance between grid points with delta_i=ir, delta_j=jr --------
 
@@ -3166,98 +3550,98 @@ print *, '                adjoint applications!'
 
 #endif /* ALLOW_TAPENADE */
 
-!  ------ Time-series file for deep boreholes
+!  ------ Time-series file for specified sites (i.e., ice cores)
 
 #if (defined(ANT))
-n_core = 6   ! Vostok, Dome A, Dome C, Dome F, Kohnen, Byrd
+n_site = 6   ! Vostok, Dome A, Dome C, Dome F, Kohnen, Byrd
 #elif (defined(GRL))
-n_core = 7   ! GRIP, GISP2, Dye3, Camp Century (CC),
+n_site = 7   ! GRIP, GISP2, Dye3, Camp Century (CC),
              ! NorthGRIP (NGRIP), NEEM, EastGRIP (EGRIP)
 #else
-n_core = 0   ! No boreholes defined
+n_site = 0   ! No sites defined
 #endif
 
-if (n_core > n_core_max) then
-   errormsg = ' >>> sico_init: n_core <= n_core_max required!' &
+if (n_site > n_site_max) then
+   errormsg = ' >>> sico_init: n_site <= n_site_max required!' &
             //         end_of_line &
-            //'        Increase value of n_core_max in sico_variables_m!'
+            //'        Increase value of n_site_max in sico_variables_m!'
    call error(errormsg)
 end if
 
 #if (defined(ANT))
 
-ch_core(1)     = 'Vostok'
-phi_core(1)    = -78.467_dp *deg2rad    ! Geographical position of Vostok,
-lambda_core(1) = 106.8_dp   *deg2rad    ! conversion deg -> rad
+ch_site(1)     = 'Vostok'
+phi_site(1)    = -78.467_dp *deg2rad    ! Geographical position of Vostok,
+lambda_site(1) = 106.8_dp   *deg2rad    ! conversion deg -> rad
  
-ch_core(2)     = 'Dome A'
-phi_core(2)    = -80.367_dp *deg2rad    ! Geographical position of Dome A,
-lambda_core(2) =  77.35_dp  *deg2rad    ! conversion deg -> rad
+ch_site(2)     = 'Dome A'
+phi_site(2)    = -80.367_dp *deg2rad    ! Geographical position of Dome A,
+lambda_site(2) =  77.35_dp  *deg2rad    ! conversion deg -> rad
 
-ch_core(3)     = 'Dome C'
-phi_core(3)    = -75.1_dp *deg2rad      ! Geographical position of Dome C,
-lambda_core(3) = 123.4_dp *deg2rad      ! conversion deg -> rad
+ch_site(3)     = 'Dome C'
+phi_site(3)    = -75.1_dp *deg2rad      ! Geographical position of Dome C,
+lambda_site(3) = 123.4_dp *deg2rad      ! conversion deg -> rad
 
-ch_core(4)     = 'Dome F'
-phi_core(4)    = -77.317_dp *deg2rad    ! Geographical position of Dome F,
-lambda_core(4) =  39.7_dp   *deg2rad    ! conversion deg -> rad
+ch_site(4)     = 'Dome F'
+phi_site(4)    = -77.317_dp *deg2rad    ! Geographical position of Dome F,
+lambda_site(4) =  39.7_dp   *deg2rad    ! conversion deg -> rad
 
-ch_core(5)     = 'Kohnen'
-phi_core(5)    = -75.0_dp   *deg2rad    ! Geographical position of Kohnen,
-lambda_core(5) =   0.067_dp *deg2rad    ! conversion deg -> rad
+ch_site(5)     = 'Kohnen'
+phi_site(5)    = -75.0_dp   *deg2rad    ! Geographical position of Kohnen,
+lambda_site(5) =   0.067_dp *deg2rad    ! conversion deg -> rad
 
-ch_core(6)     = 'Byrd'
-phi_core(6)    =  -80.017_dp *deg2rad   ! Geographical position of Byrd,
-lambda_core(6) = -119.517_dp *deg2rad   ! conversion deg -> rad
+ch_site(6)     = 'Byrd'
+phi_site(6)    =  -80.017_dp *deg2rad   ! Geographical position of Byrd,
+lambda_site(6) = -119.517_dp *deg2rad   ! conversion deg -> rad
 
 #elif (defined(GRL))
 
-ch_core(1)     = 'GRIP'
-phi_core(1)    =  72.58722_dp *deg2rad   ! Geographical position of GRIP,
-lambda_core(1) = -37.64222_dp *deg2rad   ! conversion deg -> rad
+ch_site(1)     = 'GRIP'
+phi_site(1)    =  72.58722_dp *deg2rad   ! Geographical position of GRIP,
+lambda_site(1) = -37.64222_dp *deg2rad   ! conversion deg -> rad
  
-ch_core(2)     = 'GISP2'
-phi_core(2)    =  72.58833_dp *deg2rad   ! Geographical position of GISP2
-lambda_core(2) = -38.45750_dp *deg2rad   ! conversion deg -> rad
+ch_site(2)     = 'GISP2'
+phi_site(2)    =  72.58833_dp *deg2rad   ! Geographical position of GISP2
+lambda_site(2) = -38.45750_dp *deg2rad   ! conversion deg -> rad
 
-ch_core(3)     = 'Dye3'
-phi_core(3)    =  65.15139_dp *deg2rad   ! Geographical position of Dye3,
-lambda_core(3) = -43.81722_dp *deg2rad   ! conversion deg -> rad
+ch_site(3)     = 'Dye3'
+phi_site(3)    =  65.15139_dp *deg2rad   ! Geographical position of Dye3,
+lambda_site(3) = -43.81722_dp *deg2rad   ! conversion deg -> rad
 
-ch_core(4)     = 'Camp Century'
-phi_core(4)    =  77.17970_dp *deg2rad   ! Geographical position of CC,
-lambda_core(4) = -61.10975_dp *deg2rad   ! conversion deg -> rad
+ch_site(4)     = 'Camp Century'
+phi_site(4)    =  77.17970_dp *deg2rad   ! Geographical position of CC,
+lambda_site(4) = -61.10975_dp *deg2rad   ! conversion deg -> rad
 
-ch_core(5)     = 'NGRIP'
-phi_core(5)    =  75.09694_dp *deg2rad   ! Geographical position of NGRIP,
-lambda_core(5) = -42.31956_dp *deg2rad   ! conversion deg -> rad
+ch_site(5)     = 'NGRIP'
+phi_site(5)    =  75.09694_dp *deg2rad   ! Geographical position of NGRIP,
+lambda_site(5) = -42.31956_dp *deg2rad   ! conversion deg -> rad
 
-ch_core(6)     = 'NEEM'
-phi_core(6)    =  77.5_dp     *deg2rad   ! Geographical position of NEEM,
-lambda_core(6) = -50.9_dp     *deg2rad   ! conversion deg -> rad
+ch_site(6)     = 'NEEM'
+phi_site(6)    =  77.5_dp     *deg2rad   ! Geographical position of NEEM,
+lambda_site(6) = -50.9_dp     *deg2rad   ! conversion deg -> rad
 
-ch_core(7)     = 'EGRIP'
-phi_core(7)    =  75.6299_dp  *deg2rad   ! Geographical position of EGRIP,
-lambda_core(7) = -35.9867_dp  *deg2rad   ! conversion deg -> rad
+ch_site(7)     = 'EGRIP'
+phi_site(7)    =  75.6299_dp  *deg2rad   ! Geographical position of EGRIP,
+lambda_site(7) = -35.9867_dp  *deg2rad   ! conversion deg -> rad
 
 #endif
 
-if (n_core > 0) then
+if (n_site > 0) then
 
 #if (GRID==0 || GRID==1)   /* Stereographic projection */
 
-   do n=1, n_core
+   do n=1, n_site
 
       if (F_INV > 1.0e+10_dp) then   ! interpreted as infinity,
                                      ! thus no flattening (spherical planet)
 
-         call stereo_forw_sphere(lambda_core(n), phi_core(n), &
-                                 R, LAMBDA0, PHI0, x_core(n), y_core(n))
+         call stereo_forw_sphere(lambda_site(n), phi_site(n), &
+                                 R, LAMBDA0, PHI0, x_site(n), y_site(n))
 
       else   ! finite inverse flattening (ellipsoidal planet)
 
-         call stereo_forw_ellipsoid(lambda_core(n), phi_core(n), &
-                                    A, B, LAMBDA0, PHI0, x_core(n), y_core(n))
+         call stereo_forw_ellipsoid(lambda_site(n), phi_site(n), &
+                                    A, B, LAMBDA0, PHI0, x_site(n), y_site(n))
 
       end if
 
@@ -3265,14 +3649,14 @@ if (n_core > 0) then
 
 #elif (GRID==2)   /* Geographical coordinates */
 
-   x_core = lambda_core
-   y_core = phi_core
+   x_site = lambda_site
+   y_site = phi_site
 
 #endif
 
 end if
 
-filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.core'
+filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.site'
 
 #if !defined(ALLOW_TAPENADE) /* NORMAL */
 open(14, iostat=ios, file=trim(filename_with_path), status='new')
@@ -3281,15 +3665,15 @@ open(14, iostat=ios, file=trim(filename_with_path))
 #endif /* ALLOW_TAPENADE */
 
 if (ios /= 0) then
-   errormsg = ' >>> sico_init: Error when opening the core file!'
+   errormsg = ' >>> sico_init: Error when opening the site file!'
    call error(errormsg)
 end if
 
-if (n_core == 0) then
+if (n_site == 0) then
 
-   write(14,'(1x,a)') '---------------------'
-   write(14,'(1x,a)') 'No boreholes defined.'
-   write(14,'(1x,a)') '---------------------'
+   write(14,'(1x,a)') '-----------------'
+   write(14,'(1x,a)') 'No sites defined.'
+   write(14,'(1x,a)') '-----------------'
 
 else
 
@@ -4732,6 +5116,42 @@ if (mask_region(0,0) == -1) then
 end if
 
 end subroutine topography3
+
+!-------------------------------------------------------------------------------
+!> Set the value of the auxiliary variable flag_grads_nc_tweaks.
+!-------------------------------------------------------------------------------
+  subroutine set_flag_grads_nc_tweaks()
+
+  implicit none
+
+  character(len=16) :: ch_value
+
+  flag_grads_nc_tweaks = .false.   ! default
+
+!-------- Try environment variable --------
+
+  call get_environment_variable('SICO_GRADS_NC_TWEAKS', ch_value)
+
+  if ( (trim(ch_value)=='true') &
+       .or.(trim(ch_value)=='True').or.(trim(ch_value)=='TRUE') ) &
+     flag_grads_nc_tweaks = .true.
+
+  if ( (trim(ch_value)=='yes') &   ! obsolete, but still supported
+       .or.(trim(ch_value)=='Yes').or.(trim(ch_value)=='YES') &
+       .or.(trim(ch_value)=='y').or.(trim(ch_value)=='Y') ) &
+     flag_grads_nc_tweaks = .true.
+
+!-------- Try preprocessor switch --------
+
+#if (defined(GRADS_NC_TWEAKS))
+#if (GRADS_NC_TWEAKS==1)
+  flag_grads_nc_tweaks = .true.
+#else
+  flag_grads_nc_tweaks = .false.
+#endif
+#endif
+
+  end subroutine set_flag_grads_nc_tweaks
 
 !-------------------------------------------------------------------------------
 

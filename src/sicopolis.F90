@@ -5,7 +5,7 @@
 !
 #define       MODEL_SICOPOLIS
 #define       VERSION '24'
-#define       DATE    '2024-04-27'
+#define       DATE    '2024-08-08'
 !
 !! Main program of SICOPOLIS.
 !!
@@ -93,7 +93,7 @@
 !-------- Include header for the Library of Iterative Solvers Lis
 !                                               (only if required) --------
 
-#if (CALCTHK==3 || CALCTHK==6 || MARGIN==3 || DYNAMICS==2)
+#if (MARGIN==3 || DYNAMICS==2 || DYNAMICS==3)
 #include "lisf.h"
 #endif
 
@@ -137,6 +137,8 @@
 #if (defined(GRL) && DISC>0)
 #include "subroutines/general/discharge_workers_m.F90"
 #endif
+
+#include "subroutines/general/calc_pressure_water_bas_m.F90"
 
 #include "subroutines/general/calc_enhance_m.F90"
 

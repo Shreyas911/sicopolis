@@ -5303,7 +5303,6 @@ real(dp), save     :: time_add_offset_val
 character(len= 16) :: ch_date, ch_time, ch_zone
 character(len=256) :: filename, filename_with_path, buffer
 character(len=  2) :: ch2_aux
-logical, save      :: grads_nc_tweaks
 
 integer(i4b), save :: counter = 0
 
@@ -5698,9 +5697,7 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 
 !  ------ Definition of the dimensions
 
-      call set_grads_nc_tweaks(grads_nc_tweaks)
-
-      if (grads_nc_tweaks) then
+      if (flag_grads_nc_tweaks) then
          call check( nf90_def_dim(ncid(n), 'x', 1, ncd), thisroutine )
          call check( nf90_def_dim(ncid(n), 'y', 1, ncd), thisroutine )
       end if
@@ -5709,7 +5706,7 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 
 !  ------ Definition of the variables
 
-      if (grads_nc_tweaks) then
+      if (flag_grads_nc_tweaks) then
 
 !    ---- x
 
@@ -5782,7 +5779,7 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
                   thisroutine )
       call check( nf90_put_att(ncid(n), ncv, 'axis', 't'), thisroutine )
 
-      if (grads_nc_tweaks) then
+      if (flag_grads_nc_tweaks) then
 
 !    ---- Time offset
 
@@ -6428,7 +6425,7 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 
    if (firstcall%output2) then
 
-      if (grads_nc_tweaks) then
+      if (flag_grads_nc_tweaks) then
 
          nc1cor = [ 1 ]
 
@@ -6456,7 +6453,7 @@ do n=0, maxval(mask_region)   ! n=0: entire ice sheet, n>0: defined regions
 
       call check( nf90_inq_varid(ncid(n), 't', ncv), thisroutine )
 
-      if (.not.grads_nc_tweaks) then
+      if (.not.flag_grads_nc_tweaks) then
          call check( nf90_put_var(ncid(n), ncv, time_val, &
                                   start=nc1cor), thisroutine )
       else
@@ -6984,8 +6981,8 @@ mb_resid = Q_s + bmb_tot - calv_tot - dV_dt
 end subroutine scalar_variables
 
 !-------------------------------------------------------------------------------
-!> Writing of time-series data of the deep ice cores on file in ASCII
-!! and NetCDF format.
+!> Writing of time-series data of the specified sites (i.e., ice cores) on file
+!! in ASCII and NetCDF format.
 !-------------------------------------------------------------------------------
 subroutine output4(time, dxi, deta, delta_ts, glac_index)
 
@@ -6998,14 +6995,14 @@ real(dp), intent(in) :: time, dxi, deta, delta_ts, glac_index
 
 integer(i4b)                        :: i, j, n
 integer(i4b)                        :: ios
-real(dp), dimension(:), allocatable :: r_n_core
+real(dp), dimension(:), allocatable :: r_n_site
 real(dp)                            :: time_val
 real(dp), dimension(0:JMAX,0:IMAX)  :: field
-real(dp), dimension(:), allocatable :: H_core, temp_b_core, &
-                                       vx_b_core, vy_b_core, vh_b_core, &
-                                       vx_s_core, vy_s_core, vh_s_core, &
-                                       Rx_b_core, Ry_b_core, R_b_core, &
-                                       bmb_core
+real(dp), dimension(:), allocatable :: H_site, temp_b_site, &
+                                       vx_b_site, vy_b_site, vh_b_site, &
+                                       vx_s_site, vy_s_site, vh_s_site, &
+                                       Rx_b_site, Ry_b_site, R_b_site, &
+                                       bmb_site
 real(dp), dimension(:), allocatable :: arg1
 
 integer(i4b)       :: cmode
@@ -7019,7 +7016,6 @@ real(dp), save     :: time_add_offset_val
 character(len= 16) :: ch_date, ch_time, ch_zone
 character(len=256) :: filename, filename_with_path, buffer
 logical            :: flag_in_domain
-logical, save      :: grads_nc_tweaks
 
 integer(i4b), save :: counter = 0
 
@@ -7027,28 +7023,28 @@ character(len=64), parameter :: thisroutine = 'output4'
 
 counter = counter + 1
 
-if (n_core >= 1) then
+if (n_site >= 1) then
 
-   allocate(r_n_core(n_core), H_core(n_core), temp_b_core(n_core), &
-            vx_b_core(n_core), vy_b_core(n_core), vh_b_core(n_core), &
-            vx_s_core(n_core), vy_s_core(n_core), vh_s_core(n_core), &
-            Rx_b_core(n_core), Ry_b_core(n_core), R_b_core(n_core), &
-            bmb_core(n_core))
-   allocate(arg1(n_core))
+   allocate(r_n_site(n_site), H_site(n_site), temp_b_site(n_site), &
+            vx_b_site(n_site), vy_b_site(n_site), vh_b_site(n_site), &
+            vx_s_site(n_site), vy_s_site(n_site), vh_s_site(n_site), &
+            Rx_b_site(n_site), Ry_b_site(n_site), R_b_site(n_site), &
+            bmb_site(n_site))
+   allocate(arg1(n_site))
 
-!-------- Determination of ice-core data --------
+!-------- Determination of site data --------
 
-   do n=1, n_core
+   do n=1, n_site
 
-!  ------Ice core number
+!  ------ Site number
 
-      r_n_core(n) = real(n,dp)
+      r_n_site(n) = real(n,dp)
 
 !  ------ Ice thickness
 
       field = H_c + H_t
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'grid', &
-                    H_core(n), flag_in_domain)
+      call borehole(field, x_site(n), y_site(n), dxi, deta, 'grid', &
+                    H_site(n), flag_in_domain)
 
       if ( (firstcall%output4).and.(.not.flag_in_domain) ) then
          write(6, fmt='(a,i0,a)') &
@@ -7063,8 +7059,8 @@ if (n_core >= 1) then
       end do
       end do
 
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_x', &
-                    vx_b_core(n), flag_in_domain)
+      call borehole(field, x_site(n), y_site(n), dxi, deta, 'sg_x', &
+                    vx_b_site(n), flag_in_domain)
 
       do i=0, IMAX
       do j=0, JMAX
@@ -7072,10 +7068,10 @@ if (n_core >= 1) then
       end do
       end do
 
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_y', &
-                    vy_b_core(n), flag_in_domain)
+      call borehole(field, x_site(n), y_site(n), dxi, deta, 'sg_y', &
+                    vy_b_site(n), flag_in_domain)
 
-      vh_b_core(n) = sqrt(vx_b_core(n)**2+vy_b_core(n)**2)
+      vh_b_site(n) = sqrt(vx_b_site(n)**2+vy_b_site(n)**2)
 
 !  ------ Surface velocity
 
@@ -7085,8 +7081,8 @@ if (n_core >= 1) then
       end do
       end do
 
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_x', &
-                    vx_s_core(n), flag_in_domain)
+      call borehole(field, x_site(n), y_site(n), dxi, deta, 'sg_x', &
+                    vx_s_site(n), flag_in_domain)
 
       do i=0, IMAX
       do j=0, JMAX
@@ -7094,10 +7090,10 @@ if (n_core >= 1) then
       end do
       end do
 
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_y', &
-                    vy_s_core(n), flag_in_domain)
+      call borehole(field, x_site(n), y_site(n), dxi, deta, 'sg_y', &
+                    vy_s_site(n), flag_in_domain)
 
-      vh_s_core(n) = sqrt(vx_s_core(n)**2+vy_s_core(n)**2)
+      vh_s_site(n) = sqrt(vx_s_site(n)**2+vy_s_site(n)**2)
 
 !  ------ Basal temperature
 
@@ -7107,8 +7103,8 @@ if (n_core >= 1) then
       end do
       end do
 
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'grid', &
-                    temp_b_core(n), flag_in_domain)
+      call borehole(field, x_site(n), y_site(n), dxi, deta, 'grid', &
+                    temp_b_site(n), flag_in_domain)
 
 !  ------ Basal frictional heating
 
@@ -7118,8 +7114,8 @@ if (n_core >= 1) then
       end do
       end do
 
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_x', &
-                    Rx_b_core(n), flag_in_domain)
+      call borehole(field, x_site(n), y_site(n), dxi, deta, 'sg_x', &
+                    Rx_b_site(n), flag_in_domain)
 
       do i=0, IMAX
       do j=0, JMAX
@@ -7127,16 +7123,16 @@ if (n_core >= 1) then
       end do
       end do
 
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'sg_y', &
-                    Ry_b_core(n), flag_in_domain)
+      call borehole(field, x_site(n), y_site(n), dxi, deta, 'sg_y', &
+                    Ry_b_site(n), flag_in_domain)
 
-      R_b_core(n) = Rx_b_core(n) + Ry_b_core(n)
+      R_b_site(n) = Rx_b_site(n) + Ry_b_site(n)
 
 !  ------ Basal mass balance
 
       field = -(Q_bm+Q_tld)   ! positive for supply, negative for loss
-      call borehole(field, x_core(n), y_core(n), dxi, deta, 'grid', &
-                    bmb_core(n), flag_in_domain)
+      call borehole(field, x_site(n), y_site(n), dxi, deta, 'grid', &
+                    bmb_site(n), flag_in_domain)
 
    end do
 
@@ -7151,10 +7147,10 @@ if (n_core >= 1) then
    call error(errormsg)
 #endif
 
-   vh_b_core = vh_b_core *year2sec   ! m/s -> m/a
-   vh_s_core = vh_s_core *year2sec   ! m/s -> m/a
+   vh_b_site = vh_b_site *year2sec   ! m/s -> m/a
+   vh_s_site = vh_s_site *year2sec   ! m/s -> m/a
 
-   bmb_core  = bmb_core  *year2sec   ! m ice equiv./s -> m ice equiv./a
+   bmb_site  = bmb_site  *year2sec   ! m ice equiv./s -> m ice equiv./a
 
 !-------- Writing of data on file --------
 
@@ -7165,28 +7161,28 @@ if (n_core >= 1) then
    end if
 
    n=1
-   write(unit=14, fmt='(13x,1pe13.4)', advance='no') H_core(n)
-   do n=2, n_core-1
-      write(unit=14, fmt='(1pe13.4)', advance='no') H_core(n)
+   write(unit=14, fmt='(13x,1pe13.4)', advance='no') H_site(n)
+   do n=2, n_site-1
+      write(unit=14, fmt='(1pe13.4)', advance='no') H_site(n)
    end do
-   n=n_core
-   write(unit=14, fmt='(1pe13.4)') H_core(n)
+   n=n_site
+   write(unit=14, fmt='(1pe13.4)') H_site(n)
 
    n=1
-   write(unit=14, fmt='(13x,1pe13.4)', advance='no') vh_s_core(n)
-   do n=2, n_core-1
-      write(unit=14, fmt='(1pe13.4)', advance='no') vh_s_core(n)
+   write(unit=14, fmt='(13x,1pe13.4)', advance='no') vh_s_site(n)
+   do n=2, n_site-1
+      write(unit=14, fmt='(1pe13.4)', advance='no') vh_s_site(n)
    end do
-   n=n_core
-   write(unit=14, fmt='(1pe13.4)') vh_s_core(n)
+   n=n_site
+   write(unit=14, fmt='(1pe13.4)') vh_s_site(n)
 
    n=1
-   write(unit=14, fmt='(13x,1pe13.4)', advance='no') temp_b_core(n)
-   do n=2, n_core-1
-      write(unit=14, fmt='(1pe13.4)', advance='no') temp_b_core(n)
+   write(unit=14, fmt='(13x,1pe13.4)', advance='no') temp_b_site(n)
+   do n=2, n_site-1
+      write(unit=14, fmt='(1pe13.4)', advance='no') temp_b_site(n)
    end do
-   n=n_core
-   write(unit=14, fmt='(1pe13.4,/)') temp_b_core(n)
+   n=n_site
+   write(unit=14, fmt='(1pe13.4,/)') temp_b_site(n)
 
 !-------- Extended time-series file in NetCDF format --------
 
@@ -7194,7 +7190,7 @@ if (n_core >= 1) then
 
 !  ------ Open NetCDF file
 
-      filename           = trim(run_name)//'_core.nc'
+      filename           = trim(run_name)//'_site.nc'
       filename_with_path = trim(OUT_PATH)//'/'//trim(filename)
 
       !%% call set_cmode(cmode, n_deflate_level, flag_shuffle)
@@ -7208,15 +7204,15 @@ if (n_core >= 1) then
       if (ios /= nf90_noerr) then
          errormsg = ' >>> output4: Error when opening the' &
                   //               end_of_line &
-                  //'              NetCDF ice-core time-series file!'
+                  //'              NetCDF site time-series file!'
          call error(errormsg)
       end if
 
-      ncid_core = ncid
+      ncid_site = ncid
 
 !  ------ Global attributes
 
-      buffer = 'Time-series output for the deep ice cores of simulation '// &
+      buffer = 'Time-series output for the specified sites of simulation '// &
                trim(run_name)
       call check( nf90_put_att(ncid, NF90_GLOBAL, 'title', trim(buffer)), &
                   thisroutine )
@@ -7243,19 +7239,17 @@ if (n_core >= 1) then
 
 !  ------ Definition of the dimensions
 
-      call set_grads_nc_tweaks(grads_nc_tweaks)
-
-      if (grads_nc_tweaks) then
+      if (flag_grads_nc_tweaks) then
          call check( nf90_def_dim(ncid, 'x', 1, ncd), thisroutine )
          call check( nf90_def_dim(ncid, 'y', 1, ncd), thisroutine )
       end if
 
-      call check( nf90_def_dim(ncid, 'n', n_core,  ncd), thisroutine )
+      call check( nf90_def_dim(ncid, 'n', n_site,  ncd), thisroutine )
       call check( nf90_def_dim(ncid, 't', NF90_UNLIMITED, ncd), thisroutine )
 
 !  ------ Definition of the variables
 
-      if (grads_nc_tweaks) then
+      if (flag_grads_nc_tweaks) then
 
 !    ---- x
 
@@ -7328,7 +7322,7 @@ if (n_core >= 1) then
                   thisroutine )
       call check( nf90_put_att(ncid, ncv, 'axis', 't'), thisroutine )
 
-      if (grads_nc_tweaks) then
+      if (flag_grads_nc_tweaks) then
 
 !    ---- Time offset
 
@@ -7352,7 +7346,7 @@ if (n_core >= 1) then
 
       end if
 
-!    ---- Ice core number
+!    ---- Site number
 
       call check( nf90_inq_dimid(ncid, 'n', nc1d), thisroutine )
 
@@ -7362,15 +7356,15 @@ if (n_core >= 1) then
       buffer = '1'
       call check( nf90_put_att(ncid, ncv, 'units', trim(buffer)), &
                   thisroutine )
-      buffer = 'ice_core_number'
+      buffer = 'site_number'
       call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
                   thisroutine )
-      buffer = 'Ice core number'
+      buffer = 'Site number'
       call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
                   thisroutine )
-      buffer = trim(ch_core(1))
-      do n=2, n_core; buffer = trim(buffer)//', '//trim(ch_core(n)); end do
-      call check( nf90_put_att(ncid, ncv, 'ice_core_names', trim(buffer)), &
+      buffer = trim(ch_site(1))
+      do n=2, n_site; buffer = trim(buffer)//', '//trim(ch_site(n)); end do
+      call check( nf90_put_att(ncid, ncv, 'site_names', trim(buffer)), &
                   thisroutine )
       call check( nf90_put_att(ncid, ncv, 'axis', 'n'), thisroutine )
 
@@ -7431,12 +7425,12 @@ if (n_core >= 1) then
       call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
                   thisroutine )
 
-!    ---- H_core
+!    ---- H_site
 
       call check( nf90_inq_dimid(ncid, 'n', nc2d(1)), thisroutine )
       call check( nf90_inq_dimid(ncid, 't', nc2d(2)), thisroutine )
 
-      call check( nf90_def_var(ncid, 'H_core', NF90_FLOAT, nc2d, ncv), &
+      call check( nf90_def_var(ncid, 'H_site', NF90_FLOAT, nc2d, ncv), &
                   thisroutine )
 
       buffer = 'm'
@@ -7449,12 +7443,12 @@ if (n_core >= 1) then
       call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
                   thisroutine )
 
-!    ---- vh_b_core
+!    ---- vh_b_site
 
       call check( nf90_inq_dimid(ncid, 'n', nc2d(1)), thisroutine )
       call check( nf90_inq_dimid(ncid, 't', nc2d(2)), thisroutine )
 
-      call check( nf90_def_var(ncid, 'vh_b_core', NF90_FLOAT, nc2d, ncv), &
+      call check( nf90_def_var(ncid, 'vh_b_site', NF90_FLOAT, nc2d, ncv), &
                   thisroutine )
 
       buffer = 'm a-1'
@@ -7467,12 +7461,12 @@ if (n_core >= 1) then
       call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
                   thisroutine )
 
-!    ---- vh_s_core
+!    ---- vh_s_site
 
       call check( nf90_inq_dimid(ncid, 'n', nc2d(1)), thisroutine )
       call check( nf90_inq_dimid(ncid, 't', nc2d(2)), thisroutine )
 
-      call check( nf90_def_var(ncid, 'vh_s_core', NF90_FLOAT, nc2d, ncv), &
+      call check( nf90_def_var(ncid, 'vh_s_site', NF90_FLOAT, nc2d, ncv), &
                   thisroutine )
 
       buffer = 'm a-1'
@@ -7485,12 +7479,12 @@ if (n_core >= 1) then
       call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
                   thisroutine )
 
-!    ---- temp_b_core
+!    ---- temp_b_site
 
       call check( nf90_inq_dimid(ncid, 'n', nc2d(1)), thisroutine )
       call check( nf90_inq_dimid(ncid, 't', nc2d(2)), thisroutine )
 
-      call check( nf90_def_var(ncid, 'temp_b_core', NF90_FLOAT, nc2d, ncv), &
+      call check( nf90_def_var(ncid, 'temp_b_site', NF90_FLOAT, nc2d, ncv), &
                   thisroutine )
 
       buffer = 'degC'
@@ -7503,12 +7497,12 @@ if (n_core >= 1) then
       call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
                   thisroutine )
 
-!    ---- R_b_core
+!    ---- R_b_site
 
       call check( nf90_inq_dimid(ncid, 'n', nc2d(1)), thisroutine )
       call check( nf90_inq_dimid(ncid, 't', nc2d(2)), thisroutine )
 
-      call check( nf90_def_var(ncid, 'R_b_core', NF90_FLOAT, nc2d, ncv), &
+      call check( nf90_def_var(ncid, 'R_b_site', NF90_FLOAT, nc2d, ncv), &
                   thisroutine )
 
       buffer = 'W m-2'
@@ -7521,12 +7515,12 @@ if (n_core >= 1) then
       call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
                   thisroutine )
 
-!    ---- bmb_core
+!    ---- bmb_site
 
       call check( nf90_inq_dimid(ncid, 'n', nc2d(1)), thisroutine )
       call check( nf90_inq_dimid(ncid, 't', nc2d(2)), thisroutine )
 
-      call check( nf90_def_var(ncid, 'bmb_core', NF90_FLOAT, nc2d, ncv), &
+      call check( nf90_def_var(ncid, 'bmb_site', NF90_FLOAT, nc2d, ncv), &
                   thisroutine )
 
       buffer = 'm ice equiv. a-1'
@@ -7549,7 +7543,7 @@ if (n_core >= 1) then
 
    if (firstcall%output4) then
 
-      if (grads_nc_tweaks) then
+      if (flag_grads_nc_tweaks) then
 
          nc1cor = [ 1 ]
 
@@ -7566,7 +7560,7 @@ if (n_core >= 1) then
       nc1cor = [ 1 ]
 
       call check( nf90_inq_varid(ncid, 'n', ncv), thisroutine )
-      call check( nf90_put_var(ncid, ncv, r_n_core, &
+      call check( nf90_put_var(ncid, ncv, r_n_site, &
                                start=nc1cor), thisroutine )
 
       call check( nf90_inq_varid(ncid, 'year2sec', ncv), thisroutine )
@@ -7581,12 +7575,12 @@ if (n_core >= 1) then
 
    nc2cor(1) = 1
    nc2cor(2) = counter
-   nc2cnt(1) = n_core
+   nc2cnt(1) = n_site
    nc2cnt(2) = 1
 
    call check( nf90_inq_varid(ncid, 't', ncv), thisroutine )
 
-   if (.not.grads_nc_tweaks) then
+   if (.not.flag_grads_nc_tweaks) then
       call check( nf90_put_var(ncid, ncv, time_val, &
                                start=nc1cor), thisroutine )
    else
@@ -7617,33 +7611,33 @@ if (n_core >= 1) then
    call check( nf90_put_var(ncid, ncv, z_sl_mean, &
                             start=nc1cor), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'H_core', ncv), thisroutine )
-   arg1 = H_core
+   call check( nf90_inq_varid(ncid, 'H_site', ncv), thisroutine )
+   arg1 = H_site
    call check( nf90_put_var(ncid, ncv, arg1, &
                             start=nc2cor, count=nc2cnt), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'vh_b_core', ncv), thisroutine )
-   arg1 = vh_b_core
+   call check( nf90_inq_varid(ncid, 'vh_b_site', ncv), thisroutine )
+   arg1 = vh_b_site
    call check( nf90_put_var(ncid, ncv, arg1, &
                             start=nc2cor, count=nc2cnt), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'vh_s_core', ncv), thisroutine )
-   arg1 = vh_s_core
+   call check( nf90_inq_varid(ncid, 'vh_s_site', ncv), thisroutine )
+   arg1 = vh_s_site
    call check( nf90_put_var(ncid, ncv, arg1, &
                             start=nc2cor, count=nc2cnt), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'temp_b_core', ncv), thisroutine )
-   arg1 = temp_b_core
+   call check( nf90_inq_varid(ncid, 'temp_b_site', ncv), thisroutine )
+   arg1 = temp_b_site
    call check( nf90_put_var(ncid, ncv, arg1, &
                             start=nc2cor, count=nc2cnt), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'R_b_core', ncv), thisroutine )
-   arg1 = R_b_core
+   call check( nf90_inq_varid(ncid, 'R_b_site', ncv), thisroutine )
+   arg1 = R_b_site
    call check( nf90_put_var(ncid, ncv, arg1, &
                             start=nc2cor, count=nc2cnt), thisroutine )
 
-   call check( nf90_inq_varid(ncid, 'bmb_core', ncv), thisroutine )
-   arg1 = bmb_core
+   call check( nf90_inq_varid(ncid, 'bmb_site', ncv), thisroutine )
+   arg1 = bmb_site
    call check( nf90_put_var(ncid, ncv, arg1, &
                             start=nc2cor, count=nc2cnt), thisroutine )
 
@@ -7654,15 +7648,15 @@ if (n_core >= 1) then
    if ( mod((counter-1), n_sync) == 0 ) &
       call check( nf90_sync(ncid),  thisroutine )
 
-   deallocate(r_n_core, H_core, &
-              vx_b_core, vy_b_core, vh_b_core, &
-              vx_s_core, vy_s_core, vh_s_core, &
-              temp_b_core, &
-              Rx_b_core, Ry_b_core, R_b_core, &
-              bmb_core)
+   deallocate(r_n_site, H_site, &
+              vx_b_site, vy_b_site, vh_b_site, &
+              vx_s_site, vy_s_site, vh_s_site, &
+              temp_b_site, &
+              Rx_b_site, Ry_b_site, R_b_site, &
+              bmb_site)
    deallocate(arg1)
 
-!%% else   ! (n_core == 0 -> do nothing)
+!%% else   ! (n_site == 0 -> do nothing)
 !%%
 !%%    continue
 
@@ -7703,7 +7697,7 @@ allocate(zl_surf(n_surf), zs_surf(n_surf), &
 	vx_base(n_surf), vy_base(n_surf), vz_base(n_surf), &
  	temp_base_pmp(n_surf))
 
-!-------- Determination of ice-core data --------
+!-------- Determination of site data --------
 
 do n=1, n_surf
 
@@ -8071,44 +8065,6 @@ end subroutine output5
   end if
 
   end subroutine set_ch_institution
-
-!-------------------------------------------------------------------------------
-!> Set the value of the auxiliary variable grads_nc_tweaks.
-!-------------------------------------------------------------------------------
-  subroutine set_grads_nc_tweaks(grads_nc_tweaks)
-
-  implicit none
-
-  logical, intent(out) :: grads_nc_tweaks
-
-  character(len=16) :: ch_value
-
-  grads_nc_tweaks = .false.
-
-!-------- Try environment variable --------
-
-  call get_environment_variable('SICO_GRADS_NC_TWEAKS', ch_value)
-
-  if ( (trim(ch_value)=='true') &
-       .or.(trim(ch_value)=='True').or.(trim(ch_value)=='TRUE') ) &
-     grads_nc_tweaks = .true.
-
-  if ( (trim(ch_value)=='yes') &   ! obsolete, but still supported
-       .or.(trim(ch_value)=='Yes').or.(trim(ch_value)=='YES') &
-       .or.(trim(ch_value)=='y').or.(trim(ch_value)=='Y') ) &
-     grads_nc_tweaks = .true.
-
-!-------- Try preprocessor switch --------
-
-#if (defined(GRADS_NC_TWEAKS))
-#if (GRADS_NC_TWEAKS==1)
-  grads_nc_tweaks = .true.
-#else
-  grads_nc_tweaks = .false.
-#endif
-#endif
-
-  end subroutine set_grads_nc_tweaks
 
 !-------------------------------------------------------------------------------
 

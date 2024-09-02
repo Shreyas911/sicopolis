@@ -280,12 +280,14 @@ end subroutine calc_gia
 !-------------------------------------------------------------------------------
 subroutine calc_el(load_ice_water, dxi, deta)
 
+!$ use omp_lib
+
 implicit none
 
 real(dp), intent(in), dimension(0:JMAX,0:IMAX) :: load_ice_water
 real(dp), intent(in)                           :: dxi, deta
 
-integer(i4b) :: i, j, ir, jr, il, jl, n
+integer(i4b) :: i, j, ij, ir, jr, il, jl, n
 integer(i4b) :: ir_max, jr_max, min_imax_jmax
 integer(i4b) :: il_begin, il_end, jl_begin, jl_end
 real(dp)                              :: rhoa_g_inv
@@ -367,8 +369,11 @@ end do
 
 !-------- Steady-state displacement of the lithosphere --------
 
-do i=0, IMAX
-do j=0, JMAX
+!$omp parallel do default(shared) private(ij,i,j,ir,jr,n)
+do ij=1, (IMAX+1)*(JMAX+1)
+
+   i = n2i(ij)   ! i=0...IMAX
+   j = n2j(ij)   ! j=0...JMAX
 
    wss(j,i) = 0.0_dp
 
@@ -392,7 +397,7 @@ do j=0, JMAX
    end do
 
 end do
-end do
+!$omp end parallel do
 
 #if !defined(ALLOW_TAPENADE) /* NORMAL */
 deallocate (f_0)
