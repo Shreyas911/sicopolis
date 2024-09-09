@@ -151,7 +151,7 @@ subroutine read_cost_data()
     if (ios /= nf90_noerr) then
         errormsg = ' >>> '//trim(thisroutine)//': Error when opening a' &
         //               end_of_line &
-        //'              NetCDF BedMachine data file!'
+        //'              NetCDF Age data file!'
         call error(errormsg)
     end if
 
