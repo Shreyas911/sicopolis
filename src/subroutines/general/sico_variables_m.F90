@@ -1510,7 +1510,7 @@ real(dp), dimension(0:JMAX,0:IMAX) :: delta_tda_const
 real(dp), dimension(0:NTDAMAX,0:JMAX,0:IMAX) :: delta_tda
    !! Spatiotemporally-varying temperature anomaly that will be inferred using adjoint-based DA
 
-#if (defined(AGE_COST))
+#if (defined(AGE_COST) || defined(FAKE_AGE_COST))
 
 ! Note: for the age cost, CALCMOD!=1 is recommended because
 ! the gridded ages of the GRL ice sheet are only 25 z-levels.
@@ -1525,7 +1525,7 @@ real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: age_unc_data
 
 real(dp), dimension(0:JMAX,0:IMAX) :: acc_fact
 
-#if (defined(BEDMACHINE_COST))
+#if (defined(BEDMACHINE_COST) || defined(FAKE_BEDMACHINE_COST))
 
 real(dp), dimension(0:JMAX,0:IMAX) :: H_BedMachine_data
 #ifdef ALLOW_BEDMACHINE_UNCERT

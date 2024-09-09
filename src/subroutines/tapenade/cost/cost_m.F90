@@ -83,7 +83,7 @@ fc = 0.0
   !-------- Read any necessary NetCDF cost files:
 call read_cost_data()
 
-#ifdef AGE_COST
+#if (defined(AGE_COST) || defined(FAKE_AGE_COST))
 
 #if (CALCMOD!=1)
   KDATA = KCMAX
@@ -113,7 +113,7 @@ call read_cost_data()
 
 #endif
 
-#if defined(BEDMACHINE_COST)
+#if (defined(BEDMACHINE_COST) || defined(FAKE_BEDMACHINE_COST))
     do i=0, IMAX
       do j=0, JMAX
         fc = fc &
@@ -126,7 +126,7 @@ call read_cost_data()
     end do
 #endif
 
-#if (!defined(BEDMACHINE_COST) && !defined(AGE_COST))
+#if (!defined(BEDMACHINE_COST) && !defined(AGE_COST) && !defined(FAKE_BEDMACHINE_COST) && !defined(FAKE_AGE_COST))
     do i=0, IMAX
       do j=0, JMAX
         !--- Other cost functions:
