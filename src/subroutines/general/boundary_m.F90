@@ -181,9 +181,11 @@ real(dp), parameter :: &
 
 character(len=64), parameter :: thisroutine = 'boundary'
 
-#if defined(ALLOW_TAPENADE) /* Tapenade */
-real(dp)     :: temp_val
-#endif /* Tapenade */
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+real(dp)     :: temp_val, alpha_interp, dtime_interp, time_init_interp
+integer(i4b) :: floor_interp, ceiling_interp
+real(dp), dimension(0:JMAX,0:IMAX) :: delta_tda_interp
+#endif  /* ALLOW_{GRDCHK,TAPENADE} */
 
 time_in_years = time*sec2year
 n_year_CE     = floor((time_in_years+YEAR_ZERO)+eps_sp_dp)
@@ -956,11 +958,31 @@ do j=0, JMAX
 !  ------ Correction of present monthly temperature with elevation changes
 !         and temperature deviation delta_ts
 
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+
+   dtime_interp = DTIME_INTERP0
+   time_init_interp = TIME_INIT0
+   floor_interp  = floor((time_in_years-time_init_interp)/dtime_interp)
+   ceiling_interp = ceiling((time_in_years-time_init_interp)/dtime_interp)
+   alpha_interp  = (time_in_years-time_init_interp-floor_interp*dtime_interp)/dtime_interp
+   delta_tda_interp(j,i) = delta_tda(floor_interp,j,i)  * (1-alpha_interp) &
+                        + delta_tda(ceiling_interp,j,i) * alpha_interp
+
+#if (defined(ANT) || defined(GRL)) /* Antarctica or Greenland */
+   temp_diff(j,i) = delta_ts + delta_tda_const(j,i) + delta_tda_interp(j,i)
+#else /* other than Antarctica or Greenland */
+   temp_diff(j,i) = gamma_t*(zs_ref_temp(j,i)-zs(j,i)) + delta_ts + delta_tda_const(j,i) + delta_tda_interp(j,i)
+#endif
+
+#else /* NORMAL */
+
 #if (defined(ANT) || defined(GRL)) /* Antarctica or Greenland */
    temp_diff(j,i) = delta_ts
 #else /* other than Antarctica or Greenland */
    temp_diff(j,i) = gamma_t*(zs_ref_temp(j,i)-zs(j,i)) + delta_ts
 #endif
+
+#endif /* ALLOW_{GRDCHK,TAPENADE} */
 
    do n=1, 12   ! month counter
       temp_mm(j,i,n) = temp_present(j,i,n) + temp_diff(j,i)

@@ -2,6 +2,46 @@ import pytest
 import os
 import subprocess
 
+def test_grl40_bm5_paleo17a_BH0_delta_tda_const_scalar():
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_BH0 -iv delta_tda_const -jsf inputs.json -lbfs scalar', shell = True, check = True)
+
+def test_grl40_bm5_paleo17a_BH0_BM5_delta_tda_const_scalar():
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0_BM5.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0_BM5.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_BH0_BM5 -iv delta_tda_const -jsf inputs.json -lbfs scalar', shell = True, check = True)
+
+def test_grl40_bm5_paleo17a_BH0_AC_delta_tda_const_scalar():
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0_AC.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0_AC.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_BH0_AC -iv delta_tda_const -delta 5.e-2 -jsf inputs.json -lbfs scalar', shell = True, check = True)
+
+def test_repo_grl16_bm5_ss25ka_delta_tda_const_scalar():
+	subprocess.run (['cp', 'headers/sico_specs_repo_grl16_bm5_ss25ka.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_repo_grl16_bm5_ss25ka.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -head repo_grl16_bm5_ss25ka -iv delta_tda_const -jsf inputs.json -lbfs scalar', shell = True, check = True)
+
+def test_repo_grl16_bm5_ss25ka_BM5_delta_tda_const_scalar():
+	subprocess.run (['cp', 'headers/sico_specs_repo_grl16_bm5_ss25ka_BM5.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_repo_grl16_bm5_ss25ka_BM5.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -head repo_grl16_bm5_ss25ka_BM5 -iv delta_tda_const -jsf inputs.json -lbfs scalar', shell = True, check = True)
+
+def test_repo_grl16_bm5_ss25ka_CM3_AC_delta_tda_const_scalar():
+	subprocess.run (['cp', 'headers/sico_specs_repo_grl16_bm5_ss25ka_CM3_AC.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_repo_grl16_bm5_ss25ka_CM3_AC.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -head repo_grl16_bm5_ss25ka_CM3_AC -iv delta_tda_const -jsf inputs.json -lbfs scalar', shell = True, check = True)
+
+def test_repo_ant64_b2_future09_ctrl_delta_tda_const_scalar():
+	subprocess.run (['cp', 'headers/sico_specs_repo_ant64_b2_future09_ctrl.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_repo_ant64_b2_future09_ctrl.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -head repo_ant64_b2_future09_ctrl -iv delta_tda_const -delta 5.e-2 -jsf inputs.json -lbfs scalar', shell = True, check = True)
+
+def test_repo_ant64_bm3_ss25ka_delta_tda_const_scalar():
+	subprocess.run (['cp', 'headers/sico_specs_repo_ant64_bm3_ss25ka.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_repo_ant64_bm3_ss25ka.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -head repo_ant64_bm3_ss25ka -iv delta_tda_const -jsf inputs.json -lbfs scalar', shell = True, check = True)
+
 def test_grl40_bm5_paleo17a_BH0_beta1_scalar():
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0.h', '../headers'])
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0.h', '../src/sico_specs.h'])

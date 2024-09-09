@@ -1356,4 +1356,11 @@
 #define ALLOW_COST
 #define AGE_COST
 #define COST_INPUT_PATH '/scratch2/shreyas/GrIS_paleo_data'
+
+#define NTDAMAX 2
+!                       Number of intervals for interpolation of
+!                       time-varying control variables.
+
+#define DTIME_INTERP0 10.0d0
+!		                (TIME_END0-TIME_INIT0)/NTDAMAX
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

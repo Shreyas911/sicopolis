@@ -1414,5 +1414,13 @@
 !                       the convergence criterion of the SOR method.
 !                       Need not be very precise, a rough estimate is
 !                       sufficient.]
+
 #define ALLOW_COST
+
+#define NTDAMAX 2
+!                       Number of intervals for interpolation of
+!                       time-varying control variables.
+
+#define DTIME_INTERP0 5.0d0
+!		                (TIME_END0-TIME_INIT0)/NTDAMAX
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
