@@ -101,7 +101,7 @@ call read_cost_data()
         ! only counting points that are real in the data: 
         if (  age_data(k,j,i) .ge. -0.5) then
           fc = fc &
-#ifdef ALLOW_BEDMACHINE_UNCERT
+#ifdef ALLOW_AGE_UNCERT
           + (age_data(k,j,i) - age_c(k,j,i)/year2sec)**2/age_unc_data(j,i)**2
 #else
           + (age_data(k,j,i) - age_c(k,j,i)/year2sec)**2
