@@ -1,4 +1,3 @@
-#if defined(ALLOW_GENCTRL)
 module ctrl_map_gentim_m
 
   use sico_types_m
@@ -7,10 +6,13 @@ module ctrl_map_gentim_m
 
   implicit none
 
+#ifdef DO_CTRL_GENTIM2D
   public :: ctrl_map_ini_gentim2d, ctrl_map_gentim2d
+#endif
 
 contains
 
+#ifdef DO_CTRL_GENTIM2D
   subroutine ctrl_map_ini_gentim2d(time_init, dtime, itercount)
 
     implicit none
@@ -18,17 +20,19 @@ contains
     real(dp), intent(in)        :: time_init, dtime
     integer(i4b), intent(in)    :: itercount
     integer(i4b)                :: ctrl_index
-    integer(i4b)                :: igen_temp
+    integer(i4b)                :: igen_delta_tda
 
+#ifdef XX_GENTIM2D_VARS_ARR
     xx_gentim2d_vars            = XX_GENTIM2D_VARS_ARR
-    xx_gentim2d_period          = XX_GENTIM2D_PERIOD
+#endif
 
-    igen_temp = 0
+    igen_delta_tda = 0
 
+#ifdef XX_GENTIM2D_VARS_ARR
     do ctrl_index = 1, NUM_CTRL_GENTIM2D
       
-      if (trim(adjustl(xx_gentim2d_vars(ctrl_index))) .EQ. 'xx_temp') then
-        igen_temp = ctrl_index
+      if (trim(adjustl(xx_gentim2d_vars(ctrl_index))) .EQ. 'xx_delta_tda') then
+        igen_delta_tda = ctrl_index
       else
         errormsg = ' >>> ctrl_map_ini_gentim2d: ' &
           //"This control variable is not in the gentim2d setup yet!"
@@ -38,41 +42,22 @@ contains
     end do
 
     if (igen_temp .GT. 0) then
-      call ctrl_map_gentim2d(temp_ma, igen_temp, time_init, dtime, itercount)
-      call ctrl_map_gentim2d(temp_mm(:,:,7), igen_temp, time_init, dtime, itercount)
+      call ctrl_map_gentim2d(delta_tda, igen_delta_tda)
     end if
+#endif
     
   end subroutine ctrl_map_ini_gentim2d
 
-  subroutine ctrl_map_gentim2d(fld, iarr, time_init, dtime, itercount)
+  subroutine ctrl_map_gentim2d(fld, iarr)
 
     implicit none  
 
-    real(dp), intent(in)                        :: time_init, dtime
-    integer(i4b), intent(in)                    :: itercount
     real(dp), dimension(0:JMAX,0:IMAX)          :: fld, xx_gen, xx_gen_mask
-    integer(i4b)                                :: iarr, j, i, k2
-    integer(i4b)                                :: iLow, iHigh, jLow, jHigh
-    integer(i4b)                                :: adLow, adHigh
-    real(dp)                                    :: time, alpha
+    integer(i4b)                                :: iarr, k2
 
-    time = (time_init + real(itercount,dp)*dtime)*sec2year
-
-    xx_gentim2d_mask = 1.0
-   
-    adLow  = floor(time/xx_gentim2d_period)
-    adHigh = ceiling(time/xx_gentim2d_period)
-     
-    alpha  = (time - adLow*xx_gentim2d_period)/xx_gentim2d_period
-
-    xx_gen = xx_gentim2d(iarr,adLow,:,:)  * (1-alpha) &
-           + xx_gentim2d(iarr,adHigh,:,:) * alpha
-    xx_gen_mask = xx_gentim2d_mask(iarr,adLow,:,:)  * (1-alpha) &
-                + xx_gentim2d_mask(iarr,adHigh,:,:) * alpha
-
-    fld = fld + xx_gen * xx_gen_mask
+    fld = fld + xx_gentim2d(iarr,:,:,:)
 
   end subroutine ctrl_map_gentim2d
+#endif
 
 end module ctrl_map_gentim_m 
-#endif /* ALLOW_GENCTRL */

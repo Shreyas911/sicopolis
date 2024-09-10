@@ -950,6 +950,14 @@ end do
 
 #endif /* (TSURFACE<=5) */
 
+#if ((defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK)) && defined(DTIME_INTERP0) && defined(NTDAMAX))
+dtime_interp = DTIME_INTERP0
+time_init_interp = TIME_INIT0
+floor_interp  = floor((time_in_years-time_init_interp)/dtime_interp)
+ceiling_interp = ceiling((time_in_years-time_init_interp)/dtime_interp)
+alpha_interp  = (time_in_years-time_init_interp-floor_interp*dtime_interp)/dtime_interp
+#endif
+
 do i=0, IMAX
 do j=0, JMAX
 
@@ -960,13 +968,10 @@ do j=0, JMAX
 
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
 
-   dtime_interp = DTIME_INTERP0
-   time_init_interp = TIME_INIT0
-   floor_interp  = floor((time_in_years-time_init_interp)/dtime_interp)
-   ceiling_interp = ceiling((time_in_years-time_init_interp)/dtime_interp)
-   alpha_interp  = (time_in_years-time_init_interp-floor_interp*dtime_interp)/dtime_interp
+#if(defined(DTIME_INTERP0) && defined(NTDAMAX))
    delta_tda_interp(j,i) = delta_tda(floor_interp,j,i)  * (1-alpha_interp) &
                         + delta_tda(ceiling_interp,j,i) * alpha_interp
+#endif
 
 #if (defined(ANT) || defined(GRL)) /* Antarctica or Greenland */
    temp_diff(j,i) = delta_ts + delta_tda_const(j,i) + delta_tda_interp(j,i)

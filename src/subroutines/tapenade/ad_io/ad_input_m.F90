@@ -1,4 +1,3 @@
-#if defined(ALLOW_GENCTRL)
 module ad_input_m
 
     use sico_types_m
@@ -25,15 +24,26 @@ module ad_input_m
         integer(i4b) :: ctrl_index
         integer(i4b) :: ios
 
+#ifdef DO_CTRL_GENARR2D
         real(dp), dimension(NUM_CTRL_GENARR2D,0:IMAX,0:JMAX) :: xx_genarr2d_conv
-        real(dp), dimension(NUM_CTRL_GENARR3D,0:IMAX,0:JMAX,0:KCMAX) :: xx_genarr3d_conv
-        real(dp), dimension(NUM_CTRL_GENTIM2D,0:IMAX,0:JMAX,0:ADNMAX) :: xx_gentim2d_conv
-
 #ifdef ALLOW_TAP_TLM
         real(dp), dimension(NUM_CTRL_GENARR2D,0:IMAX,0:JMAX) :: xx_genarr2dd_conv
-        real(dp), dimension(NUM_CTRL_GENARR3D,0:IMAX,0:JMAX,0:KCMAX) :: xx_genarr3dd_conv
-        real(dp), dimension(NUM_CTRL_GENTIM2D,0:IMAX,0:JMAX,0:ADNMAX) :: xx_gentim2dd_conv
 #endif /* ALLOW_TAP_TLM */
+#endif
+
+#ifdef DO_CTRL_GENARR3D
+        real(dp), dimension(NUM_CTRL_GENARR3D,0:IMAX,0:JMAX,0:KCMAX) :: xx_genarr3d_conv
+#ifdef ALLOW_TAP_TLM
+        real(dp), dimension(NUM_CTRL_GENARR3D,0:IMAX,0:JMAX,0:KCMAX) :: xx_genarr3dd_conv
+#endif /* ALLOW_TAP_TLM */
+#endif
+
+#ifdef DO_CTRL_GENTIM2D
+        real(dp), dimension(NUM_CTRL_GENTIM2D,0:IMAX,0:JMAX,0:NTDAMAX) :: xx_gentim2d_conv
+#ifdef ALLOW_TAP_TLM
+        real(dp), dimension(NUM_CTRL_GENTIM2D,0:IMAX,0:JMAX,0:NTDAMAX) :: xx_gentim2dd_conv
+#endif /* ALLOW_TAP_TLM */
+#endif
 
         character(len=64), parameter :: thisroutine = 'ad_input'
         character(len=256) :: filename, filename_with_path, temp_path
@@ -65,7 +75,8 @@ module ad_input_m
             //'              NetCDF AD-input file!'
             call error(errormsg)
         end if
-    
+
+#ifdef DO_CTRL_GENARR2D
         do ctrl_index = 1, NUM_CTRL_GENARR2D
             call check( nf90_inq_varid(ncid, trim(adjustl(xx_genarr2d_vars(ctrl_index))), ncv) )
             call check( nf90_get_var(ncid, ncv, xx_genarr2d_conv(ctrl_index,:,:)) )
@@ -74,7 +85,9 @@ module ad_input_m
             call check( nf90_get_var(ncid, ncv, xx_genarr2dd_conv(ctrl_index,:,:)) )
 #endif /* ALLOW_TAP_TLM */
         end do
+#endif
 
+#ifdef DO_CTRL_GENARR3D
         do ctrl_index = 1, NUM_CTRL_GENARR3D
             call check( nf90_inq_varid(ncid, trim(adjustl(xx_genarr3d_vars(ctrl_index))), ncv) )
             call check( nf90_get_var(ncid, ncv, xx_genarr3d_conv(ctrl_index,:,:,:)) )
@@ -83,7 +96,9 @@ module ad_input_m
             call check( nf90_get_var(ncid, ncv, xx_genarr3dd_conv(ctrl_index,:,:,:)) )
 #endif /* ALLOW_TAP_TLM */
         end do
+#endif
 
+#ifdef DO_CTRL_GENTIM2D
         do ctrl_index = 1, NUM_CTRL_GENTIM2D
             call check( nf90_inq_varid(ncid, trim(adjustl(xx_gentim2d_vars(ctrl_index))), ncv) )
             call check( nf90_get_var(ncid, ncv, xx_gentim2d_conv(ctrl_index,:,:,:)) )
@@ -92,10 +107,12 @@ module ad_input_m
             call check( nf90_get_var(ncid, ncv, xx_gentim2dd_conv(ctrl_index,:,:,:)) )
 #endif /* ALLOW_TAP_TLM */
         end do
+#endif
 
         !  ------ Close NetCDF file
         call check( nf90_close(ncid) )
 
+#ifdef DO_CTRL_GENARR2D
         do i = 0, IMAX
         do j = 0, JMAX
         do ctrl_index = 1, NUM_CTRL_GENARR2D
@@ -106,7 +123,9 @@ module ad_input_m
         end do
         end do
         end do
-    
+#endif
+
+#ifdef DO_CTRL_GENARR3D
         do i = 0, IMAX
         do j = 0, JMAX
         do kc = 0, KCMAX
@@ -119,10 +138,12 @@ module ad_input_m
         end do
         end do
         end do
-    
+#endif
+
+#ifdef DO_CTRL_GENTIM2D
         do i = 0, IMAX
         do j = 0, JMAX
-        do tad = 0, ADNMAX
+        do tad = 0, NTDAMAX
         do ctrl_index = 1, NUM_CTRL_GENTIM2D
             xx_gentim2d(ctrl_index,tad,j,i) = xx_gentim2d_conv(ctrl_index,i,j,tad)
 #ifdef ALLOW_TAP_TLM
@@ -132,10 +153,10 @@ module ad_input_m
         end do
         end do
         end do
+#endif
 
 #endif
 
     end subroutine ad_input
   
 end module ad_input_m
-#endif /* ALLOW_GENCTRL */

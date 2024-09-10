@@ -40,11 +40,6 @@ module sico_main_loop_m
 #endif
 
   use error_m
-#if defined(ALLOW_TAPENADE)
-#if defined(ALLOW_GENCTRL)
-  use ctrl_map_gentim_m
-#endif /* ALLOW_GENCTRL */
-#endif /* ALLOW_TAPENADE */
   
   implicit none
  
@@ -137,14 +132,6 @@ contains
   !-------- Save old mask --------
   
   mask_old = mask
-  
-  !-------- gentim2d setup --------
-
-#if defined(ALLOW_TAPENADE)
-#if defined(ALLOW_GENCTRL)
-  call ctrl_map_ini_gentim2d(time_init, dtime, itercount)
-#endif /* ALLOW_GENCTRL */
-#endif /* ALLOW_TAPENADE */
 
   !-------- Boundary conditions --------
   

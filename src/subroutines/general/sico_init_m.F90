@@ -40,10 +40,10 @@ module sico_init_m
 #endif
 
   use error_m
+
 #if defined(ALLOW_TAPENADE)
 #if defined(ALLOW_GENCTRL)
-  use ctrl_init_genarr_m
-  use ctrl_map_gentim_m
+  use ctrl_init_gen_m
 #endif /* ALLOW_GENCTRL */
 #endif /* ALLOW_TAPENADE */
 
@@ -298,7 +298,15 @@ time_output = 0.0_dp
 
 #if defined(ALLOW_TAPENADE)
 #if defined(ALLOW_GENCTRL)
-  call ctrl_init_genarr()
+
+#if (DO_CTRL_GENTIM2D && (!defined(NTDAMAX) || !defined(DTIME_INTERP0)))
+errormsg = ' >>> sico_init: ' &
+           // 'NTDAMAX and DTIME_INTERP0 should be defined for GenTim2D!'
+call error(errormsg)
+#endif
+
+  call ctrl_init_gen()
+
 #endif /* ALLOW_GENCTRL */
 #endif /* ALLOW_TAPENADE */
 
@@ -3105,14 +3113,6 @@ end do
 end do
 
 #endif
-
-!-------- gentim2d setup --------
-
-#if defined(ALLOW_TAPENADE)
-#if defined(ALLOW_GENCTRL)
-  call ctrl_map_ini_gentim2d(time_init, dtime, 0)
-#endif /* ALLOW_GENCTRL */
-#endif /* ALLOW_TAPENADE */
 
 !-------- Greenland only:
 !         Reading of the reference ice thickness for the retreat masks --------

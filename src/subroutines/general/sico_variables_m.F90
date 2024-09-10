@@ -1507,8 +1507,10 @@ real(dp) :: fc
 real(dp), dimension(0:JMAX,0:IMAX) :: delta_tda_const
    !! Spatially-varying temperature anomaly that will be inferred using adjoint-based DA
 
+#if(defined(DTIME_INTERP0) && defined(NTDAMAX))
 real(dp), dimension(0:NTDAMAX,0:JMAX,0:IMAX) :: delta_tda
    !! Spatiotemporally-varying temperature anomaly that will be inferred using adjoint-based DA
+#endif
 
 #if (defined(AGE_COST) || defined(FAKE_AGE_COST))
 
@@ -1535,30 +1537,22 @@ real(dp), dimension(0:JMAX,0:IMAX) :: H_unc_BedMachine_data
 #endif
 
 #if defined(ALLOW_GENCTRL)
+#ifdef DO_CTRL_GENARR2D
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR2D) :: xx_genarr2d_vars
-   character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR2D) :: xx_genarr2d_bounds
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR2D) :: xx_genarr2d_preproc 
-   character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR2D) :: xx_genarr2d_weight
-
-   real(dp), dimension(NUM_CTRL_GENARR2D)               :: xx_genarr2d_log10initval
-   real(dp), dimension(NUM_CTRL_GENARR2D,0:JMAX,0:IMAX) :: xx_genarr2d      
-   real(dp), dimension(NUM_CTRL_GENARR2D,0:JMAX,0:IMAX) :: xx_genarr2d_mask
-
-   character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR3D) :: xx_genarr3d_vars
-   character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR3D) :: xx_genarr3d_bounds
-   character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR3D) :: xx_genarr3d_preproc 
-   character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR3D) :: xx_genarr3d_weight
-
+   real(dp), dimension(NUM_CTRL_GENARR2D)                  :: xx_genarr2d_log10initval
+   real(dp), dimension(NUM_CTRL_GENARR2D,0:JMAX,0:IMAX)    :: xx_genarr2d
+#endif
+#ifdef DO_CTRL_GENARR3D
+   character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR3D)      :: xx_genarr3d_vars
+   character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR3D)      :: xx_genarr3d_preproc
    real(dp), dimension(NUM_CTRL_GENARR3D)                       :: xx_genarr3d_log10initval
-   real(dp), dimension(NUM_CTRL_GENARR3D,0:KCMAX,0:JMAX,0:IMAX) :: xx_genarr3d      
-   real(dp), dimension(NUM_CTRL_GENARR3D,0:KCMAX,0:JMAX,0:IMAX) :: xx_genarr3d_mask
-
-   character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENTIM2D) :: xx_gentim2d_vars
-   
-   real(dp)                                                      :: xx_gentim2d_period
-   real(dp), dimension(NUM_CTRL_GENTIM2D)                        :: xx_gentim2d_log10initval
-   real(dp), dimension(NUM_CTRL_GENTIM2D,0:ADNMAX,0:JMAX,0:IMAX) :: xx_gentim2d
-   real(dp), dimension(NUM_CTRL_GENTIM2D,0:ADNMAX,0:JMAX,0:IMAX) :: xx_gentim2d_mask
+   real(dp), dimension(NUM_CTRL_GENARR3D,0:KCMAX,0:JMAX,0:IMAX) :: xx_genarr3d
+#endif
+#if(defined(DTIME_INTERP0) && defined(NTDAMAX) && defined(DO_CTRL_GENTIM2D))
+   character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENTIM2D)       :: xx_gentim2d_vars
+   real(dp), dimension(NUM_CTRL_GENTIM2D,0:NTDAMAX,0:JMAX,0:IMAX) :: xx_gentim2d
+#endif
 #endif
 
 #endif /* ALLOW_{TAPENADE,GRDCHK} */

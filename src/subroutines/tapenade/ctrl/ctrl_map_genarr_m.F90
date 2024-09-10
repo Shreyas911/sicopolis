@@ -1,4 +1,3 @@
-#if defined(ALLOW_GENCTRL)
 module ctrl_map_genarr_m
 
   use sico_types_m
@@ -7,11 +6,16 @@ module ctrl_map_genarr_m
 
   implicit none
 
+#ifdef DO_CTRL_GENARR2D
   public :: ctrl_map_ini_genarr2d, ctrl_map_genarr2d
+#endif
+#ifdef DO_CTRL_GENARR3D
   public :: ctrl_map_ini_genarr3d, ctrl_map_genarr3d
+#endif
 
 contains
 
+#ifdef DO_CTRL_GENARR2D
   subroutine ctrl_map_ini_genarr2d
 
     implicit none
@@ -20,24 +24,30 @@ contains
     integer(i4b)        :: igen_c_slide_init, igen_H, igen_q_geo
     integer(i4b)        :: igen_gamma_s, igen_s_stat
     integer(i4b)        :: igen_beta1, igen_beta2
-    integer(i4b)        :: igen_Pmax, igen_mu
+    integer(i4b)        :: igen_Pmax, igen_mu, igen_delta_tda_const
 
+#ifdef XX_GENARR2D_VARS_ARR
     xx_genarr2d_vars            = XX_GENARR2D_VARS_ARR
+#endif
+#ifdef XX_GENARR2D_PREPROC_ARR
     xx_genarr2d_preproc         = XX_GENARR2D_PREPROC_ARR
-    xx_genarr2d_bounds          = XX_GENARR2D_BOUNDS_ARR
+#endif
+#ifdef XX_GENARR2D_LOG10INITVAL_ARR
     xx_genarr2d_log10initval    = XX_GENARR2D_LOG10INITVAL_ARR
-    xx_genarr2d_weight          = XX_GENARR2D_WEIGHT_ARR
+#endif
 
-    igen_c_slide_init = 0
-    igen_H            = 0
-    igen_q_geo        = 0
-    igen_gamma_s      = 0
-    igen_s_stat       = 0
-    igen_beta1        = 0
-    igen_beta2        = 0
-    igen_Pmax         = 0
-    igen_mu           = 0
+    igen_c_slide_init    = 0
+    igen_H               = 0
+    igen_q_geo           = 0
+    igen_gamma_s         = 0
+    igen_s_stat          = 0
+    igen_beta1           = 0
+    igen_beta2           = 0
+    igen_Pmax            = 0
+    igen_mu              = 0
+    igen_delta_tda_const = 0
 
+#ifdef XX_GENARR2D_VARS_ARR
     do ctrl_index = 1, NUM_CTRL_GENARR2D
       
       if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_c_slide_init') then
@@ -94,6 +104,13 @@ contains
         //'mu as a control param is only compatible with ABLSURFACE == 1 or ABLSURFACE == 2 !'
         call error(errormsg)
 #endif
+      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_delta_tda_const') then
+        igen_delta_tda_const = ctrl_index
+#if (TSURFACE > 4)
+        errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
+        //'delta_tda_const as a control param is only compatible with TSURFACE <= 4 !'
+        call error(errormsg)
+#endif
       else
         errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
           //"This control variable is not in the genctrl2d setup yet!"
@@ -136,6 +153,10 @@ contains
     if (igen_mu .GT. 0) then
       call ctrl_map_genarr2d(mu, igen_mu)
     end if
+    if (igen_delta_tda_const .GT. 0) then
+      call ctrl_map_genarr2d(delta_tda_const, igen_delta_tda_const)
+    end if
+#endif
 #endif
     
   end subroutine ctrl_map_ini_genarr2d
@@ -144,88 +165,51 @@ contains
 
     implicit none  
 
-    real(dp), dimension(0:JMAX,0:IMAX)          :: fld, wgenarr2d
-    integer(i4b)                                :: iarr, j, i, k2
-    integer(i4b)                                :: iLow, iHigh, jLow, jHigh
-    logical                                     :: doread, dobounds
-    logical                                     :: dosmooth, doscaling, dolog10ctrl
+    real(dp), dimension(0:JMAX,0:IMAX)          :: fld
+    integer(i4b)                                :: iarr, k2
+    logical                                     :: dopreprocs, dolog10ctrl
     real(dp)                                    :: log10initval, ln10
-    character(128), dimension(NUMCTRLPROCARR2D)      :: preprocs
+    character(128), dimension(NUMCTRLPROCARR2D) :: preprocs
 
+    dopreprocs = .FALSE.
     ln10 = log(10.0)
-
-    doread      = .FALSE.
-    dosmooth    = .FALSE.
-    doscaling   = .FALSE.
     dolog10ctrl = .FALSE.
-    dobounds    = .FALSE.
 
-    read (unit=xx_genarr2d_preproc(iarr),fmt=*) preprocs
+#ifdef XX_GENARR2D_PREPROC_ARR
+    dopreprocs = .TRUE.
+#endif
 
-    do k2 = 1, NUMCTRLPROCARR2D
+    if (dopreprocs) then
 
-      if (preprocs(k2) .EQ. 'smooth') then
-        dosmooth = .TRUE.
-        errormsg = ' >>> ctrl_map_genarr2d: ' &
-          //'Weaver and Courtier like smoothing is not yet implemented!'
-        call error(errormsg)
-      end if
-      if (preprocs(k2) .EQ. 'scaling') then
-        doscaling = .TRUE.
-        do i = 0, IMAX
-          do j = 0, JMAX
-            read(unit=xx_genarr2d_weight(iarr), fmt=*) wgenarr2d(j,i)
-          end do
-        end do
-      else
-        wgenarr2d = 1.0
-      end if
-      if (preprocs(k2) .EQ. 'read') then
-        doread = .TRUE.
-        errormsg = ' >>> ctrl_map_genarr2d: ' &
-          //'Reading xx_gen from a file is yet to be implemented!'
-        call error(errormsg)
-      end if
-      if (preprocs(k2) .EQ. 'log10ctrl') then
-        dolog10ctrl = .TRUE.
-        log10initval = xx_genarr2d_log10initval(iarr)
-      end if
-      if (preprocs(k2) .EQ. 'bounds') then
-        dobounds = .TRUE.
-      end if
-    end do
+      read (unit=xx_genarr2d_preproc(iarr),fmt=*) preprocs
 
-    if (dobounds .AND. trim(adjustl(xx_genarr2d_bounds(iarr))) .NE. ' ') then
-      read (unit=xx_genarr2d_bounds(iarr),fmt=*) iLow, iHigh, jLow, jHigh
-    else
-      iLow  = 0
-      iHigh = IMAX
-      jLow  = 0
-      jHigh = JMAX
-    end if
-
-    do i = 0, IMAX
-      do j = 0, JMAX
-        if ((i .GE. iLow) .AND. (i .LE. iHigh) .AND. (j .GE. jLow) .AND. (j .LE. jHigh)) then
-          xx_genarr2d_mask(iarr,j,i) = 1.0
-        else
-          xx_genarr2d_mask(iarr,j,i) = 0.0
+      do k2 = 1, NUMCTRLPROCARR2D
+#ifdef XX_GENARR2D_LOG10INITVAL_ARR
+        if (preprocs(k2) .EQ. 'log10ctrl') then
+          dolog10ctrl = .TRUE.
+          log10initval = xx_genarr2d_log10initval(iarr)
         end if
+#endif
       end do
-    end do
 
-    xx_genarr2d(iarr,:,:) = xx_genarr2d(iarr,:,:) / sqrt(wgenarr2d(:,:))
+#ifdef XX_GENARR2D_LOG10INITVAL_ARR
+      if (dolog10ctrl) then  
+        xx_genarr2d(iarr,:,:) = xx_genarr2d(iarr,:,:) + log10initval
+        xx_genarr2d(iarr,:,:) = EXP(ln10 * xx_genarr2d(iarr,:,:)) 
+        fld = xx_genarr2d(iarr,:,:)
+      endif
+#endif
 
-    if (dolog10ctrl) then  
-      xx_genarr2d(iarr,:,:) = xx_genarr2d(iarr,:,:) + log10initval
-      xx_genarr2d(iarr,:,:) = EXP(ln10 * xx_genarr2d(iarr,:,:)) 
-      fld = xx_genarr2d(iarr,:,:) * xx_genarr2d_mask(iarr,:,:)
     else
-      fld = fld + xx_genarr2d(iarr,:,:) * xx_genarr2d_mask(iarr,:,:)
-    end if       
+
+      fld = fld + xx_genarr2d(iarr,:,:)
+
+    endif
 
   end subroutine ctrl_map_genarr2d
+#endif
 
+#ifdef DO_CTRL_GENARR3D
   subroutine ctrl_map_ini_genarr3d
 
     implicit none
@@ -233,15 +217,20 @@ contains
     integer(i4b)        :: ctrl_index
     integer(i4b)        :: igen_temp_c, igen_age_c
 
+#ifdef XX_GENARR3D_VARS_ARR
     xx_genarr3d_vars            = XX_GENARR3D_VARS_ARR
+#endif
+#ifdef XX_GENARR3D_PREPROC_ARR
     xx_genarr3d_preproc         = XX_GENARR3D_PREPROC_ARR
-    xx_genarr3d_bounds          = XX_GENARR3D_BOUNDS_ARR
+#endif
+#ifdef XX_GENARR3D_LOG10INITVAL_ARR
     xx_genarr3d_log10initval    = XX_GENARR3D_LOG10INITVAL_ARR
-    xx_genarr3d_weight          = XX_GENARR3D_WEIGHT_ARR
+#endif
 
     igen_temp_c = 0
     igen_age_c = 0
 
+#ifdef XX_GENARR3D_VARS_ARR
     do ctrl_index = 1, NUM_CTRL_GENARR3D
       
       if (trim(adjustl(xx_genarr3d_vars(ctrl_index))) .EQ. 'xx_temp_c') then
@@ -268,6 +257,7 @@ contains
     if (igen_age_c .GT. 0) then
       call ctrl_map_genarr3d(age_c, igen_age_c)
     end if
+#endif
     
   end subroutine ctrl_map_ini_genarr3d
 
@@ -275,94 +265,48 @@ contains
 
     implicit none  
 
-    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)          :: fld, wgenarr3d
-    integer(i4b)                                        :: iarr, kc, j, i, k3
-    integer(i4b)                                        :: iLow, iHigh, jLow, jHigh, kcLow, kcHigh
-    logical                                             :: doread, dobounds
-    logical                                             :: dosmooth, doscaling, dolog10ctrl
-    real(dp)                                            :: log10initval, ln10
-    character(128), dimension(NUMCTRLPROCARR3D)            :: preprocs
+    real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)  :: fld
+    integer(i4b)                                :: iarr, k3
+    logical                                     :: dopreprocs, dolog10ctrl
+    real(dp)                                    :: log10initval, ln10
+    character(128), dimension(NUMCTRLPROCARR3D) :: preprocs
 
+    dopreprocs = .FALSE.
     ln10 = log(10.0)
-
-    doread      = .FALSE.
-    dosmooth    = .FALSE.
-    doscaling   = .FALSE.
     dolog10ctrl = .FALSE.
-    dobounds    = .FALSE.
 
-    read (unit=xx_genarr3d_preproc(iarr),fmt=*) preprocs
+#ifdef XX_GENARR3D_PREPROC_ARR
+    dopreprocs = .TRUE.
+#endif
 
-    do k3 = 1, NUMCTRLPROCARR3D
+    if (dopreprocs) then
 
-      if (preprocs(k3) .EQ. 'smooth') then
-        dosmooth = .TRUE.
-        errormsg = ' >>> ctrl_map_genarr3d: ' &
-          //'Weaver and Courtier like smoothing is not yet implemented!'
-        call error(errormsg)
-      end if
-      if (preprocs(k3) .EQ. 'scaling') then
-        doscaling = .TRUE.
-        do i = 0, IMAX
-          do j = 0, JMAX
-            do kc = 0, KCMAX
-              read(unit=xx_genarr3d_weight(iarr), fmt=*) wgenarr3d(kc,j,i)
-            end do
-          end do
-        end do
-      else
-        wgenarr3d = 1.0
-      end if
-      if (preprocs(k3) .EQ. 'read') then
-        doread = .TRUE.
-        errormsg = ' >>> ctrl_map_genarr3d: ' &
-          //'Reading xx_gen from a file is yet to be implemented!'
-        call error(errormsg)
-      end if
-      if (preprocs(k3) .EQ. 'log10ctrl') then
-        dolog10ctrl = .TRUE.
-        log10initval = xx_genarr3d_log10initval(iarr)
-      end if
-      if (preprocs(k3) .EQ. 'bounds') then
-        dobounds = .TRUE.
-      end if
-    end do
+      read (unit=xx_genarr3d_preproc(iarr),fmt=*) preprocs
 
-    if (dobounds .AND. trim(adjustl(xx_genarr3d_bounds(iarr))) .NE. ' ') then
-      read (unit=xx_genarr3d_bounds(iarr),fmt=*) iLow, iHigh, jLow, jHigh, kcLow, kcHigh
-    else
-      iLow   = 0
-      iHigh  = IMAX
-      jLow   = 0
-      jHigh  = JMAX
-      kcLow  = 0
-      kcHigh = KCMAX
-    end if
-
-    do i = 0, IMAX
-      do j = 0, JMAX
-        do kc = 0, KCMAX
-        if ((i .GE. iLow) .AND. (i .LE. iHigh) .AND. (j .GE. jLow) .AND. (j .LE. jHigh) &
-           .AND. (kc .GE. kcLow) .AND. (kc .LE. kcHigh)) then
-          xx_genarr3d_mask(iarr,kc,j,i) = 1.0
-        else
-          xx_genarr3d_mask(iarr,kc,j,i) = 0.0
+      do k3 = 1, NUMCTRLPROCARR3D
+#ifdef XX_GENARR3D_LOG10INITVAL_ARR
+        if (preprocs(k3) .EQ. 'log10ctrl') then
+          dolog10ctrl = .TRUE.
+          log10initval = xx_genarr3d_log10initval(iarr)
         end if
-        end do
+#endif
       end do
-    end do
 
-    xx_genarr3d(iarr,:,:,:) = xx_genarr3d(iarr,:,:,:) / sqrt(wgenarr3d(:,:,:))
+#ifdef XX_GENARR3D_LOG10INITVAL_ARR
+      if (dolog10ctrl) then  
+        xx_genarr3d(iarr,:,:,:) = xx_genarr3d(iarr,:,:,:) + log10initval
+        xx_genarr3d(iarr,:,:,:) = EXP(ln10 * xx_genarr3d(iarr,:,:,:))
+        fld = xx_genarr3d(iarr,:,:,:)
+      endif
+#endif
 
-    if (dolog10ctrl) then  
-      xx_genarr3d(iarr,:,:,:) = xx_genarr3d(iarr,:,:,:) + log10initval
-      xx_genarr3d(iarr,:,:,:) = EXP(ln10 * xx_genarr3d(iarr,:,:,:)) 
-      fld = xx_genarr3d(iarr,:,:,:) * xx_genarr3d_mask(iarr,:,:,:)
     else
-      fld = fld + xx_genarr3d(iarr,:,:,:) * xx_genarr3d_mask(iarr,:,:,:)
+
+      fld = fld + xx_genarr3d(iarr,:,:,:)
+
     end if       
 
   end subroutine ctrl_map_genarr3d
+#endif
 
 end module ctrl_map_genarr_m 
-#endif /* ALLOW_GENCTRL */

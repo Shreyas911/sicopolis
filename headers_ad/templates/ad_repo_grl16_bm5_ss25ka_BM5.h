@@ -5,6 +5,11 @@
 #undef ALLOW_GENCTRL
 !       Flag to enable specific code for genctrl setup
 
+#define DO_CTRL_GENARR2D
+#define DO_CTRL_GENARR3D
+#define DO_CTRL_GENTIM2D
+!		Flags to enable specific codes for various types of genctrl
+
 !-------- Basic settings --------
 
 #define CTRL_STRLENGTH		128
@@ -24,15 +29,10 @@
 !		List of 2D time-invariant control variables
 
 #define XX_GENARR2D_PREPROC_ARR    [ character(CTRL_STRLENGTH) ::\
-									'log10ctrl,bounds',\
-									'none,none',\
-									'none,none' ] 
+									'log10ctrl',\
+									'none',\
+									'none' ] 
 !       Define preprocessing steps for ctrl variables
-
-#define XX_GENARR2D_BOUNDS_ARR  [ character(CTRL_STRLENGTH) ::\
-									' ', ' ' ]
-!		2D mask for the 2D time-invariant control variables
-!		If empty, defaults to 0, IMAX, 0, JMAX
 
 #define XX_GENARR2D_LOG10INITVAL_ARR [ real :: \
 									-6.67172541073, 0.0, 0.0 ]
@@ -40,13 +40,6 @@
 !       Otherwise has no effect
 !		WARNING: If for example using for c_slide_init
 !		Set C_SLIDE == 0.0 in the HEADER file
-
-#define XX_GENARR2D_WEIGHT_ARR  [ character(CTRL_STRLENGTH) ::\
-									'w_c_slide_init.dat',\
-									'w_q_geo.dat',\
-									'w_H.dat' ]
-!		Weight files to be used if preproc=scaling
-!		Otherwise defaults to weight 1.0 for all indices
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -59,22 +52,8 @@
 #define XX_GENARR3D_VARS_ARR	[ character(CTRL_STRLENGTH) :: 'xx_temp_c' ]
 !		List of 3D time-invariant control variables
 
-#define XX_GENARR3D_PREPROC_ARR    [ character(CTRL_STRLENGTH) :: 'bounds' ]
+#define XX_GENARR3D_PREPROC_ARR    [ character(CTRL_STRLENGTH) :: 'none' ]
 !		Define preprocessing steps for ctrl variables
-
-#define XX_GENARR3D_BOUNDS_ARR  [ character(CTRL_STRLENGTH) :: ' ' ]
-!		3D mask for the 3D time-invariant control variables
-!		If empty, defaults to 0, IMAX, 0, JMAX, 0, KCMAX 
-
-#define XX_GENARR3D_LOG10INITVAL_ARR [ real :: -1 ]
-!		log10initval if preproc=log10ctrl
-!       Otherwise has no effect
-!		WARNING: If for example using for temp_c
-!		Set TEMP_INIT_VALUE (or some flag) == 0.0 in the HEADER file
-
-#define XX_GENARR3D_WEIGHT_ARR       [ character(CTRL_STRLENGTH) :: 'w_temp_c.dat' ]
-!		Weight files to be used if preproc=scaling
-!		Otherwise defaults to weight 1.0 for all indices
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -84,14 +63,8 @@
 #define NUMCTRLPROCTIM2D	1
 !		Maximum number of preprocessing steps for ctrl variables		
 
-#define XX_GENTIM2D_VARS_ARR	[ character(CTRL_STRLENGTH) :: 'xx_temp' ]
+#define XX_GENTIM2D_VARS_ARR	[ character(CTRL_STRLENGTH) :: 'xx_delta_tda' ]
 !		List of 3D time-varying control variables
-
-#define XX_GENTIM2D_PERIOD	5.0
-!		Time period for gentim2d
-
-#define ADNMAX			10
-!		(TIME_END0-TIME_INIT0)/XX_GENTIM2D_PERIOD 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
