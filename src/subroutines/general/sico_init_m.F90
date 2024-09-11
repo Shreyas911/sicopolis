@@ -305,7 +305,7 @@ errormsg = ' >>> sico_init: ' &
 call error(errormsg)
 #endif
 
-  call ctrl_init_gen()
+call ctrl_init_gen()
 
 #endif /* ALLOW_GENCTRL */
 #endif /* ALLOW_TAPENADE */
@@ -1019,12 +1019,12 @@ flag_larmip       = .false.
 
 #if (defined(S_STAT_0) && defined(BETA1_0) && defined(BETA2_0) && defined(PMAX_0) && defined(MU_0))
 s_stat = s_stat + S_STAT_0
-beta1  = beta1 + BETA1_0 *(0.001_dp/86400.0_dp)*(RHO_W/RHO)
+beta1  = (beta1 + BETA1_0) *(0.001_dp/86400.0_dp)*(RHO_W/RHO)
                           ! (mm WE)/(d*degC) -> (m IE)/(s*degC)
-beta2  = beta2 + BETA2_0 *(0.001_dp/86400.0_dp)*(RHO_W/RHO)
+beta2  = (beta2 + BETA2_0) *(0.001_dp/86400.0_dp)*(RHO_W/RHO)
                           ! (mm WE)/(d*degC) -> (m IE)/(s*degC)
 Pmax   = Pmax + PMAX_0
-mu     = mu + MU_0    *(1000.0_dp*86400.0_dp)*(RHO/RHO_W)
+mu     = (mu + MU_0)       *(1000.0_dp*86400.0_dp)*(RHO/RHO_W)
                           ! (d*degC)/(mm WE) -> (s*degC)/(m IE)
 #else
 errormsg = ' >>> sico_init: ' &

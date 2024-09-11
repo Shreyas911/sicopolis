@@ -126,7 +126,7 @@ do j=0, JMAX
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK)) /* NORMAL */
       c_slide_init(j,i)    = c_slide_aux(n_slide_region(j,i))*sec2year
 #else /* ALLOW_{TAPENADE,GRDCHK} */
-      c_slide_init(j,i)    = c_slide_init(j,i) + c_slide_aux(n_slide_region(j,i))*sec2year
+      c_slide_init(j,i)    = (c_slide_init(j,i) + c_slide_aux(n_slide_region(j,i)))*sec2year
 #endif /* ALLOW_{TAPENADE,GRDCHK} */
       gamma_slide_inv(j,i) = gamma_slide_inv_aux(n_slide_region(j,i))
       sub_melt_flag(j,i)   = (gamma_slide_aux(n_slide_region(j,i)) >= eps)
