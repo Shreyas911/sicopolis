@@ -109,6 +109,10 @@ ifeq ($(TAP_ADJ_PROF),1)
 driveradjoint: TAP_PROF_OPTION=-profile
 driveradjoint: CFLAGS_PROF=-D_ADSTACKPROFILE -D_ADSTACKPREFETCH
 driveradjoint: DEFINE_FLAGS_ADJOINT_PROF=-DALLOW_TAP_ADJ_PROF
+
+SRC_TAP_PROF=\
+${ADFirstAidKit_DIR}/adProfile.c
+${ADFirstAidKit_DIR}/adFixedPoint.c
 endif
 
 ifeq ($(F90C),gfortran)
@@ -198,8 +202,7 @@ tapenade_main.F90
 SRC_TAP=\
 ${ADFirstAidKit_DIR}/adStack.c \
 ${ADFirstAidKit_DIR}/adBinomial.c \
-${ADFirstAidKit_DIR}/adProfile.c \
-${ADFirstAidKit_DIR}/adFixedPoint.c
+${SRC_TAP_PROF}
 
 SRC_HEADERS=\
 sico_specs.h \
