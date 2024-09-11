@@ -16,6 +16,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 #include "adStack.h"
 #include "adComplex.h"
@@ -1920,7 +1921,7 @@ uint64_t adStack_getCurrentStackSize() {
 /******** Various dump routines for profiling and debugging *********/
 
 void showLocation(DoubleChainedBlock *locBlock, int loc) {
-  printf("%1i.%05i", (locBlock ? locBlock->rank : 0), loc) ;
+  printf("%1i.%05i", (locBlock ? locBlock->rank-1 : 0), loc) ;
 }
 
 #ifdef _ADSTACKTRACE
@@ -2052,7 +2053,8 @@ void adStack_showTotalTraffic() {
 
 void adStack_showStackSize(int label) {
   printf(" %i--> <",label) ;
-  showLocation(curStack, tappos) ;
+  printf("%"PRId64"", adStack_getCurrentStackSize());
+/*   showLocation(curStack, tappos) ; */
   printf(">") ;
 }
 

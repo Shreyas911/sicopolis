@@ -25,20 +25,6 @@
 
 #include "adProfile.h"
 #include "adStack.h"
-/*
- *Profiling will work as follows
- * SNPWRITE: 
- * -> create new record with XXX Some information
- * -> Caller record id is set to a static variable
- * -> Save current stack size in current record
- * BEGIN ADV: 
- * -> Save current stack size in current record
- * -> Compute snapshot size (diff from both current stack sizes)
- * -> Update current caller id to this record
- * END ADV: 
- * -> Add current call to the "wait_for_bwd" stack 
- * 
- */
 
 typedef uint64_t stack_size_t;
 typedef int64_t  delta_size_t;
@@ -50,50 +36,48 @@ cycle_time_t mytime_() {
 
 /** The maximum number of code checkpoint locations that we can handle */
 #define MAX_NB_CHECKPOINTS 2000
-
 /** Elementary cost/benefit data of the decision to NOT checkpoint a given static checkpoint location. */
 typedef struct _CostBenefit{
   unsigned int ckpRank; // Rank (>=1) of the static checkpoint location this cost/benefit applies to. 
-  cycle_time_t deltaT; // The (always >=0) spared runtime benefit of NOT checkpointing this location.
-  delta_size_t deltaPM; // The extra peak memory cost of NOT checkpointing this location.
-  delta_size_t deltaPMTurn; // Same as deltaPM, but restricted to the peak memory at the next turn.
+  cycle_time_t DeltaT; // The spared runtime benefit of NOT checkpointing this location.
+                       // It is always <=0 (i.e. run-time decreases), and is here stored as unsigned.
+  delta_size_t DeltaPk; // The extra peak memory cost of NOT checkpointing this location.
+  delta_size_t DeltaTn; // Same as DeltaPk, only about the peak memory at the next turn.
   struct _CostBenefit *next; // Following CostBenefit infos, about other checkpoint locations.
 } CostBenefit;
 
-/** One element in a list of runtime checkpoints, each with some time/peak memory cost data.
- * The checkpoint locations in the list are all directly contained in the same parent runtime checkpoint.
+/** One element in a list of runtime sub-checkpoints, immediately below
+ * one node/level in the tree of nested runtime checkpoints.
  * The list is ordered from the most recent (downstream) checkpoint till the most upstream one. */
-typedef struct _LevelCkpStack {
+typedef struct _LevelCkpTree {
   unsigned int ckpRank; // The rank (>=1) of the static checkpoint that is now encountered
-  cycle_time_t ckpT;
-  cycle_time_t basisCkpT;
+  cycle_time_t t1t2;     // Time to run primal code+write and read snapshot for this checkpoint.
+  cycle_time_t basisCkpT; // Time at some reference point, used to compute time differences.
 #ifdef _ADPROFILETRACE
-  stack_size_t sizeBeforeSnp;
+  stack_size_t SnpBefore; // Stack size just before writing the snapshot (only for debug).
 #endif
-  stack_size_t sizeAfterSnp;
-  struct _LevelCkpStack *previous;
-} LevelCkpStack;
+  stack_size_t Snp; // Stack size just after writing the snapshot.
+  struct _LevelCkpTree *previous; // Remaining list of runtime checkpoints at this level.
+} LevelCkpTree;
 
-/** One element in the list of nested runtime checkpoints at some present time during the profiling run.
- * The list is ordered from the deepest runtime checkpoint to the topmost enclosing runtime checkpoint. */
-//TODO meilleur nom que CkpStack (stack deja pris!)
-typedef struct _CkpStack {
-  LevelCkpStack *levelCheckpoints;
-  CostBenefit *costBenefits;
-  stack_size_t stackPeak; // Peak stack size reached during reversal of this level.
-  stack_size_t stackPeakTurn; // Peak stack size reached at the next turn.
-  LevelCkpStack *repeatLevel; // for management of start/reset/end Repeat
-  struct _CkpStack *above;
-  struct _CkpStack *below;
-} CkpStack;
+/** One node/level in the tree of nested runtime checkpoints */
+typedef struct _CkpTree {
+  LevelCkpTree *levelCheckpoints; // Ordered list of dynamic sub-checkpoints encountered fwd and not yet bwd, at this level.
+  CostBenefit *costBenefits; // Ordered list of cost/benefit information at this level, about each static checkpoint encountered.
+  stack_size_t Pk; // Peak stack size reached during reversal of this level.
+  stack_size_t Tn; // Peak stack size reached at the next turn.
+  LevelCkpTree *repeatLevel; // for management of start/reset/end Repeat
+  struct _CkpTree *above; // checkpoints level above (upper un the checkpoints tree)
+  struct _CkpTree *below; // checkpoints level below (lower in the checkpoints tree). Kept to avoid malloc/free's.
+} CkpTree;
 
-/** The main global stack of active checkpoints at some present time during the profiling run. */
-CkpStack initialCkpStack = {.levelCheckpoints=NULL, .costBenefits=NULL,
-                            .stackPeak=0, .stackPeakTurn=0, .repeatLevel=NULL,
+/** The main global tree of active checkpoints at some present time during the profiling run. */
+CkpTree initialCkpTree = {.levelCheckpoints=NULL, .costBenefits=NULL,
+                            .Pk=0, .Tn=0, .repeatLevel=NULL,
                             .above=NULL, .below=NULL};
-CkpStack *curCheckpoints = &initialCkpStack;
+CkpTree *curCheckpoints = &initialCkpTree;
 
-/************************* UTILITIES ************************/ 
+/************************* UTILITIES ************************/
 
 /** Describes one (static) checkpoint location in the code source, with a unique ckpRank attached to it.
  * A (yes/no) checkpointing decision applies to one static checkpoint location globally. */
@@ -101,7 +85,7 @@ typedef struct {
   char* fname; // Name of the file in which the checkpoint appears
   unsigned int line_nb; // Line number in the original code where the checkpoint appears
   char* callee_name; // Name of the procedure being called (when checkpoint is on a call)
-  unsigned int occurrences;
+  unsigned int occurrences; // Counter of the number of dynamic occurrences of this static checkpoint.
   unsigned int ckpRank; // Unique integer rank (from 1 up) attached to this checkpoint location.
 } CkpLocation;
 
@@ -140,45 +124,45 @@ unsigned int getCheckpointLocationRank(char* callname, char* filename, unsigned 
   return i;
 }
 
-LevelCkpStack* stackNewLevelCkp(unsigned int ckpRank, LevelCkpStack* levelCheckpoints) {
-  LevelCkpStack* additionalLevelCkp = (LevelCkpStack*)malloc(sizeof(LevelCkpStack));
+LevelCkpTree* newLevelCkp(unsigned int ckpRank, LevelCkpTree* levelCheckpoints) {
+  LevelCkpTree* additionalLevelCkp = (LevelCkpTree*)malloc(sizeof(LevelCkpTree));
   additionalLevelCkp->ckpRank = ckpRank;
-  additionalLevelCkp->ckpT = 0;
+  additionalLevelCkp->t1t2 = 0;
   additionalLevelCkp->basisCkpT = 0;
 #ifdef _ADPROFILETRACE
-  additionalLevelCkp->sizeBeforeSnp = 0;
+  additionalLevelCkp->SnpBefore = 0;
 #endif
-  additionalLevelCkp->sizeAfterSnp = 0;
+  additionalLevelCkp->Snp = 0;
   additionalLevelCkp->previous = levelCheckpoints;
   return additionalLevelCkp;
 }
 
-void releaseLevelCkp(CkpStack* checkpoints) {
-  LevelCkpStack* levelCkps = checkpoints->levelCheckpoints;
+void releaseLevelCkp(CkpTree* checkpoints) {
+  LevelCkpTree* levelCkps = checkpoints->levelCheckpoints;
   checkpoints->levelCheckpoints = levelCkps->previous;
   if (checkpoints->repeatLevel==NULL) { // Don't free if we are in Repeat mode!
     free(levelCkps);
   }
 }
 
-CkpStack* openNewCkp(CkpStack* checkpoints) {
-  CkpStack* newCkp = checkpoints->above;
+CkpTree* openNewCkp(CkpTree* checkpoints) {
+  CkpTree* newCkp = checkpoints->below;
   if (!newCkp) {
-    newCkp = (CkpStack*)malloc(sizeof(CkpStack));
-    checkpoints->above = newCkp;
+    newCkp = (CkpTree*)malloc(sizeof(CkpTree));
+    checkpoints->below = newCkp;
     newCkp->repeatLevel = NULL;
-    newCkp->below = checkpoints;
-    newCkp->above = NULL;
+    newCkp->above = checkpoints;
+    newCkp->below = NULL;
   }
   newCkp->levelCheckpoints = NULL;
   newCkp->costBenefits = NULL;
-  newCkp->stackPeak = 0;
-  newCkp->stackPeakTurn = 0;
+  newCkp->Pk = 0;
+  newCkp->Tn = 0;
   return newCkp;
 }
 
-CkpStack* closeCkp(CkpStack* checkpoints) {
-  return checkpoints->below;
+CkpTree* closeCkp(CkpTree* checkpoints) {
+  return checkpoints->above;
 }
 
 /** Advances in the given (address of a) chain of CostBenefit's, till finding a
@@ -193,9 +177,9 @@ CostBenefit** getSetCostBenefit(CostBenefit **toCostBenefits, unsigned int ckpRa
   if (*toCostBenefits==NULL || (*toCostBenefits)->ckpRank > ckpRank) {
     CostBenefit* additionalCostBenefits = (CostBenefit*)malloc(sizeof(CostBenefit));
     additionalCostBenefits->ckpRank = ckpRank;
-    additionalCostBenefits->deltaT = 0;
-    additionalCostBenefits->deltaPM = 0;
-    additionalCostBenefits->deltaPMTurn = 0;
+    additionalCostBenefits->DeltaT = 0;
+    additionalCostBenefits->DeltaPk = 0;
+    additionalCostBenefits->DeltaTn = 0;
     additionalCostBenefits->next = *toCostBenefits;
     *toCostBenefits = additionalCostBenefits;
   }
@@ -204,11 +188,11 @@ CostBenefit** getSetCostBenefit(CostBenefit **toCostBenefits, unsigned int ckpRa
 
 #ifdef _ADPROFILETRACE
 
-int depthCkp(CkpStack* checkpoints) {
+int depthCkp(CkpTree* checkpoints) {
   int i = 0;
   while (checkpoints) {
     ++i;
-    checkpoints = checkpoints->below;
+    checkpoints = checkpoints->above;
   }
   return i;
 }
@@ -224,8 +208,8 @@ int costBenefitsLength(CostBenefit* costBenefits) {
 
 void dumpCostBenefits(CostBenefit *costBenefits) {
   while (costBenefits) {
-    printf(" %u:(T:%"PRIu64";M:%"PRId64"; turn:%"PRId64")",
-           costBenefits->ckpRank, costBenefits->deltaT, costBenefits->deltaPM, costBenefits->deltaPMTurn);
+    printf(" %u:(D_t:%"PRIu64"; D_Tn:%"PRId64"; D_Pk:%"PRId64")",
+           costBenefits->ckpRank, costBenefits->DeltaT, costBenefits->DeltaTn, costBenefits->DeltaPk);
     costBenefits = costBenefits->next;
   }
 }
@@ -236,20 +220,20 @@ void dumpCostBenefits(CostBenefit *costBenefits) {
 
 void adProfileAdj_SNPWrite(char* callname, char* filename, unsigned int lineno) {
   unsigned int ckpRank = getCheckpointLocationRank(callname, filename, lineno);
-  curCheckpoints->levelCheckpoints = stackNewLevelCkp(ckpRank, curCheckpoints->levelCheckpoints);
+  curCheckpoints->levelCheckpoints = newLevelCkp(ckpRank, curCheckpoints->levelCheckpoints);
 #ifdef _ADPROFILETRACE
-  curCheckpoints->levelCheckpoints->sizeBeforeSnp = adStack_getCurrentStackSize();
+  curCheckpoints->levelCheckpoints->SnpBefore = adStack_getCurrentStackSize();
 #endif
   curCheckpoints->levelCheckpoints->basisCkpT = mytime_();
 }
 
 void adProfileAdj_beginAdvance(char* callname, char* filename, unsigned int lineno) {
   assert(getCheckpointLocationRank(callname, filename, lineno)==curCheckpoints->levelCheckpoints->ckpRank);
-  curCheckpoints->levelCheckpoints->sizeAfterSnp = adStack_getCurrentStackSize();
+  curCheckpoints->levelCheckpoints->Snp = adStack_getCurrentStackSize();
 }
 
 void adProfileAdj_endAdvance(char* callname, char* filename, unsigned int lineno) {
-  curCheckpoints->levelCheckpoints->ckpT = mytime_() - curCheckpoints->levelCheckpoints->basisCkpT;
+  curCheckpoints->levelCheckpoints->t1t2 = mytime_() - curCheckpoints->levelCheckpoints->basisCkpT;
   assert(getCheckpointLocationRank(callname, filename, lineno)==curCheckpoints->levelCheckpoints->ckpRank);
 }
 
@@ -259,7 +243,7 @@ void adProfileAdj_SNPRead(char* callname, char* filename, unsigned int lineno) {
 }
 
 void adProfileAdj_beginReverse(char* callname, char* filename, unsigned int lineno) {
-  curCheckpoints->levelCheckpoints->ckpT += mytime_() - curCheckpoints->levelCheckpoints->basisCkpT;
+  curCheckpoints->levelCheckpoints->t1t2 += mytime_() - curCheckpoints->levelCheckpoints->basisCkpT;
   assert(getCheckpointLocationRank(callname, filename, lineno)==curCheckpoints->levelCheckpoints->ckpRank);
   ++(allCkpLocations[curCheckpoints->levelCheckpoints->ckpRank]->occurrences);
   curCheckpoints = openNewCkp(curCheckpoints);
@@ -267,126 +251,124 @@ void adProfileAdj_beginReverse(char* callname, char* filename, unsigned int line
 
 void adProfileAdj_endReverse(char* callname, char* filename, unsigned int lineno) {
   assert(curCheckpoints->levelCheckpoints==NULL);
-  CostBenefit *additionalCostBenefits = curCheckpoints->costBenefits;
-  stack_size_t peakSize2 = curCheckpoints->stackPeak;
-  stack_size_t peakSizeTurn2 = curCheckpoints->stackPeakTurn;
+  CostBenefit *costBenefits_C = curCheckpoints->costBenefits;
+  stack_size_t Pk_C = curCheckpoints->Pk;
+  stack_size_t Tn_C = curCheckpoints->Tn;
   // Special case if "callname" is an external, "callname_B" did not call adProfileAdj_turn,
-  //  and curCheckpoints->stackPeak is still 0 ! Set it to the current stack size:
-  if (peakSize2==0) peakSize2 = adStack_getCurrentStackSize();
+  //  and curCheckpoints->Pk is still 0 ! Set it to the current stack size:
+  if (Pk_C==0) Pk_C = adStack_getCurrentStackSize();
   curCheckpoints = closeCkp(curCheckpoints);
-  // Now merge the additional CostBenefit's from the checkpointed fragment into the current CostBenefit's:
-  unsigned int localCkpRank = curCheckpoints->levelCheckpoints->ckpRank;
-  cycle_time_t localCkpTimeCost = curCheckpoints->levelCheckpoints->ckpT;
-  stack_size_t peakSize1 = curCheckpoints->stackPeak;
-  stack_size_t peakSizeTurn1 = curCheckpoints->stackPeakTurn;
-  int mergedLocal = 0;
-  unsigned int additionalCkpRank;
-  cycle_time_t additionalT;
-  delta_size_t additionalPM;
-  delta_size_t additionalPMTurn;
+  // Now merge the additional CostBenefit's from the checkpointed fragment C into the current CostBenefit's:
+  unsigned int rankOfC = curCheckpoints->levelCheckpoints->ckpRank;
+  stack_size_t Pk_D = curCheckpoints->Pk;
+  stack_size_t Tn_D = curCheckpoints->Tn;
+  int mergedC = 0;
+  unsigned int rankOfX;
+  cycle_time_t DeltaT_CX;
+  delta_size_t DeltaPk_CX;
+  delta_size_t DeltaTn_CX;
 #ifdef _ADPROFILETRACE
-  if (_ADPROFILETRACE==-1 || _ADPROFILETRACE==localCkpRank) {
+  if (_ADPROFILETRACE==-1 || _ADPROFILETRACE==rankOfC) {
     printf("ENDREVERSE OF %s::%i CALL %s, DEPTH:%i, SIZEBEFORESNP:%"PRId64", SIZEAFTERSNP:%"PRId64"\n",
-           allCkpLocations[localCkpRank]->fname,
-           allCkpLocations[localCkpRank]->line_nb,
-           (allCkpLocations[localCkpRank]->callee_name ? allCkpLocations[localCkpRank]->callee_name : "MANUAL"),
+           allCkpLocations[rankOfC]->fname,
+           allCkpLocations[rankOfC]->line_nb,
+           (allCkpLocations[rankOfC]->callee_name ? allCkpLocations[rankOfC]->callee_name : "MANUAL"),
            depthCkp(curCheckpoints),
-           curCheckpoints->levelCheckpoints->sizeBeforeSnp,
-           curCheckpoints->levelCheckpoints->sizeAfterSnp);
-    printf("  BEFORE (peak:%"PRId64" bytes, peak at turn:%"PRId64" bytes) :", peakSize1, peakSizeTurn1);
+           curCheckpoints->levelCheckpoints->SnpBefore,
+           curCheckpoints->levelCheckpoints->Snp);
+    printf("  BEFORE (Tn_D:%"PRId64" bytes, Pk_D:%"PRId64" bytes) :", Tn_D, Pk_D);
     dumpCostBenefits(curCheckpoints->costBenefits);
-    printf("\n  ADDING (peak:%"PRId64" bytes, peak at turn:%"PRId64" bytes) :", peakSize2, peakSizeTurn2);
-    dumpCostBenefits(additionalCostBenefits);
+    printf("\n  ADDING (Tn_C:%"PRId64" bytes, Pk_C:%"PRId64" bytes) :", Tn_C, Pk_C);
+    dumpCostBenefits(costBenefits_C);
     printf("\n");
   }
   int nbProfilesBefore = costBenefitsLength(curCheckpoints->costBenefits);
-  int nbProfilesAdded = costBenefitsLength(additionalCostBenefits);
+  int nbProfilesAdded = costBenefitsLength(costBenefits_C);
 #endif
-  CostBenefit **toCostBenefits = &(curCheckpoints->costBenefits);
-  // compute merged peak size:
-  if (peakSize2>peakSize1) curCheckpoints->stackPeak = peakSize2;
-  // compute merged list of costs/benefits:
-  while (additionalCostBenefits || !mergedLocal) {
+  CostBenefit **toCostBenefits_D = &(curCheckpoints->costBenefits);
+  // compute merged peak size (Tn_D does not change):
+  if (Pk_C>Pk_D) curCheckpoints->Pk = Pk_C;
+  // merge C's list of costs/benefits into D's:
+  while (costBenefits_C || !mergedC) {
+    rankOfX = (costBenefits_C ? costBenefits_C->ckpRank : 0);
 #ifdef _ADPROFILETRACE
-  if (_ADPROFILETRACE==-1 || _ADPROFILETRACE==localCkpRank) {
-    printf("    mergedLocal:%i next additional:%u,%"PRIu64",%"PRId64",%"PRId64"\n",
-           mergedLocal,(additionalCostBenefits?additionalCostBenefits->ckpRank:0),
-           (additionalCostBenefits?additionalCostBenefits->deltaT:0),
-           (additionalCostBenefits?additionalCostBenefits->deltaPM:0),
-           (additionalCostBenefits?additionalCostBenefits->deltaPMTurn:0));
+    if (_ADPROFILETRACE==-1 || _ADPROFILETRACE==rankOfC) {
+      printf("    mergedC:%i next additional:%u,t:%"PRIu64",Tn%"PRId64",Pk:%"PRId64"\n",
+             mergedC, rankOfX,
+             (costBenefits_C?costBenefits_C->DeltaT:0),
+             (costBenefits_C?costBenefits_C->DeltaTn:0),
+             (costBenefits_C?costBenefits_C->DeltaPk:0));
   }
 #endif
-    if (!mergedLocal
-        && (additionalCostBenefits==NULL || additionalCostBenefits->ckpRank>localCkpRank)) {
-      additionalCkpRank = localCkpRank;
-      additionalT = localCkpTimeCost;
-      additionalPM = 0;
-      additionalPMTurn = 0;
-      mergedLocal = 1;
-    } else if (additionalCostBenefits->ckpRank==localCkpRank) {
-      additionalCkpRank = localCkpRank;
-      additionalT = additionalCostBenefits->deltaT + localCkpTimeCost;
-      additionalPM = additionalCostBenefits->deltaPM ;
-      additionalPMTurn = additionalCostBenefits->deltaPMTurn;
-      CostBenefit* tmp = additionalCostBenefits->next;
-      free(additionalCostBenefits);
-      additionalCostBenefits = tmp;
-      mergedLocal = 1;
+    if (!mergedC
+        && (costBenefits_C==NULL || rankOfC < rankOfX)) {
+      // it is time to incorporate costBenefit of C alone, even if it not the candidate for merge X, to preserve ordering:
+      rankOfX = rankOfC;
+      DeltaT_CX = curCheckpoints->levelCheckpoints->t1t2;
+      DeltaPk_CX = 0;
+      DeltaTn_CX = 0;
+      mergedC = 1;
+    } else if (rankOfX == rankOfC) {
+      // it is time to incorporate constBenefit of C, together with candidate for merge X (which is the same):
+      DeltaT_CX = costBenefits_C->DeltaT + curCheckpoints->levelCheckpoints->t1t2;
+      DeltaPk_CX = costBenefits_C->DeltaPk ;
+      DeltaTn_CX = costBenefits_C->DeltaTn;
+      CostBenefit* tmp = costBenefits_C->next;
+      free(costBenefits_C);
+      costBenefits_C = tmp;
+      mergedC = 1;
     } else {
-      additionalCkpRank = additionalCostBenefits->ckpRank;
-      additionalT = additionalCostBenefits->deltaT;
-      additionalPM = additionalCostBenefits->deltaPM;
-      additionalPMTurn = additionalCostBenefits->deltaPMTurn;
-      CostBenefit* tmp = additionalCostBenefits->next;
-      free(additionalCostBenefits);
-      additionalCostBenefits = tmp;
+      // else incorporate the candidate for merge X, alone:
+      DeltaT_CX = costBenefits_C->DeltaT;
+      DeltaPk_CX = costBenefits_C->DeltaPk;
+      DeltaTn_CX = costBenefits_C->DeltaTn;
+      CostBenefit* tmp = costBenefits_C->next;
+      free(costBenefits_C);
+      costBenefits_C = tmp;
     }
-    toCostBenefits = getSetCostBenefit(toCostBenefits, additionalCkpRank);
+    toCostBenefits_D = getSetCostBenefit(toCostBenefits_D, rankOfX);
 #ifdef _ADPROFILETRACE
-  if (_ADPROFILETRACE==-1 || _ADPROFILETRACE==localCkpRank) {
-    printf("    additionalCkpRank:%u deltaPM:%"PRId64" additionalPM:%"PRId64"\n", additionalCkpRank, (*toCostBenefits)->deltaPM, additionalPM);
-  }
-#endif
-    if (additionalCkpRank==localCkpRank) {
-      delta_size_t intermediate = peakSizeTurn2 + additionalPMTurn - curCheckpoints->levelCheckpoints->sizeAfterSnp;
-#ifdef _ADPROFILETRACE
-  if (_ADPROFILETRACE==-1 || _ADPROFILETRACE==localCkpRank) {
-    printf("      %"PRIu64"  %"PRId64" %"PRIu64"\n", peakSizeTurn2, additionalPMTurn, curCheckpoints->levelCheckpoints->sizeAfterSnp) ;
-    printf("      %"PRId64" += %"PRId64"\n", (*toCostBenefits)->deltaPMTurn, intermediate);
-  }
-#endif
-      (*toCostBenefits)->deltaPMTurn += intermediate;
-      stack_size_t costPeak1 = peakSize1 + (*toCostBenefits)->deltaPM + intermediate;
-      stack_size_t costPeak2 = peakSize2 + additionalPM;
-      (*toCostBenefits)->deltaPM = (costPeak1>costPeak2 ? costPeak1 : costPeak2) - curCheckpoints->stackPeak;
-    } else {
-      // Do a max on memory costs:
-      stack_size_t costPeak1 = peakSize1 + (*toCostBenefits)->deltaPM;
-      stack_size_t costPeak2 = peakSize2 + additionalPM;
-      (*toCostBenefits)->deltaPM = (costPeak1>costPeak2 ? costPeak1 : costPeak2) - curCheckpoints->stackPeak;
+    if (_ADPROFILETRACE==-1 || _ADPROFILETRACE==rankOfC) {
+      printf("    X:%u DeltaPk:%"PRId64" DeltaPk_C:%"PRId64"\n", rankOfX, (*toCostBenefits_D)->DeltaPk, DeltaPk_CX);
     }
-    (*toCostBenefits)->deltaT += additionalT;
-    toCostBenefits = &((*toCostBenefits)->next);
+#endif
+    delta_size_t offsetOfNoCkp_C =
+        (rankOfX==rankOfC ? Tn_C + DeltaTn_CX - curCheckpoints->levelCheckpoints->Snp : 0);
+#ifdef _ADPROFILETRACE
+    if (_ADPROFILETRACE==-1 || _ADPROFILETRACE==rankOfC) {
+      printf("      %"PRIu64"  %"PRId64" %"PRIu64"\n", Tn_C, DeltaTn_CX, curCheckpoints->levelCheckpoints->Snp) ;
+      printf("      %"PRId64" += %"PRId64"\n", (*toCostBenefits_D)->DeltaTn, offsetOfNoCkp_C);
+    }
+#endif
+    (*toCostBenefits_D)->DeltaTn += offsetOfNoCkp_C;
+    stack_size_t newPk_D = Pk_D + (*toCostBenefits_D)->DeltaPk + offsetOfNoCkp_C;
+    stack_size_t newPk_C = Pk_C + DeltaPk_CX;
+    (*toCostBenefits_D)->DeltaPk = (newPk_D>newPk_C ? newPk_D : newPk_C) - curCheckpoints->Pk;
+    (*toCostBenefits_D)->DeltaT += DeltaT_CX;
+    toCostBenefits_D = &((*toCostBenefits_D)->next);
   }
 #ifdef _ADPROFILETRACE
   int nbProfilesAfter = costBenefitsLength(curCheckpoints->costBenefits);
-  if (_ADPROFILETRACE==-1 || _ADPROFILETRACE==localCkpRank) {
+  if (_ADPROFILETRACE==-1 || _ADPROFILETRACE==rankOfC) {
     printf("  ==> MERGE %i COSTBENEFITS INTO %i --> %i\n",
            nbProfilesAdded, nbProfilesBefore, nbProfilesAfter);
-    printf("  >AFTER (peak:%"PRId64" bytes, peak at turn:%"PRId64" bytes) :",
-           curCheckpoints->stackPeak, curCheckpoints->stackPeakTurn);
+    printf("  >AFTER (Tn_CD:%"PRId64" bytes, Pk_CD:%"PRId64" bytes) :",
+           curCheckpoints->Tn, curCheckpoints->Pk);
     dumpCostBenefits(curCheckpoints->costBenefits);
     printf("\n");
   }
 #endif
-  // merging finished.
+  // merge finished.
   assert(getCheckpointLocationRank(callname, filename, lineno)==curCheckpoints->levelCheckpoints->ckpRank);
   releaseLevelCkp(curCheckpoints);
 }
 
 void adProfileAdj_turn(char* callname, char* filename) {
-  curCheckpoints->stackPeak = adStack_getCurrentStackSize();
-  curCheckpoints->stackPeakTurn = curCheckpoints->stackPeak;
+  stack_size_t curPeak = adStack_getCurrentStackSize();
+  if (curPeak > curCheckpoints->Pk) {
+    curCheckpoints->Pk = curPeak;
+    curCheckpoints->Tn = curPeak;
+  }
 }
 
 void adProfileAdj_startRepeat() {
@@ -399,8 +381,8 @@ void adProfileAdj_resetRepeat() {
 
 void adProfileAdj_endRepeat() {
   while (curCheckpoints->repeatLevel != curCheckpoints->levelCheckpoints) {
-    // Now that we are no longer in Repeat mode, free preserved LevelCkpStack's:
-    LevelCkpStack *previousElem = curCheckpoints->repeatLevel->previous;
+    // Now that we are no longer in Repeat mode, free preserved LevelCkpTree's:
+    LevelCkpTree *previousElem = curCheckpoints->repeatLevel->previous;
     free(curCheckpoints->repeatLevel);
     curCheckpoints->repeatLevel = previousElem;
   }
@@ -409,8 +391,8 @@ void adProfileAdj_endRepeat() {
 
 typedef struct _SortedCostBenefit {
   unsigned int ckpRank; 
-  cycle_time_t deltaT;
-  delta_size_t deltaPM;
+  cycle_time_t DeltaT;
+  delta_size_t DeltaPk;
   float ratio;
   struct _SortedCostBenefit* next;
 } SortedCostBenefit;
@@ -422,19 +404,19 @@ int callNameComesAfter(unsigned int ckpRank1, unsigned int ckpRank2) {
 
 void showOneCostBenefit(SortedCostBenefit* sortedCostBenefits) {
   CkpLocation* ckpLocation = allCkpLocations[sortedCostBenefits->ckpRank];
-  cycle_time_t deltaT = (sortedCostBenefits->deltaT / 1000); // now milliSeconds!
-  int deltaTsec = deltaT/1000;
-  int deltaTmillisec = deltaT%1000;
-  printf("  - Time gain -%2d.%03d s.", deltaTsec, deltaTmillisec);
-  delta_size_t deltaPM = sortedCostBenefits->deltaPM;
-  if (deltaPM<0) {
-    printf(" and peak memory gain %"PRId64"b", deltaPM);
-  } else if (deltaPM==0) {
+  cycle_time_t DeltaT = (sortedCostBenefits->DeltaT / CLOCKS_PER_SEC)*1000; // DeltaT in milliSeconds.
+  int DeltaTsec = DeltaT/1000;
+  int DeltaTmillisec = DeltaT%1000;
+  printf("  - Time gain -%2d.%03d s.", DeltaTsec, DeltaTmillisec);
+  delta_size_t DeltaPk = sortedCostBenefits->DeltaPk;
+  if (DeltaPk<0) {
+    printf(" and peak memory gain %"PRId64"b", DeltaPk);
+  } else if (DeltaPk==0) {
     printf(" at peak memory cost zero");
   } else {
-    int deltaPMMb = deltaPM/1000000;
-    int deltaPMb = deltaPM%1000000;
-    printf(" at peak memory cost %4d.%06d Mb", deltaPMMb, deltaPMb);
+    int DeltaPkMb = DeltaPk/1000000;
+    int DeltaPkb = DeltaPk%1000000;
+    printf(" at peak memory cost %4d.%06d Mb", DeltaPkMb, DeltaPkb);
   }
   if (ckpLocation->callee_name) {
     printf(" for call %s (%u times), at", ckpLocation->callee_name, ckpLocation->occurrences);
@@ -449,14 +431,14 @@ void adProfileAdj_showProfiles() {
   SortedCostBenefit* sortedCostBenefitsN = NULL;
   SortedCostBenefit* sortedCostBenefitsZ = NULL;
   SortedCostBenefit* sortedCostBenefitsP = NULL;
-  CostBenefit *costBenefits = initialCkpStack.costBenefits;
+  CostBenefit *costBenefits = initialCkpTree.costBenefits;
   SortedCostBenefit** toSortedCostBenefits;
   float ratio;
   while (costBenefits) {
     unsigned int newCkpRank = costBenefits->ckpRank;
-    if (costBenefits->deltaPM <= 0) {
+    if (costBenefits->DeltaPk <= 0) {
       // Sort negative memory costs and zero memory costs in two lists ordered by routine name then location rank:
-      toSortedCostBenefits = (costBenefits->deltaPM==0 ? &sortedCostBenefitsZ : &sortedCostBenefitsN);
+      toSortedCostBenefits = (costBenefits->DeltaPk==0 ? &sortedCostBenefitsZ : &sortedCostBenefitsN);
       ratio = 0.0;
       while (*toSortedCostBenefits && callNameComesAfter(newCkpRank, (*toSortedCostBenefits)->ckpRank)) {
         toSortedCostBenefits = &((*toSortedCostBenefits)->next);
@@ -464,22 +446,21 @@ void adProfileAdj_showProfiles() {
     } else {
       // Sort positive memory costs by decreasing time/memory benefit:
       toSortedCostBenefits = &sortedCostBenefitsP;
-      ratio = ((float)costBenefits->deltaT) / ((float)costBenefits->deltaPM);
+      ratio = ((float)costBenefits->DeltaT) / ((float)costBenefits->DeltaPk);
       while (*toSortedCostBenefits && ratio<(*toSortedCostBenefits)->ratio) {
         toSortedCostBenefits = &((*toSortedCostBenefits)->next);
       }
     }
     SortedCostBenefit *newSorted = (SortedCostBenefit*)malloc(sizeof(SortedCostBenefit));
     newSorted->ckpRank = newCkpRank;
-    newSorted->deltaT = costBenefits->deltaT;
-    newSorted->deltaPM = costBenefits->deltaPM;
+    newSorted->DeltaT = costBenefits->DeltaT;
+    newSorted->DeltaPk = costBenefits->DeltaPk;
     newSorted->ratio = ratio;
     newSorted->next = *toSortedCostBenefits;
     *toSortedCostBenefits = newSorted;
     costBenefits = costBenefits->next;
   }
-  printf("CLOCKS_PER_SEC:%d\n",CLOCKS_PER_SEC);
-  printf("PEAK STACK:%"PRId64" bytes\n", initialCkpStack.stackPeak);
+  printf("PEAK STACK:%"PRId64" bytes\n", initialCkpTree.Pk);
   printf("SUGGESTED NOCHECKPOINTs:\n");
   printf(" * Peak memory gain:\n");
   while (sortedCostBenefitsN) {

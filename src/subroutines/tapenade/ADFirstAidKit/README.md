@@ -37,7 +37,7 @@ Contents of the ADFirstAidKit
   A Fortran90 module that must be USE'd by Tapenade-generated adjoint code,
   if these codes need push/pop of pointers or use ADMM primitives.
 
-## adProfile.c && adProfile.h (Currently broken, sorry)
+## adProfile.c && adProfile.h
   Primitives used by Tapenade adjoint to measure the cost/benefit of checkpointing,
   to find parts of the code that should or shouldn't be checkpointed.
 

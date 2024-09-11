@@ -8,8 +8,13 @@
 #include <stdio.h>
 #include "adBinomial.h"
 
-static int stack1[15] ;
-static int stack2[297] ;
+// Max number of nested binomial checkpoint loops:
+#define _ADBINOMIALMAXNEST 5
+// Max number of snapshots in a binomial checkpoint loop:
+#define _ADBINOMIALMAXSNP 99
+
+static int stack1[3*_ADBINOMIALMAXNEST] ;
+static int stack2[3*_ADBINOMIALMAXSNP] ;
 static int is1 = -1 ;
 static int is2 = -1 ;
 
@@ -20,13 +25,18 @@ static int is2 = -1 ;
 #define CURPOS stack2[3*is2+1]
 #define CKPCUT stack2[3*is2+2]
 
+char *actionText[] = {"","PUSHSNAP","LOOKSNAP","POPSNAP","ADVANCE","FIRSTTURN","TURN"} ;
+
 void adBinomial_init(int length, int nbSnap, int firstStep) {
   if (length<=0) {
     printf("Error: Cannot reverse a sequence of length %i\n",length) ;
+    exit(0) ;
   } else if (nbSnap==0 && length>=2) {
     printf("Error: Cannot reverse a sequence of length %i with no snapshot\n",length) ;
-  } else if (is1>4 || is2+nbSnap+1>98) {
+    exit(0) ;
+  } else if (is1>=_ADBINOMIALMAXNEST || is2+nbSnap+1>=_ADBINOMIALMAXSNP) {
     printf("Error: Binomial-Checkpointing memory exceeded !\n") ;
+    exit(0) ;
   } else {
     is1 = is1+1 ;
     is2 = is2+1 ;
@@ -36,7 +46,7 @@ void adBinomial_init(int length, int nbSnap, int firstStep) {
     LENGTH= length ;
     CURPOS = 0 ;
     CKPCUT = 0 ;
-  }    
+  }
 }
 
 void adBinomial_setCut() {
@@ -85,6 +95,7 @@ int adBinomial_next(int *action, int *step) {
     *action = -1 ;
     is1-- ;
     is2-- ;
+// printf("NEXT BINOMIAL ACTION: -1\n") ;
     return 0 ;
   } else {
     *step = 1 ;
@@ -116,6 +127,7 @@ int adBinomial_next(int *action, int *step) {
         CURPOS++ ;
       }
     }
+// printf("NEXT BINOMIAL ACTION:%s\n", actionText[*action]) ;
     return 1 ;
   }
 }
