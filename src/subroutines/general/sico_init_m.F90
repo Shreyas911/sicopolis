@@ -299,7 +299,7 @@ time_output = 0.0_dp
 #if defined(ALLOW_TAPENADE)
 #if defined(ALLOW_GENCTRL)
 
-#if (DO_CTRL_GENTIM2D && (!defined(NTDAMAX) || !defined(DTIME_INTERP0)))
+#if (defined(DO_CTRL_GENTIM2D) && (!defined(NTDAMAX) || !defined(DTIME_INTERP0)))
 errormsg = ' >>> sico_init: ' &
            // 'NTDAMAX and DTIME_INTERP0 should be defined for GenTim2D!'
 call error(errormsg)

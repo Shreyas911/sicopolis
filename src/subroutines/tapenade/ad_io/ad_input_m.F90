@@ -6,10 +6,13 @@ module ad_input_m
   
     implicit none
 
+#ifdef ALLOW_GENCTRL
     public :: ad_input
+#endif
   
     contains
-  
+
+#ifdef ALLOW_GENCTRL
     subroutine ad_input
     
         use netcdf
@@ -158,5 +161,6 @@ module ad_input_m
 #endif
 
     end subroutine ad_input
+#endif
   
 end module ad_input_m

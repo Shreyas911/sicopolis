@@ -13,7 +13,9 @@ module ctrl_map_genarr_m
   public :: ctrl_map_ini_genarr3d, ctrl_map_genarr3d
 #endif
 
+#if (defined(DO_CTRL_GENARR2D) || defined(DO_CTRL_GENARR3D))
 contains
+#endif
 
 #ifdef DO_CTRL_GENARR2D
   subroutine ctrl_map_ini_genarr2d

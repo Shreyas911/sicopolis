@@ -6,11 +6,14 @@ module ad_output_m
 
   implicit none
 
+#ifdef ALLOW_GENCTRL
   private :: set_cmode
   public :: ad_output
+#endif
 
   contains
 
+#ifdef ALLOW_GENCTRL
   subroutine ad_output
 
     use netcdf
@@ -70,7 +73,7 @@ module ad_output_m
 #ifdef DO_CTRL_GENARR3D
     real(dp), dimension(NUM_CTRL_GENARR3D,0:IMAX,0:JMAX,0:KCMAX) :: xx_genarr3d_conv
 #ifdef ALLOW_TAP_ADJ
-    real(dp), dimension(NUM_CTRL_GENARR2D,0:IMAX,0:JMAX,0:KCMAX) :: xx_genarr3db_conv
+    real(dp), dimension(NUM_CTRL_GENARR3D,0:IMAX,0:JMAX,0:KCMAX) :: xx_genarr3db_conv
 #endif /* ALLOW_TAP_ADJ */
 #endif
 
@@ -78,7 +81,7 @@ module ad_output_m
     real(dp) :: time_ad_conv(0:NTDAMAX)
     real(dp), dimension(NUM_CTRL_GENTIM2D,0:IMAX,0:JMAX,0:NTDAMAX) :: xx_gentim2d_conv
 #ifdef ALLOW_TAP_ADJ
-    real(dp), dimension(NUM_CTRL_GENARR2D,0:IMAX,0:JMAX,0:NTDAMAX) :: xx_gentim2db_conv
+    real(dp), dimension(NUM_CTRL_GENTIM2D,0:IMAX,0:JMAX,0:NTDAMAX) :: xx_gentim2db_conv
 #endif /* ALLOW_TAP_ADJ */
 #endif
 
@@ -576,5 +579,6 @@ module ad_output_m
 #endif
   
     end subroutine set_cmode
+#endif
 
 end module ad_output_m

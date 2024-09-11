@@ -7,10 +7,13 @@ module ctrl_init_gen_m
 
   implicit none
 
+#ifdef ALLOW_GENCTRL
   public :: ctrl_init_gen
+#endif
 
 contains
 
+#ifdef ALLOW_GENCTRL
   subroutine ctrl_init_gen
 
     implicit none
@@ -26,5 +29,6 @@ contains
 #endif
 
   end subroutine ctrl_init_gen
+#endif
 
 end module ctrl_init_gen_m

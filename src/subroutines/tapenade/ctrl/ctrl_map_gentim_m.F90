@@ -8,17 +8,13 @@ module ctrl_map_gentim_m
 
 #ifdef DO_CTRL_GENTIM2D
   public :: ctrl_map_ini_gentim2d, ctrl_map_gentim2d
-#endif
 
 contains
 
-#ifdef DO_CTRL_GENTIM2D
-  subroutine ctrl_map_ini_gentim2d(time_init, dtime, itercount)
+  subroutine ctrl_map_ini_gentim2d
 
     implicit none
 
-    real(dp), intent(in)        :: time_init, dtime
-    integer(i4b), intent(in)    :: itercount
     integer(i4b)                :: ctrl_index
     integer(i4b)                :: igen_delta_tda
 
@@ -41,7 +37,7 @@ contains
   
     end do
 
-    if (igen_temp .GT. 0) then
+    if (igen_delta_tda .GT. 0) then
       call ctrl_map_gentim2d(delta_tda, igen_delta_tda)
     end if
 #endif
@@ -52,8 +48,8 @@ contains
 
     implicit none  
 
-    real(dp), dimension(0:JMAX,0:IMAX)          :: fld, xx_gen, xx_gen_mask
-    integer(i4b)                                :: iarr, k2
+    real(dp), dimension(0:NTDAMAX,0:JMAX,0:IMAX) :: fld
+    integer(i4b)                                 :: iarr, k2
 
     fld = fld + xx_gentim2d(iarr,:,:,:)
 
