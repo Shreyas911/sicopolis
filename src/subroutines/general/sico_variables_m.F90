@@ -1537,21 +1537,23 @@ real(dp), dimension(0:JMAX,0:IMAX) :: H_unc_BedMachine_data
 #endif
 
 #if defined(ALLOW_GENCTRL)
+! Note: Not inside the DO_CTRL_* flags so that Tapenade can always see them all.
+! The differentiation command doesn't have to change then.
+   real(dp), dimension(NUM_CTRL_GENARR2D,0:JMAX,0:IMAX)    :: xx_genarr2d
+   real(dp), dimension(NUM_CTRL_GENARR3D,0:KCMAX,0:JMAX,0:IMAX) :: xx_genarr3d
+   real(dp), dimension(NUM_CTRL_GENTIM2D,0:NTDAMAX,0:JMAX,0:IMAX) :: xx_gentim2d
 #ifdef DO_CTRL_GENARR2D
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR2D) :: xx_genarr2d_vars
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR2D) :: xx_genarr2d_preproc 
    real(dp), dimension(NUM_CTRL_GENARR2D)                  :: xx_genarr2d_log10initval
-   real(dp), dimension(NUM_CTRL_GENARR2D,0:JMAX,0:IMAX)    :: xx_genarr2d
 #endif
 #ifdef DO_CTRL_GENARR3D
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR3D)      :: xx_genarr3d_vars
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR3D)      :: xx_genarr3d_preproc
    real(dp), dimension(NUM_CTRL_GENARR3D)                       :: xx_genarr3d_log10initval
-   real(dp), dimension(NUM_CTRL_GENARR3D,0:KCMAX,0:JMAX,0:IMAX) :: xx_genarr3d
 #endif
 #if(defined(DTIME_INTERP0) && defined(NTDAMAX) && defined(DO_CTRL_GENTIM2D))
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENTIM2D)       :: xx_gentim2d_vars
-   real(dp), dimension(NUM_CTRL_GENTIM2D,0:NTDAMAX,0:JMAX,0:IMAX) :: xx_gentim2d
 #endif
 #endif
 
