@@ -40,10 +40,10 @@
 /* The size of a Block in bytes. */
 // #define BLOCK_SIZE 17 // A very small BLOCK_SIZE allows for stronger testing!
 // #define BLOCK_SIZE 1000 // ridiculously small, just for testing.
-#define BLOCK_SIZE 65536
+#define BLOCK_SIZE 1048576
 
 /* The max number of Block's allowed in main memory */
-#define MAX_SPACES 4000
+#define MAX_SPACES 32000
 
 /**************** Data structures and globals ******************/
 
