@@ -111,7 +111,7 @@ driveradjoint: CFLAGS_PROF=-D_ADSTACKPROFILE -D_ADSTACKPREFETCH
 driveradjoint: DEFINE_FLAGS_ADJOINT_PROF=-DALLOW_TAP_ADJ_PROF
 
 SRC_TAP_PROF=\
-${ADFirstAidKit_DIR}/adProfile.c
+${ADFirstAidKit_DIR}/adProfile.c\
 ${ADFirstAidKit_DIR}/adFixedPoint.c
 endif
 
