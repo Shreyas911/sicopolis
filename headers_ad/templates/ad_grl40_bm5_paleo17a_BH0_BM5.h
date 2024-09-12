@@ -10,11 +10,11 @@
 #define DO_CTRL_GENTIM2D
 !       Flags to enable specific codes for various types of genctrl
 
-#define CTRL_STRLENGTH 128
+#define CTRL_STRLENGTH   128
 !       The fixed string length for individual entries of arrays
 !       like xx_genarr2d_vars, xx_genarr2d_bounds.
 
-!-------- Basic settings --------
+!-------- Settings for genarr2D --------
 
 #define NUM_CTRL_GENARR2D 9
 !       Number of 2D time-invariant control variables
@@ -55,7 +55,7 @@
 !       WARNING: If for example using for c_slide_init
 !       Set C_SLIDE == 0.0 in the HEADER file
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!-------- Settings for genarr3D --------
 
 #define NUM_CTRL_GENARR3D 1
 !       Number of 3D time-invariant control variables
@@ -69,7 +69,7 @@
 #define XX_GENARR3D_PREPROC_ARR [ character(CTRL_STRLENGTH) :: 'none' ]
 !       Define preprocessing steps for ctrl variables
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!-------- Settings for gentim2D --------
 
 #define NUM_CTRL_GENTIM2D 1
 !       Number of 2D time-varying control variables
@@ -80,7 +80,7 @@
 #define XX_GENTIM2D_VARS_ARR [ character(CTRL_STRLENGTH) :: 'xx_delta_tda' ]
 !       List of 3D time-varying control variables
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!-------- Settings for genctrl I/O --------
 
 !#define AD_INPUT_PATH '/home/shreyas/update_to_develop_sicopolis/sicopolis/src/subroutines/tapenade/ad_io'
 !       Absolute input path to read xx_gen* fields
