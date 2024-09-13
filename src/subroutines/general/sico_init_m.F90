@@ -42,7 +42,7 @@ module sico_init_m
   use error_m
 
 #if defined(ALLOW_TAPENADE)
-#if defined(ALLOW_GENCTRL)
+#if (defined(ALLOW_GENCTRL) && defined(ALLOW_GENCTRL_BEFORE_SICO_INIT))
   use ctrl_init_gen_m
 #endif /* ALLOW_GENCTRL */
 #endif /* ALLOW_TAPENADE */
@@ -297,7 +297,7 @@ time_output = 0.0_dp
 !-------- Initialization of Tapenade generic control --------
 
 #if defined(ALLOW_TAPENADE)
-#if defined(ALLOW_GENCTRL)
+#if (defined(ALLOW_GENCTRL) && defined(ALLOW_GENCTRL_BEFORE_SICO_INIT))
 
 #if (defined(DO_CTRL_GENTIM2D) && (!defined(NTDAMAX) || !defined(DTIME_INTERP0)))
 errormsg = ' >>> sico_init: ' &

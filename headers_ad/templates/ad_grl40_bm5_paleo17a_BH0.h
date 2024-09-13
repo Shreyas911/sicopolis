@@ -5,6 +5,9 @@
 #undef ALLOW_GENCTRL
 !       Flag to enable specific code for genctrl setup
 
+#undef ALLOW_GENCTRL_BEFORE_SICO_INIT
+!       Flag to enable activation of genctrl before sico_init
+
 #define DO_CTRL_GENARR2D
 #define DO_CTRL_GENARR3D
 #define DO_CTRL_GENTIM2D
