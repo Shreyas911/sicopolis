@@ -1,5 +1,5 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-! Specification file for control variables ad_repo_grl16_bm5_ss25ka_AC.h
+! Specification file for control variables ad_repo_grl16_bm5_ss25ka_CM3_AC.h
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #undef ALLOW_GENCTRL

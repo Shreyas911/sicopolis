@@ -1,5 +1,5 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-! Specification file for control variables ad_repo_grl40_bm5_paleo17a_BH0_BM5.h
+! Specification file for control variables ad_repo_grl40_bm5_paleo17a_BH0.h
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #undef ALLOW_GENCTRL
