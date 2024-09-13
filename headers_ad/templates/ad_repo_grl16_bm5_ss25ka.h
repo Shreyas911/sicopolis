@@ -8,22 +8,22 @@
 #undef ALLOW_GENCTRL_BEFORE_SICO_INIT
 !       Flag to enable activation of genctrl before sico_init
 
+#define CTRL_STRLENGTH   128
+!       The fixed string length for individual entries of arrays
+!       like xx_genarr2d_vars, xx_genarr2d_bounds.
+
 #define DO_CTRL_GENARR2D
 #define DO_CTRL_GENARR3D
 #define DO_CTRL_GENTIM2D
 !       Flags to enable specific codes for various types of genctrl
 
-#define CTRL_STRLENGTH   128
-!       The fixed string length for individual entries of arrays
-!       like xx_genarr2d_vars, xx_genarr2d_bounds.
+#define NUM_CTRL_GENARR2D 3
+#define NUM_CTRL_GENARR3D 1
+#define NUM_CTRL_GENTIM2D 1
+!       Number of control variables,
+!       Has to be 0 for all 3 as dummy value when not in use.
 
 !-------- Settings for genarr2D --------
-
-#define NUM_CTRL_GENARR2D 3
-!       Number of 2D time-invariant control variables
-
-#define NUMCTRLPROCARR2D  1
-!       Maximum number of preprocessing steps for ctrl variables
 
 #define XX_GENARR2D_VARS_ARR         [ character(CTRL_STRLENGTH) ::\
                                          'xx_c_slide_init',\
@@ -31,40 +31,12 @@
                                          'xx_H' ]
 !       List of 2D time-invariant control variables
 
-#define XX_GENARR2D_PREPROC_ARR      [ character(CTRL_STRLENGTH) ::\
-                                         'none',\
-                                         'none',\
-                                         'none' ]
-!       Define preprocessing steps for ctrl variables
-
-#define XX_GENARR2D_LOG10INITVAL_ARR [ real :: \
-                                         -6.67172541073, 0.0, 0.0 ]
-!       log10initval if preproc=log10ctrl
-!       Otherwise has no effect
-!       WARNING: If for example using for c_slide_init
-!       Set C_SLIDE == 0.0 in the HEADER file
-
 !-------- Settings for genarr3D --------
-
-#define NUM_CTRL_GENARR3D 1
-!       Number of 3D time-invariant control variables
-
-#define NUMCTRLPROCARR3D  1
-!       Maximum number of preprocessing steps for ctrl variables
 
 #define XX_GENARR3D_VARS_ARR    [ character(CTRL_STRLENGTH) :: 'xx_temp_c' ]
 !       List of 3D time-invariant control variables
 
-#define XX_GENARR3D_PREPROC_ARR [ character(CTRL_STRLENGTH) :: 'none' ]
-!       Define preprocessing steps for ctrl variables
-
 !-------- Settings for gentim2D --------
-
-#define NUM_CTRL_GENTIM2D 1
-!       Number of 2D time-varying control variables
-
-#define NUMCTRLPROCTIM2D  1
-!       Maximum number of preprocessing steps for ctrl variables
 
 #define XX_GENTIM2D_VARS_ARR [ character(CTRL_STRLENGTH) :: 'xx_delta_tda' ]
 !       List of 3D time-varying control variables

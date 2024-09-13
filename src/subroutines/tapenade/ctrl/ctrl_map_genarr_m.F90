@@ -171,7 +171,12 @@ contains
     integer(i4b)                                :: iarr, k2
     logical                                     :: dopreprocs, dolog10ctrl
     real(dp)                                    :: log10initval, ln10
+#ifdef XX_GENARR2D_PREPROC_ARR
     character(128), dimension(NUMCTRLPROCARR2D) :: preprocs
+#else
+! Dummy definition
+    character(128), dimension(1) :: preprocs
+#endif
 
     dopreprocs = .FALSE.
     ln10 = log(10.0)
@@ -199,6 +204,8 @@ contains
         xx_genarr2d(iarr,:,:) = xx_genarr2d(iarr,:,:) + log10initval
         xx_genarr2d(iarr,:,:) = EXP(ln10 * xx_genarr2d(iarr,:,:)) 
         fld = xx_genarr2d(iarr,:,:)
+      else
+        fld = fld + xx_genarr2d(iarr,:,:)
       endif
 #endif
 
@@ -271,7 +278,12 @@ contains
     integer(i4b)                                :: iarr, k3
     logical                                     :: dopreprocs, dolog10ctrl
     real(dp)                                    :: log10initval, ln10
+#ifdef XX_GENARR3D_PREPROC_ARR
     character(128), dimension(NUMCTRLPROCARR3D) :: preprocs
+#else
+! Dummy definition
+    character(128), dimension(1) :: preprocs
+#endif
 
     dopreprocs = .FALSE.
     ln10 = log(10.0)
@@ -299,6 +311,8 @@ contains
         xx_genarr3d(iarr,:,:,:) = xx_genarr3d(iarr,:,:,:) + log10initval
         xx_genarr3d(iarr,:,:,:) = EXP(ln10 * xx_genarr3d(iarr,:,:,:))
         fld = xx_genarr3d(iarr,:,:,:)
+      else
+        fld = fld + xx_genarr3d(iarr,:,:,:)
       endif
 #endif
 
