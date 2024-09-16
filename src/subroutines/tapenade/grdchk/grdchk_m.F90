@@ -123,7 +123,23 @@ end subroutine grdchk_main
 
           !-------- One complete forward run 
             call deldirs
-        
+
+            perturbation = 1 + direction(d) * perturb_val
+
+          !-------- Controls to be perturbed before sico_init (add your own here)
+          !         store original value that will be perturbed
+          !         and then perturb it (first in +dir then -dir)
+
+            !@ python_automated_grdchk_scalar_before @
+
+            ! Example -- gamma_s
+            ! orig_val = gamma_s(1,1)
+            ! if (orig_val .ne. 0) then
+            !   gamma_s = orig_val * perturbation
+            ! else
+            !   gamma_s = perturbation-1
+            ! end if
+
             call sico_init(delta_ts, glac_index, &
                  mean_accum, &
                  dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
@@ -132,14 +148,11 @@ end subroutine grdchk_main
                  z_mar, &
                  ndat2d, ndat3d, n_output)
 
-            perturbation = 1 + direction(d) * perturb_val
-
-          !-------- Controls to be perturbed (add your own here and below in
-          !         subroutine print_output()
+          !-------- Controls to be perturbed after sico_init (add your own here)
           !         store original value that will be perturbed
-          !         and then perturb it (first in +dir then -dir) 
+          !         and then perturb it (first in +dir then -dir)
 
-            !@ python_automated_grdchk_scalar @
+            !@ python_automated_grdchk_scalar_after @
 
             ! Example -- gamma_s
             ! orig_val = gamma_s(1,1)
@@ -299,7 +312,23 @@ end subroutine grdchk_main
 
           !-------- One complete forward run 
             call deldirs
-        
+
+            perturbation = 1 + direction(d) * perturb_val
+
+          !-------- Controls to be perturbed before sico_init (add your own here)
+          !         store original value that will be perturbed
+          !         and then perturb it (first in +dir then -dir)
+
+            !@ python_automated_grdchk_before @
+
+            ! Example -- H
+            ! orig_val = H(j,i)
+            ! if (orig_val .ne. 0) then
+            !   H(j,i) = orig_val * perturbation
+            ! else
+            !   H(j,i) = perturbation-1
+            ! end if
+
             call sico_init(delta_ts, glac_index, &
                  mean_accum, &
                  dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
@@ -308,14 +337,11 @@ end subroutine grdchk_main
                  z_mar, &
                  ndat2d, ndat3d, n_output)
 
-            perturbation = 1 + direction(d) * perturb_val
-
-          !-------- Controls to be perturbed (add your own here and below in
-          !         subroutine print_output()
+          !-------- Controls to be perturbed after sico_init (add your own here)
           !         store original value that will be perturbed
-          !         and then perturb it (first in +dir then -dir) 
+          !         and then perturb it (first in +dir then -dir)
 
-            !@ python_automated_grdchk @
+            !@ python_automated_grdchk_after @
 
             ! Example -- H
             ! orig_val = H(j,i)

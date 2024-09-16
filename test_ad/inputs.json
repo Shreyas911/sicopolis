@@ -26,5 +26,6 @@
     "c_compiler": "gcc",
     "f90_compiler": "gfortran",
     "adj_prof": 1,
-    "low": 0.0 
+    "low": 0.0,
+    "after_sico_init": 1
 }

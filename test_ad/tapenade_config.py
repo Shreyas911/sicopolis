@@ -222,6 +222,7 @@ def setup_grdchk(ind_var, header, domain,
 	limited_or_block_or_full_or_scalar = 'limited',
 	block_imin = None, block_imax = None, block_jmin = None, block_jmax = None,
 	grdchk_m_file = 'subroutines/tapenade/grdchk/grdchk_m.F90',
+	bool_ad_after_sico_init = True,
 	unit = '9999'):
 
 	'''
@@ -240,6 +241,7 @@ def setup_grdchk(ind_var, header, domain,
 				   scalar runs only for a single scalar.
 	block_imin, block_imax, block_jmin, block_jmax - Specify limits of block if needed
 	grdchk_m_file - Location of grdchk_m file
+	bool_ad_after_sico_init - Bool that decides if perturbation is before or after sico_init
 	unit - The unit to be used in FORTRAN-90 code while opening and closing the output file
 	'''
 
@@ -344,64 +346,121 @@ def setup_grdchk(ind_var, header, domain,
 		print("Wrong options may have been used in grdchk setup.")
 		sys.exit(1)
 
-	ref_string = '!@ python_automated_grdchk @'
-	if (dimension == 2) :
-		new_string = f"""
-			orig_val = {ind_var}(j,i)
-			if (orig_val .ne. 0) then
-				{ind_var}(j,i) = orig_val * perturbation
-			else
-				{ind_var}(j,i) = perturbation-1
-			end if
-		"""
-	elif(dimension == 3 and z_co_ord is not None and z_co_ord < KCMAX):
-		new_string = f"""
-			orig_val = {ind_var}({z_co_ord},j,i)
-			if (orig_val .ne. 0) then
-				{ind_var}({z_co_ord},j,i) = orig_val * perturbation
-			else
-				{ind_var}({z_co_ord},j,i) = perturbation-1
-			end if
-		"""
-	else: 
-		raise ValueError ("Something wrong with dimension in grdchk")
-		sys.exit(1)
+	if bool_ad_after_sico_init is True:
+
+		ref_string = '!@ python_automated_grdchk_after @'
+		if (dimension == 2) :
+			new_string = f"""
+				orig_val = {ind_var}(j,i)
+				if (orig_val .ne. 0) then
+					{ind_var}(j,i) = orig_val * perturbation
+				else
+					{ind_var}(j,i) = perturbation-1
+				end if
+			"""
+		elif(dimension == 3 and z_co_ord is not None and z_co_ord < KCMAX):
+			new_string = f"""
+				orig_val = {ind_var}({z_co_ord},j,i)
+				if (orig_val .ne. 0) then
+					{ind_var}({z_co_ord},j,i) = orig_val * perturbation
+				else
+					{ind_var}({z_co_ord},j,i) = perturbation-1
+				end if
+			"""
+		else:
+			raise ValueError ("Something wrong with dimension in grdchk")
+			sys.exit(1)
+
+	else:
+
+		ref_string = '!@ python_automated_grdchk_before @'
+		if (dimension == 2) :
+			new_string = f"""
+				orig_val = {ind_var}(j,i)
+				if (orig_val .ne. 0) then
+					{ind_var}(j,i) = orig_val * perturbation
+				else
+					{ind_var}(j,i) = perturbation-1
+				end if
+			"""
+		elif(dimension == 3 and z_co_ord is not None and z_co_ord < KCMAX):
+			new_string = f"""
+				orig_val = {ind_var}({z_co_ord},j,i)
+				if (orig_val .ne. 0) then
+					{ind_var}({z_co_ord},j,i) = orig_val * perturbation
+				else
+					{ind_var}({z_co_ord},j,i) = perturbation-1
+				end if
+			"""
+		else:
+			raise ValueError ("Something wrong with dimension in grdchk")
+			sys.exit(1)
 
 	modify_file(grdchk_m_file, ref_string, new_string,
 		   replace_or_append_or_prepend = 'append',
 	           instance_number = 0)
 
-	ref_string = '!@ python_automated_grdchk_scalar @'
-	if (dimension == 2) :
-		new_string = f"""
-			orig_val = {ind_var}(1,1)
-			if (orig_val .ne. 0) then
-				{ind_var} = orig_val * perturbation
-			else
-				{ind_var} = perturbation-1
-			end if
-		"""
-	elif(dimension == 3 and z_co_ord is not None and z_co_ord < KCMAX):
-		new_string = f"""
-			orig_val = {ind_var}(1,1,1)
-			if (orig_val .ne. 0) then
-				{ind_var} = orig_val * perturbation
-			else
-				{ind_var} = perturbation-1
-			end if
-		"""
-	else: 
-		raise ValueError ("Something wrong with dimension in grdchk")
-		sys.exit(1)
+	if bool_ad_after_sico_init is True:
+
+		ref_string = '!@ python_automated_grdchk_scalar_after @'
+		if (dimension == 2) :
+			new_string = f"""
+				orig_val = {ind_var}(1,1)
+				if (orig_val .ne. 0) then
+					{ind_var} = orig_val * perturbation
+				else
+					{ind_var} = perturbation-1
+				end if
+			"""
+		elif(dimension == 3 and z_co_ord is not None and z_co_ord < KCMAX):
+			new_string = f"""
+				orig_val = {ind_var}(1,1,1)
+				if (orig_val .ne. 0) then
+					{ind_var} = orig_val * perturbation
+				else
+					{ind_var} = perturbation-1
+				end if
+			"""
+		else:
+			raise ValueError ("Something wrong with dimension in grdchk")
+			sys.exit(1)
+
+	else:
+
+		ref_string = '!@ python_automated_grdchk_scalar_before @'
+		if (dimension == 2) :
+			new_string = f"""
+				orig_val = {ind_var}(1,1)
+				if (orig_val .ne. 0) then
+					{ind_var} = orig_val * perturbation
+				else
+					{ind_var} = perturbation-1
+				end if
+			"""
+		elif(dimension == 3 and z_co_ord is not None and z_co_ord < KCMAX):
+			new_string = f"""
+				orig_val = {ind_var}(1,1,1)
+				if (orig_val .ne. 0) then
+					{ind_var} = orig_val * perturbation
+				else
+					{ind_var} = perturbation-1
+				end if
+			"""
+		else:
+			raise ValueError ("Something wrong with dimension in grdchk")
+			sys.exit(1)
+
 
 	modify_file(grdchk_m_file, ref_string, new_string,
 		   replace_or_append_or_prepend = 'append',
 	           instance_number = 0)
+
+	str_ad_after_sico_init = 'after_sico_init' if bool_ad_after_sico_init else 'before_sico_init'
 	
 	ref_string = '!@ python_automated_grdchk IO begin @'
 	new_string = f'''
 	   open({unit},&
-	   file=\'GradientVals_{ind_var}_{perturbation:.2E}_{header}_{limited_or_block_or_full_or_scalar}.dat\',&
+	   file=\'GradientVals_{ind_var}_{perturbation:.2E}_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat\',&
 	   form="FORMATTED", status="REPLACE")
 	'''
 	modify_file(grdchk_m_file, ref_string, new_string,
@@ -411,7 +470,7 @@ def setup_grdchk(ind_var, header, domain,
 	ref_string = '!@ python_automated_grdchk_scalar IO begin @'
 	new_string = f'''
 	   open({unit},&
-	   file=\'GradientVals_{ind_var}_{perturbation:.2E}_{header}_{limited_or_block_or_full_or_scalar}.dat\',&
+	   file=\'GradientVals_{ind_var}_{perturbation:.2E}_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat\',&
 	   form="FORMATTED", status="REPLACE")
 	'''
 	modify_file(grdchk_m_file, ref_string, new_string,
@@ -651,7 +710,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 		ref_string = 'itercount = itercount + 1'
 	elif (ckp_status is False):
 		ref_string = 'END DO main_loop'
-	else: 
+	else:
 		raise ValueError("Wrong ckp_status for adjoint")
 		sys.exit(1)
 	
@@ -992,6 +1051,7 @@ def simulation(mode, header, domain,
 		  grdchk_m_file = 'subroutines/tapenade/grdchk/grdchk_m.F90',
 	      tapenade_main_file = 'tapenade_main.F90',
 	      run_executable_auto = 'False',
+	      bool_ad_after_sico_init = True,
 	      unit = '9999',
 	      block_imin = None, block_imax = None, block_jmin = None, block_jmax = None,
 	      output_vars = [], output_iters = [], output_dims = [],
@@ -1013,6 +1073,7 @@ def simulation(mode, header, domain,
 	perturbation - perturbation for finite difference check
 	run_executable_auto - Automatically runs compiled code if True
 	unit - File unit number inside FORTRA-90 code
+	bool_ad_after_sico_init - Bool that decides if perturbation is before or after sico_init
 	output_vars - List of normal variables to output
 	output_iters - List of iter number to output the normal variables
 	output_dims - List of z co-ordinates for normal variables that we output
@@ -1055,6 +1116,7 @@ def simulation(mode, header, domain,
 	        limited_or_block_or_full_or_scalar = limited_or_block_or_full_or_scalar,
 	        block_imin = block_imin, block_imax = block_imax, block_jmin = block_jmin, block_jmax = block_jmax,
 	        grdchk_m_file = grdchk_m_file,
+	        bool_ad_after_sico_init = bool_ad_after_sico_init,
 	        unit = unit)
 	
 		compile_code(mode = mode, header = header, domain = domain,
@@ -1071,7 +1133,7 @@ def simulation(mode, header, domain,
 
 		if ckp_status is True:	
 			setup_binomial_checkpointing(status = True, number_of_steps = ckp_num)
-		else: 
+		else:
 			setup_binomial_checkpointing(status = False)
 
 		copy_file(original_file = '../test_ad/tapenade_F90_templates/tapenade_main.F90',
@@ -1108,7 +1170,8 @@ def simulation(mode, header, domain,
 
 		if validation is True:
 			pert = f'{perturbation:.2e}'.upper()
-			grdchk_file = f'GradientVals_{ind_var}_{pert}_{header}_{limited_or_block_or_full_or_scalar}.dat'
+			str_ad_after_sico_init = 'after_sico_init' if bool_ad_after_sico_init else 'before_sico_init'
+			grdchk_file = f'GradientVals_{ind_var}_{pert}_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat'
 			adjoint_file = f'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}.dat'
 
 			if os.path.exists(grdchk_file) is False:
@@ -1139,7 +1202,8 @@ def simulation(mode, header, domain,
 
 		if validation is True:
 			pert = f'{perturbation:.2e}'.upper()
-			grdchk_file = f'GradientVals_{ind_var}_{pert}_{header}_{limited_or_block_or_full_or_scalar}.dat'
+			str_ad_after_sico_init = 'after_sico_init' if bool_ad_after_sico_init else 'before_sico_init'
+			grdchk_file = f'GradientVals_{ind_var}_{pert}_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat'
 			tlm_file = f'ForwardVals_{ind_var}_{header}_{limited_or_block_or_full_or_scalar}.dat'
 
 			if os.path.exists(grdchk_file) is False:
@@ -1199,6 +1263,7 @@ if __name__ == "__main__":
 	parser.add_argument("-prof", '--adj_prof', help="If 1, activate adjoint profiling", type=str)
 	parser.add_argument("-lbfs", '--limited_or_block_or_full_or_scalar', help="limited or block or full or scalar?", type=str)
 	parser.add_argument("-low", '--low', help="abs(values) below maxabs_value*lower_threshold are not checked", type=str)
+	parser.add_argument("-asi", '--after_sico_init', help="If 1, activation of AD after sico_init", type=str)
 
 	args = parser.parse_args()
 
@@ -1225,10 +1290,12 @@ if __name__ == "__main__":
 		ckp_status = True
 
 	list_attrs = ['json', 'header', 'domain', 'ind_var', 'dep_var',
-		      	'dimension', 'z_co_ord', 'perturbation', 'output_vars',
-		      	'output_iters', 'output_dims', 'output_adj_vars',
-		      	'output_adj_iters', 'output_adj_dims', 'checkpoint', 'run',
-		      	'c_compiler', 'f90_compiler', 'limited_or_block_or_full_or_scalar']
+	              'dimension', 'z_co_ord', 'perturbation', 'output_vars',
+	              'output_iters', 'output_dims', 'output_adj_vars',
+	              'output_adj_iters', 'output_adj_dims', 'checkpoint', 'run',
+	              'c_compiler', 'f90_compiler', 'adj_prof'
+	              'limited_or_block_or_full_or_scalar',
+	              'low', 'after_sico_init']
 
 	for attr in list_attrs:
 		if not hasattr(args, attr):
@@ -1238,6 +1305,11 @@ if __name__ == "__main__":
 	if args.limited_or_block_or_full_or_scalar is None:
 		args.limited_or_block_or_full_or_scalar = 'limited'
 
+	if int(args.after_sico_init) == 1:
+		args.bool_ad_after_sico_init = True
+	else:
+		args.bool_ad_after_sico_init = False
+
 	for mode in ['normal', 'grdchk', 'adjoint', 'forward']:
 
 		simulation(mode = mode, header = args.header, domain = args.domain, 
@@ -1245,7 +1317,7 @@ if __name__ == "__main__":
 				limited_or_block_or_full_or_scalar = args.limited_or_block_or_full_or_scalar,
 				ind_var_dim = args.dimension, ind_var_z_co_ord = args.z_co_ord,
 				perturbation = args.perturbation,
-				run_executable_auto = args.run,
+				run_executable_auto = args.run, bool_ad_after_sico_init = args.bool_ad_after_sico_init,
 				output_vars = args.output_vars, output_iters = args.output_iters, output_dims = args.output_dims,
 				output_adj_vars = args.output_adj_vars, output_adj_iters = args.output_adj_iters, output_adj_dims = args.output_adj_dims,
 				ckp_status = ckp_status, ckp_num = args.checkpoint,
