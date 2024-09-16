@@ -835,6 +835,7 @@ def setup_forward(ind_var, header, domain,
 	z_co_ord = None, limited_or_block_or_full_or_scalar = 'limited',
 	block_imin = None, block_imax = None, block_jmin = None, block_jmax = None,
 	tapenade_main_file = 'tapenade_main.F90',
+	bool_ad_after_sico_init = True,
 	unit = '99999'):
 	
 
@@ -853,6 +854,7 @@ def setup_forward(ind_var, header, domain,
 				   scalar runs only for a single scalar.
 	block_imin, block_imax, block_jmin, block_jmax - Specify limits of block if needed
 	tapenade_main_file - Location of tapenade_main file
+	bool_ad_after_sico_init - Bool that decides if perturbation is before or after sico_init
 	unit - The unit to be used in FORTRAN-90 code while opening and closing the output file
 
 	'''
@@ -971,33 +973,58 @@ def setup_forward(ind_var, header, domain,
 		   replace_or_append_or_prepend = 'append',
 		   instance_number = 0)	
 
-	ref_string = '!@ python_automated_tlm dep_vard set 1 @'
+	if bool_ad_after_sico_init is True:
 
-	if limited_or_block_or_full_or_scalar != 'scalar':
-		if (dimension == 2) :
-			new_string = f'''
-						{ind_var}d(j,i) = 1.0
-			'''
-		elif (dimension == 3 and z_co_ord is not None and z_co_ord < KCMAX):
-			new_string = f'''
-						{ind_var}d({z_co_ord},j,i) = 1.0
-			'''
+		ref_string = '!@ python_automated_tlm_after dep_vard set 1 @'
+
+		if limited_or_block_or_full_or_scalar != 'scalar':
+			if (dimension == 2) :
+				new_string = f'''
+							{ind_var}d(j,i) = 1.0
+				'''
+			elif (dimension == 3 and z_co_ord is not None and z_co_ord < KCMAX):
+				new_string = f'''
+							{ind_var}d({z_co_ord},j,i) = 1.0
+				'''
+			else:
+				raise ValueError ("Something wrong with dimension in TLM")
+				sys.exit(1)
 		else:
-			raise ValueError ("Something wrong with dimension in TLM")
-			sys.exit(1)
+				new_string = f'''
+							{ind_var}d = 1.0
+				'''
+
 	else:
-			new_string = f'''
-						{ind_var}d = 1.0
-			'''
+
+		ref_string = '!@ python_automated_tlm_before dep_vard set 1 @'
+
+		if limited_or_block_or_full_or_scalar != 'scalar':
+			if (dimension == 2) :
+				new_string = f'''
+							{ind_var}d(j,i) = 1.0
+				'''
+			elif (dimension == 3 and z_co_ord is not None and z_co_ord < KCMAX):
+				new_string = f'''
+							{ind_var}d({z_co_ord},j,i) = 1.0
+				'''
+			else:
+				raise ValueError ("Something wrong with dimension in TLM")
+				sys.exit(1)
+		else:
+				new_string = f'''
+							{ind_var}d = 1.0
+				'''
 	
 	modify_file(tapenade_main_file, 
 		   ref_string, new_string,
 		   replace_or_append_or_prepend = 'append',
 		   instance_number = 0)	
 
+	str_ad_after_sico_init = 'after_sico_init' if bool_ad_after_sico_init else 'before_sico_init'
+
 	ref_string = '!@ python_automated_tlm IO begin @'
 	new_string = f'''
-	   open({unit}, file=\'ForwardVals_{ind_var}_{header}_{limited_or_block_or_full_or_scalar}.dat\',&
+	   open({unit}, file=\'ForwardVals_{ind_var}_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat\',&
 	       form="FORMATTED", status="REPLACE")
 	'''
 	modify_file(tapenade_main_file, 
@@ -1188,6 +1215,7 @@ def simulation(mode, header, domain,
 			     z_co_ord = ind_var_z_co_ord, limited_or_block_or_full_or_scalar = limited_or_block_or_full_or_scalar,
 			     block_imin = block_imin, block_imax = block_imax, block_jmin = block_jmin, block_jmax = block_jmax,
 			     tapenade_main_file = tapenade_main_file,
+			     bool_ad_after_sico_init = bool_ad_after_sico_init,
 			     unit = unit)
 
 		compile_code(mode = mode, header = header, domain = domain,
@@ -1204,7 +1232,7 @@ def simulation(mode, header, domain,
 			pert = f'{perturbation:.2e}'.upper()
 			str_ad_after_sico_init = 'after_sico_init' if bool_ad_after_sico_init else 'before_sico_init'
 			grdchk_file = f'GradientVals_{ind_var}_{pert}_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat'
-			tlm_file = f'ForwardVals_{ind_var}_{header}_{limited_or_block_or_full_or_scalar}.dat'
+			tlm_file = f'ForwardVals_{ind_var}_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat'
 
 			if os.path.exists(grdchk_file) is False:
 				raise FileNotFoundError (f'{grdchk_file} not found for validation')

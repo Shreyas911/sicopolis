@@ -112,12 +112,14 @@ program tapenade_main
 
 !@ python_automated_tlm dep_vard set 0 @
 
+!@ python_automated_tlm_before dep_vard set 1 @
+
         CALL SICO_INIT_D(delta_ts, glac_index, mean_accum, dtime, dtime_temp, &
         &            dtime_wss, dtime_out, dtime_ser, time, time_init, time_end&
         &            , time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, z_mar&
         &            , ndat2d, ndat3d, n_output)
 
-!@ python_automated_tlm dep_vard set 1 @
+!@ python_automated_tlm_after dep_vard set 1 @
       
 !-------- Main loop --------
         CALL SICO_MAIN_LOOP_D(delta_ts, glac_index, mean_accum, dtime, &
