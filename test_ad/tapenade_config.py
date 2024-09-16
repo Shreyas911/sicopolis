@@ -550,6 +550,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 	sico_main_loop_m_cpp_b_file = 'sico_main_loop_m_cpp_b.f90',
 	dimensions = [2], 
 	z_co_ords = [None], limited_or_block_or_full_or_scalar = 'limited',
+	bool_ad_after_sico_init = True,
 	output_vars = [], output_iters = [], output_dims = [],
 	output_adj_vars = [], output_adj_iters = [], output_adj_dims = []):
 
@@ -565,6 +566,11 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 	sico_main_loop_m_cpp_b_file - Location of sico_main_loop_m_cpp_b.f90 file
 	dimensions - List of dimensions of independent vars
 	z_co_ords - List of z co-ordinate for 3D vars
+	limited_or_block_or_full_or_scalar - If limited, checks only 5 points,
+				   block runs for a block on the grid,
+				   full runs on entire grid,
+				   scalar runs only for a single scalar.
+	bool_ad_after_sico_init - Bool that decides if perturbation is before or after sico_init
 	output_vars - List of normal variables to output
 	output_iters - List of iter number to output the normal variables
 	output_dims - List of z co-ordinates for normal variables that we output
@@ -606,13 +612,14 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 			END DO
 			'''
 
-		modify_file(sicopolis_tapenade_cpp_b_file, ref_string, new_string, 
+		modify_file(sicopolis_tapenade_cpp_b_file, ref_string, new_string,
 			replace_or_append_or_prepend = 'append',
 				instance_all = True)
 	
 		ref_string = 'CALL SICO_INIT_B'
 		new_string = ''
 
+		str_ad_after_sico_init = 'after_sico_init' if bool_ad_after_sico_init else 'before_sico_init'
 		
 		for var_index, (ind_var, dimension, z_co_ord) in enumerate(zip(ind_vars, dimensions, z_co_ords), start = 1):
 
@@ -621,9 +628,9 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 
 			if(dimension == 2):
 				new_string = new_string + f'''
-				open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}.dat\',&
+				open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat\',&
 					form="FORMATTED", status="REPLACE")
-				open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}.dat\',&
+				open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}_{str_ad_after_sico_init}.dat\',&
 					form="FORMATTED", status="REPLACE")
 				do p = 1, points
 				i = ipoints(p)
@@ -640,9 +647,9 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 				'''
 			elif(dimension == 3 and z_co_ord is not None):
 				new_string = new_string + f'''
-				open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}.dat\',&
+				open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat\',&
 					form="FORMATTED", status="REPLACE")
-				open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}.dat\',&
+				open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}_{str_ad_after_sico_init}.dat\',&
 					form="FORMATTED", status="REPLACE")
 				do p = 1, points
 				i = ipoints(p)
@@ -661,15 +668,19 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 				raise ValueError("Wrong dimensions or z coord for adjoint")
 				sys.exit(1)
 
-		modify_file(sicopolis_tapenade_cpp_b_file, ref_string, new_string, 
-			replace_or_append_or_prepend = 'prepend',
-				instance_all = True)
+		if bool_ad_after_sico_init is True:
+			modify_file(sicopolis_tapenade_cpp_b_file, ref_string, new_string,
+				replace_or_append_or_prepend = 'prepend', instance_all = True)
+		else:
+			modify_file(sicopolis_tapenade_cpp_b_file, ref_string, new_string,
+				replace_or_append_or_prepend = 'append', instance_all = True)
 	
 	else:
 	
 		ref_string = 'CALL SICO_INIT_B'
 		new_string = ''
 
+		str_ad_after_sico_init = 'after_sico_init' if bool_ad_after_sico_init else 'before_sico_init'
 		
 		for var_index, (ind_var, dimension, z_co_ord) in enumerate(zip(ind_vars, dimensions, z_co_ords), start = 1):
 
@@ -678,9 +689,9 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 
 			if(dimension == 2):
 				new_string = new_string + f'''
-				open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}.dat\',&
+				open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat\',&
 					form="FORMATTED", status="REPLACE")
-				open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}.dat\',&
+				open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}_{str_ad_after_sico_init}.dat\',&
 					form="FORMATTED", status="REPLACE")
 				write ({unit[0]}, *) SUM({ind_var}b)
 				close(unit={unit[0]})
@@ -689,9 +700,9 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 				'''
 			elif(dimension == 3 and z_co_ord is not None):
 				new_string = new_string + f'''
-				open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}.dat\',&
+				open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat\',&
 					form="FORMATTED", status="REPLACE")
-				open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}.dat\',&
+				open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}_{str_ad_after_sico_init}.dat\',&
 					form="FORMATTED", status="REPLACE")
 				write ({unit[0]}, *) SUM({ind_var}b)
 				close(unit={unit[0]})
@@ -702,9 +713,12 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 				raise ValueError("Wrong dimensions or z coord for adjoint")
 				sys.exit(1)
 
-		modify_file(sicopolis_tapenade_cpp_b_file, ref_string, new_string, 
-			replace_or_append_or_prepend = 'prepend',
-				instance_all = True)
+		if bool_ad_after_sico_init is True:
+			modify_file(sicopolis_tapenade_cpp_b_file, ref_string, new_string,
+				replace_or_append_or_prepend = 'prepend', instance_all = True)
+		else:
+			modify_file(sicopolis_tapenade_cpp_b_file, ref_string, new_string,
+				replace_or_append_or_prepend = 'append', instance_all = True)
 
 	if (ckp_status is True):
 		ref_string = 'itercount = itercount + 1'
@@ -724,7 +738,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 			if dimension >= 0:
 				new_string = new_string + f'''
 				   if (itercount .EQ. {iteration}) THEN
-				   open({unit[0]}, file=\'AdjointVals_{output_var}_{dimension}_iter_{iteration}_{header}.dat\',&
+				   open({unit[0]}, file=\'AdjointVals_{output_var}_{dimension}_iter_{iteration}_{header}_{str_ad_after_sico_init}.dat\',&
 				       form="FORMATTED", status="REPLACE")
 				   do i = 0, {IMAX}
 				   do j = 0, {JMAX}
@@ -739,7 +753,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 			elif dimension == -1:
 				new_string = new_string + f'''
 				   if (itercount .EQ. {iteration}) THEN
-				      open({unit[0]}, file=\'AdjointVals_{output_var}_{dimension}_iter_{iteration}_{header}.dat\',&
+				      open({unit[0]}, file=\'AdjointVals_{output_var}_{dimension}_iter_{iteration}_{header}_{str_ad_after_sico_init}.dat\',&
 				       form="FORMATTED", status="REPLACE")
 				   do i = 0, {IMAX}
 				   do j = 0, {JMAX}
@@ -754,7 +768,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 			elif dimension == -2:
 				new_string = new_string + f'''
 				   if (itercount .EQ. {iteration}) THEN
-				      open({unit[0]}, file=\'AdjointVals_{output_var}_{dimension}_iter_{iteration}_{header}.dat\',&
+				      open({unit[0]}, file=\'AdjointVals_{output_var}_{dimension}_iter_{iteration}_{header}_{str_ad_after_sico_init}.dat\',&
 				       form="FORMATTED", status="REPLACE")
 				   write ({unit[0]}, *) SUM({output_var}(j,i))
 				   close(unit={unit[0]})
@@ -783,7 +797,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 			if dimension >= 0:
 				new_string = new_string + f'''
 				   if (itercount .EQ. {iteration}) THEN
-				   open({unit[0]}, file=\'AdjointVals_{output_var}b_{dimension}_iter_{iteration}_{header}.dat\',&
+				   open({unit[0]}, file=\'AdjointVals_{output_var}b_{dimension}_iter_{iteration}_{header}_{str_ad_after_sico_init}.dat\',&
 				       form="FORMATTED", status="REPLACE")
 				   do i = 0, {IMAX}
 				   do j = 0, {JMAX}
@@ -798,7 +812,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 			elif dimension == -1:
 				new_string = new_string + f'''
 				   if (itercount .EQ. {iteration}) THEN
-				   open({unit[0]}, file=\'AdjointVals_{output_var}b_{dimension}_iter_{iteration}_{header}.dat\',&
+				   open({unit[0]}, file=\'AdjointVals_{output_var}b_{dimension}_iter_{iteration}_{header}_{str_ad_after_sico_init}.dat\',&
 				       form="FORMATTED", status="REPLACE")
 				   do i = 0, {IMAX}
 				   do j = 0, {JMAX}
@@ -813,7 +827,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 			elif dimension == -2:
 				new_string = new_string + f'''
 				   if (itercount .EQ. {iteration}) THEN
-				   open({unit[0]}, file=\'AdjointVals_{output_var}b_{dimension}_iter_{iteration}_{header}.dat\',&
+				   open({unit[0]}, file=\'AdjointVals_{output_var}b_{dimension}_iter_{iteration}_{header}_{str_ad_after_sico_init}.dat\',&
 				       form="FORMATTED", status="REPLACE")
 				   write ({unit[0]}, *) SUM({output_var}b)
 				   close(unit={unit[0]})
@@ -1182,6 +1196,7 @@ def simulation(mode, header, domain,
 			     sico_main_loop_m_cpp_b_file = sico_main_loop_m_cpp_b_file,
 			     dimensions = [ind_var_dim],
 			     z_co_ords = [ind_var_z_co_ord], limited_or_block_or_full_or_scalar = limited_or_block_or_full_or_scalar,
+			     bool_ad_after_sico_init = bool_ad_after_sico_init,
 			     output_vars = output_vars, output_iters = output_iters, output_dims = output_dims,
 			     output_adj_vars = output_adj_vars, output_adj_iters = output_adj_iters, output_adj_dims = output_adj_dims)
 
@@ -1199,7 +1214,7 @@ def simulation(mode, header, domain,
 			pert = f'{perturbation:.2e}'.upper()
 			str_ad_after_sico_init = 'after_sico_init' if bool_ad_after_sico_init else 'before_sico_init'
 			grdchk_file = f'GradientVals_{ind_var}_{pert}_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat'
-			adjoint_file = f'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}.dat'
+			adjoint_file = f'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat'
 
 			if os.path.exists(grdchk_file) is False:
 				raise FileNotFoundError (f'{grdchk_file} not found for validation')
