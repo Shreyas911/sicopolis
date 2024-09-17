@@ -1336,7 +1336,7 @@ if __name__ == "__main__":
 	              'dimension', 'z_co_ord', 'perturbation', 'output_vars',
 	              'output_iters', 'output_dims', 'output_adj_vars',
 	              'output_adj_iters', 'output_adj_dims', 'checkpoint', 'run',
-	              'c_compiler', 'f90_compiler', 'adj_prof'
+	              'c_compiler', 'f90_compiler', 'adj_prof',
 	              'limited_or_block_or_full_or_scalar',
 	              'low', 'after_sico_init']
 
