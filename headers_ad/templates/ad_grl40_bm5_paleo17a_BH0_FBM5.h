@@ -41,16 +41,17 @@
 !!       Maximum number of preprocessing steps for ctrl variables
 
 !#define XX_GENARR2D_PREPROC_ARR      [ character(CTRL_STRLENGTH) ::\
-!                                         'log10initval',\
+!                                         'log10ctrl',\
 !                                         'none',\
 !                                         'none',\
-!                                         'log10initval',\
-!                                         'log10initval',\
-!                                         'log10initval',\
-!                                         'log10initval',\
-!                                         'log10initval',\
-!                                         'log10initval' ]
+!                                         'log10ctrl',\
+!                                         'log10ctrl',\
+!                                         'log10ctrl',\
+!                                         'log10ctrl',\
+!                                         'log10ctrl',\
+!                                         'log10ctrl' ]
 !!       Define preprocessing steps for ctrl variables
+!!       log10ctrl only works if defined(ALLOW_GENCTRL_BEFORE_SICO_INIT)
 
 !#define XX_GENARR2D_LOG10INITVAL_ARR [ real :: \
 !                                          0.39794000867,  0.0          , 0.0,\
@@ -60,6 +61,7 @@
 !!       Otherwise has no effect
 !!       WARNING: If for example using for c_slide_init
 !!       Set C_SLIDE == 0.0 in the HEADER file
+!!       log10ctrl only works if defined(ALLOW_GENCTRL_BEFORE_SICO_INIT)
 
 !-------- Settings for genarr3D --------
 

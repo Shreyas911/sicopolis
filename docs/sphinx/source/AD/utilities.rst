@@ -6,7 +6,7 @@ Utilities
 Continuous Integration (CI)
 ---------------------------
 
-We leverage the Continuous Integration (CI) infrastructure of Gitlab-CI. We have a suite of regression tests in our repository at ``test_ad/tests.py`` which leverage the ``pytest`` module in Python. The CI infrastructure allows us to automate the tests. Essentially, these tests are automatically triggered after new code is pushed to the remote repository. They run on an online ``gitlab runner`` which uses a virtual Docker environment that is correctly set up to run the SICOPOLIS code. The instructions that run in the Docker environment can be found in a file name ``.gitlab-ci.yml`` in the root directory. The status of tests can be seen with the help of the build badge in ``README.md`` in the ``ad`` branch.
+We leverage the Continuous Integration (CI) infrastructure of Gitlab-CI. We have a suite of regression tests in our repository at ``test_ad/tests_asi.py`` and ``test_ad/tests_bsi.py`` for activation of controls before and after ``sico_init`` respectively which leverage the ``pytest`` module in Python. The CI infrastructure allows us to automate the tests. Essentially, these tests are automatically triggered after new code is pushed to the remote repository. They run on an online ``gitlab runner`` which uses a virtual Docker environment that is correctly set up to run the SICOPOLIS code. The instructions that run in the Docker environment can be found in a file name ``.gitlab-ci.yml`` in the root directory. The status of tests can be seen with the help of the build badge in ``README.md`` in the ``ad`` branch.
 
 Code coverage
 -------------
