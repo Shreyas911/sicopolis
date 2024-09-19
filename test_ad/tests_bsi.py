@@ -100,7 +100,7 @@ def test_grl40_bm5_paleo17a_BH0_FBM5_beta2_scalar_bsi():
 def test_grl40_bm5_paleo17a_BH0_FAC_beta2_scalar_bsi():
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0_FAC.h', '../headers'])
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0_FAC.h', '../src/sico_specs.h'])
-	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_BH0_FAC -iv beta2 -delta 1.e-4 -jsf inputs.json -asi 0 -lbfs scalar', shell = True, check = True)
+	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_BH0_FAC -iv beta2 -delta 5.e-2 -jsf inputs.json -asi 0 -lbfs scalar', shell = True, check = True)
 
 def test_grl40_bm5_paleo17a_BH0_Pmax_scalar_bsi():
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0.h', '../headers'])
