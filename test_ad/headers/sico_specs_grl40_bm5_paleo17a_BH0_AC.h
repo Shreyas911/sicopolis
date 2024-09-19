@@ -1353,6 +1353,7 @@
 !                       the convergence criterion of the SOR method.
 !                       Need not be very precise, a rough estimate is
 !                       sufficient.]
+
 #define ALLOW_COST
 #define AGE_COST
 #define COST_INPUT_PATH '/scratch2/shreyas/GrIS_paleo_data'

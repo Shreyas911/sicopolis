@@ -174,7 +174,7 @@
 #define TIME_END0 -133980.0d0
 !                       Final time of simulation (in a)
 
-#define DTIME0 4.0d0
+#define DTIME0 1.0d0
 !                       Time step (in a) for computation of velocity
 !                       and topography
 
@@ -633,7 +633,7 @@
 !                         Maximum ice extent mask file (only for THK_EVOL>=1)
 !                         ('none' if no file is to be defined)
 
-#define CALCTHK 2
+#define CALCTHK 4
 !                         Solution of the ice-thickness equation:
 !                         1 : Explicit scheme for the diffusive
 !                             SIA ice-surface equation
@@ -1355,7 +1355,7 @@
 !                       sufficient.]
 
 #define ALLOW_COST
-#define FAKE_AGE_COST
+#define BEDMACHINE_COST
 #define COST_INPUT_PATH '/scratch2/shreyas/GrIS_paleo_data'
 
 #define NTDAMAX 2
