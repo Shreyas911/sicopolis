@@ -1576,6 +1576,9 @@ write(10, fmt=trim(fmt3)) 'temp_init_val =', TEMP_INIT_VAL
 write(10, fmt=trim(fmt1)) 'Initial-value file = '//ANFDATNAME
 write(10, fmt=trim(fmt1)) 'Path to initial-value file = '//ANF_DAT_PATH
 #endif
+#if (ANF_DAT==3 && defined(RESTART))
+write(10, fmt=trim(fmt2)) 'RESTART = ', RESTART
+#endif
 write(10, fmt=trim(fmt1)) ' '
 
 #if (defined(THK_EVOL))
