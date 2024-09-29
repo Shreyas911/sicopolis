@@ -1590,6 +1590,8 @@ vis_int_g = 0.0_dp
 
 call topography3(dxi, deta, anfdatname)
 
+#if (!(ANF_DAT==3 && RESTART==1))
+
 call boundary(time_init, dtime, dxi, deta, &
               delta_ts, glac_index, z_mar)
 
@@ -1608,7 +1610,11 @@ end do
 
 smb_corr = 0.0_dp
 
+#endif /* !(ANF_DAT==3 && RESTART==1) */
+
 Q_b_tot = Q_bm + Q_tld
+
+#if (!(ANF_DAT==3 && RESTART==1))
 
 #if (ENHMOD==1)
    call calc_enhance_1()
@@ -1628,6 +1634,8 @@ Q_b_tot = Q_bm + Q_tld
    errormsg = ' >>> sico_init: Parameter ENHMOD must be between 1 and 5!'
    call error(errormsg)
 #endif
+
+#endif /* !(ANF_DAT==3 && RESTART==1) */
 
 #endif
 
@@ -1679,6 +1687,8 @@ call flag_update_gf_gl_cf()
 call calc_vxy_b_init()
 call calc_dzs_dxy_aux(dxi, deta)
 
+#if (!(ANF_DAT==3 && RESTART==1))
+
 #if (DYNAMICS==1 || DYNAMICS==2)
 
 call calc_vxy_b_sia(time)
@@ -1700,11 +1710,11 @@ call calc_vxy_static()
 call calc_vz_static()
 
 #else
-
-   errormsg = ' >>> sico_init: DYNAMICS must be either 0, 1 or 2!'
-   call error(errormsg)
-
+errormsg = ' >>> sico_init: DYNAMICS must be either 0, 1 or 2!'
+call error(errormsg)
 #endif
+
+#endif /* !(ANF_DAT==3 && RESTART==1) */
 
 call calc_dxyz(dxi, deta, dzeta_c, dzeta_t)
 
