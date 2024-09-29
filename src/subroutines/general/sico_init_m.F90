@@ -284,11 +284,15 @@ ch_domain_short = 'xyz'
 
 n_output = 0
 
-dtime       = 0.0_dp
-dtime_temp  = 0.0_dp
-dtime_wss   = 0.0_dp
-dtime_out   = 0.0_dp
-dtime_ser   = 0.0_dp
+delta_ts   = 0.0_dp
+glac_index = 0.0_dp
+z_mar      = 0.0_dp
+
+dtime      = 0.0_dp
+dtime_temp = 0.0_dp
+dtime_wss  = 0.0_dp
+dtime_out  = 0.0_dp
+dtime_ser  = 0.0_dp
 
 time        = 0.0_dp
 time_init   = 0.0_dp
