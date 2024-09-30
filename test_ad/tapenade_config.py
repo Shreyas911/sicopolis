@@ -1100,7 +1100,7 @@ def simulation(mode, header, domain,
 	      ckp_status = False, ckp_num = 10, validation = True,
 	      sicopolis_tapenade_cpp_b_file = 'sicopolis_tapenade_cpp_b.f90',
 	      sico_main_loop_m_cpp_b_file = 'sico_main_loop_m_cpp_b.f90',
-	      f90c = 'gfortran', cc = 'gcc', tap_adj_prof = 1, low = 0.0):
+	      f90c = 'gfortran', cc = 'gcc', tap_adj_prof = 1, low = 0.0, tol = 0.1):
 
 	'''
 	Purpose - Sets up everything correctly for compilation of adjoint run
@@ -1130,6 +1130,7 @@ def simulation(mode, header, domain,
 	f90c - F90 compiler
 	tap_adj_prof - If 1, activate profiling for adjoint
 	low - abs(values) below maxabs_value*lower_threshold are not checked
+    tol - How much relative error do we tolerate?
 	'''
 
 	try:
@@ -1221,7 +1222,7 @@ def simulation(mode, header, domain,
 			if os.path.exists(adjoint_file) is False:
 				raise FileNotFoundError (f'{adjoint_file} not found for validation')
 
-			validate_FD_AD(grdchk_file, adjoint_file, tolerance = 0.1, low = low)
+			validate_FD_AD(grdchk_file, adjoint_file, tolerance = tol, low = low)
 
 	elif mode == 'forward':
 
@@ -1254,7 +1255,7 @@ def simulation(mode, header, domain,
 			if os.path.exists(tlm_file) is False:
 				raise FileNotFoundError (f'{tlm_file} not found for validation')
 
-			validate_FD_AD(grdchk_file, tlm_file, tolerance = 0.1, low = low)
+			validate_FD_AD(grdchk_file, tlm_file, tolerance = tol, low = low)
 	
 	elif mode == 'normal':
 
@@ -1307,6 +1308,7 @@ if __name__ == "__main__":
 	parser.add_argument("-lbfs", '--limited_or_block_or_full_or_scalar', help="limited or block or full or scalar?", type=str)
 	parser.add_argument("-low", '--low', help="abs(values) below maxabs_value*lower_threshold are not checked", type=str)
 	parser.add_argument("-asi", '--after_sico_init', help="If 1, activation of AD after sico_init", type=str)
+    parser.add_argument("-tol", '--tolerance', help="maxabs relative error acceptable", type=str)
 
 	args = parser.parse_args()
 
@@ -1338,7 +1340,7 @@ if __name__ == "__main__":
 	              'output_adj_iters', 'output_adj_dims', 'checkpoint', 'run',
 	              'c_compiler', 'f90_compiler', 'adj_prof',
 	              'limited_or_block_or_full_or_scalar',
-	              'low', 'after_sico_init']
+	              'low', 'after_sico_init', 'tolerance']
 
 	for attr in list_attrs:
 		if not hasattr(args, attr):

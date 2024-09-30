@@ -5,7 +5,7 @@
     "dep_var": "fc",
     "ind_var": "H",
     "perturbation": 0.001,
-    "checkpoint": 4,
+    "checkpoint": 50,
     "run": true,
     "dimension": 2,
     "z_co_ord": null,
@@ -25,8 +25,8 @@
                          1, 2, -1],
     "c_compiler": "gcc",
     "f90_compiler": "gfortran",
-    "adj_prof": 1,
+    "adj_prof": 0,
     "low": 0.0,
     "after_sico_init": 1,
-    "tol": 0.1
+    "tol": 0.25
 }
