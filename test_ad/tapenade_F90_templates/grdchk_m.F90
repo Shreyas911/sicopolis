@@ -84,13 +84,10 @@ end subroutine grdchk_main
    
    integer(i4b)       :: ndat2d, ndat3d
    integer(i4b)       :: n_output
-   real(dp)           :: delta_ts, glac_index
-   real(dp)           :: mean_accum
    real(dp)           :: dtime, dtime_temp, dtime_wss, &
                                       dtime_out, dtime_ser
    real(dp)           :: time, time_init, time_end, time_output(100)
    real(dp)           :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
-   real(dp)           :: z_mar
    
    !-------- Variable declarations needed for this routine specifically
    real(dp)                          :: orig_val, perturb_val = 0.001
@@ -140,12 +137,9 @@ end subroutine grdchk_main
             !   gamma_s = perturbation-1
             ! end if
 
-            call sico_init(delta_ts, glac_index, &
-                 mean_accum, &
-                 dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
+            call sico_init(dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
                  time, time_init, time_end, time_output, &
                  dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-                 z_mar, &
                  ndat2d, ndat3d, n_output)
 
           !-------- Controls to be perturbed after sico_init (add your own here)
@@ -170,12 +164,9 @@ end subroutine grdchk_main
               write(6,fmt='(a,f40.20)') "pert_val = ", perturbation-1
             end if
 
-            call sico_main_loop(delta_ts, glac_index, &
-                 mean_accum, &
-                 dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
+            call sico_main_loop(dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
                  time, time_init, time_end, time_output, &
                  dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-                 z_mar, &
                  ndat2d, ndat3d, n_output)
           
             call cost_final()
@@ -255,13 +246,10 @@ end subroutine grdchk_main
    
    integer(i4b)       :: ndat2d, ndat3d
    integer(i4b)       :: n_output
-   real(dp)           :: delta_ts, glac_index
-   real(dp)           :: mean_accum
    real(dp)           :: dtime, dtime_temp, dtime_wss, &
                                       dtime_out, dtime_ser
    real(dp)           :: time, time_init, time_end, time_output(100)
    real(dp)           :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
-   real(dp)           :: z_mar
    
    !-------- Variable declarations needed for this routine specifically
    real(dp)                          :: orig_val, perturb_val = 0.001
@@ -329,12 +317,9 @@ end subroutine grdchk_main
             !   H(j,i) = perturbation-1
             ! end if
 
-            call sico_init(delta_ts, glac_index, &
-                 mean_accum, &
-                 dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
+            call sico_init(dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
                  time, time_init, time_end, time_output, &
                  dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-                 z_mar, &
                  ndat2d, ndat3d, n_output)
 
           !-------- Controls to be perturbed after sico_init (add your own here)
@@ -359,12 +344,9 @@ end subroutine grdchk_main
               write(6,fmt='(a,f40.20)') "pert_val = ", perturbation-1
             end if
 
-            call sico_main_loop(delta_ts, glac_index, &
-                 mean_accum, &
-                 dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
+            call sico_main_loop(dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
                  time, time_init, time_end, time_output, &
                  dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-                 z_mar, &
                  ndat2d, ndat3d, n_output)
           
             call cost_final()

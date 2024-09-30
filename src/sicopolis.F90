@@ -291,9 +291,6 @@ real(dp) :: dzeta_r
    !! Grid spacing in z-direction in the bedrock (kr) domain
    !! (in sigma-coordinate zeta_r)
 
-real(dp) :: z_mar
-   !! Minimum bedrock (sea bed) elevation allowed to be covered by marine ice
-
 #if !defined(ALLOW_GRDCHK) /* NORMAL */
 
 !-------- Initializations --------

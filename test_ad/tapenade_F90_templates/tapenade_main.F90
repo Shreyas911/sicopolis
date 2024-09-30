@@ -56,15 +56,12 @@ program tapenade_main
     implicit none
     integer(i4b)                               :: ndat2d, ndat3d
     integer(i4b)                               :: n_output
-    real(dp)                                   :: delta_ts, glac_index
-    real(dp)                                   :: mean_accum
     real(dp)                                   :: dtime, dtime_temp, &
                                                 dtime_wss, dtime_out, dtime_ser
     real(dp)                                   :: time, time_init, time_end
     real(dp), dimension(100)                   :: time_output
     real(dp)                                   :: dxi, deta, dzeta_c, &
                                                 dzeta_t, dzeta_r
-    real(dp)                                   :: z_mar
 
 #if (defined(ALLOW_TAPENADE) && defined(ALLOW_TAP_TLM))
     integer(i4b), parameter                    :: points = 5
@@ -80,10 +77,10 @@ program tapenade_main
 
 #if defined(ALLOW_TAP_ADJ)
     fcb = 1.
-    call SICOPOLIS_TAPENADE_B(delta_ts, glac_index, mean_accum, dtime, &
-    & dtime_temp, dtime_wss, dtime_out, dtime_ser, time, time_init, time_end&
-    & , time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-    & z_mar, ndat2d, ndat3d, n_output)
+    call SICOPOLIS_TAPENADE_B(dtime, &
+    & dtime_temp, dtime_wss, dtime_out, dtime_ser, time, time_init, time_end, &
+    & time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
+    & ndat2d, ndat3d, n_output)
 #if defined(ALLOW_TAP_ADJ_PROF)
     call adstack_showpeaksize()
     call adstack_showtotaltraffic()
@@ -114,18 +111,18 @@ program tapenade_main
 
 !@ python_automated_tlm_before dep_vard set 1 @
 
-        CALL SICO_INIT_D(delta_ts, glac_index, mean_accum, dtime, dtime_temp, &
-        &            dtime_wss, dtime_out, dtime_ser, time, time_init, time_end&
-        &            , time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, z_mar&
-        &            , ndat2d, ndat3d, n_output)
+        CALL SICO_INIT_D(dtime, dtime_temp, &
+        &            dtime_wss, dtime_out, dtime_ser, time, time_init, time_end, &
+        &            time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
+        &            ndat2d, ndat3d, n_output)
 
 !@ python_automated_tlm_after dep_vard set 1 @
       
 !-------- Main loop --------
-        CALL SICO_MAIN_LOOP_D(delta_ts, glac_index, mean_accum, dtime, &
+        CALL SICO_MAIN_LOOP_D(dtime, &
         &                 dtime_temp, dtime_wss, dtime_out, dtime_ser, time, &
         &                 time_init, time_end, time_output, dxi, deta, dzeta_c, &
-        &                 dzeta_t, dzeta_r, z_mar, ndat2d, ndat3d, n_output)
+        &                 dzeta_t, dzeta_r, ndat2d, ndat3d, n_output)
         CALL COST_FINAL_D()
    
         CALL SICO_END()
@@ -156,16 +153,16 @@ program tapenade_main
 
 #elif (defined(ALLOW_TAP_TLM) && defined(ALLOW_GENCTRL))
 
-    CALL SICO_INIT_D(delta_ts, glac_index, mean_accum, dtime, dtime_temp, &
-    &            dtime_wss, dtime_out, dtime_ser, time, time_init, time_end&
-    &            , time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, z_mar&
-    &            , ndat2d, ndat3d, n_output)
+    CALL SICO_INIT_D(dtime, dtime_temp, &
+    &            dtime_wss, dtime_out, dtime_ser, time, time_init, time_end, &
+    &            time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
+    &            ndat2d, ndat3d, n_output)
         
 !-------- Main loop --------
-    CALL SICO_MAIN_LOOP_D(delta_ts, glac_index, mean_accum, dtime, &
+    CALL SICO_MAIN_LOOP_D(dtime, &
     &            dtime_temp, dtime_wss, dtime_out, dtime_ser, time, &
     &            time_init, time_end, time_output, dxi, deta, dzeta_c, &
-    &            dzeta_t, dzeta_r, z_mar, ndat2d, ndat3d, n_output)
+    &            dzeta_t, dzeta_r, ndat2d, ndat3d, n_output)
     CALL COST_FINAL_D()
      
     CALL SICO_END()

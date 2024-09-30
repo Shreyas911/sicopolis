@@ -587,7 +587,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 
 	IMAX, JMAX, KCMAX, KTMAX = get_imax_jmax_kcmax_ktmax()
 
-	ref_string = 'REAL(dp) :: z_mar'
+	ref_string = 'REAL(dp) :: dxi, deta, dzeta_c, dzeta_t, dzeta_r'
 
 	if limited_or_block_or_full_or_scalar != 'scalar':
 
