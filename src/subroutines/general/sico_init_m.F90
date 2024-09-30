@@ -50,13 +50,10 @@ contains
 !-------------------------------------------------------------------------------
 !> Main routine of sico_init_m: Initializations for SICOPOLIS.
 !-------------------------------------------------------------------------------
-subroutine sico_init(delta_ts, glac_index, &
-               mean_accum, &
-               dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
-               time, time_init, time_end, time_output, &
-               dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-               z_mar, &
-               ndat2d, ndat3d, n_output)
+subroutine sico_init(dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
+                     time, time_init, time_end, time_output, &
+                     dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
+                     ndat2d, ndat3d, n_output)
 
 #if !defined(ALLOW_TAPENADE) /* Normal */
   use compare_float_m
@@ -105,13 +102,10 @@ implicit none
 
 integer(i4b), intent(out) :: ndat2d, ndat3d
 integer(i4b), intent(out) :: n_output
-real(dp),     intent(out) :: delta_ts, glac_index
-real(dp),     intent(out) :: mean_accum
 real(dp),     intent(out) :: dtime, dtime_temp, dtime_wss
 real(dp),     intent(out) :: dtime_out, dtime_ser
 real(dp),     intent(out) :: time, time_init, time_end, time_output(100)
 real(dp),     intent(out) :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
-real(dp),     intent(out) :: z_mar
 
 integer(i4b) :: i, j, kc, kt, kr, m, n, ir, jr, n1, n2
 integer(i4b) :: ios, ios1, ios2, ios3, ios4
@@ -284,11 +278,15 @@ ch_domain_short = 'xyz'
 
 n_output = 0
 
-dtime       = 0.0_dp
-dtime_temp  = 0.0_dp
-dtime_wss   = 0.0_dp
-dtime_out   = 0.0_dp
-dtime_ser   = 0.0_dp
+delta_ts   = 0.0_dp
+glac_index = 0.0_dp
+z_mar      = 0.0_dp
+
+dtime      = 0.0_dp
+dtime_temp = 0.0_dp
+dtime_wss  = 0.0_dp
+dtime_out  = 0.0_dp
+dtime_ser  = 0.0_dp
 
 time        = 0.0_dp
 time_init   = 0.0_dp
@@ -1575,6 +1573,9 @@ write(10, fmt=trim(fmt3)) 'temp_init_val =', TEMP_INIT_VAL
 #if (ANF_DAT==3 || (ANF_DAT==1 && TEMP_INIT==5))
 write(10, fmt=trim(fmt1)) 'Initial-value file = '//ANFDATNAME
 write(10, fmt=trim(fmt1)) 'Path to initial-value file = '//ANF_DAT_PATH
+#endif
+#if (ANF_DAT==3 && defined(RESTART))
+write(10, fmt=trim(fmt2)) 'RESTART = ', RESTART
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
@@ -3091,10 +3092,12 @@ end do
 #endif
 
 !-------- Definition of initial values --------
+
 #if (DYNAMICS==3)
 tau_bx(:,:) = 0.0_dp
 tau_by(:,:) = 0.0_dp
 #endif
+
 !  ------ Present topography
 
 #if (ANF_DAT==1)
@@ -3109,8 +3112,7 @@ call disc_fields()
 z_sl      = -1.11e+11_dp   ! dummy values for initial call
 z_sl_mean = -1.11e+11_dp   ! of subroutine boundary
 
-call boundary(time_init, dtime, dxi, deta, &
-              delta_ts, glac_index, z_mar)
+call boundary(time_init, dtime, dxi, deta)
 
 do i=0, IMAX
 do j=0, JMAX
@@ -3200,8 +3202,7 @@ call disc_fields()
 z_sl      = -1.11e+11_dp   ! dummy values for initial call
 z_sl_mean = -1.11e+11_dp   ! of subroutine boundary
 
-call boundary(time_init, dtime, dxi, deta, &
-              delta_ts, glac_index, z_mar)
+call boundary(time_init, dtime, dxi, deta)
 
 as_perp_apl = 0.0_dp
 
@@ -3255,8 +3256,9 @@ call disc_param(dtime)
 call disc_fields()
 #endif
 
-call boundary(time_init, dtime, dxi, deta, &
-              delta_ts, glac_index, z_mar)
+#if (!(ANF_DAT==3 && RESTART==1))
+
+call boundary(time_init, dtime, dxi, deta)
 
 do i=0, IMAX
 do j=0, JMAX
@@ -3273,7 +3275,11 @@ end do
 
 smb_corr = 0.0_dp
 
+#endif /* !(ANF_DAT==3 && RESTART==1) */
+
 Q_b_tot = Q_bm + Q_tld
+
+#if (!(ANF_DAT==3 && RESTART==1))
 
 #if (ENHMOD==1)
    call calc_enhance_1()
@@ -3293,6 +3299,8 @@ Q_b_tot = Q_bm + Q_tld
    errormsg = ' >>> sico_init: Parameter ENHMOD must be between 1 and 5!'
    call error(errormsg)
 #endif
+
+#endif /* !(ANF_DAT==3 && RESTART==1) */
 
 #endif
 
@@ -3358,6 +3366,8 @@ call flag_update_gf_gl_cf()
 call calc_vxy_b_init()
 call calc_dzs_dxy_aux(dxi, deta)
 
+#if (!(ANF_DAT==3 && RESTART==1))
+
 #if (DYNAMICS==1 || DYNAMICS==2 || DYNAMICS==3)
 
 call calc_vxy_b_sia(time)
@@ -3379,11 +3389,11 @@ call calc_vxy_static()
 call calc_vz_static()
 
 #else
-
 errormsg = ' >>> sico_init: DYNAMICS must be between 0 and 3!'
 call error(errormsg)
-
 #endif
+
+#endif /* !(ANF_DAT==3 && RESTART==1) */
 
 call calc_dxyz(dxi, deta, dzeta_c, dzeta_t)
 
@@ -4269,8 +4279,7 @@ y_surf = phi_surf
 #endif
 
    if (flag_init_output) &
-      call output1(time_init, delta_ts, glac_index, &
-                   flag_3d_output, ndat2d, ndat3d)
+      call output1(time_init, flag_3d_output, ndat2d, ndat3d)
 
 #elif (OUTPUT==2)
 
@@ -4285,8 +4294,7 @@ if (time_output(1) <= time_init+eps) then
    call error(errormsg)
 #endif
 
-   call output1(time_init, delta_ts, glac_index, &
-                flag_3d_output, ndat2d, ndat3d)
+   call output1(time_init, flag_3d_output, ndat2d, ndat3d)
 
 end if
 
@@ -4295,15 +4303,13 @@ end if
    flag_3d_output = .false.
 
    if (flag_init_output) &
-      call output1(time_init, delta_ts, glac_index, &
-                   flag_3d_output, ndat2d, ndat3d)
+      call output1(time_init, flag_3d_output, ndat2d, ndat3d)
 
 if (time_output(1) <= time_init+eps) then
 
    flag_3d_output = .true.
 
-   call output1(time_init, delta_ts, glac_index, &
-                flag_3d_output, ndat2d, ndat3d)
+   call output1(time_init, flag_3d_output, ndat2d, ndat3d)
 
 end if
 
@@ -4314,11 +4320,11 @@ end if
 
 if (flag_init_output) then
 
-   call output2(time_init, dxi, deta, delta_ts, glac_index)
-   call output4(time_init, dxi, deta, delta_ts, glac_index)
+   call output2(time_init, dxi, deta)
+   call output4(time_init, dxi, deta)
 
 #if (defined(ASF) && WRITE_SER_FILE_STAKES==1) /* Austfonna */
-   call output5(time, dxi, deta, delta_ts, glac_index)
+   call output5(time, dxi, deta)
 #endif
 
 end if

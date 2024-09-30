@@ -552,10 +552,6 @@ real(dp), dimension(0:JMAX,0:IMAX) :: snowfall
 real(dp), dimension(0:JMAX,0:IMAX) :: rainfall
    !! Rainfall rate at the ice surface
 
-real(dp), dimension(0:JMAX,0:IMAX) :: ET
-   !! Temperature excess at the ice surface
-   !! (positive degree days divided by time)
-
 real(dp), dimension(0:JMAX,0:IMAX) :: melt
    !! Melting rate at the ice surface
 
@@ -619,8 +615,20 @@ real(dp), dimension(0:JMAX,0:IMAX) :: z_sl
 real(dp), dimension(0:JMAX,0:IMAX) :: dzsl_dtau
    !! Derivative of zsl by tau (time)
 
+real(dp) :: delta_ts
+   !! Time-dependent surface-temperature anomaly
+
+real(dp) :: glac_index
+   !! Time-dependent glacial index
+
+real(dp) :: mean_accum
+   !! Mean present accumulation over land
+
 real(dp) :: z_sl_mean
    !! Mean sea level
+
+real(dp) :: z_mar
+   !! Minimum bedrock (sea bed) elevation allowed to be covered by marine ice
 
 real(dp), dimension(0:JMAX,0:IMAX) :: am_perp
    !! Ice volume flux across the z=zm interface
@@ -1080,6 +1088,10 @@ real(dp), dimension(0:JMAX,0:IMAX) :: gamma_s
 #endif
 
 !-------- PDD and LTI parameters --------
+
+real(dp), dimension(0:JMAX,0:IMAX) :: ET
+   !! Temperature excess at the ice surface
+   !! (positive degree days divided by time)
 
 #if (ABLSURFACE==1 || ABLSURFACE==2)
 

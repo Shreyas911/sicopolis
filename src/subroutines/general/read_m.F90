@@ -110,7 +110,8 @@ contains
                                             flag_grounded_front_b_2_conv
   integer(i4b), dimension(0:IMAX,0:JMAX) :: kc_cts_conv
 
-  real(dp) :: year2sec_conv, time_conv, dummy_conv, z_sl_mean_conv, &
+  real(dp) :: year2sec_conv, time_conv, &
+              delta_ts_conv, glac_index_conv, z_sl_mean_conv, &
               xi_conv(0:IMAX), eta_conv(0:JMAX), &
               sigma_level_c_conv(0:KCMAX), sigma_level_t_conv(0:KTMAX), &
               sigma_level_r_conv(0:KRMAX)
@@ -152,7 +153,7 @@ contains
                                                 enh_t_conv, strain_heating_t_conv
   real(sp), dimension(0:IMAX,0:JMAX,0:KRMAX) :: temp_r_conv
 
-#if (DISC>0)   /* Ice discharge parameterisation */
+#if (DISC>0)   /* Ice discharge parameterization */
   integer(i4b), dimension(0:IMAX,0:JMAX) :: mask_mar_conv
   real(sp),     dimension(0:IMAX,0:JMAX) :: dis_perp_conv, &
                                             cst_dist_conv, cos_grad_tc_conv
@@ -160,6 +161,8 @@ contains
 
   real(dp) :: visc_min, visc_max, visc_init
   logical :: flag_ratio_sl, flag_vis_ave_g
+
+  real(dp), parameter :: one_year = 1.0_dp
 
 !-------- Read data from time-slice file of previous simulation --------
 
@@ -198,11 +201,15 @@ contains
   call check( nf90_get_var(ncid, ncv, time_conv) )
 
   if ( nf90_inq_varid(ncid, 'delta_ts', ncv) == nf90_noerr ) then
-     call check( nf90_get_var(ncid, ncv, dummy_conv) )
-  else if ( nf90_inq_varid(ncid, 'glac_index', ncv) == nf90_noerr ) then
-     call check( nf90_get_var(ncid, ncv, dummy_conv) )
+     call check( nf90_get_var(ncid, ncv, delta_ts_conv) )
   else
-     dummy_conv = 0.0_dp
+     delta_ts_conv = 0.0_dp
+  end if
+
+  if ( nf90_inq_varid(ncid, 'glac_index', ncv) == nf90_noerr ) then
+     call check( nf90_get_var(ncid, ncv, glac_index_conv) )
+  else
+     glac_index_conv = 0.0_dp
   end if
 
   if ( nf90_inq_varid(ncid, 'z_sl_mean', ncv) == nf90_noerr ) then
@@ -288,7 +295,7 @@ contains
      z_sl_conv = z_sl_mean_conv
   end if
 
-#if (DISC>0)   /* Ice discharge parameterisation */
+#if (DISC>0)   /* Ice discharge parameterization */
 
   call check( nf90_inq_varid(ncid, 'dis_perp', ncv) )
   call check( nf90_get_var(ncid, ncv, dis_perp_conv) )
@@ -635,17 +642,22 @@ contains
 
   if (.not.flag_temp_age_only) then
 
-     z_sl_mean = z_sl_mean_conv
+     ! year2sec = year2sec_conv   ! set in sico_init
+     ! time     = time_conv       ! set in sico_init
+
+     delta_ts   = delta_ts_conv
+     glac_index = glac_index_conv
+     z_sl_mean  = z_sl_mean_conv
 
      do i=0, IMAX
-        xi(i)  = xi_conv(i)
+        xi(i) = xi_conv(i)
      end do
 
      do j=0, JMAX
         eta(j) = eta_conv(j)
      end do
 
-     H_R  = real(H_R_conv,dp)
+     H_R = real(H_R_conv,dp)
 
      do i=0, IMAX
      do j=0, JMAX
@@ -655,7 +667,27 @@ contains
         n_cts(j,i)    = n_cts_conv(i,j)
         kc_cts(j,i)   = kc_cts_conv(i,j)
 
+        temp_maat(j,i)   = real(temp_maat_conv(i,j),dp)
+        temp_s(j,i)      = real(temp_s_conv(i,j),dp)
+        accum(j,i)       = real(accum_conv(i,j),dp)
+        snowfall(j,i)    = real(snowfall_conv(i,j),dp)
+        rainfall(j,i)    = real(rainfall_conv(i,j),dp)
+        ET(j,i)          = real(pdd_conv(i,j),dp)/one_year
+        as_perp(j,i)     = real(as_perp_conv(i,j),dp)
+        as_perp_apl(j,i) = real(as_perp_apl_conv(i,j),dp)
+        smb_corr(j,i)    = real(smb_corr_conv(i,j),dp)
+
         z_sl(j,i) = real(z_sl_conv(i,j),dp)
+
+#if (DISC>0)   /* Ice discharge parameterization */
+        dis_perp(j,i)    = real(dis_perp_conv(i,j),dp)
+        cst_dist(j,i)    = real(cst_dist_conv(i,j),dp)
+        cos_grad_tc(j,i) = real(cos_grad_tc_conv(i,j),dp)
+        mask_mar(j,i)    = mask_mar_conv(i,j)
+#endif
+
+        q_geo(j,i) = real(q_geo_conv(i,j),dp)
+
         zs(j,i)   = real(zs_conv(i,j),dp)
         zm(j,i)   = real(zm_conv(i,j),dp)
         zb(j,i)   = real(zb_conv(i,j),dp)
