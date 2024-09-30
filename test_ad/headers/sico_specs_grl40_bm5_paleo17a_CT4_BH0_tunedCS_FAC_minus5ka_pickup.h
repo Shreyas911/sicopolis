@@ -4,7 +4,7 @@
 
 !-------- Basic settings --------
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2024-08-08'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2024-09-29'
 !                      Date of last change
 
 !-------- Domain --------
@@ -540,8 +540,13 @@
 #define ANF_DAT_PATH '/home/shreyas/update_to_develop_sicopolis/sicopolis_spinups/sico_out/grl40_bm5_paleo17a_CT4_spinup_minus5ka'
 
 #define ANFDATNAME 'grl40_bm5_paleo17a_CT4_spinup_minus5ka0008.nc'
-!                             Initial-value file (only for ANF_DAT==3,
-!                                  or for ANF_DAT==1 and TEMP_INIT==5)
+!                         Initial-value file (only for ANF_DAT==3,
+!                         or for ANF_DAT==1 and TEMP_INIT==5)
+
+#define RESTART 0
+!                         Restart method (only for ANF_DAT==3):
+!                         0 : Legacy restart
+!                         1 : Improved restart (smoother transition)
 
 !-------- Lithosphere (bedrock) modelling --------
 
