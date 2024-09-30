@@ -1308,7 +1308,7 @@ if __name__ == "__main__":
 	parser.add_argument("-lbfs", '--limited_or_block_or_full_or_scalar', help="limited or block or full or scalar?", type=str)
 	parser.add_argument("-low", '--low', help="abs(values) below maxabs_value*lower_threshold are not checked", type=str)
 	parser.add_argument("-asi", '--after_sico_init', help="If 1, activation of AD after sico_init", type=str)
-    parser.add_argument("-tol", '--tolerance', help="maxabs relative error acceptable", type=str)
+	parser.add_argument("-tol", '--tolerance', help="maxabs relative error acceptable", type=str)
 
 	args = parser.parse_args()
 
