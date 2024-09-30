@@ -240,7 +240,7 @@ def test_grl40_bm5_paleo17a_CT4_BH0_BM5_beta1_scalar_asi():
 def test_grl40_bm5_paleo17a_CT4_BH0_AC_beta1_scalar_asi():
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_AC.h', '../headers'])
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_AC.h', '../src/sico_specs.h'])
-	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_CT4_BH0_AC -iv beta1 -jsf inputs.json -lbfs scalar', shell = True, check = True)
+	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_CT4_BH0_AC -iv beta1 -delta 5.e-2 -jsf inputs.json -lbfs scalar', shell = True, check = True)
 
 def test_grl40_bm5_paleo17a_CT4_BH0_FBM5_beta1_scalar_asi():
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_FBM5.h', '../headers'])
