@@ -50,15 +50,11 @@ contains
 !-------------------------------------------------------------------------------
 !> Main routine of sico_main_loop_m: Main loop of SICOPOLIS.
 !-------------------------------------------------------------------------------
-!@ begin tapenade_extract @
-  subroutine sico_main_loop(delta_ts, glac_index, &
-                      mean_accum, &
-                      dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
-                      time, time_init, time_end, time_output, &
-                      dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
-                      z_mar, &
-                      ndat2d, ndat3d, n_output)
-!@ end tapenade_extract @
+  subroutine sico_main_loop(dtime, dtime_temp, dtime_wss, &
+                            dtime_out, dtime_ser, &
+                            time, time_init, time_end, time_output, &
+                            dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
+                            ndat2d, ndat3d, n_output)
  
   use boundary_m
   
@@ -84,15 +80,12 @@ contains
   implicit none
 
   integer(i4b),       intent(in)    :: n_output
-  real(dp),           intent(in)    :: mean_accum
   real(dp),           intent(in)    :: dtime, dtime_temp, dtime_wss, &
                                        dtime_out, dtime_ser
   real(dp),           intent(in)    :: time_init, time_end, time_output(100)
   real(dp),           intent(in)    :: dxi, deta, dzeta_c, dzeta_t, dzeta_r
   integer(i4b),       intent(inout) :: ndat2d, ndat3d
-  real(dp),           intent(inout) :: delta_ts, glac_index
   real(dp),           intent(inout) :: time
-  real(dp),           intent(inout) :: z_mar
   
   integer(i4b) :: i, j, kc, kt, kr, n
   integer(i4b) :: itercount, itercount_max
@@ -135,7 +128,7 @@ contains
 
   !-------- Boundary conditions --------
   
-  call boundary(time, dtime, dxi, deta, delta_ts, glac_index, z_mar)
+  call boundary(time, dtime, dxi, deta)
   
   !-------- Temperature, water content, age, flow enhancement factor --------
   
@@ -269,11 +262,11 @@ contains
 #endif
   
 #if (CALCTHK==1)
-    call calc_thk_sia_expl(time, dtime, dxi, deta, z_mar)
+    call calc_thk_sia_expl(time, dtime, dxi, deta)
 #elif (CALCTHK==2)
-    call calc_thk_sia_impl(time, dtime, dxi, deta, z_mar, mean_accum)
+    call calc_thk_sia_impl(time, dtime, dxi, deta)
 #elif (CALCTHK==4)
-    call calc_thk_expl(time, dtime, dxi, deta, z_mar)
+    call calc_thk_expl(time, dtime, dxi, deta)
 #else
     errormsg = ' >>> sico_main_loop: ' &
              //'Parameter CALCTHK must be 1, 2 or 4!'
@@ -281,18 +274,18 @@ contains
 #endif
   
 #if (MARGIN==3)       /* coupled SIA/SSA or SIA/SStA/SSA dynamics */
-    call calc_thk_mask_update(time, dtime, dxi, deta, z_mar, 3)
+    call calc_thk_mask_update(time, dtime, dxi, deta, 3)
 #elif (DYNAMICS==2)   /* hybrid SIA/SStA dynamics */
-    call calc_thk_mask_update(time, dtime, dxi, deta, z_mar, 2)
+    call calc_thk_mask_update(time, dtime, dxi, deta, 2)
 #else                 /* SIA-only dynamics */
 #if (CALCTHK==1 || CALCTHK==2)
-    call calc_thk_mask_update(time, dtime, dxi, deta, z_mar, 1)
+    call calc_thk_mask_update(time, dtime, dxi, deta, 1)
 #elif (CALCTHK==4)
-    call calc_thk_mask_update(time, dtime, dxi, deta, z_mar, 2)
+    call calc_thk_mask_update(time, dtime, dxi, deta, 2)
 #endif
 #endif
 
-  call account_mb_source(dtime, z_mar)
+  call account_mb_source(dtime)
 
   call flag_update_gf_gl_cf()
 
@@ -344,8 +337,7 @@ contains
      flag_3d_output = .true.
 #endif
   
-     call output1(time, delta_ts, glac_index, &
-                  flag_3d_output, ndat2d, ndat3d)
+     call output1(time, flag_3d_output, ndat2d, ndat3d)
 
      flag_output1 = .true.
 
@@ -361,8 +353,7 @@ contains
      flag_3d_output = .true.
 #endif
 
-     call output1(time, delta_ts, glac_index, &
-                  flag_3d_output, ndat2d, ndat3d, &
+     call output1(time, flag_3d_output, ndat2d, ndat3d, &
                   opt_flag_compute_flux_vars_only=.true.)
 
   end if
@@ -383,8 +374,7 @@ contains
         flag_3d_output = .true.
 #endif
   
-        call output1(time, delta_ts, glac_index, &
-                     flag_3d_output, ndat2d, ndat3d)
+        call output1(time, flag_3d_output, ndat2d, ndat3d)
 
         flag_output1 = .true.
 
@@ -402,8 +392,7 @@ contains
      flag_3d_output = .true.
 #endif
 
-     call output1(time, delta_ts, glac_index, &
-                  flag_3d_output, ndat2d, ndat3d, &
+     call output1(time, flag_3d_output, ndat2d, ndat3d, &
                   opt_flag_compute_flux_vars_only=.true.)
 
   end if
@@ -418,8 +407,7 @@ contains
   
      flag_3d_output = .false.
   
-     call output1(time, delta_ts, glac_index, &
-                  flag_3d_output, ndat2d, ndat3d)
+     call output1(time, flag_3d_output, ndat2d, ndat3d)
 
      flag_output1 = .true.
   
@@ -431,8 +419,7 @@ contains
 
      flag_3d_output = .false.
 
-     call output1(time, delta_ts, glac_index, &
-                  flag_3d_output, ndat2d, ndat3d, &
+     call output1(time, flag_3d_output, ndat2d, ndat3d, &
                   opt_flag_compute_flux_vars_only=.true.)
 
   end if
@@ -445,8 +432,7 @@ contains
   
         flag_3d_output = .true.
   
-        call output1(time, delta_ts, glac_index, &
-                     flag_3d_output, ndat2d, ndat3d)
+        call output1(time, flag_3d_output, ndat2d, ndat3d)
   
      end if
   
@@ -460,13 +446,13 @@ contains
 
   if ( mod(itercount, iter_ser) == 0 ) then
 
-     call output2(time, dxi, deta, delta_ts, glac_index)
+     call output2(time, dxi, deta)
      flag_output2 = .true.
 
-     call output4(time, dxi, deta, delta_ts, glac_index)
+     call output4(time, dxi, deta)
 
 #if (defined(ASF) && WRITE_SER_FILE_STAKES==1) /* Austfonna */
-     call output5(time, dxi, deta, delta_ts, glac_index)
+     call output5(time, dxi, deta)
 #endif
 
   end if
@@ -474,7 +460,7 @@ contains
 #if (OUTPUT_FLUX_VARS==2)   /* averaging of flux variables */
 
   if (.not.flag_output2) &
-     call output2(time, dxi, deta, delta_ts, glac_index, &
+     call output2(time, dxi, deta, &
                   opt_flag_compute_flux_vars_only=.true.)
 
 #endif
