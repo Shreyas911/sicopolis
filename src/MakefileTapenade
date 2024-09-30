@@ -109,6 +109,7 @@ ifeq ($(TAP_ADJ_PROF),1)
 driveradjoint: TAP_PROF_OPTION=-profile
 driveradjoint: CFLAGS_PROF=-D_ADSTACKPROFILE -D_ADSTACKPREFETCH
 driveradjoint: DEFINE_FLAGS_ADJOINT_PROF=-DALLOW_TAP_ADJ_PROF
+driveradjoint: TAP_ADJ_PROF_PTHREAD=-lpthread
 
 SRC_TAP_PROF=\
 ${ADFirstAidKit_DIR}/adProfile.c\
@@ -323,6 +324,7 @@ driveradjoint:${LIBLIS} \
 		ad_output_m_cpp.o \
 		subroutines/tapenade/src/diffsizes.o \
 		tapenade_main_cpp.o \
+		${TAP_ADJ_PROF_PTHREAD} \
 		${LIBLISFLAG} \
 		${LIB_NETCDF_F90_FLAG}
 

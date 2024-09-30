@@ -40,10 +40,10 @@
 /* The size of a Block in bytes. */
 // #define BLOCK_SIZE 17 // A very small BLOCK_SIZE allows for stronger testing!
 // #define BLOCK_SIZE 1000 // ridiculously small, just for testing.
-#define BLOCK_SIZE 1048576
+#define BLOCK_SIZE 134217728
 
 /* The max number of Block's allowed in main memory */
-#define MAX_SPACES 32000
+#define MAX_SPACES 400
 
 /**************** Data structures and globals ******************/
 
@@ -978,6 +978,7 @@ void adStack_endRepeat() {
 /** Used only by 2nd thread. Not locked */
 void storeInFile(BlockContents* blockContents) {
   sprintf(tapStackFileName, "tapStack%05i\0", blockContents->rank) ;
+  printf("Writing to tapStack%05i\n", blockContents->rank) ;
   FILE *tapStackFile = fopen(tapStackFileName, "wb") ;
   fwrite(blockContents->contents, 1, BLOCK_SIZE, tapStackFile) ;
   fclose(tapStackFile) ;
