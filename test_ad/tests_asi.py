@@ -352,6 +352,81 @@ def test_grl40_bm5_paleo17a_CT4_BH0_FAC_s_stat_scalar_asi():
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_FAC.h', '../src/sico_specs.h'])
 	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_CT4_BH0_FAC -iv s_stat -jsf inputs.json -lbfs scalar', shell = True, check = True)
 
+def test_repo_ant64_bm3_ss25ka_c_slide_init_scalar_asi():
+	subprocess.run (['cp', 'headers/sico_specs_repo_ant64_bm3_ss25ka.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_repo_ant64_bm3_ss25ka.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -head repo_ant64_bm3_ss25ka -dom ant -iv c_slide_init -delta 1.e-2 -jsf inputs.json -lbfs scalar', shell = True, check = True)
+
+def test_repo_ant64_b2_future09_ctrl_c_slide_init_scalar_asi():
+	subprocess.run (['cp', 'headers/sico_specs_repo_ant64_b2_future09_ctrl.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_repo_ant64_b2_future09_ctrl.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -head repo_ant64_b2_future09_ctrl -dom ant -iv c_slide_init -delta 1.e-2 -jsf inputs.json -lbfs scalar', shell = True, check = True)
+
+def test_grl40_bm5_paleo17a_BH0_c_slide_init_scalar_asi():
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_BH0 -iv c_slide_init -delta 1.e-2 -jsf inputs.json -lbfs scalar', shell = True, check = True)
+
+def test_grl40_bm5_paleo17a_BH0_BM5_c_slide_init_scalar_asi():
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0_BM5.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0_BM5.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_BH0_BM5 -iv c_slide_init -delta 1.e-2 -jsf inputs.json -lbfs scalar', shell = True, check = True)
+
+def test_grl40_bm5_paleo17a_BH0_FBM5_c_slide_init_scalar_asi():
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0_FBM5.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0_FBM5.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_BH0_FBM5 -iv c_slide_init -delta 1.e-2 -jsf inputs.json -lbfs scalar', shell = True, check = True)
+
+def test_grl40_bm5_paleo17a_BH0_AC_c_slide_init_scalar_asi():
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0_AC.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0_AC.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_BH0_AC -iv c_slide_init -delta 1.e-2 -jsf inputs.json -lbfs scalar', shell = True, check = True)
+
+def test_grl40_bm5_paleo17a_BH0_FAC_c_slide_init_scalar_asi():
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0_FAC.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_BH0_FAC.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_BH0_FAC -iv c_slide_init -delta 1.e-2 -jsf inputs.json -lbfs scalar', shell = True, check = True)
+
+def test_grl40_bm5_paleo17a_CT4_BH0_c_slide_init_scalar_asi():
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_CT4_BH0 -iv c_slide_init -delta 1.e-2 -jsf inputs.json -lbfs scalar', shell = True, check = True)
+
+def test_grl40_bm5_paleo17a_CT4_BH0_BM5_c_slide_init_scalar_asi():
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_BM5.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_BM5.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_CT4_BH0_BM5 -iv c_slide_init -delta 1.e-2 -jsf inputs.json -lbfs scalar', shell = True, check = True)
+
+def test_grl40_bm5_paleo17a_CT4_BH0_FBM5_c_slide_init_scalar_asi():
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_FBM5.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_FBM5.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_CT4_BH0_FBM5 -iv c_slide_init -delta 1.e-2 -jsf inputs.json -lbfs scalar', shell = True, check = True)
+
+def test_grl40_bm5_paleo17a_CT4_BH0_AC_c_slide_init_scalar_asi():
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_AC.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_AC.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_CT4_BH0_AC -iv c_slide_init -delta 1.e-2 -jsf inputs.json -lbfs scalar', shell = True, check = True)
+
+def test_grl40_bm5_paleo17a_CT4_BH0_FAC_c_slide_init_scalar_asi():
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_FAC.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_FAC.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_CT4_BH0_FAC -iv c_slide_init -delta 1.e-2 -jsf inputs.json -lbfs scalar', shell = True, check = True)
+
+def test_repo_grl16_bm5_ss25ka_c_slide_init_scalar_asi():
+	subprocess.run (['cp', 'headers/sico_specs_repo_grl16_bm5_ss25ka.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_repo_grl16_bm5_ss25ka.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -iv c_slide_init -delta 1.e-2 -jsf inputs.json -lbfs scalar', shell = True, check = True)
+
+def test_repo_grl16_bm5_ss25ka_BM5_c_slide_init_scalar_asi():
+	subprocess.run (['cp', 'headers/sico_specs_repo_grl16_bm5_ss25ka_BM5.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_repo_grl16_bm5_ss25ka_BM5.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -head repo_grl16_bm5_ss25ka_BM5 -iv c_slide_init -delta 1.e-2 -jsf inputs.json -lbfs scalar', shell = True, check = True)
+
+def test_repo_grl16_bm5_ss25ka_CM3_AC_c_slide_init_scalar_asi():
+	subprocess.run (['cp', 'headers/sico_specs_repo_grl16_bm5_ss25ka_CM3_AC.h', '../headers'])
+	subprocess.run (['cp', 'headers/sico_specs_repo_grl16_bm5_ss25ka_CM3_AC.h', '../src/sico_specs.h'])
+	subprocess.run('python3 tapenade_config.py -head repo_grl16_bm5_ss25ka_CM3_AC -iv c_slide_init -delta 1.e-2 -jsf inputs.json -lbfs scalar', shell = True, check = True)
+
 def test_grl40_bm5_paleo17a_CT4_BH0_gamma_s_asi():
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0.h', '../headers'])
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0.h', '../src/sico_specs.h'])
