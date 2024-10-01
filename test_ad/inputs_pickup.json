@@ -28,5 +28,5 @@
     "adj_prof": 0,
     "low": 0.0,
     "after_sico_init": 1,
-    "tol": 0.25
+    "tolerance": 0.25
 }

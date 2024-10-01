@@ -1366,4 +1366,4 @@ if __name__ == "__main__":
 				output_vars = args.output_vars, output_iters = args.output_iters, output_dims = args.output_dims,
 				output_adj_vars = args.output_adj_vars, output_adj_iters = args.output_adj_iters, output_adj_dims = args.output_adj_dims,
 				ckp_status = ckp_status, ckp_num = args.checkpoint,
-				cc = args.c_compiler, f90c = args.f90_compiler, tap_adj_prof = args.adj_prof, low = float(args.low))
+				cc = args.c_compiler, f90c = args.f90_compiler, tap_adj_prof = args.adj_prof, low = float(args.low), tol = float(args.tolerance))
