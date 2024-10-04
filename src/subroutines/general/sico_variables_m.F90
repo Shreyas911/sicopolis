@@ -1524,6 +1524,11 @@ real(dp), dimension(0:NTDAMAX,0:JMAX,0:IMAX) :: delta_tda
    !! Spatiotemporally-varying temperature anomaly that will be inferred using adjoint-based DA
 #endif
 
+#if (defined(GRL) && DISC>0) /* Greenland */
+real(dp), dimension(0:JMAX,0:IMAX) :: c_dis_da
+   !! Spatially-varying discharge parameter, will be used as a scalar mostly though
+#endif
+
 #if (defined(AGE_COST) || defined(FAKE_AGE_COST))
 
 ! Note: for the age cost, CALCMOD!=1 is recommended because

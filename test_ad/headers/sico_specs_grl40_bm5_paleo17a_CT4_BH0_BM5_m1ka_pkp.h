@@ -168,13 +168,13 @@
 
 !!!!! NOTE: All time quantities below refer to the SICOPOLIS calendar. !!!!!
 
-#define TIME_INIT0 -134000.0d0
+#define TIME_INIT0 -1000.0d0
 !                       Initial time of simulation (in a)
 
-#define TIME_END0 -133980.0d0
+#define TIME_END0 0.0d0
 !                       Final time of simulation (in a)
 
-#define DTIME0 4.0d0
+#define DTIME0 1.0d0
 !                       Time step (in a) for computation of velocity
 !                       and topography
 
@@ -492,7 +492,7 @@
 
 !-------- Initial conditions --------
 
-#define ANF_DAT 1
+#define ANF_DAT 3
 !                         1 : Present initial topography
 !                         2 : Ice-free initial topography with
 !                             relaxed lithosphere
@@ -537,7 +537,9 @@
 !                             [Robin (1955) solution]
 !                         5 : Ice temperature from previous simulation
 
-#define ANFDATNAME 'none'
+#define ANF_DAT_PATH '/home/shreyas/update_to_develop_sicopolis/sicopolis_spinups/sico_out/grl40_bm5_paleo17a_CT4_BH0_13point5CS_spinup_0ka'
+
+#define ANFDATNAME 'grl40_bm5_paleo17a_CT4_BH0_13point5CS_spinup_0ka0009.nc'
 !                         Initial-value file (only for ANF_DAT==3,
 !                         or for ANF_DAT==1 and TEMP_INIT==5)
 
@@ -638,7 +640,7 @@
 !                         Maximum ice extent mask file (only for THK_EVOL>=1)
 !                         ('none' if no file is to be defined)
 
-#define CALCTHK 2
+#define CALCTHK 4
 !                         Solution of the ice-thickness equation:
 !                         1 : Explicit scheme for the diffusive
 !                             SIA ice-surface equation
@@ -787,7 +789,7 @@
 !                         7 : Implied SMB by Calov+ (2018, Cryosphere 12)
 !                             (requires ABLSURFACE==7)
 
-#define PRECIP_PRESENT_FILE 'grl_rembo_40_precip.nc'
+#define PRECIP_PRESENT_FILE 'grl_rembo_40_precmm.dat'
 !                       Name of the file containing the present-day
 !                       monthly mean precipitation data
 !                       ('none' if no such file is to be specified)
@@ -1017,7 +1019,7 @@
 !                         If defined compute c_dis_0 and stop
 !                         (only for DISC>0)
 
-#define C_DIS_0 1270.0d0
+#define C_DIS_0 15659.0d0
 !                         Discharge parameter: scale [in m^(mD+1-mH)/s]
 !                         (only for DISC>0)
 
@@ -1117,7 +1119,7 @@
 !                       1 : Ocean pressure without cut-off (can become negative)
 !                       2 : Ocean pressure with cut-off
 
-#define C_SLIDE 2.5d0
+#define C_SLIDE 13.5d0
 !                       Sliding coefficient, in m/[a*Pa^(p-q)]
 !                       (N_SLIDE_REGIONS separate values).
 
@@ -1307,12 +1309,12 @@
 !                         Time step (in a) for writing of
 !                         time-slice data (only for OUTPUT==1,3)
 
-#define N_OUTPUT 1
+#define N_OUTPUT 3
 !                         Number of specified times for writing of
 !                         time-slice data (only for OUTPUT==2,3,
 !                         not more than 100)
 
-#define TIME_OUT0 (/ -120000.0d0 /)
+#define TIME_OUT0 (/ -1000.0d0, -100.0d0, 0.0d0 /)
 !                         Times (in a) for writing of time-slice
 !                         data (only for OUTPUT==2,3, in increasing
 !                         order from #1 to #N_OUTPUT)
@@ -1360,13 +1362,13 @@
 !                       sufficient.]
 
 #define ALLOW_COST
-#define FAKE_BEDMACHINE_COST
+#define BEDMACHINE_COST
 #define COST_INPUT_PATH '/scratch2/shreyas/GrIS_paleo_data'
 
-#define NTDAMAX 2
+#define NTDAMAX 11
 !                       Number of intervals for interpolation of
 !                       time-varying control variables.
 
-#define DTIME_INTERP0 10.0d0
+#define DTIME_INTERP0 1000.0d0
 !		                (TIME_END0-TIME_INIT0)/NTDAMAX
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

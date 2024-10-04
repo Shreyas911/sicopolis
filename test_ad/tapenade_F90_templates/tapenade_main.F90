@@ -129,22 +129,27 @@ program tapenade_main
 
         ! Initialize compatible fields to 0
         ! 2D fields
-        q_geo          = 0.0
-        c_slide_init   = 0.0
-        H              = 0.0 ! Only compatible with ANF_DAT==1
+        delta_tda_const = 0.0 ! Not compatible with TSURFACE>4
+        q_geo           = 0.0
+        c_slide_init    = 0.0
+        H               = 0.0 ! Only compatible with ANF_DAT==1
 #if (ACCSURFACE==2 || ACCSURFACE==3)
-        gamma_s        = 0.0
+        gamma_s         = 0.0
 #endif
 #if (ABLSURFACE==1 || ABLSURFACE==2)
-        s_stat         = 0.0
-        beta1          = 0.0
-        beta2          = 0.0
-        Pmax           = 0.0
-        mu             = 0.0
+        s_stat          = 0.0
+        beta1           = 0.0
+        beta2           = 0.0
+        Pmax            = 0.0
+        mu              = 0.0
+#endif
+#if (defined(GRL) && DISC>0)
+        c_dis_da        = 0.0
 #endif
         ! 3D fields
-        temp_c         = 0.0 ! Not compatible with TEMP_INIT==5
-        age_c          = 0.0
+        temp_c          = 0.0 ! Not compatible with TEMP_INIT==5
+        age_c           = 0.0
+        delta_tda       = 0.0 ! Not compatible with TSURFACE>4
 
 !@ python_automated_tlm IO write @
     end do ! (close loop over points)

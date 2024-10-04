@@ -168,7 +168,7 @@
 
 !!!!! NOTE: All time quantities below refer to the SICOPOLIS calendar. !!!!!
 
-#define TIME_INIT0 -5000.0d0
+#define TIME_INIT0 -11000.0d0
 !                       Initial time of simulation (in a)
 
 #define TIME_END0 0.0d0
@@ -537,9 +537,9 @@
 !                             [Robin (1955) solution]
 !                         5 : Ice temperature from previous simulation
 
-#define ANF_DAT_PATH '/home/shreyas/update_to_develop_sicopolis/sicopolis_spinups/sico_out/grl40_bm5_paleo17a_CT4_spinup_minus5ka'
+#define ANF_DAT_PATH '/home/shreyas/update_to_develop_sicopolis/sicopolis_spinups/sico_out/grl40_bm5_paleo17a_CT4_BH0_13point5CS_spinup_0ka'
 
-#define ANFDATNAME 'grl40_bm5_paleo17a_CT4_spinup_minus5ka0008.nc'
+#define ANFDATNAME 'grl40_bm5_paleo17a_CT4_BH0_13point5CS_spinup_0ka0006.nc'
 !                         Initial-value file (only for ANF_DAT==3,
 !                         or for ANF_DAT==1 and TEMP_INIT==5)
 
@@ -1019,7 +1019,7 @@
 !                         If defined compute c_dis_0 and stop
 !                         (only for DISC>0)
 
-#define C_DIS_0 1270.0d0
+#define C_DIS_0 15659.0d0
 !                         Discharge parameter: scale [in m^(mD+1-mH)/s]
 !                         (only for DISC>0)
 
@@ -1119,7 +1119,7 @@
 !                       1 : Ocean pressure without cut-off (can become negative)
 !                       2 : Ocean pressure with cut-off
 
-#define C_SLIDE 9.75d0
+#define C_SLIDE 13.5d0
 !                       Sliding coefficient, in m/[a*Pa^(p-q)]
 !                       (N_SLIDE_REGIONS separate values).
 
@@ -1309,13 +1309,13 @@
 !                         Time step (in a) for writing of
 !                         time-slice data (only for OUTPUT==1,3)
 
-#define N_OUTPUT 4
+#define N_OUTPUT 5
 !                         Number of specified times for writing of
 !                         time-slice data (only for OUTPUT==2,3,
 !                         not more than 100)
 
-#define TIME_OUT0 (/ -5000.0d0, \
-                     -4000.0d0, -100.0d0, 0.0d0 /)
+#define TIME_OUT0 (/ -11000.0d0, \
+                     -9000.0d0, -4000.0d0, -100.0d0, 0.0d0 /)
 !                         Times (in a) for writing of time-slice
 !                         data (only for OUTPUT==2,3, in increasing
 !                         order from #1 to #N_OUTPUT)

@@ -228,7 +228,11 @@ contains
   real(dp)     :: delta_phi=25.0_dp ! approximately the phi
                                     ! spanning the middle of domain
 
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+  c_dis = (c_dis_0+c_dis_da)*c_dis_fac &
+#else
   c_dis = c_dis_0*c_dis_fac &
+#endif
                  *(1.0_dp-(1.0_dp-s_dis)*(phi*rad2deg-60.0_dp)/delta_phi)
   c_dis = max(c_dis, 0.0_dp)
 

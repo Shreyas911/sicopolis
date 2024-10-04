@@ -537,9 +537,9 @@
 !                             [Robin (1955) solution]
 !                         5 : Ice temperature from previous simulation
 
-#define ANF_DAT_PATH '/home/shreyas/update_to_develop_sicopolis/sicopolis_spinups/sico_out/grl40_bm5_paleo17a_CT4_spinup_minus11ka'
+#define ANF_DAT_PATH '/home/shreyas/update_to_develop_sicopolis/sicopolis_spinups/sico_out/grl40_bm5_paleo17a_CT4_BH0_13point5CS_spinup_0ka'
 
-#define ANFDATNAME 'grl40_bm5_paleo17a_CT4_spinup_minus11ka0006.nc'
+#define ANFDATNAME 'grl40_bm5_paleo17a_CT4_BH0_13point5CS_spinup_0ka0006.nc'
 !                         Initial-value file (only for ANF_DAT==3,
 !                         or for ANF_DAT==1 and TEMP_INIT==5)
 
@@ -1019,7 +1019,7 @@
 !                         If defined compute c_dis_0 and stop
 !                         (only for DISC>0)
 
-#define C_DIS_0 1270.0d0
+#define C_DIS_0 15659.0d0
 !                         Discharge parameter: scale [in m^(mD+1-mH)/s]
 !                         (only for DISC>0)
 
@@ -1119,7 +1119,7 @@
 !                       1 : Ocean pressure without cut-off (can become negative)
 !                       2 : Ocean pressure with cut-off
 
-#define C_SLIDE 9.75d0
+#define C_SLIDE 13.5d0
 !                       Sliding coefficient, in m/[a*Pa^(p-q)]
 !                       (N_SLIDE_REGIONS separate values).
 
@@ -1363,7 +1363,7 @@
 !                       sufficient.]
 
 #define ALLOW_COST
-#define BEDMACHINE_COST
+#define AGE_COST
 #define COST_INPUT_PATH '/scratch2/shreyas/GrIS_paleo_data'
 
 #define NTDAMAX 11

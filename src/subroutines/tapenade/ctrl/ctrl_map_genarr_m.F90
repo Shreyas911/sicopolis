@@ -25,7 +25,7 @@ contains
     integer(i4b)        :: ctrl_index
     integer(i4b)        :: igen_c_slide_init, igen_H, igen_q_geo
     integer(i4b)        :: igen_gamma_s, igen_s_stat
-    integer(i4b)        :: igen_beta1, igen_beta2
+    integer(i4b)        :: igen_beta1, igen_beta2, igen_c_dis_da
     integer(i4b)        :: igen_Pmax, igen_mu, igen_delta_tda_const
 
 #ifdef XX_GENARR2D_VARS_ARR
@@ -48,6 +48,7 @@ contains
     igen_Pmax            = 0
     igen_mu              = 0
     igen_delta_tda_const = 0
+    igen_c_dis_da        = 0
 
 #ifdef XX_GENARR2D_VARS_ARR
     do ctrl_index = 1, NUM_CTRL_GENARR2D
@@ -113,6 +114,12 @@ contains
         //'delta_tda_const as a control param is only compatible with TSURFACE <= 4 !'
         call error(errormsg)
 #endif
+      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_c_dis_da') then
+        igen_c_dis_da = ctrl_index
+#if (!defined(GRL) || DISC <= 0)
+        errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
+        //'c_dis_da as a control param is only compatible with GRL domain and DISC > 0!'
+#endif
       else
         errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
           //"This control variable is not in the genctrl2d setup yet!"
@@ -157,6 +164,9 @@ contains
     end if
     if (igen_delta_tda_const .GT. 0) then
       call ctrl_map_genarr2d(delta_tda_const, igen_delta_tda_const)
+    end if
+    if (igen_c_dis_da .GT. 0) then
+      call ctrl_map_genarr2d(c_dis_da, igen_c_dis_da)
     end if
 #endif
 #endif

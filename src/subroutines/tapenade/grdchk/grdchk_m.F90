@@ -188,6 +188,9 @@ end subroutine grdchk_main
             Pmax            = 0.0
             mu              = 0.0
 #endif
+#if (defined(GRL) && DISC>0)
+            c_dis_da        = 0.0
+#endif
             ! 3D fields
             temp_c          = 0.0 ! Not compatible with TEMP_INIT==5
             age_c           = 0.0
@@ -367,6 +370,9 @@ end subroutine grdchk_main
             beta2           = 0.0
             Pmax            = 0.0
             mu              = 0.0
+#endif
+#if (defined(GRL) && DISC>0)
+            c_dis_da        = 0.0
 #endif
             ! 3D fields
             temp_c          = 0.0 ! Not compatible with TEMP_INIT==5

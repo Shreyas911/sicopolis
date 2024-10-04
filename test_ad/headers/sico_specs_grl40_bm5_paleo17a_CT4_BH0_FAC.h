@@ -1017,7 +1017,7 @@
 !                         If defined compute c_dis_0 and stop
 !                         (only for DISC>0)
 
-#define C_DIS_0 1270.0d0
+#define C_DIS_0 15659.0d0
 !                         Discharge parameter: scale [in m^(mD+1-mH)/s]
 !                         (only for DISC>0)
 
@@ -1117,7 +1117,7 @@
 !                       1 : Ocean pressure without cut-off (can become negative)
 !                       2 : Ocean pressure with cut-off
 
-#define C_SLIDE 2.5d0
+#define C_SLIDE 13.5d0
 !                       Sliding coefficient, in m/[a*Pa^(p-q)]
 !                       (N_SLIDE_REGIONS separate values).
 

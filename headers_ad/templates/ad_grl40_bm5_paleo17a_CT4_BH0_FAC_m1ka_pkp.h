@@ -1,6 +1,6 @@
-!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-! Specification file for control variables ad_repo_grl40_bm5_paleo17a_BH0_FBM5.h
-!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+! Specification file for control variables ad_repo_grl40_bm5_paleo17a_CT4_BH0__FAC_m1ka_pkp.h
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #undef ALLOW_GENCTRL
 !       Flag to enable specific code for genctrl setup
@@ -17,7 +17,7 @@
 #define DO_CTRL_GENTIM2D
 !       Flags to enable specific codes for various types of genctrl
 
-#define NUM_CTRL_GENARR2D 9
+#define NUM_CTRL_GENARR2D 11
 #define NUM_CTRL_GENARR3D 2
 #define NUM_CTRL_GENTIM2D 1
 !       Number of control variables,
@@ -27,6 +27,8 @@
 
 #define XX_GENARR2D_VARS_ARR         [ character(CTRL_STRLENGTH) ::\
                                          'xx_c_slide_init',\
+                                         'xx_delta_tda_const',\
+                                         'xx_c_dis_da',\
                                          'xx_q_geo',\
                                          'xx_H',\
                                          'xx_gamma_s',\
@@ -43,6 +45,8 @@
 !#define XX_GENARR2D_PREPROC_ARR      [ character(CTRL_STRLENGTH) ::\
 !                                         'log10ctrl',\
 !                                         'none',\
+!                                         'log10ctrl',\
+!                                         'none',\
 !                                         'none',\
 !                                         'log10ctrl',\
 !                                         'log10ctrl',\
@@ -54,7 +58,8 @@
 !!       log10ctrl only works if defined(ALLOW_GENCTRL_BEFORE_SICO_INIT)
 
 !#define XX_GENARR2D_LOG10INITVAL_ARR [ real :: \
-!                                          0.39794000867,  0.0          , 0.0,\
+!                                          0.39794000867,  0.0,         , 4.19476402411,\
+!                                          0.0          ,  0.0,\
 !                                         -1.15206968873,  0.69897000434, 0.43616264704,\
 !                                          0.86213137931, -0.22184874962, 0.98746515611 ]
 !!       log10initval if preproc=log10ctrl
