@@ -1,6 +1,6 @@
-!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-! Specification file for control variables ad_repo_grl40_bm5_paleo17a_CT4_BH0__BM5_m1ka_pkp.h
-!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+! Specification file for control variables ad_repo_grl40_bm5_paleo17a_CT4_BH0_BM5_m1ka_pkp.h
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #undef ALLOW_GENCTRL
 !       Flag to enable specific code for genctrl setup
