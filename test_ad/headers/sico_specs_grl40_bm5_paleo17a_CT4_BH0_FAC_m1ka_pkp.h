@@ -1145,7 +1145,7 @@
 !                       Weertman exponent q (integer) for the basal pressure
 !                       (N_SLIDE_REGIONS separate values)
 
-#define TIME_RAMP_UP_SLIDE 5000.0d0
+#define TIME_RAMP_UP_SLIDE 0.0d0
 !                       Ramp-up time (in a) for basal sliding:
 !                       Sliding starts gradually between the inital time
 !                       (TIME_INIT0) and the initial time plus the ramp-up time

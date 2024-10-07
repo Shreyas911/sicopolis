@@ -1145,7 +1145,7 @@
 !                       Weertman exponent q (integer) for the basal pressure
 !                       (N_SLIDE_REGIONS separate values)
 
-#define TIME_RAMP_UP_SLIDE 5000.0d0
+#define TIME_RAMP_UP_SLIDE 0.0d0
 !                       Ramp-up time (in a) for basal sliding:
 !                       Sliding starts gradually between the inital time
 !                       (TIME_INIT0) and the initial time plus the ramp-up time
@@ -1309,13 +1309,13 @@
 !                         Time step (in a) for writing of
 !                         time-slice data (only for OUTPUT==1,3)
 
-#define N_OUTPUT 5
+#define N_OUTPUT 6
 !                         Number of specified times for writing of
 !                         time-slice data (only for OUTPUT==2,3,
 !                         not more than 100)
 
 #define TIME_OUT0 (/ -11000.0d0, \
-                     -9000.0d0, -4000.0d0, -100.0d0, 0.0d0 /)
+                     -9000.0d0, -4000.0d0, -1000.d0, -100.0d0, 0.0d0 /)
 !                         Times (in a) for writing of time-slice
 !                         data (only for OUTPUT==2,3, in increasing
 !                         order from #1 to #N_OUTPUT)
