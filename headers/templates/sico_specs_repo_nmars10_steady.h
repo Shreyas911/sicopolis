@@ -552,7 +552,7 @@
 !                         Initial-value file (only for ANF_DAT==3,
 !                         or for ANF_DAT==1 and TEMP_INIT==5)
 
-#define RESTART 0
+#define RESTART 1
 !                         Restart method (only for ANF_DAT==3):
 !                         0 : Legacy restart
 !                         1 : Improved restart (smoother transition)

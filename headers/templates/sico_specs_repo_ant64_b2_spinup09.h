@@ -537,7 +537,7 @@
 !                         Initial-value file (only for ANF_DAT==3,
 !                         or for ANF_DAT==1 and TEMP_INIT==5)
 
-#define RESTART 0
+#define RESTART 1
 !                         Restart method (only for ANF_DAT==3):
 !                         0 : Legacy restart
 !                         1 : Improved restart (smoother transition)
@@ -1321,7 +1321,7 @@
 !                             [ = signed year CE (AD) ],
 !                             that is, SICOPOLIS years + YEAR_ZERO
 
-#define OUTPUT_INIT 0
+#define OUTPUT_INIT 1
 !                         Output of initial conditions
 !                         in time-slice files '.nc'
 !                         (for prescribed output time step, OUTPUT==1,3)
