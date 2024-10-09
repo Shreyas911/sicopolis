@@ -22,6 +22,15 @@ ReadNotWritten: (1, 0)
 ReadThenWritten: (0, 0)
 NotReadThenWritten: (0, 1)
 
+subroutine execute_command_line:
+intrinsic:
+shape: (param 1)
+type: (character())
+ReadNotWritten: (1)
+ReadThenWritten: (0)
+NotReadThenWritten: (0)
+deps: (id)
+
 function floor:
 intrinsic:
 shape: (param 1, result)
