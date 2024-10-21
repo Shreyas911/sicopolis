@@ -75,7 +75,7 @@ subroutine read_cost_data()
     temp_path = COST_INPUT_PATH
 #endif
 
-#ifdef BEDMACHINE_COST
+#if (defined(BEDMACHINE_COST) || defined(AGE_COST))
 #if (IMAX==168)
     filename = 'bm5_data_10kms'//trim(filename_extension)
 #elif (IMAX==42)
@@ -100,10 +100,10 @@ subroutine read_cost_data()
         call error(errormsg)
     end if
 
-    call check( nf90_inq_varid(ncid, 'thickness', ncv), thisroutine )
+    call check( nf90_inq_varid(ncid, 'H', ncv), thisroutine )
     call check( nf90_get_var(ncid, ncv, H_BedMachine_data_conv), thisroutine )
 #ifdef ALLOW_BEDMACHINE_UNCERT
-    call check( nf90_inq_varid(ncid, 'errbed', ncv), thisroutine )
+    call check( nf90_inq_varid(ncid, 'H_uncert', ncv), thisroutine )
     call check( nf90_get_var(ncid, ncv, H_unc_BedMachine_data_conv), thisroutine )
 #endif
     !  ------ Close NetCDF file
@@ -119,7 +119,7 @@ subroutine read_cost_data()
     end do
 #endif
 
-#ifdef FAKE_BEDMACHINE_COST
+#if (defined(FAKE_BEDMACHINE_COST) || defined(FAKE_AGE_COST))
 #if (IMAX==168)
     filename = 'fake_bm5_data_10kms'//trim(filename_extension)
 #elif (IMAX==42)
@@ -147,7 +147,7 @@ subroutine read_cost_data()
     call check( nf90_inq_varid(ncid, 'H', ncv), thisroutine )
     call check( nf90_get_var(ncid, ncv, H_BedMachine_data_conv), thisroutine )
 #ifdef ALLOW_BEDMACHINE_UNCERT
-    call check( nf90_inq_varid(ncid, 'errbed', ncv), thisroutine )
+    call check( nf90_inq_varid(ncid, 'H_uncert', ncv), thisroutine )
     call check( nf90_get_var(ncid, ncv, H_unc_BedMachine_data_conv), thisroutine )
 #endif
     !  ------ Close NetCDF file
@@ -199,10 +199,10 @@ subroutine read_cost_data()
         call error(errormsg)
     end if
 
-    call check( nf90_inq_varid(ncid, 'age', ncv), thisroutine )
+    call check( nf90_inq_varid(ncid, 'age_c', ncv), thisroutine )
     call check( nf90_get_var(ncid, ncv, age_data_conv), thisroutine )
 #ifdef ALLOW_AGE_UNCERT
-    call check( nf90_inq_varid(ncid, 'age_uncert', ncv), thisroutine )
+    call check( nf90_inq_varid(ncid, 'age_c_uncert', ncv), thisroutine )
     call check( nf90_get_var(ncid, ncv, age_unc_data_conv), thisroutine )
 #endif
     !  ------ Close NetCDF file
@@ -259,7 +259,7 @@ subroutine read_cost_data()
     call check( nf90_inq_varid(ncid, 'age_c', ncv), thisroutine )
     call check( nf90_get_var(ncid, ncv, age_data_conv), thisroutine )
 #ifdef ALLOW_AGE_UNCERT
-    call check( nf90_inq_varid(ncid, 'age_uncert', ncv), thisroutine )
+    call check( nf90_inq_varid(ncid, 'age_c_uncert', ncv), thisroutine )
     call check( nf90_get_var(ncid, ncv, age_unc_data_conv), thisroutine )
 #endif
     !  ------ Close NetCDF file
@@ -280,4 +280,4 @@ subroutine read_cost_data()
 end subroutine read_cost_data
   
 end module cost_io_m
-  
+ 
