@@ -682,13 +682,22 @@ contains
         mask_mar(j,i)    = mask_mar_conv(i,j)
 #endif
 
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK)) /* NORMAL */
         q_geo(j,i) = real(q_geo_conv(i,j),dp)
+#else /* ALLOW_{TAPENADE,GRDCHK} */
+        q_geo(j,i) = q_geo(j,i) + real(q_geo_conv(i,j),dp)
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
 
         zs(j,i)   = real(zs_conv(i,j),dp)
         zm(j,i)   = real(zm_conv(i,j),dp)
         zb(j,i)   = real(zb_conv(i,j),dp)
         zl(j,i)   = real(zl_conv(i,j),dp)
+
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK)) /* NORMAL */
         H(j,i)    = real(H_conv(i,j),dp)
+#else /* ALLOW_{TAPENADE,GRDCHK} */
+        H(j,i)    = H(j,i) + real(H_conv(i,j),dp)
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
 #if (CALCMOD==1)
         H_c(j,i)  = real(H_cold_conv(i,j),dp)
         H_t(j,i)  = real(H_temp_conv(i,j),dp)
@@ -817,8 +826,13 @@ contains
            vx_c(kc,j,i)    = real(vx_c_conv(i,j,kc),dp)*sec2year
            vy_c(kc,j,i)    = real(vy_c_conv(i,j,kc),dp)*sec2year
            vz_c(kc,j,i)    = real(vz_c_conv(i,j,kc),dp)*sec2year
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK)) /* NORMAL */
            temp_c(kc,j,i)  = real(temp_c_conv(i,j,kc),dp)
            age_c(kc,j,i)   = real(age_c_conv(i,j,kc),dp)*year2sec
+#else /* ALLOW_{TAPENADE,GRDCHK} */
+           age_c(kc,j,i)   = age_c(kc,j,i) + real(age_c_conv(i,j,kc),dp)*year2sec
+           temp_c(kc,j,i)  = temp_c(kc,j,i) + real(temp_c_conv(i,j,kc),dp)
+#endif /* ALLOW_{TAPENADE,GRDCHK} */
            enth_c(kc,j,i)  = real(enth_c_conv(i,j,kc),dp)
            omega_c(kc,j,i) = real(omega_c_conv(i,j,kc),dp)
            enh_c(kc,j,i)   = real(enh_c_conv(i,j,kc),dp)

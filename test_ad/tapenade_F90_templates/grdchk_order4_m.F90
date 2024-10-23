@@ -181,7 +181,7 @@ end subroutine grdchk_main
             delta_tda_const = 0.0 ! Not compatible with TSURFACE>4
             q_geo           = 0.0
             c_slide_init    = 0.0
-            H               = 0.0 ! Only compatible with ANF_DAT==1
+            H               = 0.0 ! Only compatible with ANF_DAT==1,3
 #if (ACCSURFACE==2 || ACCSURFACE==3)
             gamma_s         = 0.0
 #endif
@@ -372,7 +372,7 @@ end subroutine grdchk_main
             delta_tda_const = 0.0 ! Not compatible with TSURFACE>4
             q_geo           = 0.0
             c_slide_init    = 0.0
-            H               = 0.0 ! Only compatible with ANF_DAT==1
+            H               = 0.0 ! Only compatible with ANF_DAT==1,3
 #if (ACCSURFACE==2 || ACCSURFACE==3)
             gamma_s         = 0.0
 #endif

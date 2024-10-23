@@ -59,9 +59,9 @@ contains
         igen_q_geo = ctrl_index
       else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_H') then
         igen_H = ctrl_index
-#if (ANF_DAT != 1)
+#if (ANF_DAT != 1 && ANF_DAT != 3)
         errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
-          //'Initial surface topography as a control param is only compatible with ANF_DAT == 1 !'
+          //'Initial surface topography as a control param is only compatible with ANF_DAT == 1 or ANF_DAT == 3 !'
         call error(errormsg)
 #endif
       else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_gamma_s') then
@@ -254,10 +254,10 @@ contains
       
       if (trim(adjustl(xx_genarr3d_vars(ctrl_index))) .EQ. 'xx_temp_c') then
         igen_temp_c = ctrl_index
-#if (((ANF_DAT == 1) && TEMP_INIT==5) || (ANF_DAT > 2))
+#if (ANF_DAT==1 && TEMP_INIT==5)
         errormsg = ' >>> ctrl_map_ini_genarr3d: ' &
           //'Initial ice temperature as a control param is only compatible with ' &
-          //'ANF_DAT==1 and TEMP_INIT<=5 or ANF_DAT==2!'
+          //'ANF_DAT == 1 and TEMP_INIT <= 5 or ANF_DAT == 2 or ANF_DAT == 3 !'
         call error(errormsg)
 #endif  
       else if (trim(adjustl(xx_genarr3d_vars(ctrl_index))) .EQ. 'xx_age_c') then

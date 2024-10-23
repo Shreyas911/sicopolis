@@ -1366,10 +1366,10 @@
 #define ALLOW_BEDMACHINE_UNCERT
 #define COST_INPUT_PATH '/scratch2/shreyas/GrIS_paleo_data'
 
-#define NTDAMAX 11
+#define NTDAMAX 10
 !                       Number of intervals for interpolation of
 !                       time-varying control variables.
 
-#define DTIME_INTERP0 1000.0d0
+#define DTIME_INTERP0 100.0d0
 !		                (TIME_END0-TIME_INIT0)/NTDAMAX
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
