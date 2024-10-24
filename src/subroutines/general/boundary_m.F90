@@ -967,8 +967,8 @@ do j=0, JMAX
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
 
 #if(defined(DTIME_INTERP0) && defined(NTDAMAX))
-   delta_tda_interp(j,i) = delta_tda(floor_interp,j,i)  * (1-alpha_interp) &
-                        + delta_tda(ceiling_interp,j,i) * alpha_interp
+   delta_tda_interp(j,i) = delta_tda(floor_interp,j,i)  * alpha_interp &
+                        + delta_tda(ceiling_interp,j,i) * (1-alpha_interp)
 #endif
 
 #if (defined(ANT) || defined(GRL)) /* Antarctica or Greenland */
