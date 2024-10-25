@@ -552,7 +552,8 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 	z_co_ords = [None], limited_or_block_or_full_or_scalar = 'limited',
 	bool_ad_after_sico_init = True,
 	output_vars = [], output_iters = [], output_dims = [],
-	output_adj_vars = [], output_adj_iters = [], output_adj_dims = []):
+	output_adj_vars = [], output_adj_iters = [], output_adj_dims = [],
+    bool_sico_init_active = True):
 
 	'''
 	Purpose - Sets up everything correctly for compilation of adjoint run
@@ -577,6 +578,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 	output_adj_vars - List of adjoint variables to output
 	output_adj_iters - List of iter number to output the adjoint variables
 	output_adj_dims - List of z co-ordinates for adjoint variables that we output
+    bool_sico_init_active - Make this False if sico_init is inactive, for example for delta_tda_const and ANF_DAT==3
 	'''
 
 
@@ -615,108 +617,203 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 		modify_file(sicopolis_tapenade_cpp_b_file, ref_string, new_string,
 			replace_or_append_or_prepend = 'append',
 				instance_all = True)
-	
-		ref_string = 'CALL SICO_INIT_B'
-		new_string = ''
 
-		str_ad_after_sico_init = 'after_sico_init' if bool_ad_after_sico_init else 'before_sico_init'
-		
-		for var_index, (ind_var, dimension, z_co_ord) in enumerate(zip(ind_vars, dimensions, z_co_ords), start = 1):
+		if bool_sico_init_active:
+			ref_string = 'CALL SICO_INIT_B'
+			new_string = ''
 
-			unit = [f'{var_index}000', f'{var_index}001']
+			str_ad_after_sico_init = 'after_sico_init' if bool_ad_after_sico_init else 'before_sico_init'
+
+			for var_index, (ind_var, dimension, z_co_ord) in enumerate(zip(ind_vars, dimensions, z_co_ords), start = 1):
+
+				unit = [f'{var_index}000', f'{var_index}001']
 
 
-			if(dimension == 2):
-				new_string = new_string + f'''
-				open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat\',&
-					form="FORMATTED", status="REPLACE")
-				open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}_{str_ad_after_sico_init}.dat\',&
-					form="FORMATTED", status="REPLACE")
-				do p = 1, points
-				i = ipoints(p)
-				j = jpoints(p)
-				write ({unit[0]}, *) {ind_var}b(j,i)
-				end do
-				close(unit={unit[0]})
-				do i = 0, {IMAX}
-				do j = 0, {JMAX}
-				write ({unit[1]}, *) {ind_var}b(j,i)
-				end do
-				end do
-				close(unit={unit[1]})
-				'''
-			elif(dimension == 3 and z_co_ord is not None):
-				new_string = new_string + f'''
-				open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat\',&
-					form="FORMATTED", status="REPLACE")
-				open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}_{str_ad_after_sico_init}.dat\',&
-					form="FORMATTED", status="REPLACE")
-				do p = 1, points
-				i = ipoints(p)
-				j = jpoints(p)
-				write ({unit[0]}, *) {ind_var}b({z_co_ord},j,i)
-				end do
-				close(unit={unit[0]})
-				do i = 0, {IMAX}
-				do j = 0, {JMAX}
-				write ({unit[1]}, *) {ind_var}b({z_co_ord},j,i)
-				end do
-				end do
-				close(unit={unit[1]})
-				'''
-			else :	
-				raise ValueError("Wrong dimensions or z coord for adjoint")
-				sys.exit(1)
+				if(dimension == 2):
+					new_string = new_string + f'''
+					open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat\',&
+						form="FORMATTED", status="REPLACE")
+					open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}_{str_ad_after_sico_init}.dat\',&
+						form="FORMATTED", status="REPLACE")
+					do p = 1, points
+					i = ipoints(p)
+					j = jpoints(p)
+					write ({unit[0]}, *) {ind_var}b(j,i)
+					end do
+					close(unit={unit[0]})
+					do i = 0, {IMAX}
+					do j = 0, {JMAX}
+					write ({unit[1]}, *) {ind_var}b(j,i)
+					end do
+					end do
+					close(unit={unit[1]})
+					'''
+				elif(dimension == 3 and z_co_ord is not None):
+					new_string = new_string + f'''
+					open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat\',&
+						form="FORMATTED", status="REPLACE")
+					open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}_{str_ad_after_sico_init}.dat\',&
+						form="FORMATTED", status="REPLACE")
+					do p = 1, points
+					i = ipoints(p)
+					j = jpoints(p)
+					write ({unit[0]}, *) {ind_var}b({z_co_ord},j,i)
+					end do
+					close(unit={unit[0]})
+					do i = 0, {IMAX}
+					do j = 0, {JMAX}
+					write ({unit[1]}, *) {ind_var}b({z_co_ord},j,i)
+					end do
+					end do
+					close(unit={unit[1]})
+					'''
+				else :
+					raise ValueError("Wrong dimensions or z coord for adjoint")
+					sys.exit(1)
 
-		if bool_ad_after_sico_init is True:
-			modify_file(sicopolis_tapenade_cpp_b_file, ref_string, new_string,
-				replace_or_append_or_prepend = 'prepend', instance_all = True)
+			if bool_ad_after_sico_init is True:
+				modify_file(sicopolis_tapenade_cpp_b_file, ref_string, new_string,
+					replace_or_append_or_prepend = 'prepend', instance_all = True)
+			else:
+				modify_file(sicopolis_tapenade_cpp_b_file, ref_string, new_string,
+					replace_or_append_or_prepend = 'append', instance_all = True)
 		else:
+			ref_string = 'CALL SICO_MAIN_LOOP_B'
+			new_string = ''
+
+			str_ad_after_sico_init = 'after_sico_init' if bool_ad_after_sico_init else 'before_sico_init'
+
+			for var_index, (ind_var, dimension, z_co_ord) in enumerate(zip(ind_vars, dimensions, z_co_ords), start = 1):
+
+				unit = [f'{var_index}000', f'{var_index}001']
+
+
+				if(dimension == 2):
+					new_string = new_string + f'''
+					open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat\',&
+						form="FORMATTED", status="REPLACE")
+					open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}_{str_ad_after_sico_init}.dat\',&
+						form="FORMATTED", status="REPLACE")
+					do p = 1, points
+					i = ipoints(p)
+					j = jpoints(p)
+					write ({unit[0]}, *) {ind_var}b(j,i)
+					end do
+					close(unit={unit[0]})
+					do i = 0, {IMAX}
+					do j = 0, {JMAX}
+					write ({unit[1]}, *) {ind_var}b(j,i)
+					end do
+					end do
+					close(unit={unit[1]})
+					'''
+				elif(dimension == 3 and z_co_ord is not None):
+					new_string = new_string + f'''
+					open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat\',&
+						form="FORMATTED", status="REPLACE")
+					open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}_{str_ad_after_sico_init}.dat\',&
+						form="FORMATTED", status="REPLACE")
+					do p = 1, points
+					i = ipoints(p)
+					j = jpoints(p)
+					write ({unit[0]}, *) {ind_var}b({z_co_ord},j,i)
+					end do
+					close(unit={unit[0]})
+					do i = 0, {IMAX}
+					do j = 0, {JMAX}
+					write ({unit[1]}, *) {ind_var}b({z_co_ord},j,i)
+					end do
+					end do
+					close(unit={unit[1]})
+					'''
+				else :
+					raise ValueError("Wrong dimensions or z coord for adjoint")
+					sys.exit(1)
+
 			modify_file(sicopolis_tapenade_cpp_b_file, ref_string, new_string,
 				replace_or_append_or_prepend = 'append', instance_all = True)
-	
+
 	else:
+		if bool_sico_init_active:
+			ref_string = 'CALL SICO_INIT_B'
+			new_string = ''
+
+			str_ad_after_sico_init = 'after_sico_init' if bool_ad_after_sico_init else 'before_sico_init'
+
+			for var_index, (ind_var, dimension, z_co_ord) in enumerate(zip(ind_vars, dimensions, z_co_ords), start = 1):
+
+				unit = [f'{var_index}000', f'{var_index}001']
+
+
+				if(dimension == 2):
+					new_string = new_string + f'''
+					open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat\',&
+						form="FORMATTED", status="REPLACE")
+					open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}_{str_ad_after_sico_init}.dat\',&
+						form="FORMATTED", status="REPLACE")
+					write ({unit[0]}, *) SUM({ind_var}b)
+					close(unit={unit[0]})
+					write ({unit[1]}, *) SUM({ind_var}b)
+					close(unit={unit[1]})
+					'''
+				elif(dimension == 3 and z_co_ord is not None):
+					new_string = new_string + f'''
+					open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat\',&
+						form="FORMATTED", status="REPLACE")
+					open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}_{str_ad_after_sico_init}.dat\',&
+						form="FORMATTED", status="REPLACE")
+					write ({unit[0]}, *) SUM({ind_var}b)
+					close(unit={unit[0]})
+					write ({unit[1]}, *) SUM({ind_var}b)
+					close(unit={unit[1]})
+					'''
+				else :
+					raise ValueError("Wrong dimensions or z coord for adjoint")
+					sys.exit(1)
 	
-		ref_string = 'CALL SICO_INIT_B'
-		new_string = ''
-
-		str_ad_after_sico_init = 'after_sico_init' if bool_ad_after_sico_init else 'before_sico_init'
-		
-		for var_index, (ind_var, dimension, z_co_ord) in enumerate(zip(ind_vars, dimensions, z_co_ords), start = 1):
-
-			unit = [f'{var_index}000', f'{var_index}001']
-
-
-			if(dimension == 2):
-				new_string = new_string + f'''
-				open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat\',&
-					form="FORMATTED", status="REPLACE")
-				open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}_{str_ad_after_sico_init}.dat\',&
-					form="FORMATTED", status="REPLACE")
-				write ({unit[0]}, *) SUM({ind_var}b)
-				close(unit={unit[0]})
-				write ({unit[1]}, *) SUM({ind_var}b)
-				close(unit={unit[1]})
-				'''
-			elif(dimension == 3 and z_co_ord is not None):
-				new_string = new_string + f'''
-				open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat\',&
-					form="FORMATTED", status="REPLACE")
-				open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}_{str_ad_after_sico_init}.dat\',&
-					form="FORMATTED", status="REPLACE")
-				write ({unit[0]}, *) SUM({ind_var}b)
-				close(unit={unit[0]})
-				write ({unit[1]}, *) SUM({ind_var}b)
-				close(unit={unit[1]})
-				'''
-			else :	
-				raise ValueError("Wrong dimensions or z coord for adjoint")
-				sys.exit(1)
-
-		if bool_ad_after_sico_init is True:
-			modify_file(sicopolis_tapenade_cpp_b_file, ref_string, new_string,
-				replace_or_append_or_prepend = 'prepend', instance_all = True)
+			if bool_ad_after_sico_init is True:
+				modify_file(sicopolis_tapenade_cpp_b_file, ref_string, new_string,
+					replace_or_append_or_prepend = 'prepend', instance_all = True)
+			else:
+				modify_file(sicopolis_tapenade_cpp_b_file, ref_string, new_string,
+					replace_or_append_or_prepend = 'append', instance_all = True)
 		else:
+			ref_string = 'CALL SICO_MAIN_LOOP_B'
+			new_string = ''
+	
+			str_ad_after_sico_init = 'after_sico_init' if bool_ad_after_sico_init else 'before_sico_init'
+
+			for var_index, (ind_var, dimension, z_co_ord) in enumerate(zip(ind_vars, dimensions, z_co_ords), start = 1):
+
+				unit = [f'{var_index}000', f'{var_index}001']
+
+
+				if(dimension == 2):
+					new_string = new_string + f'''
+					open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat\',&
+						form="FORMATTED", status="REPLACE")
+					open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}_{str_ad_after_sico_init}.dat\',&
+						form="FORMATTED", status="REPLACE")
+					write ({unit[0]}, *) SUM({ind_var}b)
+					close(unit={unit[0]})
+					write ({unit[1]}, *) SUM({ind_var}b)
+					close(unit={unit[1]})
+					'''
+				elif(dimension == 3 and z_co_ord is not None):
+					new_string = new_string + f'''
+					open({unit[0]}, file=\'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat\',&
+						form="FORMATTED", status="REPLACE")
+					open({unit[1]}, file=\'AdjointVals_{ind_var}b_{header}_{str_ad_after_sico_init}.dat\',&
+						form="FORMATTED", status="REPLACE")
+					write ({unit[0]}, *) SUM({ind_var}b)
+					close(unit={unit[0]})
+					write ({unit[1]}, *) SUM({ind_var}b)
+					close(unit={unit[1]})
+					'''
+				else :
+					raise ValueError("Wrong dimensions or z coord for adjoint")
+					sys.exit(1)
+
 			modify_file(sicopolis_tapenade_cpp_b_file, ref_string, new_string,
 				replace_or_append_or_prepend = 'append', instance_all = True)
 
@@ -850,7 +947,7 @@ def setup_forward(ind_var, header, domain,
 	block_imin = None, block_imax = None, block_jmin = None, block_jmax = None,
 	tapenade_main_file = 'tapenade_main.F90',
 	bool_ad_after_sico_init = True,
-	unit = '99999'):
+	unit = '99999', bool_sico_init_active = True):
 	
 
 	'''
@@ -870,7 +967,7 @@ def setup_forward(ind_var, header, domain,
 	tapenade_main_file - Location of tapenade_main file
 	bool_ad_after_sico_init - Bool that decides if perturbation is before or after sico_init
 	unit - The unit to be used in FORTRAN-90 code while opening and closing the output file
-
+	bool_sico_init_active - Make this False if sico_init is inactive, for example for delta_tda_const and ANF_DAT==3
 	'''
 
 	if(domain == 'grl' or domain == 'ant'):
@@ -878,8 +975,12 @@ def setup_forward(ind_var, header, domain,
 	else:
 		raise ValueError('Wrong Domain')
 
-	copy_file(original_file = '../test_ad/tapenade_F90_templates/tapenade_main.F90',
-		  	  destination_file = tapenade_main_file)
+	if bool_sico_init_active: 
+		copy_file(original_file = '../test_ad/tapenade_F90_templates/tapenade_main.F90',
+				  destination_file = tapenade_main_file)
+	else:
+		copy_file(original_file = '../test_ad/tapenade_F90_templates/tapenade_main_init_inactive.F90',
+				  destination_file = tapenade_main_file)
 
 	IMAX, JMAX, KCMAX, KTMAX = get_imax_jmax_kcmax_ktmax()
 
@@ -1100,7 +1201,8 @@ def simulation(mode, header, domain,
 	      ckp_status = False, ckp_num = 10, validation = True,
 	      sicopolis_tapenade_cpp_b_file = 'sicopolis_tapenade_cpp_b.f90',
 	      sico_main_loop_m_cpp_b_file = 'sico_main_loop_m_cpp_b.f90',
-	      f90c = 'gfortran', cc = 'gcc', tap_adj_prof = 1, low = 0.0, tol = 0.1):
+	      f90c = 'gfortran', cc = 'gcc', tap_adj_prof = 1, low = 0.0, tol = 0.1,
+          bool_sico_init_active = True):
 
 	'''
 	Purpose - Sets up everything correctly for compilation of adjoint run
@@ -1131,6 +1233,7 @@ def simulation(mode, header, domain,
 	tap_adj_prof - If 1, activate profiling for adjoint
 	low - abs(values) below maxabs_value*lower_threshold are not checked
     tol - How much relative error do we tolerate?
+    bool_sico_init_active - Make this False if sico_init is inactive, for example for delta_tda_const and ANF_DAT==3
 	'''
 
 	try:
@@ -1199,7 +1302,8 @@ def simulation(mode, header, domain,
 			     z_co_ords = [ind_var_z_co_ord], limited_or_block_or_full_or_scalar = limited_or_block_or_full_or_scalar,
 			     bool_ad_after_sico_init = bool_ad_after_sico_init,
 			     output_vars = output_vars, output_iters = output_iters, output_dims = output_dims,
-			     output_adj_vars = output_adj_vars, output_adj_iters = output_adj_iters, output_adj_dims = output_adj_dims)
+			     output_adj_vars = output_adj_vars, output_adj_iters = output_adj_iters, output_adj_dims = output_adj_dims,
+                 bool_sico_init_active = bool_sico_init_active)
 
 		compile_code(mode = mode, header = header, domain = domain,
 			    clean = False, dep_var=dep_var, ind_vars = ind_var,
@@ -1232,7 +1336,7 @@ def simulation(mode, header, domain,
 			     block_imin = block_imin, block_imax = block_imax, block_jmin = block_jmin, block_jmax = block_jmax,
 			     tapenade_main_file = tapenade_main_file,
 			     bool_ad_after_sico_init = bool_ad_after_sico_init,
-			     unit = unit)
+			     unit = unit, bool_sico_init_active = bool_sico_init_active)
 
 		compile_code(mode = mode, header = header, domain = domain,
 			     clean = True, dep_var=dep_var, ind_vars = ind_var,
@@ -1309,6 +1413,7 @@ if __name__ == "__main__":
 	parser.add_argument("-low", '--low', help="abs(values) below maxabs_value*lower_threshold are not checked", type=str)
 	parser.add_argument("-asi", '--after_sico_init', help="If 1, activation of AD after sico_init", type=str)
 	parser.add_argument("-tol", '--tolerance', help="maxabs relative error acceptable", type=str)
+	parser.add_argument("-bia", '--bool_sico_init_active', help="1 if sico_init active. True for most cases.")
 
 	args = parser.parse_args()
 
@@ -1340,7 +1445,7 @@ if __name__ == "__main__":
 	              'output_adj_iters', 'output_adj_dims', 'checkpoint', 'run',
 	              'c_compiler', 'f90_compiler', 'adj_prof',
 	              'limited_or_block_or_full_or_scalar',
-	              'low', 'after_sico_init', 'tolerance']
+	              'low', 'after_sico_init', 'tolerance', 'bool_sico_init_active']
 
 	for attr in list_attrs:
 		if not hasattr(args, attr):
@@ -1355,6 +1460,11 @@ if __name__ == "__main__":
 	else:
 		args.bool_ad_after_sico_init = False
 
+	if int(args.bool_sico_init_active) == 1:
+		args.bool_sico_init_active = True
+	else:
+		args.bool_sico_init_active = False
+
 	for mode in ['normal', 'grdchk', 'adjoint', 'forward']:
 
 		simulation(mode = mode, header = args.header, domain = args.domain, 
@@ -1366,4 +1476,6 @@ if __name__ == "__main__":
 				output_vars = args.output_vars, output_iters = args.output_iters, output_dims = args.output_dims,
 				output_adj_vars = args.output_adj_vars, output_adj_iters = args.output_adj_iters, output_adj_dims = args.output_adj_dims,
 				ckp_status = ckp_status, ckp_num = args.checkpoint,
-				cc = args.c_compiler, f90c = args.f90_compiler, tap_adj_prof = args.adj_prof, low = float(args.low), tol = float(args.tolerance))
+				cc = args.c_compiler, f90c = args.f90_compiler, tap_adj_prof = args.adj_prof, low = float(args.low), tol = float(args.tolerance),
+				bool_sico_init_active = args.bool_sico_init_active)
+
