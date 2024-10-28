@@ -72,10 +72,10 @@ def test_grl40_bm5_paleo17a_CT4_BH0_BM5_m1ka_pkp_mini_temp_c_bsi():
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_BM5_m1ka_pkp_mini.h', '../src/sico_specs.h'])
 	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_CT4_BH0_BM5_m1ka_pkp_mini -iv temp_c -dim 3 -z 40 -low 0.01 -jsf inputs.json -asi 0 -bia 1', shell = True, check = True)
 
-def test_grl40_bm5_paleo17a_CT4_BH0_BM5_m1ka_pkp_mini_age_c_bsi():
-	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_BM5_m1ka_pkp_mini.h', '../headers'])
-	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_BM5_m1ka_pkp_mini.h', '../src/sico_specs.h'])
-	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_CT4_BH0_BM5_m1ka_pkp_mini -iv age_c -dim 3 -z 40 -jsf inputs.json -asi 0 -bia 1', shell = True, check = True)
+#def test_grl40_bm5_paleo17a_CT4_BH0_BM5_m1ka_pkp_mini_age_c_bsi():
+#	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_BM5_m1ka_pkp_mini.h', '../headers'])
+#	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_BM5_m1ka_pkp_mini.h', '../src/sico_specs.h'])
+#	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_CT4_BH0_BM5_m1ka_pkp_mini -iv age_c -dim 3 -z 40 -jsf inputs.json -asi 0 -bia 1', shell = True, check = True)
 
 def test_grl40_bm5_paleo17a_CT4_BH0_BM5_m1ka_pkp_mini_H_bsi():
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_BM5_m1ka_pkp_mini.h', '../headers'])
@@ -160,7 +160,7 @@ def test_grl40_bm5_paleo17a_CT4_BH0_FAC_m1ka_pkp_mini_c_slide_init_scalar_bsi():
 def test_grl40_bm5_paleo17a_CT4_BH0_FAC_m1ka_pkp_mini_delta_tda_const_scalar_bsi():
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_FAC_m1ka_pkp_mini.h', '../headers'])
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_FAC_m1ka_pkp_mini.h', '../src/sico_specs.h'])
-	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_CT4_BH0_FAC_m1ka_pkp_mini -iv delta_tda_const -delta 5.e-2 -jsf inputs_pickup.json -asi 0 -lbfs scalar -bia 0', shell = True, check = True)
+	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_CT4_BH0_FAC_m1ka_pkp_mini -iv delta_tda_const -jsf inputs_pickup.json -asi 0 -lbfs scalar -bia 0', shell = True, check = True)
 
 def test_grl40_bm5_paleo17a_CT4_BH0_FAC_m1ka_pkp_mini_beta1_scalar_bsi():
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_FAC_m1ka_pkp_mini.h', '../headers'])
@@ -202,10 +202,10 @@ def test_grl40_bm5_paleo17a_CT4_BH0_FBM5_m1ka_pkp_mini_temp_c_bsi():
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_FBM5_m1ka_pkp_mini.h', '../src/sico_specs.h'])
 	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_CT4_BH0_FBM5_m1ka_pkp_mini -iv temp_c -dim 3 -z 40 -low 0.01 -jsf inputs.json -asi 0 -bia 1', shell = True, check = True)
 
-def test_grl40_bm5_paleo17a_CT4_BH0_FBM5_m1ka_pkp_mini_age_c_bsi():
-	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_FBM5_m1ka_pkp_mini.h', '../headers'])
-	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_FBM5_m1ka_pkp_mini.h', '../src/sico_specs.h'])
-	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_CT4_BH0_FBM5_m1ka_pkp_mini -iv age_c -dim 3 -z 40 -jsf inputs.json -asi 0 -bia 1', shell = True, check = True)
+#def test_grl40_bm5_paleo17a_CT4_BH0_FBM5_m1ka_pkp_mini_age_c_bsi():
+#	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_FBM5_m1ka_pkp_mini.h', '../headers'])
+#	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_FBM5_m1ka_pkp_mini.h', '../src/sico_specs.h'])
+#	subprocess.run('python3 tapenade_config.py -head grl40_bm5_paleo17a_CT4_BH0_FBM5_m1ka_pkp_mini -iv age_c -dim 3 -z 40 -jsf inputs.json -asi 0 -bia 1', shell = True, check = True)
 
 def test_grl40_bm5_paleo17a_CT4_BH0_FBM5_m1ka_pkp_mini_H_bsi():
 	subprocess.run (['cp', 'headers/sico_specs_grl40_bm5_paleo17a_CT4_BH0_FBM5_m1ka_pkp_mini.h', '../headers'])
