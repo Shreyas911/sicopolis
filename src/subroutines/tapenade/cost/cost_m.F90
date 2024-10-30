@@ -149,7 +149,7 @@ call read_cost_data()
     do i=0, IMAX
       do j=0, JMAX
         !--- Other cost functions:
-        fc = fc + (H_c(j,i) + H_t(j,i))*cell_area(j,i)
+        fc = fc + H(j,i)*cell_area(j,i)
       end do
     end do
 #endif
