@@ -606,7 +606,7 @@ contains
 #else   /* all other domains */
 
 #if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
-  age_c = age_c + 15000.0_dp*year2sec
+  age_c = (age_c + 15000.0_dp)*year2sec
 #else /* NORMAL */
   age_c = 15000.0_dp*year2sec
 #endif /* ALLOW_{GRDCHK,TAPENADE} */

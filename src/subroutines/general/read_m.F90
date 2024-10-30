@@ -830,7 +830,7 @@ contains
            temp_c(kc,j,i)  = real(temp_c_conv(i,j,kc),dp)
            age_c(kc,j,i)   = real(age_c_conv(i,j,kc),dp)*year2sec
 #else /* ALLOW_{TAPENADE,GRDCHK} */
-           age_c(kc,j,i)   = age_c(kc,j,i) + real(age_c_conv(i,j,kc),dp)*year2sec
+           age_c(kc,j,i)   = (age_c(kc,j,i) + real(age_c_conv(i,j,kc),dp))*year2sec
            temp_c(kc,j,i)  = temp_c(kc,j,i) + real(temp_c_conv(i,j,kc),dp)
 #endif /* ALLOW_{TAPENADE,GRDCHK} */
            enth_c(kc,j,i)  = real(enth_c_conv(i,j,kc),dp)
