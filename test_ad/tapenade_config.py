@@ -1460,6 +1460,8 @@ if __name__ == "__main__":
 	else:
 		args.bool_ad_after_sico_init = False
 
+	if args.bool_sico_init_active is None:
+		args.bool_sico_init_active = False
 	if int(args.bool_sico_init_active) == 1:
 		args.bool_sico_init_active = True
 	else:

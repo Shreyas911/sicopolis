@@ -76,6 +76,7 @@ contains
   
   integer(i4b) :: i, j, k, kc, kt, ios, KDATA
   character(len=64), parameter :: thisroutine = 'cost_final'
+  real(dp), dimension(0:JMAX,0:IMAX) :: vs
 
   !-------- Calculate the difference between the modeled and 'observed' ages:
 fc = 0.0
@@ -110,7 +111,6 @@ call read_cost_data()
       end do
     end do
   end do
-
 #endif
 
 #if (defined(BEDMACHINE_COST) || defined(FAKE_BEDMACHINE_COST))
@@ -126,7 +126,26 @@ call read_cost_data()
     end do
 #endif
 
-#if (!defined(BEDMACHINE_COST) && !defined(AGE_COST) && !defined(FAKE_BEDMACHINE_COST) && !defined(FAKE_AGE_COST))
+#if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
+    do i=0, IMAX
+      do j=0, JMAX
+
+#if !defined(ALLOW_TAPENADE)
+        vs(j,i) = sqrt(vx_s_g(j,i)**2 + vy_s_g(j,i)**2)
+#else /* ALLOW_TAPENADE: guarding against non-differentiable sqrt(0) */
+        if ((vx_s_g(j,i)**2 + vy_s_g(j,i)**2) > 0) then
+          vs(j,i) = sqrt(vx_s_g(j,i)**2 + vy_s_g(j,i)**2)
+        else
+          vs(j,i) = 0.0
+        end if
+#endif
+        fc = fc &
+        + (vs(j,i) - vs_MEaSUREs_data(j,i)/year2sec)**2
+      end do
+    end do
+#endif
+
+#if (!defined(BEDMACHINE_COST) && !defined(AGE_COST) && !defined(SURFVEL_COST) && !defined(FAKE_BEDMACHINE_COST) && !defined(FAKE_AGE_COST) && !defined(FAKE_SURFVEL_COST))
     do i=0, IMAX
       do j=0, JMAX
         !--- Other cost functions:

@@ -1599,6 +1599,10 @@ real(dp), dimension(0:JMAX,0:IMAX) :: H_unc_BedMachine_data
 
 #endif
 
+#if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
+real(dp), dimension(0:JMAX,0:IMAX) :: vs_MEaSUREs_data
+#endif
+
 #if defined(ALLOW_GENCTRL)
 ! Note: Not inside the DO_CTRL_* flags so that Tapenade can always see them all.
 ! The differentiation command doesn't have to change then.
