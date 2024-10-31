@@ -105,11 +105,13 @@ import subprocess
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FSVC.h", "grl40_bm5_paleo17a_CT4_BH0_FSVC", "H", "1.e-4", "0.015", None, None, "inputs.json", 0, None, 1, None),
     ("sico_specs_repo_grl16_bm5_ss25ka_CM3_SVC.h", "repo_grl16_bm5_ss25ka_CM3_SVC", "H", None, "0.01", None, None, "inputs.json", 0, None, 1, None),
 
-    # Final cases for q_geo, temp_c, age_c
+    # q_geo cases
     ("sico_specs_repo_grl16_bm5_ss25ka.h", "repo_grl16_bm5_ss25ka", "q_geo", None, None, None, None, "inputs.json", 0, None, 1, None),
     ("sico_specs_repo_grl16_bm5_ss25ka_BM5.h", "repo_grl16_bm5_ss25ka_BM5", "q_geo", None, None, None, None, "inputs.json", 0, None, 1, None),
     ("sico_specs_repo_grl16_bm5_ss25ka_CM3_AC.h", "repo_grl16_bm5_ss25ka_CM3_AC", "q_geo", "1.e-4", None, None, None, "inputs.json", 0, None, 1, None),
     ("sico_specs_repo_grl16_bm5_ss25ka_CM3_SVC.h", "repo_grl16_bm5_ss25ka_CM3_SVC", "q_geo", "1.e-4", None, None, None, "inputs.json", 0, None, 1, None),
+
+    # temp_c and age_c cases
     ("sico_specs_repo_grl16_bm5_ss25ka.h", "repo_grl16_bm5_ss25ka", "temp_c", None, "0.01", "3", "40", "inputs.json", 0, None, 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_AC.h", "grl40_bm5_paleo17a_CT4_BH0_AC", "age_c", None, None, "3", "40", "inputs.json", 0, None, 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FAC.h", "grl40_bm5_paleo17a_CT4_BH0_FAC", "age_c", None, None, "3", "40", "inputs.json", 0, None, 1, None),
