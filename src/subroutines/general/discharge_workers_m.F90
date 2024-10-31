@@ -230,9 +230,9 @@ contains
 
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
   c_dis = (c_dis_0+c_dis_da)*c_dis_fac &
-#else
+#else /* NORMAL */
   c_dis = c_dis_0*c_dis_fac &
-#endif
+#endif ALLOW_{TAPENADE,GRDCHK}
                  *(1.0_dp-(1.0_dp-s_dis)*(phi*rad2deg-60.0_dp)/delta_phi)
   c_dis = max(c_dis, 0.0_dp)
 
