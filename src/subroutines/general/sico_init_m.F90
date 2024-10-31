@@ -4822,9 +4822,11 @@ do j=0, JMAX
    n_cts(j,i) = -1
    kc_cts(j,i) = 0
 
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK)) /* NORMAL */
    H(j,i)   = 0.0_dp
    H_c(j,i) = 0.0_dp
    H_t(j,i) = 0.0_dp
+#endif
 
    dzs_dtau(j,i)  = 0.0_dp
    dzm_dtau(j,i)  = 0.0_dp
