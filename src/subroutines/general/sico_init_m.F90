@@ -2981,6 +2981,9 @@ else if (n_q_geo_mod==2) then
 endif
 
 #else /* ALLOW_{TAPENADE,GRDCHK} */
+!SSG: When ANF_DAT==3 q_geo ends up getting read here as well as from NetCDF file, resulting in twice the value.
+!SSG: This is a guardrail to prevent that.
+#if (ANF_DAT != 3)
 
 if (n_q_geo_mod==1) then
 
@@ -3011,6 +3014,7 @@ else if (n_q_geo_mod==2) then
 
 endif
 
+#endif
 #endif /* ALLOW_{TAPENADE,GRDCHK} */
 
 !-------- Reading of tabulated kei function--------
