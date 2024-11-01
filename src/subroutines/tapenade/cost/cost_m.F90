@@ -100,7 +100,7 @@ call read_cost_data()
     do j=0, JMAX
       do k=0, KDATA
         ! only counting points that are real in the data: 
-        if (  age_data(k,j,i) .ge. -0.5 .and. age_data(k,j,i) .le. 60000.0 .and. H_BedMachine_data(j,i) .ge. 2000.0) then
+        if (age_data(k,j,i) .ge. -0.5 .and. age_data(k,j,i) .le. 60000.0 .and. H_BedMachine_data(j,i) .ge. 2000.0) then
           fc = fc &
 #ifdef ALLOW_AGE_UNCERT
           + (age_data(k,j,i) - age_c(k,j,i)/year2sec)**2/age_unc_data(k,j,i)**2
@@ -116,12 +116,15 @@ call read_cost_data()
 #if (defined(BEDMACHINE_COST) || defined(FAKE_BEDMACHINE_COST))
     do i=0, IMAX
       do j=0, JMAX
-        fc = fc &
+        ! Data has a negative boundary far from the island and we need to ignore it.
+        if (H_BedMachine_data(j,i) .ge. 0.0) then
+          fc = fc &
 #ifdef ALLOW_BEDMACHINE_UNCERT
-        + (H(j,i) - H_BedMachine_data(j,i))**2/H_unc_BedMachine_data(j,i)**2
+          + (H(j,i) - H_BedMachine_data(j,i))**2/H_unc_BedMachine_data(j,i)**2
 #else
-        + (H(j,i) - H_BedMachine_data(j,i))**2
+          + (H(j,i) - H_BedMachine_data(j,i))**2
 #endif
+        end if
       end do
     end do
 #endif
