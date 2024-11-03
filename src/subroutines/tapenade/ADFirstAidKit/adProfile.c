@@ -402,38 +402,50 @@ int callNameComesAfter(unsigned int ckpRank1, unsigned int ckpRank2) {
   return (comparison>0 || (comparison==0 && allCkpLocations[ckpRank1]->line_nb > allCkpLocations[ckpRank2]->line_nb));
 }
 
-void showOneCostBenefit(SortedCostBenefit* sortedCostBenefits) {
+void showOneCostBenefit(SortedCostBenefit* sortedCostBenefits, FILE* fp) {
   CkpLocation* ckpLocation = allCkpLocations[sortedCostBenefits->ckpRank];
   cycle_time_t DeltaT = (sortedCostBenefits->DeltaT / CLOCKS_PER_SEC)*1000; // DeltaT in milliSeconds.
   int DeltaTsec = DeltaT/1000;
   int DeltaTmillisec = DeltaT%1000;
-  printf("  - Time gain -%2d.%03d s.", DeltaTsec, DeltaTmillisec);
+  fprintf(fp, "  - Time gain -%2d.%03d s.", DeltaTsec, DeltaTmillisec);
   delta_size_t DeltaPk = sortedCostBenefits->DeltaPk;
   if (DeltaPk<0) {
-    printf(" and peak memory gain %"PRId64"b", DeltaPk);
+    fprintf(fp, " and peak memory gain %"PRId64"b", DeltaPk);
   } else if (DeltaPk==0) {
-    printf(" at peak memory cost zero");
+    fprintf(fp, " at peak memory cost zero");
   } else {
     int DeltaPkMb = DeltaPk/1000000;
     int DeltaPkb = DeltaPk%1000000;
-    printf(" at peak memory cost %4d.%06d Mb", DeltaPkMb, DeltaPkb);
+    fprintf(fp, " at peak memory cost %4d.%06d Mb", DeltaPkMb, DeltaPkb);
   }
   if (ckpLocation->callee_name) {
-    printf(" for call %s (%u times), at", ckpLocation->callee_name, ckpLocation->occurrences);
+    fprintf(fp, " for call %s (%u times), at", ckpLocation->callee_name, ckpLocation->occurrences);
   } else {
-    printf(" for checkpoint (%u times) starting at", ckpLocation->occurrences);
+    fprintf(fp, " for checkpoint (%u times) starting at", ckpLocation->occurrences);
   }
-  printf(" location#%u: line %u of file %s\n", sortedCostBenefits->ckpRank, ckpLocation->line_nb, ckpLocation->fname);
+  fprintf(fp, " location#%u: line %u of file %s\n", sortedCostBenefits->ckpRank, ckpLocation->line_nb, ckpLocation->fname);
   sortedCostBenefits = sortedCostBenefits->next;
 }
 
 void adProfileAdj_showProfiles() {
+    adProfileAdj_showProfilesFile(NULL);
+}
+
+void adProfileAdj_showProfilesFile(char* filename) {
   SortedCostBenefit* sortedCostBenefitsN = NULL;
   SortedCostBenefit* sortedCostBenefitsZ = NULL;
   SortedCostBenefit* sortedCostBenefitsP = NULL;
   CostBenefit *costBenefits = initialCkpTree.costBenefits;
   SortedCostBenefit** toSortedCostBenefits;
   float ratio;
+  FILE* fpout = stdout;
+  if( filename!=NULL && strlen(filename)>0 ) {
+      fpout = fopen(filename, "w");
+      if( fpout==NULL ) {
+          fprintf(stderr, "ERROR::***%s*** was not opened properly", filename);
+          exit(1);
+      }
+  }
   while (costBenefits) {
     unsigned int newCkpRank = costBenefits->ckpRank;
     if (costBenefits->DeltaPk <= 0) {
@@ -460,22 +472,26 @@ void adProfileAdj_showProfiles() {
     *toSortedCostBenefits = newSorted;
     costBenefits = costBenefits->next;
   }
-  printf("PEAK STACK:%"PRId64" bytes\n", initialCkpTree.Pk);
-  printf("SUGGESTED NOCHECKPOINTs:\n");
-  printf(" * Peak memory gain:\n");
+  fprintf(fpout, "PEAK STACK:%"PRId64" bytes\n", initialCkpTree.Pk);
+  fprintf(fpout, "SUGGESTED NOCHECKPOINTs:\n");
+  fprintf(fpout, " * Peak memory gain:\n");
   while (sortedCostBenefitsN) {
-    showOneCostBenefit(sortedCostBenefitsN);
+      showOneCostBenefit(sortedCostBenefitsN, fpout);
     sortedCostBenefitsN = sortedCostBenefitsN->next;
   }
-  printf(" * Peak memory neutral:\n");
+  fprintf(fpout, " * Peak memory neutral:\n");
   while (sortedCostBenefitsZ) {
-    showOneCostBenefit(sortedCostBenefitsZ);
+      showOneCostBenefit(sortedCostBenefitsZ, fpout);
     sortedCostBenefitsZ = sortedCostBenefitsZ->next;
   }
-  printf(" * Peak memory cost:\n");
+  fprintf(fpout, " * Peak memory cost:\n");
   while (sortedCostBenefitsP) {
-    showOneCostBenefit(sortedCostBenefitsP);
+      showOneCostBenefit(sortedCostBenefitsP, fpout);
     sortedCostBenefitsP = sortedCostBenefitsP->next;
+  }
+  if( fpout!=stdout ) {
+      fclose(fpout);
+      printf("profiling information written to ***%s***\n\n", filename);
   }
 }
 
@@ -519,6 +535,17 @@ void adprofileadj_resetrepeat_() {
 
 void adprofileadj_endrepeat_() {
   adProfileAdj_endRepeat();
+}
+
+void adprofileadj_showprofilesfile_(char* filename) {
+    char* ftnfile;
+    int len;
+    len = strlen(filename) + 1;
+    ftnfile = (char*) malloc( len*sizeof(char) );
+    strcpy(ftnfile, filename);
+    ftnfile[len-1] = '\0';
+    adProfileAdj_showProfilesFile(ftnfile);
+    free( ftnfile );
 }
 
 void adprofileadj_showprofiles_() {

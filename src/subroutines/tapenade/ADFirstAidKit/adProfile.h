@@ -27,6 +27,7 @@ void adProfileAdj_endRepeat() ;
 
 /** Displays the estimated costs/benefits. To be called at the end of the profiled execution. */
 void adProfileAdj_showProfiles() ;
+void adProfileAdj_showProfilesFile(char* filename) ;
 
 
 #endif // ADPROFILE_LOADED

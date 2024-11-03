@@ -6,6 +6,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h> //exit
 #include "adBinomial.h"
 
 // Max number of nested binomial checkpoint loops:
