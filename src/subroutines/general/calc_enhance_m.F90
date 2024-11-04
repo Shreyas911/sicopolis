@@ -230,11 +230,11 @@ contains
 !-------------------------------------------------------------------------------
 !> Weighted enhancement factor for SIA/SStA hybrid dynamics.
 !-------------------------------------------------------------------------------
-  subroutine calc_enhance_hybrid_weighted(weigh_ssta_sia)
+  subroutine calc_enhance_hybrid_weighted(weigh_stream)
 
   implicit none
 
-  real(dp), dimension(0:JMAX,0:IMAX), intent(in) :: weigh_ssta_sia
+  real(dp), dimension(0:JMAX,0:IMAX), intent(in) :: weigh_stream
 
   integer(i4b) :: i, j, kc, kt
 
@@ -246,13 +246,13 @@ contains
         if (flag_shelfy_stream(j,i)) then   ! shelfy stream
 
            do kt=0, KTMAX
-              enh_t(kt,j,i) = weigh_ssta_sia(j,i)*enh_stream &
-                              + (1.0_dp-weigh_ssta_sia(j,i))*enh_t(kt,j,i)
+              enh_t(kt,j,i) = weigh_stream(j,i)*enh_stream &
+                              + (1.0_dp-weigh_stream(j,i))*enh_t(kt,j,i)
            end do
 
            do kc=0, KCMAX
-              enh_c(kc,j,i) = weigh_ssta_sia(j,i)*enh_stream &
-                              + (1.0_dp-weigh_ssta_sia(j,i))*enh_c(kc,j,i)
+              enh_c(kc,j,i) = weigh_stream(j,i)*enh_stream &
+                              + (1.0_dp-weigh_stream(j,i))*enh_c(kc,j,i)
            end do
 
         end if
