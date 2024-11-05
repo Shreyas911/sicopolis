@@ -123,20 +123,20 @@ def test_tapenade_config(header_filename, head, iv, delta, low, dim, z, jsf, asi
 
     cmd = f'python3 tapenade_config.py -head {head} -iv {iv} -jsf {jsf}'
 
-    if delta:
+    if delta is not None:
         cmd += f' -delta {delta}'
-    if low:
+    if low is not None:
         cmd += f' -low {low}'
-    if dim:
+    if dim is not None:
         cmd += f' -dim {dim}'
-    if z:
+    if z is not None:
         cmd += f' -z {z}'
-    if lbfs:
+    if lbfs is not None:
         cmd += f' -lbfs {lbfs}'
-    if bia:
+    if bia is not None:
         cmd += f' -bia {bia}'
-    if asi:
+    if asi is not None:
         cmd += f' -asi {asi}'
-    if dom:
+    if dom is not None:
         cmd += f' -dom {dom}'
     subprocess.run(cmd, shell=True, check=True)
