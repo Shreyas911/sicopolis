@@ -46,7 +46,7 @@ module calc_enhance_m
   private
   public :: calc_enhance_1, calc_enhance_2, calc_enhance_3
   public :: calc_enhance_4, calc_enhance_5
-  public :: calc_enhance_hybrid_weighted
+  public :: calc_enhance_stream_weighted
 
 contains
 
@@ -228,9 +228,9 @@ contains
   end subroutine calc_enhance_5
 
 !-------------------------------------------------------------------------------
-!> Weighted enhancement factor for SIA/SStA hybrid dynamics.
+!> Weighted enhancement factor for fast-flowing ice (ice streams).
 !-------------------------------------------------------------------------------
-  subroutine calc_enhance_hybrid_weighted(weigh_stream)
+  subroutine calc_enhance_stream_weighted(weigh_stream)
 
   implicit none
 
@@ -262,7 +262,7 @@ contains
 
   end if
 
-  end subroutine calc_enhance_hybrid_weighted
+  end subroutine calc_enhance_stream_weighted
 
 !-------------------------------------------------------------------------------
 !> Minimal anisotropic flow enhancement factor.

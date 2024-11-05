@@ -1316,6 +1316,9 @@ real(dp), dimension(n_surf_max) :: y_surf
 real(dp), parameter :: pi = 3.141592653589793_dp
    !! Constant pi
 
+real(dp), parameter :: pi_inv = 1.0_dp/pi
+   !! Inverse of pi
+
 real(dp), parameter :: deg2rad = pi/180.0_dp
    !! pi divided by 180 (-> deg to rad)
 
