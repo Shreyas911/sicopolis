@@ -111,6 +111,7 @@ call read_cost_data()
       end do
     end do
   end do
+
 #endif
 
 #if (defined(BEDMACHINE_COST) || defined(FAKE_BEDMACHINE_COST))

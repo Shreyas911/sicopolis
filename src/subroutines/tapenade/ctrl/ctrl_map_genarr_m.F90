@@ -227,6 +227,7 @@ contains
     implicit none
 
     integer(i4b)        :: ctrl_index
+    integer(i4b)        :: igen_vx_c, igen_vy_c, igen_vz_c
     integer(i4b)        :: igen_temp_c, igen_age_c
 
 #ifdef XX_GENARR3D_VARS_ARR
@@ -239,13 +240,39 @@ contains
     xx_genarr3d_log10initval    = XX_GENARR3D_LOG10INITVAL_ARR
 #endif
 
+    igen_vx_c = 0
+    igen_vy_c = 0
+    igen_vz_c = 0
     igen_temp_c = 0
     igen_age_c = 0
 
 #ifdef XX_GENARR3D_VARS_ARR
     do ctrl_index = 1, NUM_CTRL_GENARR3D
-      
-      if (trim(adjustl(xx_genarr3d_vars(ctrl_index))) .EQ. 'xx_temp_c') then
+      if (trim(adjustl(xx_genarr3d_vars(ctrl_index))) .EQ. 'xx_vx_c') then
+        igen_vx_c = ctrl_index
+#if (!(ANF_DAT==3 && RESTART==1))
+        errormsg = ' >>> ctrl_map_ini_genarr3d: ' &
+          //'vx_c as a control param is only compatible with ' &
+          //'ANF_DAT == 3 and RESTART == 1 for now !'
+        call error(errormsg)
+#endif
+      else if (trim(adjustl(xx_genarr3d_vars(ctrl_index))) .EQ. 'xx_vy_c') then
+        igen_vy_c = ctrl_index
+#if (!(ANF_DAT==3 && RESTART==1))
+        errormsg = ' >>> ctrl_map_ini_genarr3d: ' &
+          //'vy_c as a control param is only compatible with ' &
+          //'ANF_DAT == 3 and RESTART == 1 for now !'
+        call error(errormsg)
+#endif
+      else if (trim(adjustl(xx_genarr3d_vars(ctrl_index))) .EQ. 'xx_vz_c') then
+        igen_vz_c = ctrl_index
+#if (!(ANF_DAT==3 && RESTART==1))
+        errormsg = ' >>> ctrl_map_ini_genarr3d: ' &
+          //'vz_c as a control param is only compatible with ' &
+          //'ANF_DAT == 3 and RESTART == 1 for now !'
+        call error(errormsg)
+#endif
+      else if (trim(adjustl(xx_genarr3d_vars(ctrl_index))) .EQ. 'xx_temp_c') then
         igen_temp_c = ctrl_index
 #if (ANF_DAT==1 && TEMP_INIT==5)
         errormsg = ' >>> ctrl_map_ini_genarr3d: ' &
@@ -263,6 +290,15 @@ contains
   
     end do
 
+    if (igen_vx_c .GT. 0) then
+      call ctrl_map_genarr3d(vx_c, igen_vx_c)
+    end if
+    if (igen_vy_c .GT. 0) then
+      call ctrl_map_genarr3d(vy_c, igen_vy_c)
+    end if
+    if (igen_vz_c .GT. 0) then
+      call ctrl_map_genarr3d(vz_c, igen_vz_c)
+    end if
     if (igen_temp_c .GT. 0) then
       call ctrl_map_genarr3d(temp_c, igen_temp_c)
     end if

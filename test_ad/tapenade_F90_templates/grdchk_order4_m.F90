@@ -196,6 +196,9 @@ end subroutine grdchk_main
             c_dis_da        = 0.0
 #endif
             ! 3D fields
+            vx_c            = 0.0 ! Only compatible with ANF_DAT==3 && RESTART==1
+            vy_c            = 0.0 ! Only compatible with ANF_DAT==3 && RESTART==1
+            vz_c            = 0.0 ! Only compatible with ANF_DAT==3 && RESTART==1
             temp_c          = 0.0 ! Not compatible with TEMP_INIT==5
             age_c           = 0.0
             delta_tda       = 0.0 ! Not compatible with TSURFACE>4
@@ -387,6 +390,9 @@ end subroutine grdchk_main
             c_dis_da        = 0.0
 #endif
             ! 3D fields
+            vx_c            = 0.0 ! Only compatible with ANF_DAT==3 && RESTART==1
+            vy_c            = 0.0 ! Only compatible with ANF_DAT==3 && RESTART==1
+            vz_c            = 0.0 ! Only compatible with ANF_DAT==3 && RESTART==1
             temp_c          = 0.0 ! Not compatible with TEMP_INIT==5
             age_c           = 0.0
             delta_tda       = 0.0 ! Not compatible with TSURFACE>4
