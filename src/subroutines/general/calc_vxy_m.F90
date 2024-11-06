@@ -1787,6 +1787,15 @@ do ij=1, (IMAX+1)*(JMAX+1)
 
 end do
 
+!-------- Weighted flow enhancement factor --------
+
+#if ((DYNAMICS==2 && HYB_MODE==2) || DYNAMICS==3)
+    ! SStA or DIVA
+
+call calc_enhance_stream_weighted(weigh_stream)
+
+#endif
+
 !-------- Parameters for the relaxation scheme --------
 
 #if (MARGIN==3 || DYNAMICS==2 || DYNAMICS==3)
@@ -2222,12 +2231,12 @@ end do
 
 !-------- Weighted flow enhancement factor --------
 
-#if (DYNAMICS==2 || DYNAMICS==3)
+#if (DYNAMICS==2 && (HYB_MODE==0 || HYB_MODE==1))
+    ! SIA-SStA hybrid dynamics
 
-if (flag_calc_temp) call calc_enhance_stream_weighted(weigh_stream)
-                                !%% \!/ This needs to be reconsidered. \!/
+call calc_enhance_stream_weighted(weigh_stream)
 
-#endif   /* DYNAMICS==2 or 3 */
+#endif
 
 !-------- Surface and basal velocities vx_s_g vy_s_g, vx_b_g vy_b_g
 !                                                (defined at (i,j)) --------
@@ -3733,8 +3742,8 @@ do i=0, IMAX
 do j=0, JMAX
 
    if ((mask(j,i)==0).and.(.not.flag_shelfy_stream(j,i))) then
-                                                   ! grounded ice, but
-                                                   ! not shelfy stream
+                                     ! grounded ice, but not shelfy stream
+
       de_ssa(j,i) = 0.0_dp   ! dummy value
 
 #if (DYNAMICS==3)   /* DIVA */
@@ -3746,7 +3755,8 @@ do j=0, JMAX
       vis_int_g(j,i) = H(j,i) * vis_ave_g(j,i)
 
    else if ((mask(j,i)==1).or.(mask(j,i)==2)) then
-                                                   ! ice-free land or ocean
+                                     ! ice-free land or ocean
+
       de_ssa(j,i) = 0.0_dp   ! dummy value
 
 #if (DYNAMICS==3)   /* DIVA */
@@ -3830,7 +3840,6 @@ do j=0, JMAX
                de_t_diva(kt,j,i)= de_c_diva(0,j,i) ! temperate "slice" collapsed to the bottom
             end do
          endif
-   
 
       else if (mask(j,i)==3) then   ! floating ice
 
@@ -3851,7 +3860,7 @@ do j=0, JMAX
 !  ------ Term abbreviations
 
 #if (DYNAMICS==2 || DYNAMICS==3)
-      if (.not.flag_shelfy_stream(j,i)) then
+      if (.not.flag_shelfy_stream(j,i)) then   ! ice shelves (floating ice)
 #endif
 
          do kc=0, KCMAX
@@ -3864,19 +3873,22 @@ do j=0, JMAX
                               0.0_dp, enh_val, 0)
 
 #if (DYNAMICS==3)
-            flui_c_diva(kc,j,i)=1.0_dp/min(max(viscosity(de_ssa(j,i), &
-                              temp_c(kc,j,i), temp_c_m(kc,j,i), &
-                              0.0_dp, enh_val, 0),visc_min),visc_max)
+            flui_c_diva(kc,j,i) &
+               = 1.0_dp/min(max(viscosity(de_ssa(j,i), &
+                                temp_c(kc,j,i), temp_c_m(kc,j,i), &
+                                0.0_dp, enh_val, 0), visc_min), &
+                                visc_max)
 #endif
          end do
          ! Ice shelves (floating ice) are assumed to consist of cold ice only
+         ! -> no kt loop needed
 
 #if (DYNAMICS==2 || DYNAMICS==3)
 
-      else   ! flag_shelfy_stream(j,i) == .true.
+      else   ! gounded ice, flag_shelfy_stream(j,i) == .true.
 
 #if (DYNAMICS==2)
-         de_tmp=de_ssa(j,i)
+         de_tmp = de_ssa(j,i)
 #endif
 
 #if (CALCMOD==-1 || CALCMOD==0)
@@ -3887,11 +3899,17 @@ do j=0, JMAX
             de_tmp = de_c_diva(kc,j,i)
 #endif
 
+#if (DYNAMICS==2 && (HYB_MODE==0 || HYB_MODE==1))
+            ! SIA-SStA hybrid dynamics
             if (flag_enh_stream) then
                enh_val = enh_stream
             else
                enh_val = enh_c(kc,j,i)
             end if
+#elif ((DYNAMICS==2 && HYB_MODE==2) || DYNAMICS==3)
+            ! SStA or DIVA
+            enh_val = enh_c(kc,j,i)
+#endif
 
             cvis1(kc) = aqxy1(kc)*H_c(j,i) &
                            *viscosity(de_tmp, &
@@ -3899,9 +3917,11 @@ do j=0, JMAX
                               0.0_dp, enh_val, 0)
 
 #if (DYNAMICS==3)
-            flui_c_diva(kc,j,i)=1.0_dp/min(max(viscosity(de_tmp, &
-                             temp_c(kc,j,i), temp_c_m(kc,j,i), &
-                             0.0_dp, enh_val, 0),visc_min),visc_max)
+            flui_c_diva(kc,j,i) &
+               = 1.0_dp/min(max(viscosity(de_tmp, &
+                                temp_c(kc,j,i), temp_c_m(kc,j,i), &
+                                0.0_dp, enh_val, 0), visc_min), &
+                                visc_max)
 #endif
          end do
 
@@ -3913,11 +3933,17 @@ do j=0, JMAX
             de_tmp = de_t_diva(kt,j,i)
 #endif
 
+#if (DYNAMICS==2 && (HYB_MODE==0 || HYB_MODE==1))
+            ! SIA-SStA hybrid dynamics
             if (flag_enh_stream) then
                enh_val = enh_stream
             else
                enh_val = enh_t(kt,j,i)
             end if
+#elif ((DYNAMICS==2 && HYB_MODE==2) || DYNAMICS==3)
+            ! SStA or DIVA
+            enh_val = enh_t(kt,j,i)
+#endif
 
             cvis0(kt) = dzeta_t*H_t(j,i) &
                            *viscosity(de_tmp, &
@@ -3925,9 +3951,11 @@ do j=0, JMAX
                               omega_t(kt,j,i), enh_val, 1)
 
 #if (DYNAMICS==3)
-            flui_t_diva(kt,j,i)=1.0_dp/min(max(viscosity(de_tmp, &
-                                 temp_t_m(kt,j,i), temp_t_m(kt,j,i), &
-                                 omega_t(kt,j,i), enh_val, 1),visc_min),visc_max)
+            flui_t_diva(kt,j,i) &
+               = 1.0_dp/min(max(viscosity(de_tmp, &
+                                temp_t_m(kt,j,i), temp_t_m(kt,j,i), &
+                                omega_t(kt,j,i), enh_val, 1), visc_min), &
+                                visc_max)
 #endif
          end do
 
@@ -3937,11 +3965,17 @@ do j=0, JMAX
             de_tmp = de_c_diva(kc,j,i)
 #endif
 
+#if (DYNAMICS==2 && (HYB_MODE==0 || HYB_MODE==1))
+            ! SIA-SStA hybrid dynamics
             if (flag_enh_stream) then
                enh_val = enh_stream
             else
                enh_val = enh_c(kc,j,i)
             end if
+#elif ((DYNAMICS==2 && HYB_MODE==2) || DYNAMICS==3)
+            ! SStA or DIVA
+            enh_val = enh_c(kc,j,i)
+#endif
 
             cvis1(kc) = aqxy1(kc)*H_c(j,i) &
                            *viscosity(de_tmp, &
@@ -3949,9 +3983,11 @@ do j=0, JMAX
                               0.0_dp, enh_val, 0)
 
 #if (DYNAMICS==3)
-            flui_c_diva(kc,j,i)=1.0_dp/min(max(viscosity(de_tmp, &
-                                 temp_c(kc,j,i), temp_c_m(kc,j,i), &
-                                 0.0_dp, enh_val, 0),visc_min),visc_max)
+            flui_c_diva(kc,j,i) &
+               = 1.0_dp/min(max(viscosity(de_tmp, &
+                                temp_c(kc,j,i), temp_c_m(kc,j,i), &
+                                0.0_dp, enh_val, 0), visc_min), &
+                                visc_max)
 #endif
                               
          end do
@@ -3964,11 +4000,17 @@ do j=0, JMAX
             de_tmp = de_c_diva(kc,j,i)
 #endif
 
+#if (DYNAMICS==2 && (HYB_MODE==0 || HYB_MODE==1))
+            ! SIA-SStA hybrid dynamics
             if (flag_enh_stream) then
                enh_val = enh_stream
             else
                enh_val = enh_c(kc,j,i)
             end if
+#elif ((DYNAMICS==2 && HYB_MODE==2) || DYNAMICS==3)
+            ! SStA or DIVA
+            enh_val = enh_c(kc,j,i)
+#endif
 
             cvis1(kc) = aqxy1(kc)*H_c(j,i) &
                          *viscosity(de_tmp, &
@@ -3976,9 +4018,11 @@ do j=0, JMAX
                            omega_c(kc,j,i), enh_val, 2)
 
 #if (DYNAMICS==3)
-            flui_c_diva(kc,j,i)=1.0_dp/min(max(viscosity(de_tmp, &
-                              temp_c(kc,j,i), temp_c_m(kc,j,i), &
-                              omega_c(kc,j,i), enh_val, 2),visc_min),visc_max)
+            flui_c_diva(kc,j,i) &
+               = 1.0_dp/min(max(viscosity(de_tmp, &
+                                temp_c(kc,j,i), temp_c_m(kc,j,i), &
+                                omega_c(kc,j,i), enh_val, 2), visc_min), &
+                                visc_max)
 #endif
          end do
 
@@ -4096,9 +4140,11 @@ real(dp) :: inv_H, var_mid
 
 do kc=0, KCMAX
    if (flag_aa_nonzero) then
-      H_dz_c_dzeta(kc) = (aa * eaz_c(kc))/(ea-1.0_dp) ! dzeta_c_dz(kc) divided by H_c(j,i)
+      H_dz_c_dzeta(kc) = (aa * eaz_c(kc))/(ea-1.0_dp)
+                  ! dzeta_c_dz(kc) divided by H_c(j,i)
    else
-      H_dz_c_dzeta(kc) = 1.0_dp ! for linear sigma transformation, dz_c_dzeta= 1 * H_c(j,i)
+      H_dz_c_dzeta(kc) = 1.0_dp
+                  ! for linear sigma transformation, dz_c_dzeta = 1 * H_c(j,i)
    end if
 end do
 
@@ -4141,7 +4187,8 @@ do j=0, JMAX
 
          f_1_pre_int_c(kc) = flui_c_diva(kc,j,i) &
                               * ( H_c_ratio * (1.0_dp - eaz_c_quotient(kc)) ) &
-                              * H_dz_c_dzeta(kc) * H_c(j,i)! * sigma transformation
+                              * H_dz_c_dzeta(kc) * H_c(j,i)
+                                                   ! * sigma transformation
 
          f_2_pre_int_c(kc) = f_1_pre_int_c(kc) &
                               * ( H_c_ratio * (1.0_dp - eaz_c_quotient(kc)) )
@@ -4176,11 +4223,11 @@ do j=0, JMAX
       end if
 
       !-------- Stagger on x and y grid ---------
-      !if (flag_shelfy_stream(j,i) .and. flag_shelfy_stream(j,i+1)) then
+      ! if (flag_shelfy_stream(j,i) .and. flag_shelfy_stream(j,i+1)) then
       F_2_x(j,i) = 0.5_dp*(F_2_g(j,i) + F_2_g(j,i+1))
       F_2_y(j,i) = 0.5_dp*(F_2_g(j,i) + F_2_g(j+1,i))
 
-   else !not shelfy stream :
+   else ! not shelfy stream:
       F_2_g(j,i)     = 0.0_dp
       F_2_x(j,i)     = 0.0_dp
       F_2_y(j,i)     = 0.0_dp
