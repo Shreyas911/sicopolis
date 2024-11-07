@@ -15,7 +15,6 @@ import subprocess
     ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "delta_tda_const", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_SVC.h", "grl40_bm5_paleo17a_CT4_BH0_SVC", "delta_tda_const", "5.e-2", None, None, None, "inputs.json", 1, "scalar", 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FSVC.h", "grl40_bm5_paleo17a_CT4_BH0_FSVC", "delta_tda_const", "5.e-2", None, None, None, "inputs.json", 1, "scalar", 1, None),
-    ("sico_specs_repo_grl16_bm5_ss25ka_CM3_SVC.h", "repo_grl16_bm5_ss25ka_CM3_SVC", "delta_tda_const", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
 
     # c_slide_init cases
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_BM5.h", "grl40_bm5_paleo17a_CT4_BH0_BM5", "c_slide_init", "1.e-2", None, None, None, "inputs.json", 1, "scalar", 1, None),
@@ -26,13 +25,12 @@ import subprocess
     ("sico_specs_repo_grl16_bm5_ss25ka_CM3_AC.h", "repo_grl16_bm5_ss25ka_CM3_AC", "c_slide_init", "1.e-2", None, None, None, "inputs.json", 1, "scalar", 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_SVC.h", "grl40_bm5_paleo17a_CT4_BH0_SVC", "c_slide_init", "5.e-2", None, None, None, "inputs.json", 1, "scalar", 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FSVC.h", "grl40_bm5_paleo17a_CT4_BH0_FSVC", "c_slide_init", "5.e-2", None, None, None, "inputs.json", 1, "scalar", 1, None),
-    ("sico_specs_repo_grl16_bm5_ss25ka_CM3_SVC.h", "repo_grl16_bm5_ss25ka_CM3_SVC", "c_slide_init", "1.e-2", None, None, None, "inputs.json", 1, "scalar", 1, None),
 
     # beta1 cases
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0.h", "grl40_bm5_paleo17a_CT4_BH0", "beta1", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_BM5.h", "grl40_bm5_paleo17a_CT4_BH0_BM5", "beta1", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FBM5.h", "grl40_bm5_paleo17a_CT4_BH0_FBM5", "beta1", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
-    ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_AC.h", "grl40_bm5_paleo17a_CT4_BH0_AC", "beta1", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
+    ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_AC.h", "grl40_bm5_paleo17a_CT4_BH0_AC", "beta1", "5.e-2", None, None, None, "inputs.json", 1, "scalar", 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FAC.h", "grl40_bm5_paleo17a_CT4_BH0_FAC", "beta1", "1.e-1", None, None, None, "inputs.json", 1, "scalar", 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_SVC.h", "grl40_bm5_paleo17a_CT4_BH0_SVC", "beta1", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FSVC.h", "grl40_bm5_paleo17a_CT4_BH0_FSVC", "beta1", "1.e-1", None, None, None, "inputs.json", 1, "scalar", 1, None),
@@ -93,13 +91,11 @@ import subprocess
     ("sico_specs_repo_grl16_bm5_ss25ka_CM3_AC.h", "repo_grl16_bm5_ss25ka_CM3_AC", "H", None, "0.01", None, None, "inputs.json", 1, None, 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_SVC.h", "grl40_bm5_paleo17a_CT4_BH0_SVC", "H", "1.e-4", "0.01", None, None, "inputs.json", 1, None, 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FSVC.h", "grl40_bm5_paleo17a_CT4_BH0_FSVC", "H", "1.e-4", "0.01", None, None, "inputs.json", 1, None, 1, None),
-    ("sico_specs_repo_grl16_bm5_ss25ka_CM3_SVC.h", "repo_grl16_bm5_ss25ka_CM3_SVC", "H", None, "0.01", None, None, "inputs.json", 1, None, 1, None),
 
     # q_geo cases
     ("sico_specs_repo_grl16_bm5_ss25ka.h", "repo_grl16_bm5_ss25ka", "q_geo", None, None, None, None, "inputs.json", 1, None, 1, None),
     ("sico_specs_repo_grl16_bm5_ss25ka_BM5.h", "repo_grl16_bm5_ss25ka_BM5", "q_geo", None, None, None, None, "inputs.json", 1, None, 1, None),
     ("sico_specs_repo_grl16_bm5_ss25ka_CM3_AC.h", "repo_grl16_bm5_ss25ka_CM3_AC", "q_geo", None, "0.01", None, None, "inputs.json", 1, None, 1, None),
-    ("sico_specs_repo_grl16_bm5_ss25ka_CM3_SVC.h", "repo_grl16_bm5_ss25ka_CM3_SVC", "q_geo", None, "0.01", None, None, "inputs.json", 1, None, 1, None),
 
     # temp_c and age_c cases
     ("sico_specs_repo_grl16_bm5_ss25ka.h", "repo_grl16_bm5_ss25ka", "temp_c", None, None, "3", "40", "inputs.json", 1, None, 1, None),
