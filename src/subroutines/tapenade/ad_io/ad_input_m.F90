@@ -54,9 +54,15 @@ module ad_input_m
     
 #if defined(AD_INPUT_PATH)
 
+#ifdef DO_CTRL_GENARR2D
         xx_genarr2d_vars            = XX_GENARR2D_VARS_ARR
+#endif
+#ifdef DO_CTRL_GENARR3D
         xx_genarr3d_vars            = XX_GENARR3D_VARS_ARR
+#endif
+#ifdef DO_CTRL_GENTIM2D
         xx_gentim2d_vars            = XX_GENTIM2D_VARS_ARR
+#endif
 
         !-------- Create file name --------
         
