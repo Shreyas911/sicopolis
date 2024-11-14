@@ -144,7 +144,7 @@ call read_cost_data()
         end if
 #endif
         fc = fc &
-        + (vs(j,i) - vs_MEaSUREs_data(j,i)/year2sec)**2
+        + (vs(j,i)*year2sec - vs_MEaSUREs_data(j,i))**2
       end do
     end do
 #endif
