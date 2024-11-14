@@ -250,26 +250,26 @@ contains
     do ctrl_index = 1, NUM_CTRL_GENARR3D
       if (trim(adjustl(xx_genarr3d_vars(ctrl_index))) .EQ. 'xx_vx_c') then
         igen_vx_c = ctrl_index
-#if (!(ANF_DAT==3 && RESTART==1))
+#if (!(ANF_DAT==3) || defined(LEGACY_RESTART))
         errormsg = ' >>> ctrl_map_ini_genarr3d: ' &
           //'vx_c as a control param is only compatible with ' &
-          //'ANF_DAT == 3 and RESTART == 1 for now !'
+          //'ANF_DAT == 3 and !defined(LEGACY_RESTART) for now !'
         call error(errormsg)
 #endif
       else if (trim(adjustl(xx_genarr3d_vars(ctrl_index))) .EQ. 'xx_vy_c') then
         igen_vy_c = ctrl_index
-#if (!(ANF_DAT==3 && RESTART==1))
+#if (!(ANF_DAT==3) || defined(LEGACY_RESTART))
         errormsg = ' >>> ctrl_map_ini_genarr3d: ' &
           //'vy_c as a control param is only compatible with ' &
-          //'ANF_DAT == 3 and RESTART == 1 for now !'
+          //'ANF_DAT == 3 and !defined(LEGACY_RESTART) for now !'
         call error(errormsg)
 #endif
       else if (trim(adjustl(xx_genarr3d_vars(ctrl_index))) .EQ. 'xx_vz_c') then
         igen_vz_c = ctrl_index
-#if (!(ANF_DAT==3 && RESTART==1))
+#if (!(ANF_DAT==3) || defined(LEGACY_RESTART))
         errormsg = ' >>> ctrl_map_ini_genarr3d: ' &
           //'vz_c as a control param is only compatible with ' &
-          //'ANF_DAT == 3 and RESTART == 1 for now !'
+          //'ANF_DAT == 3 and !defined(LEGACY_RESTART) for now !'
         call error(errormsg)
 #endif
       else if (trim(adjustl(xx_genarr3d_vars(ctrl_index))) .EQ. 'xx_temp_c') then
