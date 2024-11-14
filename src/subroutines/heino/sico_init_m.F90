@@ -924,8 +924,8 @@ write(10, fmt=trim(fmt3)) 'temp_init_val =', TEMP_INIT_VAL
 write(10, fmt=trim(fmt1)) 'Initial-value file = '//ANFDATNAME
 write(10, fmt=trim(fmt1)) 'Path to initial-value file = '//ANF_DAT_PATH
 #endif
-#if (ANF_DAT==3 && defined(RESTART))
-write(10, fmt=trim(fmt2)) 'RESTART = ', RESTART
+#if (ANF_DAT==3 && defined(LEGACY_RESTART))
+write(10, fmt=trim(fmt1)) 'LEGACY_RESTART = defined'
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
@@ -1187,14 +1187,18 @@ write(10, fmt=trim(fmt3)) 'visc_smooth_diff =', VISC_SMOOTH_DIFF
 write(10, fmt=trim(fmt3)) 'relax_fact_ssa =', RELAX_FACT_SSA
 #endif
 #endif
-#if (DYNAMICS==2 && HYB_MODE==0 && defined(RATIO_SL_THRESH))
+#if ((DYNAMICS==2 && (HYB_MODE==0 || HYB_MODE==2)) || DYNAMICS==3)
+#if (defined(RATIO_SL_THRESH))
 write(10, fmt=trim(fmt3)) 'ratio_sl_thresh =', RATIO_SL_THRESH
 #endif
-#if (DYNAMICS==2 && HYB_MODE==0 && defined(SSTA_SIA_WEIGH_FCT))
+#if (defined(SSTA_SIA_WEIGH_FCT))
 write(10, fmt=trim(fmt2)) 'SSTA_SIA_WEIGH_FCT = ', SSTA_SIA_WEIGH_FCT
 #endif
-#if (DYNAMICS==2 && HYB_MODE==1 && defined(HYB_REF_SPEED))
+#endif
+#if (DYNAMICS==2 && HYB_MODE==1)
+#if (defined(HYB_REF_SPEED))
 write(10, fmt=trim(fmt3)) 'hyb_ref_speed =', HYB_REF_SPEED
+#endif
 #endif
 write(10, fmt=trim(fmt1)) ' '
 
@@ -1591,7 +1595,7 @@ vis_int_g = 0.0_dp
 
 call topography3(dxi, deta, anfdatname)
 
-#if (!(ANF_DAT==3 && RESTART==1))
+#if (!(ANF_DAT==3) || defined(LEGACY_RESTART))
 
 call boundary(time_init, dtime, dxi, deta)
 
@@ -1610,11 +1614,11 @@ end do
 
 smb_corr = 0.0_dp
 
-#endif /* !(ANF_DAT==3 && RESTART==1) */
+#endif /* (!(ANF_DAT==3) || defined(LEGACY_RESTART)) */
 
 Q_b_tot = Q_bm + Q_tld
 
-#if (!(ANF_DAT==3 && RESTART==1))
+#if (!(ANF_DAT==3) || defined(LEGACY_RESTART))
 
 #if (ENHMOD==1)
    call calc_enhance_1()
@@ -1635,7 +1639,7 @@ Q_b_tot = Q_bm + Q_tld
    call error(errormsg)
 #endif
 
-#endif /* !(ANF_DAT==3 && RESTART==1) */
+#endif /* (!(ANF_DAT==3) || defined(LEGACY_RESTART)) */
 
 #endif
 
@@ -1687,7 +1691,7 @@ call flag_update_gf_gl_cf()
 call calc_vxy_b_init()
 call calc_dzs_dxy_aux(dxi, deta)
 
-#if (!(ANF_DAT==3 && RESTART==1))
+#if (!(ANF_DAT==3) || defined(LEGACY_RESTART))
 
 #if (DYNAMICS==1 || DYNAMICS==2 || DYNAMICS==3)
 
@@ -1714,7 +1718,7 @@ errormsg = ' >>> sico_init: DYNAMICS must be between 0 and 3!'
 call error(errormsg)
 #endif
 
-#endif /* !(ANF_DAT==3 && RESTART==1) */
+#endif /* (!(ANF_DAT==3) || defined(LEGACY_RESTART)) */
 
 call calc_dxyz(dxi, deta, dzeta_c, dzeta_t)
 
