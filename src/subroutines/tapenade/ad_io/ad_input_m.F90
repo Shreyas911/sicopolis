@@ -48,6 +48,23 @@ module ad_input_m
 #endif /* ALLOW_TAP_TLM */
 #endif
 
+#if (defined(ALLOW_TAP_ADJ) && defined(ALLOW_TAP_ADJ_AT_ACTION))
+
+#if (defined(AGE_COST) || defined(FAKE_AGE_COST))
+        real(dp), dimension(0:IMAX,0:JMAX,0:KCMAX) :: age_cb_conv
+#endif
+
+#if (defined(BEDMACHINE_COST) || defined(FAKE_BEDMACHINE_COST))
+        real(dp), dimension(0:IMAX,0:JMAX)         :: Hb_conv
+#endif
+
+#if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
+        real(dp), dimension(0:JMAX,0:IMAX)         :: vs
+        real(dp), dimension(0:IMAX,0:JMAX)         :: vsb_conv
+#endif
+
+#endif /* ALLOW_TAP_ADJ && ALLOW_TAP_ADJ_AT_ACTION */
+
         character(len=64), parameter :: thisroutine = 'ad_input'
         character(len=256) :: filename, filename_with_path, temp_path
         character(len= 16), parameter :: filename_extension = '.nc'
@@ -68,10 +85,18 @@ module ad_input_m
         
         temp_path = AD_INPUT_PATH
 #ifdef ALLOW_TAP_TLM
+#ifdef ALLOW_TAP_TLM_A_ACTION
+        filename = 'ad_input_tlm_hessaction'//trim(filename_extension)
+#else
         filename = 'ad_input_tlm'//trim(filename_extension)
+#endif
 #endif /* ALLOW_TAP_TLM */
 #ifdef ALLOW_TAP_ADJ
+#ifdef ALLOW_TAP_ADJ_AT_ACTION
+        filename = 'ad_input_adj_hessaction'//trim(filename_extension)
+#else
         filename = 'ad_input_adj'//trim(filename_extension)
+#endif
 #endif /* ALLOW_TAP_ADJ */
         filename_with_path = trim(temp_path)//'/'//trim(filename)
     
@@ -118,6 +143,25 @@ module ad_input_m
         end do
 #endif
 
+#if (defined(ALLOW_TAP_ADJ) && defined(ALLOW_TAP_ADJ_AT_ACTION))
+
+#if (defined(AGE_COST) || defined(FAKE_AGE_COST))
+        call check( nf90_inq_varid(ncid, 'age_cb', ncv) )
+        call check( nf90_get_var(ncid, ncv, age_cb_conv) )
+#endif
+
+#if (defined(BEDMACHINE_COST) || defined(FAKE_BEDMACHINE_COST))
+        call check( nf90_inq_varid(ncid, 'Hb', ncv) )
+        call check( nf90_get_var(ncid, ncv, Hb_conv) )
+#endif
+
+#if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
+        call check( nf90_inq_varid(ncid, 'vsb', ncv) )
+        call check( nf90_get_var(ncid, ncv, vsb_conv) ) 
+#endif
+
+#endif /* ALLOW_TAP_ADJ && ALLOW_TAP_ADJ_AT_ACTION */
+
         !  ------ Close NetCDF file
         call check( nf90_close(ncid) )
 
@@ -163,6 +207,45 @@ module ad_input_m
         end do
         end do
 #endif
+
+#if (defined(ALLOW_TAP_ADJ) && defined(ALLOW_TAP_ADJ_AT_ACTION))
+
+#if (defined(AGE_COST) || defined(FAKE_AGE_COST))
+        do i = 0, IMAX
+        do j = 0, JMAX
+        do kc = 0, KCMAX
+            age_cb(kc,j,i) = age_cb_conv(i,j,kc)
+        end do
+        end do
+        end do
+#endif
+
+#if (defined(BEDMACHINE_COST) || defined(FAKE_BEDMACHINE_COST))
+        do i = 0, IMAX
+        do j = 0, JMAX
+            Hb(j,i) = Hb_conv(i,j)
+        end do
+        end do
+#endif
+
+#if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
+        do i = 0, IMAX
+        do j = 0, JMAX
+! /* ALLOW_TAPENADE: guarding against non-differentiable sqrt(0) */
+          vs(j,i) = sqrt(vx_s_g(j,i)**2 + vy_s_g(j,i)**2)
+          if (vs(j,i) > 0) then
+            vx_s_gb(j,i)  = vx_s_gb(j,i) + vsb_conv(i,j)*(vx_s_g(j,i)/vs(j,i))
+            vy_s_gb(j,i)  = vy_s_gb(j,i) + vsb_conv(i,j)*(vy_s_g(j,i)/vs(j,i))
+            vsb_conv(i,j) = 0.0
+          else
+            vx_s_gb(j,i)  = 0.0
+            vy_s_gb(j,i)  = 0.0
+          end if
+        end do
+        end do
+#endif
+
+#endif /* ALLOW_TAP_ADJ && ALLOW_TAP_ADJ_AT_ACTION */
 
 #endif
 

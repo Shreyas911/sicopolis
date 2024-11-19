@@ -76,7 +76,9 @@ program tapenade_main
 #endif /* ALLOW_GENCTRL */
 
 #if defined(ALLOW_TAP_ADJ)
+#if !defined(ALLOW_TAP_ADJ_AT_ACTION)
     fcb = 1.
+#endif
     call SICOPOLIS_TAPENADE_B(dtime, &
     & dtime_temp, dtime_wss, dtime_out, dtime_ser, time, time_init, time_end, &
     & time_output, dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
@@ -171,7 +173,10 @@ program tapenade_main
     &            dtime_temp, dtime_wss, dtime_out, dtime_ser, time, &
     &            time_init, time_end, time_output, dxi, deta, dzeta_c, &
     &            dzeta_t, dzeta_r, ndat2d, ndat3d, n_output)
+
+#if !defined(ALLOW_TAP_TLM_A_ACTION)
     CALL COST_FINAL_D()
+#endif
      
     CALL SICO_END()
 

@@ -1,4 +1,4 @@
-all: drivergrdchk_cov drivergrdchk driveradjoint driverforward cov drivernormal
+all: drivergrdchk_cov drivergrdchk driveradjoint driverforward cov drivernormal driveradjointhessaction driverforwardhessaction
 
 ifndef F90C
 F90C=gfortran
@@ -110,6 +110,10 @@ driveradjoint: TAP_PROF_OPTION=-profile
 driveradjoint: CFLAGS_PROF=-D_ADSTACKPROFILE -D_ADSTACKPREFETCH
 driveradjoint: DEFINE_FLAGS_ADJOINT_PROF=-DALLOW_TAP_ADJ_PROF
 driveradjoint: TAP_ADJ_PROF_PTHREAD=-lpthread
+driveradjointhessaction: TAP_PROF_OPTION=-profile
+driveradjointhessaction: CFLAGS_PROF=-D_ADSTACKPROFILE -D_ADSTACKPREFETCH
+driveradjointhessaction: DEFINE_FLAGS_ADJOINT_PROF=-DALLOW_TAP_ADJ_PROF
+driveradjointhessaction: TAP_ADJ_PROF_PTHREAD=-lpthread
 
 SRC_TAP_PROF=\
 ${ADFirstAidKit_DIR}/adProfile.c\
@@ -140,9 +144,15 @@ DEFINE_FLAGS_GRDCHK= -DALLOW_GRDCHK -DIN_PATH=\"${IN_PATH_GRDCHK}\" -DOUT_PATH=\
 
 IN_PATH_ADJOINT=../sico_in
 OUT_PATH_ADJOINT=../sico_out/ADJOINT_${HEADER}
+
 driveradjoint: TAP_MODE_FLAG=ALLOW_TAP_ADJ
 driverforward: TAP_MODE_FLAG=ALLOW_TAP_TLM
-DEFINE_FLAGS_ADJOINT= -DDATE=\"14/02/24\" -DVERSION=\"v23.12\" -DALLOW_TAPENADE -D${TAP_MODE_FLAG} ${DEFINE_FLAGS_ADJOINT_PROF} -DIN_PATH=\"${IN_PATH_ADJOINT}\" -DOUT_PATH=\"${OUT_PATH_ADJOINT}\"
+driveradjointhessaction: TAP_MODE_FLAG=ALLOW_TAP_ADJ
+driveradjointhessaction: DEFINE_FLAGS_ADJOINT_HESSACTION=-DALLOW_TAP_ADJ_AT_ACTION
+driverforwardhessaction: TAP_MODE_FLAG=ALLOW_TAP_TLM
+driverforwardhessaction: DEFINE_FLAGS_TLM_HESSACTION=-DALLOW_TAP_TLM_A_ACTION
+
+DEFINE_FLAGS_ADJOINT= -DDATE=\"14/02/24\" -DVERSION=\"v23.12\" -DALLOW_TAPENADE -D${TAP_MODE_FLAG} ${DEFINE_FLAGS_ADJOINT_HESSACTION} ${DEFINE_FLAGS_TLM_HESSACTION} ${DEFINE_FLAGS_ADJOINT_PROF} -DIN_PATH=\"${IN_PATH_ADJOINT}\" -DOUT_PATH=\"${OUT_PATH_ADJOINT}\"
 
 SRC_SICO=\
 subroutines/general/sico_types_m.F90\
@@ -285,6 +295,36 @@ driverforward:${LIBLIS} \
 		${LIBLISFLAG} \
 		${LIB_NETCDF_F90_FLAG}
 
+driverforwardhessaction:${LIBLIS} \
+	${LIB_NETCDF_F90} \
+	${SRC_HEADERS} \
+	$(patsubst %.c,%.o,$(SRC_TAP)) \
+	error_m_cpp.o \
+	sico_types_m_cpp.o \
+	compare_float_m_cpp.o \
+	sico_maths_m_tlm_cpp.o \
+	subroutines/tapenade/src/diffsizes.o \
+	nc_check_m_cpp.o \
+	PHONY_TAP_TLM \
+	${OBJ_AD_TLM} \
+	ad_input_m_cpp.o \
+	ad_output_m_cpp.o \
+	tapenade_main_cpp.o
+	${F90C} ${F90FLAGS} -o $@ \
+		error_m_cpp.o \
+		sico_types_m_cpp.o \
+		compare_float_m_cpp.o \
+		sico_maths_m_tlm_cpp.o \
+		nc_check_m_cpp.o \
+		$(patsubst %.c,%.o,$(SRC_TAP)) \
+		${OBJ_AD_TLM} \
+		ad_input_m_cpp.o \
+		ad_output_m_cpp.o \
+		subroutines/tapenade/src/diffsizes.o \
+		tapenade_main_cpp.o \
+		${LIBLISFLAG} \
+		${LIB_NETCDF_F90_FLAG}
+
 .PHONY = PHONY_TAP_TLM
 PHONY_TAP_TLM: ${SRC_AD_INPUT}
 	@if [ ! -f ${TAPENADE_CHECK_FILE_TLM} ]; then\
@@ -298,6 +338,37 @@ PHONY_TAP_TLM: ${SRC_AD_INPUT}
 	fi
 
 driveradjoint:${LIBLIS} \
+	${LIB_NETCDF_F90} \
+	${SRC_HEADERS} \
+	$(patsubst %.c,%.o,$(SRC_TAP)) \
+	error_m_cpp.o \
+	sico_types_m_cpp.o \
+	compare_float_m_cpp.o \
+	sico_maths_m_grad_cpp.o \
+	subroutines/tapenade/src/diffsizes.o \
+	nc_check_m_cpp.o \
+	PHONY_TAP_ADJ \
+	${OBJ_AD_ADJ} \
+	ad_input_m_cpp.o \
+	ad_output_m_cpp.o \
+	tapenade_main_cpp.o
+	${F90C} ${F90FLAGS} -o $@ \
+		error_m_cpp.o \
+		sico_types_m_cpp.o \
+		compare_float_m_cpp.o \
+		sico_maths_m_grad_cpp.o \
+		nc_check_m_cpp.o \
+		$(patsubst %.c,%.o,$(SRC_TAP)) \
+		${OBJ_AD_ADJ} \
+		ad_input_m_cpp.o \
+		ad_output_m_cpp.o \
+		subroutines/tapenade/src/diffsizes.o \
+		tapenade_main_cpp.o \
+		${TAP_ADJ_PROF_PTHREAD} \
+		${LIBLISFLAG} \
+		${LIB_NETCDF_F90_FLAG}
+
+driveradjointhessaction:${LIBLIS} \
 	${LIB_NETCDF_F90} \
 	${SRC_HEADERS} \
 	$(patsubst %.c,%.o,$(SRC_TAP)) \
