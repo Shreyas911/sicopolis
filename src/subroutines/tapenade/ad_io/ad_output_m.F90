@@ -204,9 +204,7 @@ module ad_output_m
 #else
     call check( nf90_def_dim(ncid, trim(coord_id(4)), 1, ncd), thisroutine )
 #endif
-#if (defined(ALLOW_TAP_TLM) && !defined(ALLOW_TAP_TLM_A_ACTION)) 
     call check( nf90_def_dim(ncid, trim(coord_id(5)), 1, ncd), thisroutine )
-#endif
 
     !    ---- x (= xi)
 
