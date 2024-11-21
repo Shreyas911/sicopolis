@@ -532,11 +532,34 @@ clean:
 			driver*\
 			*~
 
-cleanobj: 
+clean_noexec:
+	rm -f subroutines/tapenade/*/*.o\
+		  subroutines/tapenade/*/*.mod\
+          subroutines/general/*.o\
+		  subroutines/general/*.mod\
+		  ../test_ad/tapenade_F90_templates/*.o\
+		  ../test_ad/tapenade_F90_templates/*.mod\
+          sicopolis.o\
+	rm -f dummy.f90\
+			*_cpp.f90\
+			*_cpp_b.f90\
+			*_cpp_d.f90\
+			*.o\
+			*.h\
+			*.msg\
+			*.gcov\
+			*.gcda\
+			*.gcno\
+			*.mod*\
+			tapStack*\
+			*~
+
+cleanobj:
 	rm -f subroutines/tapenade/*/*.o \
               subroutines/general/*.o\
               *.o
 
 .PHONY: clean
+.PHONY: clean_noexec
 .PHONY: cleanobj
 .PRECIOUS: ad_output_m_cpp.f90 nc_check_m_cpp.f90 sico_vars_m_cpp.f90 tapenade_main_cpp.f90 ad_input_m_cpp.f90 sico_maths_m_grad_cpp.f90
