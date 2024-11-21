@@ -1,4 +1,4 @@
-all: drivergrdchk_cov drivergrdchk driveradjoint driverforward cov drivernormal driveradjointhessaction driverforwardhessaction
+all: drivergrdchk_cov drivergrdchk driveradjoint driverforward cov drivernodiff driveradjointhessaction driverforwardhessaction
 
 ifndef F90C
 F90C=gfortran
@@ -123,20 +123,20 @@ endif
 ifeq ($(F90C),gfortran)
 F90FLAGS_COV= --coverage -fprofile-arcs -ftest-coverage -O0 -g -DRUN_SPECS_HEADER=\"sico_specs.h\" -mcmodel=medium -fno-range-check -ffpe-trap=invalid,zero -ffree-line-length-none
 CFLAGS_COV= --coverage -fprofile-arcs -ftest-coverage -O0 -g
-F90FLAGS= -O3 -g -DRUN_SPECS_HEADER=\"sico_specs.h\" -mcmodel=medium -fno-range-check -ffpe-trap=invalid,zero -ffree-line-length-none
+F90FLAGS= -O3 -g -DRUN_SPECS_HEADER=\"sico_specs.h\" -DAD_SPECS_HEADER=\"ad_specs.h\" -mcmodel=medium -fno-range-check -ffpe-trap=invalid,zero -ffree-line-length-none
 CFLAGS= -O3 -g
 endif
 
 ifeq ($(F90C),ifort)
 $(info ifort might not work well with the genctrl setup since -extend-source can extend line length limit to max 132 columns.)
 $(info This remains untested, so can consider a higher value than 132 probably.)
-F90FLAGS= -m64 -convert big_endian -assume byterecl -mcmodel=medium -O2 -align -ip -fp-model source -xHost -DRUN_SPECS_HEADER=\"sico_specs.h\" -extend-source 132
+F90FLAGS= -m64 -convert big_endian -assume byterecl -mcmodel=medium -O2 -align -ip -fp-model source -xHost -DRUN_SPECS_HEADER=\"sico_specs.h\" -DAD_SPECS_HEADER=\"ad_specs.h\" -extend-source 132
 CFLAGS= -O0 -ip -m64 -xHost -mcmodel=medium -DWORDLENGTH=4 -DDEFAULT_R8
 endif
 
-IN_PATH_NORMAL=../sico_in
-OUT_PATH_NORMAL=../sico_out/N_${HEADER}
-DEFINE_FLAGS_NORMAL= -DIN_PATH=\"${IN_PATH_NORMAL}\" -DOUT_PATH=\"${OUT_PATH_NORMAL}\" -DNETCDF=1 -DHEADER=\"${HEADER}\"
+IN_PATH_NODIFF=../sico_in
+OUT_PATH_NODIFF=../sico_out/N_${HEADER}
+DEFINE_FLAGS_NODIFF= -DALLOW_NODIFF -DIN_PATH=\"${IN_PATH_NODIFF}\" -DOUT_PATH=\"${OUT_PATH_NODIFF}\" -DNETCDF=1 -DHEADER=\"${HEADER}\"
 
 IN_PATH_GRDCHK=../sico_in
 OUT_PATH_GRDCHK=../sico_out/GRDCHK_${HEADER}
@@ -421,10 +421,10 @@ sico_specs.h: ../headers/sico_specs_$(HEADER).h
 ad_specs.h: ../headers_ad/ad_$(HEADER).h
 	cp $^ $@
 
-drivernormal: sico_specs.h $(SRC_SICO) $(SRC)
-	rm -rf ${OUT_PATH_NORMAL}
+drivernodiff: sico_specs.h $(SRC_SICO) $(SRC) ad_specs.h
+	rm -rf ${OUT_PATH_NODIFF}
 	sed -i 's/&__NL__//g' sico_specs.h
-	${F90C} -I./ ${F90FLAGS} ${DEFINE_FLAGS_NORMAL} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
+	${F90C} -I./ ${F90FLAGS} ${DEFINE_FLAGS_NODIFF} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
 	${F90C} ${F90FLAGS} -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
 
 drivergrdchk: sico_specs.h $(SRC_SICO) $(SRC_SICO_AD_COST) $(SRC) $(SRC_SICO_AD_GRDCHK)

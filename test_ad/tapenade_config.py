@@ -79,7 +79,7 @@ def compile_code(mode, header, domain,
 	Purpose - Compiles code using MakefileTapenade and the given options
 
 	Variables:
-	mode - Can be grdchk or adjoint or forward or normal
+	mode - Can be grdchk or adjoint or forward or nodiff
 	clean - If True, runs the terminal command - make -f MakefileTapenade clean
 	dep_var - Specify dependent variable (generally fc)
 	ind_vars - Specify independent variables (H, vx_c, vy_c, q_geo, etc.)
@@ -92,7 +92,7 @@ def compile_code(mode, header, domain,
 		pass
 	elif (mode == 'forward' and (dep_var is not None or ind_vars is not None)):
 		pass
-	elif (mode == 'grdchk' or mode == 'normal'):
+	elif (mode == 'grdchk' or mode == 'nodiff'):
 		pass
 	else:
 		raise TypeError('Incorrect options specified for compile_code.')
@@ -1361,7 +1361,7 @@ def simulation(mode, header, domain,
 
 			validate_FD_AD(grdchk_file, tlm_file, tolerance = tol, low = low)
 	
-	elif mode == 'normal':
+	elif mode == 'nodiff':
 
 		### The name here should match the output directory in MakefileTapenade
 
@@ -1371,11 +1371,11 @@ def simulation(mode, header, domain,
 			     clean = True, dep_var=dep_var, ind_vars = ind_var,
 			     f90c = f90c, cc = cc, tap_adj_prof = tap_adj_prof)
 		
-		print(f'normal compilation complete for {header}.')
+		print(f'nodiff compilation complete for {header}.')
 		
 		if run_executable_auto is True:
-			run_executable('normal')
-			print(f'normal execution complete for {header}.')
+			run_executable('nodiff')
+			print(f'nodiff execution complete for {header}.')
 
 	else:
 		raise ValueError("Incorrect simulation mode")
@@ -1467,7 +1467,7 @@ if __name__ == "__main__":
 	else:
 		args.bool_sico_init_active = False
 
-	for mode in ['normal', 'grdchk', 'adjoint', 'forward']:
+	for mode in ['nodiff', 'grdchk', 'adjoint', 'forward']:
 
 		simulation(mode = mode, header = args.header, domain = args.domain, 
 				ind_var = args.ind_var, dep_var = args.dep_var,

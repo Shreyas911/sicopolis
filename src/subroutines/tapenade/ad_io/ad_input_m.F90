@@ -1,7 +1,11 @@
 module ad_input_m
 
     use sico_types_m
+#if defined(ALLOW_NODIFF)
+    use sico_variables_m
+#else
     use sico_variables_m_diff
+#endif
     use error_m
   
     implicit none
@@ -98,6 +102,10 @@ module ad_input_m
         filename = 'ad_input_adj'//trim(filename_extension)
 #endif
 #endif /* ALLOW_TAP_ADJ */
+#ifdef ALLOW_NODIFF
+        filename = 'ad_input_nodiff'//trim(filename_extension)
+#endif
+
         filename_with_path = trim(temp_path)//'/'//trim(filename)
     
         !  ------ Open NetCDF file

@@ -89,6 +89,9 @@
 !-------- Include run specification header --------
 
 #include RUN_SPECS_HEADER
+#ifdef ALLOW_NODIFF
+#include AD_SPECS_HEADER
+#endif /* ALLOW_NODIFF */
 
 !-------- Include header for the Library of Iterative Solvers Lis
 !                                               (only if required) --------
@@ -188,6 +191,16 @@
 
 #include "subroutines/general/init_temp_water_age_m.F90"
 
+#ifdef ALLOW_NODIFF
+#ifdef ALLOW_GENCTRL
+#include "subroutines/tapenade/ctrl/ctrl_map_genarr_m.F90"
+#include "subroutines/tapenade/ctrl/ctrl_map_gentim_m.F90"
+#include "subroutines/tapenade/ctrl/ctrl_init_gen_m.F90"
+#include "subroutines/tapenade/ad_io/ad_input_m.F90"
+#include "subroutines/tapenade/ad_io/ad_output_m.F90"
+#endif /* ALLOW_GENCTRL */
+#endif /* ALLOW_NODIFF */
+
 #if (defined(EISMINT))
 #include "subroutines/eismint/sico_init_m.F90"
 #elif (defined(HEINO))
@@ -205,11 +218,11 @@
 #include "subroutines/general/sico_main_loop_m.F90"
 #include "subroutines/general/sico_end_m.F90"
 
-#if defined(ALLOW_GRDCHK)
+#if (defined(ALLOW_NODIFF) || defined(ALLOW_GRDCHK))
 #include "subroutines/tapenade/cost/cost_io_m.F90"
 #include "subroutines/tapenade/cost/cost_m.F90"
 #include "subroutines/tapenade/grdchk/grdchk_m.F90"
-#endif /* ALLOW_GRDCHK */
+#endif /* ALLOW_{NODIFF,GRDCHK} */
 
 !-------------------------------------------------------------------------------
 !> Main program of SICOPOLIS.
@@ -229,6 +242,13 @@ use sico_init_m
 use sico_main_loop_m
 use sico_end_m
 
+#if defined(ALLOW_NODIFF)
+use cost_m, only: cost_final
+#if defined(ALLOW_GENCTRL)
+use ad_input_m
+use ad_output_m
+#endif /* ALLOW_GENCTRL */
+#endif /* ALLOW_NODIFF */
 #if defined(ALLOW_GRDCHK)
 use grdchk_m, only: grdchk_main
 #endif /* ALLOW_GRDCHK */
@@ -291,7 +311,15 @@ real(dp) :: dzeta_r
    !! Grid spacing in z-direction in the bedrock (kr) domain
    !! (in sigma-coordinate zeta_r)
 
-#if !defined(ALLOW_GRDCHK) /* NORMAL */
+#if !defined(ALLOW_GRDCHK) /* NODIFF */
+
+!-------- Tapenade-specific routines --------
+
+#ifdef ALLOW_NODIFF
+#ifdef ALLOW_GENCTRL
+call ad_input()
+#endif /* ALLOW_GENCTRL */
+#endif /* ALLOW_NODIFF */
 
 !-------- Initializations --------
 
@@ -307,11 +335,21 @@ call sico_main_loop(dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
      dxi, deta, dzeta_c, dzeta_t, dzeta_r, &
      ndat2d, ndat3d, n_output)
 
+#ifdef ALLOW_NODIFF
+call cost_final()
+#endif /* ALLOW_NODIFF */
+
 !-------- Endings --------
 
 call sico_end()
 
 !-------- Tapenade-specific routines --------
+
+#ifdef ALLOW_NODIFF
+#ifdef ALLOW_GENCTRL
+call ad_output()
+#endif /* ALLOW_GENCTRL */
+#endif /* ALLOW_NODIFF */
 
 #else /* ALLOW_GRDCHK */
 call grdchk_main()

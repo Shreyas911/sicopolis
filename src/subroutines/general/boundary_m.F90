@@ -56,9 +56,9 @@ contains
 !-------------------------------------------------------------------------------
 subroutine boundary(time, dtime, dxi, deta)
 
-#if defined(ALLOW_TAPENADE) /* Tapenade */
+#if defined(ALLOW_TAPENADE) /* TAPENADE */
   use sico_maths_m, only: my_erfc
-#endif /* Tapenade */
+#endif /* TAPENADE */
 
   use netcdf
   use nc_check_m
@@ -179,11 +179,11 @@ real(dp), parameter :: &
 
 character(len=64), parameter :: thisroutine = 'boundary'
 
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
 real(dp)     :: temp_val, alpha_interp, dtime_interp, time_init_interp
 integer(i4b) :: floor_interp, ceiling_interp
 real(dp), dimension(0:JMAX,0:IMAX) :: delta_tda_interp
-#endif  /* ALLOW_{GRDCHK,TAPENADE} */
+#endif  /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
 
 time_in_years = time*sec2year
 n_year_CE     = floor((time_in_years+YEAR_ZERO)+eps_sp_dp)
@@ -948,7 +948,7 @@ end do
 
 #endif /* (TSURFACE<=5) */
 
-#if ((defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK)) && defined(DTIME_INTERP0) && defined(NTDAMAX))
+#if ((defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF)) && defined(DTIME_INTERP0) && defined(NTDAMAX))
 dtime_interp = DTIME_INTERP0
 time_init_interp = TIME_INIT0
 floor_interp  = floor((time_in_years-time_init_interp)/dtime_interp)
@@ -964,7 +964,7 @@ do j=0, JMAX
 !  ------ Correction of present monthly temperature with elevation changes
 !         and temperature deviation delta_ts
 
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
 
 #if(defined(DTIME_INTERP0) && defined(NTDAMAX))
    delta_tda_interp(j,i) = delta_tda(floor_interp,j,i)  * alpha_interp &
@@ -985,7 +985,7 @@ do j=0, JMAX
    temp_diff(j,i) = gamma_t*(zs_ref_temp(j,i)-zs(j,i)) + delta_ts
 #endif
 
-#endif /* ALLOW_{GRDCHK,TAPENADE} */
+#endif /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
 
    do n=1, 12   ! month counter
       temp_mm(j,i,n) = temp_present(j,i,n) + temp_diff(j,i)
@@ -1247,14 +1247,14 @@ do j=0, JMAX
 
 #elif (SOLID_PRECIP==3)   /* Huybrechts and de Wolde (1999) */
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
       frac_solid = 1.0_dp &
                    - 0.5_dp &
                        *erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat(j,i))
-#else /* Tapenade */
+#else /* TAPENADE */
       call my_erfc((temp_rain-temp_mm(j,i,n))*inv_sqrt2_s_stat(j,i), temp_val)
       frac_solid = 1.0_dp - 0.5_dp*temp_val
-#endif /* Normal vs. Tapenade */
+#endif /* NORMAL vs TAPENADE */
 
 #endif
 

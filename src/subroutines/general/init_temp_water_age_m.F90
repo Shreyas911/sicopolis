@@ -100,29 +100,29 @@ contains
 
 #if (defined(TEMP_INIT_VAL))
 
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
   temp_c = temp_c + real(TEMP_INIT_VAL,dp)
 #else /* NORMAL */
   temp_c = real(TEMP_INIT_VAL,dp)
-#endif /* ALLOW_{TAPENADE,GRDCHK} */
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 #else
 
 #if (defined(NMARS) || defined(SMARS))   /* Polar caps of Mars */
 
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
   temp_c = temp_c - 100.0_dp ! default value -100 C
 #else /* NORMAL */
   temp_c = -100.0_dp         ! default value -100 C
-#endif /* ALLOW_{TAPENADE,GRDCHK} */
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 #else   /* all other domains */
 
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
   temp_c = temp_c - 10.0_dp  ! default value -10 C
 #else /* NORMAL */
   temp_c = -10.0_dp          ! default value -10 C
-#endif /* ALLOW_{TAPENADE,GRDCHK} */
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 #endif
 #endif
@@ -173,7 +173,7 @@ contains
   do i=0, IMAX
   do j=0, JMAX
 
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
      do kc=0, KCMAX
         temp_c(kc,j,i) = temp_c(kc,j,i) + temp_s(j,i)
      end do
@@ -181,7 +181,7 @@ contains
      do kc=0, KCMAX
         temp_c(kc,j,i) = temp_s(j,i)
      end do
-#endif /* ALLOW_{TAPENADE,GRDCHK} */
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
   end do
   end do
@@ -229,7 +229,7 @@ contains
   integer(i4b) :: i, j, kc
   real(dp)     :: kappa_const_val
   real(dp)     :: temp_ice_base
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
   real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: temp_c_orig
 #endif
 
@@ -244,7 +244,7 @@ contains
   do i=0, IMAX
   do j=0, JMAX
 
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
      if (mask(j,i)<=2) then
 
         do kc=0, KCMAX
@@ -318,7 +318,7 @@ contains
         end do
 
      end if
-#endif /* ALLOW_{TAPENADE,GRDCHK} */
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
   end do
   end do
@@ -347,7 +347,7 @@ contains
   real(dp)     :: as_val, H_val, qgeo_val, K, z_above_base
   real(dp)     :: erf_val_1, erf_val_2
   real(dp)     :: temp_ice_base, temp_scale_factor
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
   real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: temp_c_orig
 #endif
 
@@ -381,10 +381,10 @@ contains
      erf_val_1 = my_erf(H_c(j,i)/(sqrt(2.0_dp)*K))
 #endif /* ALLOW_TAPENADE */
 
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
      do kc=0, KCMAX
         z_above_base   = H_c(j,i)*eaz_c_quotient(kc)
-#if defined(ALLOW_GRDCHK)
+#if (defined(ALLOW_NODIFF) || defined(ALLOW_GRDCHK))
         erf_val_2      = erf(z_above_base/(sqrt(2.0_dp)*K))
 #endif
 #if defined(ALLOW_TAPENADE)
@@ -443,7 +443,7 @@ contains
 
   end do
   end do
-#endif /* ALLOW_{TAPENADE,GRDCHK} */
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 !-------- Initial lithosphere temperature, water content and age --------
 
@@ -572,11 +572,11 @@ contains
   do j=0, JMAX
 
      do kc=0, KCMAX
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
         temp_c(kc,j,i) = temp_c(kc,j,i) + temp_s(j,i)
 #else /* NORMAL */
         temp_c(kc,j,i) = temp_s(j,i)
-#endif /* ALLOW_TAPENADE */
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
      end do
 
   end do
@@ -646,11 +646,11 @@ contains
 
 #else   /* all other domains */
 
-#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
+#if (defined(ALLOW_NODIFF) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
   age_c = (age_c + 15000.0_dp)*year2sec
 #else /* NORMAL */
   age_c = 15000.0_dp*year2sec
-#endif /* ALLOW_{GRDCHK,TAPENADE} */
+#endif /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
   age_t = 15000.0_dp*year2sec
 #endif
 

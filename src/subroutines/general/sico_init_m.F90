@@ -41,11 +41,11 @@ module sico_init_m
 
   use error_m
 
-#if defined(ALLOW_TAPENADE)
+#if (defined(ALLOW_NODIFF) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
 #if (defined(ALLOW_GENCTRL) && defined(ALLOW_GENCTRL_BEFORE_SICO_INIT))
   use ctrl_init_gen_m
 #endif /* ALLOW_GENCTRL */
-#endif /* ALLOW_TAPENADE */
+#endif /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
 
   implicit none
 
@@ -294,7 +294,7 @@ time_output = 0.0_dp
 
 !-------- Initialization of Tapenade generic control --------
 
-#if defined(ALLOW_TAPENADE)
+#if (defined(ALLOW_NODIFF) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
 #if (defined(ALLOW_GENCTRL) && defined(ALLOW_GENCTRL_BEFORE_SICO_INIT))
 
 #if (defined(DO_CTRL_GENTIM2D) && (!defined(NTDAMAX) || !defined(DTIME_INTERP0)))
@@ -306,7 +306,7 @@ call error(errormsg)
 call ctrl_init_gen()
 
 #endif /* ALLOW_GENCTRL */
-#endif /* ALLOW_TAPENADE */
+#endif /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
 
 !-------- Initialization of the Library of Iterative Solvers Lis,
 !                                                     if required --------
@@ -1004,16 +1004,16 @@ flag_larmip       = .false.
 #endif
 
 #if (ACCSURFACE==2 || ACCSURFACE==3)
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
    gamma_s = gamma_s + GAMMA_S
 #else /* NORMAL */
    gamma_s = GAMMA_S
-#endif /* ALLOW_{TAPENADE,GRDCHK} */
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 #endif
 
 #if (ABLSURFACE==1 || ABLSURFACE==2)
 
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK))
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
 
 #if (defined(S_STAT_0) && defined(BETA1_0) && defined(BETA2_0) && defined(PMAX_0) && defined(MU_0))
 s_stat = s_stat + S_STAT_0
@@ -1047,7 +1047,7 @@ errormsg = ' >>> sico_init: ' &
 call error(errormsg)
 #endif
 
-#endif /* ALLOW_{TAPENADE,GRDCHK} */
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 #elif (ABLSURFACE==3)
 
@@ -2953,7 +2953,7 @@ call read_scalar_input(filename_with_path, &
 
 !-------- Determination of the geothermal heat flux --------
 
-#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK)) /* NORMAL */
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
 
 if (n_q_geo_mod==1) then
 
@@ -2984,7 +2984,7 @@ else if (n_q_geo_mod==2) then
 
 endif
 
-#else /* ALLOW_{TAPENADE,GRDCHK} */
+#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 !SSG: When ANF_DAT==3 q_geo ends up getting read here as well as from NetCDF file, resulting in twice the value.
 !SSG: This is a guardrail to prevent that.
 #if (ANF_DAT != 3)
@@ -3019,7 +3019,7 @@ else if (n_q_geo_mod==2) then
 endif
 
 #endif
-#endif /* ALLOW_{TAPENADE,GRDCHK} */
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 !-------- Reading of tabulated kei function--------
 
@@ -3523,11 +3523,11 @@ call error(errormsg)
 
 filename_with_path = trim(OUT_PATH)//'/'//trim(run_name)//'.ser'
 
-#if !defined(ALLOW_TAPENADE) /* Normal */
+#if !defined(ALLOW_TAPENADE) /* NORMAL */
 open(12, iostat=ios, file=trim(filename_with_path), status='new')
-#else /* Tapenade */
+#else /* TAPENADE */
 open(12, iostat=ios, file=trim(filename_with_path))
-#endif /* Normal vs. Tapenade */
+#endif /* NORMAL vs TAPENADE */
 
 if (ios /= 0) then
    errormsg = ' >>> sico_init: Error when opening the ser file!'
@@ -4599,11 +4599,11 @@ do j=0, JMAX
    n_cts(j,i) = -1
    kc_cts(j,i) = 0
 
-#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK)) /* NORMAL */
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
    H(j,i)   = zs(j,i)-zm(j,i)
-#else /* ALLOW_{TAPENADE,GRDCHK} */
+#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
    H(j,i)   = H(j,i) + zs(j,i)-zm(j,i)
-#endif /* ALLOW_{TAPENADE,GRDCHK} */
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
    H_c(j,i) = H(j,i)
    H_t(j,i) = 0.0_dp
 
@@ -4830,7 +4830,7 @@ do j=0, JMAX
    n_cts(j,i) = -1
    kc_cts(j,i) = 0
 
-#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK)) /* NORMAL */
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
    H(j,i)   = 0.0_dp
    H_c(j,i) = 0.0_dp
    H_t(j,i) = 0.0_dp

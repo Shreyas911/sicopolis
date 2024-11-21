@@ -1,7 +1,11 @@
 module ad_output_m
 
   use sico_types_m
+#if defined(ALLOW_NODIFF)
+  use sico_variables_m
+#else
   use sico_variables_m_diff
+#endif
   use error_m
 
   implicit none
@@ -18,7 +22,11 @@ module ad_output_m
 
     use netcdf
     use nc_check_m
+#if defined(ALLOW_NODIFF)
+    use sico_variables_m
+#else
     use sico_variables_m_diff
+#endif
 
     implicit none
 
@@ -50,15 +58,14 @@ module ad_output_m
     !     nc1cnt(1): Count of a 1-d array
     !     nc2cnt(2): Count of a 2-d array
     !     nc3cnt(3): Count of a 3-d array
-#if (defined(ALLOW_TAP_TLM) && !defined(ALLOW_TAP_TLM_A_ACTION))
-    integer(i4b) :: nc0cor_fcd(1)
-    integer(i4b) :: nc0cnt_fcd(1)
-    !     nc0cor_fcd: Defined specially for fcd
-    !     nc0cnt_fcd: Defined specially for fcd
-#endif
+    integer(i4b) :: nc0cor_fc(1)
+    integer(i4b) :: nc0cnt_fc(1)
+    !     nc0cor_fc: Defined specially for fc
+    !     nc0cnt_fc: Defined specially for fc
 
     real(dp) :: xi_conv(0:IMAX), eta_conv(0:JMAX), sigma_level_c_conv(0:KCMAX)
 
+    real(dp), dimension(1) :: fc_arr
 #ifdef ALLOW_TAP_TLM
 #if !defined(ALLOW_TAP_TLM_A_ACTION)
     real(dp), dimension(1) :: fcd_arr
@@ -107,11 +114,9 @@ module ad_output_m
     character(len= 16), parameter :: filename_extension = '.nc'
     character(len= 16), allocatable :: coord_id(:)
 
-#if (defined(ALLOW_TAP_TLM) && !defined(ALLOW_TAP_TLM_A_ACTION))
-    fcd_arr(1) = fcd
-    nc0cor_fcd = (/ 1 /)
-    nc0cnt_fcd = (/ 1 /)
-#endif
+    fc_arr(1) = fc
+    nc0cor_fc = (/ 1 /)
+    nc0cnt_fc = (/ 1 /)
 
     nc1cor_i = (/ 1 /)
     nc1cnt_i = (/ IMAX+1 /)
@@ -153,23 +158,20 @@ module ad_output_m
     filename = 'ad_output_adj'//trim(filename_extension)
 #endif
 #endif /* ALLOW_TAP_ADJ */
+#ifdef ALLOW_NODIFF
+    filename = 'ad_output_nodiff'//trim(filename_extension)
+#endif /* ALLOW_NODIFF */
 
     filename_with_path = trim(temp_path)//'/'//trim(filename)
 
     !-------- File initialization --------
 
     if (allocated(coord_id)) deallocate(coord_id); 
-#if (defined(ALLOW_TAP_TLM) && !defined(ALLOW_TAP_TLM_A_ACTION)) 
     allocate(coord_id(5))
-#else
-    allocate(coord_id(4))
-#endif
 
     coord_id(1) = 'x'; coord_id(2) = 'y'
     coord_id(3) = 'zeta_c'; coord_id(4) = 'time_ad'
-#if (defined(ALLOW_TAP_TLM) && !defined(ALLOW_TAP_TLM_A_ACTION))
-    coord_id(5) = 'fcd_dummy_dim'
-#endif
+    coord_id(5) = 'fc_dummy_dim'
     
     !  ------ Open NetCDF file
     
@@ -278,6 +280,21 @@ module ad_output_m
     buffer = 'Times between which linear interp. for gentim2d'
     call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
           thisroutine )
+#endif
+
+    !    ---- Define fc
+    call check( nf90_inq_dimid(ncid, trim(coord_id(5)), nc1d), &
+                      thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+    call check( nf90_def_var(ncid, 'fc', &
+                      NF90_DOUBLE, nc1d, ncv, &
+                      deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                      thisroutine )
+#else
+    call check( nf90_def_var(ncid, 'fc', &
+                      NF90_DOUBLE, nc1d, ncv), &
+                      thisroutine )
 #endif
 
 #ifdef ALLOW_TAP_TLM
@@ -540,6 +557,13 @@ module ad_output_m
                 thisroutine )
 #endif
 
+    call check( nf90_inq_varid(ncid, 'fc', &
+                ncv), &
+                thisroutine )
+    call check( nf90_put_var(ncid, ncv, fc_arr, &
+                             start=nc0cor_fc, count=nc0cnt_fc), &
+                thisroutine )
+
 #ifdef ALLOW_TAP_TLM
 
 #if !defined(ALLOW_TAP_TLM_A_ACTION)
@@ -548,7 +572,7 @@ module ad_output_m
                 ncv), &
                 thisroutine )
     call check( nf90_put_var(ncid, ncv, fcd_arr, &
-                             start=nc0cor_fcd, count=nc0cnt_fcd), &
+                             start=nc0cor_fc, count=nc0cnt_fc), &
                 thisroutine )
 
 #else

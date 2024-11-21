@@ -1576,7 +1576,7 @@ character(len=256) :: errormsg
 character, parameter :: end_of_line = char(10)
    !! End-of-line string
 
-#if (defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
+#if (defined(ALLOW_NODIFF) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
 
 real(dp) :: fc
    !! Scalar cost function
@@ -1643,7 +1643,7 @@ real(dp), dimension(0:JMAX,0:IMAX) :: vs_MEaSUREs_data
 #endif
 #endif
 
-#endif /* ALLOW_{TAPENADE,GRDCHK} */
+#endif /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
 
 end module sico_variables_m
 !
