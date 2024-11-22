@@ -115,6 +115,12 @@ module ad_output_m
     character(len= 16), allocatable :: coord_id(:)
 
     fc_arr(1) = fc
+#ifdef ALLOW_TAP_TLM
+#if !defined(ALLOW_TAP_TLM_A_ACTION)
+    fcd_arr(1) = fcd
+#endif
+#endif
+
     nc0cor_fc = (/ 1 /)
     nc0cnt_fc = (/ 1 /)
 
