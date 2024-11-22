@@ -605,7 +605,7 @@ module ad_output_m
 ! /* ALLOW_TAPENADE: guarding against non-differentiable sqrt(0) */
       vs(j,i) = sqrt(vx_s_g(j,i)**2 + vy_s_g(j,i)**2)*year2sec
       if (vs(j,i) > 0) then
-        vsd_conv(i,j) = (vx_s_g(j,i)*vx_s_gd(j,i) + vy_s_g(j,i)*vy_s_gd(j,i)) / vs(j,i)
+        vsd_conv(i,j) = (vx_s_g(j,i)*vx_s_gd(j,i) + vy_s_g(j,i)*vy_s_gd(j,i))*year2sec**2 / vs(j,i)
       else
         vsd_conv(i,j) = 0.0
       end if

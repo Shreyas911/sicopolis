@@ -242,8 +242,8 @@ module ad_input_m
 ! /* ALLOW_TAPENADE: guarding against non-differentiable sqrt(0) */
           vs(j,i) = sqrt(vx_s_g(j,i)**2 + vy_s_g(j,i)**2)*year2sec
           if (vs(j,i) > 0) then
-            vx_s_gb(j,i)  = vx_s_gb(j,i) + vsb_conv(i,j)*(vx_s_g(j,i)/vs(j,i))*year2sec
-            vy_s_gb(j,i)  = vy_s_gb(j,i) + vsb_conv(i,j)*(vy_s_g(j,i)/vs(j,i))*year2sec
+            vx_s_gb(j,i)  = vx_s_gb(j,i) + vsb_conv(i,j)*(vx_s_g(j,i)/vs(j,i))*year2sec**2
+            vy_s_gb(j,i)  = vy_s_gb(j,i) + vsb_conv(i,j)*(vy_s_g(j,i)/vs(j,i))*year2sec**2
             vsb_conv(i,j) = 0.0
           else
             vx_s_gb(j,i)  = 0.0
