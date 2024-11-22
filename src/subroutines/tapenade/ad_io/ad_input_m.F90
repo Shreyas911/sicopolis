@@ -240,10 +240,10 @@ module ad_input_m
         do i = 0, IMAX
         do j = 0, JMAX
 ! /* ALLOW_TAPENADE: guarding against non-differentiable sqrt(0) */
-          vs(j,i) = sqrt(vx_s_g(j,i)**2 + vy_s_g(j,i)**2)
+          vs(j,i) = sqrt(vx_s_g(j,i)**2 + vy_s_g(j,i)**2)*year2sec
           if (vs(j,i) > 0) then
-            vx_s_gb(j,i)  = vx_s_gb(j,i) + vsb_conv(i,j)*(vx_s_g(j,i)/vs(j,i))
-            vy_s_gb(j,i)  = vy_s_gb(j,i) + vsb_conv(i,j)*(vy_s_g(j,i)/vs(j,i))
+            vx_s_gb(j,i)  = vx_s_gb(j,i) + vsb_conv(i,j)*(vx_s_g(j,i)/vs(j,i))*year2sec
+            vy_s_gb(j,i)  = vy_s_gb(j,i) + vsb_conv(i,j)*(vy_s_g(j,i)/vs(j,i))*year2sec
             vsb_conv(i,j) = 0.0
           else
             vx_s_gb(j,i)  = 0.0

@@ -103,9 +103,9 @@ call read_cost_data()
         if (age_data(k,j,i) .ge. -0.5 .and. age_data(k,j,i) .le. 60000.0 .and. H_BedMachine_data(j,i) .ge. 2000.0) then
           fc = fc &
 #ifdef ALLOW_AGE_UNCERT
-          + 0.5*(age_data(k,j,i) - age_c(k,j,i)/year2sec)**2/age_unc_data(k,j,i)**2
+          + 0.5*(age_data(k,j,i)*year2sec - age_c(k,j,i))**2/(age_unc_data(k,j,i)*year2sec)**2
 #else
-          + 0.5*(age_data(k,j,i) - age_c(k,j,i)/year2sec)**2
+          + 0.5*(age_data(k,j,i)*year2sec - age_c(k,j,i))**2
 #endif
         end if
       end do
@@ -135,16 +135,16 @@ call read_cost_data()
       do j=0, JMAX
 
 #if !defined(ALLOW_TAPENADE)
-        vs(j,i) = sqrt(vx_s_g(j,i)**2 + vy_s_g(j,i)**2)
+        vs(j,i) = sqrt(vx_s_g(j,i)**2 + vy_s_g(j,i)**2)*year2sec
 #else /* ALLOW_TAPENADE: guarding against non-differentiable sqrt(0) */
         if ((vx_s_g(j,i)**2 + vy_s_g(j,i)**2) > 0) then
-          vs(j,i) = sqrt(vx_s_g(j,i)**2 + vy_s_g(j,i)**2)
+          vs(j,i) = sqrt(vx_s_g(j,i)**2 + vy_s_g(j,i)**2)*year2sec
         else
           vs(j,i) = 0.0
         end if
 #endif
         fc = fc &
-        + 0.5*(vs(j,i)*year2sec - vs_MEaSUREs_data(j,i))**2
+        + 0.5*(vs(j,i) - vs_MEaSUREs_data(j,i))**2
       end do
     end do
 #endif

@@ -597,7 +597,7 @@ module ad_output_m
     do i=0, IMAX
     do j=0, JMAX
 ! /* ALLOW_TAPENADE: guarding against non-differentiable sqrt(0) */
-      vs(j,i) = sqrt(vx_s_g(j,i)**2 + vy_s_g(j,i)**2)
+      vs(j,i) = sqrt(vx_s_g(j,i)**2 + vy_s_g(j,i)**2)*year2sec
       if (vs(j,i) > 0) then
         vsd_conv(i,j) = (vx_s_g(j,i)*vx_s_gd(j,i) + vy_s_g(j,i)*vy_s_gd(j,i)) / vs(j,i)
       else
