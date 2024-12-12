@@ -99,12 +99,15 @@ call read_cost_data()
   do i=0, IMAX 
     do j=0, JMAX
       do k=0, KDATA
-        ! only counting points that are real in the data: 
-        if (age_data(k,j,i) .ge. -0.5 .and. age_data(k,j,i) .le. 60000.0 .and. H_BedMachine_data(j,i) .ge. 2000.0) then
-          fc = fc &
 #ifdef ALLOW_AGE_UNCERT
+        ! only counting points that are real in the data: 
+        if (age_unc_data(k,j,i) .gt. 0.0 .and. age_data(k,j,i) .ge. 0.0 .and. age_data(k,j,i) .le. 60000.0 .and. H_BedMachine_data(j,i) .ge. 2000.0) then
+          fc = fc &
           + 0.5*(age_data(k,j,i)*year2sec - age_c(k,j,i))**2/(age_unc_data(k,j,i)*year2sec)**2
 #else
+        ! only counting points that are real in the data:
+        if (age_data(k,j,i) .ge. 0.0 .and. age_data(k,j,i) .le. 60000.0 .and. H_BedMachine_data(j,i) .ge. 2000.0) then
+          fc = fc &
           + 0.5*(age_data(k,j,i)*year2sec - age_c(k,j,i))**2
 #endif
         end if
