@@ -178,6 +178,7 @@ module ad_input_m
         do j = 0, JMAX
         do ctrl_index = 1, NUM_CTRL_GENARR2D
             xx_genarr2d(ctrl_index,j,i) = xx_genarr2d_conv(ctrl_index,i,j)
+            xx_genarr2d_orig(ctrl_index,j,i) = xx_genarr2d_conv(ctrl_index,i,j)
 #ifdef ALLOW_TAP_TLM
             xx_genarr2dd(ctrl_index,j,i) = xx_genarr2dd_conv(ctrl_index,i,j)
 #endif /* ALLOW_TAP_TLM */
@@ -192,6 +193,7 @@ module ad_input_m
         do kc = 0, KCMAX
         do ctrl_index = 1, NUM_CTRL_GENARR3D
             xx_genarr3d(ctrl_index,kc,j,i) = xx_genarr3d_conv(ctrl_index,i,j,kc)
+            xx_genarr3d_orig(ctrl_index,kc,j,i) = xx_genarr3d_conv(ctrl_index,i,j,kc)
 #ifdef ALLOW_TAP_TLM
             xx_genarr3dd(ctrl_index,kc,j,i) = xx_genarr3dd_conv(ctrl_index,i,j,kc)
 #endif /* ALLOW_TAP_TLM */
@@ -207,6 +209,7 @@ module ad_input_m
         do tad = 0, NTDAMAX
         do ctrl_index = 1, NUM_CTRL_GENTIM2D
             xx_gentim2d(ctrl_index,tad,j,i) = xx_gentim2d_conv(ctrl_index,i,j,tad)
+            xx_gentim2d_orig(ctrl_index,tad,j,i) = xx_gentim2d_conv(ctrl_index,i,j,tad)
 #ifdef ALLOW_TAP_TLM
             xx_gentim2dd(ctrl_index,tad,j,i) = xx_gentim2dd_conv(ctrl_index,i,j,tad)
 #endif /* ALLOW_TAP_TLM */

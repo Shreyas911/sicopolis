@@ -269,6 +269,9 @@ module ad_output_m
     buffer = 'sigma-coordinate of the grid point kc'
     call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
           thisroutine )
+    call check( nf90_put_att(ncid, ncv, 'type', 'ignore'), &
+                thisroutine )
+
 
 #ifdef DO_CTRL_GENTIM2D
     !    ---- time_ad
@@ -301,6 +304,9 @@ module ad_output_m
                       thisroutine )
 #endif
 
+    call check( nf90_put_att(ncid, ncv, 'type', 'cost'), &
+                thisroutine )
+
 #ifdef ALLOW_TAP_TLM
 
 #if !defined(ALLOW_TAP_TLM_A_ACTION)
@@ -319,6 +325,9 @@ module ad_output_m
                       NF90_DOUBLE, nc1d, ncv), &
                       thisroutine )     
 #endif
+
+    call check( nf90_put_att(ncid, ncv, 'type', 'tlm'), &
+                thisroutine )
 
 #else /* ALLOW_TAP_TLM_A_ACTION */
 
@@ -341,6 +350,9 @@ module ad_output_m
                 NF90_DOUBLE, nc3d, ncv), &
                 thisroutine )     
 #endif
+
+    call check( nf90_put_att(ncid, ncv, 'type', 'tlmhessaction'), &
+                thisroutine )
 #endif
 
 #if (defined(BEDMACHINE_COST) || defined(FAKE_BEDMACHINE_COST))
@@ -360,6 +372,9 @@ module ad_output_m
                 NF90_DOUBLE, nc2d, ncv), &
                 thisroutine )     
 #endif      
+
+      call check( nf90_put_att(ncid, ncv, 'type', 'tlmhessaction'), &
+                  thisroutine )
 #endif
 
 #if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
@@ -378,7 +393,10 @@ module ad_output_m
       call check( nf90_def_var(ncid, 'vsd', &
                 NF90_DOUBLE, nc2d, ncv), &
                 thisroutine )     
-#endif      
+#endif
+
+      call check( nf90_put_att(ncid, ncv, 'type', 'tlmhessaction'), &
+                  thisroutine )
 #endif
 
 #endif /* ALLOW_TAP_TLM_A_ACTION */
@@ -404,6 +422,9 @@ module ad_output_m
                 thisroutine )     
 #endif      
 
+      call check( nf90_put_att(ncid, ncv, 'type', 'nodiff'), &
+                  thisroutine )
+
 #ifdef ALLOW_TAP_ADJ
       call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
                 thisroutine )
@@ -420,6 +441,9 @@ module ad_output_m
                 NF90_DOUBLE, nc2d, ncv), &
                 thisroutine )
 #endif
+
+      call check( nf90_put_att(ncid, ncv, 'type', 'adj'), &
+                  thisroutine )
 #endif /* ALLOW_TAP_ADJ */
 
     end do
@@ -447,6 +471,9 @@ module ad_output_m
                 thisroutine )     
 #endif      
 
+      call check( nf90_put_att(ncid, ncv, 'type', 'nodiff'), &
+                  thisroutine )
+
 #ifdef ALLOW_TAP_ADJ
       call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc3d(1)), &
                 thisroutine )
@@ -465,6 +492,9 @@ module ad_output_m
                 NF90_DOUBLE, nc3d, ncv), &
                 thisroutine )
 #endif
+
+      call check( nf90_put_att(ncid, ncv, 'type', 'adj'), &
+                  thisroutine )
 #endif /* ALLOW_TAP_ADJ */
 
     end do
@@ -492,6 +522,9 @@ module ad_output_m
                 thisroutine )     
 #endif      
 
+      call check( nf90_put_att(ncid, ncv, 'type', 'nodiff'), &
+                  thisroutine )
+
 #ifdef ALLOW_TAP_ADJ
       call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc3d(1)), &
                 thisroutine )
@@ -509,7 +542,10 @@ module ad_output_m
       call check( nf90_def_var(ncid, trim(adjustl(xx_gentim2d_vars(ctrl_index)))//'b', &
                 NF90_DOUBLE, nc3d, ncv), &
                 thisroutine )
-#endif     
+#endif
+
+      call check( nf90_put_att(ncid, ncv, 'type', 'adj'), &
+                  thisroutine )
 #endif /* ALLOW_TAP_ADJ */
 
     end do
@@ -621,7 +657,7 @@ module ad_output_m
     do i=0, IMAX
     do j=0, JMAX
     do ctrl_index = 1, NUM_CTRL_GENARR2D
-      xx_genarr2d_conv(ctrl_index,i,j) = xx_genarr2d(ctrl_index,j,i)
+      xx_genarr2d_conv(ctrl_index,i,j) = xx_genarr2d_orig(ctrl_index,j,i)
 #ifdef ALLOW_TAP_ADJ
       xx_genarr2db_conv(ctrl_index,i,j) = xx_genarr2db(ctrl_index,j,i)
 #endif /* ALLOW_TAP_ADJ */
@@ -635,7 +671,7 @@ module ad_output_m
     do j=0, JMAX
     do kc=0, KCMAX
     do ctrl_index = 1, NUM_CTRL_GENARR3D
-      xx_genarr3d_conv(ctrl_index,i,j,kc) = xx_genarr3d(ctrl_index,kc,j,i)
+      xx_genarr3d_conv(ctrl_index,i,j,kc) = xx_genarr3d_orig(ctrl_index,kc,j,i)
 #ifdef ALLOW_TAP_ADJ
       xx_genarr3db_conv(ctrl_index,i,j,kc) = xx_genarr3db(ctrl_index,kc,j,i)
 #endif /* ALLOW_TAP_ADJ */
@@ -650,7 +686,7 @@ module ad_output_m
     do j=0, JMAX
     do tad=0, NTDAMAX
     do ctrl_index = 1, NUM_CTRL_GENTIM2D
-      xx_gentim2d_conv(ctrl_index,i,j,tad) = xx_gentim2d(ctrl_index,tad,j,i)
+      xx_gentim2d_conv(ctrl_index,i,j,tad) = xx_gentim2d_orig(ctrl_index,tad,j,i)
 #ifdef ALLOW_TAP_ADJ
       xx_gentim2db_conv(ctrl_index,i,j,tad) = xx_gentim2db(ctrl_index,tad,j,i)
 #endif /* ALLOW_TAP_ADJ */

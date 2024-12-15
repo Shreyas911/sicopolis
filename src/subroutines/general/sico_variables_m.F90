@@ -1625,9 +1625,9 @@ real(dp), dimension(0:JMAX,0:IMAX) :: vs_MEaSUREs_data
 #if defined(ALLOW_GENCTRL)
 ! Note: Not inside the DO_CTRL_* flags so that Tapenade can always see them all.
 ! The differentiation command doesn't have to change then.
-   real(dp), dimension(NUM_CTRL_GENARR2D,0:JMAX,0:IMAX)    :: xx_genarr2d
-   real(dp), dimension(NUM_CTRL_GENARR3D,0:KCMAX,0:JMAX,0:IMAX) :: xx_genarr3d
-   real(dp), dimension(NUM_CTRL_GENTIM2D,0:NTDAMAX,0:JMAX,0:IMAX) :: xx_gentim2d
+   real(dp), dimension(NUM_CTRL_GENARR2D,0:JMAX,0:IMAX)    :: xx_genarr2d, xx_genarr2d_orig
+   real(dp), dimension(NUM_CTRL_GENARR3D,0:KCMAX,0:JMAX,0:IMAX) :: xx_genarr3d, xx_genarr3d_orig
+   real(dp), dimension(NUM_CTRL_GENTIM2D,0:NTDAMAX,0:JMAX,0:IMAX) :: xx_gentim2d, xx_gentim2d_orig
 #ifdef DO_CTRL_GENARR2D
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR2D) :: xx_genarr2d_vars
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR2D) :: xx_genarr2d_preproc 
