@@ -336,7 +336,7 @@ subroutine read_cost_data()
     call check( nf90_inq_varid(ncid, 'age_c', ncv), thisroutine )
     call check( nf90_get_var(ncid, ncv, age_data_conv), thisroutine )
 #ifdef ALLOW_AGE_UNCERT
-    call check( nf90_inq_varid(ncid, 'age_c_uncert_real', ncv), thisroutine )
+    call check( nf90_inq_varid(ncid, 'age_c_uncert', ncv), thisroutine )
     call check( nf90_get_var(ncid, ncv, age_unc_data_conv), thisroutine )
 #endif
     !  ------ Close NetCDF file

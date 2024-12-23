@@ -830,10 +830,10 @@ contains
            temp_c(kc,j,i)  = real(temp_c_conv(i,j,kc),dp)
            age_c(kc,j,i)   = real(age_c_conv(i,j,kc),dp)*year2sec
 #else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
-           vx_c(kc,j,i)    = vx_c(kc,j,i) + real(vx_c_conv(i,j,kc),dp)*sec2year
-           vy_c(kc,j,i)    = vy_c(kc,j,i) + real(vy_c_conv(i,j,kc),dp)*sec2year
-           vz_c(kc,j,i)    = vz_c(kc,j,i) + real(vz_c_conv(i,j,kc),dp)*sec2year
-           age_c(kc,j,i)   = age_c(kc,j,i) + real(age_c_conv(i,j,kc),dp)*year2sec
+           vx_c(kc,j,i)    = (vx_c(kc,j,i) + real(vx_c_conv(i,j,kc),dp))*sec2year
+           vy_c(kc,j,i)    = (vy_c(kc,j,i) + real(vy_c_conv(i,j,kc),dp))*sec2year
+           vz_c(kc,j,i)    = (vz_c(kc,j,i) + real(vz_c_conv(i,j,kc),dp))*sec2year
+           age_c(kc,j,i)   = (age_c(kc,j,i) + real(age_c_conv(i,j,kc),dp))*year2sec
            temp_c(kc,j,i)  = temp_c(kc,j,i) + real(temp_c_conv(i,j,kc),dp)
 #endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
            enth_c(kc,j,i)  = real(enth_c_conv(i,j,kc),dp)
