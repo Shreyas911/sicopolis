@@ -64,7 +64,7 @@ module ad_input_m
 
 #if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
         real(dp), dimension(0:JMAX,0:IMAX)         :: vs
-        real(dp), dimension(0:IMAX,0:JMAX)         :: vsb_conv
+        real(dp), dimension(0:IMAX,0:JMAX)         :: vx_s_g_final_conv, vy_s_g_final_conv, vsb_conv
 #endif
 
 #endif /* ALLOW_TAP_ADJ && ALLOW_TAP_ADJ_AT_ACTION */
@@ -166,6 +166,10 @@ module ad_input_m
 #if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
         call check( nf90_inq_varid(ncid, 'vsb', ncv) )
         call check( nf90_get_var(ncid, ncv, vsb_conv) ) 
+        call check( nf90_inq_varid(ncid, 'vx_s_g_final', ncv) )
+        call check( nf90_get_var(ncid, ncv, vx_s_g_final_conv) ) 
+        call check( nf90_inq_varid(ncid, 'vy_s_g_final', ncv) )
+        call check( nf90_get_var(ncid, ncv, vy_s_g_final_conv) ) 
 #endif
 
 #endif /* ALLOW_TAP_ADJ && ALLOW_TAP_ADJ_AT_ACTION */
@@ -240,13 +244,20 @@ module ad_input_m
 #endif
 
 #if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
+
+#if (defined(YEAR_SEC))
+year2sec = YEAR_SEC
+#else
+year2sec = 3.1556925445e+07_dp
+#endif
+
         do i = 0, IMAX
         do j = 0, JMAX
 ! /* ALLOW_TAPENADE: guarding against non-differentiable sqrt(0) */
-          vs(j,i) = sqrt(vx_s_g(j,i)**2 + vy_s_g(j,i)**2)*year2sec
+          vs(j,i) = sqrt(vx_s_g_final_conv(i,j)**2 + vy_s_g_final_conv(i,j)**2)*year2sec
           if (vs(j,i) > 0) then
-            vx_s_gb(j,i)  = vx_s_gb(j,i) + vsb_conv(i,j)*(vx_s_g(j,i)/vs(j,i))*year2sec**2
-            vy_s_gb(j,i)  = vy_s_gb(j,i) + vsb_conv(i,j)*(vy_s_g(j,i)/vs(j,i))*year2sec**2
+            vx_s_gb(j,i)  = vx_s_gb(j,i) + vsb_conv(i,j)*(vx_s_g_final_conv(i,j)/vs(j,i))*year2sec**2
+            vy_s_gb(j,i)  = vy_s_gb(j,i) + vsb_conv(i,j)*(vy_s_g_final_conv(i,j)/vs(j,i))*year2sec**2
             vsb_conv(i,j) = 0.0
           else
             vx_s_gb(j,i)  = 0.0
@@ -254,6 +265,7 @@ module ad_input_m
           end if
         end do
         end do
+
 #endif
 
 #endif /* ALLOW_TAP_ADJ && ALLOW_TAP_ADJ_AT_ACTION */

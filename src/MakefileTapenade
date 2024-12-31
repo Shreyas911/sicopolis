@@ -143,7 +143,11 @@ OUT_PATH_GRDCHK=../sico_out/GRDCHK_${HEADER}
 DEFINE_FLAGS_GRDCHK= -DALLOW_GRDCHK -DIN_PATH=\"${IN_PATH_GRDCHK}\" -DOUT_PATH=\"${OUT_PATH_GRDCHK}\" -DNETCDF=1 -DHEADER=\"${HEADER}\"
 
 IN_PATH_ADJOINT=../sico_in
-OUT_PATH_ADJOINT=../sico_out/ADJOINT_${HEADER}
+
+driveradjoint: OUT_PATH_ADJOINT=../sico_out/ADJOINT_${HEADER}
+driverforward: OUT_PATH_ADJOINT=../sico_out/FORWARD_${HEADER}
+driveradjointhessaction: OUT_PATH_ADJOINT=../sico_out/ADJOINTHESSACTION_${HEADER}
+driverforwardhessaction: OUT_PATH_ADJOINT=../sico_out/FORWARDHESSACTION_${HEADER}
 
 driveradjoint: TAP_MODE_FLAG=ALLOW_TAP_ADJ
 driverforward: TAP_MODE_FLAG=ALLOW_TAP_TLM
@@ -402,7 +406,7 @@ driveradjointhessaction:${LIBLIS} \
 .PHONY = PHONY_TAP_ADJ
 PHONY_TAP_ADJ: ${SRC_AD_INPUT}
 	@if [ ! -f ${TAPENADE_CHECK_FILE_ADJ} ]; then\
-		${TAPENADECMD} ${TAP_PROF_OPTION} -b -ext "${FLOW_TAPAD_FILE}" -linelength 2000 -head "${TAPENADE_HEAD_ROUTINE}(${DEP_VAR})/(${IND_VARS})" ${SRC_AD_INPUT};\
+		${TAPENADECMD} ${TAP_PROF_OPTION} -nocheckpoint "kappa_val omega_fct_enth ratefac_c_t temp_fct_enth velocity_limiter_gradual c_val creep pdd" -b -ext "${FLOW_TAPAD_FILE}" -linelength 2000 -head "${TAPENADE_HEAD_ROUTINE}(${DEP_VAR})/(${IND_VARS})" ${SRC_AD_INPUT};\
 	else\
 		echo @@@@@@@@@@@@@@@ TAPENADE FYI @@@@@@@@@@@@@@@@;\
 		echo Not executing tapenade adjoint command again!;\
