@@ -1619,7 +1619,12 @@ real(dp), dimension(0:JMAX,0:IMAX) :: H_unc_BedMachine_data
 #endif
 
 #if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
+
 real(dp), dimension(0:JMAX,0:IMAX) :: vs_MEaSUREs_data
+#ifdef ALLOW_SURFVEL_UNCERT
+real(dp), dimension(0:JMAX,0:IMAX) :: vs_unc_MEaSUREs_data
+#endif
+
 #endif
 
 #if defined(ALLOW_GENCTRL)
