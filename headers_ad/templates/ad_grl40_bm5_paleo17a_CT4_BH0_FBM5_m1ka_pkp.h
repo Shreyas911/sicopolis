@@ -56,17 +56,44 @@
 !                                         'log10ctrl' ]
 !!       Define preprocessing steps for ctrl variables
 !!       log10ctrl only works if defined(ALLOW_GENCTRL_BEFORE_SICO_INIT)
+!!       WARNING: If for example using for c_slide_init
+!!       Set C_SLIDE == 0.0 in the HEADER file
+
+!!       WARNING: If using for spatially varying fields, ensure you manually comment some lines.
+!!                This is to prevent fields from getting added twice.	
+!!	 
+!!       WARNING: If for example using for H.
+!!                Just to illustrate, assuming the right ANF_DAT flags are in use.
+!!
+!!       Comment out in read_tms_nc if reading from file.
+!!       H(j,i)    = H(j,i) + real(H_conv(i,j),dp)
+!!       Comment out in topography1 if initializing.
+!!       H(j,i)   = H(j,i) + zs(j,i)-zm(j,i)
+!!                
+!!       WARNING: Take care of units while commenting out, showing for a 3D field age_c.
+!!                Just to illustrate, assuming the right ANF_DAT flags are in use.
+!!                This should be done for XX_GENARR3D_PREPROC_ARR of course, the comment is here for now.
+!!
+!!       Comment out in read_tms_nc if reading from file.
+!!       age_c(kc,j,i)   = (age_c(kc,j,i) + real(age_c_conv(i,j,kc),dp))*year2sec
+!!       But to preserve the unit change, add a line.
+!!       age_c(kc,j,i) = real(age_c(kc,j,i),dp)*year2sec
+!!
+!!       Comment out in init_age if initializing.
+!!       age_c = (age_c + 15000.0_dp)*year2sec
+!!       But to preserve the unit change, add a line.
+!!       age_c(kc,j,i) = real(age_c(kc,j,i),dp)*year2sec
+
 
 !#define XX_GENARR2D_LOG10INITVAL_ARR [ real :: \
 !                                          1.13033376850,  0.0,         , 4.19476402411,\
 !                                          0.0          ,  0.0,\
 !                                         -1.15206968873,  0.69897000434, 0.43616264704,\
 !                                          0.86213137931, -0.22184874962, 0.98746515611 ]
-!!       log10initval if preproc=log10ctrl
-!!       Otherwise has no effect
+!!       log10initval is used only if preproc=log10ctrl and AD_INPUT_PATH is not defined.
+!!       Has no effect (not even read) if AD_INPUT_PATH is defined.
 !!       WARNING: If for example using for c_slide_init
 !!       Set C_SLIDE == 0.0 in the HEADER file
-!!       log10ctrl only works if defined(ALLOW_GENCTRL_BEFORE_SICO_INIT)
 
 !-------- Settings for genarr3D --------
 
