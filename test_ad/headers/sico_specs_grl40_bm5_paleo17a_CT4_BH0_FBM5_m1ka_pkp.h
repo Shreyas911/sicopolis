@@ -1359,6 +1359,7 @@
 #define ALLOW_COST
 #define FAKE_BEDMACHINE_COST
 #define ALLOW_BEDMACHINE_UNCERT
+#define BEDMACHINE_UNCERT_FIELD 'H_uncert'
 #define COST_INPUT_PATH '/scratch2/shreyas/GrIS_paleo_data'
 
 #define NTDAMAX 10

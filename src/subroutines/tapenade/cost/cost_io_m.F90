@@ -69,6 +69,7 @@ subroutine read_cost_data()
     real(dp), dimension(0:IMAX,0:JMAX,0:KCMAX) :: age_data_conv
     real(dp), dimension(0:IMAX,0:JMAX,0:KCMAX) :: age_unc_data_conv
     real(dp), dimension(0:IMAX,0:JMAX) :: vs_MEaSUREs_data_conv
+    real(dp), dimension(0:IMAX,0:JMAX) :: vs_unc_MEaSUREs_data_conv
 
     !-------- Create file name --------
     
@@ -104,7 +105,7 @@ subroutine read_cost_data()
     call check( nf90_inq_varid(ncid, 'H', ncv), thisroutine )
     call check( nf90_get_var(ncid, ncv, H_BedMachine_data_conv), thisroutine )
 #ifdef ALLOW_BEDMACHINE_UNCERT
-    call check( nf90_inq_varid(ncid, 'H_uncert', ncv), thisroutine )
+    call check( nf90_inq_varid(ncid, BEDMACHINE_UNCERT_FIELD, ncv), thisroutine )
     call check( nf90_get_var(ncid, ncv, H_unc_BedMachine_data_conv), thisroutine )
 #endif
     !  ------ Close NetCDF file
@@ -148,7 +149,7 @@ subroutine read_cost_data()
     call check( nf90_inq_varid(ncid, 'H', ncv), thisroutine )
     call check( nf90_get_var(ncid, ncv, H_BedMachine_data_conv), thisroutine )
 #ifdef ALLOW_BEDMACHINE_UNCERT
-    call check( nf90_inq_varid(ncid, 'H_uncert', ncv), thisroutine )
+    call check( nf90_inq_varid(ncid, BEDMACHINE_UNCERT_FIELD, ncv), thisroutine )
     call check( nf90_get_var(ncid, ncv, H_unc_BedMachine_data_conv), thisroutine )
 #endif
     !  ------ Close NetCDF file
@@ -190,6 +191,11 @@ subroutine read_cost_data()
     end if
 
     call check( nf90_inq_varid(ncid, 'vs', ncv), thisroutine )
+#ifdef ALLOW_SURFVEL_UNCERT
+    call check( nf90_inq_varid(ncid, SURFVEL_UNCERT_FIELD, ncv), thisroutine )
+    call check( nf90_get_var(ncid, ncv, vs_unc_MEaSUREs_data_conv), thisroutine )
+#endif
+
     call check( nf90_get_var(ncid, ncv, vs_MEaSUREs_data_conv), thisroutine )
 
     !  ------ Close NetCDF file
@@ -198,6 +204,9 @@ subroutine read_cost_data()
     do i = 0, IMAX
         do j = 0, JMAX
             vs_MEaSUREs_data(j,i) = vs_MEaSUREs_data_conv(i,j)
+#ifdef ALLOW_SURFVEL_UNCERT
+            vs_unc_MEaSUREs_data(j,i) = vs_unc_MEaSUREs_data_conv(i,j)
+#endif
         end do
     end do
 #endif
@@ -229,6 +238,10 @@ subroutine read_cost_data()
 
     call check( nf90_inq_varid(ncid, 'vs', ncv), thisroutine )
     call check( nf90_get_var(ncid, ncv, vs_MEaSUREs_data_conv), thisroutine )
+#ifdef ALLOW_SURFVEL_UNCERT
+    call check( nf90_inq_varid(ncid, SURFVEL_UNCERT_FIELD, ncv), thisroutine )
+    call check( nf90_get_var(ncid, ncv, vs_unc_MEaSUREs_data_conv), thisroutine )
+#endif
 
     !  ------ Close NetCDF file
     call check( nf90_close(ncid) )
@@ -236,7 +249,10 @@ subroutine read_cost_data()
     do i = 0, IMAX
         do j = 0, JMAX
             vs_MEaSUREs_data(j,i) = vs_MEaSUREs_data_conv(i,j)
-        end do
+#ifdef ALLOW_SURFVEL_UNCERT
+            vs_unc_MEaSUREs_data(j,i) = vs_unc_MEaSUREs_data_conv(i,j)
+#endif
+       end do
     end do
 #endif
 
@@ -279,7 +295,7 @@ subroutine read_cost_data()
     call check( nf90_inq_varid(ncid, 'age_c', ncv), thisroutine )
     call check( nf90_get_var(ncid, ncv, age_data_conv), thisroutine )
 #ifdef ALLOW_AGE_UNCERT
-    call check( nf90_inq_varid(ncid, 'age_c_uncert_real', ncv), thisroutine )
+    call check( nf90_inq_varid(ncid, AGE_UNCERT_FIELD, ncv), thisroutine )
     call check( nf90_get_var(ncid, ncv, age_unc_data_conv), thisroutine )
 #endif
     !  ------ Close NetCDF file
@@ -336,7 +352,7 @@ subroutine read_cost_data()
     call check( nf90_inq_varid(ncid, 'age_c', ncv), thisroutine )
     call check( nf90_get_var(ncid, ncv, age_data_conv), thisroutine )
 #ifdef ALLOW_AGE_UNCERT
-    call check( nf90_inq_varid(ncid, 'age_c_uncert', ncv), thisroutine )
+    call check( nf90_inq_varid(ncid, AGE_UNCERT_FIELD, ncv), thisroutine )
     call check( nf90_get_var(ncid, ncv, age_unc_data_conv), thisroutine )
 #endif
     !  ------ Close NetCDF file
