@@ -197,14 +197,18 @@ contains
 #ifdef XX_GENARR2D_LOG10INITVAL_ARR
         if (preprocs(k2) .EQ. 'log10ctrl') then
           dolog10ctrl = .TRUE.
+#if !defined(AD_INPUT_PATH)
           log10initval = xx_genarr2d_log10initval(iarr)
+#endif
         end if
 #endif
       end do
 
 #ifdef XX_GENARR2D_LOG10INITVAL_ARR
       if (dolog10ctrl) then  
+#if !defined(AD_INPUT_PATH)
         xx_genarr2d(iarr,:,:) = xx_genarr2d(iarr,:,:) + log10initval
+#endif
         xx_genarr2d(iarr,:,:) = EXP(ln10 * xx_genarr2d(iarr,:,:)) 
         fld = xx_genarr2d(iarr,:,:)
       else
@@ -340,14 +344,18 @@ contains
 #ifdef XX_GENARR3D_LOG10INITVAL_ARR
         if (preprocs(k3) .EQ. 'log10ctrl') then
           dolog10ctrl = .TRUE.
+#if !defined(AD_INPUT_PATH)
           log10initval = xx_genarr3d_log10initval(iarr)
+#endif
         end if
 #endif
       end do
 
 #ifdef XX_GENARR3D_LOG10INITVAL_ARR
-      if (dolog10ctrl) then  
+      if (dolog10ctrl) then
+#if !defined(AD_INPUT_PATH)
         xx_genarr3d(iarr,:,:,:) = xx_genarr3d(iarr,:,:,:) + log10initval
+#endif
         xx_genarr3d(iarr,:,:,:) = EXP(ln10 * xx_genarr3d(iarr,:,:,:))
         fld = xx_genarr3d(iarr,:,:,:)
       else

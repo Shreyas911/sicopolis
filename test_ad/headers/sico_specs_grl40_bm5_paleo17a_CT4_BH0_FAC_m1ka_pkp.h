@@ -1365,6 +1365,7 @@
 #define ALLOW_COST
 #define FAKE_AGE_COST
 #define ALLOW_AGE_UNCERT
+#define AGE_UNCERT_FIELD 'age_uncert'
 #define COST_INPUT_PATH '/scratch2/shreyas/GrIS_paleo_data'
 
 #define NTDAMAX 10
