@@ -165,7 +165,7 @@ end do
 
 !  ------ Adjustment due to prescribed target topography
 
-#if (THK_EVOL==2)
+#if (THK_EVOL==2 && TARGET_TOPO_OPTION<=1)
 
 if (time_in_years < real(target_topo_tau0_time_min,dp)) then
 
@@ -229,7 +229,7 @@ end if
 
 dzl_dtau = (zl_new-zl)*dtime_inv
 
-#elif (THK_EVOL==3)
+#elif (THK_EVOL==3 && TARGET_TOPO_OPTION<=1)
 
 target_topo_tau = target_topo_tau_0
 

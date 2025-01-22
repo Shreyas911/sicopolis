@@ -1634,6 +1634,9 @@ write(10, fmt=trim(fmt3)) 'H_isol_max =', H_ISOL_MAX
 #endif
 
 #if (THK_EVOL==2)
+#if (defined(TARGET_TOPO_OPTION))
+write(10, fmt=trim(fmt2)) 'TARGET_TOPO_OPTION = ', TARGET_TOPO_OPTION
+#endif
 write(10, fmt=trim(fmt1)) 'Target-topography relaxation-time file = ' &
                           //TARGET_TOPO_TAU0_FILE
 write(10, fmt=trim(fmt1)) 'Target-topography file = '//TARGET_TOPO_DAT_NAME
@@ -1641,6 +1644,9 @@ write(10, fmt=trim(fmt1)) 'Path to target-topography file = '//TARGET_TOPO_PATH
 #endif
 
 #if (THK_EVOL==3)
+#if (defined(TARGET_TOPO_OPTION))
+write(10, fmt=trim(fmt2)) 'TARGET_TOPO_OPTION = ', TARGET_TOPO_OPTION
+#endif
 write(10, fmt=trim(fmt3)) 'target_topo_tau_0 =', TARGET_TOPO_TAU0
 write(10, fmt=trim(fmt1)) 'Target-topography file = '//TARGET_TOPO_DAT_NAME
 write(10, fmt=trim(fmt1)) 'Path to target-topography file = '//TARGET_TOPO_PATH

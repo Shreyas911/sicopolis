@@ -4,7 +4,7 @@
 
 !-------- Basic settings --------
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2024-11-11'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2025-01-17'
 !                      Date of last change
 
 !-------- Domain --------
@@ -604,12 +604,12 @@
 !                             the initial thickness
 !                         1 : Evolution of the ice thickness
 !                         2 : Evolution of the ice thickness, but
-!                             the ice topography (zs, zb, zl, H) is nugded
+!                             the ice topography is nudged
 !                             towards a prescribed target with a
 !                             time-dependent relaxation time
 !                             read from the file TARGET_TOPO_TAU0_FILE.
 !                         3 : Evolution of the ice thickness, but
-!                             the ice topography (zs, zb, zl, H) is nugded
+!                             the ice topography is nudged
 !                             towards a prescribed target with the
 !                             constant relaxation time TARGET_TOPO_TAU0.
 
@@ -620,6 +620,12 @@
 #define H_ISOL_MAX 1000.0d0
 !                         Maximum thickness of isolated ice points (in m)
 !                         (if set to 0.0d0, isolated ice points are killed).
+
+#define TARGET_TOPO_OPTION 1
+!                         Topography-nudging for
+!                         1 : H (thickness) and zl (lithosphere surface)
+!                         2 : H (thickness) only
+!                         (only for THK_EVOL==2, 3)
 
 #define TARGET_TOPO_TAU0_FILE 'none'
 !                         Name of the file containing the time-dependent
