@@ -124,7 +124,7 @@ n_reg = regions['n_basin'][:]
 
 #Change the following depending on the ice sheet studied, dx is the resolution entered earlier
 #adjust the path to the MEaSUREs surface velocities maps 
-path = './surfvel/'
+path = './sico_in/ant/'
 filename = f'SurfVel_Antarctica_MEaSUREs_GridEPSG3031_{dx}km.nc'
 
 ##################################################
