@@ -27,6 +27,7 @@ contains
     integer(i4b)        :: igen_gamma_s, igen_s_stat
     integer(i4b)        :: igen_beta1, igen_beta2, igen_c_dis_da
     integer(i4b)        :: igen_Pmax, igen_mu, igen_delta_tda_const
+    integer(i4b)        :: igen_RHO_A, igen_time_lag_asth
 
 #ifdef XX_GENARR2D_VARS_ARR
     xx_genarr2d_vars            = XX_GENARR2D_VARS_ARR
@@ -49,6 +50,8 @@ contains
     igen_mu              = 0
     igen_delta_tda_const = 0
     igen_c_dis_da        = 0
+    igen_RHO_A           = 0
+    igen_time_lag_asth   = 0
 
 #ifdef XX_GENARR2D_VARS_ARR
     do ctrl_index = 1, NUM_CTRL_GENARR2D
@@ -114,6 +117,21 @@ contains
 #if (!defined(GRL) || DISC <= 0)
         errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
         //'c_dis_da as a control param is only compatible with GRL domain and DISC > 0!'
+        call error(errormsg)
+#endif
+      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_RHO_A') then
+        igen_RHO_A = ctrl_index
+#if (!defined(PARAM_RHO_A))
+        errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
+        //'RHO_A as a control param is only compatible with PARAM_RHO_A being defined!'
+        call error(errormsg)
+#endif
+      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_time_lag_asth') then
+        igen_time_lag_asth = ctrl_index
+#if (REBOUND != 1 && REBOUND != 2)
+        errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
+        //'time_lag_asth as a control param is only compatible with REBOUND == 1 or REBOUND == 2!'
+        call error(errormsg)
 #endif
       else
         errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
@@ -158,10 +176,23 @@ contains
     if (igen_delta_tda_const .GT. 0) then
       call ctrl_map_genarr2d(delta_tda_const, igen_delta_tda_const)
     end if
+#endif
+#if (defined(GRL) && DISC > 0)
     if (igen_c_dis_da .GT. 0) then
       call ctrl_map_genarr2d(c_dis_da, igen_c_dis_da)
     end if
 #endif
+#if (defined(PARAM_RHO_A))
+    if (igen_RHO_A .GT. 0) then
+      call ctrl_map_genarr2d(RHO_A, igen_RHO_A)
+    end if
+#endif
+#if (REBOUND==1 || REBOUND==2)
+    if (igen_time_lag_asth .GT. 0) then
+      call ctrl_map_genarr2d(time_lag_asth, igen_time_lag_asth)
+    end if
+#endif
+
 #endif
     
   end subroutine ctrl_map_ini_genarr2d

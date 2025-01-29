@@ -428,7 +428,11 @@ call error(errormsg)
 #endif
 
 #if (defined(PARAM_RHO_A))
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+RHO_A = RHO_A + real(PARAM_RHO_A,dp)
+#else /* NORMAL */
 RHO_A = real(PARAM_RHO_A,dp)
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 #else
 errormsg = ' >>> sico_init: ' &
            // 'Parameter PARAM_RHO_A not defined in run-specs header!'
@@ -3046,7 +3050,11 @@ call read_kei()
 
 #if (TIME_LAG_MOD==1)
 
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+time_lag_asth = (time_lag_asth + TIME_LAG)*year2sec   ! a -> s
+#else /* NORMAL */
 time_lag_asth = TIME_LAG*year2sec   ! a -> s
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 #elif (TIME_LAG_MOD==2)
 
@@ -3058,7 +3066,11 @@ call read_2d_input(filename_with_path, &
                    n_var_type=1, n_ascii_header=6, &
                    field2d_r=field2d_aux)
 
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+time_lag_asth = (time_lag_asth + field2d_aux) *year2sec   ! a -> s
+#else /* NORMAL */
 time_lag_asth = field2d_aux *year2sec   ! a -> s
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 #endif
 

@@ -195,6 +195,12 @@ end subroutine grdchk_main
 #if (defined(GRL) && DISC>0)
             c_dis_da        = 0.0
 #endif
+#if (defined(PARAM_RHO_A))
+            RHO_A           = 0.0
+#endif
+#if (REBOUND==1 || REBOUND==2)
+            time_lag_asth   = 0.0
+#endif
             ! 3D fields
             vx_c            = 0.0 ! Only compatible with ANF_DAT==3 && !defined(LEGACY_RESTART)
             vy_c            = 0.0 ! Only compatible with ANF_DAT==3 && !defined(LEGACY_RESTART)
@@ -388,6 +394,12 @@ end subroutine grdchk_main
 #endif
 #if (defined(GRL) && DISC>0)
             c_dis_da        = 0.0
+#endif
+#if (defined(PARAM_RHO_A))
+            RHO_A           = 0.0
+#endif
+#if (REBOUND==1 || REBOUND==2)
+            time_lag_asth   = 0.0
 #endif
             ! 3D fields
             vx_c            = 0.0 ! Only compatible with ANF_DAT==3 && !defined(LEGACY_RESTART)
