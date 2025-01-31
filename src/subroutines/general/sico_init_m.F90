@@ -429,7 +429,11 @@ call error(errormsg)
 
 #if (defined(PARAM_RHO_A))
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
-RHO_A = RHO_A + real(PARAM_RHO_A,dp)
+do i=0, IMAX
+do j=0, JMAX
+   RHO_A(j,i) = RHO_A(j,i) + real(PARAM_RHO_A,dp)
+end do
+end do
 #else /* NORMAL */
 RHO_A = real(PARAM_RHO_A,dp)
 #endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
@@ -2997,6 +3001,7 @@ endif
 #else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 !SSG: When ANF_DAT==3 q_geo ends up getting read here as well as from NetCDF file, resulting in twice the value.
 !SSG: This is a guardrail to prevent that.
+!SSG: Since output files have the units for q_geo as W/m2, we activate in a way that preserves this.
 #if (ANF_DAT != 3)
 
 if (n_q_geo_mod==1) then
@@ -4508,7 +4513,11 @@ call read_2d_input(filename_with_path, &
                    ch_var_name='zs', n_var_type=1, n_ascii_header=6, &
                    field2d_r=field2d_aux)
 
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
 zs = field2d_aux
+#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+zs = zs + field2d_aux
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZL_PRESENT_FILE)
@@ -4517,7 +4526,11 @@ call read_2d_input(filename_with_path, &
                    ch_var_name='zl', n_var_type=1, n_ascii_header=6, &
                    field2d_r=field2d_aux)
 
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
 zl = field2d_aux
+#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+zl = zl + field2d_aux
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(ZL0_FILE)
@@ -4526,7 +4539,11 @@ call read_2d_input(filename_with_path, &
                    ch_var_name='zl0', n_var_type=1, n_ascii_header=6, &
                    field2d_r=field2d_aux)
 
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
 zl0 = field2d_aux
+#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+zl0 = zl0 + field2d_aux
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(MASK_PRESENT_FILE)
@@ -4546,7 +4563,11 @@ call read_2d_input(filename_with_path, &
                    ch_var_name='zb', n_var_type=1, n_ascii_header=6, &
                    field2d_r=field2d_aux)
 
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
 zb = field2d_aux
+#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+zb = zb + field2d_aux
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 #else
 
@@ -4795,7 +4816,11 @@ call read_2d_input(filename_with_path, &
                    ch_var_name='zl0', n_var_type=1, n_ascii_header=6, &
                    field2d_r=field2d_aux)
 
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
 zl0 = field2d_aux
+#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+zl0 = zl0 + field2d_aux
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(MASK_PRESENT_FILE)
@@ -5029,7 +5054,11 @@ call read_2d_input(filename_with_path, &
                    ch_var_name='zl0', n_var_type=1, n_ascii_header=6, &
                    field2d_r=field2d_aux)
 
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
 zl0 = field2d_aux
+#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+zl0 = zl0 + field2d_aux
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 !-------- Further stuff --------
 

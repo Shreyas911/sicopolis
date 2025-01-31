@@ -28,6 +28,7 @@ contains
     integer(i4b)        :: igen_beta1, igen_beta2, igen_c_dis_da
     integer(i4b)        :: igen_Pmax, igen_mu, igen_delta_tda_const
     integer(i4b)        :: igen_RHO_A, igen_time_lag_asth
+    integer(i4b)        :: igen_zs, igen_zl, igen_zl0, igen_zb
 
 #ifdef XX_GENARR2D_VARS_ARR
     xx_genarr2d_vars            = XX_GENARR2D_VARS_ARR
@@ -52,6 +53,10 @@ contains
     igen_c_dis_da        = 0
     igen_RHO_A           = 0
     igen_time_lag_asth   = 0
+    igen_zs              = 0
+    igen_zl              = 0
+    igen_zl0             = 0
+    igen_zb              = 0
 
 #ifdef XX_GENARR2D_VARS_ARR
     do ctrl_index = 1, NUM_CTRL_GENARR2D
@@ -133,6 +138,29 @@ contains
         //'time_lag_asth as a control param is only compatible with REBOUND == 1 or REBOUND == 2!'
         call error(errormsg)
 #endif
+      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_zs') then
+        igen_zs = ctrl_index
+#if (ANF_DAT==2)
+        errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
+        //'zs as a control param is only compatible with ANF_DAT != 2!'
+        call error(errormsg)
+#endif
+      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_zl') then
+        igen_zl = ctrl_index
+#if (ANF_DAT==2)
+        errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
+        //'zl as a control param is only compatible with ANF_DAT != 2!'
+        call error(errormsg)
+#endif
+      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_zl0') then
+        igen_zl0 = ctrl_index
+      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_zb') then
+        igen_zb = ctrl_index
+#if (ANF_DAT==2 || (ANF_DAT == 1 && !defined(ZB_PRESENT_FILE)))
+        errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
+        //'zb as a control param is only compatible with ANF_DAT == 1 and defined(ZB_PRESENT_FILE) or ANF_DAT == 3!'
+        call error(errormsg)
+#endif
       else
         errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
           //"This control variable is not in the genctrl2d setup yet!"
@@ -190,6 +218,22 @@ contains
 #if (REBOUND==1 || REBOUND==2)
     if (igen_time_lag_asth .GT. 0) then
       call ctrl_map_genarr2d(time_lag_asth, igen_time_lag_asth)
+    end if
+#endif
+#if (ANF_DAT!=2)
+    if (igen_zs .GT. 0) then
+      call ctrl_map_genarr2d(zs, igen_zs)
+    end if
+    if (igen_zl .GT. 0) then
+      call ctrl_map_genarr2d(zl, igen_zl)
+    end if
+#endif
+    if (igen_zl0 .GT. 0) then
+      call ctrl_map_genarr2d(zl0, igen_zl0)
+    end if
+#if ((ANF_DAT==1 && defined(ZB_PRESENT_FILE)) || ANF_DAT==3)
+    if (igen_zb .GT. 0) then
+      call ctrl_map_genarr2d(zb, igen_zb)
     end if
 #endif
 

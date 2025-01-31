@@ -133,6 +133,38 @@ call read_cost_data()
     end do
 #endif
 
+#if (defined(ZS_COST) || defined(FAKE_ZS_COST))
+    do i=0, IMAX
+      do j=0, JMAX
+        ! Focus on the interior of the ice sheet and ignore the Canadian Ellesmere Island.
+        if (H_BedMachine_data(j,i) .ge. 700.0) then
+          fc = fc &
+#ifdef ALLOW_BEDMACHINE_UNCERT
+          + 0.5*(zs(j,i) - zs_BedMachine_data(j,i))**2/zs_unc_BedMachine_data(j,i)**2
+#else
+          + 0.5*(zs(j,i) - zs_BedMachine_data(j,i))**2
+#endif
+        end if
+      end do
+    end do
+#endif
+
+#if (defined(ZL_COST) || defined(FAKE_ZL_COST))
+    do i=0, IMAX
+      do j=0, JMAX
+        ! Focus on the interior of the ice sheet and ignore the Canadian Ellesmere Island.
+        if (H_BedMachine_data(j,i) .ge. 700.0) then
+          fc = fc &
+#ifdef ALLOW_BEDMACHINE_UNCERT
+          + 0.5*(zl(j,i) - zl_BedMachine_data(j,i))**2/zl_unc_BedMachine_data(j,i)**2
+#else
+          + 0.5*(zl(j,i) - zl_BedMachine_data(j,i))**2
+#endif
+        end if
+      end do
+    end do
+#endif
+
 #if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
     do i=0, IMAX
       do j=0, JMAX
@@ -152,13 +184,15 @@ call read_cost_data()
     end do
 #endif
 
-#if (!defined(BEDMACHINE_COST) && !defined(AGE_COST) && !defined(SURFVEL_COST) && !defined(FAKE_BEDMACHINE_COST) && !defined(FAKE_AGE_COST) && !defined(FAKE_SURFVEL_COST))
+#if (!defined(BEDMACHINE_COST) && !defined(AGE_COST) && !defined(SURFVEL_COST) && !defined(ZS_COST) && !defined(ZL_COST))
+#if (!defined(FAKE_BEDMACHINE_COST) && !defined(FAKE_AGE_COST) && !defined(FAKE_SURFVEL_COST) && !defined(FAKE_ZS_COST) && !defined(FAKE_ZL_COST))
     do i=0, IMAX
       do j=0, JMAX
         !--- Other cost functions:
         fc = fc + H(j,i)*cell_area(j,i)
       end do
     end do
+#endif
 #endif
   
   !-------- Print to screen just in case something gets

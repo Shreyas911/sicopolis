@@ -68,7 +68,12 @@ real(dp) :: tldt_inv(0:JMAX,0:IMAX)
 real(dp) :: time_ratio_1(0:JMAX,0:IMAX), time_ratio_2(0:JMAX,0:IMAX)
 real(dp) :: load_ice_water(0:JMAX,0:IMAX)
 real(dp) :: dtime_inv
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+real(dp) :: rho_g, rhosw_g
+real(dp), dimension(0:JMAX,0:IMAX) :: rhoa_g_inv
+#else /* NORMAL */
 real(dp) :: rho_g, rhosw_g, rhoa_g_inv
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 !-------- Term abbreviations --------
 
@@ -294,7 +299,11 @@ real(dp), intent(in)                           :: dxi, deta
 integer(i4b) :: i, j, ij, ir, jr, il, jl, n
 integer(i4b) :: ir_max, jr_max, min_imax_jmax
 integer(i4b) :: il_begin, il_end, jl_begin, jl_end
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+real(dp), dimension(0:JMAX,0:IMAX)    :: rhoa_g_inv
+#else /* NORMAL */
 real(dp)                              :: rhoa_g_inv
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 real(dp)                              :: dxi_inv, deta_inv
 real(dp)                              :: kei_r_incr_inv
 real(dp), dimension(0:JMAX,0:IMAX)    :: l_r, l_r_inv, fac_wss
@@ -321,7 +330,11 @@ kei_r_incr_inv = 1.0_dp/kei_r_incr
 
 do i=0, IMAX
 do j=0, JMAX
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+   l_r(j,i)     = (flex_rig_lith(j,i)*rhoa_g_inv(j,i))**0.25_dp
+#else /* NORMAL */
    l_r(j,i)     = (flex_rig_lith(j,i)*rhoa_g_inv)**0.25_dp
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
    l_r_inv(j,i) = 1.0_dp/l_r(j,i)
    fac_wss(j,i) = l_r(j,i)*l_r(j,i)/(2.0_dp*pi*flex_rig_lith(j,i))
 end do

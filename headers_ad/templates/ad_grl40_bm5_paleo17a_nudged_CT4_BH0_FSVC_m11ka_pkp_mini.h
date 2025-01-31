@@ -17,7 +17,7 @@
 #define DO_CTRL_GENTIM2D
 !       Flags to enable specific codes for various types of genctrl
 
-#define NUM_CTRL_GENARR2D 13
+#define NUM_CTRL_GENARR2D 17
 #define NUM_CTRL_GENARR3D 5
 #define NUM_CTRL_GENTIM2D 1
 !       Number of control variables,
@@ -38,7 +38,11 @@
                                          'xx_Pmax',\
                                          'xx_mu',\
                                          'xx_RHO_A',\
-                                         'xx_time_lag_asth' ]
+                                         'xx_time_lag_asth',\
+                                         'xx_zs',\
+                                         'xx_zl',\
+                                         'xx_zl0',\
+                                         'xx_zb' ]
 !       List of 2D time-invariant control variables
 
 !#define NUMCTRLPROCARR2D 1
@@ -57,7 +61,11 @@
 !                                         'log10ctrl',\
 !                                         'log10ctrl',\
 !                                         'log10ctrl',\
-!                                         'log10ctrl' ]
+!                                         'log10ctrl',\
+!                                         'none',\
+!                                         'none',\
+!                                         'none',\
+!                                         'none' ]
 !!       Define preprocessing steps for ctrl variables
 !!       log10ctrl only works if defined(ALLOW_GENCTRL_BEFORE_SICO_INIT)
 !!       WARNING: If for example using for c_slide_init
@@ -94,7 +102,8 @@
 !                                          0.0          ,  0.0,\
 !                                         -1.15206968873,  0.69897000434, 0.43616264704,\
 !                                          0.86213137931, -0.22184874962, 0.98746515611,\
-!                                          3.51851393988, 3.47712125472 ]
+!                                          3.51851393988, 3.47712125472,\
+!                                          0.0, 0.0, 0.0, 0.0 ]
 !!       log10initval is used only if preproc=log10ctrl and AD_INPUT_PATH is not defined.
 !!       Has no effect (not even read) if AD_INPUT_PATH is defined.
 !!       WARNING: If for example using for c_slide_init
