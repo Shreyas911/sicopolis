@@ -135,6 +135,10 @@ program tapenade_main
         q_geo           = 0.0
         c_slide_init    = 0.0
         H               = 0.0
+        zs              = 0.0 ! Not compatible with ANF_DAT==2
+        zl              = 0.0 ! Not compatible with ANF_DAT==2
+        zl0             = 0.0
+        zb              = 0.0 ! Not compatible with ANF_DAT==2, or if ANF_DAT==1 and ZB_PRESENT_FILE is not defined
 #if (ACCSURFACE==2 || ACCSURFACE==3)
         gamma_s         = 0.0
 #endif
@@ -147,6 +151,12 @@ program tapenade_main
 #endif
 #if (defined(GRL) && DISC>0)
         c_dis_da        = 0.0
+#endif
+#if (defined(PARAM_RHO_A))
+        RHO_A           = 0.0
+#endif
+#if (REBOUND==1 || REBOUND==2)
+        time_lag_asth   = 0.0
 #endif
         ! 3D fields
         vx_c            = 0.0 ! Only compatible with ANF_DAT==3 && !defined(LEGACY_RESTART)

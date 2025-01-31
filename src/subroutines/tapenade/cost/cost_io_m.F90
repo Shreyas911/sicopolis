@@ -77,7 +77,7 @@ subroutine read_cost_data()
     temp_path = COST_INPUT_PATH
 #endif
 
-#if (defined(BEDMACHINE_COST) || defined(AGE_COST))
+#if (defined(BEDMACHINE_COST) || defined(ZS_COST) || defined(ZL_COST) || defined(AGE_COST))
 #if (IMAX==168)
     filename = 'bm5_data_10kms'//trim(filename_extension)
 #elif (IMAX==42)
@@ -121,7 +121,7 @@ subroutine read_cost_data()
     end do
 #endif
 
-#if (defined(FAKE_BEDMACHINE_COST) || defined(FAKE_AGE_COST))
+#if (defined(FAKE_BEDMACHINE_COST) || defined(FAKE_ZS_COST) || defined(FAKE_ZL_COST) || defined(FAKE_AGE_COST))
 #if (IMAX==168)
     filename = 'fake_bm5_data_10kms'//trim(filename_extension)
 #elif (IMAX==42)
@@ -160,6 +160,182 @@ subroutine read_cost_data()
             H_BedMachine_data(j,i) = H_BedMachine_data_conv(i,j)
 #ifdef ALLOW_BEDMACHINE_UNCERT
             H_unc_BedMachine_data(j,i) = H_unc_BedMachine_data_conv(i,j)
+#endif
+        end do
+    end do
+#endif
+
+#if (defined(ZS_COST))
+#if (IMAX==168)
+    filename = 'bm5_data_10kms'//trim(filename_extension)
+#elif (IMAX==42)
+    filename = 'bm5_data_40kms'//trim(filename_extension)
+#elif (IMAX==105)
+    filename = 'bm5_data_16kms'//trim(filename_extension)
+#else
+    errormsg = ' >>> '//trim(thisroutine)//': Error when looking for a' &
+    //               end_of_line &
+    //'              BedMachine data file!'
+    call error(errormsg)
+#endif
+    filename_with_path = trim(temp_path)//'/'//trim(filename)
+
+    !  ------ Open NetCDF file
+    ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+    if (ios /= nf90_noerr) then
+        errormsg = ' >>> '//trim(thisroutine)//': Error when opening a' &
+        //               end_of_line &
+        //'              NetCDF BedMachine data file!'
+        call error(errormsg)
+    end if
+
+    call check( nf90_inq_varid(ncid, 'zs', ncv), thisroutine )
+    call check( nf90_get_var(ncid, ncv, zs_BedMachine_data_conv), thisroutine )
+#ifdef ALLOW_ZS_UNCERT
+    call check( nf90_inq_varid(ncid, ZS_UNCERT_FIELD, ncv), thisroutine )
+    call check( nf90_get_var(ncid, ncv, zs_unc_BedMachine_data_conv), thisroutine )
+#endif
+    !  ------ Close NetCDF file
+    call check( nf90_close(ncid) )
+
+    do i = 0, IMAX
+        do j = 0, JMAX
+            zs_BedMachine_data(j,i) = zs_BedMachine_data_conv(i,j)
+#ifdef ALLOW_ZS_UNCERT
+            zs_unc_BedMachine_data(j,i) = zs_unc_BedMachine_data_conv(i,j)
+#endif
+        end do
+    end do
+#endif
+
+#if (defined(FAKE_ZS_COST))
+#if (IMAX==168)
+    filename = 'fake_bm5_data_10kms'//trim(filename_extension)
+#elif (IMAX==42)
+    filename = 'fake_bm5_data_40kms'//trim(filename_extension)
+#elif (IMAX==105)
+    filename = 'fake_bm5_data_16kms'//trim(filename_extension)
+#else
+    errormsg = ' >>> '//trim(thisroutine)//': Error when looking for a' &
+    //               end_of_line &
+    //'              Fake BedMachine data file!'
+    call error(errormsg)
+#endif
+    filename_with_path = trim(temp_path)//'/'//trim(filename)
+
+    !  ------ Open NetCDF file
+    ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+    if (ios /= nf90_noerr) then
+        errormsg = ' >>> '//trim(thisroutine)//': Error when opening a' &
+        //               end_of_line &
+        //'              Fake NetCDF BedMachine data file!'
+        call error(errormsg)
+    end if
+
+    call check( nf90_inq_varid(ncid, 'zs', ncv), thisroutine )
+    call check( nf90_get_var(ncid, ncv, zs_BedMachine_data_conv), thisroutine )
+#ifdef ALLOW_ZS_UNCERT
+    call check( nf90_inq_varid(ncid, ZS_UNCERT_FIELD, ncv), thisroutine )
+    call check( nf90_get_var(ncid, ncv, zs_unc_BedMachine_data_conv), thisroutine )
+#endif
+    !  ------ Close NetCDF file
+    call check( nf90_close(ncid) )
+
+    do i = 0, IMAX
+        do j = 0, JMAX
+            zs_BedMachine_data(j,i) = zs_BedMachine_data_conv(i,j)
+#ifdef ALLOW_ZS_UNCERT
+            zs_unc_BedMachine_data(j,i) = zs_unc_BedMachine_data_conv(i,j)
+#endif
+        end do
+    end do
+#endif
+
+#if (defined(ZL_COST))
+#if (IMAX==168)
+    filename = 'bm5_data_10kms'//trim(filename_extension)
+#elif (IMAX==42)
+    filename = 'bm5_data_40kms'//trim(filename_extension)
+#elif (IMAX==105)
+    filename = 'bm5_data_16kms'//trim(filename_extension)
+#else
+    errormsg = ' >>> '//trim(thisroutine)//': Error when looking for a' &
+    //               end_of_line &
+    //'              BedMachine data file!'
+    call error(errormsg)
+#endif
+    filename_with_path = trim(temp_path)//'/'//trim(filename)
+
+    !  ------ Open NetCDF file
+    ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+    if (ios /= nf90_noerr) then
+        errormsg = ' >>> '//trim(thisroutine)//': Error when opening a' &
+        //               end_of_line &
+        //'              NetCDF BedMachine data file!'
+        call error(errormsg)
+    end if
+
+    call check( nf90_inq_varid(ncid, 'zl', ncv), thisroutine )
+    call check( nf90_get_var(ncid, ncv, zl_BedMachine_data_conv), thisroutine )
+#ifdef ALLOW_ZL_UNCERT
+    call check( nf90_inq_varid(ncid, ZL_UNCERT_FIELD, ncv), thisroutine )
+    call check( nf90_get_var(ncid, ncv, zl_unc_BedMachine_data_conv), thisroutine )
+#endif
+    !  ------ Close NetCDF file
+    call check( nf90_close(ncid) )
+
+    do i = 0, IMAX
+        do j = 0, JMAX
+            zl_BedMachine_data(j,i) = zl_BedMachine_data_conv(i,j)
+#ifdef ALLOW_ZL_UNCERT
+            zl_unc_BedMachine_data(j,i) = zl_unc_BedMachine_data_conv(i,j)
+#endif
+        end do
+    end do
+#endif
+
+#if (defined(FAKE_ZL_COST))
+#if (IMAX==168)
+    filename = 'fake_bm5_data_10kms'//trim(filename_extension)
+#elif (IMAX==42)
+    filename = 'fake_bm5_data_40kms'//trim(filename_extension)
+#elif (IMAX==105)
+    filename = 'fake_bm5_data_16kms'//trim(filename_extension)
+#else
+    errormsg = ' >>> '//trim(thisroutine)//': Error when looking for a' &
+    //               end_of_line &
+    //'              Fake BedMachine data file!'
+    call error(errormsg)
+#endif
+    filename_with_path = trim(temp_path)//'/'//trim(filename)
+
+    !  ------ Open NetCDF file
+    ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+    if (ios /= nf90_noerr) then
+        errormsg = ' >>> '//trim(thisroutine)//': Error when opening a' &
+        //               end_of_line &
+        //'              Fake NetCDF BedMachine data file!'
+        call error(errormsg)
+    end if
+
+    call check( nf90_inq_varid(ncid, 'zl', ncv), thisroutine )
+    call check( nf90_get_var(ncid, ncv, zl_BedMachine_data_conv), thisroutine )
+#ifdef ALLOW_ZL_UNCERT
+    call check( nf90_inq_varid(ncid, ZL_UNCERT_FIELD, ncv), thisroutine )
+    call check( nf90_get_var(ncid, ncv, zl_unc_BedMachine_data_conv), thisroutine )
+#endif
+    !  ------ Close NetCDF file
+    call check( nf90_close(ncid) )
+
+    do i = 0, IMAX
+        do j = 0, JMAX
+            zl_BedMachine_data(j,i) = zl_BedMachine_data_conv(i,j)
+#ifdef ALLOW_ZL_UNCERT
+            zl_unc_BedMachine_data(j,i) = zl_unc_BedMachine_data_conv(i,j)
 #endif
         end do
     end do

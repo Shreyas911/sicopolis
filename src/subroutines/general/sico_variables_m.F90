@@ -987,8 +987,10 @@ real(dp) :: RHO_C_R
 real(dp) :: KAPPA_R
    !! Heat conductivity of the lithosphere
 
+#if (!defined(ALLOW_NODIFF) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_TAPENADE))
 real(dp) :: RHO_A
    !! Density of the asthenosphere
+#endif
 
 real(dp) :: R_T
    !! Coefficient of the water-content dependence in the rate factor
@@ -1581,6 +1583,11 @@ character, parameter :: end_of_line = char(10)
 real(dp) :: fc
    !! Scalar cost function
 
+#if (defined(PARAM_RHO_A)) 
+real(dp), dimension(0:JMAX,0:IMAX) :: RHO_A
+   !! Density of the asthenosphere
+#endif
+
 real(dp), dimension(0:JMAX,0:IMAX) :: delta_tda_const
    !! Spatially-varying temperature anomaly that will be inferred using adjoint-based DA
 
@@ -1609,11 +1616,29 @@ real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: age_unc_data
 
 real(dp), dimension(0:JMAX,0:IMAX) :: acc_fact
 
-#if (defined(BEDMACHINE_COST) || defined(FAKE_BEDMACHINE_COST) || defined(AGE_COST) || defined(FAKE_AGE_COST))
+#if (defined(BEDMACHINE_COST) || defined(FAKE_BEDMACHINE_COST) || defined(ZS_COST) || defined(FAKE_ZS_COST) || defined(ZL_COST) || defined(FAKE_ZL_COST) || defined(AGE_COST) || defined(FAKE_AGE_COST))
 
 real(dp), dimension(0:JMAX,0:IMAX) :: H_BedMachine_data
 #ifdef ALLOW_BEDMACHINE_UNCERT
 real(dp), dimension(0:JMAX,0:IMAX) :: H_unc_BedMachine_data
+#endif
+
+#endif
+
+#if (defined(ZS_COST) || defined(FAKE_ZS_COST))
+
+real(dp), dimension(0:JMAX,0:IMAX) :: zs_BedMachine_data
+#ifdef ALLOW_ZS_UNCERT
+real(dp), dimension(0:JMAX,0:IMAX) :: zs_unc_BedMachine_data
+#endif
+
+#endif
+
+#if (defined(ZL_COST) || defined(FAKE_ZL_COST))
+
+real(dp), dimension(0:JMAX,0:IMAX) :: zl_BedMachine_data
+#ifdef ALLOW_BEDMACHINE_UNCERT
+real(dp), dimension(0:JMAX,0:IMAX) :: zl_unc_BedMachine_data
 #endif
 
 #endif
