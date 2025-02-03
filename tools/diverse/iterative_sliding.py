@@ -87,7 +87,7 @@ Last update: 09-01-2025
 
 name_of_run = 'ant32_bm3_jare_aq1_spinup03_fixtopo_1' #name of the 'startup' file described earlier
 
-modifier = 0.5  #value of the modifier, the change in the sliding coefficients is too agressive without it
+modifier = 0.6  #value of the modifier, the change in the sliding coefficients is too agressive without it
 
 dx = 32    #Resolution
 
@@ -112,25 +112,25 @@ tfinal = 100000
 #Start and end times of the iterations simulations
 
 
-kmax = 10 # Max number of iterations, 10-15 is usually enough
+kmax = 3 # Max number of iterations, 10-15 is usually enough
 
 # regions file, to change according to the ice sheet.
-path = './sico_in/ant/'
+path = '../../sico_in/ant/'
 filename = f'ant{dx}_imbie2016_basins_extrapolated.nc'
 
 regions = nc.Dataset(path+filename)
-n_reg = regions['n_basin'][:]
-
+reg = regions['n_basin'][:]
+n_reg = max(max(sub) for sub in reg)
 
 #Change the following depending on the ice sheet studied, dx is the resolution entered earlier
 #adjust the path to the MEaSUREs surface velocities maps 
-path = './sico_in/ant/'
+path = '../../sico_in/ant/'
 filename = f'SurfVel_Antarctica_MEaSUREs_GridEPSG3031_{dx}km.nc'
 
 ##################################################
 
 try :
-    os.mkdir(f'./results_{name_of_run}')
+    os.mkdir(f'../../my_results_{name_of_run}')
 except:
     print(f'the results folder with the name results_{name_of_run} already exists. Please Change it\'s name or move it elsewhere and try again')
     exit()
@@ -159,12 +159,14 @@ def get_intercepts(k, first_iter = False):
     iteration number, and returns the slopes, rmsd and intercept
     for computing the sliding coefficient in each region.'''
 
-
+    dir = ''
     if first_iter:
-        path = f'./sico_out/{anfdatname}/'
+        dir = '../..'
+        path = f'{dir}/sico_out/{anfdatname}/'
         filename = f'{anfdatname}{tslice2}.nc'
     else:
-        path = f'./sico_out/{name_of_run}_{modifier}_{k}/'
+        dir = '.'
+        path = f'{dir}/sico_out/{name_of_run}_{modifier}_{k}/'
         filename = f'{name_of_run}_{modifier}_{k}0001.nc'
 
 
@@ -191,7 +193,7 @@ def get_intercepts(k, first_iter = False):
     intercept_log = []
 
     print(f'Calculating the new Sliding Coefficients for iteration {k+1}...')
-    for n_cnt in range(1, max(max(sub) for sub in n_reg)+2):
+    for n_cnt in range(1, n_reg+2):
         log_vs_ob_aux = [log_vs_ob[k][:] for k in range(nmax)]
         vs_ob_aux = [vs_ob[k][:] for k in range(nmax)]
         log_vs_sim_aux = [log_vs_sim[k][:] for k in range(nmax)]
@@ -199,16 +201,16 @@ def get_intercepts(k, first_iter = False):
 
 
         #Cleaning up in order to remove the ocean 
-        if (n_cnt <= max([max(sub) for sub in n_reg])):
+        if (n_cnt <= n_reg):
             for i in range(nmax):
                 for j in range(nmax):
-                    if (n_reg[i][j] != n_cnt or mask[i][j] != 0):
+                    if (reg[i][j] != n_cnt or mask[i][j] != 0):
                         log_vs_ob_aux[i][j] = float('nan')
                         vs_ob_aux[i][j] = float('nan')
                         log_vs_sim_aux[i][j] = float('nan')
                         vs_sim_aux[i][j] = float('nan')
 
-        if (n_cnt > max([max(sub) for sub in n_reg])):
+        else:
             for i in range(nmax):
                 for j in range(nmax):
                     if (mask[i][j] != 0):
@@ -250,31 +252,31 @@ def get_intercepts(k, first_iter = False):
 
     #Writing the data
     print(f'Writing data for iteration {k+1}')
-    with open(f'results_{name_of_run}/{modifier}_rmsd_lin.txt', 'a') as f:
+    with open(f'{dir}/my_results_{name_of_run}/{modifier}_rmsd_lin.txt', 'a') as f:
         g = (f'{rmsd_lin[k]},' for k in range(len(rmsd_lin)))
         for x in g:
             f.write(str(x))
         f.write('\n')
 
-    with open(f'results_{name_of_run}/{modifier}_slope_lin.txt', 'a') as f:
+    with open(f'{dir}/my_results_{name_of_run}/{modifier}_slope_lin.txt', 'a') as f:
         g = (f'{slope_lin[k]},' for k in range(len(slope_lin)))
         for x in g:
             f.write(str(x))
         f.write('\n')
 
-    with open(f'results_{name_of_run}/{modifier}_rmsd_log.txt', 'a') as f:
+    with open(f'{dir}/my_results_{name_of_run}/{modifier}_rmsd_log.txt', 'a') as f:
         g = (f'{rmsd_log[k]},' for k in range(len(rmsd_log)))
         for x in g:
             f.write(str(x))
         f.write('\n')
 
-    with open(f'results_{name_of_run}/{modifier}_intercept_log.txt', 'a') as f:
+    with open(f'{dir}/my_results_{name_of_run}/{modifier}_intercept_log.txt', 'a') as f:
         g = (f'{intercept_log[k]},' for k in range(len(intercept_log)))
         for x in g:
             f.write(str(x))
         f.write('\n')
 
-    with open(f'results_{name_of_run}/{modifier}_slope_log.txt', 'a') as f:
+    with open(f'{dir}/my_results_{name_of_run}/{modifier}_slope_log.txt', 'a') as f:
         g = (f'{slope_log[k]},' for k in range(len(slope_log)))
         for x in g:
             f.write(str(x))
@@ -286,7 +288,7 @@ def get_intercepts(k, first_iter = False):
 
 ################## CREATION OF THE FIRST ITERATION
 
-header = open(f'./headers/sico_specs_{name_of_run}.h', 'r')
+header = open(f'../../headers/sico_specs_{name_of_run}.h', 'r')
 content = header.readlines()
 header.close()
 
@@ -314,22 +316,22 @@ content[1385] = f'#define N_OUTPUT 1'
 content[1390] = f'#define TIME_OUT0 {tfinal}'
 
 values = f'#define C_SLIDE (/ '
-for j in range(0,n_reg):
+for j in range(n_reg):
     values += f'{C[j]}d0, '
-
+values = values[:-2]
 values +=  '/)\n'
 
 content[1117] = values
 
 
-new_file = open(f'headers/sico_specs_{name_of_run}_{modifier}_1.h','w')
+new_file = open(f'../../headers/sico_specs_{name_of_run}_{modifier}_1.h','w')
 new_file.write(''.join(content))
 new_file.close()
 
 
 ################### RUNNING THE SIMULATION
 
-run = open(f'my_multi_sico_iter_k.sh', 'r')
+run = open(f'../../my_multi_sico_iter_k.sh', 'r')
 run_ctn = run.readlines()
 run.close()
 
@@ -338,29 +340,28 @@ run_ctn[131] = f'              -a ${{MULTI_OUTDIR}}/{anfdatname} \\\n'
 run_ctn[132] = f'              -t ${{MULTI_OUTDIR}}/{targetname}) \\\n'
 run_ctn[133] = f'              >out_multi_{name_of_run}_{modifier}_1.dat 2>&1\n'
 
-run = open(f'my_multi_sico_iter_{name_of_run}_{modifier}_1.sh', 'w')
+run = open(f'../../my_multi_sico_iter_{name_of_run}_{modifier}_1.sh', 'w')
 run.write(''.join(run_ctn))
 run.close()
 
 time.sleep(5)
-os.chmod(f'my_multi_sico_iter_{name_of_run}_{modifier}_1.sh', 0o755 )
+os.chmod(f'../../my_multi_sico_iter_{name_of_run}_{modifier}_1.sh', 0o755 )
 time.sleep(5)
+os.chdir('../../')
 os.system(f'(./my_multi_sico_iter_{name_of_run}_{modifier}_1.sh) >out_multi_iter_{name_of_run}_{modifier}_1.dat 2>&1 &')
+print(f'running simulation of iteration 1...')
+time_to_wait = 60 #in seconds
 
 
 ################ ITERATIONS
 
 k = 1
-while k < kmax:
+while k <= kmax:
     '''The program will wait 10 minutes before checking if the
     previous simulation is done, can be changed through time_to_wait'''
 
-    time_to_wait = 600 #in seconds
-
-
     iterator = True
     waited_time = 0
-    print(f'running simulation of iteration {k}...')
     while iterator:
         try:
             a, slope_lin, a, a, slope_log = get_intercepts(k)
@@ -370,8 +371,9 @@ while k < kmax:
             waited_time = waited_time + 10
             print(f'time Waited : {waited_time} minutes')
 
+    os.chdir('./tools/diverse/')
     #Opens the previous iteration' header in order to copy it into the new header 
-    header = open(f'./headers/sico_specs_{name_of_run}_{modifier}_{k}.h', 'r')
+    header = open(f'../../headers/sico_specs_{name_of_run}_{modifier}_{k}.h', 'r')
     content = header.readlines()
     header.close()
     a = content[1117]
@@ -398,38 +400,41 @@ while k < kmax:
     C = [max(round(slide[k]/slope_log[k],4),0.1) for k in range(n_reg)]
 
     values = f'#define C_SLIDE (/ '
-    for j in range n_reg:
+    for j in range(n_reg):
         values += f'{C[j]}d0, '
-
+    values = values[:-2]
     values +=  '/)\n'
 
     content[1117] = values
-
     k = k + 1
 
-    #################### CREATION OF THE NEXT ITERATION
-    new_file = open(f'headers/sico_specs_{name_of_run}_{modifier}_{k}.h','w')
-    new_file.write(''.join(content))
-    new_file.close()
+        #################### CREATION OF THE NEXT ITERATION
+    if k <= kmax:
+        new_file = open(f'../../headers/sico_specs_{name_of_run}_{modifier}_{k}.h','w')
+        new_file.write(''.join(content))
+        new_file.close()
 
-    run = open('my_multi_sico_iter_k.sh', 'r')
-    run_ctn = run.readlines()
-    run.close()
+        run = open('../../my_multi_sico_iter_k.sh', 'r')
+        run_ctn = run.readlines()
+        run.close()
 
-    #Create new run.sh
-    run_ctn[130] = f'   (./sico.sh ${{MULTI_OPTIONS_1}} -m {name_of_run}_{modifier}_{k} \\\n'
-    run_ctn[131] = f'              -a ${{MULTI_OUTDIR}}/{anfdatname} \\\n'
-    run_ctn[132] = f'              -t ${{MULTI_OUTDIR}}/{targetname}) \\\n'
-    run_ctn[133] = f'              >out_multi_{name_of_run}_{modifier}_{k}.dat 2>&1\n'
+        #Create new run.sh
+        run_ctn[130] = f'   (./sico.sh ${{MULTI_OPTIONS_1}} -m {name_of_run}_{modifier}_{k} \\\n'
+        run_ctn[131] = f'              -a ${{MULTI_OUTDIR}}/{anfdatname} \\\n'
+        run_ctn[132] = f'              -t ${{MULTI_OUTDIR}}/{targetname}) \\\n'
+        run_ctn[133] = f'              >out_multi_{name_of_run}_{modifier}_{k}.dat 2>&1\n'
 
-    run = open(f'my_multi_sico_iter_{name_of_run}_{modifier}_{k}.sh', 'w')
-    run.write(''.join(run_ctn))
-    run.close()
+        run = open(f'../../my_multi_sico_iter_{name_of_run}_{modifier}_{k}.sh', 'w')
+        run.write(''.join(run_ctn))
+        run.close()
 
-    ################# RUNING NEW ITERATION
-    time.sleep(5)
-    os.chmod(f'my_multi_sico_iter_{name_of_run}_{modifier}_{k}.sh', 0o755 )
-    time.sleep(5)
-    os.system(f'(./my_multi_sico_iter_{name_of_run}_{modifier}_{k}.sh) >out_multi_iter_{name_of_run}_{modifier}_{k}.dat 2>&1 &')
+        ################# RUNING NEW ITERATION
+        time.sleep(5)
+        os.chmod(f'../../my_multi_sico_iter_{name_of_run}_{modifier}_{k}.sh', 0o755 )
+        time.sleep(5)
+        os.chdir('../../')
+        os.system(f'(./my_multi_sico_iter_{name_of_run}_{modifier}_{k}.sh) >out_multi_iter_{name_of_run}_{modifier}_{k}.dat 2>&1 &')
+        print(f'running simulation of iteration {k}...')
+
 
 print('Job done. It worked on the first time. Probably.')

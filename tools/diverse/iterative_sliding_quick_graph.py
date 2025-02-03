@@ -12,7 +12,7 @@ the iterative_sliding.py script (for now produces some results as a .txt file)
 This will plot the evolution of the sliding coefficients as well as the slopes obtained using 
 the Greve et al., 2020 (DOI: 10.5281/zenodo.3971232) method.
 
-This script should be run from the main /sicopolis directory, through the command
+This script should be run from the /sicopolis/tools/diverse directory, through the command
 python3 quick_graph.py.
 
 Make sure you have python 3 and the netCDF4 library installed through the command pip install netcdf4
@@ -21,22 +21,29 @@ Will save the files in the results folder created during the iterative script
 '''
 
 # NO EXTENSIONS IN THE FOLLOWING PARAMETERS
-run_name = 'ant32_bm3_jare_aq1_spinup03_fixtopo_1' #name of the run inputted in the iterative python script
-coef = 0.5 #coef used in the aforementioned script
-name_topo = 'ant_bm3_32_topo' #Name of the topography file
-region = 'ant'  
-region_file_name = 'ant32_imbie2016_basins_extrapolated'  #Name of the region file (e.g. the imbie basins)
+run_name = 'ant32_bm3_jare_aq1_spinup03_fixtopo_1'           # Name of the run inputted in the iterative python script
+coef = 0.6                                                   # Coef used in the aforementioned script
+name_topo = 'ant_bm3_32_topo'                                # Name of the topography file
+region = 'ant'    					     # Name of the region (the folder for sico_in)
+region_file_name = 'ant32_imbie2016_basins_extrapolated'     # Name of the region file (e.g. the imbie basins)
+run_name_base_run = 'ant32_bm3_jare_aq1_spinup03_fixtopo'    # Name of the base run with 1m/Pa-1 everywhere
+num_output_base_run = '0002'                                 # Output number of the base simulation with 1m/Pa-1 everywhere
+
 
 def avg_sliding_slope(n):
 
-    path = f'./sico_in/{region}/'
+    path = f'../../sico_in/{region}/'
     filename = f'{region_file_name}.nc'
 
     regions = nc.Dataset(path+filename)
     n_reg = regions['n_basin'][:]
-
-    path = f'./sico_out/{run_name}_{coef}_{n}/'
-    filename = f'{run_name}_{coef}_{n}0001.nc'
+    
+    if k == 0:
+       path = f'../../sico_out/{run_name_base_run}/'
+       filename = f'{run_name_base_run}{num_output_base_run}.nc'  
+    else:       
+        path = f'../../sico_out/{run_name}_{coef}_{n}/'
+        filename = f'{run_name}_{coef}_{n}0001.nc'
 
     sim = nc.Dataset(path+filename)
     mask = sim['mask'][:]
@@ -57,7 +64,7 @@ def avg_sliding_slope(n):
     return (frac_region, ntot_ground)
     
 
-txt = open(f'results_{run_name}/{coef}_slope_log.txt', 'r')
+txt = open(f'../../my_results_{run_name}/{coef}_slope_log.txt', 'r')
 
 content = txt.readlines()
 txt.close()
@@ -72,16 +79,17 @@ Y = []
 num_reg = len(content[0])
 num_iter = len(content)
 slide = [[] for j in range(len(content[0]))]
+print(num_iter)
 print('Calculating the average slope for each iteration... \n')
-for k in range(len(content)):
+for k in range(num_iter):
     avg = 0
     X.append(k)
-    (frac_region, ntot_ground) = avg_sliding_slope(k+1)
+    (frac_region, ntot_ground) = avg_sliding_slope(k)
     for j in range(len(content[0])):
         slide[j].append(content[k][j])
         avg = avg + frac_region[j] * content[k][j] / ntot_ground
     Y.append(avg)
-    print('Iteration',k+1,':', avg)
+    print('Iteration',k,':', avg)
 
 
 
@@ -96,12 +104,12 @@ for k in range(len(slide)):
 plt.plot(X, Y, label = 'Avg', linewidth=6)
 plt.plot(X, [1 for k in range(len(Y))], 'k--')
 plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
-fig.savefig(f'./results_{run_name}/slope_evol_{coef}_{run_name}.png', dpi=600)
+fig.savefig(f'../../my_results_{run_name}/slope_evol_{coef}_{run_name}.png', dpi=600)
 plt.close('all')
 
 C = []
-for k in range(1,num_iter+1):
-    header = open(f'./sico_out/{run_name}_{coef}_{k}/sico_specs_{run_name}_{coef}_{k}.h', 'r')
+for k in range(1,num_iter):
+    header = open(f'../../sico_out/{run_name}_{coef}_{k}/sico_specs_{run_name}_{coef}_{k}.h', 'r')
     content = header.readlines()
     header.close()
     a = content[1117]
@@ -124,7 +132,7 @@ for k in range(len(C)):
     for j in range(len(C[0])):
         slide[j].append(C[k][j])
 
-
+X.append(len(C))
 plt.figure()
 plt.title('Evolution of the sliding coefficient against iteration\n', fontsize = 14)
 plt.xlabel('Number of iterations', fontsize = 14)
@@ -132,22 +140,22 @@ plt.ylabel('Sliding coefficients m/(a*Pa)', fontsize = 14)
 plt.tight_layout(rect=[0, 0, 0.85, 1])
 fig = plt.gcf()
 for k in range(len(slide)):
-    plt.plot(X, slide[k], label = f'{k+1}')
+    plt.plot(X, [1] + slide[k], label = f'{k+1}')
 plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
-fig.savefig(f'./results_{run_name}/c_slide_evol_{run_name}_{coef}.png', dpi=600)
+fig.savefig(f'../../my_results_{run_name}/c_slide_evol_{run_name}_{coef}.png', dpi=600)
 plt.close('all')
 
 
 def create_coeff_map():
     coeff_map = []
-    path = f'./sico_in/{region}/'
+    path = f'../../sico_in/{region}/'
     filename = f'{region_file_name}.nc'
 
     regions = nc.Dataset(path+filename)
     n_reg = regions['n_basin'][:]
 
-    path = f'./sico_out/{run_name}_{coef}_{num_iter}/'
-    filename = f'{run_name}_{coef}_{num_iter}0001.nc'
+    path = f'../../sico_out/{run_name}_{coef}_{num_iter-1}/'
+    filename = f'{run_name}_{coef}_{num_iter-1}0001.nc'
 
     sim = nc.Dataset(path+filename)
     mask = sim['mask'][:]
@@ -176,7 +184,7 @@ def create_plot(regions_map, coeff_map,x,y):
     x = [k/1000 for k in x]
     y = [k/1000 for k in y]
 
-    regions = nc.Dataset(f'./sico_in/{region}/{name_topo}.nc')
+    regions = nc.Dataset(f'../../sico_in/{region}/{name_topo}.nc')
     H = regions['H'][:]
     mask = regions['mask'][:]
     H[mask != 2] +=10
@@ -196,7 +204,7 @@ def create_plot(regions_map, coeff_map,x,y):
     plt.contour(x,y, regions_map, levels = num_reg, colors = 'k')
     plt.tight_layout()
     fig = plt.gcf()
-    fig.savefig(f'./results_{run_name}/regions_map.png', dpi=600)
+    fig.savefig(f'../../my_results_{run_name}/regions_map.png', dpi=600)
     plt.close('all')
 
     levels = np.linspace(np.nanmin(regions_map), np.nanmax(regions_map), 19)
@@ -228,7 +236,7 @@ def create_plot(regions_map, coeff_map,x,y):
     plt.contour(x,y, regions_map,levels =levels, colors = 'k', corner_mask=True)
     plt.tight_layout()
     fig = plt.gcf()
-    fig.savefig(f'./results_{run_name}/coeff_map_{run_name}_{coef}.png', dpi=600)
+    fig.savefig(f'../../my_results_{run_name}/coeff_map_{run_name}_{coef}.png', dpi=600)
     plt.close('all')
 
 
