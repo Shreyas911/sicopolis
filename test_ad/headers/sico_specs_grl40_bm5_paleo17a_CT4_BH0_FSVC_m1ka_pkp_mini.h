@@ -1367,7 +1367,7 @@
 #define ALLOW_COST
 #define FAKE_SURFVEL_COST
 #define ALLOW_SURFVEL_UNCERT
-#define SURVEL_UNCERT_FIELD 'vs_uncert'
+#define SURFVEL_UNCERT_FIELD 'vs_uncert'
 #define COST_INPUT_PATH '/scratch2/shreyas/GrIS_paleo_data'
 
 #define NTDAMAX 10
