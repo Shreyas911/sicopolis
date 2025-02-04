@@ -499,30 +499,32 @@
 !                         3 : Initial values from previous
 !                             simulation
 
-#define ZS_PRESENT_FILE   'grl_bm5_40_topo.nc'
-!                             Name of the file containing the present-day
-!                             ice-surface topography
+#define ZS_PRESENT_FILE 'grl_bm5_40_topo.nc'
+!                         Name of the file containing the present-day
+!                         ice-surface topography
 
-#define ZB_PRESENT_FILE   'grl_bm5_40_topo.nc'
-!                             Name of the file containing the present-day
-!                             ice-base topography (only for ANF_DAT==1)
+#define ZB_PRESENT_FILE 'grl_bm5_40_topo.nc'
+!                         Name of the file containing the present-day
+!                         ice-base topography (only for ANF_DAT==1)
 
-#define ZL_PRESENT_FILE   'grl_bm5_40_topo.nc'
-!                             Name of the file containing the present-day
-!                             lithosphere-surface topography
-!                             (only for ANF_DAT==1)
+#define ZL_PRESENT_FILE 'grl_bm5_40_topo.nc'
+!                         Name of the file containing the present-day
+!                         lithosphere-surface topography
+!                         (only for ANF_DAT==1)
 
-#define ZL0_FILE          'grl_bm5_40_zl0_llra.nc'
-!                             Name of the file containing the topography
-!                             of the relaxed lithosphere surface
+#define ZL0_FILE 'grl_bm5_40_zl0_llra.nc'
+!                         Name of the file containing the topography
+!                         of the relaxed lithosphere surface
+!                         (for ANF_DAT==3, can be set to 'none' if
+!                         topography is to be kept from previous simulation)
 
 #define MASK_PRESENT_FILE 'grl_bm5_40_topo.nc'
-!                             Name of the file containing the present-day
-!                             ice-land-ocean mask
+!                         Name of the file containing the present-day
+!                         ice-land-ocean mask
 
 #define MASK_REGION_FILE 'none'
-!                             Name of the file containing the region mask
-!                             ('none' if no file is to be defined)
+!                         Name of the file containing the region mask
+!                         ('none' if no file is to be defined)
 
 #define TEMP_INIT 4
 !                         Initial ice temperature conditions

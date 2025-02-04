@@ -2696,14 +2696,24 @@ call error(errormsg)
 
 #endif
 
-filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
-                     trim(ZL0_FILE)
+if ( (trim(adjustl(ZL0_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(ZL0_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(ZL0_FILE)) /= 'NONE') ) then
 
-call read_2d_input(filename_with_path, &
-                   ch_var_name='zl0', n_var_type=1, n_ascii_header=6, &
-                   field2d_r=field2d_aux)
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(ZL0_FILE)
 
-zl0 = field2d_aux
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='zl0', n_var_type=1, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
+
+   zl0 = field2d_aux
+
+! else: zl0 read above by routine 'read_tms_nc' will be used
+
+end if
 
 !-------- Geographic coordinates, metric tensor,
 !                                 gradients of the topography --------
