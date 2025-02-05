@@ -719,9 +719,17 @@ contains
 #else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
         zb(j,i)   = zb(j,i) + real(zb_conv(i,j),dp)
         zl(j,i)   = zl(j,i) + real(zl_conv(i,j),dp)
-        !! SSG: zl0 is again read in sico_init immediately after the call to read_tms_nc.
+        !! SSG: zl0 can be read in sico_init immediately after the call to read_tms_nc.
         !! SSG: It doesn't make sense to activate zl0 here otherwise the value gets added twice.
-        !zl0(j,i)  = zl0(j,i) + real(zl0_conv(i,j),dp) 
+        if ( (trim(adjustl(ZL0_FILE)) /= 'none') &
+             .and. &
+             (trim(adjustl(ZL0_FILE)) /= 'None') &
+             .and. &
+             (trim(adjustl(ZL0_FILE)) /= 'NONE') ) then
+            !! zl0 is activated in sico_init
+        else
+            zl0(j,i)  = zl0(j,i) + real(zl0_conv(i,j),dp)
+        end if
 #endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
         wss(j,i)  = real(wss_conv(i,j),dp)
 
