@@ -502,6 +502,12 @@
 !                         Name of the file containing the present-day
 !                         ice-surface topography
 
+#define ZB_PRESENT_FILE 'none'
+!                         Name of the file containing the present-day
+!                         ice-base topography
+!                         (only for ANF_DAT==1;
+!                          if 'none' or undefined, zb=zl will be assumed)
+
 #define ZL_PRESENT_FILE 'tibet_e2_20_zl_sm100.dat'
 !                         Name of the file containing the present-day
 !                         lithosphere-surface topography

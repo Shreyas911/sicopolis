@@ -4556,18 +4556,33 @@ mask = nint(field2d_aux)
 
 #if (defined(ZB_PRESENT_FILE))
 
-filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
-                     trim(ZB_PRESENT_FILE)
+if ( (trim(adjustl(ZB_PRESENT_FILE)) /= 'none') &
+     .and. &
+     (trim(adjustl(ZB_PRESENT_FILE)) /= 'None') &
+     .and. &
+     (trim(adjustl(ZB_PRESENT_FILE)) /= 'NONE') ) then
 
-call read_2d_input(filename_with_path, &
-                   ch_var_name='zb', n_var_type=1, n_ascii_header=6, &
-                   field2d_r=field2d_aux)
+   filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                        trim(ZB_PRESENT_FILE)
+
+   call read_2d_input(filename_with_path, &
+                      ch_var_name='zb', n_var_type=1, n_ascii_header=6, &
+                      field2d_r=field2d_aux)
 
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
-zb = field2d_aux
+   zb = field2d_aux
 #else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
-zb = zb + field2d_aux
+   zb = zb + field2d_aux
 #endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+
+else
+
+   write(6, fmt='(a)') ' >>> topography1: ZB_PRESENT_FILE set to ''none,'''
+   write(6, fmt='(a)') '                  thus zb = zl assumed.'
+
+   zb = zl
+
+end if
 
 #else
 

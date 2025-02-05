@@ -181,7 +181,7 @@ end subroutine grdchk_main
             zs              = 0.0 ! Not compatible with ANF_DAT==2
             zl              = 0.0 ! Not compatible with ANF_DAT==2
             zl0             = 0.0
-            zb              = 0.0 ! Not compatible with ANF_DAT==2, or if ANF_DAT==1 and ZB_PRESENT_FILE is not defined
+            zb              = 0.0 ! Not compatible with ANF_DAT==2, or if ANF_DAT==1 and ZB_PRESENT_FILE is 'none' or not defined
 #if (ACCSURFACE==2 || ACCSURFACE==3)
             gamma_s         = 0.0
 #endif
@@ -377,7 +377,7 @@ end subroutine grdchk_main
             zs              = 0.0 ! Not compatible with ANF_DAT==2
             zl              = 0.0 ! Not compatible with ANF_DAT==2
             zl0             = 0.0
-            zb              = 0.0 ! Not compatible with ANF_DAT==2, or if ANF_DAT==1 and ZB_PRESENT_FILE is not defined
+            zb              = 0.0 ! Not compatible with ANF_DAT==2, or if ANF_DAT==1 and ZB_PRESENT_FILE is 'none' or not defined
 #if (ACCSURFACE==2 || ACCSURFACE==3)
             gamma_s         = 0.0
 #endif
