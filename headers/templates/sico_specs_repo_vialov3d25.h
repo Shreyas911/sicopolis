@@ -498,7 +498,9 @@
 
 #define ZB_PRESENT_FILE 'emtp2sge025_topo.nc'
 !                         Name of the file containing the present-day
-!                         ice-base topography (only for ANF_DAT==1)
+!                         ice-base topography
+!                         (only for ANF_DAT==1;
+!                          if 'none' or undefined, zb=zl will be assumed)
 
 #define ZL_PRESENT_FILE 'emtp2sge025_topo.nc'
 !                         Name of the file containing the present-day

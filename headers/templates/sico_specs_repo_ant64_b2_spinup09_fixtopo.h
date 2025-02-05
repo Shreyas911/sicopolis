@@ -499,7 +499,9 @@
 
 #define ZB_PRESENT_FILE 'ant_b2_64_zb.dat'
 !                         Name of the file containing the present-day
-!                         ice-base topography (only for ANF_DAT==1)
+!                         ice-base topography
+!                         (only for ANF_DAT==1;
+!                          if 'none' or undefined, zb=zl will be assumed)
 
 #define ZL_PRESENT_FILE 'ant_b2_64_zl.dat'
 !                         Name of the file containing the present-day
