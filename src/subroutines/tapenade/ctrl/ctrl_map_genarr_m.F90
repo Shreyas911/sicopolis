@@ -247,55 +247,41 @@ contains
 
     real(dp), dimension(0:JMAX,0:IMAX)          :: fld
     integer(i4b)                                :: iarr, k2
-    logical                                     :: dopreprocs, dolog10ctrl
+    logical                                     :: dolog10ctrl
     real(dp)                                    :: log10initval, ln10
 #ifdef XX_GENARR2D_PREPROC_ARR
     character(128), dimension(NUMCTRLPROCARR2D) :: preprocs
-#else
-! Dummy definition
-    character(128), dimension(1) :: preprocs
 #endif
 
-    dopreprocs = .FALSE.
     ln10 = log(10.0)
     dolog10ctrl = .FALSE.
 
 #ifdef XX_GENARR2D_PREPROC_ARR
-    dopreprocs = .TRUE.
-#endif
 
-    if (dopreprocs) then
+    read (unit=xx_genarr2d_preproc(iarr),fmt=*) preprocs
 
-      read (unit=xx_genarr2d_preproc(iarr),fmt=*) preprocs
+    do k2 = 1, NUMCTRLPROCARR2D
+      if (preprocs(k2) .EQ. 'log10ctrl') then
+        dolog10ctrl = .TRUE.
+#if (defined(XX_GENARR2D_LOG10INITVAL_ARR) && !defined(AD_INPUT_PATH))
+        log10initval = xx_genarr2d_log10initval(iarr)
+#endif
+      end if
+    end do
 
-      do k2 = 1, NUMCTRLPROCARR2D
-#ifdef XX_GENARR2D_LOG10INITVAL_ARR
-        if (preprocs(k2) .EQ. 'log10ctrl') then
-          dolog10ctrl = .TRUE.
-#if !defined(AD_INPUT_PATH)
-          log10initval = xx_genarr2d_log10initval(iarr)
+    if (dolog10ctrl) then
+#if (defined(XX_GENARR2D_LOG10INITVAL_ARR) && !defined(AD_INPUT_PATH))
+      xx_genarr2d(iarr,:,:) = xx_genarr2d(iarr,:,:) + log10initval
 #endif
-        end if
-#endif
-      end do
-
-#ifdef XX_GENARR2D_LOG10INITVAL_ARR
-      if (dolog10ctrl) then  
-#if !defined(AD_INPUT_PATH)
-        xx_genarr2d(iarr,:,:) = xx_genarr2d(iarr,:,:) + log10initval
-#endif
-        xx_genarr2d(iarr,:,:) = EXP(ln10 * xx_genarr2d(iarr,:,:)) 
-        fld = xx_genarr2d(iarr,:,:)
-      else
-        fld = fld + xx_genarr2d(iarr,:,:)
-      endif
-#endif
-
+      xx_genarr2d(iarr,:,:) = EXP(ln10 * xx_genarr2d(iarr,:,:))
+      fld = xx_genarr2d(iarr,:,:)
     else
-
       fld = fld + xx_genarr2d(iarr,:,:)
-
     endif
+
+#else
+    fld = fld + xx_genarr2d(iarr,:,:)
+#endif
 
   end subroutine ctrl_map_genarr2d
 #endif
@@ -394,55 +380,41 @@ contains
 
     real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX)  :: fld
     integer(i4b)                                :: iarr, k3
-    logical                                     :: dopreprocs, dolog10ctrl
+    logical                                     :: dolog10ctrl
     real(dp)                                    :: log10initval, ln10
 #ifdef XX_GENARR3D_PREPROC_ARR
     character(128), dimension(NUMCTRLPROCARR3D) :: preprocs
-#else
-! Dummy definition
-    character(128), dimension(1) :: preprocs
 #endif
 
-    dopreprocs = .FALSE.
     ln10 = log(10.0)
     dolog10ctrl = .FALSE.
 
 #ifdef XX_GENARR3D_PREPROC_ARR
-    dopreprocs = .TRUE.
-#endif
 
-    if (dopreprocs) then
+    read (unit=xx_genarr3d_preproc(iarr),fmt=*) preprocs
 
-      read (unit=xx_genarr3d_preproc(iarr),fmt=*) preprocs
+    do k3 = 1, NUMCTRLPROCARR3D
+      if (preprocs(k3) .EQ. 'log10ctrl') then
+        dolog10ctrl = .TRUE.
+#if (defined(XX_GENARR3D_LOG10INITVAL_ARR) && !defined(AD_INPUT_PATH))
+        log10initval = xx_genarr3d_log10initval(iarr)
+#endif
+      end if
+    end do
 
-      do k3 = 1, NUMCTRLPROCARR3D
-#ifdef XX_GENARR3D_LOG10INITVAL_ARR
-        if (preprocs(k3) .EQ. 'log10ctrl') then
-          dolog10ctrl = .TRUE.
-#if !defined(AD_INPUT_PATH)
-          log10initval = xx_genarr3d_log10initval(iarr)
+    if (dolog10ctrl) then
+#if (defined(XX_GENARR3D_LOG10INITVAL_ARR) && !defined(AD_INPUT_PATH))
+      xx_genarr3d(iarr,:,:,:) = xx_genarr3d(iarr,:,:,:) + log10initval
 #endif
-        end if
-#endif
-      end do
-
-#ifdef XX_GENARR3D_LOG10INITVAL_ARR
-      if (dolog10ctrl) then
-#if !defined(AD_INPUT_PATH)
-        xx_genarr3d(iarr,:,:,:) = xx_genarr3d(iarr,:,:,:) + log10initval
-#endif
-        xx_genarr3d(iarr,:,:,:) = EXP(ln10 * xx_genarr3d(iarr,:,:,:))
-        fld = xx_genarr3d(iarr,:,:,:)
-      else
-        fld = fld + xx_genarr3d(iarr,:,:,:)
-      endif
-#endif
-
+      xx_genarr3d(iarr,:,:,:) = EXP(ln10 * xx_genarr3d(iarr,:,:,:))
+      fld = xx_genarr3d(iarr,:,:,:)
     else
-
       fld = fld + xx_genarr3d(iarr,:,:,:)
+    endif
 
-    end if       
+#else
+    fld = fld + xx_genarr3d(iarr,:,:,:)
+#endif
 
   end subroutine ctrl_map_genarr3d
 #endif
