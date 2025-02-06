@@ -179,7 +179,11 @@ call read_cost_data()
         end if
 #endif
         fc = fc &
+#ifdef ALLOW_SURFVEL_UNCERT
+        + 0.5*(vs(j,i) - vs_MEaSUREs_data(j,i))**2/vs_unc_MEaSUREs_data(j,i)**2
+#else
         + 0.5*(vs(j,i) - vs_MEaSUREs_data(j,i))**2
+#endif
       end do
     end do
 #endif
