@@ -217,7 +217,7 @@ contains
   end do
 #endif
 
-#if (defined(DO_CTRL_GENARR3D) && defined(XX_GENARR3D_VARS_ARR))
+#if (defined(DO_CTRL_GENTIM2D) && defined(XX_GENTIM2D_VARS_ARR))
   do ctrl_index = 1, NUM_CTRL_GENTIM2D
     call l2_tim2D_reg_cost(xx_gentim2d_orig(ctrl_index,:,:,:), xx_gentim2d_prior(ctrl_index,:,:,:), gentim2d_sigma_arr(ctrl_index))
   end do
