@@ -65,7 +65,7 @@ module ad_output_m
 
     real(dp) :: xi_conv(0:IMAX), eta_conv(0:JMAX), sigma_level_c_conv(0:KCMAX)
 
-    real(dp), dimension(1) :: fc_arr
+    real(dp), dimension(1) :: fc_arr, fc_data_arr, fc_reg_arr
 #ifdef ALLOW_TAP_TLM
 #if !defined(ALLOW_TAP_TLM_A_ACTION)
     real(dp), dimension(1) :: fcd_arr
@@ -115,6 +115,8 @@ module ad_output_m
     character(len= 16), allocatable :: coord_id(:)
 
     fc_arr(1) = fc
+    fc_data_arr(1) = fc_data
+    fc_reg_arr(1) = fc_reg
 #ifdef ALLOW_TAP_TLM
 #if !defined(ALLOW_TAP_TLM_A_ACTION)
     fcd_arr(1) = fcd
@@ -300,6 +302,42 @@ module ad_output_m
                       thisroutine )
 #else
     call check( nf90_def_var(ncid, 'fc', &
+                      NF90_DOUBLE, nc1d, ncv), &
+                      thisroutine )
+#endif
+
+    call check( nf90_put_att(ncid, ncv, 'type', 'cost'), &
+                thisroutine )
+
+    !    ---- Define fc_data
+    call check( nf90_inq_dimid(ncid, trim(coord_id(5)), nc1d), &
+                      thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+    call check( nf90_def_var(ncid, 'fc_data', &
+                      NF90_DOUBLE, nc1d, ncv, &
+                      deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                      thisroutine )
+#else
+    call check( nf90_def_var(ncid, 'fc_data', &
+                      NF90_DOUBLE, nc1d, ncv), &
+                      thisroutine )
+#endif
+
+    call check( nf90_put_att(ncid, ncv, 'type', 'cost'), &
+                thisroutine )
+
+    !    ---- Define fc_reg
+    call check( nf90_inq_dimid(ncid, trim(coord_id(5)), nc1d), &
+                      thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+    call check( nf90_def_var(ncid, 'fc_reg', &
+                      NF90_DOUBLE, nc1d, ncv, &
+                      deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                      thisroutine )
+#else
+    call check( nf90_def_var(ncid, 'fc_reg', &
                       NF90_DOUBLE, nc1d, ncv), &
                       thisroutine )
 #endif
@@ -601,6 +639,20 @@ module ad_output_m
                 ncv), &
                 thisroutine )
     call check( nf90_put_var(ncid, ncv, fc_arr, &
+                             start=nc0cor_fc, count=nc0cnt_fc), &
+                thisroutine )
+
+    call check( nf90_inq_varid(ncid, 'fc_data', &
+                ncv), &
+                thisroutine )
+    call check( nf90_put_var(ncid, ncv, fc_data_arr, &
+                             start=nc0cor_fc, count=nc0cnt_fc), &
+                thisroutine )
+
+    call check( nf90_inq_varid(ncid, 'fc_reg', &
+                ncv), &
+                thisroutine )
+    call check( nf90_put_var(ncid, ncv, fc_reg_arr, &
                              start=nc0cor_fc, count=nc0cnt_fc), &
                 thisroutine )
 

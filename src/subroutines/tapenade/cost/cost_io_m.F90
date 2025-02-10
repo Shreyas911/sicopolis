@@ -343,11 +343,11 @@ subroutine read_cost_data()
 
 #if defined(SURFVEL_COST)
 #if (IMAX==168)
-    filename = 'vel_data_10kms'//trim(filename_extension)
+    filename = 'surfvel_data_10kms'//trim(filename_extension)
 #elif (IMAX==42)
-    filename = 'vel_data_40kms'//trim(filename_extension)
+    filename = 'surfvel_data_40kms'//trim(filename_extension)
 #elif (IMAX==105)
-    filename = 'vel_data_16kms'//trim(filename_extension)
+    filename = 'surfvel_data_16kms'//trim(filename_extension)
 #else
     errormsg = ' >>> '//trim(thisroutine)//': Error when looking for a' &
     //               end_of_line &
@@ -389,11 +389,11 @@ subroutine read_cost_data()
 
 #if defined(FAKE_SURFVEL_COST)
 #if (IMAX==168)
-    filename = 'fake_vel_data_10kms'//trim(filename_extension)
+    filename = 'fake_surfvel_data_10kms'//trim(filename_extension)
 #elif (IMAX==42)
-    filename = 'fake_vel_data_40kms'//trim(filename_extension)
+    filename = 'fake_surfvel_data_40kms'//trim(filename_extension)
 #elif (IMAX==105)
-    filename = 'fake_vel_data_16kms'//trim(filename_extension)
+    filename = 'fake_surfvel_data_16kms'//trim(filename_extension)
 #else
     errormsg = ' >>> '//trim(thisroutine)//': Error when looking for a' &
     //               end_of_line &

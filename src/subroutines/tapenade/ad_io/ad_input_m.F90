@@ -69,6 +69,10 @@ module ad_input_m
 
 #endif /* ALLOW_TAP_ADJ && ALLOW_TAP_ADJ_AT_ACTION */
 
+#if defined(DO_GENCTRL_PRIOR)
+        real(dp), dimension(1) :: prior_alpha_conv
+#endif
+
         character(len=64), parameter :: thisroutine = 'ad_input'
         character(len=256) :: filename, filename_with_path, temp_path
         character(len= 16), parameter :: filename_extension = '.nc'
@@ -269,6 +273,98 @@ year2sec = 3.1556925445e+07_dp
 #endif
 
 #endif /* ALLOW_TAP_ADJ && ALLOW_TAP_ADJ_AT_ACTION */
+
+#if defined(DO_GENCTRL_PRIOR)
+
+        filename = 'ad_input_nodiff_prior'//trim(filename_extension)
+        filename_with_path = trim(temp_path)//'/'//trim(filename)
+
+        !  ------ Open NetCDF file
+        ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+        if (ios /= nf90_noerr) then
+            errormsg = ' >>> '//trim(thisroutine)//': Error when opening a' &
+            //               end_of_line &
+            //'              NetCDF AD-input file!'
+            call error(errormsg)
+        end if
+
+        call check( nf90_inq_varid(ncid, "prior_alpha", ncv) )
+        call check( nf90_get_var(ncid, ncv, prior_alpha_conv) )
+
+#ifdef DO_CTRL_GENARR2D
+        call check( nf90_inq_varid(ncid, "genarr2d_gamma_arr", ncv) )
+        call check( nf90_get_var(ncid, ncv, genarr2d_gamma_arr) )
+
+        call check( nf90_inq_varid(ncid, "genarr2d_delta_arr", ncv) )
+        call check( nf90_get_var(ncid, ncv, genarr2d_delta_arr) )
+
+        do ctrl_index = 1, NUM_CTRL_GENARR2D
+            call check( nf90_inq_varid(ncid, trim(adjustl(xx_genarr2d_vars(ctrl_index))), ncv) )
+            call check( nf90_get_var(ncid, ncv, xx_genarr2d_conv(ctrl_index,:,:)) )
+        end do
+#endif
+
+#ifdef DO_CTRL_GENARR3D
+        call check( nf90_inq_varid(ncid, "genarr3d_sigma_arr", ncv) )
+        call check( nf90_get_var(ncid, ncv, genarr3d_sigma_arr) )
+
+        do ctrl_index = 1, NUM_CTRL_GENARR3D
+            call check( nf90_inq_varid(ncid, trim(adjustl(xx_genarr3d_vars(ctrl_index))), ncv) )
+            call check( nf90_get_var(ncid, ncv, xx_genarr3d_conv(ctrl_index,:,:,:)) )
+        end do
+#endif
+
+#ifdef DO_CTRL_GENTIM2D
+        call check( nf90_inq_varid(ncid, "gentim2d_sigma_arr", ncv) )
+        call check( nf90_get_var(ncid, ncv, gentim2d_sigma_arr) )
+
+        do ctrl_index = 1, NUM_CTRL_GENTIM2D
+            call check( nf90_inq_varid(ncid, trim(adjustl(xx_gentim2d_vars(ctrl_index))), ncv) )
+            call check( nf90_get_var(ncid, ncv, xx_gentim2d_conv(ctrl_index,:,:,:)) )
+        end do
+#endif
+
+        !  ------ Close NetCDF file
+        call check( nf90_close(ncid) )
+
+        prior_alpha = prior_alpha_conv(1)
+
+#ifdef DO_CTRL_GENARR2D
+        do i = 0, IMAX
+        do j = 0, JMAX
+        do ctrl_index = 1, NUM_CTRL_GENARR2D
+            xx_genarr2d_prior(ctrl_index,j,i) = xx_genarr2d_conv(ctrl_index,i,j)
+        end do
+        end do
+        end do
+#endif
+
+#ifdef DO_CTRL_GENARR3D
+        do i = 0, IMAX
+        do j = 0, JMAX
+        do kc = 0, KCMAX
+        do ctrl_index = 1, NUM_CTRL_GENARR3D
+            xx_genarr3d_prior(ctrl_index,kc,j,i) = xx_genarr3d_conv(ctrl_index,i,j,kc)
+        end do
+        end do
+        end do
+        end do
+#endif
+
+#ifdef DO_CTRL_GENTIM2D
+        do i = 0, IMAX
+        do j = 0, JMAX
+        do tad = 0, NTDAMAX
+        do ctrl_index = 1, NUM_CTRL_GENTIM2D
+            xx_gentim2d_prior(ctrl_index,tad,j,i) = xx_gentim2d_conv(ctrl_index,i,j,tad)
+        end do
+        end do
+        end do
+        end do
+#endif
+
+#endif
 
 #endif
 
