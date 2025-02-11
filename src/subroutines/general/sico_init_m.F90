@@ -4577,7 +4577,7 @@ if ( (trim(adjustl(ZB_PRESENT_FILE)) /= 'none') &
 
 else
 
-   write(6, fmt='(a)') ' >>> topography1: ZB_PRESENT_FILE set to ''none,'''
+   write(6, fmt='(a)') ' >>> topography1: ZB_PRESENT_FILE set to ''none'','
    write(6, fmt='(a)') '                  thus zb = zl assumed.'
 
    zb = zl
