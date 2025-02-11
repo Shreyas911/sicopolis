@@ -70,7 +70,7 @@ module ad_input_m
 #endif /* ALLOW_TAP_ADJ && ALLOW_TAP_ADJ_AT_ACTION */
 
 #if defined(DO_GENCTRL_PRIOR)
-        real(dp), dimension(1) :: prior_alpha_conv
+        real(dp), dimension(1) :: prior_alpha_conv, prior_delta_z_scaler_conv
 #endif
 
         character(len=64), parameter :: thisroutine = 'ad_input'
@@ -292,6 +292,9 @@ year2sec = 3.1556925445e+07_dp
         call check( nf90_inq_varid(ncid, "prior_alpha", ncv) )
         call check( nf90_get_var(ncid, ncv, prior_alpha_conv) )
 
+        call check( nf90_inq_varid(ncid, "prior_delta_z_scaler", ncv) )
+        call check( nf90_get_var(ncid, ncv, prior_delta_z_scaler_conv) )
+
 #ifdef DO_CTRL_GENARR2D
         call check( nf90_inq_varid(ncid, "genarr2d_gamma_arr", ncv) )
         call check( nf90_get_var(ncid, ncv, genarr2d_gamma_arr) )
@@ -306,6 +309,12 @@ year2sec = 3.1556925445e+07_dp
 #endif
 
 #ifdef DO_CTRL_GENARR3D
+        call check( nf90_inq_varid(ncid, "genarr3d_gamma_arr", ncv) )
+        call check( nf90_get_var(ncid, ncv, genarr3d_gamma_arr) )
+
+        call check( nf90_inq_varid(ncid, "genarr3d_delta_arr", ncv) )
+        call check( nf90_get_var(ncid, ncv, genarr3d_delta_arr) )
+
         call check( nf90_inq_varid(ncid, "genarr3d_sigma_arr", ncv) )
         call check( nf90_get_var(ncid, ncv, genarr3d_sigma_arr) )
 
@@ -329,6 +338,7 @@ year2sec = 3.1556925445e+07_dp
         call check( nf90_close(ncid) )
 
         prior_alpha = prior_alpha_conv(1)
+        prior_delta_z_scaler = prior_delta_z_scaler_conv(1)
 
 #ifdef DO_CTRL_GENARR2D
         do i = 0, IMAX

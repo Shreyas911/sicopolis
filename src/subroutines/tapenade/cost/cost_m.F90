@@ -213,7 +213,8 @@ contains
 
 #if (defined(DO_CTRL_GENARR3D) && defined(XX_GENARR3D_VARS_ARR))
   do ctrl_index = 1, NUM_CTRL_GENARR3D
-    call l2_3D_reg_cost(xx_genarr3d_orig(ctrl_index,:,:,:), xx_genarr3d_prior(ctrl_index,:,:,:), genarr3d_sigma_arr(ctrl_index))
+    call laplace_smoothing_3D_reg_cost(xx_genarr3d_orig(ctrl_index,:,:,:), xx_genarr3d_prior(ctrl_index,:,:,:), genarr3d_gamma_arr(ctrl_index), genarr3d_delta_arr(ctrl_index))
+    !call l2_3D_reg_cost(xx_genarr3d_orig(ctrl_index,:,:,:), xx_genarr3d_prior(ctrl_index,:,:,:), genarr3d_sigma_arr(ctrl_index))
   end do
 #endif
 
@@ -292,6 +293,46 @@ contains
   end do
 
   end subroutine laplace_smoothing_2D_reg_cost
+
+  subroutine laplace_smoothing_3D_reg_cost(field, field_prior, gamm, delta)
+
+  implicit none
+
+  real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: field, field_prior
+
+  integer(i4b) :: i, j, kc
+  character(len=64), parameter :: thisroutine = 'laplace_smoothing_3D_reg_cost'
+  real(dp) :: delta, gamm
+  real(dp), dimension(1:KCMAX) :: delta_z
+
+  do kc=1, KCMAX
+    delta_z(kc) = prior_delta_z_scaler*(eaz_c(kc)-eaz_c(kc-1))
+  end do
+
+  do i=0,IMAX
+    do j=0,JMAX
+      fc_reg = fc_reg + prior_alpha*0.5*(delta*(field(0,j,i)-field_prior(0,j,i)) &
+                                         - gamm*((field(1,j,i) - field(0,j,i)) &
+                                         -(field_prior(1,j,i) - field_prior(0,j,i))) / delta_z(1)**2)**2
+      fc_reg = fc_reg + prior_alpha*0.5*(delta*(field(KCMAX,j,i)-field_prior(KCMAX,j,i)) &
+                                         - gamm*((field(KCMAX-1,j,i) - field(KCMAX,j,i)) &
+                                         -(field_prior(KCMAX-1,j,i) - field_prior(KCMAX,j,i))) / delta_z(KCMAX)**2)**2
+    end do
+  end do
+
+  do i=0,IMAX
+    do j=0,JMAX
+      do kc=1, KCMAX-1
+        fc_reg = fc_reg &
+        + prior_alpha*0.5 &
+          *(delta*(field(kc,j,i)-field_prior(kc,j,i)) &
+            - gamm*(((field(kc+1,j,i)-field(kc,j,i))/delta_z(kc+1) - (field(kc,j,i)-field(kc-1,j,i))/delta_z(kc))*(2.0/(delta_z(kc) + delta_z(kc+1))) &
+            -((field_prior(kc+1,j,i)-field_prior(kc,j,i))/delta_z(kc+1) - (field_prior(kc,j,i)-field_prior(kc-1,j,i))/delta_z(kc))*(2.0/(delta_z(kc) + delta_z(kc+1)))))**2
+      end do
+    end do
+  end do
+
+  end subroutine laplace_smoothing_3D_reg_cost
 
   subroutine l2_3D_reg_cost(field, field_prior, sigma)
 

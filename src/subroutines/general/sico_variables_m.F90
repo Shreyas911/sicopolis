@@ -1659,7 +1659,7 @@ real(dp), dimension(0:JMAX,0:IMAX) :: vs_unc_MEaSUREs_data
    real(dp), dimension(NUM_CTRL_GENARR3D,0:KCMAX,0:JMAX,0:IMAX) :: xx_genarr3d, xx_genarr3d_orig
    real(dp), dimension(NUM_CTRL_GENTIM2D,0:NTDAMAX,0:JMAX,0:IMAX) :: xx_gentim2d, xx_gentim2d_orig
 #if defined(DO_GENCTRL_PRIOR)
-   real(dp) :: prior_alpha
+   real(dp) :: prior_alpha, prior_delta_z_scaler
 #endif
 #ifdef DO_CTRL_GENARR2D
 #if defined(DO_GENCTRL_PRIOR)
@@ -1673,7 +1673,7 @@ real(dp), dimension(0:JMAX,0:IMAX) :: vs_unc_MEaSUREs_data
 #ifdef DO_CTRL_GENARR3D
 #if defined(DO_GENCTRL_PRIOR)
    real(dp), dimension(NUM_CTRL_GENARR3D,0:KCMAX,0:JMAX,0:IMAX) :: xx_genarr3d_prior
-   real(dp), dimension(NUM_CTRL_GENARR3D)                       :: genarr3d_sigma_arr
+   real(dp), dimension(NUM_CTRL_GENARR3D)                       :: genarr3d_gamma_arr, genarr3d_delta_arr, genarr3d_sigma_arr
 #endif
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR3D)      :: xx_genarr3d_vars
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR3D)      :: xx_genarr3d_preproc
