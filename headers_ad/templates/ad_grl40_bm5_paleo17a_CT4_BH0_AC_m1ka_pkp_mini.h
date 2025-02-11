@@ -8,6 +8,9 @@
 #undef ALLOW_GENCTRL_BEFORE_SICO_INIT
 !       Flag to enable activation of genctrl before sico_init
 
+#undef DO_GENCTRL_PRIOR
+!       Flag to enable prior regularization
+
 #define CTRL_STRLENGTH   128
 !       The fixed string length for individual entries of arrays
 !       like xx_genarr2d_vars, xx_genarr2d_bounds.
