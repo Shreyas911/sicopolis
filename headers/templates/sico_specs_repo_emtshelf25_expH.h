@@ -4,7 +4,7 @@
 
 !-------- Basic settings --------
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2025-02-04'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2025-02-26'
 !                      Date of last change
 
 !-------- Domain --------
@@ -596,6 +596,7 @@
 !                         Topography-nudging for
 !                         1 : H (thickness) and zl (lithosphere surface)
 !                         2 : H (thickness) only
+!                         3 : zl (lithosphere surface) only
 !                         (only for THK_EVOL==2, 3)
 
 #define TARGET_TOPO_TAU0_FILE 'none'
