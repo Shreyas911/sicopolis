@@ -317,7 +317,7 @@ contains
   real(dp), dimension(1:KCMAX) :: delta_z
 
   do kc=1, KCMAX
-    delta_z(kc) = prior_delta_z_scaler*(eaz_c(kc)-eaz_c(kc-1))
+    delta_z(kc) = eaz_c(kc)-eaz_c(kc-1)
   end do
 
   field(:,:,:) = field(:,:,:) / (field_prior_X(:,:,:)*sigma)
