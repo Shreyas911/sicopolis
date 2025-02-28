@@ -207,14 +207,23 @@ contains
 
 #if (defined(DO_CTRL_GENARR2D) && defined(XX_GENARR2D_VARS_ARR))
   do ctrl_index = 1, NUM_CTRL_GENARR2D
-    call laplace_smoothing_2D_reg_cost(xx_genarr2d_orig(ctrl_index,:,:), xx_genarr2d_prior(ctrl_index,:,:), genarr2d_gamma_arr(ctrl_index), genarr2d_delta_arr(ctrl_index))
+    call laplace_smoothing_2D_reg_cost(xx_genarr2d_orig(ctrl_index,:,:), &
+                                       xx_genarr2d_prior(ctrl_index,:,:), &
+                                       xx_genarr2d_prior_X(ctrl_index,:,:), &
+                                       genarr2d_gamma_arr(ctrl_index), &
+                                       genarr2d_delta_arr(ctrl_index), &
+                                       genarr2d_sigma_arr(ctrl_index))
   end do
 #endif
 
 #if (defined(DO_CTRL_GENARR3D) && defined(XX_GENARR3D_VARS_ARR))
   do ctrl_index = 1, NUM_CTRL_GENARR3D
-    call laplace_smoothing_3D_reg_cost(xx_genarr3d_orig(ctrl_index,:,:,:), xx_genarr3d_prior(ctrl_index,:,:,:), genarr3d_gamma_arr(ctrl_index), genarr3d_delta_arr(ctrl_index))
-    !call l2_3D_reg_cost(xx_genarr3d_orig(ctrl_index,:,:,:), xx_genarr3d_prior(ctrl_index,:,:,:), genarr3d_sigma_arr(ctrl_index))
+    call laplace_smoothing_3D_reg_cost(xx_genarr3d_orig(ctrl_index,:,:,:), &
+                                       xx_genarr3d_prior(ctrl_index,:,:,:), &
+                                       xx_genarr3d_prior_X(ctrl_index,:,:,:), &
+                                       genarr3d_gamma_arr(ctrl_index), &
+                                       genarr3d_delta_arr(ctrl_index), &
+                                       genarr2d_sigma_arr(ctrl_index))
   end do
 #endif
 
@@ -237,47 +246,50 @@ contains
 
   end subroutine cost_final
 
-  subroutine laplace_smoothing_2D_reg_cost(field, field_prior, gamm, delta)
+  subroutine laplace_smoothing_2D_reg_cost(field, field_prior, field_prior_X, gamm, delta, sigma)
 
   implicit none
 
-  real(dp), dimension(0:JMAX,0:IMAX) :: field, field_prior
+  real(dp), dimension(0:JMAX,0:IMAX) :: field, field_prior, field_prior_X
 
   integer(i4b) :: i, j
   character(len=64), parameter :: thisroutine = 'laplace_smoothing_2D_reg_cost'
-  real(dp) :: delta, gamm
+  real(dp) :: delta, gamm, sigma
 
-  fc_reg = fc_reg + prior_alpha*0.5*(delta*(field(0,0)-field_prior(0,0)) &
+  field(:,:) = field(:,:) / (field_prior_X(:,:)*sigma)
+  field_prior(:,:) = field_prior(:,:) / (field_prior_X(:,:)*sigma)
+
+  fc_reg = fc_reg + 0.5*(delta*(field(0,0)-field_prior(0,0)) &
                                - gamm*((field(0,1) + field(1,0) - 2*field(0,0)) &
                                -(field_prior(0,1) + field_prior(1,0) - 2*field_prior(0,0))) / DX**2)**2
-  fc_reg = fc_reg + prior_alpha*0.5*(delta*(field(JMAX,0)-field_prior(JMAX,0)) &
+  fc_reg = fc_reg + 0.5*(delta*(field(JMAX,0)-field_prior(JMAX,0)) &
                                - gamm*((field(JMAX,1) + field(JMAX-1,0) - 2*field(JMAX,0)) &
                                -(field_prior(JMAX,1) + field_prior(JMAX-1,0) - 2*field_prior(JMAX,0))) / DX**2)**2
-  fc_reg = fc_reg + prior_alpha*0.5*(delta*(field(0,IMAX)-field_prior(0,IMAX)) &
+  fc_reg = fc_reg + 0.5*(delta*(field(0,IMAX)-field_prior(0,IMAX)) &
                                - gamm*((field(0,IMAX-1) + field(1,IMAX) - 2*field(0,IMAX)) &
                                -(field_prior(0,IMAX-1) + field_prior(1,IMAX) - 2*field_prior(0,IMAX))) / DX**2)**2
-  fc_reg = fc_reg + prior_alpha*0.5*(delta*(field(JMAX,IMAX)-field_prior(JMAX,IMAX)) &
+  fc_reg = fc_reg + 0.5*(delta*(field(JMAX,IMAX)-field_prior(JMAX,IMAX)) &
                                - gamm*((field(JMAX,IMAX-1) + field(JMAX-1,IMAX) - 2*field(JMAX,IMAX)) &
                                -(field_prior(JMAX,IMAX-1) + field_prior(JMAX-1,IMAX) - 2*field_prior(JMAX,IMAX))) / DX**2)**2
 
   do i=1, IMAX-1
     fc_reg = fc_reg &
-           + prior_alpha*0.5*(delta*(field(0,i)-field_prior(0,i)) &
+           + 0.5*(delta*(field(0,i)-field_prior(0,i)) &
                         - gamm*(((field(1,i) - field(0,i)) - (field_prior(1,i) - field_prior(0,i))) / DX**2 &
                         + ((field(0,i-1) - 2*field(0,i) + field(0,i+1)) - (field_prior(0,i-1) - 2*field_prior(0,i) + field_prior(0,i+1))) / DX**2))**2
     fc_reg = fc_reg &
-           + prior_alpha*0.5*(delta*(field(JMAX,i)-field_prior(JMAX,i)) &
+           + 0.5*(delta*(field(JMAX,i)-field_prior(JMAX,i)) &
                         - gamm*(((field(JMAX-1,i) - field(JMAX,i)) - (field_prior(JMAX-1,i) - field_prior(JMAX,i))) / DX**2 &
                         + ((field(JMAX,i-1) - 2*field(JMAX,i) + field(JMAX,i+1)) - (field_prior(JMAX,i-1) - 2*field_prior(JMAX,i) + field_prior(JMAX,i+1))) / DX**2))**2
   end do
 
   do j=1, JMAX-1
     fc_reg = fc_reg &
-           + prior_alpha*0.5*(delta*(field(j,0)-field_prior(j,0)) &
+           + 0.5*(delta*(field(j,0)-field_prior(j,0)) &
                         - gamm*(((field(j-1,0) - 2*field(j,0) + field(j+1,0)) - (field_prior(j-1,0) - 2*field_prior(j,0) + field_prior(j+1,0))) / DX**2 &
                                  + ((field(j,1) - field(j,0)) - (field_prior(j,1) - field_prior(j,0))) / DX**2))**2
     fc_reg = fc_reg &
-           + prior_alpha*0.5*(delta*(field(j,IMAX)-field_prior(j,IMAX)) &
+           + 0.5*(delta*(field(j,IMAX)-field_prior(j,IMAX)) &
                         - gamm*(((field(j-1,IMAX) - 2*field(j,IMAX) + field(j+1,IMAX)) - (field_prior(j-1,IMAX) - 2*field_prior(j,IMAX) + field_prior(j+1,IMAX))) / DX**2 &
                                 + ((field(j,IMAX-1) - field(j,IMAX)) - (field_prior(j,IMAX-1) - field_prior(j,IMAX))) / DX**2))**2
   end do
@@ -285,8 +297,7 @@ contains
   do i=1, IMAX-1
     do j=1, JMAX-1
       fc_reg = fc_reg &
-      + prior_alpha*0.5 &
-        *(delta*(field(j,i)-field_prior(j,i)) &
+      + 0.5*(delta*(field(j,i)-field_prior(j,i)) &
           - gamm*((field(j,i-1) - 2*field(j,i) + field(j,i+1)) - (field_prior(j,i-1) - 2*field_prior(j,i) + field_prior(j,i+1))) / DX**2 &
           - gamm*((field(j-1,i) - 2*field(j,i) + field(j+1,i)) - (field_prior(j-1,i) - 2*field_prior(j,i) + field_prior(j+1,i))) / DX**2)**2
     end do
@@ -294,27 +305,30 @@ contains
 
   end subroutine laplace_smoothing_2D_reg_cost
 
-  subroutine laplace_smoothing_3D_reg_cost(field, field_prior, gamm, delta)
+  subroutine laplace_smoothing_3D_reg_cost(field, field_prior, field_prior_X, gamm, delta, sigma)
 
   implicit none
 
-  real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: field, field_prior
+  real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: field, field_prior, field_prior_X
 
   integer(i4b) :: i, j, kc
   character(len=64), parameter :: thisroutine = 'laplace_smoothing_3D_reg_cost'
-  real(dp) :: delta, gamm
+  real(dp) :: delta, gamm, sigma
   real(dp), dimension(1:KCMAX) :: delta_z
 
   do kc=1, KCMAX
     delta_z(kc) = prior_delta_z_scaler*(eaz_c(kc)-eaz_c(kc-1))
   end do
 
+  field(:,:,:) = field(:,:,:) / (field_prior_X(:,:,:)*sigma)
+  field_prior(:,:,:) = field_prior(:,:,:) / (field_prior_X(:,:,:)*sigma)
+
   do i=0,IMAX
     do j=0,JMAX
-      fc_reg = fc_reg + prior_alpha*0.5*(delta*(field(0,j,i)-field_prior(0,j,i)) &
+      fc_reg = fc_reg + 0.5*(delta*(field(0,j,i)-field_prior(0,j,i)) &
                                          - gamm*((field(1,j,i) - field(0,j,i)) &
                                          -(field_prior(1,j,i) - field_prior(0,j,i))) / delta_z(1)**2)**2
-      fc_reg = fc_reg + prior_alpha*0.5*(delta*(field(KCMAX,j,i)-field_prior(KCMAX,j,i)) &
+      fc_reg = fc_reg + 0.5*(delta*(field(KCMAX,j,i)-field_prior(KCMAX,j,i)) &
                                          - gamm*((field(KCMAX-1,j,i) - field(KCMAX,j,i)) &
                                          -(field_prior(KCMAX-1,j,i) - field_prior(KCMAX,j,i))) / delta_z(KCMAX)**2)**2
     end do
@@ -324,8 +338,7 @@ contains
     do j=0,JMAX
       do kc=1, KCMAX-1
         fc_reg = fc_reg &
-        + prior_alpha*0.5 &
-          *(delta*(field(kc,j,i)-field_prior(kc,j,i)) &
+        + 0.5*(delta*(field(kc,j,i)-field_prior(kc,j,i)) &
             - gamm*(((field(kc+1,j,i)-field(kc,j,i))/delta_z(kc+1) - (field(kc,j,i)-field(kc-1,j,i))/delta_z(kc))*(2.0/(delta_z(kc) + delta_z(kc+1))) &
             -((field_prior(kc+1,j,i)-field_prior(kc,j,i))/delta_z(kc+1) - (field_prior(kc,j,i)-field_prior(kc-1,j,i))/delta_z(kc))*(2.0/(delta_z(kc) + delta_z(kc+1)))))**2
       end do
@@ -333,25 +346,6 @@ contains
   end do
 
   end subroutine laplace_smoothing_3D_reg_cost
-
-  subroutine l2_3D_reg_cost(field, field_prior, sigma)
-
-  implicit none
-
-  real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: field, field_prior
-  integer(i4b) :: i, j, kc
-  character(len=64), parameter :: thisroutine = 'l2_3D_reg_cost'
-  real(dp) :: sigma
-
-  do i=0, IMAX
-    do j=0, JMAX
-      do kc=0, KCMAX
-        fc_reg = fc_reg + prior_alpha*0.5*(field(kc,j,i)-field_prior(kc,j,i))**2/sigma**2
-      end do
-    end do
-  end do
-
-  end subroutine l2_3D_reg_cost
 
   subroutine l2_tim2D_reg_cost(field, field_prior, sigma)
 
@@ -365,7 +359,7 @@ contains
   do i=0, IMAX
     do j=0, JMAX
       do tad=0, NTDAMAX
-        fc_reg = fc_reg + prior_alpha*0.5*(field(tad,j,i)-field_prior(tad,j,i))**2/sigma**2
+        fc_reg = fc_reg + 0.5*(field(tad,j,i)-field_prior(tad,j,i))**2/sigma**2
       end do
     end do
   end do

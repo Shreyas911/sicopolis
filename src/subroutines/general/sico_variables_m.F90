@@ -1659,12 +1659,12 @@ real(dp), dimension(0:JMAX,0:IMAX) :: vs_unc_MEaSUREs_data
    real(dp), dimension(NUM_CTRL_GENARR3D,0:KCMAX,0:JMAX,0:IMAX) :: xx_genarr3d, xx_genarr3d_orig
    real(dp), dimension(NUM_CTRL_GENTIM2D,0:NTDAMAX,0:JMAX,0:IMAX) :: xx_gentim2d, xx_gentim2d_orig
 #if defined(DO_GENCTRL_PRIOR)
-   real(dp) :: prior_alpha, prior_delta_z_scaler
+   real(dp) :: prior_delta_z_scaler
 #endif
 #ifdef DO_CTRL_GENARR2D
 #if defined(DO_GENCTRL_PRIOR)
-   real(dp), dimension(NUM_CTRL_GENARR2D,0:JMAX,0:IMAX)    :: xx_genarr2d_prior
-   real(dp), dimension(NUM_CTRL_GENARR2D)                  :: genarr2d_gamma_arr, genarr2d_delta_arr
+   real(dp), dimension(NUM_CTRL_GENARR2D,0:JMAX,0:IMAX)    :: xx_genarr2d_prior, xx_genarr2d_prior_X
+   real(dp), dimension(NUM_CTRL_GENARR2D)                  :: genarr2d_gamma_arr, genarr2d_delta_arr, genarr2d_sigma_arr
 #endif
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR2D) :: xx_genarr2d_vars
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR2D) :: xx_genarr2d_preproc 
@@ -1672,7 +1672,7 @@ real(dp), dimension(0:JMAX,0:IMAX) :: vs_unc_MEaSUREs_data
 #endif
 #ifdef DO_CTRL_GENARR3D
 #if defined(DO_GENCTRL_PRIOR)
-   real(dp), dimension(NUM_CTRL_GENARR3D,0:KCMAX,0:JMAX,0:IMAX) :: xx_genarr3d_prior
+   real(dp), dimension(NUM_CTRL_GENARR3D,0:KCMAX,0:JMAX,0:IMAX) :: xx_genarr3d_prior, xx_genarr3d_prior_X
    real(dp), dimension(NUM_CTRL_GENARR3D)                       :: genarr3d_gamma_arr, genarr3d_delta_arr, genarr3d_sigma_arr
 #endif
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR3D)      :: xx_genarr3d_vars
@@ -1681,7 +1681,7 @@ real(dp), dimension(0:JMAX,0:IMAX) :: vs_unc_MEaSUREs_data
 #endif
 #if(defined(DTIME_INTERP0) && defined(NTDAMAX) && defined(DO_CTRL_GENTIM2D))
 #if defined(DO_GENCTRL_PRIOR)
-   real(dp), dimension(NUM_CTRL_GENTIM2D,0:NTDAMAX,0:JMAX,0:IMAX)    :: xx_gentim2d_prior
+   real(dp), dimension(NUM_CTRL_GENTIM2D,0:NTDAMAX,0:JMAX,0:IMAX)    :: xx_gentim2d_prior, xx_gentim2d_prior_X
    real(dp), dimension(NUM_CTRL_GENTIM2D)                            :: gentim2d_sigma_arr
 #endif
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENTIM2D)       :: xx_gentim2d_vars
