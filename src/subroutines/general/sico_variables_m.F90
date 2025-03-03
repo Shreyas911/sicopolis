@@ -1679,7 +1679,7 @@ real(dp), dimension(0:JMAX,0:IMAX) :: vs_unc_MEaSUREs_data
 #if(defined(DTIME_INTERP0) && defined(NTDAMAX) && defined(DO_CTRL_GENTIM2D))
 #if defined(DO_GENCTRL_PRIOR)
    real(dp), dimension(NUM_CTRL_GENTIM2D,0:NTDAMAX,0:JMAX,0:IMAX)    :: xx_gentim2d_prior, xx_gentim2d_prior_X
-   real(dp), dimension(NUM_CTRL_GENTIM2D)                            :: gentim2d_sigma_arr
+   real(dp), dimension(NUM_CTRL_GENTIM2D)                            :: gentim2d_gamma_arr, gentim2d_delta_arr, gentim2d_sigma_arr
 #endif
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENTIM2D)       :: xx_gentim2d_vars
 #endif

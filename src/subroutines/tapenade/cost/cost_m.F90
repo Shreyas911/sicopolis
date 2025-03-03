@@ -43,7 +43,7 @@ module cost_m
 
   implicit none
 
-  public :: cost_final, laplace_smoothing_2D_reg_cost
+  public :: cost_final, laplace_smoothing_2D_reg_cost, laplace_smoothing_3D_reg_cost
 
 contains
  
@@ -74,7 +74,7 @@ contains
   
   implicit none
   
-  integer(i4b) :: i, j, k, kc, kt, ios, KDATA, ctrl_index
+  integer(i4b) :: i, j, k, kc, kt, tad, ios, KDATA, ctrl_index
   character(len=64), parameter :: thisroutine = 'cost_final'
   real(dp), dimension(0:JMAX,0:IMAX) :: vs
 
@@ -229,7 +229,14 @@ contains
 
 #if (defined(DO_CTRL_GENTIM2D) && defined(XX_GENTIM2D_VARS_ARR))
   do ctrl_index = 1, NUM_CTRL_GENTIM2D
-    call l2_tim2D_reg_cost(xx_gentim2d_orig(ctrl_index,:,:,:), xx_gentim2d_prior(ctrl_index,:,:,:), gentim2d_sigma_arr(ctrl_index))
+    do tad = 0, NTDAMAX
+      call laplace_smoothing_2D_reg_cost(xx_gentim2d_orig(ctrl_index,tad,:,:), &
+                                         xx_gentim2d_prior(ctrl_index,tad,:,:), &
+                                         xx_gentim2d_prior_X(ctrl_index,tad,:,:), &
+                                         gentim2d_gamma_arr(ctrl_index), &
+                                         gentim2d_delta_arr(ctrl_index), &
+                                         gentim2d_sigma_arr(ctrl_index))
+    end do
   end do
 #endif
 
@@ -346,24 +353,5 @@ contains
   end do
 
   end subroutine laplace_smoothing_3D_reg_cost
-
-  subroutine l2_tim2D_reg_cost(field, field_prior, sigma)
-
-  implicit none
-
-  real(dp), dimension(0:NTDAMAX,0:JMAX,0:IMAX) :: field, field_prior
-  integer(i4b) :: i, j, tad
-  character(len=64), parameter :: thisroutine = 'l2_tim2D_reg_cost'
-  real(dp) :: sigma
-
-  do i=0, IMAX
-    do j=0, JMAX
-      do tad=0, NTDAMAX
-        fc_reg = fc_reg + 0.5*(field(tad,j,i)-field_prior(tad,j,i))**2/sigma**2
-      end do
-    end do
-  end do
-
-  end subroutine l2_tim2D_reg_cost
 
 end module cost_m

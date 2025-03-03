@@ -318,6 +318,12 @@ year2sec = 3.1556925445e+07_dp
 #endif
 
 #ifdef DO_CTRL_GENTIM2D
+        call check( nf90_inq_varid(ncid, "gentim2d_gamma_arr", ncv) )
+        call check( nf90_get_var(ncid, ncv, gentim2d_gamma_arr) )
+
+        call check( nf90_inq_varid(ncid, "gentim2d_delta_arr", ncv) )
+        call check( nf90_get_var(ncid, ncv, gentim2d_delta_arr) )
+
         call check( nf90_inq_varid(ncid, "gentim2d_sigma_arr", ncv) )
         call check( nf90_get_var(ncid, ncv, gentim2d_sigma_arr) )
 
