@@ -64,8 +64,8 @@ subroutine read_cost_data()
     character(len=256) :: filename, filename_with_path, temp_path
     character(len= 16), parameter :: filename_extension = '.nc'
 
-    real(dp), dimension(0:IMAX,0:JMAX) :: H_BedMachine_data_conv
-    real(dp), dimension(0:IMAX,0:JMAX) :: H_unc_BedMachine_data_conv
+    real(dp), dimension(0:IMAX,0:JMAX) :: H_BedMachine_data_conv, zs_BedMachine_data_conv, zl_BedMachine_data_conv
+    real(dp), dimension(0:IMAX,0:JMAX) :: H_unc_BedMachine_data_conv, zs_unc_BedMachine_data_conv, zl_unc_BedMachine_data_conv
     real(dp), dimension(0:IMAX,0:JMAX,0:KCMAX) :: age_data_conv
     real(dp), dimension(0:IMAX,0:JMAX,0:KCMAX) :: age_unc_data_conv
     real(dp), dimension(0:IMAX,0:JMAX) :: vs_MEaSUREs_data_conv
