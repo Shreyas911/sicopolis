@@ -1650,16 +1650,44 @@ write(10, fmt=trim(fmt2)) 'TSURFACE = ', TSURFACE
 
 flag_temp_zs_ref_file = .false.
 
-#if (defined(ANT) || defined(GRL)) /* Antarctica or Greenland */
+#if (TEMP_PRESENT_PARA>=1) /* parameterization */
 
 write(10, fmt=trim(fmt2)) 'TEMP_PRESENT_PARA = ', TEMP_PRESENT_PARA
 #if (defined(TEMP_PRESENT_OFFSET))
 write(10, fmt=trim(fmt3))  'TEMP_PRESENT_OFFSET =', TEMP_PRESENT_OFFSET
 #endif
+#if (TEMP_PRESENT_PARA==3)
+#if (defined(THETA_MA_0))
+write(10, fmt=trim(fmt3))  'THETA_MA_0 =', THETA_MA_0
+#endif
+#if (defined(GAMMA_MA_0))
+write(10, fmt=trim(fmt3))  'GAMMA_MA_0 =', GAMMA_MA_0
+#endif
+#if (defined(C_MA_0))
+write(10, fmt=trim(fmt3))  'C_MA_0 =', C_MA_0
+#endif
+#if (defined(KAPPA_MA_0))
+write(10, fmt=trim(fmt3))  'KAPPA_MA_0 =', KAPPA_MA_0
+#endif
+#if (defined(THETA_MJ_0))
+write(10, fmt=trim(fmt3))  'THETA_MJ_0 =', THETA_MJ_0
+#endif
+#if (defined(GAMMA_MJ_0))
+write(10, fmt=trim(fmt3))  'GAMMA_MJ_0 =', GAMMA_MJ_0
+#endif
+#if (defined(C_MJ_0))
+write(10, fmt=trim(fmt3))  'C_MJ_0 =', C_MJ_0
+#endif
+#if (defined(KAPPA_MJ_0))
+write(10, fmt=trim(fmt3))  'KAPPA_MJ_0 =', KAPPA_MJ_0
+#endif
+#endif
 
-#else /* other than Antarctica or Greenland */
+#else /* read from file */
 
+#if (defined(TEMP_PRESENT_FILE))
 write(10, fmt=trim(fmt1)) 'temp_present file = '//TEMP_PRESENT_FILE
+#endif
 #if (defined(TOPO_LAPSE_RATE))
 write(10, fmt=trim(fmt3)) 'topo_lapse_rate =', TOPO_LAPSE_RATE
 #endif
@@ -2560,9 +2588,11 @@ end if
 
 !-------- Reading of present-day monthly mean surface temperature --------
 
-#if (!defined(ANT) && !defined(GRL)) /* other than Antarctica or Greenland */
+#if (TEMP_PRESENT_PARA==0) /* also true if undefined */
 
 #if (TSURFACE<=5)
+
+#if (defined(TEMP_PRESENT_FILE))
 
 filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
                      trim(TEMP_PRESENT_FILE)
@@ -2582,6 +2612,12 @@ do n=1, 12   ! month counter
    temp_present(:,:,n) = field2d_aux
 
 end do
+
+#else
+errormsg = ' >>> sico_init: ' &
+              //'TEMP_PRESENT_PARA==0, but TEMP_PRESENT_FILE undefined!'
+call error(errormsg)
+#endif
 
 #endif
 
