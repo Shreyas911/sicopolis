@@ -1637,7 +1637,7 @@ real(dp), dimension(0:JMAX,0:IMAX) :: zs_unc_BedMachine_data
 #if (defined(ZL_COST) || defined(FAKE_ZL_COST))
 
 real(dp), dimension(0:JMAX,0:IMAX) :: zl_BedMachine_data
-#ifdef ALLOW_BEDMACHINE_UNCERT
+#ifdef ALLOW_ZL_UNCERT
 real(dp), dimension(0:JMAX,0:IMAX) :: zl_unc_BedMachine_data
 #endif
 
