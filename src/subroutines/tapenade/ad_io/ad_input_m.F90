@@ -62,6 +62,14 @@ module ad_input_m
         real(dp), dimension(0:IMAX,0:JMAX)         :: Hb_conv
 #endif
 
+#if (defined(ZS_COST) || defined(FAKE_ZS_COST))
+        real(dp), dimension(0:IMAX,0:JMAX)         :: zsb_conv
+#endif
+
+#if (defined(ZL_COST) || defined(FAKE_ZL_COST))
+        real(dp), dimension(0:IMAX,0:JMAX)         :: zlb_conv
+#endif
+
 #if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
         real(dp), dimension(0:JMAX,0:IMAX)         :: vs
         real(dp), dimension(0:IMAX,0:JMAX)         :: vx_s_g_final_conv, vy_s_g_final_conv, vsb_conv
@@ -163,6 +171,16 @@ module ad_input_m
         call check( nf90_get_var(ncid, ncv, Hb_conv) )
 #endif
 
+#if (defined(ZS_COST) || defined(FAKE_ZS_COST))
+        call check( nf90_inq_varid(ncid, 'zsb', ncv) )
+        call check( nf90_get_var(ncid, ncv, zsb_conv) )
+#endif
+
+#if (defined(ZL_COST) || defined(FAKE_ZL_COST))
+        call check( nf90_inq_varid(ncid, 'zlb', ncv) )
+        call check( nf90_get_var(ncid, ncv, zlb_conv) )
+#endif
+
 #if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
         call check( nf90_inq_varid(ncid, 'vsb', ncv) )
         call check( nf90_get_var(ncid, ncv, vsb_conv) ) 
@@ -239,6 +257,22 @@ module ad_input_m
         do i = 0, IMAX
         do j = 0, JMAX
             Hb(j,i) = Hb_conv(i,j)
+        end do
+        end do
+#endif
+
+#if (defined(ZS_COST) || defined(FAKE_ZS_COST))
+        do i = 0, IMAX
+        do j = 0, JMAX
+            zsb(j,i) = zsb_conv(i,j)
+        end do
+        end do
+#endif
+
+#if (defined(ZL_COST) || defined(FAKE_ZL_COST))
+        do i = 0, IMAX
+        do j = 0, JMAX
+            zlb(j,i) = zlb_conv(i,j)
         end do
         end do
 #endif
