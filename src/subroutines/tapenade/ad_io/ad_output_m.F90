@@ -76,6 +76,12 @@ module ad_output_m
 #if (defined(BEDMACHINE_COST) || defined(FAKE_BEDMACHINE_COST))
     real(dp), dimension(0:IMAX,0:JMAX)         :: Hd_conv
 #endif
+#if (defined(ZS_COST) || defined(FAKE_ZS_COST))
+    real(dp), dimension(0:IMAX,0:JMAX)         :: zsd_conv
+#endif
+#if (defined(ZL_COST) || defined(FAKE_ZL_COST))
+    real(dp), dimension(0:IMAX,0:JMAX)         :: zld_conv
+#endif
 #if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
     real(dp), dimension(0:JMAX,0:IMAX)         :: vs
     real(dp), dimension(0:IMAX,0:JMAX)         :: vsd_conv
@@ -415,6 +421,50 @@ module ad_output_m
                   thisroutine )
 #endif
 
+#if (defined(ZS_COST) || defined(FAKE_ZS_COST))
+      !    ---- Define zsd
+      call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
+                thisroutine )
+      call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
+                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid, 'zsd', &
+                NF90_DOUBLE, nc2d, ncv, &
+                deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                thisroutine )
+#else
+      call check( nf90_def_var(ncid, 'zsd', &
+                NF90_DOUBLE, nc2d, ncv), &
+                thisroutine )
+#endif
+
+      call check( nf90_put_att(ncid, ncv, 'type', 'tlmhessaction'), &
+                  thisroutine )
+#endif
+
+#if (defined(ZL_COST) || defined(FAKE_ZL_COST))
+      !    ---- Define zld
+      call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
+                thisroutine )
+      call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
+                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid, 'zld', &
+                NF90_DOUBLE, nc2d, ncv, &
+                deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                thisroutine )
+#else
+      call check( nf90_def_var(ncid, 'zld', &
+                NF90_DOUBLE, nc2d, ncv), &
+                thisroutine )
+#endif
+
+      call check( nf90_put_att(ncid, ncv, 'type', 'tlmhessaction'), &
+                  thisroutine )
+#endif
+
 #if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
       !    ---- Define vsd
       call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
@@ -687,6 +737,22 @@ module ad_output_m
     end do
 #endif
 
+#if (defined(ZS_COST) || defined(FAKE_ZS_COST))
+    do i=0, IMAX
+    do j=0, JMAX
+      zsd_conv(i,j) = zsd(j,i)
+    end do
+    end do
+#endif
+
+#if (defined(ZS_COST) || defined(FAKE_ZS_COST))
+    do i=0, IMAX
+    do j=0, JMAX
+      zld_conv(i,j) = zld(j,i)
+    end do
+    end do
+#endif
+
 #if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
     do i=0, IMAX
     do j=0, JMAX
@@ -764,6 +830,24 @@ module ad_output_m
                   ncv), &
                   thisroutine )
       call check( nf90_put_var(ncid, ncv, Hd_conv, &
+                               start=nc2cor_ij, count=nc2cnt_ij), &
+                  thisroutine )
+#endif
+
+#if (defined(ZS_COST) || defined(FAKE_ZS_COST))
+      call check( nf90_inq_varid(ncid, 'zsd', &
+                  ncv), &
+                  thisroutine )
+      call check( nf90_put_var(ncid, ncv, zsd_conv, &
+                               start=nc2cor_ij, count=nc2cnt_ij), &
+                  thisroutine )
+#endif
+
+#if (defined(ZL_COST) || defined(FAKE_ZL_COST))
+      call check( nf90_inq_varid(ncid, 'zld', &
+                  ncv), &
+                  thisroutine )
+      call check( nf90_put_var(ncid, ncv, zld_conv, &
                                start=nc2cor_ij, count=nc2cnt_ij), &
                   thisroutine )
 #endif
