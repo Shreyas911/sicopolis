@@ -514,7 +514,7 @@
 !                         lithosphere-surface topography
 !                         (only for ANF_DAT==1)
 
-#define ZL0_FILE 'grl_bm5_40_zl0_llra.nc'
+#define ZL0_FILE 'grl_bm5_40_zl0_elra.nc'
 !                         Name of the file containing the topography
 !                         of the relaxed lithosphere surface
 !                         (for ANF_DAT==3, can be set to 'none' if
@@ -549,7 +549,7 @@
 
 !-------- Lithosphere (bedrock) modelling --------
 
-#define REBOUND 1
+#define REBOUND 2
 !                         0 : No bedrock adjustment
 !                         1 : Isostatic bedrock adjustment with local
 !                             lithosphere and relaxing asthenosphere (LLRA model)

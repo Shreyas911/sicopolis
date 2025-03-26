@@ -158,6 +158,9 @@ program tapenade_main
 #if (REBOUND==1 || REBOUND==2)
         time_lag_asth   = 0.0
 #endif
+#if (REBOUND==2)
+        flex_rig_lith   = 0.0
+#endif
         ! 3D fields
         vx_c            = 0.0 ! Only compatible with ANF_DAT==3 && !defined(LEGACY_RESTART)
         vy_c            = 0.0 ! Only compatible with ANF_DAT==3 && !defined(LEGACY_RESTART)

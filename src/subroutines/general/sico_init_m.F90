@@ -3089,6 +3089,28 @@ time_lag_asth = 0.0_dp   ! dummy values
 
 #if (REBOUND==2)
 
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+
+#if (FLEX_RIG_MOD==1)
+
+flex_rig_lith = flex_rig_lith + FLEX_RIG
+
+#elif (FLEX_RIG_MOD==2)
+
+filename_with_path = trim(IN_PATH)//'/'//trim(ch_domain_short)//'/'// &
+                     trim(FLEX_RIG_FILE)
+
+call read_2d_input(filename_with_path, &
+                   ch_var_name='flex_rig_lith', &
+                   n_var_type=1, n_ascii_header=6, &
+                   field2d_r=field2d_aux)
+
+flex_rig_lith = flex_rig_lith + field2d_aux
+
+#endif
+
+#else /* NORMAL */
+
 #if (FLEX_RIG_MOD==1)
 
 flex_rig_lith = FLEX_RIG
@@ -3106,6 +3128,8 @@ call read_2d_input(filename_with_path, &
 flex_rig_lith = field2d_aux
 
 #endif
+
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 #elif (REBOUND==0 || REBOUND==1)
 

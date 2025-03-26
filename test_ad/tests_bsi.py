@@ -43,6 +43,26 @@ import subprocess
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_SVC.h", "grl40_bm5_paleo17a_CT4_BH0_SVC", "time_lag_asth", "1.e+2", None, None, None, "inputs.json", 0, "scalar", 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FSVC.h", "grl40_bm5_paleo17a_CT4_BH0_FSVC", "time_lag_asth", "1.e+2", None, None, None, "inputs.json", 0, "scalar", 1, None),
 
+    # flex_rig_lith cases
+    ("sico_specs_grl40_bm5_paleo17a_CT4_BH0.h", "grl40_bm5_paleo17a_CT4_BH0", "flex_rig_lith", "1.e18", None, None, None, "inputs.json", 0, "scalar", 1, None),
+    ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_BM5.h", "grl40_bm5_paleo17a_CT4_BH0_BM5", "flex_rig_lith", "1.e18", None, None, None, "inputs.json", 0, "scalar", 1, None),
+    ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FBM5.h", "grl40_bm5_paleo17a_CT4_BH0_FBM5", "flex_rig_lith", "1.e18", None, None, None, "inputs.json", 0, "scalar", 1, None),
+    ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_ZSC.h", "grl40_bm5_paleo17a_CT4_BH0_ZSC", "flex_rig_lith", "1.e18", None, None, None, "inputs.json", 0, "scalar", 1, None),
+    ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FZSC.h", "grl40_bm5_paleo17a_CT4_BH0_FZSC", "flex_rig_lith", "1.e18", None, None, None, "inputs.json", 0, "scalar", 1, None),
+    ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_ZLC.h", "grl40_bm5_paleo17a_CT4_BH0_ZLC", "flex_rig_lith", "1.e18", None, None, None, "inputs.json", 0, "scalar", 1, None),
+    ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FZLC.h", "grl40_bm5_paleo17a_CT4_BH0_FZLC", "flex_rig_lith", "1.e18", None, None, None, "inputs.json", 0, "scalar", 1, None),
+    ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_AC.h", "grl40_bm5_paleo17a_CT4_BH0_AC", "flex_rig_lith", "1.e18", None, None, None, "inputs.json", 0, "scalar", 1, None),
+    ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FAC.h", "grl40_bm5_paleo17a_CT4_BH0_FAC", "flex_rig_lith", "1.e18", None, None, None, "inputs.json", 0, "scalar", 1, None),
+    ("sico_specs_repo_grl16_bm5_ss25ka.h", "repo_grl16_bm5_ss25ka", "flex_rig_lith", "1.e18", None, None, None, "inputs.json", 0, "scalar", 1, None),
+    ("sico_specs_repo_grl16_bm5_ss25ka_BM5.h", "repo_grl16_bm5_ss25ka_BM5", "flex_rig_lith", "1.e18", None, None, None, "inputs.json", 0, "scalar", 1, None),
+    ("sico_specs_repo_grl16_bm5_ss25ka_ZSC.h", "repo_grl16_bm5_ss25ka_ZSC", "flex_rig_lith", "1.e18", None, None, None, "inputs.json", 0, "scalar", 1, None),
+    ("sico_specs_repo_grl16_bm5_ss25ka_ZLC.h", "repo_grl16_bm5_ss25ka_ZLC", "flex_rig_lith", "1.e18", None, None, None, "inputs.json", 0, "scalar", 1, None),
+    ("sico_specs_repo_grl16_bm5_ss25ka_CM3_AC.h", "repo_grl16_bm5_ss25ka_CM3_AC", "flex_rig_lith", "1.e18", None, None, None, "inputs.json", 0, "scalar", 1, None),
+    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "flex_rig_lith", "1.e18", None, None, None, "inputs.json", 0, None, 1, "ant"),
+    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "flex_rig_lith", "1.e18", None, None, None, "inputs.json", 0, None, 1, "ant"),
+    ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_SVC.h", "grl40_bm5_paleo17a_CT4_BH0_SVC", "flex_rig_lith", "1.e18", None, None, None, "inputs.json", 0, "scalar", 1, None),
+    ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FSVC.h", "grl40_bm5_paleo17a_CT4_BH0_FSVC", "flex_rig_lith", "1.e18", None, None, None, "inputs.json", 0, "scalar", 1, None),
+
     # delta_tda_const cases
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0.h", "grl40_bm5_paleo17a_CT4_BH0", "delta_tda_const", None, None, None, None, "inputs.json", 0, "scalar", 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_BM5.h", "grl40_bm5_paleo17a_CT4_BH0_BM5", "delta_tda_const", None, None, None, None, "inputs.json", 0, "scalar", 1, None),

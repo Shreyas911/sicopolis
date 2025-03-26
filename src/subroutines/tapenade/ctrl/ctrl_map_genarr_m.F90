@@ -27,7 +27,7 @@ contains
     integer(i4b)        :: igen_gamma_s, igen_s_stat
     integer(i4b)        :: igen_beta1, igen_beta2, igen_c_dis_da
     integer(i4b)        :: igen_Pmax, igen_mu, igen_delta_tda_const
-    integer(i4b)        :: igen_RHO_A, igen_time_lag_asth
+    integer(i4b)        :: igen_RHO_A, igen_time_lag_asth, igen_flex_rig_lith
     integer(i4b)        :: igen_zs, igen_zl, igen_zl0, igen_zb
 
 #ifdef XX_GENARR2D_VARS_ARR
@@ -53,6 +53,7 @@ contains
     igen_c_dis_da        = 0
     igen_RHO_A           = 0
     igen_time_lag_asth   = 0
+    igen_flex_rig_lith   = 0
     igen_zs              = 0
     igen_zl              = 0
     igen_zl0             = 0
@@ -138,6 +139,13 @@ contains
         //'time_lag_asth as a control param is only compatible with REBOUND == 1 or REBOUND == 2!'
         call error(errormsg)
 #endif
+      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_flex_rig_lith') then
+        igen_flex_rig_lith = ctrl_index
+#if (REBOUND != 2)
+        errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
+        //'flex_rig_lith as a control param is only compatible with REBOUND == 1 or REBOUND == 2!'
+        call error(errormsg)
+#endif
       else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_zs') then
         igen_zs = ctrl_index
 #if (ANF_DAT==2)
@@ -218,6 +226,11 @@ contains
 #if (REBOUND==1 || REBOUND==2)
     if (igen_time_lag_asth .GT. 0) then
       call ctrl_map_genarr2d(time_lag_asth, igen_time_lag_asth)
+    end if
+#endif
+#if (REBOUND==2)
+    if (igen_flex_rig_lith .GT. 0) then
+      call ctrl_map_genarr2d(flex_rig_lith, igen_flex_rig_lith)
     end if
 #endif
 #if (ANF_DAT!=2)

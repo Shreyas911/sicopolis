@@ -20,7 +20,7 @@
 #define DO_CTRL_GENTIM2D
 !       Flags to enable specific codes for various types of genctrl
 
-#define NUM_CTRL_GENARR2D 17
+#define NUM_CTRL_GENARR2D 18
 #define NUM_CTRL_GENARR3D 5
 #define NUM_CTRL_GENTIM2D 1
 !       Number of control variables,
@@ -42,6 +42,7 @@
                                          'xx_mu',\
                                          'xx_RHO_A',\
                                          'xx_time_lag_asth',\
+                                         'xx_flex_rig_lith',\
                                          'xx_zs',\
                                          'xx_zl',\
                                          'xx_zl0',\
@@ -57,6 +58,7 @@
 !                                         'log10ctrl',\
 !                                         'none',\
 !                                         'none',\
+!                                         'log10ctrl',\
 !                                         'log10ctrl',\
 !                                         'log10ctrl',\
 !                                         'log10ctrl',\
@@ -105,7 +107,7 @@
 !                                          0.0          ,  0.0,\
 !                                         -1.15206968873,  0.69897000434, 0.43616264704,\
 !                                          0.86213137931, -0.22184874962, 0.98746515611,\
-!                                          3.51851393988, 3.47712125472,\
+!                                          3.51851393988,  3.47712125472, 25.0000000000,\
 !                                          0.0, 0.0, 0.0, 0.0 ]
 !!       log10initval is used only if preproc=log10ctrl and AD_INPUT_PATH is not defined.
 !!       Has no effect (not even read) if AD_INPUT_PATH is defined.
