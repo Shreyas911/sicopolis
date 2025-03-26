@@ -84,7 +84,7 @@ module ad_output_m
 #endif
 #if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
     real(dp), dimension(0:JMAX,0:IMAX)         :: vs
-    real(dp), dimension(0:IMAX,0:JMAX)         :: vsd_conv
+    real(dp), dimension(0:IMAX,0:JMAX)         :: vx_s_gd_conv, vy_s_gd_conv, vsd_conv
 #endif
 #endif /* ALLOW_TAP_TLM_A_ACTION */
 #endif /* ALLOW_TAP_TLM */
@@ -466,6 +466,47 @@ module ad_output_m
 #endif
 
 #if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
+
+      !    ---- Define vx_s_gd
+      call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
+                thisroutine )
+      call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
+                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid, 'vx_s_gd', &
+                NF90_DOUBLE, nc2d, ncv, &
+                deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                thisroutine )
+#else
+      call check( nf90_def_var(ncid, 'vx_s_gd', &
+                NF90_DOUBLE, nc2d, ncv), &
+                thisroutine )
+#endif
+
+      call check( nf90_put_att(ncid, ncv, 'type', 'tlmhessaction'), &
+                  thisroutine )
+
+      !    ---- Define vy_s_gd
+      call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
+                thisroutine )
+      call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
+                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid, 'vy_s_gd', &
+                NF90_DOUBLE, nc2d, ncv, &
+                deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                thisroutine )
+#else
+      call check( nf90_def_var(ncid, 'vy_s_gd', &
+                NF90_DOUBLE, nc2d, ncv), &
+                thisroutine )
+#endif
+
+      call check( nf90_put_att(ncid, ncv, 'type', 'tlmhessaction'), &
+                  thisroutine )
+
       !    ---- Define vsd
       call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
                 thisroutine )
@@ -756,6 +797,8 @@ module ad_output_m
 #if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
     do i=0, IMAX
     do j=0, JMAX
+      vx_s_gd_conv(i,j) = vx_s_gd(j,i)
+      vy_s_gd_conv(i,j) = vy_s_gd(j,i)
 ! /* ALLOW_TAPENADE: guarding against non-differentiable sqrt(0) */
       vs(j,i) = sqrt(vx_s_g(j,i)**2 + vy_s_g(j,i)**2)*year2sec
       if (vs(j,i) > 0) then
@@ -853,6 +896,20 @@ module ad_output_m
 #endif
 
 #if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
+      call check( nf90_inq_varid(ncid, 'vx_s_gd', &
+                  ncv), &
+                  thisroutine )
+      call check( nf90_put_var(ncid, ncv, vx_s_gd_conv, &
+                               start=nc2cor_ij, count=nc2cnt_ij), &
+                  thisroutine )
+
+      call check( nf90_inq_varid(ncid, 'vy_s_gd', &
+                  ncv), &
+                  thisroutine )
+      call check( nf90_put_var(ncid, ncv, vy_s_gd_conv, &
+                               start=nc2cor_ij, count=nc2cnt_ij), &
+                  thisroutine )
+
       call check( nf90_inq_varid(ncid, 'vsd', &
                   ncv), &
                   thisroutine )

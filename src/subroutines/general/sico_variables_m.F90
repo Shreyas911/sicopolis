@@ -1616,7 +1616,7 @@ real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: age_unc_data
 
 real(dp), dimension(0:JMAX,0:IMAX) :: acc_fact
 
-#if (defined(BEDMACHINE_COST) || defined(FAKE_BEDMACHINE_COST) || defined(ZS_COST) || defined(FAKE_ZS_COST) || defined(ZL_COST) || defined(FAKE_ZL_COST) || defined(AGE_COST) || defined(FAKE_AGE_COST))
+#if (defined(BEDMACHINE_COST) || defined(FAKE_BEDMACHINE_COST) || defined(AGE_COST) || defined(FAKE_AGE_COST))
 
 real(dp), dimension(0:JMAX,0:IMAX) :: H_BedMachine_data
 #ifdef ALLOW_BEDMACHINE_UNCERT
@@ -1625,7 +1625,7 @@ real(dp), dimension(0:JMAX,0:IMAX) :: H_unc_BedMachine_data
 
 #endif
 
-#if (defined(ZS_COST) || defined(FAKE_ZS_COST))
+#if (defined(BEDMACHINE_COST) || defined(FAKE_BEDMACHINE_COST) || defined(ZS_COST) || defined(FAKE_ZS_COST) || defined(ZL_COST) || defined(FAKE_ZL_COST) || defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
 
 real(dp), dimension(0:JMAX,0:IMAX) :: zs_BedMachine_data
 #ifdef ALLOW_ZS_UNCERT
@@ -1645,9 +1645,20 @@ real(dp), dimension(0:JMAX,0:IMAX) :: zl_unc_BedMachine_data
 
 #if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
 
+#if !defined(SURF_VXVY_COST)
+
 real(dp), dimension(0:JMAX,0:IMAX) :: vs_MEaSUREs_data
 #ifdef ALLOW_SURFVEL_UNCERT
 real(dp), dimension(0:JMAX,0:IMAX) :: vs_unc_MEaSUREs_data
+#endif
+
+#else
+
+real(dp), dimension(0:JMAX,0:IMAX) :: vx_MEaSUREs_data, vy_MEaSUREs_data
+#ifdef ALLOW_SURFVEL_UNCERT
+real(dp), dimension(0:JMAX,0:IMAX) :: vx_unc_MEaSUREs_data, vy_unc_MEaSUREs_data
+#endif
+
 #endif
 
 #endif

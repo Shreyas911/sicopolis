@@ -64,12 +64,31 @@ subroutine read_cost_data()
     character(len=256) :: filename, filename_with_path, temp_path
     character(len= 16), parameter :: filename_extension = '.nc'
 
-    real(dp), dimension(0:IMAX,0:JMAX) :: H_BedMachine_data_conv, zs_BedMachine_data_conv, zl_BedMachine_data_conv
-    real(dp), dimension(0:IMAX,0:JMAX) :: H_unc_BedMachine_data_conv, zs_unc_BedMachine_data_conv, zl_unc_BedMachine_data_conv
+#if (defined(BEDMACHINE_COST) || defined(FAKE_BEDMACHINE_COST) || defined(AGE_COST) || defined(FAKE_AGE_COST))
+    real(dp), dimension(0:IMAX,0:JMAX) :: H_BedMachine_data_conv
+    real(dp), dimension(0:IMAX,0:JMAX) :: H_unc_BedMachine_data_conv
+#endif
+#if (defined(BEDMACHINE_COST) || defined(FAKE_BEDMACHINE_COST) || defined(ZS_COST) || defined(FAKE_ZS_COST) || defined(ZL_COST) || defined(FAKE_ZL_COST) || defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
+    real(dp), dimension(0:IMAX,0:JMAX) :: zs_BedMachine_data_conv
+    real(dp), dimension(0:IMAX,0:JMAX) :: zs_unc_BedMachine_data_conv
+#endif
+#if (defined(ZL_COST) || defined(FAKE_ZL_COST))
+    real(dp), dimension(0:IMAX,0:JMAX) :: zl_BedMachine_data_conv
+    real(dp), dimension(0:IMAX,0:JMAX) :: zl_unc_BedMachine_data_conv
+#endif
+#if (defined(AGE_COST) || defined(FAKE_AGE_COST))
     real(dp), dimension(0:IMAX,0:JMAX,0:KCMAX) :: age_data_conv
     real(dp), dimension(0:IMAX,0:JMAX,0:KCMAX) :: age_unc_data_conv
+#endif
+#if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
+#if !defined(SURF_VXVY_COST)
     real(dp), dimension(0:IMAX,0:JMAX) :: vs_MEaSUREs_data_conv
     real(dp), dimension(0:IMAX,0:JMAX) :: vs_unc_MEaSUREs_data_conv
+#else
+    real(dp), dimension(0:IMAX,0:JMAX) :: vx_MEaSUREs_data_conv, vy_MEaSUREs_data_conv
+    real(dp), dimension(0:IMAX,0:JMAX) :: vx_unc_MEaSUREs_data_conv, vy_unc_MEaSUREs_data_conv
+#endif
+#endif
 
     !-------- Create file name --------
     
@@ -77,7 +96,7 @@ subroutine read_cost_data()
     temp_path = COST_INPUT_PATH
 #endif
 
-#if (defined(BEDMACHINE_COST) || defined(ZS_COST) || defined(ZL_COST) || defined(AGE_COST))
+#if (defined(BEDMACHINE_COST) || defined(AGE_COST))
 #if (IMAX==168)
     filename = 'bm5_data_10kms'//trim(filename_extension)
 #elif (IMAX==42)
@@ -121,7 +140,7 @@ subroutine read_cost_data()
     end do
 #endif
 
-#if (defined(FAKE_BEDMACHINE_COST) || defined(FAKE_ZS_COST) || defined(FAKE_ZL_COST) || defined(FAKE_AGE_COST))
+#if (defined(FAKE_BEDMACHINE_COST) || defined(FAKE_AGE_COST))
 #if (IMAX==168)
     filename = 'fake_bm5_data_10kms'//trim(filename_extension)
 #elif (IMAX==42)
@@ -165,7 +184,7 @@ subroutine read_cost_data()
     end do
 #endif
 
-#if (defined(ZS_COST))
+#if (defined(BEDMACHINE_COST) || defined(ZS_COST) || defined(ZL_COST) || defined(SURFVEL_COST))
 #if (IMAX==168)
     filename = 'bm5_data_10kms'//trim(filename_extension)
 #elif (IMAX==42)
@@ -209,7 +228,7 @@ subroutine read_cost_data()
     end do
 #endif
 
-#if (defined(FAKE_ZS_COST))
+#if (defined(FAKE_BEDMACHINE_COST) || defined(FAKE_ZS_COST) || defined(FAKE_ZL_COST) || defined(FAKE_SURFVEL_COST))
 #if (IMAX==168)
     filename = 'fake_bm5_data_10kms'//trim(filename_extension)
 #elif (IMAX==42)
@@ -366,13 +385,14 @@ subroutine read_cost_data()
         call error(errormsg)
     end if
 
+#if !defined(SURF_VXVY_COST)
+
     call check( nf90_inq_varid(ncid, 'vs', ncv), thisroutine )
+    call check( nf90_get_var(ncid, ncv, vs_MEaSUREs_data_conv), thisroutine )
 #ifdef ALLOW_SURFVEL_UNCERT
     call check( nf90_inq_varid(ncid, SURFVEL_UNCERT_FIELD, ncv), thisroutine )
     call check( nf90_get_var(ncid, ncv, vs_unc_MEaSUREs_data_conv), thisroutine )
 #endif
-
-    call check( nf90_get_var(ncid, ncv, vs_MEaSUREs_data_conv), thisroutine )
 
     !  ------ Close NetCDF file
     call check( nf90_close(ncid) )
@@ -385,6 +405,38 @@ subroutine read_cost_data()
 #endif
         end do
     end do
+
+#else
+
+    call check( nf90_inq_varid(ncid, 'vx', ncv), thisroutine )
+    call check( nf90_get_var(ncid, ncv, vx_MEaSUREs_data_conv), thisroutine )
+#ifdef ALLOW_SURFVEL_UNCERT
+    call check( nf90_inq_varid(ncid, SURFVX_UNCERT_FIELD, ncv), thisroutine )
+    call check( nf90_get_var(ncid, ncv, vx_unc_MEaSUREs_data_conv), thisroutine )
+#endif
+    call check( nf90_inq_varid(ncid, 'vy', ncv), thisroutine )
+    call check( nf90_get_var(ncid, ncv, vy_MEaSUREs_data_conv), thisroutine )
+#ifdef ALLOW_SURFVEL_UNCERT
+    call check( nf90_inq_varid(ncid, SURFVY_UNCERT_FIELD, ncv), thisroutine )
+    call check( nf90_get_var(ncid, ncv, vy_unc_MEaSUREs_data_conv), thisroutine )
+#endif
+
+    !  ------ Close NetCDF file
+    call check( nf90_close(ncid) )
+
+    do i = 0, IMAX
+        do j = 0, JMAX
+            vx_MEaSUREs_data(j,i) = vx_MEaSUREs_data_conv(i,j)
+            vy_MEaSUREs_data(j,i) = vy_MEaSUREs_data_conv(i,j)
+#ifdef ALLOW_SURFVEL_UNCERT
+            vx_unc_MEaSUREs_data(j,i) = vx_unc_MEaSUREs_data_conv(i,j)
+            vy_unc_MEaSUREs_data(j,i) = vy_unc_MEaSUREs_data_conv(i,j)
+#endif
+        end do
+    end do
+
+#endif
+
 #endif
 
 #if defined(FAKE_SURFVEL_COST)
@@ -412,6 +464,8 @@ subroutine read_cost_data()
         call error(errormsg)
     end if
 
+#if !defined(SURF_VXVY_COST)
+
     call check( nf90_inq_varid(ncid, 'vs', ncv), thisroutine )
     call check( nf90_get_var(ncid, ncv, vs_MEaSUREs_data_conv), thisroutine )
 #ifdef ALLOW_SURFVEL_UNCERT
@@ -430,6 +484,38 @@ subroutine read_cost_data()
 #endif
        end do
     end do
+
+#else
+
+    call check( nf90_inq_varid(ncid, 'vx', ncv), thisroutine )
+    call check( nf90_get_var(ncid, ncv, vx_MEaSUREs_data_conv), thisroutine )
+#ifdef ALLOW_SURFVEL_UNCERT
+    call check( nf90_inq_varid(ncid, SURFVX_UNCERT_FIELD, ncv), thisroutine )
+    call check( nf90_get_var(ncid, ncv, vx_unc_MEaSUREs_data_conv), thisroutine )
+#endif
+    call check( nf90_inq_varid(ncid, 'vy', ncv), thisroutine )
+    call check( nf90_get_var(ncid, ncv, vy_MEaSUREs_data_conv), thisroutine )
+#ifdef ALLOW_SURFVEL_UNCERT
+    call check( nf90_inq_varid(ncid, SURFVY_UNCERT_FIELD, ncv), thisroutine )
+    call check( nf90_get_var(ncid, ncv, vy_unc_MEaSUREs_data_conv), thisroutine )
+#endif
+
+    !  ------ Close NetCDF file
+    call check( nf90_close(ncid) )
+
+    do i = 0, IMAX
+        do j = 0, JMAX
+            vx_MEaSUREs_data(j,i) = vx_MEaSUREs_data_conv(i,j)
+            vy_MEaSUREs_data(j,i) = vy_MEaSUREs_data_conv(i,j)
+#ifdef ALLOW_SURFVEL_UNCERT
+            vx_unc_MEaSUREs_data(j,i) = vx_unc_MEaSUREs_data_conv(i,j)
+            vy_unc_MEaSUREs_data(j,i) = vy_unc_MEaSUREs_data_conv(i,j)
+#endif
+        end do
+    end do
+
+#endif
+
 #endif
 
 #ifdef AGE_COST
