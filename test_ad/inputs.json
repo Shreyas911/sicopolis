@@ -5,7 +5,7 @@
     "dep_var": "fc",
     "ind_var": "H",
     "perturbation": 0.001,
-    "checkpoint": 4,
+    "checkpoint": 50,
     "run": true,
     "dimension": 2,
     "z_co_ord": null,

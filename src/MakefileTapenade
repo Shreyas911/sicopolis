@@ -428,18 +428,18 @@ ad_specs.h: ../headers_ad/ad_$(HEADER).h
 drivernodiff: sico_specs.h $(SRC_SICO) $(SRC) ad_specs.h
 	rm -rf ${OUT_PATH_NODIFF}
 	sed -i 's/&__NL__//g' sico_specs.h
-	${F90C} -I./ ${F90FLAGS} ${DEFINE_FLAGS_NODIFF} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
-	${F90C} ${F90FLAGS} -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
+	${F90C} -I./ ${F90FLAGS} -fopenmp ${DEFINE_FLAGS_NODIFF} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
+	${F90C} ${F90FLAGS} -fopenmp -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
 
 drivergrdchk: sico_specs.h $(SRC_SICO) $(SRC_SICO_AD_COST) $(SRC) $(SRC_SICO_AD_GRDCHK)
 	sed -i 's/&__NL__//g' sico_specs.h
-	${F90C} -I./ ${F90FLAGS} ${DEFINE_FLAGS_GRDCHK} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
-	${F90C} ${F90FLAGS} -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
+	${F90C} -I./ ${F90FLAGS} -fopenmp ${DEFINE_FLAGS_GRDCHK} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
+	${F90C} ${F90FLAGS} -fopenmp -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
 
 drivergrdchk_cov: sico_specs.h $(SRC_SICO) $(SRC_SICO_AD_COST) $(SRC) $(SRC_SICO_AD_GRDCHK)
 	sed -i 's/&__NL__//g' sico_specs.h
-	${F90C} -I./ ${F90FLAGS_COV} ${DEFINE_FLAGS_GRDCHK} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
-	${F90C} ${F90FLAGS_COV} -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
+	${F90C} -I./ ${F90FLAGS_COV} -fopenmp ${DEFINE_FLAGS_GRDCHK} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
+	${F90C} ${F90FLAGS_COV} -fopenmp -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
 
 cov: sico_specs.h $(SRC_SICO) $(SRC_SICO_AD_COST) $(SRC)
 	${GCOV} $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
