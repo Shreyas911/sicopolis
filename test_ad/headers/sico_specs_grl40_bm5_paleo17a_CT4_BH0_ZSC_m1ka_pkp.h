@@ -541,9 +541,9 @@
 !                             [Robin (1955) solution]
 !                         5 : Ice temperature from previous simulation
 
-#define ANF_DAT_PATH '/home/shreyas/update_to_develop_sicopolis/sicopolis_spinups/sico_out/grl40_bm5_paleo17a_CT4_BH0_13point5CS_spinup_0ka'
+#define ANF_DAT_PATH '/home/shreyas/update_to_develop_sicopolis/sicopolis_spinups/sico_out/grl40_bm5_paleo17a_CT4_BH0_8point5CS_spinup_0ka'
 
-#define ANFDATNAME 'grl40_bm5_paleo17a_CT4_BH0_13point5CS_spinup_0ka0009.nc'
+#define ANFDATNAME 'grl40_bm5_paleo17a_CT4_BH0_8point5CS_spinup_0ka0009.nc'
 !                         Initial-value file (only for ANF_DAT==3,
 !                         or for ANF_DAT==1 and TEMP_INIT==5)
 
@@ -1124,7 +1124,7 @@
 !                       1 : Ocean pressure without cut-off (can become negative)
 !                       2 : Ocean pressure with cut-off
 
-#define C_SLIDE 13.5d0
+#define C_SLIDE 8.5d0
 !                       Sliding coefficient, in m/[a*Pa^(p-q)]
 !                       (N_SLIDE_REGIONS separate values).
 

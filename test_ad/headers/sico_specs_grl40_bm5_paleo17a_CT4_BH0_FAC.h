@@ -1122,7 +1122,7 @@
 !                       1 : Ocean pressure without cut-off (can become negative)
 !                       2 : Ocean pressure with cut-off
 
-#define C_SLIDE 13.5d0
+#define C_SLIDE 8.5d0
 !                       Sliding coefficient, in m/[a*Pa^(p-q)]
 !                       (N_SLIDE_REGIONS separate values).
 
