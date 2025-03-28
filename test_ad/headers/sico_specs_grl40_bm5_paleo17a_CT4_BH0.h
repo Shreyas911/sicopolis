@@ -792,7 +792,7 @@
 !                         7 : Implied SMB by Calov+ (2018, Cryosphere 12)
 !                             (requires ABLSURFACE==7)
 
-#define PRECIP_PRESENT_FILE 'grl_rembo_40_precmm.dat'
+#define PRECIP_PRESENT_FILE 'grl_rembo_40_precip.nc'
 !                       Name of the file containing the present-day
 !                       monthly mean precipitation data
 !                       ('none' if no such file is to be specified)
