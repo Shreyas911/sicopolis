@@ -28,9 +28,9 @@ contains
     integer(i4b)        :: igen_beta1, igen_beta2, igen_c_dis_da
     integer(i4b)        :: igen_Pmax, igen_mu, igen_delta_tda_const
     integer(i4b)        :: igen_RHO_A, igen_time_lag_asth, igen_flex_rig_lith
-    integer(i4b)        :: igen_p_weert, igen_q_weert
+!    integer(i4b)        :: igen_p_weert, igen_q_weert
     integer(i4b)        :: igen_enh_fact_da_dummy2d_scalar, igen_enh_intg_da_dummy2d_scalar
-    integer(i4b)        :: igen_n_glen_da_dummy2d_scalar
+!    integer(i4b)        :: igen_n_glen_da_dummy2d_scalar
     integer(i4b)        :: igen_zs, igen_zl, igen_zl0, igen_zb
 
 #ifdef XX_GENARR2D_VARS_ARR
@@ -57,11 +57,11 @@ contains
     igen_RHO_A           = 0
     igen_time_lag_asth   = 0
     igen_flex_rig_lith   = 0
-    igen_p_weert         = 0
-    igen_q_weert         = 0
+!    igen_p_weert         = 0
+!    igen_q_weert         = 0
     igen_enh_fact_da_dummy2d_scalar = 0
     igen_enh_intg_da_dummy2d_scalar = 0
-    igen_n_glen_da_dummy2d_scalar   = 0
+!    igen_n_glen_da_dummy2d_scalar   = 0
     igen_zs              = 0
     igen_zl              = 0
     igen_zl0             = 0
@@ -154,20 +154,20 @@ contains
         //'flex_rig_lith as a control param is only compatible with REBOUND == 1 or REBOUND == 2!'
         call error(errormsg)
 #endif
-      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_p_weert') then
-        igen_p_weert = ctrl_index
-#if (!defined(P_WEERT))
-        errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
-        //'p_weert as a control param is only compatible with P_WEERT being defined!'
-        call error(errormsg)
-#endif
-      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_q_weert') then
-        igen_q_weert = ctrl_index
-#if (!defined(Q_WEERT))
-        errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
-        //'q_weert as a control param is only compatible with Q_WEERT being defined!'
-        call error(errormsg)
-#endif
+!      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_p_weert') then
+!        igen_p_weert = ctrl_index
+!#if (!defined(P_WEERT))
+!        errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
+!        //'p_weert as a control param is only compatible with P_WEERT being defined!'
+!        call error(errormsg)
+!#endif
+!      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_q_weert') then
+!        igen_q_weert = ctrl_index
+!#if (!defined(Q_WEERT))
+!        errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
+!        //'q_weert as a control param is only compatible with Q_WEERT being defined!'
+!        call error(errormsg)
+!#endif
       else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_enh_fact_da_dummy2d_scalar') then
         igen_enh_fact_da_dummy2d_scalar = ctrl_index
 #if (ENHMOD != 1 && ENHMOD != 2 && ENHMOD != 3)
@@ -182,13 +182,13 @@ contains
         //'enh_intg_da_dummy2d_scalar as a control param is only compatible with ENHMOD == 2, 3!'
         call error(errormsg)
 #endif
-      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_n_glen_da_dummy2d_scalar') then
-        igen_n_glen_da_dummy2d_scalar = ctrl_index
-#if (FLOW_LAW != 1)
-        errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
-        //'n_glen_da_dummy2d_scalar as a control param is only compatible with Glen flow law i.e. FLOW_LAW == 1!'
-        call error(errormsg)
-#endif
+!      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_n_glen_da_dummy2d_scalar') then
+!        igen_n_glen_da_dummy2d_scalar = ctrl_index
+!#if (FLOW_LAW != 1)
+!        errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
+!        //'n_glen_da_dummy2d_scalar as a control param is only compatible with Glen flow law i.e. FLOW_LAW == 1!'
+!        call error(errormsg)
+!#endif
       else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_zs') then
         igen_zs = ctrl_index
 #if (ANF_DAT==2)
@@ -276,16 +276,16 @@ contains
       call ctrl_map_genarr2d(flex_rig_lith, igen_flex_rig_lith)
     end if
 #endif
-#if (defined(P_WEERT))
-    if (igen_p_weert .GT. 0) then
-      call ctrl_map_genarr2d(p_weert, igen_p_weert)
-    end if
-#endif
-#if (defined(Q_WEERT))
-    if (igen_q_weert .GT. 0) then
-      call ctrl_map_genarr2d(q_weert, igen_q_weert)
-    end if
-#endif
+!#if (defined(P_WEERT))
+!    if (igen_p_weert .GT. 0) then
+!      call ctrl_map_genarr2d(p_weert, igen_p_weert)
+!    end if
+!#endif
+!#if (defined(Q_WEERT))
+!    if (igen_q_weert .GT. 0) then
+!      call ctrl_map_genarr2d(q_weert, igen_q_weert)
+!    end if
+!#endif
 #if (ENHMOD==1 || ENHMOD==2 || ENHMOD==3)
     if (igen_enh_fact_da_dummy2d_scalar .GT. 0) then
       call ctrl_map_genarr2d(enh_fact_da_dummy2d_scalar, igen_enh_fact_da_dummy2d_scalar)
@@ -296,11 +296,11 @@ contains
       call ctrl_map_genarr2d(enh_intg_da_dummy2d_scalar, igen_enh_intg_da_dummy2d_scalar)
     end if
 #endif
-#if (FLOW_LAW==1)
-    if (igen_n_glen_da_dummy2d_scalar .GT. 0) then
-      call ctrl_map_genarr2d(n_glen_da_dummy2d_scalar, igen_n_glen_da_dummy2d_scalar)
-    end if
-#endif
+!#if (FLOW_LAW==1)
+!    if (igen_n_glen_da_dummy2d_scalar .GT. 0) then
+!      call ctrl_map_genarr2d(n_glen_da_dummy2d_scalar, igen_n_glen_da_dummy2d_scalar)
+!    end if
+!#endif
 #if (ANF_DAT!=2)
     if (igen_zs .GT. 0) then
       call ctrl_map_genarr2d(zs, igen_zs)
