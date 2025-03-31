@@ -43,6 +43,8 @@
 
 #define XX_GENTIM2D_VARS_ARR [ character(CTRL_STRLENGTH) :: 'xx_delta_tda' ]
 !       List of 3D time-varying control variables
+                                         'xx_enh_fact_da_dummy2d_scalar',\
+                                         'xx_enh_intg_da_dummy2d_scalar',\
 
 !-------- Settings for genctrl I/O --------
 

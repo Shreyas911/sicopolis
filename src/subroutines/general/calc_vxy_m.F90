@@ -121,11 +121,13 @@ do j=0, JMAX
    if ( (n_slide_region(j,i) >= 1) &
         .and. &
         (n_slide_region(j,i) <= n_slide_regions) ) then
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
       p_weert(j,i)         = p_weert_aux(n_slide_region(j,i))
       q_weert(j,i)         = q_weert_aux(n_slide_region(j,i))
-#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
       c_slide_init(j,i)    = c_slide_aux(n_slide_region(j,i))*sec2year
 #else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+      p_weert(j,i)         = p_weert(j,i) + p_weert_aux(n_slide_region(j,i))
+      q_weert(j,i)         = q_weert(j,i) + q_weert_aux(n_slide_region(j,i))
       c_slide_init(j,i)    = (c_slide_init(j,i) + c_slide_aux(n_slide_region(j,i)))*sec2year
 #endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
       gamma_slide_inv(j,i) = gamma_slide_inv_aux(n_slide_region(j,i))

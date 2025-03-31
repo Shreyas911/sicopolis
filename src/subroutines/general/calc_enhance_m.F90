@@ -59,8 +59,13 @@ contains
 
   implicit none
 
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
   enh_t = ENH_FACT
   enh_c = ENH_FACT
+#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+  enh_t = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT
+  enh_c = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
   call calc_enhance_stream_const()   ! ice streams
 
@@ -89,6 +94,7 @@ contains
 
   age_trans = AGE_TRANS_0*year2sec
 
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
   do i=0, IMAX
   do j=0, JMAX
 
@@ -110,6 +116,29 @@ contains
 
   end do
   end do
+#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+  do i=0, IMAX
+  do j=0, JMAX
+
+     do kt=0, KTMAX
+        if (age_t(kt,j,i) < age_trans) then
+           enh_t(kt,j,i) = SUM(enh_intg_da_dummy2d_scalar) / SIZE(enh_intg_da_dummy2d_scalar) + ENH_INTG   ! Holocene ice
+        else
+           enh_t(kt,j,i) = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT   ! Pleistocene ice
+        end if
+     end do
+
+     do kc=0, KCMAX
+        if (age_c(kc,j,i) < age_trans) then
+           enh_c(kc,j,i) = SUM(enh_intg_da_dummy2d_scalar) / SIZE(enh_intg_da_dummy2d_scalar) + ENH_INTG   ! Holocene ice
+        else
+           enh_c(kc,j,i) = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT   ! Pleistocene ice
+        end if
+     end do
+
+  end do
+  end do
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
   call calc_enhance_stream_const()   ! ice streams
 
@@ -142,6 +171,7 @@ contains
   date_trans2 = DATE_TRANS2_0*year2sec
   date_trans3 = DATE_TRANS3_0*year2sec
 
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
   do i=0, IMAX
   do j=0, JMAX
 
@@ -175,6 +205,41 @@ contains
 
   end do
   end do
+#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+  do i=0, IMAX
+  do j=0, JMAX
+
+     do kt=0, KTMAX
+        if ( (time-age_t(kt,j,i)) < date_trans1 ) then
+           enh_t(kt,j,i) = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT   ! pre-Eemian ice
+        else if ( ((time-age_t(kt,j,i)) >= date_trans1).and. &
+                  ((time-age_t(kt,j,i)) <  date_trans2) ) then
+           enh_t(kt,j,i) = SUM(enh_intg_da_dummy2d_scalar) / SIZE(enh_intg_da_dummy2d_scalar) + ENH_INTG   ! Eemian ice
+        else if ( ((time-age_t(kt,j,i)) >= date_trans2).and. &
+                  ((time-age_t(kt,j,i)) <  date_trans3) ) then
+           enh_t(kt,j,i) = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT   ! Weichselian ice
+        else
+           enh_t(kt,j,i) = SUM(enh_intg_da_dummy2d_scalar) / SIZE(enh_intg_da_dummy2d_scalar) + ENH_INTG   ! Holocene ice
+        end if
+     end do
+
+     do kc=0, KCMAX
+        if ( (time-age_c(kc,j,i)) < date_trans1 ) then
+           enh_c(kc,j,i) = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT   ! pre-Eemian ice
+        else if ( ((time-age_c(kc,j,i)) >= date_trans1).and. &
+                  ((time-age_c(kc,j,i)) <  date_trans2) ) then
+           enh_c(kc,j,i) = SUM(enh_intg_da_dummy2d_scalar) / SIZE(enh_intg_da_dummy2d_scalar) + ENH_INTG   ! Eemian ice
+        else if ( ((time-age_c(kc,j,i)) >= date_trans2).and. &
+                  ((time-age_c(kc,j,i)) <  date_trans3) ) then
+           enh_c(kc,j,i) = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT   ! Weichselian ice
+        else
+           enh_c(kc,j,i) = SUM(enh_intg_da_dummy2d_scalar) / SIZE(enh_intg_da_dummy2d_scalar) + ENH_INTG   ! Holocene ice
+        end if
+     end do
+
+  end do
+  end do
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
   call calc_enhance_stream_const()   ! ice streams
 

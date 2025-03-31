@@ -434,7 +434,11 @@ de_val_m = max(de_val, de_min)
 
 !-------- Glen's flow law (n=3) --------
 
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
 inv_n_power_law = 0.333333333333333_dp   ! 1/3
+#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+inv_n_power_law = (3.0 + SUM(n_glen_da_dummy2d_scalar) / SIZE(n_glen_da_dummy2d_scalar))**(-1)
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 viscosity = 0.5_dp * de_val_m**(inv_n_power_law-1.0_dp) &
                    * (enh_val*ratefac_val)**(-inv_n_power_law)
@@ -467,7 +471,11 @@ viscosity = 0.5_dp * de_val_m**(inv_n_power_law-1.0_dp) &
 
 !-------- Glen's flow (n=3) with additional finite viscosity --------
 
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
 n_power_law = 3.0_dp
+#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+n_power_law = 3.0_dp + SUM(n_glen_da_dummy2d_scalar) / SIZE(n_glen_da_dummy2d_scalar)
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 viscosity = visc_iter(de_val_m, ratefac_val, enh_val, n_power_law, SIGMA_RES)
 

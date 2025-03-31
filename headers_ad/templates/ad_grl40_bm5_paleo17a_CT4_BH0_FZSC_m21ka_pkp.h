@@ -20,7 +20,7 @@
 #define DO_CTRL_GENTIM2D
 !       Flags to enable specific codes for various types of genctrl
 
-#define NUM_CTRL_GENARR2D 18
+#define NUM_CTRL_GENARR2D 20
 #define NUM_CTRL_GENARR3D 5
 #define NUM_CTRL_GENTIM2D 1
 !       Number of control variables,
@@ -43,6 +43,8 @@
                                          'xx_RHO_A',\
                                          'xx_time_lag_asth',\
                                          'xx_flex_rig_lith',\
+                                         'xx_enh_fact_da_dummy2d_scalar',\
+                                         'xx_enh_intg_da_dummy2d_scalar',\
                                          'xx_zs',\
                                          'xx_zl',\
                                          'xx_zl0',\
@@ -58,6 +60,8 @@
 !                                         'log10ctrl',\
 !                                         'none',\
 !                                         'none',\
+!                                         'log10ctrl',\
+!                                         'log10ctrl',\
 !                                         'log10ctrl',\
 !                                         'log10ctrl',\
 !                                         'log10ctrl',\
@@ -100,7 +104,21 @@
 !!       age_c = (age_c + 15000.0_dp)*year2sec
 !!       But to preserve the unit change, add a line.
 !!       age_c(kc,j,i) = real(age_c(kc,j,i),dp)*year2sec
-
+!!
+!!       p_weert, q_weert can be added to genctrl once the problem of how to differentiate through lookup tables of RF, KAPPA, etc. in read_m is solved.
+!!       n_glen_da_dummy2d_scalar can be added to genctrl but it is hard-coded in some places, and tuning it changes units of Arrhenius factor A, which is only known for n = 3.
+!!       WARNING: enh_fact_da_dummy2d_scalar, enh_intg_da_dummy2d_scalar, n_glen_da_dummy2d_scalar are special cases.
+!!       They are only supposed to be scalars. Illustrating examples below.
+!!
+!!       Comment out in ice_material_properties_m for n_glen_da_dummy2d_scalar.
+!!       n_power_law = 3.0_dp + SUM(n_glen_da_dummy2d_scalar) / SIZE(n_glen_da_dummy2d_scalar)
+!!       But add this line since n_glen_da_dummy2d_scalar = exp(xx_n_glen_da_dummy2d_scalar) = 3.0
+!!       n_power_law = SUM(n_glen_da_dummy2d_scalar) / SIZE(n_glen_da_dummy2d_scalar)
+!!
+!!       Set ENH_FACT = 0 in header files and replace the following line in calc_enhance_m.
+!!       enh_c = ENH_FACT
+!!       with this line.
+!!       enh_c = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT
 
 !#define XX_GENARR2D_LOG10INITVAL_ARR [ real :: \
 !                                          0.92941892571,  0.0,         , 4.19476402411,\
@@ -108,6 +126,7 @@
 !                                         -1.15206968873,  0.69897000434, 0.43616264704,\
 !                                          0.86213137931, -0.22184874962, 0.98746515611,\
 !                                          3.51851393988,  3.47712125472, 25.0000000000,\
+!                                          0.47712125472, 0.0,\
 !                                          0.0, 0.0, 0.0, 0.0 ]
 !!       log10initval is used only if preproc=log10ctrl and AD_INPUT_PATH is not defined.
 !!       Has no effect (not even read) if AD_INPUT_PATH is defined.

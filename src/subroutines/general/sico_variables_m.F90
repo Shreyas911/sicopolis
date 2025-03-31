@@ -1601,6 +1601,20 @@ real(dp), dimension(0:JMAX,0:IMAX) :: c_dis_da
    !! Spatially-varying discharge parameter, will be used as a scalar mostly though
 #endif
 
+#if (ENHMOD==1 || ENHMOD==2 || ENHMOD==3)
+real(dp), dimension(0:JMAX,0:IMAX) :: enh_fact_da_dummy2d_scalar
+   !! Scalar correction to ENH_FACT expressed as a dummy 2D variable
+#endif
+#if (ENHMOD==2 || ENHMOD==3)
+real(dp), dimension(0:JMAX,0:IMAX) :: enh_intg_da_dummy2d_scalar
+   !! Scalar correction to ENH_INTG expressed as a dummy 2D variable
+#endif
+
+#if (FLOW_LAW==1)
+real(dp), dimension(0:JMAX,0:IMAX) :: n_glen_da_dummy2d_scalar
+   !! Scalar correction to Glen's exponent expressed as a dummy 2D variable
+#endif
+
 #if (defined(AGE_COST) || defined(FAKE_AGE_COST))
 
 ! Note: for the age cost, CALCMOD!=1 is recommended because

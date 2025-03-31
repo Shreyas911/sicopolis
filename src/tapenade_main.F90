@@ -134,6 +134,17 @@ program tapenade_main
         delta_tda_const = 0.0 ! Not compatible with TSURFACE>4
         q_geo           = 0.0
         c_slide_init    = 0.0
+        p_weert         = 0.0
+        q_weert         = 0.0
+#if (ENHMOD==1 || ENHMOD==2 || ENHMOD==3)
+        enh_fact_da_dummy2d_scalar = 0.0 ! Only used as a scalar
+#endif
+#if (ENHMOD==2 || ENHMOD==3)
+        enh_intg_da_dummy2d_scalar = 0.0 ! Only used as a scalar
+#endif
+#if (FLOW_LAW==1)
+        n_glen_da_dummy2d_scalar   = 0.0 ! Only used as a scalar
+#endif
         H               = 0.0
         zs              = 0.0 ! Not compatible with ANF_DAT==2
         zl              = 0.0 ! Not compatible with ANF_DAT==2
