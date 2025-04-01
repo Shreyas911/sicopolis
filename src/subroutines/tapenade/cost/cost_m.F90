@@ -217,9 +217,9 @@ contains
 #endif
           fc_vxc = fc_vxc &
 #ifdef ALLOW_SURFVEL_UNCERT
-          + 0.5*(vx_s_g(j,i) - vx_MEaSUREs_data(j,i))**2/vx_unc_MEaSUREs_data(j,i)**2 &
+          + 0.5*(vx_s_g(j,i) - vx_MEaSUREs_data(j,i))**2/vx_unc_MEaSUREs_data(j,i)**2
 #else
-          + 0.5*(vx_s_g(j,i) - vx_MEaSUREs_data(j,i))**2 &
+          + 0.5*(vx_s_g(j,i) - vx_MEaSUREs_data(j,i))**2
 #endif
           fc_vyc = fc_vyc &
 #ifdef ALLOW_SURFVEL_UNCERT
