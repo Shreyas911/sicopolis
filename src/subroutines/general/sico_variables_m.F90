@@ -1580,7 +1580,7 @@ character, parameter :: end_of_line = char(10)
 
 #if (defined(ALLOW_NODIFF) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
 
-real(dp) :: fc, fc_data, fc_reg
+real(dp) :: fc, fc_data, fc_reg, fc_bm5, fc_ac, fc_svc, fc_vxc, fc_vyc, fc_zsc, fc_zlc
    !! Scalar cost functions (total, model-data misfit component, prior or regularization component)
 
 #if (defined(PARAM_RHO_A)) 

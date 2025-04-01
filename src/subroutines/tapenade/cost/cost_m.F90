@@ -78,10 +78,17 @@ contains
   character(len=64), parameter :: thisroutine = 'cost_final'
   real(dp), dimension(0:JMAX,0:IMAX) :: vs
 
-  !-------- Calculate the difference between the modeled and 'observed' ages:
+  !-------- Initialize the cost functions:
   fc = 0.0
   fc_data = 0.0
   fc_reg = 0.0
+  fc_bm5 = 0.0
+  fc_ac = 0.0
+  fc_svc = 0.0
+  fc_vxc = 0.0
+  fc_vyc = 0.0
+  fc_zsc = 0.0
+  fc_zlc = 0.0
 
   !-------- Read any necessary NetCDF cost files:
   call read_cost_data()
@@ -117,6 +124,8 @@ contains
     end do
   end do
 
+  fc_ac = fc
+  print *, 'Final age cost, fc_ac = ', fc_ac
 #endif
 
 #if (defined(BEDMACHINE_COST) || defined(FAKE_BEDMACHINE_COST))
@@ -132,6 +141,9 @@ contains
         end if
       end do
     end do
+
+  fc_bm5 = fc - fc_ac
+  print *, 'Final BM5 cost, fc_bm5 = ', fc_bm5
 #endif
 
 #if (defined(ZS_COST) || defined(FAKE_ZS_COST))
@@ -147,6 +159,9 @@ contains
         end if
       end do
     end do
+
+  fc_zsc = fc - (fc_ac + fc_bm5)
+  print *, 'Final zs cost, fc_zsc = ', fc_zsc
 #endif
 
 #if (defined(ZL_COST) || defined(FAKE_ZL_COST))
@@ -162,6 +177,9 @@ contains
         end if
       end do
     end do
+
+  fc_zlc = fc - (fc_ac + fc_bm5 + fc_zsc)
+  print *, 'Final zl cost, fc_zlc = ', fc_zlc
 #endif
 
 #if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
@@ -197,18 +215,38 @@ contains
           + 0.5*(vx_s_g(j,i) - vx_MEaSUREs_data(j,i))**2 &
           + 0.5*(vy_s_g(j,i) - vy_MEaSUREs_data(j,i))**2
 #endif
+          fc_vxc = fc_vxc &
+#ifdef ALLOW_SURFVEL_UNCERT
+          + 0.5*(vx_s_g(j,i) - vx_MEaSUREs_data(j,i))**2/vx_unc_MEaSUREs_data(j,i)**2 &
+#else
+          + 0.5*(vx_s_g(j,i) - vx_MEaSUREs_data(j,i))**2 &
+#endif
+          fc_vyc = fc_vyc &
+#ifdef ALLOW_SURFVEL_UNCERT
+          + 0.5*(vy_s_g(j,i) - vy_MEaSUREs_data(j,i))**2/vy_unc_MEaSUREs_data(j,i)**2
+#else
+          + 0.5*(vy_s_g(j,i) - vy_MEaSUREs_data(j,i))**2
+#endif
 
 #endif
         end if
       end do
     end do
+
+#if !defined(SURF_VXVY_COST)
+  fc_svc = fc - (fc_ac + fc_bm5 + fc_zsc + fc_zlc)
+  print *, 'Final vs cost, fc_svc = ', fc_svc
+#else
+  print *, 'Final vx cost, fc_vxc = ', fc_vxc
+  print *, 'Final vy cost, fc_vyc = ', fc_vyc
+#endif
 #endif
 
 #if (!defined(BEDMACHINE_COST) && !defined(AGE_COST) && !defined(SURFVEL_COST) && !defined(ZS_COST) && !defined(ZL_COST))
 #if (!defined(FAKE_BEDMACHINE_COST) && !defined(FAKE_AGE_COST) && !defined(FAKE_SURFVEL_COST) && !defined(FAKE_ZS_COST) && !defined(FAKE_ZL_COST))
     do i=0, IMAX
       do j=0, JMAX
-        !--- Other cost functions:
+        !--- Total volume cost function:
         fc = fc + H(j,i)*cell_area(j,i)
       end do
     end do
@@ -260,9 +298,9 @@ contains
   
   !-------- Print to screen just in case something gets
   !         crazy with the file outputting:
-  print *, 'Final cost, fc = ', fc
   print *, 'Final model-data misfit cost, fc_data = ', fc_data
   print *, 'Final prior/regularization cost, fc_reg = ', fc_reg
+  print *, 'Final cost, fc = ', fc
   print *, trim(OUT_PATH)
 
   end subroutine cost_final

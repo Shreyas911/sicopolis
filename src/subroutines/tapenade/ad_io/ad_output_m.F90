@@ -65,7 +65,7 @@ module ad_output_m
 
     real(dp) :: xi_conv(0:IMAX), eta_conv(0:JMAX), sigma_level_c_conv(0:KCMAX)
 
-    real(dp), dimension(1) :: fc_arr, fc_data_arr, fc_reg_arr
+    real(dp), dimension(1) :: fc_arr, fc_data_arr, fc_bm5_arr, fc_ac_arr, fc_svc_arr, fc_vxc_arr, fc_vyc_arr, fc_zsc_arr, fc_zlc_arr, fc_reg_arr
 #ifdef ALLOW_TAP_TLM
 #if !defined(ALLOW_TAP_TLM_A_ACTION)
     real(dp), dimension(1) :: fcd_arr
@@ -126,6 +126,13 @@ module ad_output_m
 
     fc_arr(1) = fc
     fc_data_arr(1) = fc_data
+    fc_bm5_arr(1) = fc_bm5
+    fc_ac_arr(1)  = fc_ac
+    fc_svc_arr(1) = fc_svc
+    fc_vxc_arr(1) = fc_vxc
+    fc_vyc_arr(1) = fc_vyc
+    fc_zsc_arr(1) = fc_zsc
+    fc_zlc_arr(1) = fc_zlc
     fc_reg_arr(1) = fc_reg
 #ifdef ALLOW_TAP_TLM
 #if !defined(ALLOW_TAP_TLM_A_ACTION)
@@ -330,6 +337,132 @@ module ad_output_m
                       thisroutine )
 #else
     call check( nf90_def_var(ncid, 'fc_data', &
+                      NF90_DOUBLE, nc1d, ncv), &
+                      thisroutine )
+#endif
+
+    call check( nf90_put_att(ncid, ncv, 'type', 'cost'), &
+                thisroutine )
+
+    !    ---- Define fc_bm5
+    call check( nf90_inq_dimid(ncid, trim(coord_id(5)), nc1d), &
+                      thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+    call check( nf90_def_var(ncid, 'fc_bm5', &
+                      NF90_DOUBLE, nc1d, ncv, &
+                      deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                      thisroutine )
+#else
+    call check( nf90_def_var(ncid, 'fc_bm5', &
+                      NF90_DOUBLE, nc1d, ncv), &
+                      thisroutine )
+#endif
+
+    call check( nf90_put_att(ncid, ncv, 'type', 'cost'), &
+                thisroutine )
+
+    !    ---- Define fc_ac
+    call check( nf90_inq_dimid(ncid, trim(coord_id(5)), nc1d), &
+                      thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+    call check( nf90_def_var(ncid, 'fc_ac', &
+                      NF90_DOUBLE, nc1d, ncv, &
+                      deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                      thisroutine )
+#else
+    call check( nf90_def_var(ncid, 'fc_ac', &
+                      NF90_DOUBLE, nc1d, ncv), &
+                      thisroutine )
+#endif
+
+    call check( nf90_put_att(ncid, ncv, 'type', 'cost'), &
+                thisroutine )
+
+    !    ---- Define fc_svc
+    call check( nf90_inq_dimid(ncid, trim(coord_id(5)), nc1d), &
+                      thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+    call check( nf90_def_var(ncid, 'fc_svc', &
+                      NF90_DOUBLE, nc1d, ncv, &
+                      deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                      thisroutine )
+#else
+    call check( nf90_def_var(ncid, 'fc_svc', &
+                      NF90_DOUBLE, nc1d, ncv), &
+                      thisroutine )
+#endif
+
+    call check( nf90_put_att(ncid, ncv, 'type', 'cost'), &
+                thisroutine )
+
+    !    ---- Define fc_vxc
+    call check( nf90_inq_dimid(ncid, trim(coord_id(5)), nc1d), &
+                      thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+    call check( nf90_def_var(ncid, 'fc_vxc', &
+                      NF90_DOUBLE, nc1d, ncv, &
+                      deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                      thisroutine )
+#else
+    call check( nf90_def_var(ncid, 'fc_vxc', &
+                      NF90_DOUBLE, nc1d, ncv), &
+                      thisroutine )
+#endif
+
+    call check( nf90_put_att(ncid, ncv, 'type', 'cost'), &
+                thisroutine )
+
+    !    ---- Define fc_vyc
+    call check( nf90_inq_dimid(ncid, trim(coord_id(5)), nc1d), &
+                      thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+    call check( nf90_def_var(ncid, 'fc_vyc', &
+                      NF90_DOUBLE, nc1d, ncv, &
+                      deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                      thisroutine )
+#else
+    call check( nf90_def_var(ncid, 'fc_vyc', &
+                      NF90_DOUBLE, nc1d, ncv), &
+                      thisroutine )
+#endif
+
+    call check( nf90_put_att(ncid, ncv, 'type', 'cost'), &
+                thisroutine )
+
+    !    ---- Define fc_zsc
+    call check( nf90_inq_dimid(ncid, trim(coord_id(5)), nc1d), &
+                      thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+    call check( nf90_def_var(ncid, 'fc_zsc', &
+                      NF90_DOUBLE, nc1d, ncv, &
+                      deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                      thisroutine )
+#else
+    call check( nf90_def_var(ncid, 'fc_zsc', &
+                      NF90_DOUBLE, nc1d, ncv), &
+                      thisroutine )
+#endif
+
+    call check( nf90_put_att(ncid, ncv, 'type', 'cost'), &
+                thisroutine )
+
+    !    ---- Define fc_zlc
+    call check( nf90_inq_dimid(ncid, trim(coord_id(5)), nc1d), &
+                      thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+    call check( nf90_def_var(ncid, 'fc_zlc', &
+                      NF90_DOUBLE, nc1d, ncv, &
+                      deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                      thisroutine )
+#else
+    call check( nf90_def_var(ncid, 'fc_zlc', &
                       NF90_DOUBLE, nc1d, ncv), &
                       thisroutine )
 #endif
@@ -747,6 +880,55 @@ module ad_output_m
                 ncv), &
                 thisroutine )
     call check( nf90_put_var(ncid, ncv, fc_data_arr, &
+                             start=nc0cor_fc, count=nc0cnt_fc), &
+                thisroutine )
+
+    call check( nf90_inq_varid(ncid, 'fc_bm5', &
+                ncv), &
+                thisroutine )
+    call check( nf90_put_var(ncid, ncv, fc_bm5_arr, &
+                             start=nc0cor_fc, count=nc0cnt_fc), &
+                thisroutine )
+
+    call check( nf90_inq_varid(ncid, 'fc_ac', &
+                ncv), &
+                thisroutine )
+    call check( nf90_put_var(ncid, ncv, fc_ac_arr, &
+                             start=nc0cor_fc, count=nc0cnt_fc), &
+                thisroutine )
+
+    call check( nf90_inq_varid(ncid, 'fc_svc', &
+                ncv), &
+                thisroutine )
+    call check( nf90_put_var(ncid, ncv, fc_svc_arr, &
+                             start=nc0cor_fc, count=nc0cnt_fc), &
+                thisroutine )
+
+    call check( nf90_inq_varid(ncid, 'fc_vxc', &
+                ncv), &
+                thisroutine )
+    call check( nf90_put_var(ncid, ncv, fc_vxc_arr, &
+                             start=nc0cor_fc, count=nc0cnt_fc), &
+                thisroutine )
+
+    call check( nf90_inq_varid(ncid, 'fc_vyc', &
+                ncv), &
+                thisroutine )
+    call check( nf90_put_var(ncid, ncv, fc_vyc_arr, &
+                             start=nc0cor_fc, count=nc0cnt_fc), &
+                thisroutine )
+
+    call check( nf90_inq_varid(ncid, 'fc_zsc', &
+                ncv), &
+                thisroutine )
+    call check( nf90_put_var(ncid, ncv, fc_zsc_arr, &
+                             start=nc0cor_fc, count=nc0cnt_fc), &
+                thisroutine )
+
+    call check( nf90_inq_varid(ncid, 'fc_zlc', &
+                ncv), &
+                thisroutine )
+    call check( nf90_put_var(ncid, ncv, fc_zlc_arr, &
                              start=nc0cor_fc, count=nc0cnt_fc), &
                 thisroutine )
 
