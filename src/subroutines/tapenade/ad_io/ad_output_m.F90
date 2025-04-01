@@ -83,8 +83,12 @@ module ad_output_m
     real(dp), dimension(0:IMAX,0:JMAX)         :: zld_conv
 #endif
 #if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
+#if !defined(SURF_VXVY_COST)
     real(dp), dimension(0:JMAX,0:IMAX)         :: vs
-    real(dp), dimension(0:IMAX,0:JMAX)         :: vx_s_gd_conv, vy_s_gd_conv, vsd_conv
+    real(dp), dimension(0:IMAX,0:JMAX)         :: vsd_conv
+#else
+    real(dp), dimension(0:IMAX,0:JMAX)         :: vx_s_gd_conv, vy_s_gd_conv
+#endif
 #endif
 #endif /* ALLOW_TAP_TLM_A_ACTION */
 #endif /* ALLOW_TAP_TLM */
@@ -467,6 +471,8 @@ module ad_output_m
 
 #if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
 
+#if defined(SURF_VXVY_COST)
+
       !    ---- Define vx_s_gd
       call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
                 thisroutine )
@@ -507,6 +513,8 @@ module ad_output_m
       call check( nf90_put_att(ncid, ncv, 'type', 'tlmhessaction'), &
                   thisroutine )
 
+#else
+
       !    ---- Define vsd
       call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
                 thisroutine )
@@ -526,6 +534,8 @@ module ad_output_m
 
       call check( nf90_put_att(ncid, ncv, 'type', 'tlmhessaction'), &
                   thisroutine )
+#endif
+
 #endif
 
 #endif /* ALLOW_TAP_TLM_A_ACTION */
@@ -797,8 +807,10 @@ module ad_output_m
 #if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
     do i=0, IMAX
     do j=0, JMAX
+#if defined(SURF_VXVY_COST)
       vx_s_gd_conv(i,j) = vx_s_gd(j,i)
       vy_s_gd_conv(i,j) = vy_s_gd(j,i)
+#else
 ! /* ALLOW_TAPENADE: guarding against non-differentiable sqrt(0) */
       vs(j,i) = sqrt(vx_s_g(j,i)**2 + vy_s_g(j,i)**2)*year2sec
       if (vs(j,i) > 0) then
@@ -806,6 +818,7 @@ module ad_output_m
       else
         vsd_conv(i,j) = 0.0
       end if
+#endif
     end do
     end do
 #endif
@@ -896,6 +909,7 @@ module ad_output_m
 #endif
 
 #if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
+#if defined(SURF_VXVY_COST)
       call check( nf90_inq_varid(ncid, 'vx_s_gd', &
                   ncv), &
                   thisroutine )
@@ -909,13 +923,14 @@ module ad_output_m
       call check( nf90_put_var(ncid, ncv, vy_s_gd_conv, &
                                start=nc2cor_ij, count=nc2cnt_ij), &
                   thisroutine )
-
+#else
       call check( nf90_inq_varid(ncid, 'vsd', &
                   ncv), &
                   thisroutine )
       call check( nf90_put_var(ncid, ncv, vsd_conv, &
                                start=nc2cor_ij, count=nc2cnt_ij), &
                   thisroutine )
+#endif
 #endif
 
 #endif /* ALLOW_TAP_TLM && ALLOW_TAP_TLM_A_ACTION */

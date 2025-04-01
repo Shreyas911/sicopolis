@@ -71,8 +71,8 @@ module ad_input_m
 #endif
 
 #if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
-        real(dp), dimension(0:JMAX,0:IMAX)         :: vs
 #if !defined(SURF_VXVY_COST)
+        real(dp), dimension(0:JMAX,0:IMAX)         :: vs
         real(dp), dimension(0:IMAX,0:JMAX)         :: vx_s_g_final_conv, vy_s_g_final_conv, vsb_conv
 #else
         real(dp), dimension(0:IMAX,0:JMAX)         :: vx_s_gb_conv, vy_s_gb_conv
