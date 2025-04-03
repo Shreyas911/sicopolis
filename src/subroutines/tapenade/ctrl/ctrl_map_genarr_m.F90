@@ -151,7 +151,7 @@ contains
         igen_flex_rig_lith = ctrl_index
 #if (REBOUND != 2)
         errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
-        //'flex_rig_lith as a control param is only compatible with REBOUND == 1 or REBOUND == 2!'
+        //'flex_rig_lith as a control param is only compatible with REBOUND == 2!'
         call error(errormsg)
 #endif
 !      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_p_weert') then
