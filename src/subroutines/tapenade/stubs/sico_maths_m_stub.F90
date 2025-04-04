@@ -34,32 +34,9 @@ module sico_maths_m
 
   use sico_types_m
 
-  public :: sor_sprs, tri_sle, my_erfc
-#if (MARGIN==3 || DYNAMICS==2)
-  public :: sico_lis_solver
-#endif
+  implicit none
 
-  interface sor_sprs
-     module procedure sor_sprs_stub
-  end interface
-
-  interface tri_sle
-     module procedure tri_sle_stub
-  end interface
-
-  interface bilinint 
-     module procedure bilinint_stub
-  end interface
-
-  interface my_erfc
-     module procedure my_erfc_stub
-  end interface
-
-#if (MARGIN==3 || DYNAMICS==2)
-  interface sico_lis_solver
-     module procedure sico_lis_solver_stub
-  end interface
-#endif
+  public
 
 contains
 
@@ -69,35 +46,29 @@ contains
 !! represented by arrays lgs_a_value(values), lgs_a_index (indices)
 !! and lgs_a_ptr (pointers)].
 !-------------------------------------------------------------------------------
-  subroutine sor_sprs_stub(lgs_a_value, lgs_a_index, lgs_a_diag_index, &
-                           lgs_a_ptr, &
-                           lgs_b_value, &
-                           nnz, nmax, &
-                           omega, eps_sor, lgs_x_value, ierr)
+  subroutine sor_sprs(lgs_a_value, lgs_a_index, lgs_a_diag_index, lgs_a_ptr, &
+                      lgs_b_value, &
+                      nnz, nmax, omega, eps_sor, lgs_x_value, ierr)
 
   implicit none
 
-  integer(i4b), intent(in) :: nnz, nmax
-  real(dp),     intent(in) :: omega, eps_sor
+  integer(i4b),                     intent(in) :: nnz, nmax
+  real(dp),                         intent(in) :: omega, eps_sor
+  integer(i4b), dimension(nmax+1),  intent(in) :: lgs_a_ptr
+  integer(i4b), dimension(nnz),     intent(in) :: lgs_a_index
+  integer(i4b), dimension(nmax),    intent(in) :: lgs_a_diag_index
+  real(dp),     dimension(nnz),     intent(in) :: lgs_a_value
+  real(dp),     dimension(nmax),    intent(in) :: lgs_b_value
 
-  integer(i4b), dimension(nmax+1), intent(in) :: lgs_a_ptr
-  integer(i4b), dimension(nnz),    intent(in) :: lgs_a_index
-  integer(i4b), dimension(nmax),   intent(in) :: lgs_a_diag_index
-  real(dp),     dimension(nnz),    intent(in) :: lgs_a_value
-  real(dp),     dimension(nmax),   intent(in) :: lgs_b_value
-
-  integer(i4b), intent(out) :: ierr
-
-  real(dp), dimension(nmax), intent(inout) :: lgs_x_value
+  integer(i4b),                    intent(out) :: ierr
+  real(dp),     dimension(nmax), intent(inout) :: lgs_x_value
 
   integer(i4b) :: iter
   integer(i4b) :: iter_max
   integer(i4b) :: nr, k
   real(dp), dimension(nmax) :: lgs_x_value_prev
-  real(dp) :: temp1, temp2
-  logical  :: isnanflag1, isnanflag2, isnanflag3
-  real(dp) :: b_nr
-  logical  :: flag_convergence
+  real(dp)     :: b_nr
+  logical      :: flag_convergence
 
 #if (ITER_MAX_SOR > 0)
   iter_max = ITER_MAX_SOR
@@ -124,7 +95,6 @@ contains
      end do
 
      flag_convergence = .true.
-
      do nr=1, nmax
         if (abs(lgs_x_value(nr)-lgs_x_value_prev(nr)) > eps_sor) then
            flag_convergence = .false.
@@ -143,12 +113,12 @@ contains
   write(6,'(10x,a,i0)') 'sor_sprs: iter = ', iter
   ierr = -1   ! convergence criterion not fulfilled
 
-  end subroutine sor_sprs_stub
+  end subroutine sor_sprs
 
 !-------------------------------------------------------------------------------
 !> Solution of a system of linear equations Ax=b with tridiagonal matrix A.
 !-------------------------------------------------------------------------------
-  subroutine tri_sle_stub(a0, a1, a2, x, b, nrows)
+  subroutine tri_sle(a0, a1, a2, x, b, nrows)
 
   implicit none
 
@@ -202,12 +172,12 @@ contains
   !           diagonal becoming zero. In this case it crashes even
   !           though the system may be solvable. Otherwise ok.
 
-  end subroutine tri_sle_stub
+  end subroutine tri_sle
 
 !-------------------------------------------------------------------------------
 !> Bilinear interpolation.
 !-------------------------------------------------------------------------------
-  subroutine bilinint_stub(x1, x2, y1, y2, z11, z12, z21, z22, x, y, retval)
+  subroutine bilinint(x1, x2, y1, y2, z11, z12, z21, z22, x, y, retval)
 
   implicit none
 
@@ -223,14 +193,14 @@ contains
 
   retval = (I-t)*(I-u)*z11 + (I-t)*u*z12 + t*(I-u)*z21 + t*u*z22
 
-  end subroutine bilinint_stub
+  end subroutine bilinint
 
 !-------------------------------------------------------------------------------
 !> Computation of the complementary error function erfc(x) = 1-erf(x)
 !! with a fractional error everywhere less than 1.2 x 10^(-7)
 !! (formula by Press et al., 'Numerical Recipes in Fortran 77').
 !-------------------------------------------------------------------------------
-  subroutine my_erfc_stub(x, retval)
+  subroutine my_erfc(x, retval)
 
   implicit none
 
@@ -255,7 +225,7 @@ contains
 
   if (x < 0.0_dp) retval = 2.0_dp-retval
 
-  end subroutine my_erfc_stub
+  end subroutine my_erfc
 
 #if (MARGIN==3 || DYNAMICS==2)
 !-------------------------------------------------------------------------------
@@ -263,9 +233,9 @@ contains
 !! Note that there are no actual calls to the LIS library since it is treated
 !! as a black box, and we only need this stub to be a placeholder.
 !-------------------------------------------------------------------------------
-  subroutine sico_lis_solver_stub(nmax, nnz, &
-                                  lgs_a_ptr, lgs_a_index, &
-                                  lgs_a_value, lgs_b_value, lgs_x_value)
+  subroutine sico_lis_solver(nmax, nnz, &
+                             lgs_a_ptr, lgs_a_index, &
+                             lgs_a_value, lgs_b_value, lgs_x_value)
 
   implicit none
 
@@ -310,7 +280,7 @@ contains
 
   end do
 
-  end subroutine sico_lis_solver_stub
+  end subroutine sico_lis_solver
 
 #endif
 

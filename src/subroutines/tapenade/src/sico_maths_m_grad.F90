@@ -35,42 +35,8 @@ module sico_maths_m_diff
   use sico_types_m
 
   implicit none
+
   public
-
-  interface sor_sprs
-      module procedure sor_sprs_stub
-  end interface
-
-  interface sor_sprs_b
-      module procedure sor_sprs_stub_b
-  end interface
-
-  interface tri_sle
-      module procedure tri_sle_stub
-  end interface
-
-  interface tri_sle_b
-      module procedure tri_sle_stub_b
-      module procedure tri_sle_mini_stub_b
-  end interface
-
-  interface my_erfc
-      module procedure my_erfc_stub
-  end interface
-
-  interface my_erfc_b
-      module procedure my_erfc_stub_b
-  end interface
-
-#if defined(BUILD_LIS) && (MARGIN==3 || DYNAMICS==2)
-  interface sico_lis_solver
-      module procedure sico_lis_solver_stub
-  end interface
-
-  interface sico_lis_solver_b
-      module procedure sico_lis_solver_stub_b
-  end interface
-#endif
 
 contains
 
@@ -129,11 +95,11 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
   end subroutine transpose_csr
 
 !-------------------------------------------------------------------------------
-!> Differentiation of sor_sprs_stub in reverse (adjoint) mode:
+!> Differentiation of sor_sprs in reverse (adjoint) mode:
 !! gradient of useful results: lgs_x_value,
 !! with respect to varying inputs: lgs_b_value lgs_x_value lgs_a_value.
 !-------------------------------------------------------------------------------
-  subroutine sor_sprs_stub_b(lgs_a_value, lgs_a_valueb, lgs_a_index, &
+  subroutine sor_sprs_b(lgs_a_value, lgs_a_valueb, lgs_a_index, &
                              lgs_a_diag_index, lgs_a_ptr, &
                              lgs_b_value, lgs_b_valueb, &
                              nnz, nmax, &
@@ -205,7 +171,7 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
 
   lgs_x_valueb = 0.0
 
-  end subroutine sor_sprs_stub_b
+  end subroutine sor_sprs_b
 
 !-------------------------------------------------------------------------------
 !> SOR solver for a system of linear equations lgs_a*lgs_x=lgs_b
@@ -213,7 +179,7 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
 !! represented by arrays lgs_a_value(values), lgs_a_index (indices)
 !! and lgs_a_ptr (pointers)].
 !-------------------------------------------------------------------------------
-  subroutine sor_sprs_stub(lgs_a_value, lgs_a_index, lgs_a_diag_index, &
+  subroutine sor_sprs(lgs_a_value, lgs_a_index, lgs_a_diag_index, &
                            lgs_a_ptr, lgs_b_value, &
                            nnz, nmax, &
                            omega, eps_sor, lgs_x_value, ierr)
@@ -287,14 +253,14 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
   ierr = -1   ! convergence criterion not fulfilled
   deallocate(lgs_x_value_prev)
 
-  end subroutine sor_sprs_stub
+  end subroutine sor_sprs
 
 !-------------------------------------------------------------------------------
-!> Differentiation of tri_sle_stub in reverse (adjoint) mode:
+!> Differentiation of tri_sle in reverse (adjoint) mode:
 !! gradient of useful results: x,
 !! with respect to varying inputs: x a0 a1 a2 b.
 !-------------------------------------------------------------------------------
-  subroutine tri_sle_stub_b(a0, a0b, a1, a1b, a2, a2b, x, xb, b, bb, nrows)
+  subroutine tri_sle_b(a0, a0b, a1, a1b, a2, a2b, x, xb, b, bb, nrows)
 
   implicit none
 
@@ -336,14 +302,14 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
   end do
   xb = 0.0
 
-  end subroutine tri_sle_stub_b
+  end subroutine tri_sle_b
 
 !-------------------------------------------------------------------------------
-!> Differentiation of tri_sle_stub in reverse (adjoint) mode:
+!> Differentiation of tri_sle in reverse (adjoint) mode:
 !! gradient of useful results: x,
 !! with respect to varying inputs: x b.
 !-------------------------------------------------------------------------------
-  subroutine tri_sle_mini_stub_b(a0, a1, a2, x, xb, b, bb, nrows)
+  subroutine tri_sle_mini_b(a0, a1, a2, x, xb, b, bb, nrows)
 
   implicit none
 
@@ -370,12 +336,12 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
      bb(i) = incrbb(i)
   end do
 
-  end subroutine tri_sle_mini_stub_b
+  end subroutine tri_sle_mini_b
 
 !-------------------------------------------------------------------------------
 !> Solution of a system of linear equations Ax=b with tridiagonal matrix A.
 !-------------------------------------------------------------------------------
-  subroutine tri_sle_stub(a0, a1, a2, x, b, nrows)
+  subroutine tri_sle(a0, a1, a2, x, b, nrows)
 
   implicit none
 
@@ -429,7 +395,138 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
   !           diagonal becoming zero. In this case it crashes even
   !           though the system may be solvable. Otherwise ok.
 
-  end subroutine tri_sle_stub
+  end subroutine tri_sle
+
+!  Differentiation of tri_sle in reverse (adjoint) mode, forward sweep (with options profile split(apply_mb_source calc_enhance_3
+! calc_gia calc_temp_melt calc_thk_mask_update calc_vxy_b_sia cost_final kappa_val thk_adjust c_int_inv_val c_int_val c_val calc_
+!el calc_temp_enth_1_a calc_temp_enth_1_b calc_temp_enth_1_c calc_temp_enth_1_d calc_temp_enth_2_a1 calc_temp_enth_2_a2 calc_temp
+!_enth_2_b calc_temp_enth_2_c calc_temp_enth_2_d creep enth_fct_temp_omega omega_fct_enth pdd ratefac_c_t ratefac_t temp_fct_enth
+! velocity_limiter_gradual calc_thk_expl calc_thk_mask_update_aux2 calc_vz_grounded topograd_2 sico_main_loop calc_dzs_dxy_aux ca
+!lc_qbm calc_thk_init limit_thickness_isolated_ice my_erfc tri_sle)):
+!   gradient     of useful results: x
+!   with respect to varying inputs: x a0 a1 a2 b
+!-------------------------------------------------------------------------------
+!> Solution of a system of linear equations Ax=b with tridiagonal matrix A.
+!-------------------------------------------------------------------------------
+  SUBROUTINE TRI_SLE_FWD(a0, a1, a2, x, b, nrows)
+    IMPLICIT NONE
+    INTEGER(i4b), INTENT(IN) :: nrows
+    REAL(dp), DIMENSION(0:nrows), INTENT(IN) :: a0, a1, a2, b
+    REAL(dp), DIMENSION(0:nrows) :: x
+! a0: a0(j) is element A_(j,j-1) of matrix A
+! a1: a1(j) is element A_(j,j)   of matrix A
+! a2: a2(j) is element A_(j,j+1) of matrix A
+! b: inhomogeneity vector
+! nrows: size of matrix A (indices run from 0 (!) to nrows)
+! x: solution vector
+    INTEGER(i4b) :: n
+    REAL(dp), DIMENSION(0:nrows) :: a0_aux, a1_aux, a2_aux, b_aux, x_aux
+!--------  Define local variables --------
+    a0_aux = a0
+    a1_aux = a1
+    a2_aux = a2
+    b_aux = b
+! initialization
+    x_aux = 0.0_dp
+!--------  Generate an upper triangular matrix --------
+    DO n=1,nrows
+      CALL PUSHREAL8(a1_aux(n))
+      a1_aux(n) = a1_aux(n) - a0_aux(n)/a1_aux(n-1)*a2_aux(n-1)
+    END DO
+    DO n=1,nrows
+      CALL PUSHREAL8(b_aux(n))
+      b_aux(n) = b_aux(n) - a0_aux(n)/a1_aux(n-1)*b_aux(n-1)
+! a0_aux(n) = 0.0_dp , not needed in the following, therefore not set
+    END DO
+!-------- Iterative solution of the new system --------
+    x_aux(0) = b_aux(nrows)/a1_aux(nrows)
+    DO n=1,nrows
+      CALL PUSHREAL8(x_aux(n))
+      x_aux(n) = b_aux(nrows-n)/a1_aux(nrows-n) - a2_aux(nrows-n)/a1_aux(nrows-n)*x_aux(n-1)
+    END DO
+    DO n=0,nrows
+      x(n) = x_aux(nrows-n)
+    END DO
+    CALL PUSHREAL8ARRAY(a1_aux, nrows + 1)
+    CALL PUSHREAL8ARRAY(a0_aux, nrows + 1)
+    CALL PUSHREAL8ARRAY(b_aux, nrows + 1)
+    CALL PUSHREAL8ARRAY(x_aux, nrows + 1)
+    CALL PUSHREAL8ARRAY(a2_aux, nrows + 1)
+  END SUBROUTINE TRI_SLE_FWD
+
+!  Differentiation of tri_sle in reverse (adjoint) mode, backward sweep (with options profile split(apply_mb_source calc_enhance_
+!3 calc_gia calc_temp_melt calc_thk_mask_update calc_vxy_b_sia cost_final kappa_val thk_adjust c_int_inv_val c_int_val c_val calc
+!_el calc_temp_enth_1_a calc_temp_enth_1_b calc_temp_enth_1_c calc_temp_enth_1_d calc_temp_enth_2_a1 calc_temp_enth_2_a2 calc_tem
+!p_enth_2_b calc_temp_enth_2_c calc_temp_enth_2_d creep enth_fct_temp_omega omega_fct_enth pdd ratefac_c_t ratefac_t temp_fct_ent
+!h velocity_limiter_gradual calc_thk_expl calc_thk_mask_update_aux2 calc_vz_grounded topograd_2 sico_main_loop calc_dzs_dxy_aux c
+!alc_qbm calc_thk_init limit_thickness_isolated_ice my_erfc tri_sle)):
+!   gradient     of useful results: x
+!   with respect to varying inputs: x a0 a1 a2 b
+!-------------------------------------------------------------------------------
+!> Solution of a system of linear equations Ax=b with tridiagonal matrix A.
+!-------------------------------------------------------------------------------
+  SUBROUTINE TRI_SLE_BWD(a0, a0b, a1, a1b, a2, a2b, x, xb, b, bb, nrows)
+    IMPLICIT NONE
+    INTEGER(i4b), INTENT(IN) :: nrows
+    REAL(dp), DIMENSION(0:nrows), INTENT(IN) :: a0, a1, a2, b
+    REAL(dp), DIMENSION(0:nrows) :: a0b, a1b, a2b, bb
+    REAL(dp), DIMENSION(0:nrows) :: x
+    REAL(dp), DIMENSION(0:nrows) :: xb
+    INTEGER(i4b) :: n
+    REAL(dp), DIMENSION(0:nrows) :: a0_aux, a1_aux, a2_aux, b_aux, x_aux
+    REAL(dp), DIMENSION(0:nrows) :: a0_auxb, a1_auxb, a2_auxb, b_auxb, x_auxb
+    REAL(dp) :: tempb
+    REAL(dp) :: tempb0
+    CALL POPREAL8ARRAY(a2_aux, nrows + 1)
+    CALL POPREAL8ARRAY(x_aux, nrows + 1)
+    CALL POPREAL8ARRAY(b_aux, nrows + 1)
+    CALL POPREAL8ARRAY(a0_aux, nrows + 1)
+    CALL POPREAL8ARRAY(a1_aux, nrows + 1)
+    x_auxb = 0.0_8
+    DO n=nrows,0,-1
+      x_auxb(nrows-n) = x_auxb(nrows-n) + xb(n)
+      xb(n) = 0.0_8
+    END DO
+    a2_auxb = 0.0_8
+    b_auxb = 0.0_8
+    a1_auxb = 0.0_8
+    DO n=nrows,1,-1
+      CALL POPREAL8(x_aux(n))
+      tempb = x_auxb(n)/a1_aux(nrows-n)
+      tempb0 = -(x_auxb(n)/a1_aux(nrows-n))
+      x_auxb(n) = 0.0_8
+      a2_auxb(nrows-n) = a2_auxb(nrows-n) + x_aux(n-1)*tempb0
+      x_auxb(n-1) = x_auxb(n-1) + a2_aux(nrows-n)*tempb0
+      a1_auxb(nrows-n) = a1_auxb(nrows-n) - a2_aux(nrows-n)*x_aux(n-1)*tempb0/a1_aux(nrows-n) - b_aux(nrows-n)*tempb/a1_aux(nrows-n)
+      b_auxb(nrows-n) = b_auxb(nrows-n) + tempb
+    END DO
+    tempb = x_auxb(0)/a1_aux(nrows)
+    b_auxb(nrows) = b_auxb(nrows) + tempb
+    a1_auxb(nrows) = a1_auxb(nrows) - b_aux(nrows)*tempb/a1_aux(nrows)
+    a0_auxb = 0.0_8
+    DO n=nrows,1,-1
+      CALL POPREAL8(b_aux(n))
+      tempb = -(b_auxb(n)/a1_aux(n-1))
+      a0_auxb(n) = a0_auxb(n) + b_aux(n-1)*tempb
+      b_auxb(n-1) = b_auxb(n-1) + a0_aux(n)*tempb
+      a1_auxb(n-1) = a1_auxb(n-1) - a0_aux(n)*b_aux(n-1)*tempb/a1_aux(n-1)
+    END DO
+    DO n=nrows,1,-1
+      CALL POPREAL8(a1_aux(n))
+      tempb = -(a1_auxb(n)/a1_aux(n-1))
+      a0_auxb(n) = a0_auxb(n) + a2_aux(n-1)*tempb
+      a2_auxb(n-1) = a2_auxb(n-1) + a0_aux(n)*tempb
+      a1_auxb(n-1) = a1_auxb(n-1) - a0_aux(n)*a2_aux(n-1)*tempb/a1_aux(n-1)
+    END DO
+    bb = 0.0_8
+    bb = b_auxb
+    a2b = 0.0_8
+    a2b = a2_auxb
+    a1b = 0.0_8
+    a1b = a1_auxb
+    a0b = 0.0_8
+    a0b = a0_auxb
+  END SUBROUTINE TRI_SLE_BWD
 
 !-------------------------------------------------------------------------------
 !> Bilinear interpolation.
@@ -453,11 +550,11 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
   end function bilinint
   
 !-------------------------------------------------------------------------------
-!> Differentiation of my_erfc_stub in reverse (adjoint) mode:
+!> Differentiation of my_erfc in reverse (adjoint) mode:
 !! gradient of useful results: retval,
 !! with respect to varying inputs: x.
 !-------------------------------------------------------------------------------
-  subroutine my_erfc_stub_b(x, xb, retval, retvalb)
+  subroutine my_erfc_b(x, xb, retval, retvalb)
 
   implicit none
 
@@ -521,14 +618,14 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
      xb = -zb
   end if
 
-  end subroutine my_erfc_stub_b
+  end subroutine my_erfc_b
 
 !-------------------------------------------------------------------------------
 !> Computation of the complementary error function erfc(x) = 1-erf(x)
 !! with a fractional error everywhere less than 1.2 x 10^(-7)
 !! (formula by Press et al., 'Numerical Recipes in Fortran 77').
 !-------------------------------------------------------------------------------
-  subroutine my_erfc_stub(x, retval)
+  subroutine my_erfc(x, retval)
 
   implicit none
 
@@ -554,7 +651,110 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
 
   if (x < 0.0_dp) retval = 2.0_dp - retval
 
-  end subroutine my_erfc_stub
+  end subroutine my_erfc
+
+!  Differentiation of my_erfc in reverse (adjoint) mode, forward sweep (with options split(apply_mb_source calc_enhance_3 calc_gi
+!a calc_temp_melt calc_thk_mask_update calc_vxy_b_sia cost_final kappa_val thk_adjust c_int_inv_val c_int_val c_val calc_el calc_
+!temp_enth_1_a calc_temp_enth_1_b calc_temp_enth_1_c calc_temp_enth_1_d calc_temp_enth_2_a1 calc_temp_enth_2_a2 calc_temp_enth_2_
+!b calc_temp_enth_2_c calc_temp_enth_2_d creep enth_fct_temp_omega omega_fct_enth pdd ratefac_c_t ratefac_t temp_fct_enth velocit
+!y_limiter_gradual calc_thk_expl calc_thk_mask_update_aux2 calc_vz_grounded topograd_2 sico_main_loop calc_dzs_dxy_aux calc_qbm c
+!alc_thk_init limit_thickness_isolated_ice my_erfc)):
+!   gradient     of useful results: retval
+!   with respect to varying inputs: x
+!-------------------------------------------------------------------------------
+!> Computation of the complementary error function erfc(x) = 1-erf(x)
+!! with a fractional error everywhere less than 1.2 x 10^(-7)
+!! (formula by Press et al., 'Numerical Recipes in Fortran 77').
+!-------------------------------------------------------------------------------
+  SUBROUTINE MY_ERFC_FWD(x, retval)
+    IMPLICIT NONE
+    REAL(dp), INTENT(IN) :: x
+    REAL(dp) :: retval
+    REAL(dp) :: t, z
+    INTRINSIC ABS
+    INTRINSIC EXP
+    IF (x .GE. 0.) THEN
+      z = x
+      CALL PUSHCONTROL1B(0)
+    ELSE
+      z = -x
+      CALL PUSHCONTROL1B(1)
+    END IF
+    t = 1.0_dp/(1.0_dp+0.5_dp*z)
+    CALL PUSHREAL8(retval)
+    retval = t*EXP(-(z*z)-1.26551223_dp+t*(1.00002368_dp+t*(0.37409196_dp+t*(0.09678418_dp+t*(-0.18628806_dp+t*(0.27886807_dp+t*(-1.13520398_dp+t*(1.48851587_dp+t*(-0.82215223_dp+t*0.17087277_dp)))))))))
+    IF (x .LT. 0.0_dp) THEN
+      retval = 2.0_dp - retval
+      CALL PUSHREAL8(z)
+      CALL PUSHCONTROL1B(1)
+    ELSE
+      CALL PUSHREAL8(z)
+      CALL PUSHCONTROL1B(0)
+    END IF
+  END SUBROUTINE MY_ERFC_FWD
+
+!  Differentiation of my_erfc in reverse (adjoint) mode, backward sweep (with options split(apply_mb_source calc_enhance_3 calc_g
+!ia calc_temp_melt calc_thk_mask_update calc_vxy_b_sia cost_final kappa_val thk_adjust c_int_inv_val c_int_val c_val calc_el calc
+!_temp_enth_1_a calc_temp_enth_1_b calc_temp_enth_1_c calc_temp_enth_1_d calc_temp_enth_2_a1 calc_temp_enth_2_a2 calc_temp_enth_2
+!_b calc_temp_enth_2_c calc_temp_enth_2_d creep enth_fct_temp_omega omega_fct_enth pdd ratefac_c_t ratefac_t temp_fct_enth veloci
+!ty_limiter_gradual calc_thk_expl calc_thk_mask_update_aux2 calc_vz_grounded topograd_2 sico_main_loop calc_dzs_dxy_aux calc_qbm
+!calc_thk_init limit_thickness_isolated_ice my_erfc)):
+!   gradient     of useful results: retval
+!   with respect to varying inputs: x
+!-------------------------------------------------------------------------------
+!> Computation of the complementary error function erfc(x) = 1-erf(x)
+!! with a fractional error everywhere less than 1.2 x 10^(-7)
+!! (formula by Press et al., 'Numerical Recipes in Fortran 77').
+!-------------------------------------------------------------------------------
+  SUBROUTINE MY_ERFC_BWD(x, xb, retval, retvalb)
+    IMPLICIT NONE
+    REAL(dp), INTENT(IN) :: x
+    REAL(dp) :: xb
+    REAL(dp) :: retval
+    REAL(dp) :: retvalb
+    REAL(dp) :: t, z
+    REAL(dp) :: tb, zb
+    INTRINSIC ABS
+    INTRINSIC EXP
+    REAL(dp) :: temp
+    REAL(dp) :: temp0
+    REAL(dp) :: temp1
+    REAL(dp) :: temp2
+    REAL(dp) :: temp3
+    REAL(dp) :: temp4
+    REAL(dp) :: tempb
+    REAL(dp) :: tempb0
+    REAL(dp) :: tempb1
+    REAL(dp) :: tempb2
+    INTEGER*4 :: branch
+    CALL POPCONTROL1B(branch)
+    IF (branch .EQ. 0) THEN
+      CALL POPREAL8(z)
+    ELSE
+      CALL POPREAL8(z)
+      retvalb = -retvalb
+    END IF
+    t = 1.0_dp/(1.0_dp+0.5_dp*z)
+    CALL POPREAL8(retval)
+    temp = t*(0.17087277_dp*t-0.82215223_dp) + 1.48851587_dp
+    temp0 = t*temp - 1.13520398_dp
+    temp1 = t*(t*temp0+0.27886807_dp) - 0.18628806_dp
+    temp2 = t*(t*temp1+0.09678418_dp) + 0.37409196_dp
+    temp3 = t*temp2 + 1.00002368_dp
+    temp4 = t*temp3 - z*z - 1.26551223_dp
+    tempb = EXP(temp4)*t*retvalb
+    tempb0 = t**2*tempb
+    tempb1 = t**2*tempb0
+    tempb2 = t**2*tempb1
+    tb = EXP(temp4)*retvalb + (temp3+temp2*t)*tempb + (t*temp1+temp1*t+0.09678418_dp)*tempb0 + (t*temp0+temp0*t+0.27886807_dp)*tempb1 + (temp+(0.17087277_dp*t-0.82215223_dp)*t+0.17087277_dp*t**2)*tempb2
+    zb = -(2*z*tempb) - 0.5_dp*tb/(0.5_dp*z+1.0_dp)**2
+    CALL POPCONTROL1B(branch)
+    IF (branch .EQ. 0) THEN
+      xb = zb
+    ELSE
+      xb = -zb
+    END IF
+  END SUBROUTINE MY_ERFC_BWD
 
 #if defined(BUILD_LIS) && (MARGIN==3 || DYNAMICS==2)
 !-------------------------------------------------------------------------------
@@ -613,7 +813,7 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
 !! and lgs_a_ptr (pointers)].
 !-------------------------------------------------------------------------------
 #include "lisf.h"
-  subroutine sico_lis_solver_stub(nmax, nnz, lgs_a_ptr, lgs_a_index, &
+  subroutine sico_lis_solver(nmax, nnz, lgs_a_ptr, lgs_a_index, &
                                   lgs_a_value, lgs_b_value, lgs_x_value)
 
   implicit none
@@ -688,14 +888,14 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
   call lis_solver_destroy(solver, ierr)
   call lis_finalize_f(ierr)
 
-  end subroutine sico_lis_solver_stub
+  end subroutine sico_lis_solver
 
 !-------------------------------------------------------------------------------
-!> Differentiation of sico_lis_solver_stub in reverse (adjoint) mode:
+!> Differentiation of sico_lis_solver in reverse (adjoint) mode:
 !! gradient of useful results: lgs_x_value,
 !! with respect to varying inputs: lgs_b_value lgs_x_value lgs_a_value.
 !-------------------------------------------------------------------------------
-  subroutine sico_lis_solver_stub_b(nmax, nnz, lgs_a_ptr, lgs_a_index, &
+  subroutine sico_lis_solver_b(nmax, nnz, lgs_a_ptr, lgs_a_index, &
                                     lgs_a_value, lgs_a_valueb, &
                                     lgs_b_value, lgs_b_valueb, lgs_x_value, &
                                     lgs_x_valueb)
@@ -751,7 +951,7 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
   end do
   lgs_x_valueb = 0.0
 
-  end subroutine sico_lis_solver_stub_b
+  end subroutine sico_lis_solver_b
 
 #endif
 

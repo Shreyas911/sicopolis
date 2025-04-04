@@ -35,50 +35,17 @@ module sico_maths_m_diff
   use sico_types_m
 
   implicit none
+
   public
 
-  interface tri_sle
-      module procedure tri_sle_stub
-  end interface
-
-  interface tri_sle_d
-      module procedure tri_sle_stub_d
-      module procedure tri_sle_mini_stub_d
-  end interface
-
-  interface my_erfc
-      module procedure my_erfc_stub
-  end interface
-
-  interface my_erfc_d
-      module procedure my_erfc_stub_d
-  end interface
-
-  interface sor_sprs
-      module procedure sor_sprs_stub
-  end interface
-
-  interface sor_sprs_d
-      module procedure sor_sprs_stub_d
-  end interface
-
-#if defined(BUILD_LIS) && (MARGIN==3 || DYNAMICS==2)
-  interface sico_lis_solver
-      module procedure sico_lis_solver_stub
-  end interface
-
-  interface sico_lis_solver_d
-      module procedure sico_lis_solver_stub_d
-  end interface
-#endif
-
 contains
+
 !-------------------------------------------------------------------------------
-!> Differentiation of sor_sprs_stub in forward (tangent) mode:
+!> Differentiation of sor_sprs in forward (tangent) mode:
 !! variations of useful results: lgs_x_value,
 !! with respect to varying inputs: lgs_b_value lgs_x_value lgs_a_value.
 !-------------------------------------------------------------------------------
-  subroutine sor_sprs_stub_d(lgs_a_value, lgs_a_valued, lgs_a_index, &
+  subroutine sor_sprs_d(lgs_a_value, lgs_a_valued, lgs_a_index, &
                              lgs_a_diag_index, lgs_a_ptr, &
                              lgs_b_value, lgs_b_valued, &
                              nnz, nmax, &
@@ -120,7 +87,7 @@ contains
                 lgs_a_ptr, lgs_rhs_value, nnz, nmax, omega, eps_sor/10000.0, &
                 lgs_x_valued, ierr)
 
-  end subroutine sor_sprs_stub_d
+  end subroutine sor_sprs_d
 
 !-------------------------------------------------------------------------------
 !> SOR solver for a system of linear equations lgs_a*lgs_x=lgs_b
@@ -128,7 +95,7 @@ contains
 !! represented by arrays lgs_a_value(values), lgs_a_index (indices)
 !! and lgs_a_ptr (pointers)].
 !-------------------------------------------------------------------------------
-  subroutine sor_sprs_stub(lgs_a_value, lgs_a_index, lgs_a_diag_index, &
+  subroutine sor_sprs(lgs_a_value, lgs_a_index, lgs_a_diag_index, &
                            lgs_a_ptr, lgs_b_value, &
                            nnz, nmax, &
                            omega, eps_sor, lgs_x_value, ierr)
@@ -202,14 +169,14 @@ contains
   ierr = -1   ! convergence criterion not fulfilled
   deallocate(lgs_x_value_prev)
 
-  end subroutine sor_sprs_stub
+  end subroutine sor_sprs
 
 !-------------------------------------------------------------------------------
-!> Differentiation of tri_sle_stub in forward (tangent) mode:
+!> Differentiation of tri_sle in forward (tangent) mode:
 !! variations of useful results: x b,
 !! with respect to varying inputs: x a0 a1 a2 b.
 !-------------------------------------------------------------------------------
-  subroutine tri_sle_stub_d(a0, a0d, a1, a1d, a2, a2d, x, xd, b, bd, nrows)
+  subroutine tri_sle_d(a0, a0d, a1, a1d, a2, a2d, x, xd, b, bd, nrows)
 
   implicit none
 
@@ -239,14 +206,14 @@ contains
 
   call tri_sle(a0, a1copy, a2, xd, rhs, nrows)
 
-  end subroutine tri_sle_stub_d
+  end subroutine tri_sle_d
 
 !-------------------------------------------------------------------------------
-!> Differentiation of tri_sle_stub in forward (tangent) mode:
+!> Differentiation of tri_sle in forward (tangent) mode:
 !! variations of useful results: x b,
 !! with respect to varying inputs: x b.
 !-------------------------------------------------------------------------------
-  subroutine tri_sle_mini_stub_d(a0, a1, a2, x, xd, b, bd, nrows)
+  subroutine tri_sle_mini_d(a0, a1, a2, x, xd, b, bd, nrows)
 
   implicit none
 
@@ -275,12 +242,12 @@ contains
 
   call tri_sle(a0, a1copy, a2, xd, rhs, nrows)
 
-  end subroutine tri_sle_mini_stub_d
+  end subroutine tri_sle_mini_d
 
 !-------------------------------------------------------------------------------
 !> Solution of a system of linear equations Ax=b with tridiagonal matrix A.
 !-------------------------------------------------------------------------------
-  subroutine tri_sle_stub(a0, a1, a2, x, b, nrows)
+  subroutine tri_sle(a0, a1, a2, x, b, nrows)
 
   implicit none
 
@@ -334,7 +301,7 @@ contains
   !           diagonal becoming zero. In this case it crashes even
   !           though the system may be solvable. Otherwise ok.
 
-  end subroutine tri_sle_stub
+  end subroutine tri_sle
 
 !-------------------------------------------------------------------------------
 !> Bilinear interpolation.
@@ -358,11 +325,11 @@ contains
   end function bilinint
 
 !-------------------------------------------------------------------------------
-!> Differentiation of my_erfc_stub in forward (tangent) mode:
+!> Differentiation of my_erfc in forward (tangent) mode:
 !! variations of useful results: retval,
 !! with respect to varying inputs: x.
 !-------------------------------------------------------------------------------
-  subroutine my_erfc_stub_d(x, xd, retval, retvald)
+  subroutine my_erfc_d(x, xd, retval, retvald)
 
   implicit none
 
@@ -411,14 +378,14 @@ contains
      retval = 2.0_dp - retval
   end if
 
-  end subroutine my_erfc_stub_d
+  end subroutine my_erfc_d
 
 !-------------------------------------------------------------------------------
 !> Computation of the complementary error function erfc(x) = 1-erf(x)
 !! with a fractional error everywhere less than 1.2 x 10^(-7)
 !! (formula by Press et al., 'Numerical Recipes in Fortran 77').
 !-------------------------------------------------------------------------------
-  subroutine my_erfc_stub(x, retval)
+  subroutine my_erfc(x, retval)
 
   implicit none
 
@@ -445,14 +412,14 @@ contains
   retval = t*exp(arg1)
   if (x < 0.0_dp) retval = 2.0_dp - retval
 
-  end subroutine my_erfc_stub
+  end subroutine my_erfc
 
 #if defined(BUILD_LIS) && (MARGIN==3 || DYNAMICS==2)
 !-------------------------------------------------------------------------------
 !> Template for Tapenade to help differentiate through the LIS solver.
 !-------------------------------------------------------------------------------
 #include "lisf.h"
-  subroutine sico_lis_solver_stub(nmax, nnz, lgs_a_ptr, lgs_a_index, &
+  subroutine sico_lis_solver(nmax, nnz, lgs_a_ptr, lgs_a_index, &
                                   lgs_a_value, lgs_b_value, lgs_x_value)
 
   implicit none
@@ -530,12 +497,12 @@ contains
   call lis_vector_destroy(lgs_x, ierr)
   call lis_solver_destroy(solver, ierr)
 
-  end subroutine sico_lis_solver_stub
+  end subroutine sico_lis_solver
 
 !-------------------------------------------------------------------------------
-!> Differentiation of sico_lis_solver_stub in forward (tangent) mode.
+!> Differentiation of sico_lis_solver in forward (tangent) mode.
 !-------------------------------------------------------------------------------
-  subroutine sico_lis_solver_stub_d(nmax, nnz, &
+  subroutine sico_lis_solver_d(nmax, nnz, &
                                     lgs_a_ptr, lgs_a_index, &
                                     lgs_a_value, lgs_a_valued, lgs_b_value, &
                                     lgs_b_valued, lgs_x_value, lgs_x_valued)
@@ -618,7 +585,7 @@ contains
   call lis_vector_destroy(rhs, ierr)
   call lis_finalize_f(ierr)
 
-  end subroutine sico_lis_solver_stub_d
+  end subroutine sico_lis_solver_d
 
 #endif
 
