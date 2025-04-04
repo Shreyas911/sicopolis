@@ -20,7 +20,7 @@
 #define DO_CTRL_GENTIM2D
 !       Flags to enable specific codes for various types of genctrl
 
-#define NUM_CTRL_GENARR2D 20
+#define NUM_CTRL_GENARR2D 22
 #define NUM_CTRL_GENARR3D 5
 #define NUM_CTRL_GENTIM2D 1
 !       Number of control variables,
@@ -43,6 +43,8 @@
                                          'xx_RHO_A',\
                                          'xx_time_lag_asth',\
                                          'xx_flex_rig_lith',\
+                                         'xx_p_weert',\
+                                         'xx_q_weert',\
                                          'xx_enh_fact_da_dummy2d_scalar',\
                                          'xx_enh_intg_da_dummy2d_scalar',\
                                          'xx_zs',\
@@ -60,6 +62,8 @@
 !                                         'log10ctrl',\
 !                                         'none',\
 !                                         'none',\
+!                                         'log10ctrl',\
+!                                         'log10ctrl',\
 !                                         'log10ctrl',\
 !                                         'log10ctrl',\
 !                                         'log10ctrl',\
@@ -105,7 +109,6 @@
 !!       But to preserve the unit change, add a line.
 !!       age_c(kc,j,i) = real(age_c(kc,j,i),dp)*year2sec
 !!
-!!       p_weert, q_weert can be added to genctrl once the problem of how to differentiate through lookup tables of RF, KAPPA, etc. in read_m is solved.
 !!       n_glen_da_dummy2d_scalar can be added to genctrl but it is hard-coded in some places, and tuning it changes units of Arrhenius factor A, which is only known for n = 3.
 !!       WARNING: enh_fact_da_dummy2d_scalar, enh_intg_da_dummy2d_scalar, n_glen_da_dummy2d_scalar are special cases.
 !!       They are only supposed to be scalars. Illustrating examples below.
@@ -126,7 +129,7 @@
 !                                         -1.15206968873,  0.69897000434, 0.43616264704,\
 !                                          0.86213137931, -0.22184874962, 0.98746515611,\
 !                                          3.51851393988,  3.47712125472, 25.0000000000,\
-!                                          0.47712125472, 0.0,\
+!                                          0.47712125472,  0.30102999566, 0.47712125472, 0.0,\
 !                                          0.0, 0.0, 0.0, 0.0 ]
 !!       log10initval is used only if preproc=log10ctrl and AD_INPUT_PATH is not defined.
 !!       Has no effect (not even read) if AD_INPUT_PATH is defined.
