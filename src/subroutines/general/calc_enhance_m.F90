@@ -91,6 +91,9 @@ contains
 
   integer(i4b) :: i, j, kc, kt
   real(dp)     :: age_trans
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+  real(dp)     :: enh_fact_updated, enh_intg_updated
+#endif
 
   age_trans = AGE_TRANS_0*year2sec
 
@@ -117,22 +120,24 @@ contains
   end do
   end do
 #else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+  enh_fact_updated = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT
+  enh_intg_updated = SUM(enh_intg_da_dummy2d_scalar) / SIZE(enh_intg_da_dummy2d_scalar) + ENH_INTG
   do i=0, IMAX
   do j=0, JMAX
 
      do kt=0, KTMAX
         if (age_t(kt,j,i) < age_trans) then
-           enh_t(kt,j,i) = SUM(enh_intg_da_dummy2d_scalar) / SIZE(enh_intg_da_dummy2d_scalar) + ENH_INTG   ! Holocene ice
+           enh_t(kt,j,i) = enh_intg_updated   ! Holocene ice
         else
-           enh_t(kt,j,i) = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT   ! Pleistocene ice
+           enh_t(kt,j,i) = enh_fact_updated   ! Pleistocene ice
         end if
      end do
 
      do kc=0, KCMAX
         if (age_c(kc,j,i) < age_trans) then
-           enh_c(kc,j,i) = SUM(enh_intg_da_dummy2d_scalar) / SIZE(enh_intg_da_dummy2d_scalar) + ENH_INTG   ! Holocene ice
+           enh_c(kc,j,i) = enh_intg_updated   ! Holocene ice
         else
-           enh_c(kc,j,i) = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT   ! Pleistocene ice
+           enh_c(kc,j,i) = enh_fact_updated   ! Pleistocene ice
         end if
      end do
 
@@ -166,6 +171,9 @@ contains
 
   integer(i4b) :: i, j, kc, kt
   real(dp)     :: date_trans1, date_trans2, date_trans3
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+  real(dp)     :: enh_fact_updated, enh_intg_updated
+#endif
 
   date_trans1 = DATE_TRANS1_0*year2sec
   date_trans2 = DATE_TRANS2_0*year2sec
@@ -206,34 +214,36 @@ contains
   end do
   end do
 #else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+  enh_fact_updated = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT
+  enh_intg_updated = SUM(enh_intg_da_dummy2d_scalar) / SIZE(enh_intg_da_dummy2d_scalar) + ENH_INTG
   do i=0, IMAX
   do j=0, JMAX
 
      do kt=0, KTMAX
         if ( (time-age_t(kt,j,i)) < date_trans1 ) then
-           enh_t(kt,j,i) = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT   ! pre-Eemian ice
+           enh_t(kt,j,i) = enh_fact_updated   ! pre-Eemian ice
         else if ( ((time-age_t(kt,j,i)) >= date_trans1).and. &
                   ((time-age_t(kt,j,i)) <  date_trans2) ) then
-           enh_t(kt,j,i) = SUM(enh_intg_da_dummy2d_scalar) / SIZE(enh_intg_da_dummy2d_scalar) + ENH_INTG   ! Eemian ice
+           enh_t(kt,j,i) = enh_intg_updated   ! Eemian ice
         else if ( ((time-age_t(kt,j,i)) >= date_trans2).and. &
                   ((time-age_t(kt,j,i)) <  date_trans3) ) then
-           enh_t(kt,j,i) = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT   ! Weichselian ice
+           enh_t(kt,j,i) = enh_fact_updated   ! Weichselian ice
         else
-           enh_t(kt,j,i) = SUM(enh_intg_da_dummy2d_scalar) / SIZE(enh_intg_da_dummy2d_scalar) + ENH_INTG   ! Holocene ice
+           enh_t(kt,j,i) = enh_intg_updated   ! Holocene ice
         end if
      end do
 
      do kc=0, KCMAX
         if ( (time-age_c(kc,j,i)) < date_trans1 ) then
-           enh_c(kc,j,i) = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT   ! pre-Eemian ice
+           enh_c(kc,j,i) = enh_fact_updated   ! pre-Eemian ice
         else if ( ((time-age_c(kc,j,i)) >= date_trans1).and. &
                   ((time-age_c(kc,j,i)) <  date_trans2) ) then
-           enh_c(kc,j,i) = SUM(enh_intg_da_dummy2d_scalar) / SIZE(enh_intg_da_dummy2d_scalar) + ENH_INTG   ! Eemian ice
+           enh_c(kc,j,i) = enh_intg_updated   ! Eemian ice
         else if ( ((time-age_c(kc,j,i)) >= date_trans2).and. &
                   ((time-age_c(kc,j,i)) <  date_trans3) ) then
-           enh_c(kc,j,i) = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT   ! Weichselian ice
+           enh_c(kc,j,i) = enh_fact_updated   ! Weichselian ice
         else
-           enh_c(kc,j,i) = SUM(enh_intg_da_dummy2d_scalar) / SIZE(enh_intg_da_dummy2d_scalar) + ENH_INTG   ! Holocene ice
+           enh_c(kc,j,i) = enh_intg_updated   ! Holocene ice
         end if
      end do
 
