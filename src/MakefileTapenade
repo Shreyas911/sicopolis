@@ -134,8 +134,8 @@ endif
 ifeq ($(F90C),ifort)
 $(info ifort might not work well with the genctrl setup since -extend-source can extend line length limit to max 132 columns.)
 $(info This remains untested, so can consider a higher value than 132 probably.)
-F90FLAGS= -m64 -convert big_endian -assume byterecl -mcmodel=medium -O3 -align -fp-model source -xHost -DRUN_SPECS_HEADER=\"sico_specs.h\" -DAD_SPECS_HEADER=\"ad_specs.h\" -extend-source 132
-CFLAGS= -O3 -ip -m64 -xHost -mcmodel=medium -DWORDLENGTH=4 -DDEFAULT_R8
+F90FLAGS= -ip -m64 -convert big_endian -assume byterecl -mcmodel=medium -O3 -align -fp-model source -xHost -DRUN_SPECS_HEADER=\"sico_specs.h\" -DAD_SPECS_HEADER=\"ad_specs.h\" -extend-source 132
+CFLAGS= -ipo -O3 -m64 -xHost -mcmodel=medium -DWORDLENGTH=4 -DDEFAULT_R8
 endif
 
 IN_PATH_NODIFF=../sico_in
