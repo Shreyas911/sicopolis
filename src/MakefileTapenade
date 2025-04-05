@@ -45,15 +45,19 @@ ifndef LISDIR
 ifeq ($(F90C),gfortran)
 LISDIR=/home/shreyas/lis-2.1.3/installation
 endif
-ifeq ($(F90C),ifort)
-LISDIR=/home/shreyas/lis-2.1.3-intel/installation
-endif
+# HAVE TO INSTALL LIS CORRECTLY FOR INTEL
+#ifeq ($(F90C),ifort)
+#LISDIR=/home/shreyas/lis-2.1.3-intel/installation
+#endif
 endif
 
 ifdef LISDIR
+ifeq ($(F90C),gfortran)
 LIBLIS=${LISDIR}/lib/liblis.so
 LIBLISFLAG=-L${LISDIR}/lib -llis
 LISFLAG=-DBUILD_LIS -I${LISDIR}/include/
+endif
+# HAVE TO INSTALL LIS CORRECTLY FOR INTEL
 endif
 
 ifndef NETCDF_FORTRAN_DIR
@@ -130,8 +134,8 @@ endif
 ifeq ($(F90C),ifort)
 $(info ifort might not work well with the genctrl setup since -extend-source can extend line length limit to max 132 columns.)
 $(info This remains untested, so can consider a higher value than 132 probably.)
-F90FLAGS= -m64 -convert big_endian -assume byterecl -mcmodel=medium -O2 -align -ip -fp-model source -xHost -DRUN_SPECS_HEADER=\"sico_specs.h\" -DAD_SPECS_HEADER=\"ad_specs.h\" -extend-source 132
-CFLAGS= -O0 -ip -m64 -xHost -mcmodel=medium -DWORDLENGTH=4 -DDEFAULT_R8
+F90FLAGS= -m64 -convert big_endian -assume byterecl -mcmodel=medium -O3 -align -fp-model source -xHost -DRUN_SPECS_HEADER=\"sico_specs.h\" -DAD_SPECS_HEADER=\"ad_specs.h\" -extend-source 132
+CFLAGS= -O3 -ip -m64 -xHost -mcmodel=medium -DWORDLENGTH=4 -DDEFAULT_R8
 endif
 
 IN_PATH_NODIFF=../sico_in

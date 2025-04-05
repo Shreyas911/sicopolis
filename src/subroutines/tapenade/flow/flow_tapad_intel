@@ -63,9 +63,9 @@ function index:
 intrinsic:
 shape: (param 1, param 2, result)
 type: (arrayType(character(),dimColons(dimColon(none(),none()))), arrayType(character(),dimColons(dimColon(none(),none()))), integer())
-ReadNotWritten: (1, 0)
-ReadThenWritten: (0, 0)
-NotReadThenWritten: (0, 1)
+ReadNotWritten: (1, 1, 0)
+ReadThenWritten: (0, 0, 1)
+NotReadThenWritten: (0, 0, 1)
 
 function kind:
 intrinsic:
