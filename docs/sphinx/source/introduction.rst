@@ -15,7 +15,7 @@ Resources
 * Model website: https://www.sicopolis.net/.
 * This user manual: https://sicopolis.readthedocs.io/.
 * Developer manual: See the :ref:`building instructions <developer_manual>`.
-* GitLab repository: https://gitlab.awi.de/sicopolis/sicopolis/.
+* GitHub repository: https://github.com/sicopolis/sicopolis/.
 * SICOPOLIS community @ Zenodo: https://zenodo.org/communities/sicopolis/.
 
 Authorship
