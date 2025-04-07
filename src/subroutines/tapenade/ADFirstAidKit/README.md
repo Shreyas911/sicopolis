@@ -10,6 +10,14 @@ Contents of the ADFirstAidKit
   Primitives for Tapenade adjoint with binomial checkpoiting (cf Griewank-Walther
   "revolve" method). Triggered by Tapenade directive $AD BINOMIAL-CKP.
 
+## adFixedPoint.c && adFixedPoint.h
+  Primitives for Tapenade adjoint that uses Christianson's two-step method.
+  Triggered by Tapenade directive $AD FP-LOOP
+
+## adOMP.c && adOMP.h
+  Primitives for Tapenade differentiated code of OpenMP codes.
+  Tapenade needs command-line option -openmp to produce diff code of OpenMP source.
+
 ## (adContext.c || adContextMPI.c) && adContext.h
   Primitives used by Tapenade-differentiated code with automated validation.
   Triggered by tapenade command-line option -context.
@@ -26,8 +34,12 @@ Contents of the ADFirstAidKit
   -debugTGT or with -debugADJ.
   Use adDebugMPI.c instead of adDebug.c on MPI code.
 
+## adProfile.c && adProfile.h
+  Primitives used by Tapenade adjoint to measure the cost/benefit of checkpointing,
+  to find parts of the code that should or shouldn't be checkpointed.
+
 ## adComplex.h
-  Utility for adStack, adContext, adDebug
+  Utility for adStack, adContext, adDebug...
 
 ## admm.c && admm.h (might be integrated later into adBuffer)
   The "ADMM" primitives, which manage push/pop of pointers when the pointer's
@@ -36,10 +48,6 @@ Contents of the ADFirstAidKit
 ## admm_tapenade_interface.f90
   A Fortran90 module that must be USE'd by Tapenade-generated adjoint code,
   if these codes need push/pop of pointers or use ADMM primitives.
-
-## adProfile.c && adProfile.h
-  Primitives used by Tapenade adjoint to measure the cost/benefit of checkpointing,
-  to find parts of the code that should or shouldn't be checkpointed.
 
 ## fortranSupport.F && ampiSupport.c
   Files needed by AMPI, for Tapenade adjoint code of MPI programs.
