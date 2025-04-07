@@ -125,17 +125,19 @@ ${ADFirstAidKit_DIR}/adFixedPoint.c
 endif
 
 ifeq ($(F90C),gfortran)
-F90FLAGS_COV= --coverage -fprofile-arcs -ftest-coverage -O0 -g -DRUN_SPECS_HEADER=\"sico_specs.h\" -mcmodel=medium -fno-range-check -ffpe-trap=invalid,zero -ffree-line-length-none
+F90FLAGS_COV= --coverage -fprofile-arcs -ftest-coverage -O0 -g -DRUN_SPECS_HEADER=\"sico_specs.h\" -fno-range-check -ffree-line-length-none -mcmodel=medium -ffpe-trap=invalid,zero
 CFLAGS_COV= --coverage -fprofile-arcs -ftest-coverage -O0 -g
-F90FLAGS= -O3 -g -DRUN_SPECS_HEADER=\"sico_specs.h\" -DAD_SPECS_HEADER=\"ad_specs.h\" -mcmodel=medium -fno-range-check -ffpe-trap=invalid,zero -ffree-line-length-none
-CFLAGS= -O3 -g
+F90FLAGS= -O3 -march=native -DRUN_SPECS_HEADER=\"sico_specs.h\" -DAD_SPECS_HEADER=\"ad_specs.h\" -fno-range-check -ffree-line-length-none -mcmodel=medium -ffpe-trap=invalid,zero
+CFLAGS= -O3 -march=native
+F90FLAG_OMP = -fopenmp
 endif
 
 ifeq ($(F90C),ifort)
 $(info ifort might not work well with the genctrl setup since -extend-source can extend line length limit to max 132 columns.)
 $(info This remains untested, so can consider a higher value than 132 probably.)
-F90FLAGS= -ip -m64 -convert big_endian -assume byterecl -mcmodel=medium -O3 -align -fp-model source -xHost -DRUN_SPECS_HEADER=\"sico_specs.h\" -DAD_SPECS_HEADER=\"ad_specs.h\" -extend-source 132
-CFLAGS= -ipo -O3 -m64 -xHost -mcmodel=medium -DWORDLENGTH=4 -DDEFAULT_R8
+F90FLAGS= -ip -O3 -align -m64 -xHost -DRUN_SPECS_HEADER=\"sico_specs.h\" -DAD_SPECS_HEADER=\"ad_specs.h\" -extend-source 132 -mcmodel=medium -fp-model source #-fp-model fast=2
+CFLAGS= -ipo -O3 -align -m64 -xHost -fp-model source #-fp-model fast=2
+F90FLAG_OMP = -qopenmp
 endif
 
 IN_PATH_NODIFF=../sico_in
@@ -432,18 +434,18 @@ ad_specs.h: ../headers_ad/ad_$(HEADER).h
 drivernodiff: sico_specs.h $(SRC_SICO) $(SRC) ad_specs.h
 	rm -rf ${OUT_PATH_NODIFF}
 	sed -i 's/&__NL__//g' sico_specs.h
-	${F90C} -I./ ${F90FLAGS} -fopenmp ${DEFINE_FLAGS_NODIFF} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
-	${F90C} ${F90FLAGS} -fopenmp -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
+	${F90C} -I./ ${F90FLAGS} ${F90FLAG_OMP} ${DEFINE_FLAGS_NODIFF} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
+	${F90C} ${F90FLAGS} ${F90FLAG_OMP} -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
 
 drivergrdchk: sico_specs.h $(SRC_SICO) $(SRC_SICO_AD_COST) $(SRC) $(SRC_SICO_AD_GRDCHK)
 	sed -i 's/&__NL__//g' sico_specs.h
-	${F90C} -I./ ${F90FLAGS} -fopenmp ${DEFINE_FLAGS_GRDCHK} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
-	${F90C} ${F90FLAGS} -fopenmp -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
+	${F90C} -I./ ${F90FLAGS} ${F90FLAG_OMP} ${DEFINE_FLAGS_GRDCHK} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
+	${F90C} ${F90FLAGS} ${F90FLAG_OMP} -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
 
 drivergrdchk_cov: sico_specs.h $(SRC_SICO) $(SRC_SICO_AD_COST) $(SRC) $(SRC_SICO_AD_GRDCHK)
 	sed -i 's/&__NL__//g' sico_specs.h
-	${F90C} -I./ ${F90FLAGS_COV} -fopenmp ${DEFINE_FLAGS_GRDCHK} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
-	${F90C} ${F90FLAGS_COV} -fopenmp -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
+	${F90C} -I./ ${F90FLAGS_COV} ${F90FLAG_OMP} ${DEFINE_FLAGS_GRDCHK} ${LISFLAG} ${NETCDF_F90_FLAG} -o sicopolis.o -c $(SRC)
+	${F90C} ${F90FLAGS_COV} ${F90FLAG_OMP} -DNETCDF=1 -o $@ sicopolis.o ${LIBLISFLAG} ${LIB_NETCDF_F90_FLAG} -lm
 
 cov: sico_specs.h $(SRC_SICO) $(SRC_SICO_AD_COST) $(SRC)
 	${GCOV} $(SRC_SICO) $(SRC_SICO_AD) $(SRC)
