@@ -209,23 +209,23 @@ contains
 
           fc = fc &
 #ifdef ALLOW_SURFVEL_UNCERT
-          + 0.5*(vx_s_g(j,i) - vx_MEaSUREs_data(j,i))**2/vx_unc_MEaSUREs_data(j,i)**2 &
-          + 0.5*(vy_s_g(j,i) - vy_MEaSUREs_data(j,i))**2/vy_unc_MEaSUREs_data(j,i)**2
+          + 0.5*(vx_s_g(j,i)*year2sec - vx_MEaSUREs_data(j,i))**2/vx_unc_MEaSUREs_data(j,i)**2 &
+          + 0.5*(vy_s_g(j,i)*year2sec - vy_MEaSUREs_data(j,i))**2/vy_unc_MEaSUREs_data(j,i)**2
 #else
-          + 0.5*(vx_s_g(j,i) - vx_MEaSUREs_data(j,i))**2 &
-          + 0.5*(vy_s_g(j,i) - vy_MEaSUREs_data(j,i))**2
+          + 0.5*(vx_s_g(j,i)*year2sec - vx_MEaSUREs_data(j,i))**2 &
+          + 0.5*(vy_s_g(j,i)*year2sec - vy_MEaSUREs_data(j,i))**2
 #endif
           fc_vxc = fc_vxc &
 #ifdef ALLOW_SURFVEL_UNCERT
-          + 0.5*(vx_s_g(j,i) - vx_MEaSUREs_data(j,i))**2/vx_unc_MEaSUREs_data(j,i)**2
+          + 0.5*(vx_s_g(j,i)*year2sec - vx_MEaSUREs_data(j,i))**2/vx_unc_MEaSUREs_data(j,i)**2
 #else
-          + 0.5*(vx_s_g(j,i) - vx_MEaSUREs_data(j,i))**2
+          + 0.5*(vx_s_g(j,i)*year2sec - vx_MEaSUREs_data(j,i))**2
 #endif
           fc_vyc = fc_vyc &
 #ifdef ALLOW_SURFVEL_UNCERT
-          + 0.5*(vy_s_g(j,i) - vy_MEaSUREs_data(j,i))**2/vy_unc_MEaSUREs_data(j,i)**2
+          + 0.5*(vy_s_g(j,i)*year2sec - vy_MEaSUREs_data(j,i))**2/vy_unc_MEaSUREs_data(j,i)**2
 #else
-          + 0.5*(vy_s_g(j,i) - vy_MEaSUREs_data(j,i))**2
+          + 0.5*(vy_s_g(j,i)*year2sec - vy_MEaSUREs_data(j,i))**2
 #endif
 
 #endif
