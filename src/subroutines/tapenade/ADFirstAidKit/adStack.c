@@ -26,41 +26,58 @@
 // File operations (storage and retrieval) are done synchronously by default,
 // but they can be done asynchronously by a 2nd thread (using pthreads).
 
-// Compile with -D_ADSTACKPREFETCH to use a 2nd thread for asynchronous file operations.
+// Compile with -D ADSTACK_BLOCK_SIZE=<number> to set the size in bytes of each
+// stack "block" (also the size of each file used to offload stack to disk)
+// See the default value below.
+
+// Compile with -D ADSTACK_MAX_SPACES=<number> to set the number of blocks
+// allowed in main memory before offloading to disk starts.
+// See the default value below.
+
+// Compile with -D ADSTACK_PREFETCH to use a 2nd thread for asynchronous file operations.
 // In that case, code must be linked with -lpthread
 
-// Compile with -D_ADSTACKTRACE to see a trace of the "file storage"
-// and (optionaly) "prefetching" mechanism
-
-// Compile with -D_ADSTACKPROFILE to enable summary of stack usage
+// Compile with -D ADSTACK_PROFILE to enable summary of stack usage
 // through adStack_showPeakSize() and adStack_showTotalTraffic()
+
+// Compile with -D ADSTACK_TRACE to see a trace of the "file storage"
+// and (optionaly) "prefetching" mechanism
 
 /******* Size and max number of blocks ********/
 
-/* The size of a Block in bytes. */
-// #define BLOCK_SIZE 17 // A very small BLOCK_SIZE allows for stronger testing!
-// #define BLOCK_SIZE 1000 // ridiculously small, just for testing.
-#define BLOCK_SIZE 134217728
+#ifndef ADSTACK_BLOCK_SIZE
+/* The default value of the size of a Block in bytes. This is also the
+ * size of each separate storage file, when the stack is offloaded to disk storage. */
+// #define ADSTACK_BLOCK_SIZE 17 // A very small ADSTACK_BLOCK_SIZE allows for stronger testing!
+// #define ADSTACK_BLOCK_SIZE 1000 // ridiculously small, just for testing.
+#define ADSTACK_BLOCK_SIZE 134217728
+#endif
 
-/* The max number of Block's allowed in main memory */
-#define MAX_SPACES 400
+#ifndef ADSTACK_MAX_SPACES
+/* The default value of the max number of Block's allowed in main memory.
+ * If more Block's are needed,the older Block's will be offloaded to disk (and retrieved later). */
+#define ADSTACK_MAX_SPACES 400
+#endif
 
 /**************** Data structures and globals ******************/
 
-#ifdef _ADSTACKPREFETCH
+#ifdef ADSTACK_PREFETCH
 
 #include <pthread.h>
 
 /* Asynchronous lookahead: number of Block's that we may enqueue for
  * anticipated "preStore" or "preRestore" (before or after) current Block.
- * We assume/require that 2*FETCHAHEAD < MAX_SPACES, to
+ * We assume/require that 2*FETCHAHEAD < ADSTACK_MAX_SPACES, to
  * avoid (possible?) conflicts between preStoring and preRestoring. */
-#define FETCHAHEAD 2
+#define FETCHAHEAD 10
 
 pthread_t fileStorageThread ;
 pthread_mutex_t fileStorageMutex;
 pthread_cond_t enqueuedStorageCV, doneStoreOrRestoreCV ;
 
+#endif
+
+#ifdef ADSTACK_TRACE
 // When not set to -1, DEBUG mode will show only actions about the space with this "id" field.
 static int tracedId = -1 ;
 #endif
@@ -75,8 +92,8 @@ char* stateNames[] = {"U", "S"};
 typedef struct {
   unsigned int rank ;         // From 1 up, or 0 for "not used yet"
   CONTENTS_STATE state ;      // One of {INUSE, STORED}
-  char contents[BLOCK_SIZE] ; // The main storage space.
-#ifdef _ADSTACKTRACE
+  char contents[ADSTACK_BLOCK_SIZE] ; // The main storage space.
+#ifdef ADSTACK_TRACE
   int id ; //Only to have a distinct name (char 'a'+id) for debug!
 #endif
 } BlockContents ;
@@ -113,11 +130,11 @@ int rankBeingDone = -1 ;
  * These 3 globals are used only by 1st thread */
 static DoubleChainedBlock *curStack = NULL ;
 static char* tapblock = NULL ;
-static int tappos  = BLOCK_SIZE ;
+static int tappos  = ADSTACK_BLOCK_SIZE ;
 
-/** All the BlockContents allocated. We allow only MAX_SPACES of them.
+/** All the BlockContents allocated. We allow only ADSTACK_MAX_SPACES of them.
  * Used only by 1st thread */
-static BlockContents* allBlockContents[MAX_SPACES] ; //assume they are all initialized to NULL
+static BlockContents* allBlockContents[ADSTACK_MAX_SPACES] ; //assume they are all initialized to NULL
 
 /** Structure keeping the needed info for one repetition level (used to read from
  * the stack without removing the values read, thus allowing for reading again).
@@ -173,11 +190,12 @@ void removeStorageFile(int blockRank) ;
 void storeInFile(BlockContents* blockContents) ;
 void restoreFromFile(BlockContents* blockContents) ;
 
-#ifdef _ADSTACKPREFETCH
+#ifdef ADSTACK_PREFETCH
 
 /**** Queue of requested file store/restore actions (only when asynchronous) ****/
 
 void dumpFileActionQueue() ;
+#endif
 
 /** One cell of the queue of requested file store/restore actions */
 typedef struct _FileActionCell {
@@ -191,6 +209,7 @@ typedef struct _FileActionCell {
 FileActionCell *fileActionQueueHead = NULL;
 FileActionCell *fileActionQueueTail = NULL;
 
+#ifdef ADSTACK_PREFETCH
 /** Used only by 1st thread. Always called inside pthread_mutex_lock(&fileStorageMutex) */
 int enqueued(BlockContents *space) {
   int found = 0 ;
@@ -255,7 +274,7 @@ void dequeueFileAction(FileActionCell *cell) {
 void emptyFileActionQueue() {
   while (fileActionQueueHead) {
     FileActionCell *tofree = fileActionQueueHead ;
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
     printf(" Forget %s (%c: %02i %s)\n",
            (tofree->action==STORE ? "store" : "restore"),
            'a'+tofree->space->id,
@@ -291,7 +310,7 @@ static int goingForward = 1 ;
 /** Used only by 1st thread. Must be called inside pthread_mutex_lock(&fileStorageMutex) */
 void enqueueFileAction(BlockContents* space, ACTION action, int restoredRank) {
   struct timespec ts ;
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
   if (tracedId==-1 || tracedId==space->id) {
     clock_gettime(CLOCK_REALTIME, &ts);
     if (action==STORE) {
@@ -309,7 +328,7 @@ void enqueueFileAction(BlockContents* space, ACTION action, int restoredRank) {
   }
 #endif
   addTailFileAction(space, action, restoredRank) ;
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
   clock_gettime(CLOCK_REALTIME, &ts);
   printf("t%09i Send signal enqueuedStorageCV\n", ts.tv_nsec) ;
 #endif
@@ -329,7 +348,7 @@ void enqueueFileAction(BlockContents* space, ACTION action, int restoredRank) {
  *  if any, does not concern this BlockContents, and therefore we enqueue the given request.
  * Used only by 1st thread. Must be called inside pthread_mutex_lock(&fileStorageMutex) */
 void preStoreBlock(BlockContents *future, int storedRank) {
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
   if (tracedId==-1 || tracedId==future->id) {
     struct timespec ts ;
     clock_gettime(CLOCK_REALTIME, &ts);
@@ -365,7 +384,7 @@ void preStoreBlock(BlockContents *future, int storedRank) {
  *  if not already stored yet, and then enqueue the given request.
  * Used only by 1st thread. Must be called inside pthread_mutex_lock(&fileStorageMutex) */
 void preRestoreBlock(BlockContents *future, int restoredRank) {
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
   if (tracedId==-1 || tracedId==future->id) {
     struct timespec ts;
     clock_gettime(CLOCK_REALTIME, &ts);
@@ -409,9 +428,9 @@ void preStore() {
     goingForward = 1 ;
   }
   preStoreBlock(curStack->toContents, curStack->rank) ;
-  int curIndex = (curStack->rank - 1)%MAX_SPACES ;
+  int curIndex = (curStack->rank - 1)%ADSTACK_MAX_SPACES ;
   for (int i=1 ; i<=FETCHAHEAD ; ++i) {
-    BlockContents *future = allBlockContents[(curIndex+i<MAX_SPACES ? curIndex+i : curIndex+i-MAX_SPACES)] ;
+    BlockContents *future = allBlockContents[(curIndex+i<ADSTACK_MAX_SPACES ? curIndex+i : curIndex+i-ADSTACK_MAX_SPACES)] ;
     if (future) {
       preStoreBlock(future, curStack->rank + i) ;
     }
@@ -431,9 +450,9 @@ void preStoreAtFreePush() {
   // we must retrieve its contents to preserve the part of
   // its contents which is *before* the freePush location.
   preRestoreBlock(curStack->toContents, curStack->rank) ;  
-  int curIndex = (curStack->rank - 1)%MAX_SPACES ;
+  int curIndex = (curStack->rank - 1)%ADSTACK_MAX_SPACES ;
   for (int i=1 ; i<=FETCHAHEAD ; ++i) {
-    BlockContents *future = allBlockContents[(curIndex+i<MAX_SPACES ? curIndex+i : curIndex+i-MAX_SPACES)] ;
+    BlockContents *future = allBlockContents[(curIndex+i<ADSTACK_MAX_SPACES ? curIndex+i : curIndex+i-ADSTACK_MAX_SPACES)] ;
     if (future) {
       preStoreBlock(future, curStack->rank + i) ;
     }
@@ -449,9 +468,9 @@ void preRestore() {
     goingForward = 0 ;
   }
   preRestoreBlock(curStack->toContents, curStack->rank) ;
-  int curIndex = (curStack->rank - 1)%MAX_SPACES ;
+  int curIndex = (curStack->rank - 1)%ADSTACK_MAX_SPACES ;
   for (int i=0 ; i<=FETCHAHEAD && i<curStack->rank ; ++i) {
-    BlockContents *future = allBlockContents[(curIndex-i>=0 ? curIndex-i : curIndex-i+MAX_SPACES)] ;
+    BlockContents *future = allBlockContents[(curIndex-i>=0 ? curIndex-i : curIndex-i+ADSTACK_MAX_SPACES)] ;
     preRestoreBlock(future, curStack->rank - i) ;
   }
 }
@@ -467,7 +486,7 @@ void waitForward() {
   while (spaceBeingDone==space
          || space->state==INUSE
          || enqueued(space)) {
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
       clock_gettime(CLOCK_REALTIME, &ts);
       printf("t%09i Waiting forward for [%02i (%c: %02i %s)] %c%c%c\n", ts.tv_nsec,
              curStack->rank, 'a'+space->id, space->rank, stateNames[space->state],
@@ -480,12 +499,12 @@ void waitForward() {
 //    ts.tv_sec += 1;
 //    rt = pthread_cond_timedwait(&doneStoreOrRestoreCV, &fileStorageMutex, &ts) ;
       pthread_cond_wait(&doneStoreOrRestoreCV, &fileStorageMutex) ;
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
       clock_gettime(CLOCK_REALTIME, &ts);
       printf("t%09i Wait forward %s\n", ts.tv_nsec, (rt ? "timed out" : "woke up")) ;
 #endif
   }
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
   clock_gettime(CLOCK_REALTIME, &ts);
   printf("t%09i Done waiting forward [%02i (%c: %02i %s)]\n", ts.tv_nsec,
          curStack->rank, 'a'+space->id, space->rank, stateNames[space->state]) ;
@@ -504,7 +523,7 @@ void waitBackward() {
   while (spaceBeingDone==space
          || space->rank!=curStack->rank
          || enqueued(space)) {
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
       clock_gettime(CLOCK_REALTIME, &ts);
       printf("t%09i Waiting backward for %02i (%c: %02i %s) %c%c%c\n", ts.tv_nsec,
              curStack->rank, 'a'+space->id, space->rank, stateNames[space->state],
@@ -518,14 +537,14 @@ void waitBackward() {
 //    ts.tv_sec += 1;
 //    rt = pthread_cond_timedwait(&doneStoreOrRestoreCV, &fileStorageMutex, &ts) ;
       pthread_cond_wait(&doneStoreOrRestoreCV, &fileStorageMutex) ;
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
       clock_gettime(CLOCK_REALTIME, &ts);
       printf("t%09i Wait backward %s for %02i (%c: %02i %s)\n", ts.tv_nsec,
              (rt ? "timed out" : "woke up"),
              curStack->rank, 'a'+space->id, space->rank, stateNames[space->state]) ;
 #endif
   }
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
   clock_gettime(CLOCK_REALTIME, &ts);
   printf("t%09i Done waiting backward [%02i (%c: %02i %s)]\n", ts.tv_nsec,
          curStack->rank, 'a'+space->id, space->rank, stateNames[space->state]) ;
@@ -542,7 +561,7 @@ void checkForward() {
   // Synchronous mode. Just make sure we can overwrite in this space:
   BlockContents *space = curStack->toContents ;
   if (space->state==INUSE) {
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
       if (tracedId==-1 || tracedId==space->id) {
         printf(" store (%c: %02i %s) into file tapStack%05i\n", 'a'+space->id,
                space->rank, stateNames[space->state], space->rank) ;
@@ -558,7 +577,7 @@ void checkBackward() {
   BlockContents *space = curStack->toContents ;
   if (space->rank!=curStack->rank) {
       if (space->state==INUSE) {
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
         if (tracedId==-1 || tracedId==space->id) {
           printf(" store (%c: %02i %s) into file tapStack%05i\n", 'a'+space->id,
                  space->rank, stateNames[space->state], space->rank) ;
@@ -567,7 +586,7 @@ void checkBackward() {
         storeInFile(space) ;
       }
       space->rank = curStack->rank ;
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
       if (tracedId==-1 || tracedId==space->id) {
         printf(" restore (%c: %02i %s) from file tapStack%05i\n", 'a'+space->id,
                space->rank, stateNames[space->state], space->rank) ;
@@ -592,7 +611,7 @@ void setBackPopToCurrentLocation(RepetitionLevel *repetitionLevel) {
 /** Used only by 1st thread. Not locked, but contains a locked section. */
 void setCurrentLocationToBackPop(RepetitionLevel *repetitionLevel) {
   curStack = repetitionLevel->backPopBlock ;
-#ifdef _ADSTACKPREFETCH
+#ifdef ADSTACK_PREFETCH
   // Start a locked section on 1st thread:
   pthread_mutex_lock(&fileStorageMutex) ;
   emptyFileActionQueue() ;
@@ -606,7 +625,7 @@ void setCurrentLocationToBackPop(RepetitionLevel *repetitionLevel) {
   checkBackward() ;
   curStack->toContents->rank = curStack->rank ;
 #endif
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
   struct timespec ts;
   clock_gettime(CLOCK_REALTIME, &ts);
   printf("t%09i %02i <= BackPop\n", ts.tv_nsec, curStack->rank) ;
@@ -624,7 +643,7 @@ void setResumePointToCurrentLocation(RepetitionLevel *repetitionLevel) {
 /** Used only by 1st thread. Not locked, but contains a locked section. */
 void setCurrentLocationToResumePoint(RepetitionLevel *repetitionLevel) {
   curStack = repetitionLevel->resumePointBlock ;
-#ifdef _ADSTACKPREFETCH
+#ifdef ADSTACK_PREFETCH
   // Start a locked section on 1st thread:
   pthread_mutex_lock(&fileStorageMutex) ;
   emptyFileActionQueue() ;
@@ -638,7 +657,7 @@ void setCurrentLocationToResumePoint(RepetitionLevel *repetitionLevel) {
   checkBackward() ;
   curStack->toContents->rank = curStack->rank ;
 #endif
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
   struct timespec ts;
   clock_gettime(CLOCK_REALTIME, &ts);
   printf("t%09i %02i <= Repeat\n", ts.tv_nsec, curStack->rank) ;
@@ -656,7 +675,7 @@ void setFreePushToCurrentLocation(RepetitionLevel *repetitionLevel) {
 /** Used only by 1st thread. Not locked, but contains a locked section. */
 void setCurrentLocationToFreePush(RepetitionLevel *repetitionLevel) {
   curStack = repetitionLevel->freePushBlock ;
-#ifdef _ADSTACKPREFETCH
+#ifdef ADSTACK_PREFETCH
   // Start a locked section on 1st thread:
   pthread_mutex_lock(&fileStorageMutex) ;
   emptyFileActionQueue() ;
@@ -672,7 +691,7 @@ void setCurrentLocationToFreePush(RepetitionLevel *repetitionLevel) {
   curStack->toContents->rank = curStack->rank ;
   curStack->toContents->state = INUSE ; // because we are going to push into curStack
 #endif
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
   struct timespec ts;
   clock_gettime(CLOCK_REALTIME, &ts);
   printf("t%09i FreePush => %02i\n", ts.tv_nsec, curStack->rank) ;
@@ -684,42 +703,42 @@ void setCurrentLocationToFreePush(RepetitionLevel *repetitionLevel) {
 //TODO: try inline this function for efficiency:
 /** Used only by 1st thread. Not locked */
 int currentLocationStrictBelowFreePush(RepetitionLevel *repetitionLevel) {
-  // Not as simple as it could be, because N;BLOCK_SIZE <=> N+1;0
+  // Not as simple as it could be, because N;ADSTACK_BLOCK_SIZE <=> N+1;0
   //  and both may happen due to initial NULL curStack...
   int curL1 = curStack->rank ;
   int curL2 = tappos ;
   int fpL1 = repetitionLevel->freePushBlock->rank ;
   int fpL2 = repetitionLevel->freePush ;
-  if (curL2==BLOCK_SIZE) {++curL1 ; curL2=0 ;}
-  if (fpL2==BLOCK_SIZE) {++fpL1 ; fpL2=0 ;}
+  if (curL2==ADSTACK_BLOCK_SIZE) {++curL1 ; curL2=0 ;}
+  if (fpL2==ADSTACK_BLOCK_SIZE) {++fpL1 ; fpL2=0 ;}
   return (curL1<fpL1 || (curL1==fpL1 && curL2<fpL2)) ;
 }
 
 //TODO: try inline this function for efficiency:
 /** Used only by 1st thread. Not locked */
 int currentLocationEqualsFreePush(RepetitionLevel *repetitionLevel) {
-  // Not as simple as it could be, because N;BLOCK_SIZE <=> N+1;0
+  // Not as simple as it could be, because N;ADSTACK_BLOCK_SIZE <=> N+1;0
   // and both may happen due to initial NULL curStack...
   int curL1 = curStack->rank ;
   int curL2 = tappos ;
   int fpL1 = repetitionLevel->freePushBlock->rank ;
   int fpL2 = repetitionLevel->freePush ;
-  if (curL2==BLOCK_SIZE) {++curL1 ; curL2=0 ;}
-  if (fpL2==BLOCK_SIZE) {++fpL1 ; fpL2=0 ;}
+  if (curL2==ADSTACK_BLOCK_SIZE) {++curL1 ; curL2=0 ;}
+  if (fpL2==ADSTACK_BLOCK_SIZE) {++fpL1 ; fpL2=0 ;}
   return (curL1==fpL1 && curL2==fpL2) ;
 }
 
 //TODO: try inline this function for efficiency:
 /** Used only by 1st thread. Not locked */
 int currentLocationEqualsBackPop(RepetitionLevel *repetitionLevel) {
-  // Not as simple as it could be, because N;BLOCK_SIZE <=> N+1;0
+  // Not as simple as it could be, because N;ADSTACK_BLOCK_SIZE <=> N+1;0
   // and both may happen due to initial NULL curStack...
   int curL1 = curStack->rank ;
   int curL2 = tappos ;
   int bpL1 = repetitionLevel->backPopBlock->rank ;
   int bpL2 = repetitionLevel->backPop ;
-  if (curL2==BLOCK_SIZE) {++curL1 ; curL2=0 ;}
-  if (bpL2==BLOCK_SIZE) {++bpL1 ; bpL2=0 ;}
+  if (curL2==ADSTACK_BLOCK_SIZE) {++curL1 ; curL2=0 ;}
+  if (bpL2==ADSTACK_BLOCK_SIZE) {++bpL1 ; bpL2=0 ;}
   return (curL1==bpL1 && curL2==bpL2) ;
 }
 
@@ -735,7 +754,7 @@ void checkPushInReadOnly() {
     if(currentLocationStrictBelowFreePush(topActive)) {
       setBackPopToCurrentLocation(topActive) ;
       setCurrentLocationToFreePush(topActive) ;
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
       printf("BEFORE PUSH AT ") ;
       showLocation(topRepetitionPoint->backPopBlock, topRepetitionPoint->backPop) ;
       printf("  WITH REPETITION LEVELS:\n") ;
@@ -747,7 +766,7 @@ void checkPushInReadOnly() {
     } else if (currentLocationEqualsFreePush(topActive)) {
       //setBackPopToCurrentLocation(topActive) ; //not sure
       setCurrentLocationToFreePush(topActive) ;
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
       printf("BEFORE PUSH 2 AT ") ;
       showLocation(topRepetitionPoint->backPopBlock, topRepetitionPoint->backPop) ;
       printf("  WITH REPETITION LEVELS:\n") ;
@@ -765,7 +784,7 @@ void checkPushInReadOnly() {
  * Used only by 1st thread. Not locked */
 void checkPopToReadOnly() {
   RepetitionLevel *repetitionPoint = topRepetitionPoint ;
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
   RepetitionLevel *activeRepetitionPoint = topRepetitionPoint ;
   while (activeRepetitionPoint && !activeRepetitionPoint->active) {
     activeRepetitionPoint = activeRepetitionPoint->previous ;
@@ -785,7 +804,7 @@ void checkPopToReadOnly() {
     if (oldCell->hasBackPop && oldCell->active) {
       if (currentLocationEqualsFreePush(oldCell)) {
         setCurrentLocationToBackPop(oldCell) ;
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
         printf("  MOVED TO BACK POP LOCATION:") ;
         showLocation(curStack, tappos) ;
         printf("\n") ;
@@ -812,7 +831,7 @@ void checkPopToReadOnly() {
  * will reset the push-pop stack to its current contents of now.
  * Used only by 1st thread. Not locked */
 void adStack_startRepeat() {
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
   printf("BEFORE START REPEAT AT ") ;
   showLocation(curStack, tappos) ;
   printf("\n") ;
@@ -855,7 +874,7 @@ void adStack_startRepeat() {
   }
   // Make this new repetition level the current repetition level:
   topRepetitionPoint = newRepetitionLevel ;
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
   printf(">AFTER START REPEAT AT:") ;
   showLocation(curStack, tappos) ;
   printf("\n") ;
@@ -869,7 +888,7 @@ void adStack_startRepeat() {
  * closed by a subsequent adStack_endRepeat().
  * Used only by 1st thread. Not locked */
 void adStack_resetRepeat() {
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
   printf("BEFORE RESET REPEAT AT ") ;
   showLocation(curStack, tappos) ;
   printf("\n") ;
@@ -887,7 +906,7 @@ void adStack_resetRepeat() {
   // Reset the bits buffer:
   adbitbuf = topRepetitionPoint->storedadbitbuf ;
   adbitibuf = topRepetitionPoint->storedadbitibuf ;
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
   printf(">AFTER RESET REPEAT AT ") ;
   showLocation(curStack, tappos) ;
   printf("\n") ;
@@ -899,7 +918,7 @@ void adStack_resetRepeat() {
 /** Close (i.e. remove) the repetition level created by the latest adStack_startRepeat().
  * Used only by 1st thread. Not locked, but contains a locked section */
 void adStack_endRepeat() {
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
   printf("BEFORE END REPEAT AT ") ;
   showLocation(curStack, tappos) ;
   printf("\n") ;
@@ -926,12 +945,12 @@ void adStack_endRepeat() {
     }
     // ... till the freePushBlock of the currently ended repeat level.
     DoubleChainedBlock *eraseBlockTo = topActive->freePushBlock ;
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
     printf(" erase all files from %02i up to %02i\n",
            (eraseBlockFrom ? eraseBlockFrom->rank : -1),
            (eraseBlockTo ? eraseBlockTo->rank : -1)) ;
 #endif
-#ifdef _ADSTACKPREFETCH
+#ifdef ADSTACK_PREFETCH
     // Start a locked section on 1st thread:
     pthread_mutex_lock(&fileStorageMutex) ;
 #endif
@@ -957,14 +976,14 @@ void adStack_endRepeat() {
         eraseBlockFrom = eraseBlockFrom->next ;
       }
     }
-#ifdef _ADSTACKPREFETCH
+#ifdef ADSTACK_PREFETCH
     pthread_mutex_unlock(&fileStorageMutex) ;
     // End locked section on 1st thread.
 #endif
   }
   // current location may have moved back ; check if we must move further back:
   if (topRepetitionPoint) checkPopToReadOnly() ;
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
   printf(">AFTER END REPEAT AT ") ;
   showLocation(curStack, tappos) ;
   printf("\n") ;
@@ -978,9 +997,8 @@ void adStack_endRepeat() {
 /** Used only by 2nd thread. Not locked */
 void storeInFile(BlockContents* blockContents) {
   sprintf(tapStackFileName, "tapStack%05i\0", blockContents->rank) ;
-  printf("Writing to tapStack%05i\n", blockContents->rank) ;
   FILE *tapStackFile = fopen(tapStackFileName, "wb") ;
-  fwrite(blockContents->contents, 1, BLOCK_SIZE, tapStackFile) ;
+  fwrite(blockContents->contents, 1, ADSTACK_BLOCK_SIZE, tapStackFile) ;
   fclose(tapStackFile) ;
 }
 
@@ -988,7 +1006,7 @@ void storeInFile(BlockContents* blockContents) {
 void restoreFromFile(BlockContents* blockContents /*, RepetitionLevel* repetitionForbidsRemove*/) {
   sprintf(tapStackFileName, "tapStack%05i\0", blockContents->rank) ;
   FILE *tapStackFile = fopen(tapStackFileName, "rb") ;
-  fread(blockContents->contents, 1, BLOCK_SIZE, tapStackFile) ;
+  fread(blockContents->contents, 1, ADSTACK_BLOCK_SIZE, tapStackFile) ;
   fclose(tapStackFile) ;
 }
 
@@ -996,7 +1014,7 @@ void restoreFromFile(BlockContents* blockContents /*, RepetitionLevel* repetitio
 void removeStorageFile(int blockRank) {
   char tapStackFileNameBis[14] ;
   sprintf(tapStackFileNameBis, "tapStack%05i\0", blockRank) ;
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
   printf("  Remove storage file %s\n", tapStackFileNameBis) ;
 #endif
   remove(tapStackFileNameBis) ;
@@ -1005,7 +1023,7 @@ void removeStorageFile(int blockRank) {
 /** Used only by 1st thread. Not locked. */
 BlockContents* assignSpace(int blockRank) {
   BlockContents* space ;
-  int index = (blockRank-1)%MAX_SPACES ; //index in allBlockContents
+  int index = (blockRank-1)%ADSTACK_MAX_SPACES ; //index in allBlockContents
   space = allBlockContents[index] ;
   if (!space) {
       space = (BlockContents*)malloc(sizeof(BlockContents)) ;
@@ -1013,7 +1031,7 @@ BlockContents* assignSpace(int blockRank) {
         printf("Out of memory while creating a BlockContents.\n") ;
         exit(0) ;
       }
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
       space->id = index ;
 #endif
       // Convention: STORED and rank 0 means not in use and ready to be used
@@ -1024,7 +1042,7 @@ BlockContents* assignSpace(int blockRank) {
   return space ;
 }
 
-#ifdef _ADSTACKPREFETCH
+#ifdef ADSTACK_PREFETCH
 /** Used only by 2nd thread. Not locked, but contains mostly locked sections. */
 void* manageFileStorage(void *arg) {
   struct timespec ts;
@@ -1032,7 +1050,7 @@ void* manageFileStorage(void *arg) {
   pthread_mutex_lock(&fileStorageMutex) ;
   while (1) {
     while (fileActionQueueHead==NULL) {
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
       clock_gettime(CLOCK_REALTIME, &ts);
       printf("t%09i------------------ Waiting in manage\n", ts.tv_nsec) ;
 #endif
@@ -1041,12 +1059,12 @@ void* manageFileStorage(void *arg) {
 //    ts.tv_sec += 1;
 //    rt = pthread_cond_timedwait(&enqueuedStorageCV, &fileStorageMutex, &ts) ;
       pthread_cond_wait(&enqueuedStorageCV, &fileStorageMutex) ;
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
       clock_gettime(CLOCK_REALTIME, &ts);
       printf("t%09i------------------ Wait %s in manage\n", ts.tv_nsec, (rt ? "timed out" : "woke up")) ;
 #endif
     }
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
     clock_gettime(CLOCK_REALTIME, &ts);
     printf("t%09i------------------ Manage file action queue:", ts.tv_nsec) ; dumpFileActionQueue() ; printf("\n") ;
 #endif
@@ -1061,7 +1079,7 @@ void* manageFileStorage(void *arg) {
     }
     pthread_mutex_unlock(&fileStorageMutex) ;
     // End locked section on 2nd thread.
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
     clock_gettime(CLOCK_REALTIME, &ts);
     if (fileActionBeingDone==STORE) {
       printf("t%09i------------------ Going to store %04i from (%c: %02i %s)\n", ts.tv_nsec,
@@ -1085,7 +1103,7 @@ void* manageFileStorage(void *arg) {
     // Start a locked section on 2nd thread:
     pthread_mutex_lock(&fileStorageMutex) ;
     spaceBeingDone->state = STORED ;
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
     struct timespec ts;
     clock_gettime(CLOCK_REALTIME, &ts);
     printf("t%09i------------------ %s (%c: %02i %s) done, send signal doneStoreOrRestoreCV\n",
@@ -1123,7 +1141,7 @@ char* pushBlock() {
       newStack->rank = curStack->rank + 1 ;
     } else {
       newStack->rank = 1 ;
-#ifdef _ADSTACKPREFETCH
+#ifdef ADSTACK_PREFETCH
       // INITIALIZE THINGS AND LAUNCH THE 2nd THREAD:
       int errCode = 0 ;
       if ((errCode = pthread_mutex_init(&fileStorageMutex, NULL)) != 0) {
@@ -1150,7 +1168,7 @@ char* pushBlock() {
     space = assignSpace(curStack->rank);
     curStack->toContents = space ;
   }
-#ifdef _ADSTACKPREFETCH
+#ifdef ADSTACK_PREFETCH
   // Start a locked section on 1st thread:
   pthread_mutex_lock(&fileStorageMutex) ;
   preStore() ;
@@ -1164,13 +1182,13 @@ char* pushBlock() {
   space->state = INUSE ;
   space->rank = curStack->rank ;
 #endif
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
   clock_gettime(CLOCK_REALTIME, &ts);
   printf("t%09i %02i => %02i\n", ts.tv_nsec, curStack->rank - 1,
          curStack->rank) ;
   dumpStack(curStack) ; printf("\n") ;
 #endif
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   if (curStack->rank > maxBlocks) maxBlocks = curStack->rank ;
 #endif
   return space->contents ;
@@ -1182,7 +1200,7 @@ char* popBlock() {
   DoubleChainedBlock *oldTopStack = curStack ;
   struct timespec ts;
   curStack = curStack->prev ;
-#ifdef _ADSTACKPREFETCH
+#ifdef ADSTACK_PREFETCH
   // Start a locked section on 1st thread:
   pthread_mutex_lock(&fileStorageMutex) ;
   int oldInRepetition =
@@ -1224,7 +1242,7 @@ char* popBlock() {
   }
   curStack->toContents->rank = curStack->rank ;
 #endif
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
   clock_gettime(CLOCK_REALTIME, &ts);
   printf("t%09i %02i <= %02i\n", ts.tv_nsec, curStack->rank, curStack->rank + 1) ;
   dumpStack(curStack) ; printf("\n") ;
@@ -1244,7 +1262,7 @@ char* popBlock() {
    value to it. */
 void pushNArray(char *x, int nbChars) {
   do {
-    int wsize = tappos+nbChars<BLOCK_SIZE?nbChars:BLOCK_SIZE-tappos ;
+    int wsize = tappos+nbChars<ADSTACK_BLOCK_SIZE?nbChars:ADSTACK_BLOCK_SIZE-tappos ;
     if(wsize > 0) {
       memcpy(tapblock+tappos,x,wsize) ;
       nbChars -= wsize ;
@@ -1270,7 +1288,7 @@ void popNArray(char *x, int nbChars) {
     }
     else if (nbChars > 0) {
       tapblock = popBlock() ;
-      tappos = BLOCK_SIZE ;
+      tappos = ADSTACK_BLOCK_SIZE ;
     }
   } while(nbChars > 0) ; //=> lazy pop: if finishes at the bottom of block contents, does not pop block.
 }
@@ -1278,7 +1296,7 @@ void popNArray(char *x, int nbChars) {
 void pushInteger4Array(int *x, int n) {
   if (topRepetitionPoint) checkPushInReadOnly() ;
   pushNArray((char *)x,(int)(n*4)) ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += (int)(n*4) ;
 #endif
 }
@@ -1286,7 +1304,7 @@ void pushInteger4Array(int *x, int n) {
 void popInteger4Array(int *x, int n) {
   popNArray((char *)x,(int)(n*4)) ;
   if (topRepetitionPoint) checkPopToReadOnly() ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += (int)(n*4) ;
 #endif
 }
@@ -1294,7 +1312,7 @@ void popInteger4Array(int *x, int n) {
 void pushInteger8Array(long *x, int n) {
   if (topRepetitionPoint) checkPushInReadOnly() ;
   pushNArray((char *)x,(int)(n*8)) ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += (int)(n*8) ;
 #endif
 }
@@ -1302,7 +1320,7 @@ void pushInteger8Array(long *x, int n) {
 void popInteger8Array(long *x, int n) {
   popNArray((char *)x,(int)(n*8)) ;
   if (topRepetitionPoint) checkPopToReadOnly() ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += (int)(n*8) ;
 #endif
 }
@@ -1310,7 +1328,7 @@ void popInteger8Array(long *x, int n) {
 void pushReal4Array(float *x, int n) {
   if (topRepetitionPoint) checkPushInReadOnly() ;
   pushNArray((char *)x,(int)(n*4)) ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += (int)(n*4) ;
 #endif
 }
@@ -1318,7 +1336,7 @@ void pushReal4Array(float *x, int n) {
 void popReal4Array(float *x, int n) {
   popNArray((char *)x,(int)(n*4)) ;
   if (topRepetitionPoint) checkPopToReadOnly() ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += (int)(n*4) ;
 #endif
 }
@@ -1326,7 +1344,7 @@ void popReal4Array(float *x, int n) {
 void pushReal8Array(double *x, int n) {
   if (topRepetitionPoint) checkPushInReadOnly() ;
   pushNArray((char *)x,(int)(n*8)) ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += (int)(n*8) ;
 #endif
 }
@@ -1334,7 +1352,7 @@ void pushReal8Array(double *x, int n) {
 void popReal8Array(double *x, int n) {
   popNArray((char *)x,(int)(n*8)) ;
   if (topRepetitionPoint) checkPopToReadOnly() ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += (int)(n*8) ;
 #endif
 }
@@ -1342,7 +1360,7 @@ void popReal8Array(double *x, int n) {
 void pushReal16Array(long double *x, int n) {
   if (topRepetitionPoint) checkPushInReadOnly() ;
   pushNArray((char *)x,(int)(n*16)) ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += (int)(n*16) ;
 #endif
 }
@@ -1350,7 +1368,7 @@ void pushReal16Array(long double *x, int n) {
 void popReal16Array(long double *x, int n) {
   popNArray((char *)x,(int)(n*16)) ;
   if (topRepetitionPoint) checkPopToReadOnly() ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += (int)(n*16) ;
 #endif
 }
@@ -1358,7 +1376,7 @@ void popReal16Array(long double *x, int n) {
 void pushComplex8Array(ccmplx *x, int n) {
   if (topRepetitionPoint) checkPushInReadOnly() ;
   pushNArray((char *)x,(int)(n*8)) ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += (int)(n*8) ;
 #endif
 }
@@ -1366,7 +1384,7 @@ void pushComplex8Array(ccmplx *x, int n) {
 void popComplex8Array(ccmplx *x, int n) {
   popNArray((char *)x,(int)(n*8)) ;
   if (topRepetitionPoint) checkPopToReadOnly() ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += (int)(n*8) ;
 #endif
 }
@@ -1374,7 +1392,7 @@ void popComplex8Array(ccmplx *x, int n) {
 void pushComplex16Array(double complex *x, int n) {
   if (topRepetitionPoint) checkPushInReadOnly() ;
   pushNArray((char *)x,(int)(n*16)) ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += (int)(n*16) ;
 #endif
 }
@@ -1382,7 +1400,7 @@ void pushComplex16Array(double complex *x, int n) {
 void popComplex16Array(double complex *x, int n) {
   popNArray((char *)x,(int)(n*16)) ;
   if (topRepetitionPoint) checkPopToReadOnly() ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += (int)(n*16) ;
 #endif
 }
@@ -1390,7 +1408,7 @@ void popComplex16Array(double complex *x, int n) {
 void pushCharacterArray(char *x, int n) {
   if (topRepetitionPoint) checkPushInReadOnly() ;
   pushNArray(x,(int)n) ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += (int)n ;
 #endif
 }
@@ -1398,7 +1416,7 @@ void pushCharacterArray(char *x, int n) {
 void popCharacterArray(char *x, int n) {
   popNArray(x,(int)n) ;
   if (topRepetitionPoint) checkPopToReadOnly() ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += (int)n ;
 #endif
 }
@@ -1407,14 +1425,14 @@ void popCharacterArray(char *x, int n) {
 
 void pushCharacter(char val) {
   if (topRepetitionPoint) checkPushInReadOnly() ;
-  if(tappos + 1 > BLOCK_SIZE) {
+  if(tappos + 1 > ADSTACK_BLOCK_SIZE) {
     pushNArray((char*)&val, 1) ;
   }
   else {
     *(char*)(tapblock+tappos) = val;
     tappos = tappos + 1 ;
   }
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += 1 ;
 #endif
 }
@@ -1428,21 +1446,21 @@ void popCharacter(char * val) {
     *val = *(char*)(tapblock+tappos);
   }
   if (topRepetitionPoint) checkPopToReadOnly() ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += 1 ;
 #endif
 }
 
 void pushReal4(float val) {
   if (topRepetitionPoint) checkPushInReadOnly() ;
-  if(tappos + 4 > BLOCK_SIZE) {
+  if(tappos + 4 > ADSTACK_BLOCK_SIZE) {
     pushNArray((char*)&val, 4) ;
   }
   else {
     *(float*)(tapblock+tappos) = val;
     tappos = tappos + 4 ;
   }
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += 4 ;
 #endif
 }
@@ -1456,21 +1474,21 @@ void popReal4(float * val) {
     *val = *(float*)(tapblock+tappos);
   }
   if (topRepetitionPoint) checkPopToReadOnly() ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += 4 ;
 #endif
 }
 
 void pushReal8(double val) {
   if (topRepetitionPoint) checkPushInReadOnly() ;
-  if(tappos + 8 > BLOCK_SIZE) {
+  if(tappos + 8 > ADSTACK_BLOCK_SIZE) {
     pushNArray((char*)&val, 8) ;
   }
   else {
     *(double*)(tapblock+tappos) = val;
     tappos = tappos + 8 ;
   }
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += 8 ;
 #endif
 }
@@ -1484,21 +1502,21 @@ void popReal8(double * val) {
     *val = *(double*)(tapblock+tappos);
   }
   if (topRepetitionPoint) checkPopToReadOnly() ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += 8 ;
 #endif
 }
 
 void pushReal16(long double *val) {
   if (topRepetitionPoint) checkPushInReadOnly() ;
-  if(tappos + 16 > BLOCK_SIZE) {
+  if(tappos + 16 > ADSTACK_BLOCK_SIZE) {
     pushNArray((char*)val, 16) ;
   }
   else {
     memcpy(tapblock+tappos, (void *)val, 16);
     tappos = tappos + 16 ;
   }
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += 16 ;
 #endif
 }
@@ -1512,21 +1530,21 @@ void popReal16(long double *val) {
     memcpy((void *)val, tapblock+tappos, 16) ;
   }
   if (topRepetitionPoint) checkPopToReadOnly() ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += 16 ;
 #endif
 }
 
 void pushInteger4(int val) {
   if (topRepetitionPoint) checkPushInReadOnly() ;
-  if(tappos + 4 > BLOCK_SIZE) {
+  if(tappos + 4 > ADSTACK_BLOCK_SIZE) {
     pushNArray((char*)&val, 4) ;
   }
   else {
     *(int*)(tapblock+tappos) = val;
     tappos = tappos + 4 ;
   }
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += 4 ;
 #endif
 }
@@ -1540,21 +1558,21 @@ void popInteger4(int * val) {
     *val = *(int*)(tapblock+tappos);
   }
   if (topRepetitionPoint) checkPopToReadOnly() ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += 4 ;
 #endif
 }
 
 void pushInteger8(long val) {
   if (topRepetitionPoint) checkPushInReadOnly() ;
-  if(tappos + 8 > BLOCK_SIZE) {
+  if(tappos + 8 > ADSTACK_BLOCK_SIZE) {
     pushNArray((char*)&val, 8) ;
   }
   else {
     *(long*)(tapblock+tappos) = val;
     tappos = tappos + 8 ;
   }
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += 8 ;
 #endif
 }
@@ -1568,21 +1586,21 @@ void popInteger8(long * val) {
     *val = *(long*)(tapblock+tappos);
   }
   if (topRepetitionPoint) checkPopToReadOnly() ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += 8 ;
 #endif
 }
 
 void pushComplex8(ccmplx val) {
   if (topRepetitionPoint) checkPushInReadOnly() ;
-  if(tappos + 8 > BLOCK_SIZE) {
+  if(tappos + 8 > ADSTACK_BLOCK_SIZE) {
     pushNArray((char*)&val, 8) ;
   }
   else {
     *(ccmplx*)(tapblock+tappos) = val;
     tappos = tappos + 8 ;
   }
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += 8 ;
 #endif
 }
@@ -1596,21 +1614,21 @@ void popComplex8(ccmplx * val) {
     *val = *(ccmplx*)(tapblock+tappos);
   }
   if (topRepetitionPoint) checkPopToReadOnly() ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += 8 ;
 #endif
 }
 
 void pushComplex16(double complex val) {
   if (topRepetitionPoint) checkPushInReadOnly() ;
-  if(tappos + 16 > BLOCK_SIZE) {
+  if(tappos + 16 > ADSTACK_BLOCK_SIZE) {
     pushNArray((char*)&val, 16) ;
   }
   else {
     *(double complex *)(tapblock+tappos) = val;
     tappos = tappos + 16 ;
   }
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += 16 ;
 #endif
 }
@@ -1624,21 +1642,21 @@ void popComplex16(double complex *val) {
     *val = *(double complex *)(tapblock+tappos);
   }
   if (topRepetitionPoint) checkPopToReadOnly() ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += 16 ;
 #endif
 }
 
 void pushPointer4(void * val) {
   if (topRepetitionPoint) checkPushInReadOnly() ;
-  if(tappos + 4 > BLOCK_SIZE) {
+  if(tappos + 4 > ADSTACK_BLOCK_SIZE) {
     pushNArray((char*)&val, 4) ;
   }
   else {
     *(void**)(tapblock+tappos) = val;
     tappos = tappos + 4 ;
   }
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += 4 ;
 #endif
 }
@@ -1652,21 +1670,21 @@ void popPointer4(void ** val) {
     *val = *(void**)(tapblock+tappos);
   }
   if (topRepetitionPoint) checkPopToReadOnly() ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += 4 ;
 #endif
 }
 
 void pushPointer8(void * val) {
   if (topRepetitionPoint) checkPushInReadOnly() ;
-  if(tappos + 8 > BLOCK_SIZE) {
+  if(tappos + 8 > ADSTACK_BLOCK_SIZE) {
     pushNArray((char*)&val, 8) ;
   }
   else {
     *(void**)(tapblock+tappos) = val;
     tappos = tappos + 8 ;
   }
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += 8 ;
 #endif
 }
@@ -1680,7 +1698,7 @@ void popPointer8(void ** val) {
     *val = *(void**)(tapblock+tappos);
   }
   if (topRepetitionPoint) checkPopToReadOnly() ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += 8 ;
 #endif
 }
@@ -1694,7 +1712,7 @@ void pushBit(int x) {
     pushNArray((char *)&adbitbuf, 4) ;
     adbitbuf = 0 ;
     adbitibuf = 0 ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
     pushPopTraffic += 4 ;
 #endif
   } else
@@ -1705,7 +1723,7 @@ int popBit() {
   if (adbitibuf<=0) {
     popNArray((char *)&adbitbuf, 4) ;
     adbitibuf = 31 ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
     pushPopTraffic += 4 ;
 #endif
   } else
@@ -1916,7 +1934,7 @@ void popControl8b(int *cc) {
 }
 
 uint64_t adStack_getCurrentStackSize() {
- return curStack ? (curStack->rank-1)*BLOCK_SIZE + tappos : 0;
+ return curStack ? (curStack->rank-1)*ADSTACK_BLOCK_SIZE + tappos : 0;
 }
 
 /******** Various dump routines for profiling and debugging *********/
@@ -1925,7 +1943,7 @@ void showLocation(DoubleChainedBlock *locBlock, int loc) {
   printf("%1i.%05i", (locBlock ? locBlock->rank-1 : 0), loc) ;
 }
 
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
 void dumpStackPrev(DoubleChainedBlock *st) {
   if (st) {
     if (st->rank==st->toContents->rank) { // Don't dump too far back...
@@ -2005,7 +2023,7 @@ void dumpFileActionQueue() {
 #endif
 
 void dumpContents(BlockContents* space) {
-  for (int i=0 ; i<BLOCK_SIZE ; ++i) {
+  for (int i=0 ; i<ADSTACK_BLOCK_SIZE ; ++i) {
     printf("%02x", (unsigned char)space->contents[i]) ;
     if (i%10==9) printf(" ") ;
     if (i%50==49) printf("\n") ;
@@ -2034,7 +2052,7 @@ void showErrorContext() {
   struct timespec ts;
   clock_gettime(CLOCK_REALTIME, &ts);
   printf("t%09i ERROR AT:", ts.tv_nsec) ; showLocation(curStack, tappos) ;
-#ifdef _ADSTACKTRACE
+#ifdef ADSTACK_TRACE
   printf(" STACK:") ; dumpStack(curStack) ; printf("\n") ;
   printf("FILE ACTION QUEUE:\n") ;
   dumpFileActionQueue() ; printf("\n") ;
@@ -2045,7 +2063,7 @@ void showErrorContext() {
 
 void adStack_showPeakSize() {
   printf("Peak stack size (%1li blocks): %1llu bytes\n",
-         maxBlocks, maxBlocks*((long int)BLOCK_SIZE)) ;
+         maxBlocks, maxBlocks*((long int)ADSTACK_BLOCK_SIZE)) ;
 }
 
 void adStack_showTotalTraffic() {
@@ -2079,7 +2097,7 @@ void adStack_showStack(char *locationName) {
       printf(" |\n") ;
       --blocksToShow ;
       inStack = inStack->prev ;
-      inPos = BLOCK_SIZE ;
+      inPos = ADSTACK_BLOCK_SIZE ;
     }
     if (inStack)
       printf("  %d more blocks below\n", inStack->rank) ;
@@ -2187,7 +2205,7 @@ void popcharacterarray_(char *ii, int *ll) {
 void pushbooleanarray_(char *x, int *n) {
   if (topRepetitionPoint) checkPushInReadOnly() ;
   pushNArray(x,(*n*4)) ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += *n*4 ;
 #endif
 }
@@ -2195,7 +2213,7 @@ void pushbooleanarray_(char *x, int *n) {
 void popbooleanarray_(char *x, int *n) {
   popNArray(x,(*n*4)) ;
   if (topRepetitionPoint) checkPopToReadOnly() ;
-#ifdef _ADSTACKPROFILE
+#ifdef ADSTACK_PROFILE
   pushPopTraffic += *n*4 ;
 #endif
 }
