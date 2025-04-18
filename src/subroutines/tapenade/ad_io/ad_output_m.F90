@@ -978,7 +978,7 @@ module ad_output_m
     end do
 #endif
 
-#if (defined(ZS_COST) || defined(FAKE_ZS_COST))
+#if (defined(ZL_COST) || defined(FAKE_ZL_COST))
     do i=0, IMAX
     do j=0, JMAX
       zld_conv(i,j) = zld(j,i)
