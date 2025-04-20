@@ -1142,9 +1142,17 @@ do j=0, JMAX
 #if (ACCSURFACE==1)
    precip_fact(j,i) = ACCFACT
 #elif (ACCSURFACE==2)
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+   precip_fact(j,i) = 1.0_dp + gamma_s(j,i)*(delta_ts + delta_tda_const(j,i) + delta_tda_interp(j,i))
+#else /* NORMAL */
    precip_fact(j,i) = 1.0_dp + gamma_s(j,i)*delta_ts
+#endif /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
 #elif (ACCSURFACE==3)
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+   precip_fact(j,i) = exp(gamma_s(j,i)*(delta_ts + delta_tda_const(j,i) + delta_tda_interp(j,i)))
+#else /* NORMAL */
    precip_fact(j,i) = exp(gamma_s(j,i)*delta_ts)
+#endif /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
 #endif
 
 #if (ACCSURFACE<=3)
