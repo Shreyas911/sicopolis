@@ -19,26 +19,26 @@ inpath   = '/uchi/greve/sicopolis/data/ant_surfvel_measures';
 % inpath   = '.';
 filename = 'antarctica_ice_velocity_450m_v2.nc';
 
-xmin = -3040;   % Domain limits of the SICOPOLIS EPSG:3031 grid [km]
-xmax =  3040;
-ymin = -3040;
-ymax =  3040;
+xmin = -3040e3;   % Domain limits of the SICOPOLIS EPSG:3031 grid [m]
+xmax =  3040e3;
+ymin = -3040e3;
+ymax =  3040e3;
 
 ch_grid = 'EPSG3031';
 
-pi_180     = pi/180.0;
-pi_180_inv = 180.0/pi;
+A = 6378137.0;
+%   WGS84 semi-major axis [m]
 
-A = 6.378137e+03;
-%   Semi-major axis of the Earth = 6378137 m (in km)
+F_INV = 298.257223563;
+%   WGS84 inverse flattening
 
-B = 6.3567523142e+03;
-%   Semi-minor axis of the Earth = 6356752.3142 m (in km)
+B = A*(1.0-1.0/F_INV);
+%   WGS84 semi-minor axis [m]
 
 lond0 =     0;   % Central meridian  EPSG:3031 [deg]
 latd0 =   -71;   % Standard parallel EPSG:3031 [deg]
-lon0  = lond0 *pi_180;
-lat0  = latd0 *pi_180;
+lon0  = deg2rad(lond0);
+lat0  = deg2rad(latd0);
 
 ch_reference = ['Rignot et al., 2017, ' ...
                 'NASA National Snow and Ice Data Center ' ...
@@ -73,15 +73,15 @@ vy_ms = fliplr(vy_ms);
 imax_ms = length(x_ms)-1;
 jmax_ms = length(y_ms)-1;
 
-xmin_ms = double(x_ms(1))   *1.0e-03;   % m -> km
-xmax_ms = double(x_ms(end)) *1.0e-03;   % m -> km
-ymin_ms = double(y_ms(1))   *1.0e-03;   % m -> km
-ymax_ms = double(y_ms(end)) *1.0e-03;   % m -> km
+xmin_ms = double(x_ms(1));
+xmax_ms = double(x_ms(end));
+ymin_ms = double(y_ms(1));
+ymax_ms = double(y_ms(end));
 
-dx_ms   = double(x_ms(2)-x_ms(1)) *1.0e-03;   % m -> km
+dx_ms   = double(x_ms(2)-x_ms(1));
 
-x_ms    = double(x_ms) *1.0e-03;   % m -> km
-y_ms    = double(y_ms) *1.0e-03;   % m -> km
+x_ms    = double(x_ms);
+y_ms    = double(y_ms);
 
 vx_ms   = double(vx_ms);
 vy_ms   = double(vy_ms);
@@ -97,36 +97,39 @@ flag_nan = isnan(vs_ms);
 disp(' ')
 disp('Defining SICOPOLIS grid ...')
 
-disp(' ')
-disp('Horizontal resolution: (1) 64 km, (2) 32 km, (3) 16 km, (4) 8 km,')
-disp('                       (5) 40 km, (6) 20 km, (7) 10 km.')
-dx_number = input('Enter 1, 2, 3, 4, 5, 6 or 7 > ');
+prompt = ['Horizontal resolution: ' ...
+          '(1) 64 km, (2) 40 km, (3) 32 km, (4) 20 km, \n' ...
+          '                       ' ...
+          '(5) 16 km, (6) 10 km, (7)  8 km. \n' ...
+          'Enter [1-7] > '];
+dx_number = input(prompt);
 
-if ( (dx_number < 1) || (dx_number > 7) )
+if isempty(dx_number) ...
+   || ( dx_number < 1 || dx_number > 7 )
    error('Wrong value!')
 end
 
 if (dx_number == 1)
-   dx    =  64 ;
+   dx    =  64e3;
    ch_dx = '64';
 elseif (dx_number == 2)
-   dx    =  32 ;
-   ch_dx = '32';
-elseif (dx_number == 3)
-   dx    =  16 ;
-   ch_dx = '16';
-elseif (dx_number == 4)
-   dx    =   8 ;
-   ch_dx = '08';
-elseif (dx_number == 5)
-   dx    =  40 ;
+   dx    =  40e3;
    ch_dx = '40';
-elseif (dx_number == 6)
-   dx    =  20 ;
+elseif (dx_number == 3)
+   dx    =  32e3;
+   ch_dx = '32';
+elseif (dx_number == 4)
+   dx    =  20e3;
    ch_dx = '20';
-elseif (dx_number == 7)
-   dx    =  10 ;
+elseif (dx_number == 5)
+   dx    =  16e3;
+   ch_dx = '16';
+elseif (dx_number == 6)
+   dx    =  10e3;
    ch_dx = '10';
+elseif (dx_number == 7)
+   dx    =   8e3;
+   ch_dx = '08';
 end
 
 disp(' ')
@@ -231,41 +234,43 @@ ncid = netcdf.create(filename, 'CLASSIC_MODEL');
 dimid_x = netcdf.defDim(ncid, 'x', imax+1);
 dimid_y = netcdf.defDim(ncid, 'y', jmax+1);
 
-varid1 = netcdf.defVar(ncid, 'crs', 'NC_BYTE', []);
+varid1 = netcdf.defVar(ncid, 'mapping', 'NC_BYTE', []);
 
 netcdf.putAtt(ncid, varid1, 'grid_mapping_name', 'polar_stereographic');
-netcdf.putAtt(ncid, varid1, 'ellipsoid', 'WGS84');
+netcdf.putAtt(ncid, varid1, 'reference_ellipsoid_name', 'WGS84');
+netcdf.putAtt(ncid, varid1, 'semi_major_axis', A);
+netcdf.putAtt(ncid, varid1, 'inverse_flattening', F_INV);
+netcdf.putAtt(ncid, varid1, 'latitude_of_projection_origin', -90);
+netcdf.putAtt(ncid, varid1, 'standard_parallel', latd0);
+netcdf.putAtt(ncid, varid1, 'straight_vertical_longitude_from_pole', lond0);
 netcdf.putAtt(ncid, varid1, 'false_easting', 0);
 netcdf.putAtt(ncid, varid1, 'false_northing', 0);
-netcdf.putAtt(ncid, varid1, 'latitude_of_projection_origin', -90);
-netcdf.putAtt(ncid, varid1, 'straight_vertical_longitude_from_pole', lond0);
-netcdf.putAtt(ncid, varid1, 'standard_parallel', latd0);
 
 varid2 = netcdf.defVar(ncid, 'x', 'NC_INT', dimid_x);
 
-netcdf.putAtt(ncid, varid2, 'units', 'km');
+netcdf.putAtt(ncid, varid2, 'units', 'm');
 netcdf.putAtt(ncid, varid2, 'standard_name', 'projection_x_coordinate');
 netcdf.putAtt(ncid, varid2, 'long_name', 'x-coordinate');
 netcdf.putAtt(ncid, varid2, 'axis', 'x');
 
 varid3 = netcdf.defVar(ncid, 'y', 'NC_INT', dimid_y);
 
-netcdf.putAtt(ncid, varid3, 'units', 'km');
+netcdf.putAtt(ncid, varid3, 'units', 'm');
 netcdf.putAtt(ncid, varid3, 'standard_name', 'projection_y_coordinate');
 netcdf.putAtt(ncid, varid3, 'long_name', 'y-coordinate');
 netcdf.putAtt(ncid, varid3, 'axis', 'y');
 
-varid4 = netcdf.defVar(ncid, 'lon', 'NC_FLOAT', [dimid_x dimid_y]);
+varid4 = netcdf.defVar(ncid, 'lat', 'NC_FLOAT', [dimid_x dimid_y]);
 
-netcdf.putAtt(ncid, varid4, 'units', 'degrees_E');
-netcdf.putAtt(ncid, varid4, 'standard_name', 'longitude');
-netcdf.putAtt(ncid, varid4, 'long_name', 'Geographical longitude');
+netcdf.putAtt(ncid, varid4, 'units', 'degrees_N');
+netcdf.putAtt(ncid, varid4, 'standard_name', 'latitude');
+netcdf.putAtt(ncid, varid4, 'long_name', 'Geographical latitude');
 
-varid5 = netcdf.defVar(ncid, 'lat', 'NC_FLOAT', [dimid_x dimid_y]);
+varid5 = netcdf.defVar(ncid, 'lon', 'NC_FLOAT', [dimid_x dimid_y]);
 
-netcdf.putAtt(ncid, varid5, 'units', 'degrees_N');
-netcdf.putAtt(ncid, varid5, 'standard_name', 'latitude');
-netcdf.putAtt(ncid, varid5, 'long_name', 'Geographical latitude');
+netcdf.putAtt(ncid, varid5, 'units', 'degrees_E');
+netcdf.putAtt(ncid, varid5, 'standard_name', 'longitude');
+netcdf.putAtt(ncid, varid5, 'long_name', 'Geographical longitude');
 
 varid6 = netcdf.defVar(ncid, 'vs', 'NC_FLOAT', [dimid_x dimid_y]);
 
@@ -273,18 +278,17 @@ netcdf.putAtt(ncid, varid6, 'units', 'm a-1');
 netcdf.putAtt(ncid, varid6, 'standard_name', ...
                                'land_ice_surface_velocity');
 netcdf.putAtt(ncid, varid6, 'long_name', 'Surface velocity');
-netcdf.putAtt(ncid, varid6, 'grid_mapping', 'crs');
-netcdf.putAtt(ncid, varid6, 'coordinates', 'lon lat');
+netcdf.putAtt(ncid, varid6, 'grid_mapping', 'mapping');
 
 netcdf.endDef(ncid);
 
-crs = 0;
+mapping = 0;
 
-netcdf.putVar(ncid, varid1, crs);
+netcdf.putVar(ncid, varid1, mapping);
 netcdf.putVar(ncid, varid2, round(x));
 netcdf.putVar(ncid, varid3, round(y));
-netcdf.putVar(ncid, varid4, mod(lon*pi_180_inv+180, 360)-180);
-netcdf.putVar(ncid, varid5, lat*pi_180_inv);
+netcdf.putVar(ncid, varid4, rad2deg(lat));
+netcdf.putVar(ncid, varid5, mod(rad2deg(lon)+180, 360)-180);
 netcdf.putVar(ncid, varid6, vs);
 
 netcdf.close(ncid);
