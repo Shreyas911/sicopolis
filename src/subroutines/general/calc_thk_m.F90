@@ -704,13 +704,7 @@ end subroutine apply_mb_source
 
   H_new(j,i) = H(j,i)   ! newly computed ice thickness is discarded
 
-#elif (THK_EVOL==1)
-
-!  ------ Ice thickness evolves freely
-
-  !%% continue
-
-#elif (THK_EVOL==2)
+#elif (THK_EVOL==2 && TARGET_TOPO_OPTION<=2)
 
 !  ------ Nudging towards prescribed target topography
 !                                    with varying relaxation time
@@ -775,7 +769,7 @@ end subroutine apply_mb_source
 
   end if
 
-#elif (THK_EVOL==3)
+#elif (THK_EVOL==3 && TARGET_TOPO_OPTION<=2)
 
 !  ------ Nudging towards prescribed target topography
 !                                    with constant relaxation time
@@ -801,11 +795,6 @@ end subroutine apply_mb_source
                   / ( target_topo_tau            + dtime )
 
   end if
-
-#else
-
-  errormsg = ' >>> thk_adjust: THK_EVOL must be between 0 and 3!'
-  call error(errormsg)
 
 #endif
 
@@ -1007,7 +996,7 @@ end do
 
 !  ------ Adjustment due to prescribed target topography
 
-#if (THK_EVOL==2 || THK_EVOL==3)
+#if ((THK_EVOL==2 || THK_EVOL==3) && TARGET_TOPO_OPTION<=2)
 if (target_topo_tau*sec2year < epsi) mask = mask_target
 #endif
 
@@ -1164,7 +1153,7 @@ end do
 
 !  ------ Adjustment due to prescribed target topography
 
-#if (THK_EVOL==2 || THK_EVOL==3)
+#if ((THK_EVOL==2 || THK_EVOL==3) && TARGET_TOPO_OPTION<=2)
 if (target_topo_tau*sec2year < epsi) mask = mask_target
 #endif
 
@@ -1414,7 +1403,7 @@ end do
 
 !  ------ Adjustment due to prescribed target topography
 
-#if (THK_EVOL==2 || THK_EVOL==3)
+#if ((THK_EVOL==2 || THK_EVOL==3) && TARGET_TOPO_OPTION<=2)
 if (target_topo_tau*sec2year < epsi) mask = mask_target
 #endif
 

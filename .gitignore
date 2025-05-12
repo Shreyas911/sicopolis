@@ -22,7 +22,7 @@ my_*
 
 /tools/*
 !/tools/*/
-/tools/matlab/*
+/tools/matlab/startup.m
 /tools/sicograph/*
 /tools/*/*.h
 
@@ -30,6 +30,7 @@ my_*
 /src/*.py
 /src/*.sh
 /src/*.dat
+src/fort*
 /src/driver*
 /src/*.msg
 /src/*.out
