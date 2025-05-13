@@ -103,6 +103,16 @@ def compile_code(mode, header, domain,
 			process = subprocess.run (
 				['make', '-f', 'MakefileTapenade', 'clean'])
 
+		print(f'make -f MakefileTapenade ' +
+			f'driver{mode} ' +
+			f'HEADER={header} ' +
+			f'DOMAIN_SHORT={domain} ' +
+			f'DEP_VAR={dep_var} ' +
+			f'IND_VARS={ind_vars} ' +
+			f'CC={cc} ' +
+			f'F90C={f90c} ' +
+			f'TAP_ADJ_PROF={tap_adj_prof} ')
+
 		process = subprocess.run(
 			f'make -f MakefileTapenade '
 			f'driver{mode} '
