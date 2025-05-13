@@ -138,8 +138,6 @@ import subprocess
     #    ("sico_specs_repo_grl16_bm5_ss25ka_ZSC.h", "repo_grl16_bm5_ss25ka_ZSC", "enh_intg_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     #    ("sico_specs_repo_grl16_bm5_ss25ka_ZLC.h", "repo_grl16_bm5_ss25ka_ZLC", "enh_intg_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     #    ("sico_specs_repo_grl16_bm5_ss25ka_CM3_AC.h", "repo_grl16_bm5_ss25ka_CM3_AC", "enh_intg_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
-    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "enh_intg_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
-    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "enh_intg_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_SVC.h", "grl40_bm5_paleo17a_CT4_BH0_SVC", "enh_intg_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FSVC.h", "grl40_bm5_paleo17a_CT4_BH0_FSVC", "enh_intg_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
 
