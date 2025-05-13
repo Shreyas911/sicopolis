@@ -38,6 +38,21 @@ module sico_maths_m_diff
 
   public
 
+  interface tri_sle_b
+    module procedure tri_sle_full_b
+    module procedure tri_sle_mini_b
+  end interface
+
+  interface tri_sle_fwd
+    module procedure tri_sle_full_fwd
+    ! tri_sle_mini_fwd is future work if needed.
+  end interface
+
+  interface tri_sle_bwd
+    module procedure tri_sle_full_bwd
+    ! tri_sle_mini_bwd is future work if needed.
+  end interface
+
 contains
 
 !-------------------------------------------------------------------------------
@@ -260,7 +275,7 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
 !! gradient of useful results: x,
 !! with respect to varying inputs: x a0 a1 a2 b.
 !-------------------------------------------------------------------------------
-  subroutine tri_sle_b(a0, a0b, a1, a1b, a2, a2b, x, xb, b, bb, nrows)
+  subroutine tri_sle_full_b(a0, a0b, a1, a1b, a2, a2b, x, xb, b, bb, nrows)
 
   implicit none
 
@@ -302,7 +317,7 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
   end do
   xb = 0.0
 
-  end subroutine tri_sle_b
+  end subroutine tri_sle_full_b
 
 !-------------------------------------------------------------------------------
 !> Differentiation of tri_sle in reverse (adjoint) mode:
@@ -408,7 +423,7 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
 !-------------------------------------------------------------------------------
 !> Solution of a system of linear equations Ax=b with tridiagonal matrix A.
 !-------------------------------------------------------------------------------
-  SUBROUTINE TRI_SLE_FWD(a0, a1, a2, x, b, nrows)
+  SUBROUTINE TRI_SLE_FULL_FWD(a0, a1, a2, x, b, nrows)
     IMPLICIT NONE
     INTEGER(i4b), INTENT(IN) :: nrows
     REAL(dp), DIMENSION(0:nrows), INTENT(IN) :: a0, a1, a2, b
@@ -452,7 +467,7 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
     CALL PUSHREAL8ARRAY(b_aux, nrows + 1)
     CALL PUSHREAL8ARRAY(x_aux, nrows + 1)
     CALL PUSHREAL8ARRAY(a2_aux, nrows + 1)
-  END SUBROUTINE TRI_SLE_FWD
+  END SUBROUTINE TRI_SLE_FULL_FWD
 
 !  Differentiation of tri_sle in reverse (adjoint) mode, backward sweep (with options profile split(apply_mb_source calc_enhance_
 !3 calc_gia calc_temp_melt calc_thk_mask_update calc_vxy_b_sia cost_final kappa_val thk_adjust c_int_inv_val c_int_val c_val calc
@@ -465,7 +480,7 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
 !-------------------------------------------------------------------------------
 !> Solution of a system of linear equations Ax=b with tridiagonal matrix A.
 !-------------------------------------------------------------------------------
-  SUBROUTINE TRI_SLE_BWD(a0, a0b, a1, a1b, a2, a2b, x, xb, b, bb, nrows)
+  SUBROUTINE TRI_SLE_FULL_BWD(a0, a0b, a1, a1b, a2, a2b, x, xb, b, bb, nrows)
     IMPLICIT NONE
     INTEGER(i4b), INTENT(IN) :: nrows
     REAL(dp), DIMENSION(0:nrows), INTENT(IN) :: a0, a1, a2, b
@@ -526,7 +541,7 @@ subroutine transpose_csr(a_value, a_index, a_diag_index, a_ptr, &
     a1b = a1_auxb
     a0b = 0.0_8
     a0b = a0_auxb
-  END SUBROUTINE TRI_SLE_BWD
+  END SUBROUTINE TRI_SLE_FULL_BWD
 
 !-------------------------------------------------------------------------------
 !> Bilinear interpolation.

@@ -38,6 +38,11 @@ module sico_maths_m_diff
 
   public
 
+  interface tri_sle_d
+    module procedure tri_sle_full_d
+    module procedure tri_sle_mini_d
+  end interface
+
 contains
 
 !-------------------------------------------------------------------------------
@@ -176,7 +181,7 @@ contains
 !! variations of useful results: x b,
 !! with respect to varying inputs: x a0 a1 a2 b.
 !-------------------------------------------------------------------------------
-  subroutine tri_sle_d(a0, a0d, a1, a1d, a2, a2d, x, xd, b, bd, nrows)
+  subroutine tri_sle_full_d(a0, a0d, a1, a1d, a2, a2d, x, xd, b, bd, nrows)
 
   implicit none
 
@@ -206,7 +211,7 @@ contains
 
   call tri_sle(a0, a1copy, a2, xd, rhs, nrows)
 
-  end subroutine tri_sle_d
+  end subroutine tri_sle_full_d
 
 !-------------------------------------------------------------------------------
 !> Differentiation of tri_sle in forward (tangent) mode:
