@@ -63,8 +63,13 @@ contains
   enh_t = ENH_FACT
   enh_c = ENH_FACT
 #else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+#if (ENHMOD==1 || ENHMOD==2 || ENHMOD==3)
   enh_t = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT
   enh_c = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT
+#else
+  enh_t = ENH_FACT
+  enh_c = ENH_FACT
+#endif
 #endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
   call calc_enhance_stream_const()   ! ice streams
@@ -120,8 +125,16 @@ contains
   end do
   end do
 #else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+#if (ENHMOD==1 || ENHMOD==2 || ENHMOD==3)
   enh_fact_updated = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT
+#else
+  enh_fact_updated = ENH_FACT
+#endif
+#if (ENHMOD==2 || ENHMOD==3)
   enh_intg_updated = SUM(enh_intg_da_dummy2d_scalar) / SIZE(enh_intg_da_dummy2d_scalar) + ENH_INTG
+#else
+  enh_intg_updated = ENH_INTG
+#endif
   do i=0, IMAX
   do j=0, JMAX
 
@@ -214,8 +227,16 @@ contains
   end do
   end do
 #else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+#if (ENHMOD==1 || ENHMOD==2 || ENHMOD==3)
   enh_fact_updated = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT
+#else
+  enh_fact_updated = ENH_FACT
+#endif
+#if (ENHMOD==2 || ENHMOD==3)
   enh_intg_updated = SUM(enh_intg_da_dummy2d_scalar) / SIZE(enh_intg_da_dummy2d_scalar) + ENH_INTG
+#else
+  enh_intg_updated = ENH_INTG
+#endif
   do i=0, IMAX
   do j=0, JMAX
 
