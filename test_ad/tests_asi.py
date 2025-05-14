@@ -18,8 +18,8 @@ import subprocess
     #    #    ("sico_specs_repo_grl16_bm5_ss25ka_ZSC.h", "repo_grl16_bm5_ss25ka_ZSC", "RHO_A", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     #    #    ("sico_specs_repo_grl16_bm5_ss25ka_ZLC.h", "repo_grl16_bm5_ss25ka_ZLC", "RHO_A", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     #    #    ("sico_specs_repo_grl16_bm5_ss25ka_CM3_AC.h", "repo_grl16_bm5_ss25ka_CM3_AC", "RHO_A", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
-    #    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "RHO_A", "5.e-2", None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
-    #    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "RHO_A", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    #    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "RHO_A", "5.e-2", None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    #    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "RHO_A", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
     #    ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_SVC.h", "grl40_bm5_paleo17a_CT4_BH0_SVC", "RHO_A", "5.e-2", None, None, None, "inputs.json", 1, "scalar", 1, None),
     #    ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FSVC.h", "grl40_bm5_paleo17a_CT4_BH0_FSVC", "RHO_A", "5.e-2", None, None, None, "inputs.json", 1, "scalar", 1, None),
 
@@ -38,8 +38,8 @@ import subprocess
     #    ("sico_specs_repo_grl16_bm5_ss25ka_ZSC.h", "repo_grl16_bm5_ss25ka_ZSC", "time_lag_asth", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     #    ("sico_specs_repo_grl16_bm5_ss25ka_ZLC.h", "repo_grl16_bm5_ss25ka_ZLC", "time_lag_asth", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     #    ("sico_specs_repo_grl16_bm5_ss25ka_CM3_AC.h", "repo_grl16_bm5_ss25ka_CM3_AC", "time_lag_asth", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
-    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "time_lag_asth", "5.e-2", None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
-    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "time_lag_asth", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "time_lag_asth", "5.e-2", None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "time_lag_asth", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_SVC.h", "grl40_bm5_paleo17a_CT4_BH0_SVC", "time_lag_asth", "5.e-2", None, None, None, "inputs.json", 1, "scalar", 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FSVC.h", "grl40_bm5_paleo17a_CT4_BH0_FSVC", "time_lag_asth", "5.e-2", None, None, None, "inputs.json", 1, "scalar", 1, None),
 
@@ -57,8 +57,8 @@ import subprocess
     #    ("sico_specs_repo_grl16_bm5_ss25ka_ZSC.h", "repo_grl16_bm5_ss25ka_ZSC", "flex_rig_lith", "1.e-7", None, None, None, "inputs.json", 1, "scalar", 1, None),
     #    ("sico_specs_repo_grl16_bm5_ss25ka_ZLC.h", "repo_grl16_bm5_ss25ka_ZLC", "flex_rig_lith", "1.e-7", None, None, None, "inputs.json", 1, "scalar", 1, None),
     #    ("sico_specs_repo_grl16_bm5_ss25ka_CM3_AC.h", "repo_grl16_bm5_ss25ka_CM3_AC", "flex_rig_lith", "1.e-7", None, None, None, "inputs.json", 1, "scalar", 1, None),
-    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "flex_rig_lith", "1.e-7", None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
-    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "flex_rig_lith", "1.e-7", None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "flex_rig_lith", "1.e-7", None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "flex_rig_lith", "1.e-7", None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_SVC.h", "grl40_bm5_paleo17a_CT4_BH0_SVC", "flex_rig_lith", "1.e-7", None, None, None, "inputs.json", 1, "scalar", 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FSVC.h", "grl40_bm5_paleo17a_CT4_BH0_FSVC", "flex_rig_lith", "1.e-7", None, None, None, "inputs.json", 1, "scalar", 1, None),
 
@@ -77,8 +77,8 @@ import subprocess
     #    ("sico_specs_repo_grl16_bm5_ss25ka_ZSC.h", "repo_grl16_bm5_ss25ka_ZSC", "p_weert", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     #    ("sico_specs_repo_grl16_bm5_ss25ka_ZLC.h", "repo_grl16_bm5_ss25ka_ZLC", "p_weert", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     #    ("sico_specs_repo_grl16_bm5_ss25ka_CM3_AC.h", "repo_grl16_bm5_ss25ka_CM3_AC", "p_weert", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
-    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "p_weert", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
-    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "p_weert", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "p_weert", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "p_weert", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_SVC.h", "grl40_bm5_paleo17a_CT4_BH0_SVC", "p_weert", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FSVC.h", "grl40_bm5_paleo17a_CT4_BH0_FSVC", "p_weert", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
 
@@ -97,8 +97,8 @@ import subprocess
     #    ("sico_specs_repo_grl16_bm5_ss25ka_ZSC.h", "repo_grl16_bm5_ss25ka_ZSC", "q_weert", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     #    ("sico_specs_repo_grl16_bm5_ss25ka_ZLC.h", "repo_grl16_bm5_ss25ka_ZLC", "q_weert", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     #    ("sico_specs_repo_grl16_bm5_ss25ka_CM3_AC.h", "repo_grl16_bm5_ss25ka_CM3_AC", "q_weert", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
-    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "q_weert", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
-    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "q_weert", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "q_weert", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "q_weert", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_SVC.h", "grl40_bm5_paleo17a_CT4_BH0_SVC", "q_weert", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FSVC.h", "grl40_bm5_paleo17a_CT4_BH0_FSVC", "q_weert", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
 
@@ -117,8 +117,8 @@ import subprocess
     #    ("sico_specs_repo_grl16_bm5_ss25ka_ZSC.h", "repo_grl16_bm5_ss25ka_ZSC", "enh_fact_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     #    ("sico_specs_repo_grl16_bm5_ss25ka_ZLC.h", "repo_grl16_bm5_ss25ka_ZLC", "enh_fact_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     #    ("sico_specs_repo_grl16_bm5_ss25ka_CM3_AC.h", "repo_grl16_bm5_ss25ka_CM3_AC", "enh_fact_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
-    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "enh_fact_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
-    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "enh_fact_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "enh_fact_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "enh_fact_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_SVC.h", "grl40_bm5_paleo17a_CT4_BH0_SVC", "enh_fact_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FSVC.h", "grl40_bm5_paleo17a_CT4_BH0_FSVC", "enh_fact_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
 
@@ -155,8 +155,8 @@ import subprocess
     #    #    ("sico_specs_repo_grl16_bm5_ss25ka_ZSC.h", "repo_grl16_bm5_ss25ka_ZSC", "n_glen_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     #    #    ("sico_specs_repo_grl16_bm5_ss25ka_ZLC.h", "repo_grl16_bm5_ss25ka_ZLC", "n_glen_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     #    #    ("sico_specs_repo_grl16_bm5_ss25ka_CM3_AC.h", "repo_grl16_bm5_ss25ka_CM3_AC", "n_glen_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
-    #    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "n_glen_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
-    #    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "n_glen_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    #    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "n_glen_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    #    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "n_glen_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
     #    ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_SVC.h", "grl40_bm5_paleo17a_CT4_BH0_SVC", "n_glen_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     #    ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FSVC.h", "grl40_bm5_paleo17a_CT4_BH0_FSVC", "n_glen_da_dummy2d_scalar", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
 
@@ -175,8 +175,8 @@ import subprocess
     #    ("sico_specs_repo_grl16_bm5_ss25ka_ZSC.h", "repo_grl16_bm5_ss25ka_ZSC", "delta_tda_const", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     #    ("sico_specs_repo_grl16_bm5_ss25ka_ZLC.h", "repo_grl16_bm5_ss25ka_ZLC", "delta_tda_const", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     #    ("sico_specs_repo_grl16_bm5_ss25ka_CM3_AC.h", "repo_grl16_bm5_ss25ka_CM3_AC", "delta_tda_const", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
-    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "delta_tda_const", "5.e-2", None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
-    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "delta_tda_const", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "delta_tda_const", "5.e-2", None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "delta_tda_const", None, None, None, None, "inputs.json", 1, "scalar", 1, "ant"),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_SVC.h", "grl40_bm5_paleo17a_CT4_BH0_SVC", "delta_tda_const", "5.e-2", None, None, None, "inputs.json", 1, "scalar", 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FSVC.h", "grl40_bm5_paleo17a_CT4_BH0_FSVC", "delta_tda_const", "5.e-2", None, None, None, "inputs.json", 1, "scalar", 1, None),
 
@@ -273,8 +273,8 @@ import subprocess
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FSVC.h", "grl40_bm5_paleo17a_CT4_BH0_FSVC", "gamma_s", "1.e-4", "0.01", None, None, "inputs.json", 1, None, 1, None),
 
     # H cases
-    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "H", None, None, None, None, "inputs.json", 1, None, 1, "ant"),
-    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "H", "5.e-2", None, None, None, "inputs.json", 1, None, 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "H", None, None, None, None, "inputs.json", 1, None, 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "H", "5.e-2", None, None, None, "inputs.json", 1, None, 1, "ant"),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0.h", "grl40_bm5_paleo17a_CT4_BH0", "H", None, None, None, None, "inputs.json", 1, None, 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_BM5.h", "grl40_bm5_paleo17a_CT4_BH0_BM5", "H", "1.e-4", None, None, None, "inputs.json", 1, None, 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FBM5.h", "grl40_bm5_paleo17a_CT4_BH0_FBM5", "H", "1.e-4", None, None, None, "inputs.json", 1, None, 1, None),
@@ -293,8 +293,8 @@ import subprocess
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FSVC.h", "grl40_bm5_paleo17a_CT4_BH0_FSVC", "H", "1.e-4", "0.01", None, None, "inputs.json", 1, None, 1, None),
 
     # zs cases
-    # java.lang.ArrayIndexOutOfBoundsException    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "zs", None, None, None, None, "inputs.json", 1, None, 1, "ant"),
-    # java.lang.ArrayIndexOutOfBoundsException    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "zs", "5.e-2", None, None, None, "inputs.json", 1, None, 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    # java.lang.ArrayIndexOutOfBoundsException    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "zs", None, None, None, None, "inputs.json", 1, None, 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    # java.lang.ArrayIndexOutOfBoundsException    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "zs", "5.e-2", None, None, None, "inputs.json", 1, None, 1, "ant"),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0.h", "grl40_bm5_paleo17a_CT4_BH0", "zs", None, None, None, None, "inputs.json", 1, None, 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_BM5.h", "grl40_bm5_paleo17a_CT4_BH0_BM5", "zs", "1.e-4", None, None, None, "inputs.json", 1, None, 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FBM5.h", "grl40_bm5_paleo17a_CT4_BH0_FBM5", "zs", "1.e-4", None, None, None, "inputs.json", 1, None, 1, None),
@@ -313,8 +313,8 @@ import subprocess
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FSVC.h", "grl40_bm5_paleo17a_CT4_BH0_FSVC", "zs", "1.e-4", "0.01", None, None, "inputs.json", 1, None, 1, None),
 
     # zl cases
-    # java.lang.ArrayIndexOutOfBoundsException    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "zl", None, None, None, None, "inputs.json", 1, None, 1, "ant"),
-    # java.lang.ArrayIndexOutOfBoundsException    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "zl", "5.e-2", None, None, None, "inputs.json", 1, None, 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    # java.lang.ArrayIndexOutOfBoundsException    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "zl", None, None, None, None, "inputs.json", 1, None, 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    # java.lang.ArrayIndexOutOfBoundsException    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "zl", "5.e-2", None, None, None, "inputs.json", 1, None, 1, "ant"),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0.h", "grl40_bm5_paleo17a_CT4_BH0", "zl", None, None, None, None, "inputs.json", 1, None, 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_BM5.h", "grl40_bm5_paleo17a_CT4_BH0_BM5", "zl", "1.e-4", None, None, None, "inputs.json", 1, None, 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FBM5.h", "grl40_bm5_paleo17a_CT4_BH0_FBM5", "zl", "1.e-4", None, None, None, "inputs.json", 1, None, 1, None),
@@ -333,8 +333,8 @@ import subprocess
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FSVC.h", "grl40_bm5_paleo17a_CT4_BH0_FSVC", "zl", "1.e-4", "0.01", None, None, "inputs.json", 1, None, 1, None),
 
     # zl0 cases
-    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "zl0", None, None, None, None, "inputs.json", 1, None, 1, "ant"),
-    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "zl0", "5.e-2", None, None, None, "inputs.json", 1, None, 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "zl0", None, None, None, None, "inputs.json", 1, None, 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "zl0", "5.e-2", None, None, None, "inputs.json", 1, None, 1, "ant"),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0.h", "grl40_bm5_paleo17a_CT4_BH0", "zl0", None, None, None, None, "inputs.json", 1, None, 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_BM5.h", "grl40_bm5_paleo17a_CT4_BH0_BM5", "zl0", "1.e-4", None, None, None, "inputs.json", 1, None, 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FBM5.h", "grl40_bm5_paleo17a_CT4_BH0_FBM5", "zl0", "1.e-4", None, None, None, "inputs.json", 1, None, 1, None),
@@ -353,8 +353,8 @@ import subprocess
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FSVC.h", "grl40_bm5_paleo17a_CT4_BH0_FSVC", "zl0", "1.e-4", "0.01", None, None, "inputs.json", 1, None, 1, None),
 
     # zb cases
-    # java.lang.ArrayIndexOutOfBoundsException    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "zb", None, None, None, None, "inputs.json", 1, None, 1, "ant"),
-    # java.lang.ArrayIndexOutOfBoundsException    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "zb", "5.e-2", None, None, None, "inputs.json", 1, None, 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    # java.lang.ArrayIndexOutOfBoundsException    ("sico_specs_repo_ant64_bm3_ss25ka.h", "repo_ant64_bm3_ss25ka", "zb", None, None, None, None, "inputs.json", 1, None, 1, "ant"),
+    # DYNAMICS==2, MARGIN==3    # java.lang.ArrayIndexOutOfBoundsException    ("sico_specs_repo_ant64_b2_future09_ctrl.h", "repo_ant64_b2_future09_ctrl", "zb", "5.e-2", None, None, None, "inputs.json", 1, None, 1, "ant"),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0.h", "grl40_bm5_paleo17a_CT4_BH0", "zb", None, None, None, None, "inputs.json", 1, None, 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_BM5.h", "grl40_bm5_paleo17a_CT4_BH0_BM5", "zb", "1.e-4", None, None, None, "inputs.json", 1, None, 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FBM5.h", "grl40_bm5_paleo17a_CT4_BH0_FBM5", "zb", "1.e-4", None, None, None, "inputs.json", 1, None, 1, None),
