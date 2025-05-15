@@ -33,7 +33,7 @@ import subprocess
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FZLC.h", "grl40_bm5_paleo17a_CT4_BH0_FZLC", "time_lag_asth", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_AC.h", "grl40_bm5_paleo17a_CT4_BH0_AC", "time_lag_asth", "5.e-2", None, None, None, "inputs.json", 1, "scalar", 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FAC.h", "grl40_bm5_paleo17a_CT4_BH0_FAC", "time_lag_asth", "5.e-2", None, None, None, "inputs.json", 1, "scalar", 1, None),
-    ("sico_specs_repo_grl16_bm5_ss25ka.h", "repo_grl16_bm5_ss25ka", "time_lag_asth", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
+    # ADJOINT VALIDATED, TLM NOT VALIDATED    ("sico_specs_repo_grl16_bm5_ss25ka.h", "repo_grl16_bm5_ss25ka", "time_lag_asth", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     #    ("sico_specs_repo_grl16_bm5_ss25ka_BM5.h", "repo_grl16_bm5_ss25ka_BM5", "time_lag_asth", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     #    ("sico_specs_repo_grl16_bm5_ss25ka_ZSC.h", "repo_grl16_bm5_ss25ka_ZSC", "time_lag_asth", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
     #    ("sico_specs_repo_grl16_bm5_ss25ka_ZLC.h", "repo_grl16_bm5_ss25ka_ZLC", "time_lag_asth", None, None, None, None, "inputs.json", 1, "scalar", 1, None),
