@@ -1048,7 +1048,7 @@ def test_tapenade_config(header_filename, head, iv, delta, low, dim, z, jsf, asi
     subprocess.run(['cp', f'headers/{header_filename}', '../headers'])
     subprocess.run(['cp', f'headers/{header_filename}', '../src/sico_specs.h'])
 
-    cmd = f'python3 tapenade_config.py -head {head} -iv {iv} -jsf {jsf}'
+    cmd = f'python3 tapenade_config_pickup_bsi.py -head {head} -iv {iv} -jsf {jsf}'
 
     if delta is not None:
         cmd += f' -delta {delta}'

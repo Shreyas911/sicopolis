@@ -985,7 +985,7 @@ def setup_forward(ind_var, header, domain,
 	else:
 		raise ValueError('Wrong Domain')
 
-	if bool_sico_init_active: 
+	if bool_sico_init_active and ind_var not in ["enh_fact_da_dummy2d_scalar", "enh_intg_da_dummy2d_scalar", "delta_tda_const"]:
 		copy_file(original_file = '../test_ad/tapenade_F90_templates/tapenade_main.F90',
 				  destination_file = tapenade_main_file)
 	else:
