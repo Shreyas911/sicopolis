@@ -629,7 +629,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 				instance_all = True)
 
 		if bool_sico_init_active:
-			ref_string = 'fcb = 0.0'
+			ref_string = 'CALL SICO_INIT_B'
 			new_string = ''
 
 			str_ad_after_sico_init = 'after_sico_init' if bool_ad_after_sico_init else 'before_sico_init'
@@ -745,7 +745,7 @@ def setup_adjoint(ind_vars, header, domain, ckp_status,
 
 	else:
 		if bool_sico_init_active:
-			ref_string = 'fcb = 0.0'
+			ref_string = 'CALL SICO_INIT_B'
 			new_string = ''
 
 			str_ad_after_sico_init = 'after_sico_init' if bool_ad_after_sico_init else 'before_sico_init'
