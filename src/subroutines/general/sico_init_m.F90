@@ -1685,6 +1685,9 @@ write(10, fmt=trim(fmt3))  'KAPPA_MJ_0 =', KAPPA_MJ_0
 
 #else /* read from file */
 
+#if (defined(TEMP_PRESENT_PARA))
+write(10, fmt=trim(fmt2)) 'TEMP_PRESENT_PARA = ', TEMP_PRESENT_PARA
+#endif
 #if (defined(TEMP_PRESENT_FILE))
 write(10, fmt=trim(fmt1)) 'temp_present file = '//TEMP_PRESENT_FILE
 #endif
