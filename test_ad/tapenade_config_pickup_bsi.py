@@ -1184,6 +1184,9 @@ def validate_FD_AD(grdchk_file, ad_file, tolerance = 0.1, low = 0.0):
 	'''
 
 	grdchk_data = np.loadtxt(grdchk_file, dtype = float)
+	if np.all(grdchk_data == 0):
+		raise Exception("Validation failed because all grdchk are 0.")
+
 	ad_data = np.loadtxt(ad_file, dtype = float)
 
 	maximum = np.max(np.abs(grdchk_data))
@@ -1363,13 +1366,17 @@ def simulation(mode, header, domain,
 			str_ad_after_sico_init = 'after_sico_init' if bool_ad_after_sico_init else 'before_sico_init'
 			grdchk_file = f'GradientVals_{ind_var}_{pert}_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat'
 			tlm_file = f'ForwardVals_{ind_var}_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat'
+			adjoint_file = f'AdjointVals_{ind_var}b_{header}_{limited_or_block_or_full_or_scalar}_{str_ad_after_sico_init}.dat'
 
 			if os.path.exists(grdchk_file) is False:
 				raise FileNotFoundError (f'{grdchk_file} not found for validation')
 			if os.path.exists(tlm_file) is False:
 				raise FileNotFoundError (f'{tlm_file} not found for validation')
+			if os.path.exists(adjoint_file) is False:
+				raise FileNotFoundError (f'{adjoint_file} not found for validation')
 
 			validate_FD_AD(grdchk_file, tlm_file, tolerance = tol, low = low)
+			validate_FD_AD(tlm_file, adjoint_file, tolerance = 1.e-8, low = 0.0)
 	
 	elif mode == 'nodiff':
 
