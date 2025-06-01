@@ -110,12 +110,12 @@ contains
       do k=0, KDATA
 #ifdef ALLOW_AGE_UNCERT
         ! only counting points that are real in the data: 
-        if (age_unc_data(k,j,i) .gt. 0.0 .and. age_data(k,j,i) .ge. 0.0 .and. age_data(k,j,i) .le. 60000.0 .and. H_BedMachine_data(j,i) .ge. 2000.0) then
+        if (age_unc_data(k,j,i) .gt. 0.0 .and. age_data(k,j,i) .ge. 0.0 .and. age_data(k,j,i) .le. 134000.0 .and. H_BedMachine_data(j,i) .ge. 1500.0) then
           fc = fc &
           + 0.5*(age_data(k,j,i)*year2sec - age_c(k,j,i))**2/(age_unc_data(k,j,i)*year2sec)**2
 #else
         ! only counting points that are real in the data:
-        if (age_data(k,j,i) .ge. 0.0 .and. age_data(k,j,i) .le. 60000.0 .and. H_BedMachine_data(j,i) .ge. 2000.0) then
+        if (age_data(k,j,i) .ge. 0.0 .and. age_data(k,j,i) .le. 134000.0 .and. H_BedMachine_data(j,i) .ge. 1500.0) then
           fc = fc &
           + 0.5*(age_data(k,j,i)*year2sec - age_c(k,j,i))**2
 #endif
@@ -131,14 +131,12 @@ contains
 #if (defined(BEDMACHINE_COST) || defined(FAKE_BEDMACHINE_COST))
     do i=0, IMAX
       do j=0, JMAX
-        if (zs_BedMachine_data(j,i) .ge. -50.0) then
-          fc = fc &
+        fc = fc &
 #ifdef ALLOW_BEDMACHINE_UNCERT
-          + 0.5*(H(j,i) - H_BedMachine_data(j,i))**2/H_unc_BedMachine_data(j,i)**2
+        + 0.5*(H(j,i) - H_BedMachine_data(j,i))**2/H_unc_BedMachine_data(j,i)**2
 #else
-          + 0.5*(H(j,i) - H_BedMachine_data(j,i))**2
+        + 0.5*(H(j,i) - H_BedMachine_data(j,i))**2
 #endif
-        end if
       end do
     end do
 
@@ -149,14 +147,12 @@ contains
 #if (defined(ZS_COST) || defined(FAKE_ZS_COST))
     do i=0, IMAX
       do j=0, JMAX
-        if (zs_BedMachine_data(j,i) .ge. -50.0) then
-          fc = fc &
+        fc = fc &
 #ifdef ALLOW_ZS_UNCERT
-          + 0.5*(zs(j,i) - zs_BedMachine_data(j,i))**2/zs_unc_BedMachine_data(j,i)**2
+        + 0.5*(zs(j,i) - zs_BedMachine_data(j,i))**2/zs_unc_BedMachine_data(j,i)**2
 #else
-          + 0.5*(zs(j,i) - zs_BedMachine_data(j,i))**2
+        + 0.5*(zs(j,i) - zs_BedMachine_data(j,i))**2
 #endif
-        end if
       end do
     end do
 
@@ -167,14 +163,12 @@ contains
 #if (defined(ZL_COST) || defined(FAKE_ZL_COST))
     do i=0, IMAX
       do j=0, JMAX
-        if (zs_BedMachine_data(j,i) .ge. -50.0) then
-          fc = fc &
+        fc = fc &
 #ifdef ALLOW_ZL_UNCERT
-          + 0.5*(zl(j,i) - zl_BedMachine_data(j,i))**2/zl_unc_BedMachine_data(j,i)**2
+        + 0.5*(zl(j,i) - zl_BedMachine_data(j,i))**2/zl_unc_BedMachine_data(j,i)**2
 #else
-          + 0.5*(zl(j,i) - zl_BedMachine_data(j,i))**2
+        + 0.5*(zl(j,i) - zl_BedMachine_data(j,i))**2
 #endif
-        end if
       end do
     end do
 
