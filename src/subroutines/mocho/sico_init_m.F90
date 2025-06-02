@@ -130,7 +130,7 @@ character(len=64), parameter :: fmt1 = '(a)', &
                                 fmt3 = '(a,es13.5)', &
                                 fmt4 = '(a,es20.12)'
 
-write(unit=6, fmt='(/a/)') ' -------- sico_init --------'
+write(unit=6, fmt='(/a)') ' -------- sico_init --------'
 
 !-------- Name of the computational domain --------
 
@@ -1798,6 +1798,9 @@ call topography1(dxi, deta)
 z_sl      = -1.11e+11_dp   ! dummy values for initial call
 z_sl_mean = -1.11e+11_dp   ! of subroutine boundary
 
+itercount = 0   ! initialization
+write(unit=6, fmt='(/2x,i0)') itercount
+
 call boundary(time_init, dtime, dxi, deta)
 
 do i=0, IMAX
@@ -1874,6 +1877,9 @@ call topography2(dxi, deta)
 z_sl      = -1.11e+11_dp   ! dummy values for initial call
 z_sl_mean = -1.11e+11_dp   ! of subroutine boundary
 
+itercount = 0   ! initialization
+write(unit=6, fmt='(/2x,i0)') itercount
+
 call boundary(time_init, dtime, dxi, deta)
 
 as_perp_apl = 0.0_dp
@@ -1922,6 +1928,9 @@ vis_int_g = 0.0_dp
 #elif (ANF_DAT==3)
 
 call topography3(dxi, deta, anfdatname)
+
+itercount = 0   ! initialization
+write(unit=6, fmt='(/2x,i0)') itercount
 
 #if (!(ANF_DAT==3) || defined(LEGACY_RESTART))
 
@@ -2018,9 +2027,6 @@ end do
 #endif
 
 !-------- Initial velocities --------
-
-itercount = 0   ! initialization
-write(unit=6, fmt='(2x,i0)') itercount
 
 call calc_temp_melt()
 call flag_update_gf_gl_cf()
