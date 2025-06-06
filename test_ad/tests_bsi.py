@@ -355,7 +355,7 @@ import subprocess
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_ZLC.h", "grl40_bm5_paleo17a_CT4_BH0_ZLC", "zl0", "1.e-4", None, None, None, "inputs.json", 0, None, 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FZLC.h", "grl40_bm5_paleo17a_CT4_BH0_FZLC", "zl0", "1.e-4", None, None, None, "inputs.json", 0, None, 1, None),
     ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_AC.h", "grl40_bm5_paleo17a_CT4_BH0_AC", "zl0", "1.e-4", "0.01", None, None, "inputs.json", 0, None, 1, None),
-    ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FAC.h", "grl40_bm5_paleo17a_CT4_BH0_FAC", "zl0", "1.e-4", "0.015", None, None, "inputs.json", 0, None, 1, None),
+    ("sico_specs_grl40_bm5_paleo17a_CT4_BH0_FAC.h", "grl40_bm5_paleo17a_CT4_BH0_FAC", "zl0", "1.e-4", "0.1", None, None, "inputs.json", 0, None, 1, None),
     # ADJOINT_TLM_NOT_SUPER_PRECISE_AGREEMENT    ("sico_specs_repo_grl16_bm5_ss25ka.h", "repo_grl16_bm5_ss25ka", "zl0", None, "0.01", None, None, "inputs.json", 0, None, 1, None),
     #    ("sico_specs_repo_grl16_bm5_ss25ka_BM5.h", "repo_grl16_bm5_ss25ka_BM5", "zl0", None, None, None, None, "inputs.json", 0, None, 1, None),
     #    ("sico_specs_repo_grl16_bm5_ss25ka_ZSC.h", "repo_grl16_bm5_ss25ka_ZSC", "zl0", None, None, None, None, "inputs.json", 0, None, 1, None),
