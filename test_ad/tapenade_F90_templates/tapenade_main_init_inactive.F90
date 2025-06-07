@@ -154,7 +154,7 @@ program tapenade_main
         gamma_s         = 0.0
 #endif
 #if (ABLSURFACE==1 || ABLSURFACE==2)
-        s_stat          = 0.0
+        s_stat          = 0.0 ! Not compatible with SOLID_PRECIP==3, would need to also activate s_stat_solid_precip in that case.
         beta1           = 0.0
         beta2           = 0.0
         Pmax            = 0.0
