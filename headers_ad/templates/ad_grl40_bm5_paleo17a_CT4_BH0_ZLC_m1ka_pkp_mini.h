@@ -45,8 +45,6 @@
                                          'xx_flex_rig_lith',\
                                          'xx_p_weert',\
                                          'xx_q_weert',\
-                                         'xx_enh_fact_da_dummy2d_scalar',\
-                                         'xx_enh_intg_da_dummy2d_scalar',\
                                          'xx_zs',\
                                          'xx_zl',\
                                          'xx_zl0',\
@@ -62,8 +60,6 @@
 !                                         'log10ctrl',\
 !                                         'none',\
 !                                         'none',\
-!                                         'log10ctrl',\
-!                                         'log10ctrl',\
 !                                         'log10ctrl',\
 !                                         'log10ctrl',\
 !                                         'log10ctrl',\
@@ -122,6 +118,12 @@
 !!       enh_c = ENH_FACT
 !!       with this line.
 !!       enh_c = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT
+!!
+!!       WARNING: enh_fact_da_dummy2d_scalar, enh_intg_da_dummy2d_scalar are special cases.
+!!       They currently cannot be used with pickups, hence you do not see them in the list above by default.
+!!       They need to be accounted for correctly in read_tms_nc, since it is reading enh_c and enh_t from the spinup.
+!!       You can add an extreme value in read_tms_nc to enh_c and enh_t (say 1000) and verify for yourself that the simulation crashes.
+!!       This is unlike vx_c, vy_c, vz_c, which get completely overwritten.
 
 !#define XX_GENARR2D_LOG10INITVAL_ARR [ real :: \
 !                                          0.92941892571,  0.0,         , 4.19476402411,\
