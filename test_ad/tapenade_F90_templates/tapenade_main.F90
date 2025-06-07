@@ -137,10 +137,10 @@ program tapenade_main
         p_weert         = 0.0
         q_weert         = 0.0
 #if (ENHMOD==1 || ENHMOD==2 || ENHMOD==3)
-        enh_fact_da_dummy2d_scalar = 0.0 ! Only used as a scalar
+        enh_fact_da_dummy2d_scalar = 0.0 ! Only used as a scalar ! Not compatible with ANF_DAT==3
 #endif
 #if (ENHMOD==2 || ENHMOD==3)
-        enh_intg_da_dummy2d_scalar = 0.0 ! Only used as a scalar
+        enh_intg_da_dummy2d_scalar = 0.0 ! Only used as a scalar ! Not compatible with ANF_DAT==3
 #endif
 #if (FLOW_LAW==1)
         n_glen_da_dummy2d_scalar   = 0.0 ! Only used as a scalar
