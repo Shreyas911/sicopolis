@@ -229,9 +229,6 @@ contains
   integer(i4b) :: i, j, kc
   real(dp)     :: kappa_const_val
   real(dp)     :: temp_ice_base
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
-  real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: temp_c_orig
-#endif
 
 !-------- Initial ice temperature --------
 
@@ -249,19 +246,19 @@ contains
 
         do kc=0, KCMAX
 
-           temp_c_orig(kc,j,i) = temp_s(j,i) &
+           temp_c(kc,j,i) = temp_c(kc,j,i) + temp_s(j,i) &
                             + (q_geo(j,i)/kappa_const_val) &
                               *H_c(j,i)*(1.0_dp-eaz_c_quotient(kc))
                             ! linear temperature distribution according to the
                             ! geothermal heat flux
         end do
 
-        if (temp_c_orig(0,j,i) >= -BETA*H_c(j,i)) then
+        if (temp_c(0,j,i) >= -BETA*H_c(j,i)) then
 
            temp_ice_base = -BETA*H_c(j,i)
 
            do kc=0, KCMAX
-              temp_c_orig(kc,j,i) = temp_s(j,i) &
+              temp_c(kc,j,i) = temp_s(j,i) &
                                + (temp_ice_base-temp_s(j,i)) &
                                  *(1.0_dp-eaz_c_quotient(kc))
            end do
@@ -273,16 +270,13 @@ contains
         temp_ice_base = -BETA*H_c(j,i) - DELTA_TM_SW
 
         do kc=0, KCMAX
-           temp_c_orig(kc,j,i) = temp_s(j,i) &
+           temp_c(kc,j,i) = temp_c(kc,j,i) + temp_s(j,i) &
                             + (temp_ice_base-temp_s(j,i)) &
                               *(1.0_dp-eaz_c_quotient(kc))
         end do
 
      end if
 
-     do kc=0, KCMAX
-        temp_c(kc,j,i) = temp_c(kc,j,i) + temp_c_orig(kc,j,i)
-     end do
 #else /* NORMAL */
      if (mask(j,i)<=2) then
 
@@ -347,9 +341,6 @@ contains
   real(dp)     :: as_val, H_val, qgeo_val, K, z_above_base
   real(dp)     :: erf_val_1, erf_val_2
   real(dp)     :: temp_ice_base, temp_scale_factor
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
-  real(dp), dimension(0:KCMAX,0:JMAX,0:IMAX) :: temp_c_orig
-#endif
 
 !-------- Initial ice temperature --------
 
@@ -390,32 +381,13 @@ contains
 #if defined(ALLOW_TAPENADE)
         erf_val_2      = my_erf(z_above_base/(sqrt(2.0_dp)*K))
 #endif
-        temp_c_orig(kc,j,i) = temp_s(j,i) &
+        temp_c(kc,j,i) = temp_c(kc,j,i) + temp_s(j,i) &
                           + (qgeo_val/kappa_const_val) &
                             * sqrt(0.5_dp*pi)*K*(erf_val_1-erf_val_2)
      end do
 
-     if ( (mask(j,i) <= 2).and.(temp_c_orig(0,j,i) >= -BETA*H_c(j,i)) ) then
-        temp_ice_base     = -BETA*H_c(j,i)
-        temp_scale_factor = (temp_ice_base-temp_s(j,i)) &
-                                  /(temp_c_orig(0,j,i)-temp_s(j,i))
-     else if (mask(j,i) == 3) then
-        temp_ice_base     = -BETA*H_c(j,i)-DELTA_TM_SW
-        temp_scale_factor = (temp_ice_base-temp_s(j,i)) &
-                                /(temp_c_orig(0,j,i)-temp_s(j,i))
-     else
-        temp_scale_factor = 1.0_dp
-     end if
-
-     do kc=0, KCMAX
-        temp_c_orig(kc,j,i) = temp_s(j,i) &
-                         + temp_scale_factor*(temp_c_orig(kc,j,i)-temp_s(j,i))
-        temp_c(kc,j,i) = temp_c(kc,j,i) + temp_c_orig(kc,j,i)
-     end do
-
-  end do
-  end do
 #else /* NORMAL */
+
      do kc=0, KCMAX
         z_above_base   = H_c(j,i)*eaz_c_quotient(kc)
         erf_val_2      = erf(z_above_base/(sqrt(2.0_dp)*K))
@@ -423,6 +395,8 @@ contains
                           + (qgeo_val/kappa_const_val) &
                             * sqrt(0.5_dp*pi)*K*(erf_val_1-erf_val_2)
      end do
+
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
      if ( (mask(j,i) <= 2).and.(temp_c(0,j,i) >= -BETA*H_c(j,i)) ) then
         temp_ice_base     = -BETA*H_c(j,i)
@@ -443,7 +417,6 @@ contains
 
   end do
   end do
-#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 !-------- Initial lithosphere temperature, water content and age --------
 
