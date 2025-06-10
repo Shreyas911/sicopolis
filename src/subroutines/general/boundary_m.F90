@@ -180,9 +180,12 @@ real(dp), parameter :: &
 character(len=64), parameter :: thisroutine = 'boundary'
 
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+#if (defined(DTIME_INTERP0) && defined(NTDAMAX))
 real(dp)     :: temp_val, alpha_interp, dtime_interp, time_init_interp
-integer(i4b) :: floor_interp, ceiling_interp
+integer(i4b) :: floor_interp, ceiling_interp, tad
 real(dp), dimension(0:JMAX,0:IMAX) :: delta_tda_interp
+real(dp), dimension(0:NTDAMAX) :: delta_tda_spatial_mean
+#endif
 #endif  /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
 
 time_in_years = time*sec2year
@@ -1101,6 +1104,37 @@ time_init_interp = TIME_INIT0
 floor_interp  = floor((time_in_years-time_init_interp)/dtime_interp)
 ceiling_interp = ceiling((time_in_years-time_init_interp)/dtime_interp)
 alpha_interp  = (time_in_years-time_init_interp-floor_interp*dtime_interp)/dtime_interp
+
+! SSG: Remove the spatial mean of delta_tda at each time step (tad).
+!      This ensures that delta_tda contains only time-varying *spatial fluctuations*
+!      with zero mean across the domain. The full spatially varying, time-invariant
+!      correction is handled by delta_tda_const instead.
+delta_tda_spatial_mean(:) = 0.0
+do i=0, IMAX
+do j=0, JMAX
+do tad=0, NTDAMAX
+   delta_tda_spatial_mean(tad) = delta_tda_spatial_mean(tad) + delta_tda(tad,j,i)
+end do
+end do
+end do
+delta_tda_spatial_mean = delta_tda_spatial_mean / REAL(NTDAMAX + 1)
+do i=0, IMAX
+do j=0, JMAX
+do tad=0, NTDAMAX
+   delta_tda(tad,j,i) = delta_tda(tad,j,i) - delta_tda_spatial_mean(tad)
+end do
+end do
+end do
+
+do i=0, IMAX
+do j=0, JMAX
+
+   delta_tda_interp(j,i) = delta_tda(floor_interp,j,i)  * (1-alpha_interp) &
+                         + delta_tda(ceiling_interp,j,i) * alpha_interp
+
+end do
+end do
+
 #endif
 
 do i=0, IMAX
@@ -1112,11 +1146,6 @@ do j=0, JMAX
 !         and temperature deviation delta_ts
 
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
-
-#if(defined(DTIME_INTERP0) && defined(NTDAMAX))
-   delta_tda_interp(j,i) = delta_tda(floor_interp,j,i)  * (1-alpha_interp) &
-                         + delta_tda(ceiling_interp,j,i) * alpha_interp
-#endif
 
 #if (TEMP_PRESENT_PARA>=1)
    temp_diff(j,i) = delta_ts + delta_tda_const(j,i) + delta_tda_interp(j,i)
