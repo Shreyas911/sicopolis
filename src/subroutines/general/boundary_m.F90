@@ -183,8 +183,7 @@ character(len=64), parameter :: thisroutine = 'boundary'
 #if (defined(DTIME_INTERP0) && defined(NTDAMAX))
 real(dp)     :: temp_val, alpha_interp, dtime_interp, time_init_interp
 integer(i4b) :: floor_interp, ceiling_interp, tad
-real(dp), dimension(0:JMAX,0:IMAX) :: delta_tda_interp
-real(dp), dimension(0:NTDAMAX) :: delta_tda_spatial_mean
+real(dp), dimension(0:JMAX,0:IMAX) :: delta_tda_interp, delta_tda_temporal_mean
 #endif
 #endif  /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
 
@@ -1105,33 +1104,44 @@ floor_interp  = floor((time_in_years-time_init_interp)/dtime_interp)
 ceiling_interp = ceiling((time_in_years-time_init_interp)/dtime_interp)
 alpha_interp  = (time_in_years-time_init_interp-floor_interp*dtime_interp)/dtime_interp
 
-! SSG: Remove the spatial mean of delta_tda at each time step (tad).
-!      This ensures that delta_tda contains only time-varying *spatial fluctuations*
-!      with zero mean across the domain. The full spatially varying, time-invariant
-!      correction is handled by delta_tda_const instead.
-delta_tda_spatial_mean(:) = 0.0
+! SSG: Remove the temporal mean of delta_tda at each spatial point (j,i).
+!      This ensures that delta_tda contains only temporal fluctuations,
+!      with no persistent bias at any location.
+!      The full time-invariant spatial correction is handled by delta_tda_const(j,i).
+
+! t = 0 and t = NTDAMAX have half weight according to trapezoidal rule.
 do i=0, IMAX
 do j=0, JMAX
-do tad=0, NTDAMAX
-   delta_tda_spatial_mean(tad) = delta_tda_spatial_mean(tad) + delta_tda(tad,j,i)
+   delta_tda_temporal_mean(j,i) = 0.5 * delta_tda(0,j,i) + 0.5 * delta_tda(NTDAMAX,j,i)
 end do
 end do
-end do
-delta_tda_spatial_mean = delta_tda_spatial_mean / REAL(NTDAMAX + 1)
-do i=0, IMAX
-do j=0, JMAX
-do tad=0, NTDAMAX
-   delta_tda(tad,j,i) = delta_tda(tad,j,i) - delta_tda_spatial_mean(tad)
+
+! t = 1 to NTDAMAX - 1 have full weight according to trapezoidal rule.
+do i = 0, IMAX
+do j = 0, JMAX
+do tad = 1, NTDAMAX - 1
+   delta_tda_temporal_mean(j,i) = delta_tda_temporal_mean(j,i) + delta_tda(tad,j,i)
 end do
 end do
 end do
 
+! Final normalization: divide by NTDAMAX (not NDAMAX + 1) according to trapezoidal rule.
+delta_tda_temporal_mean = delta_tda_temporal_mean / REAL(NTDAMAX)
+
+! Remove the temporal mean from delta_tda
 do i=0, IMAX
 do j=0, JMAX
+do tad=0, NTDAMAX
+   delta_tda(tad,j,i) = delta_tda(tad,j,i) - delta_tda_temporal_mean(j,i)
+end do
+end do
+end do
 
-   delta_tda_interp(j,i) = delta_tda(floor_interp,j,i)  * (1-alpha_interp) &
+! Linearly interpolate delta_tda for current time
+do i=0, IMAX
+do j=0, JMAX
+   delta_tda_interp(j,i) = delta_tda(floor_interp,j,i)   * (1-alpha_interp) &
                          + delta_tda(ceiling_interp,j,i) * alpha_interp
-
 end do
 end do
 
