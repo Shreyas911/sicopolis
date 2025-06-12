@@ -208,10 +208,10 @@ contains
         igen_zl0 = ctrl_index
       else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_zm') then
         igen_zm = ctrl_index
-#if (!(ANF_DAT==3) || defined(LEGACY_RESTART))
+#if (!(ANF_DAT==3) || defined(LEGACY_RESTART) || (CALCMOD==1))
         errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
           //'zm as a control param is only compatible with ' &
-          //'ANF_DAT == 3 and !defined(LEGACY_RESTART) for now !'
+          //'ANF_DAT == 3 and !defined(LEGACY_RESTART) and CALCMOD != 1 for now !'
         call error(errormsg)
 #endif
       else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_zb') then
@@ -321,7 +321,7 @@ contains
     if (igen_zl0 .GT. 0) then
       call ctrl_map_genarr2d(zl0, igen_zl0)
     end if
-#if ((ANF_DAT==3) && !defined(LEGACY_RESTART))
+#if ((ANF_DAT==3) && !defined(LEGACY_RESTART) && (CALCMOD!=1))
     if (igen_zm .GT. 0) then
       call ctrl_map_genarr2d(zm, igen_zm)
     end if
