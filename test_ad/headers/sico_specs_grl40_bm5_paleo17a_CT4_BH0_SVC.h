@@ -1268,7 +1268,7 @@
 !                             [ = signed year CE (AD) ],
 !                             that is, SICOPOLIS years + YEAR_ZERO
 
-#define OUTPUT_INIT 0
+#define OUTPUT_INIT 1
 !                         Output of initial conditions
 !                         in time-slice files '.nc'
 !                         (for prescribed output time step, OUTPUT==1,3)
