@@ -450,6 +450,7 @@ contains
   
     end do
 
+#if ((ANF_DAT==3) && !defined(LEGACY_RESTART))
     if (igen_vx_c .GT. 0) then
       call ctrl_map_genarr3d(vx_c, igen_vx_c)
     end if
@@ -459,9 +460,12 @@ contains
     if (igen_vz_c .GT. 0) then
       call ctrl_map_genarr3d(vz_c, igen_vz_c)
     end if
+#endif
+#if ((ANF_DAT!=1) || ((ANF_DAT==1) && (TEMP_INIT!=5)))
     if (igen_temp_c .GT. 0) then
       call ctrl_map_genarr3d(temp_c, igen_temp_c)
     end if
+#endif
     if (igen_age_c .GT. 0) then
       call ctrl_map_genarr3d(age_c, igen_age_c)
     end if
