@@ -711,12 +711,13 @@ contains
         zs(j,i)   = zs(j,i) + real(zs_conv(i,j),dp)
 #endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
-        zm(j,i)   = real(zm_conv(i,j),dp)
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
+        zm(j,i)   = real(zm_conv(i,j),dp)
         zb(j,i)   = real(zb_conv(i,j),dp)
         zl(j,i)   = real(zl_conv(i,j),dp)
         zl0(j,i)  = real(zl0_conv(i,j),dp)
 #else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+        zm(j,i)   = zm(j,i) + real(zm_conv(i,j),dp)
         zb(j,i)   = zb(j,i) + real(zb_conv(i,j),dp)
         zl(j,i)   = zl(j,i) + real(zl_conv(i,j),dp)
         !! SSG: zl0 can be read in sico_init immediately after the call to read_tms_nc.
