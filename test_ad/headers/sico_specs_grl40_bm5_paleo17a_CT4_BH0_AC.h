@@ -1313,12 +1313,14 @@
 !                         Time step (in a) for writing of
 !                         time-slice data (only for OUTPUT==1,3)
 
-#define N_OUTPUT 1
+#define N_OUTPUT 11
 !                         Number of specified times for writing of
 !                         time-slice data (only for OUTPUT==2,3,
 !                         not more than 100)
 
-#define TIME_OUT0 (/ -120000.0d0 /)
+#define TIME_OUT0 (/ -120000.0d0, -65000.0d0, -40000.0d0, \
+                     -25000.0d0,  -21000.0d0, -11000.0d0, \
+                     -9000.0d0, -4000.0d0, -1000.d0, -100.0d0, 0.0d0 /)
 !                         Times (in a) for writing of time-slice
 !                         data (only for OUTPUT==2,3, in increasing
 !                         order from #1 to #N_OUTPUT)
