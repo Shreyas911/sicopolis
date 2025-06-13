@@ -1385,5 +1385,5 @@
 !                       time-varying control variables.
 
 #define DTIME_INTERP0 1000.0d0
-!		                (TIME_END0-TIME_INIT0)/NTDAMAX
+!                       (TIME_END0-TIME_INIT0)/NTDAMAX
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
