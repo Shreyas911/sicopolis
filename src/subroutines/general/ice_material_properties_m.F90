@@ -321,59 +321,78 @@ real(dp)             :: creep
 real(dp), intent(in) :: sigma_val
 
 #if (FLOW_LAW==4)
-real(dp), parameter :: sm_coeff_1 = 8.5112e-15_dp, &   ! s^-1 Pa^-1
-                       sm_coeff_2 = 8.1643e-25_dp, &   ! s^-1 Pa^-3
-                       sm_coeff_3 = 9.2594e-12_dp      ! Pa^-2
+real(dp) :: sm_coeff_1, sm_coeff_2, sm_coeff_3
 #endif
+
+#if (FLOW_LAW==1)
 
 #if (FIN_VISC==1)
 
-#if (FLOW_LAW==1)
-
+#if (N_POWER_LAW_INT==1)
+creep = 1.0_dp
+#elif (N_POWER_LAW_INT==2)
+creep = sigma_val
+#elif (N_POWER_LAW_INT==3)
 creep = sigma_val*sigma_val
-!       Glen's flow law (n=3)
-
-#elif (FLOW_LAW==2)
-
-creep = sigma_val**0.8_dp * GR_SIZE**(-1.4_dp)
-!       Goldsby-Kohlstedt flow law (n=1.8, d=1.4)
-
-#elif (FLOW_LAW==3)
-
+#elif (N_POWER_LAW_INT==4)
 creep = sigma_val*sigma_val*sigma_val
-!       Durham's flow law (n=4)
-
+#elif (N_POWER_LAW_INT>=5)
+creep = sigma_val**(N_POWER_LAW_INT-1)
+#elif (defined(N_POWER_LAW_REAL))
+creep = sigma_val**(N_POWER_LAW_REAL-1.0_dp)
+#else
+creep = sigma_val*sigma_val   ! default n=3
 #endif
+        ! Nye-Glen flow law
 
 #elif (FIN_VISC==2)
 
-#if (FLOW_LAW==1)
-
+#if (N_POWER_LAW_INT==1)
+creep = 1.0_dp   ! SIGMA_RES ignored here
+#elif (N_POWER_LAW_INT==2)
+creep = sigma_val + SIGMA_RES
+#elif (N_POWER_LAW_INT==3)
 creep = sigma_val*sigma_val + SIGMA_RES*SIGMA_RES
-!       Glen's flow (n=3) with additional finite viscosity
-
-#elif (FLOW_LAW==2)
-
-creep = (sigma_val**0.8_dp + SIGMA_RES**0.8_dp) * GR_SIZE**(-1.4_dp)
-!       Goldsby-Kohlstedt flow law (n=1.8, d=1.4)
-!       with additional finite viscosity
-
-#elif (FLOW_LAW==3)
-
+#elif (N_POWER_LAW_INT==4)
 creep = sigma_val*sigma_val*sigma_val + SIGMA_RES*SIGMA_RES*SIGMA_RES
-!       Durham's flow law (n=4) with additional finite viscosity
+#elif (N_POWER_LAW_INT>=5)
+creep = sigma_val**(N_POWER_LAW_INT-1) &
+           + SIGMA_RES**(N_POWER_LAW_INT-1)
+#elif (defined(N_POWER_LAW_REAL))
+creep = sigma_val**(N_POWER_LAW_REAL-1.0_dp) &
+           + SIGMA_RES**(N_POWER_LAW_REAL-1.0_dp)
+#else
+creep = sigma_val*sigma_val + SIGMA_RES*SIGMA_RES   ! default n=3
+#endif
+        ! Nye-Glen flow law with additional finite viscosity
 
 #endif
 
+#elif (FLOW_LAW==4)
+
+#if (defined(SM_COEFF1))
+sm_coeff_1 = SM_COEFF1
+#else
+sm_coeff_1 = 8.5112e-15_dp   ! s^-1 Pa^-1
 #endif
 
-#if (FLOW_LAW==4)
+#if (defined(SM_COEFF2))
+sm_coeff_2 = SM_COEFF2
+#else
+sm_coeff_2 = 8.1643e-25_dp   ! s^-1 Pa^-3
+#endif
+
+#if (defined(SM_COEFF3))
+sm_coeff_3 = SM_COEFF3
+#else
+sm_coeff_3 = 9.2594e-12_dp   ! Pa^-2
+#endif
 
 creep = sm_coeff_1 &
         + sm_coeff_2 * (sigma_val*sigma_val) &
           * (1.0_dp + sm_coeff_3 * (sigma_val*sigma_val))
-!       Smith-Morland (polynomial) flow law, normalised to a dimensionless
-!       rate factor with A(-10C)=1.
+        ! Smith-Morland (polynomial) flow law,
+        ! normalized to a dimensionless rate factor with A(-10C)=1
 
 #endif
 
@@ -405,16 +424,14 @@ integer(i4b), intent(in) :: i_flag_cold_temp
 real(dp) :: ratefac_val
 real(dp) :: de_val_m
 
-real(dp) :: n_power_law, inv_n_power_law, n_grain_size
+#if (FLOW_LAW==1)
+real(dp) :: d_n_power_law, d_inv_n_power_law
+#elif (FLOW_LAW==4)
+real(dp) :: sm_coeff_1, sm_coeff_2, sm_coeff_3
+#endif
 
 real(dp), parameter :: de_min = 1.0e-30_dp   ! minimum value for the
                                              ! effective strain rate
-
-#if (FLOW_LAW==4)
-real(dp), parameter :: sm_coeff_1 = 8.5112e-15_dp, &   ! s^-1 Pa^-1
-                       sm_coeff_2 = 8.1643e-25_dp, &   ! s^-1 Pa^-3
-                       sm_coeff_3 = 9.2594e-12_dp      ! Pa^-2
-#endif
 
 !-------- Rate factor and effective strain rate --------
 
@@ -428,90 +445,61 @@ end if
 
 de_val_m = max(de_val, de_min)
 
-#if (FIN_VISC==1)
-
 #if (FLOW_LAW==1)
 
-!-------- Glen's flow law (n=3) --------
+#if (FIN_VISC==1)
 
-#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
-inv_n_power_law = 0.333333333333333_dp   ! 1/3
-#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
-inv_n_power_law = (3.0 + SUM(n_glen_da_dummy2d_scalar) / SIZE(n_glen_da_dummy2d_scalar))**(-1)
-#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
-
-viscosity = 0.5_dp * de_val_m**(inv_n_power_law-1.0_dp) &
-                   * (enh_val*ratefac_val)**(-inv_n_power_law)
-
-#elif (FLOW_LAW==2)
-
-!-------- Goldsby-Kohlstedt flow law (n=1.8, d=1.4) --------
-
-inv_n_power_law = 0.555555555555555_dp   ! 1/1.8
-n_grain_size    = 1.4_dp
-
-viscosity = 0.5_dp * de_val_m**(inv_n_power_law-1.0_dp) &
-                   * GR_SIZE**(n_grain_size*inv_n_power_law) &
-                   * (enh_val*ratefac_val)**(-inv_n_power_law)
-
-#elif (FLOW_LAW==3)
-
-!-------- Durham's flow law (n=4) --------
-
-inv_n_power_law = 0.25_dp   ! 1/4
-
-viscosity = 0.5_dp * de_val_m**(inv_n_power_law-1.0_dp) &
-                   * (enh_val*ratefac_val)**(-inv_n_power_law)
-
+#if (N_POWER_LAW_INT>=1)
+d_inv_n_power_law = 1.0_dp/real(N_POWER_LAW_INT,dp)
+#elif (defined(N_POWER_LAW_REAL))
+d_inv_n_power_law = 1.0_dp/N_POWER_LAW_REAL
+#else
+d_inv_n_power_law = 1.0_dp/3.0_dp   ! default n=3
 #endif
+
+viscosity = 0.5_dp * de_val_m**(d_inv_n_power_law-1.0_dp) &
+                   * (enh_val*ratefac_val)**(-d_inv_n_power_law)
+            ! Nye-Glen flow law
 
 #elif (FIN_VISC==2)
 
-#if (FLOW_LAW==1)
+#if (N_POWER_LAW_INT>=1)
+d_n_power_law = real(N_POWER_LAW_INT,dp)
+#elif (defined(N_POWER_LAW_REAL))
+d_n_power_law = N_POWER_LAW_REAL
+#else
+d_n_power_law = 3.0_dp   ! default n=3
+#endif
 
-!-------- Glen's flow (n=3) with additional finite viscosity --------
-
-#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
-n_power_law = 3.0_dp
-#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
-n_power_law = 3.0_dp + SUM(n_glen_da_dummy2d_scalar) / SIZE(n_glen_da_dummy2d_scalar)
-#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
-
-viscosity = visc_iter(de_val_m, ratefac_val, enh_val, n_power_law, SIGMA_RES)
-
-#elif (FLOW_LAW==2)
-
-!-------- Goldsby-Kohlstedt flow law (n=1.8, d=1.4)
-!                           with additional finite viscosity --------
-
-n_power_law  = 1.8_dp
-n_grain_size = 1.4_dp
-
-errormsg = ' >>> viscosity: Computation of the viscosity as a function' &
-         //         end_of_line &
-         //'        of the effective strain rate not yet implemented' &
-         //         end_of_line &
-         //'        for grain-size-dependent finite viscosity flow laws!'
-call error(errormsg)
-
-#elif (FLOW_LAW==3)
-
-!-------- Durham's flow law (n=4) with additional finite viscosity --------
-
-n_power_law = 4.0_dp
-
-viscosity = visc_iter(de_val_m, ratefac_val, enh_val, n_power_law, SIGMA_RES)
+viscosity = visc_iter(de_val_m, ratefac_val, enh_val, d_n_power_law, SIGMA_RES)
+            ! Nye-Glen flow with additional finite viscosity
 
 #endif
 
+#elif (FLOW_LAW==4)
+
+#if (defined(SM_COEFF1))
+sm_coeff_1 = SM_COEFF1
+#else
+sm_coeff_1 = 8.5112e-15_dp   ! s^-1 Pa^-1
 #endif
 
-#if (FLOW_LAW==4)
+#if (defined(SM_COEFF2))
+sm_coeff_2 = SM_COEFF2
+#else
+sm_coeff_2 = 8.1643e-25_dp   ! s^-1 Pa^-3
+#endif
 
-!-------- Smith-Morland (polynomial) flow law --------
+#if (defined(SM_COEFF3))
+sm_coeff_3 = SM_COEFF3
+#else
+sm_coeff_3 = 9.2594e-12_dp   ! Pa^-2
+#endif
 
 viscosity = visc_iter_sm(de_val_m, ratefac_val, enh_val, &
                          sm_coeff_1, sm_coeff_2, sm_coeff_3)
+            ! Smith-Morland (polynomial) flow law,
+            ! normalized to a dimensionless rate factor with A(-10C)=1
 
 #endif
 
@@ -523,14 +511,14 @@ end function viscosity
 !> Iterative computation of the viscosity by solving equation (4.28)
 !! by Greve and Blatter (Springer, 2009).
 !-------------------------------------------------------------------------------
-function visc_iter(de_val_m, ratefac_val, enh_val, n_power_law, sigma_res)
+function visc_iter(de_val_m, ratefac_val, enh_val, d_n_power_law, sigma_resid)
 
 implicit none
 
 real(dp)             :: visc_iter
 real(dp), intent(in) :: de_val_m
 real(dp), intent(in) :: ratefac_val, enh_val
-real(dp), intent(in) :: n_power_law, sigma_res
+real(dp), intent(in) :: d_n_power_law, sigma_resid
 
 integer(i4b) :: n
 integer(i4b) :: max_iters
@@ -552,7 +540,7 @@ do while ((.not.flag_rescheck1).and.(n <= max_iters))
    n = n+1
 
    res = fct_visc(de_val_m, ratefac_val, enh_val, visc_val, &
-                  n_power_law, sigma_res)
+                  d_n_power_law, sigma_resid)
 
    if (res < 0.0_dp) then
       visc_val = 10.0_dp*visc_val
@@ -578,10 +566,10 @@ if (flag_rescheck1) then
       visc_val = visc_val &
                  - res &
                    /fct_visc_deriv(de_val_m, ratefac_val, enh_val, visc_val, &
-                                   n_power_law, sigma_res)
+                                   d_n_power_law, sigma_resid)
 
       res = fct_visc(de_val_m, ratefac_val, enh_val, visc_val, &
-                     n_power_law, sigma_res)
+                     d_n_power_law, sigma_resid)
 
       if (abs(res) < eps) then 
          flag_rescheck2 = .true. 
@@ -600,7 +588,7 @@ end function visc_iter
 !! [equation (4.28) by Greve and Blatter (Springer, 2009)].
 !-------------------------------------------------------------------------------
 function fct_visc(de_val_m, ratefac_val, enh_val, visc_val, &
-                  n_power_law, sigma_res)
+                  d_n_power_law, sigma_resid)
 
 implicit none
 
@@ -608,14 +596,14 @@ real(dp)             :: fct_visc
 real(dp), intent(in) :: de_val_m
 real(dp), intent(in) :: ratefac_val, enh_val
 real(dp), intent(in) :: visc_val
-real(dp), intent(in) :: n_power_law, sigma_res
+real(dp), intent(in) :: d_n_power_law, sigma_resid
 
-fct_visc = 2.0_dp**n_power_law &
+fct_visc = 2.0_dp**d_n_power_law &
              *enh_val*ratefac_val &
-             *de_val_m**(n_power_law-1.0_dp) &
-             *visc_val**n_power_law &
+             *de_val_m**(d_n_power_law-1.0_dp) &
+             *visc_val**d_n_power_law &
           + 2.0_dp*enh_val*ratefac_val &
-             *sigma_res**(n_power_law-1.0_dp) &
+             *sigma_resid**(d_n_power_law-1.0_dp) &
              *visc_val &
           - 1.0_dp
 
@@ -626,7 +614,7 @@ end function fct_visc
 !! [equation (4.28) by Greve and Blatter (Springer, 2009)].
 !-------------------------------------------------------------------------------
 function fct_visc_deriv(de_val_m, ratefac_val, enh_val, visc_val, &
-                        n_power_law, sigma_res)
+                        d_n_power_law, sigma_resid)
 
 implicit none
 
@@ -634,14 +622,14 @@ real(dp)             :: fct_visc_deriv
 real(dp), intent(in) :: de_val_m
 real(dp), intent(in) :: ratefac_val, enh_val
 real(dp), intent(in) :: visc_val
-real(dp), intent(in) :: n_power_law, sigma_res
+real(dp), intent(in) :: d_n_power_law, sigma_resid
 
-fct_visc_deriv = 2.0_dp**n_power_law*n_power_law &
+fct_visc_deriv = 2.0_dp**d_n_power_law*d_n_power_law &
                    *enh_val*ratefac_val &
-                   *de_val_m**(n_power_law-1.0_dp) &
-                   *visc_val**(n_power_law-1.0_dp) &
+                   *de_val_m**(d_n_power_law-1.0_dp) &
+                   *visc_val**(d_n_power_law-1.0_dp) &
                  + 2.0_dp*enh_val*ratefac_val &
-                   *sigma_res**(n_power_law-1.0_dp)
+                   *sigma_resid**(d_n_power_law-1.0_dp)
          
 end function fct_visc_deriv
 
