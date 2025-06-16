@@ -4,7 +4,7 @@
 
 !-------- Basic settings --------
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2025-02-26'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2025-06-16'
 !                      Date of last change
 
 !-------- Domain --------
@@ -79,7 +79,7 @@
 !       Coefficient of the water-content dependence in the rate factor
 !       for temperate
 
-#define RF_KAPPA_C_FILE 'RF_KAPPA_C_CuPa10.nc'
+#define RF_KAPPA_C_FILE 'RF_dimless_KAPPA_C_CuPa10.nc'
 !       Name of the file containing the tabulated values of the
 !       temperature-dependent rate factor, heat conductivity and specific heat
 
@@ -396,27 +396,31 @@
 !-------- Flow law --------
 
 #define FLOW_LAW 1
-!                         1 : Glen's flow law with stress exponent n=3
-!                         2 : Goldsby-Kohlstedt flow law with stress exponent
-!                             n=1.8 and grain-size exponent p=1.4
-!                         3 : Durham's flow law with stress exponent n=4
+!                         1 : Nye-Glen flow law (power law)
 !                         4 : Smith-Morland (polynomial) flow law
 
-#define FIN_VISC 1
-!                         1 : Unmodified flow law with infinite viscosity
-!                             for low strain rates
-!                             (only for FLOW_LAW==1, 2, 3)
-!                         2 : Modified flow law with additional
-!                             finite-viscosity parameter SIGMA_RES
-!                             (only for FLOW_LAW==1, 2, 3)
+#define N_POWER_LAW_INT 3
+!                         Stress exponent for the Nye-Glen flow law
+!                         (integer value, only for FLOW_LAW==1)
 
-#define GR_SIZE 1.0d-03
-!                         Average grain size (in m; only for FLOW_LAW==2)
+#define N_POWER_LAW_REAL 9999.9d0
+!                         Stress exponent for the Nye-Glen flow law
+!                         (real value, only for FLOW_LAW==1,
+!                          and only used if N_POWER_LAW_INT is undefined
+!                          or non-positive, otherwise ignored)
+
+#define FIN_VISC 1
+!                         1 : Unmodified Nye-Glen flow law with
+!                             infinite viscosity in the low-strain-rate limit
+!                             (only for FLOW_LAW==1)
+!                         2 : Regularized Nye-Glen flow law with
+!                             additional finite-viscosity parameter SIGMA_RES
+!                             (only for FLOW_LAW==1)
 
 #define SIGMA_RES 1.0d+04
 !                         Residual stress (finite-viscosity contribution)
-!                         in the creep response function
-!                         (in Pa; only for FLOW_LAW==1, 2, 3 and FIN_VISC==2)
+!                         for the regularized Nye-Glen flow law
+!                         (in Pa; only for FLOW_LAW==1 and FIN_VISC==2)
 
 !-------- Flow enhancement factor --------
 
@@ -718,35 +722,35 @@
 !-------- Surface temperature --------
 
 #define TSURFACE 1
-!                         1 : delta_ts = DELTA_TS0, steady state
-!                         3 : Sinusoidal air-temperature forcing
-!                             between delta_ts = 0 C and delta_ts =
-!                             -2*SINE_AMPLIT C with period
-!                             SINE_PERIOD (in a)
-!                         4 : delta_ts from ice-core data
-!                             (e.g., GRIP, Vostok)
-!                         5 : Surface temperature interpolated by using
-!                             present values, LGM anomalies and a
-!                             glacial index (requires ACCSURFACE==5)
-!                         6 : Surface temperature climatology and anomaly
-!                             read directly from NetCDF files
-!                             (requires ACCSURFACE==6, ABLSURFACE==6)
+!                       1 : delta_ts = DELTA_TS0, steady state
+!                       3 : Sinusoidal air-temperature forcing
+!                           between delta_ts = 0 C and delta_ts =
+!                           -2*SINE_AMPLIT C with period
+!                           SINE_PERIOD (in a)
+!                       4 : delta_ts from ice-core data
+!                           (e.g., GRIP, Vostok)
+!                       5 : Surface temperature interpolated by using
+!                           present values, LGM anomalies and a
+!                           glacial index (requires ACCSURFACE==5)
+!                       6 : Surface temperature climatology and anomaly
+!                           read directly from NetCDF files
+!                           (requires ACCSURFACE==6, ABLSURFACE==6)
 
 #define TEMP_PRESENT_PARA 2
-!                         Parameterization of the present-day mean-annual
+!                       Parameterization of the present-day mean-annual
 !                         and mean-January (summer) surface temperatures by
 !                         1 : Fortuin and Oerlemans (1990)
 !                             for the whole ice sheet
 !                         2 : Fortuin and Oerlemans (1990),
 !                             separately for three different elevation ranges
-!                         (for TSURFACE<=5)
 
 #define TEMP_PRESENT_OFFSET 0.0d0
-!                         Offset for the parameterization of the present-day
-!                         mean-annual and mean-July surface temperatures (in C)
-!                         in order to optimise the match
-!                         for the chosen reference year YEAR_ZERO
-!                         (for TSURFACE<=5)
+!                       Offset for the parameterization of the
+!                       present-day mean-annual and mean-July (mid-summer)
+!                       surface temperatures (in degC)
+!                       in order to optimize the match
+!                       for the chosen reference year YEAR_ZERO
+!                       (for TEMP_PRESENT_PARA>0 and TSURFACE<=5)
 
 #define DELTA_TS0 0.0d0
 !                       Constant air-temperature deviation for steady
