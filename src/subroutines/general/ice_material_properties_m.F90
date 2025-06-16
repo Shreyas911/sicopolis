@@ -339,7 +339,11 @@ creep = sigma_val*sigma_val*sigma_val
 #elif (N_POWER_LAW_INT>=5)
 creep = sigma_val**(N_POWER_LAW_INT-1)
 #elif (defined(N_POWER_LAW_REAL))
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+creep = sigma_val**(N_POWER_LAW_REAL + SUM(n_glen_da_dummy2d_scalar) / SIZE(n_glen_da_dummy2d_scalar) - 1.0_dp)
+#else /* NORMAL */
 creep = sigma_val**(N_POWER_LAW_REAL-1.0_dp)
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 #else
 creep = sigma_val*sigma_val   ! default n=3
 #endif
@@ -359,8 +363,13 @@ creep = sigma_val*sigma_val*sigma_val + SIGMA_RES*SIGMA_RES*SIGMA_RES
 creep = sigma_val**(N_POWER_LAW_INT-1) &
            + SIGMA_RES**(N_POWER_LAW_INT-1)
 #elif (defined(N_POWER_LAW_REAL))
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+creep = sigma_val**(N_POWER_LAW_REAL + SUM(n_glen_da_dummy2d_scalar) / SIZE(n_glen_da_dummy2d_scalar) -1.0_dp) &
+           + SIGMA_RES**(N_POWER_LAW_REAL + SUM(n_glen_da_dummy2d_scalar) / SIZE(n_glen_da_dummy2d_scalar) -1.0_dp)
+#else /* NORMAL */
 creep = sigma_val**(N_POWER_LAW_REAL-1.0_dp) &
            + SIGMA_RES**(N_POWER_LAW_REAL-1.0_dp)
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 #else
 creep = sigma_val*sigma_val + SIGMA_RES*SIGMA_RES   ! default n=3
 #endif
@@ -452,7 +461,11 @@ de_val_m = max(de_val, de_min)
 #if (N_POWER_LAW_INT>=1)
 d_inv_n_power_law = 1.0_dp/real(N_POWER_LAW_INT,dp)
 #elif (defined(N_POWER_LAW_REAL))
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+d_inv_n_power_law = 1.0_dp/(N_POWER_LAW_REAL + SUM(n_glen_da_dummy2d_scalar) / SIZE(n_glen_da_dummy2d_scalar))
+#else /* NORMAL */
 d_inv_n_power_law = 1.0_dp/N_POWER_LAW_REAL
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 #else
 d_inv_n_power_law = 1.0_dp/3.0_dp   ! default n=3
 #endif
@@ -466,7 +479,11 @@ viscosity = 0.5_dp * de_val_m**(d_inv_n_power_law-1.0_dp) &
 #if (N_POWER_LAW_INT>=1)
 d_n_power_law = real(N_POWER_LAW_INT,dp)
 #elif (defined(N_POWER_LAW_REAL))
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+d_n_power_law = N_POWER_LAW_REAL + SUM(n_glen_da_dummy2d_scalar) / SIZE(n_glen_da_dummy2d_scalar)
+#else /* NORMAL */
 d_n_power_law = N_POWER_LAW_REAL
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 #else
 d_n_power_law = 3.0_dp   ! default n=3
 #endif

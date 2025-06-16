@@ -2391,7 +2391,12 @@ contains
                              /stress_dev_scale**N_POWER_LAW_INT
 #elif (defined(N_POWER_LAW_REAL))
      RF_scale = (strain_rate_scale/year2sec_aux) &
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+              /stress_dev_scale**(N_POWER_LAW_REAL + + SUM(n_glen_da_dummy2d_scalar) / SIZE(n_glen_da_dummy2d_scalar))
+#else /* NORMAL */
                              /stress_dev_scale**N_POWER_LAW_REAL
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+
 #else
      RF_scale = (strain_rate_scale/year2sec_aux) &
                              /stress_dev_scale**3
