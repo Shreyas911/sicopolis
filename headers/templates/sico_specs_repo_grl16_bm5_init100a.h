@@ -1,11 +1,10 @@
-
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !                   Specification file sico_specs_runname.h
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 !-------- Basic settings --------
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2025-06-12'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2025-06-16'
 !                      Date of last change
 
 !-------- Domain --------
@@ -80,7 +79,7 @@
 !       Coefficient of the water-content dependence in the rate factor
 !       for temperate
 
-#define RF_KAPPA_C_FILE 'RF_KAPPA_C_CuPa10.nc'
+#define RF_KAPPA_C_FILE 'RF_dimless_KAPPA_C_CuPa10.nc'
 !       Name of the file containing the tabulated values of the
 !       temperature-dependent rate factor, heat conductivity and specific heat
 
