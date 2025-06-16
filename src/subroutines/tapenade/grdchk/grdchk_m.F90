@@ -186,7 +186,8 @@ end subroutine grdchk_main
             enh_intg_da_dummy2d_scalar = 0.0 ! Only used as a scalar ! Not compatible with ANF_DAT==3
 #endif
 #if (FLOW_LAW==1)
-            n_glen_da_dummy2d_scalar   = 0.0 ! Only used as a scalar
+            n_glen_da_dummy2d_scalar   = 0.0 ! Only used as a scalar ! Only compatible with :
+                                             ! ((!defined(N_POWER_LAW_INT) OR N_POWER_LAW_INT < 0) && (defined(N_POWER_LAW_REAL)))
 #endif
             H               = 0.0
             zs              = 0.0 ! Not compatible with ANF_DAT==2
@@ -397,7 +398,8 @@ end subroutine grdchk_main
             enh_intg_da_dummy2d_scalar = 0.0 ! Only used as a scalar ! Not compatible with ANF_DAT==3
 #endif
 #if (FLOW_LAW==1)
-            n_glen_da_dummy2d_scalar   = 0.0 ! Only used as a scalar
+            n_glen_da_dummy2d_scalar   = 0.0 ! Only used as a scalar  ! Only compatible with :
+                                             ! ((!defined(N_POWER_LAW_INT) OR N_POWER_LAW_INT < 0) && (defined(N_POWER_LAW_REAL)))
 #endif
             H               = 0.0
             zs              = 0.0 ! Not compatible with ANF_DAT==2
