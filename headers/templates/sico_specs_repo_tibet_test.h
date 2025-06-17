@@ -4,7 +4,7 @@
 
 !-------- Basic settings --------
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2025-06-16'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2025-06-17'
 !                      Date of last change
 
 !-------- Domain --------
@@ -959,16 +959,24 @@
 !                       1 : Ocean pressure without cut-off (can become negative)
 !                       2 : Ocean pressure with cut-off
 
-#define C_SLIDE 11.2d0
-!                       Sliding coefficient, in m/[a*Pa^(p-q)]
+#define C_SLIDE_DIMLESS 1.12d0
+!                       Sliding coefficient (dimensionless)
 !                       (N_SLIDE_REGIONS separate values).
+
+!                       [If needed, the underlying scaling can be defined by the
+!                       parameters TAU_BAS_SCALE, N_BAS_SCALE and V_BAS_SCALE
+!                       for the basal shear stress (Pa), normal stress (Pa)
+!                       and sliding velocity (m/a), respectively.
+!                       However, if they are undefined, default values
+!                       for the scaling are used, which are usually fine.]
 
 #define C_SLIDE_FILTER_WIDTH 0.0d0
 !                       Filtering width (spatial smoothing by Gaussian filter)
 !                       for the sliding coefficient, in km.
 !                       Set to 0.0d0 for no smoothing.
-!                       Values > 0 only make sense
-!                       for constant Weertman exponents p and q!
+!                       Values > 0 only make sense for
+!                       dimensionless sliding coefficients (C_SLIDE_DIMLESS),
+!                       or for constant Weertman exponents p and q!
 
 #define GAMMA_SLIDE 1.0d0
 !                       Sub-melt sliding coefficient, in K
