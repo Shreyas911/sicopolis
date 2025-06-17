@@ -399,11 +399,11 @@
 !                         1 : Nye-Glen flow law (power law)
 !                         4 : Smith-Morland (polynomial) flow law
 
-#define N_POWER_LAW_INT 3
+#define N_POWER_LAW_INT -1
 !                         Stress exponent for the Nye-Glen flow law
 !                         (integer value, only for FLOW_LAW==1)
 
-#define N_POWER_LAW_REAL 9999.9d0
+#define N_POWER_LAW_REAL 3.0d0
 !                         Stress exponent for the Nye-Glen flow law
 !                         (real value, only for FLOW_LAW==1,
 !                          and only used if N_POWER_LAW_INT is undefined

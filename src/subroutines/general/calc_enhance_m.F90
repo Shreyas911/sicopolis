@@ -64,8 +64,8 @@ contains
   enh_c = ENH_FACT
 #else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 #if (ENHMOD==1)
-  enh_t = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT
-  enh_c = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT
+  enh_t = enh_fact_da_scalar + ENH_FACT
+  enh_c = enh_fact_da_scalar + ENH_FACT
 #else
   enh_t = ENH_FACT
   enh_c = ENH_FACT
@@ -126,8 +126,8 @@ contains
   end do
 #else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 #if (ENHMOD==2)
-  enh_fact_updated = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT
-  enh_intg_updated = SUM(enh_intg_da_dummy2d_scalar) / SIZE(enh_intg_da_dummy2d_scalar) + ENH_INTG
+  enh_fact_updated = enh_fact_da_scalar + ENH_FACT
+  enh_intg_updated = enh_intg_da_scalar + ENH_INTG
 #else
   enh_fact_updated = ENH_FACT
   enh_intg_updated = ENH_INTG
@@ -225,8 +225,8 @@ contains
   end do
 #else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 #if (ENHMOD==3)
-  enh_fact_updated = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT
-  enh_intg_updated = SUM(enh_intg_da_dummy2d_scalar) / SIZE(enh_intg_da_dummy2d_scalar) + ENH_INTG
+  enh_fact_updated = enh_fact_da_scalar + ENH_FACT
+  enh_intg_updated = enh_intg_da_scalar + ENH_INTG
 #else
   enh_fact_updated = ENH_FACT
   enh_intg_updated = ENH_INTG
@@ -474,7 +474,7 @@ contains
   d_n_power_law = real(N_POWER_LAW_INT,dp)
 #elif (defined(N_POWER_LAW_REAL))
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
-  d_n_power_law = N_POWER_LAW_REAL + SUM(n_glen_da_dummy2d_scalar) / SIZE(n_glen_da_dummy2d_scalar)
+  d_n_power_law = N_POWER_LAW_REAL + n_glen_da_scalar
 #else /* NORMAL */
   d_n_power_law = N_POWER_LAW_REAL
 #endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */

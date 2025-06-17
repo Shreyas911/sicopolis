@@ -30,7 +30,7 @@ contains
     integer(i4b)        :: igen_RHO_A, igen_time_lag_asth, igen_flex_rig_lith
     integer(i4b)        :: igen_p_weert, igen_q_weert
     integer(i4b)        :: igen_enh_fact_da_dummy2d_scalar, igen_enh_intg_da_dummy2d_scalar
-!    integer(i4b)        :: igen_n_glen_da_dummy2d_scalar
+    integer(i4b)        :: igen_n_glen_da_dummy2d_scalar
     integer(i4b)        :: igen_zs, igen_zl, igen_zl0, igen_zm, igen_zb
 
 #ifdef XX_GENARR2D_VARS_ARR
@@ -61,7 +61,7 @@ contains
     igen_q_weert         = 0
     igen_enh_fact_da_dummy2d_scalar = 0
     igen_enh_intg_da_dummy2d_scalar = 0
-!    igen_n_glen_da_dummy2d_scalar   = 0
+    igen_n_glen_da_dummy2d_scalar   = 0
     igen_zs              = 0
     igen_zl              = 0
     igen_zl0             = 0
@@ -183,13 +183,13 @@ contains
         //'enh_intg_da_dummy2d_scalar as a control param is only compatible with ENHMOD == 2, 3!'
         call error(errormsg)
 #endif
-!      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_n_glen_da_dummy2d_scalar') then
-!        igen_n_glen_da_dummy2d_scalar = ctrl_index
-!#if (FLOW_LAW != 1)
-!        errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
-!        //'n_glen_da_dummy2d_scalar as a control param is only compatible with Glen flow law i.e. FLOW_LAW == 1!'
-!        call error(errormsg)
-!#endif
+      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_n_glen_da_dummy2d_scalar') then
+        igen_n_glen_da_dummy2d_scalar = ctrl_index
+#if (FLOW_LAW != 1 || !defined(N_POWER_LAW_REAL) || N_POWER_LAW_INT > 0)
+        errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
+        //'n_glen_da_dummy2d_scalar as a control param is only compatible with FLOW_LAW == 1, and defined(N_POWER_LAW_REAL) and N_POWER_LAW_INT undefined or < 0!'
+        call error(errormsg)
+#endif
       else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_zs') then
         igen_zs = ctrl_index
 #if (ANF_DAT==2)
@@ -305,11 +305,11 @@ contains
       call ctrl_map_genarr2d(enh_intg_da_dummy2d_scalar, igen_enh_intg_da_dummy2d_scalar)
     end if
 #endif
-!#if (FLOW_LAW==1)
-!    if (igen_n_glen_da_dummy2d_scalar .GT. 0) then
-!      call ctrl_map_genarr2d(n_glen_da_dummy2d_scalar, igen_n_glen_da_dummy2d_scalar)
-!    end if
-!#endif
+#if (FLOW_LAW==1)
+    if (igen_n_glen_da_dummy2d_scalar .GT. 0) then
+      call ctrl_map_genarr2d(n_glen_da_dummy2d_scalar, igen_n_glen_da_dummy2d_scalar)
+    end if
+#endif
 #if (ANF_DAT!=2)
     if (igen_zs .GT. 0) then
       call ctrl_map_genarr2d(zs, igen_zs)

@@ -2269,6 +2269,10 @@ contains
 
   character(len=64), parameter :: thisroutine = 'read_phys_para'
 
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+  character(len=256) :: tap_temp
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+
 !-------- Determining file type --------
 
 #if (defined(RF_KAPPA_C_FILE))
@@ -2279,7 +2283,12 @@ contains
   filename_aux = adjustr(filename_with_path)
   n            = len(filename_aux)
   ch_nc_test   = filename_aux(n-2:n)
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
   filename_aux = adjustl(filename_aux)
+#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+  tap_temp = adjustl(filename_aux)
+  filename_aux = tap_temp
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
   if (ch_nc_test == '.nc') then
      flag_nc = .true.   ! NetCDF file
@@ -2392,7 +2401,7 @@ contains
 #elif (defined(N_POWER_LAW_REAL))
      RF_scale = (strain_rate_scale/year2sec_aux) &
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
-              /stress_dev_scale**(N_POWER_LAW_REAL + + SUM(n_glen_da_dummy2d_scalar) / SIZE(n_glen_da_dummy2d_scalar))
+              /stress_dev_scale**(N_POWER_LAW_REAL + n_glen_da_scalar)
 #else /* NORMAL */
                              /stress_dev_scale**N_POWER_LAW_REAL
 #endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */

@@ -20,7 +20,7 @@
 #define DO_CTRL_GENTIM2D
 !       Flags to enable specific codes for various types of genctrl
 
-#define NUM_CTRL_GENARR2D 21
+#define NUM_CTRL_GENARR2D 24
 #define NUM_CTRL_GENARR3D 5
 #define NUM_CTRL_GENTIM2D 1
 !       Number of control variables,
@@ -45,32 +45,15 @@
                                          'xx_flex_rig_lith',\
                                          'xx_p_weert',\
                                          'xx_q_weert',\
+                                         'xx_enh_fact_da_dummy2d_scalar',\
+                                         'xx_enh_intg_da_dummy2d_scalar',\
+                                         'xx_n_glen_da_dummy2d_scalar',\
                                          'xx_zs',\
                                          'xx_zl',\
                                          'xx_zl0',\
                                          'xx_zm',\
                                          'xx_zb' ]
 !       List of 2D time-invariant control variables
-!
-!       n_glen_da_dummy2d_scalar can be added to genctrl but it is hard-coded in some places, and tuning it changes units of Arrhenius factor A, which is only known for n = 3.
-!       WARNING: enh_fact_da_dummy2d_scalar, enh_intg_da_dummy2d_scalar, n_glen_da_dummy2d_scalar are special cases.
-!       They are only supposed to be scalars. Illustrating examples below.
-!
-!       Comment out in ice_material_properties_m for n_glen_da_dummy2d_scalar.
-!       n_power_law = 3.0_dp + SUM(n_glen_da_dummy2d_scalar) / SIZE(n_glen_da_dummy2d_scalar)
-!       But add this line since n_glen_da_dummy2d_scalar = exp(xx_n_glen_da_dummy2d_scalar) = 3.0
-!       n_power_law = SUM(n_glen_da_dummy2d_scalar) / SIZE(n_glen_da_dummy2d_scalar)
-!
-!       Set ENH_FACT = 0 in header files and replace the following line in calc_enhance_m.
-!       enh_c = ENH_FACT
-!       with this line.
-!       enh_c = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar) + ENH_FACT
-!
-!       WARNING: enh_fact_da_dummy2d_scalar, enh_intg_da_dummy2d_scalar are special cases.
-!       They currently cannot be used with pickups, hence you do not see them in the list above by default.
-!       They need to be accounted for correctly in read_tms_nc, since it is reading enh_c and enh_t from the spinup.
-!       You can add an extreme value in read_tms_nc to enh_c and enh_t (say 1000) and verify for yourself that the simulation crashes.
-!       This is unlike vx_c, vy_c, vz_c, which get completely overwritten.
 
 !#define NUMCTRLPROCARR2D 1
 !!       Maximum number of preprocessing steps for ctrl variables
@@ -81,6 +64,9 @@
 !                                         'log10ctrl',\
 !                                         'none',\
 !                                         'none',\
+!                                         'log10ctrl',\
+!                                         'log10ctrl',\
+!                                         'log10ctrl',\
 !                                         'log10ctrl',\
 !                                         'log10ctrl',\
 !                                         'log10ctrl',\

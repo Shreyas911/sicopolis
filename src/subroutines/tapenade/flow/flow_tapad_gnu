@@ -1,3 +1,23 @@
+function adjustl:
+intrinsic:
+shape: (param 1, result)
+type: (character(), character())
+ReadNotWritten: (1, 0)
+ReadThenWritten: (0, 0)
+NotReadThenWritten: (0, 1)
+deps:  (id,
+	1, 0)
+
+function adjustr:
+intrinsic:
+shape: (param 1, result)
+type: (character(), character())
+readnotwritten: (1, 0)
+readthenwritten: (0, 0)
+notreadthenwritten: (0, 1)
+deps:  (id,
+	1, 0)
+
 function ceiling:
 intrinsic:
 shape: (param 1, result)

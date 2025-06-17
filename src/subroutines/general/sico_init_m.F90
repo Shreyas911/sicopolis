@@ -305,6 +305,16 @@ call error(errormsg)
 call ctrl_init_gen()
 
 #endif /* ALLOW_GENCTRL */
+
+#if (FLOW_LAW==1)
+n_glen_da_scalar = SUM(n_glen_da_dummy2d_scalar) / SIZE(n_glen_da_dummy2d_scalar)
+#endif
+#if (ENHMOD==1 || ENHMOD==2 || ENHMOD==3)
+enh_fact_da_scalar = SUM(enh_fact_da_dummy2d_scalar) / SIZE(enh_fact_da_dummy2d_scalar)
+#endif
+#if (ENHMOD==2 || ENHMOD==3)
+enh_intg_da_scalar = SUM(enh_intg_da_dummy2d_scalar) / SIZE(enh_intg_da_dummy2d_scalar)
+#endif
 #endif /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
 
 !-------- Initialization of the Library of Iterative Solvers Lis,
