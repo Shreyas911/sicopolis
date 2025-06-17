@@ -80,7 +80,6 @@
 !                                         'none',\
 !                                         'none',\
 !                                         'none',\
-!                                         'none',\
 !                                         'none' ]
 !!       Define preprocessing steps for ctrl variables
 !!       log10ctrl only works if defined(ALLOW_GENCTRL_BEFORE_SICO_INIT)
