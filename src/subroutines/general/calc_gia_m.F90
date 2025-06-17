@@ -44,7 +44,11 @@ module calc_gia_m
   implicit none
 
   private
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+  public :: calc_gia, calc_el
+#else /* NORMAL */
   public :: calc_gia
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 contains
 

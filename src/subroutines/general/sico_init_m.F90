@@ -97,6 +97,10 @@ subroutine sico_init(dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
   use output_m
 #endif /* NORMAL */
 
+#if (defined(ALLOW_NODIFF) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
+  use calc_gia_m
+#endif /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
+
 implicit none
 
 integer(i4b), intent(out) :: ndat2d, ndat3d
@@ -209,6 +213,15 @@ character(len=64), parameter :: fmt1 = '(a)', &
                                 fmt2 = '(a,i0)', &
                                 fmt3 = '(a,es13.5)', &
                                 fmt4 = '(a,es20.12)'
+
+#if (defined(ALLOW_NODIFF) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
+real(dp) :: tldt_inv(0:JMAX,0:IMAX)
+real(dp) :: time_ratio_1(0:JMAX,0:IMAX), time_ratio_2(0:JMAX,0:IMAX)
+real(dp) :: load_ice_water(0:JMAX,0:IMAX)
+real(dp) :: dtime_inv
+real(dp) :: rho_g, rhosw_g
+real(dp), dimension(0:JMAX,0:IMAX) :: rhoa_g_inv
+#endif
 
 write(unit=6, fmt='(/a)') ' -------- sico_init --------'
 
@@ -3580,6 +3593,71 @@ end do
 end do
 
 #endif
+
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+
+!-------- Term abbreviations --------
+
+do i=0, IMAX
+do j=0, JMAX
+   tldt_inv(j,i) = 1.0_dp/(time_lag_asth(j,i)+dtime)
+   time_ratio_1(j,i) = tldt_inv(j,i) * time_lag_asth(j,i)
+   time_ratio_2(j,i) = tldt_inv(j,i) * dtime
+end do
+end do
+
+rho_g      = RHO*G
+rhosw_g    = RHO_SW*G
+rhoa_g_inv = 1.0_dp/(RHO_A*G)
+
+dtime_inv = 1.0_dp/dtime
+
+!-------- Load due to ice and sea water --------
+
+#if (REBOUND==0)
+
+load_ice_water = 0.0_dp   ! not needed, thus not computed
+
+#elif (REBOUND==1 || REBOUND==2)
+
+do i=0, IMAX
+do j=0, JMAX
+
+   if (mask(j,i) <= 1) then   ! grounded ice or ice-free land
+
+      load_ice_water(j,i) = rho_g * H(j,i)
+
+   else   ! (mask(j,i) >= 2, floating ice or ocean)
+
+      load_ice_water(j,i) = rhosw_g * z_sl(j,i)
+                   ! Water load relative to the present sea-level stand (0 m)
+                   ! -> can be positive or negative
+
+   end if
+
+end do
+end do
+
+#endif
+
+!-------- Steady-state displacement of the lithosphere
+!                              (wss, positive downward) --------
+
+#if (REBOUND==0)
+
+wss = 0.0_dp
+
+#elif (REBOUND==1)
+
+wss = FRAC_LLRA * ( load_ice_water * rhoa_g_inv )
+
+#elif (REBOUND==2)
+
+call calc_el(load_ice_water, dxi, deta)
+
+#endif
+
+#endif /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
 
 !-------- Initial velocities --------
 
