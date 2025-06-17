@@ -31,7 +31,7 @@ contains
     integer(i4b)        :: igen_p_weert, igen_q_weert
     integer(i4b)        :: igen_enh_fact_da_dummy2d_scalar, igen_enh_intg_da_dummy2d_scalar
     integer(i4b)        :: igen_n_glen_da_dummy2d_scalar
-    integer(i4b)        :: igen_zs, igen_zl, igen_zl0, igen_zm, igen_zb
+    integer(i4b)        :: igen_zs, igen_zl, igen_zl0, igen_zb
 
 #ifdef XX_GENARR2D_VARS_ARR
     xx_genarr2d_vars            = XX_GENARR2D_VARS_ARR
@@ -65,7 +65,6 @@ contains
     igen_zs              = 0
     igen_zl              = 0
     igen_zl0             = 0
-    igen_zm              = 0
     igen_zb              = 0
 
 #ifdef XX_GENARR2D_VARS_ARR
@@ -206,14 +205,6 @@ contains
 #endif
       else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_zl0') then
         igen_zl0 = ctrl_index
-      else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_zm') then
-        igen_zm = ctrl_index
-#if (!(ANF_DAT==3) || defined(LEGACY_RESTART) || (CALCMOD==1))
-        errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
-          //'zm as a control param is only compatible with ' &
-          //'ANF_DAT == 3 and !defined(LEGACY_RESTART) and CALCMOD != 1 for now !'
-        call error(errormsg)
-#endif
       else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_zb') then
         igen_zb = ctrl_index
 #if (ANF_DAT==2 || (ANF_DAT == 1 && !defined(ZB_PRESENT_FILE)))
@@ -321,11 +312,6 @@ contains
     if (igen_zl0 .GT. 0) then
       call ctrl_map_genarr2d(zl0, igen_zl0)
     end if
-#if ((ANF_DAT==3) && !defined(LEGACY_RESTART) && (CALCMOD!=1))
-    if (igen_zm .GT. 0) then
-      call ctrl_map_genarr2d(zm, igen_zm)
-    end if
-#endif
 #if ((ANF_DAT==1 && defined(ZB_PRESENT_FILE)) || ANF_DAT==3)
     if (igen_zb .GT. 0) then
       call ctrl_map_genarr2d(zb, igen_zb)

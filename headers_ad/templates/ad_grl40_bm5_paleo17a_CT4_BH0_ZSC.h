@@ -20,7 +20,7 @@
 #define DO_CTRL_GENTIM2D
 !       Flags to enable specific codes for various types of genctrl
 
-#define NUM_CTRL_GENARR2D 24
+#define NUM_CTRL_GENARR2D 23
 #define NUM_CTRL_GENARR3D 3
 #define NUM_CTRL_GENTIM2D 1
 !       Number of control variables,
@@ -51,7 +51,6 @@
                                          'xx_zs',\
                                          'xx_zl',\
                                          'xx_zl0',\
-                                         'xx_zm',\
                                          'xx_zb' ]
 !       List of 2D time-invariant control variables
 

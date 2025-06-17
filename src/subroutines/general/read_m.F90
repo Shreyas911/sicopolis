@@ -1440,14 +1440,12 @@ contains
 #else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
         zs(j,i)   = zs(j,i) + real(zs_conv(i,j),dp)
 #endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
-
-#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
         zm(j,i)   = real(zm_conv(i,j),dp)
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
         zb(j,i)   = real(zb_conv(i,j),dp)
         zl(j,i)   = real(zl_conv(i,j),dp)
         zl0(j,i)  = real(zl0_conv(i,j),dp)
 #else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
-        zm(j,i)   = zm(j,i) + real(zm_conv(i,j),dp)
         zb(j,i)   = zb(j,i) + real(zb_conv(i,j),dp)
         zl(j,i)   = zl(j,i) + real(zl_conv(i,j),dp)
         !! SSG: zl0 can be read in sico_init immediately after the call to read_tms_nc.
@@ -1502,6 +1500,7 @@ contains
         end if
 
 ! SSG : THIS LINE IS COMMENTED OUT FROM TOPOGRAPHY1, ZM IS MORE APPROPRIATE TO READ FROM FILE (ALREADY DONE ABOVE).
+! SSG : IT MAKES NO DIFFERENCE EITHER WAYS, SINCE THE ADJOINT ZMB == 0.0
 !        zm(j,i)   = zb(j,i)
 ! SSG : THIS LINE IS DIFFERENT FROM TOPOGRAPHY1, ZB INSTEAD OF ZM IS MORE APPROPRIATE HERE.
         H(j,i)    = H(j,i) + zs(j,i)-zb(j,i)

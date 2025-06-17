@@ -193,7 +193,6 @@ end subroutine grdchk_main
             zs              = 0.0 ! Not compatible with ANF_DAT==2
             zl              = 0.0 ! Not compatible with ANF_DAT==2
             zl0             = 0.0
-            zm              = 0.0 ! Only compatible with ANF_DAT==3 && !defined(LEGACY_RESTART) && CALCMOD!=1
             zb              = 0.0 ! Not compatible with ANF_DAT==2, or if ANF_DAT==1 and ZB_PRESENT_FILE is 'none' or not defined
 #if (ACCSURFACE==2 || ACCSURFACE==3)
             gamma_s         = 0.0
@@ -403,7 +402,6 @@ end subroutine grdchk_main
             zs              = 0.0 ! Not compatible with ANF_DAT==2
             zl              = 0.0 ! Not compatible with ANF_DAT==2
             zl0             = 0.0
-            zm              = 0.0 ! Only compatible with ANF_DAT==3 && !defined(LEGACY_RESTART) && CALCMOD!=1
             zb              = 0.0 ! Not compatible with ANF_DAT==2, or if ANF_DAT==1 and ZB_PRESENT_FILE is 'none' or not defined
 #if (ACCSURFACE==2 || ACCSURFACE==3)
             gamma_s         = 0.0
