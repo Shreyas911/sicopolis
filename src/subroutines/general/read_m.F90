@@ -160,6 +160,11 @@ contains
 
   real(dp), parameter :: one_year = 1.0_dp
 
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+  real(dp)     :: H_ice, freeboard_ratio
+  freeboard_ratio = (RHO_SW-RHO)/RHO_SW
+#endif
+
 !-------- Read data from time-slice file of previous simulation --------
 
   if (present(opt_flag_temp_age_only)) then
@@ -1462,7 +1467,46 @@ contains
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
         H(j,i)    = real(H_conv(i,j),dp)
 #else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
-        H(j,i)    = H(j,i) + real(H_conv(i,j),dp)
+! SSG : THE SNIPPET OF CODE BELOW IS FROM TOPOGRAPHY1.
+        if (mask(j,i) <= 1) then
+
+            zb(j,i) = zl(j,i)   ! ensure consistency
+
+        else if (mask(j,i) == 2) then
+
+#if (MARGIN==1 || MARGIN==2)
+            zs(j,i) = zl(j,i)   ! ensure
+            zb(j,i) = zl(j,i)   ! consistency
+#elif (MARGIN==3)
+            zs(j,i) = 0.0_dp    ! present-day
+            zb(j,i) = 0.0_dp    ! sea level
+#endif
+
+        else if (mask(j,i) == 3) then
+
+#if (MARGIN==1 || (MARGIN==2 && MARINE_ICE_FORMATION==1))
+            mask(j,i) = 2   ! floating ice cut off
+            zs(j,i) = zl(j,i)
+            zb(j,i) = zl(j,i)
+#elif (MARGIN==2 && MARINE_ICE_FORMATION==2)
+            mask(j,i) = 0   ! floating ice becomes "underwater ice"
+            H_ice   = zs(j,i)-zb(j,i)   ! ice thickness
+            zs(j,i) = zl(j,i)+H_ice
+            zb(j,i) = zl(j,i)
+#elif (MARGIN==3)
+            H_ice = zs(j,i)-zb(j,i)   ! ice thickness
+            zs(j,i) = freeboard_ratio*H_ice   ! ensure properly
+            zb(j,i) = zs(j,i)-H_ice           ! floating ice
+#endif
+
+        end if
+
+! SSG : THIS LINE IS COMMENTED OUT FROM TOPOGRAPHY1, ZM IS MORE APPROPRIATE TO READ FROM FILE (ALREADY DONE ABOVE).
+!        zm(j,i)   = zb(j,i)
+! SSG : THIS LINE IS DIFFERENT FROM TOPOGRAPHY1, ZB INSTEAD OF ZM IS MORE APPROPRIATE HERE.
+        H(j,i)    = H(j,i) + zs(j,i)-zb(j,i)
+! SSG : OLD VERSION WHICH DID NOT ENSURE CORRECT RELATIONSHIP BETWEEN ZS, ZL, ZB, ZM, H AFTER TUNING
+!        H(j,i)    = H(j,i) + real(H_conv(i,j),dp)
 #endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 #if (CALCMOD==1)
         H_c(j,i)  = real(H_cold_conv(i,j),dp)
@@ -1495,7 +1539,36 @@ contains
         vz_s(j,i)    = real(vz_s_conv(i,j),dp)*sec2year
         temp_b(j,i)  = real(temp_b_conv(i,j),dp)
         temph_b(j,i) = real(temph_b_conv(i,j),dp)
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
         p_b_w(j,i)   = real(p_b_w_conv(i,j),dp)
+#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+
+! SSG : p_b_w depends on z_sl and zb, so instead of reading from a file we calculate it for AD activation graph purposes.
+! SSG : Snippet from calc_pressure_water_bas
+
+#if (!defined(BASAL_WATER_PRESSURE) || BASAL_WATER_PRESSURE==0)
+
+        p_b_w(j,i) = 0.0_dp
+                   ! zero everywhere
+
+#elif (BASAL_WATER_PRESSURE==1)
+
+        p_b_w(j,i) = RHO_SW*G*(z_sl(j,i)-zb(j,i))
+                   ! ocean pressure without cut-off (can become negative)
+
+#elif (BASAL_WATER_PRESSURE==2)
+
+        p_b_w(j,i) = RHO_SW*G*max((z_sl(j,i)-zb(j,i)), 0.0_dp)
+                   ! ocean pressure with cut-off
+
+#else
+
+        errormsg = ' >>> read_tms_nc: ' &
+                 // 'Parameter BASAL_WATER_PRESSURE must be 0, 1 or 2!'
+        call error(errormsg)
+
+#endif
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
         q_w(j,i)     = real(q_w_conv(i,j),dp)*sec2year
         q_w_x(j,i)   = real(q_w_x_conv(i,j),dp)*sec2year
         q_w_y(j,i)   = real(q_w_y_conv(i,j),dp)*sec2year
@@ -1604,7 +1677,11 @@ contains
 #endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
            enth_c(kc,j,i)  = real(enth_c_conv(i,j,kc),dp)
            omega_c(kc,j,i) = real(omega_c_conv(i,j,kc),dp)
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
+! SSG : enh_c depends on age, so instead of reading from a file we calculate it for AD activation graph purposes.
+! SSG : This is done in sico_init since it already uses module calc_enhance_m.
            enh_c(kc,j,i)   = real(enh_c_conv(i,j,kc),dp)
+#endif
            strain_heating_c(kc,j,i) = real(strain_heating_c_conv(i,j,kc),dp)
         end do
 

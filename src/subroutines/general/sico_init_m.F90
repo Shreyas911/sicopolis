@@ -3457,6 +3457,19 @@ call disc_param(dtime)
 call disc_fields()
 #endif
 
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+#if (ENHMOD==1)
+   call calc_enhance_1()
+#elif (ENHMOD==2)
+   call calc_enhance_2()
+#elif (ENHMOD==3)
+   call calc_enhance_3(time_init)
+#else
+   errormsg = ' >>> sico_init: Parameter ENHMOD must be between 1 and 3 for ANF_DAT==3 for AD purposes!'
+   all error(errormsg)
+#endif
+#endif /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
+
 itercount = 0   ! initialization
 write(unit=6, fmt='(/2x,i0)') itercount
 
