@@ -1662,26 +1662,23 @@ contains
         end do
 
         do kc=0, KCMAX
-#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
            vx_c(kc,j,i)    = real(vx_c_conv(i,j,kc),dp)*sec2year
            vy_c(kc,j,i)    = real(vy_c_conv(i,j,kc),dp)*sec2year
            vz_c(kc,j,i)    = real(vz_c_conv(i,j,kc),dp)*sec2year
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
            temp_c(kc,j,i)  = real(temp_c_conv(i,j,kc),dp)
            age_c(kc,j,i)   = real(age_c_conv(i,j,kc),dp)*year2sec
-#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
-           vx_c(kc,j,i)    = (vx_c(kc,j,i) + real(vx_c_conv(i,j,kc),dp))*sec2year
-           vy_c(kc,j,i)    = (vy_c(kc,j,i) + real(vy_c_conv(i,j,kc),dp))*sec2year
-           vz_c(kc,j,i)    = (vz_c(kc,j,i) + real(vz_c_conv(i,j,kc),dp))*sec2year
-           age_c(kc,j,i)   = (age_c(kc,j,i) + real(age_c_conv(i,j,kc),dp))*year2sec
-           temp_c(kc,j,i)  = temp_c(kc,j,i) + real(temp_c_conv(i,j,kc),dp)
-#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+! SSG : enth_c is a function of temp_c and omega_c and is recalculated in sico_init anyway, so not included in the AD guardrail.
            enth_c(kc,j,i)  = real(enth_c_conv(i,j,kc),dp)
            omega_c(kc,j,i) = real(omega_c_conv(i,j,kc),dp)
-#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
 ! SSG : enh_c depends on age, so instead of reading from a file we calculate it for AD activation graph purposes.
 ! SSG : This is done in sico_init since it already uses module calc_enhance_m.
            enh_c(kc,j,i)   = real(enh_c_conv(i,j,kc),dp)
-#endif
+#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+           temp_c(kc,j,i)  = temp_c(kc,j,i) + real(temp_c_conv(i,j,kc),dp)
+           age_c(kc,j,i)   = (age_c(kc,j,i) + real(age_c_conv(i,j,kc),dp))*year2sec
+           omega_c(kc,j,i) = omega_c(kc,j,i) + real(omega_c_conv(i,j,kc),dp)
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
            strain_heating_c(kc,j,i) = real(strain_heating_c_conv(i,j,kc),dp)
         end do
 

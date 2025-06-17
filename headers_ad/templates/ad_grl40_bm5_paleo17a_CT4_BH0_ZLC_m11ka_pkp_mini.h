@@ -21,7 +21,7 @@
 !       Flags to enable specific codes for various types of genctrl
 
 #define NUM_CTRL_GENARR2D 24
-#define NUM_CTRL_GENARR3D 5
+#define NUM_CTRL_GENARR3D 3
 #define NUM_CTRL_GENTIM2D 1
 !       Number of control variables,
 !       Has to be 0 for all 3 as dummy value when not in use.
@@ -129,7 +129,8 @@
 !-------- Settings for genarr3D --------
 
 #define XX_GENARR3D_VARS_ARR    [ character(CTRL_STRLENGTH) ::\
-                                    'xx_temp_c', 'xx_vx_c', 'xx_vy_c', 'xx_vz_c',\
+                                    'xx_temp_c',\
+                                    'xx_omega_c',\
                                     'xx_age_c' ]
 !       List of 3D time-invariant control variables
 

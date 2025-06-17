@@ -218,9 +218,7 @@ end subroutine grdchk_main
             flex_rig_lith   = 0.0
 #endif
             ! 3D fields
-            vx_c            = 0.0 ! Only compatible with ANF_DAT==3 && !defined(LEGACY_RESTART)
-            vy_c            = 0.0 ! Only compatible with ANF_DAT==3 && !defined(LEGACY_RESTART)
-            vz_c            = 0.0 ! Only compatible with ANF_DAT==3 && !defined(LEGACY_RESTART)
+            omega_c         = 0.0 ! Only compatible with ANF_DAT==3 && !defined(LEGACY_RESTART)
             temp_c          = 0.0 ! Not compatible with ANF_DAT==1 and TEMP_INIT==5
             age_c           = 0.0 ! Not compatible with ANF_DAT==1 and TEMP_INIT==5
             delta_tda       = 0.0 ! Not compatible with TSURFACE>4
@@ -430,9 +428,7 @@ end subroutine grdchk_main
             flex_rig_lith   = 0.0
 #endif
             ! 3D fields
-            vx_c            = 0.0 ! Only compatible with ANF_DAT==3 && !defined(LEGACY_RESTART)
-            vy_c            = 0.0 ! Only compatible with ANF_DAT==3 && !defined(LEGACY_RESTART)
-            vz_c            = 0.0 ! Only compatible with ANF_DAT==3 && !defined(LEGACY_RESTART)
+            omega_c         = 0.0 ! Only compatible with ANF_DAT==3 && !defined(LEGACY_RESTART)
             temp_c          = 0.0 ! Not compatible with ANF_DAT==1 and TEMP_INIT==5
             age_c           = 0.0 ! Not compatible with ANF_DAT==1 and TEMP_INIT==5
             delta_tda       = 0.0 ! Not compatible with TSURFACE>4
