@@ -3470,40 +3470,10 @@ call disc_param(dtime)
 call disc_fields()
 #endif
 
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
-call boundary(time_init, dtime, dxi, deta)
-
-do i=0, IMAX
-do j=0, JMAX
-
-   if ((mask(j,i)==0).or.(mask(j,i)==3)) then
-                 ! grounded or floating ice
-      as_perp_apl(j,i) = as_perp(j,i)
-   else          ! mask==1 or 2, ice-free land or sea
-      as_perp_apl(j,i) = 0.0_dp
-   end if
-
-end do
-end do
-
-smb_corr = 0.0_dp
-
-#if (ENHMOD==1)
-   call calc_enhance_1()
-#elif (ENHMOD==2)
-   call calc_enhance_2()
-#elif (ENHMOD==3)
-   call calc_enhance_3(time_init)
-#else
-   errormsg = ' >>> sico_init: Parameter ENHMOD must be between 1 and 3 for ANF_DAT==3 for AD purposes!'
-   all error(errormsg)
-#endif
-#endif /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
-
 itercount = 0   ! initialization
 write(unit=6, fmt='(/2x,i0)') itercount
 
-#if (!(ANF_DAT==3) || defined(LEGACY_RESTART))
+#if (!(ANF_DAT==3) || defined(LEGACY_RESTART) || (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF)))
 
 call boundary(time_init, dtime, dxi, deta)
 
@@ -3522,11 +3492,11 @@ end do
 
 smb_corr = 0.0_dp
 
-#endif /* (!(ANF_DAT==3) || defined(LEGACY_RESTART)) */
+#endif /* (!(ANF_DAT==3) || defined(LEGACY_RESTART)) */ /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
 
 Q_b_tot = Q_bm + Q_tld
 
-#if (!(ANF_DAT==3) || defined(LEGACY_RESTART))
+#if (!(ANF_DAT==3) || defined(LEGACY_RESTART) || (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF)))
 
 #if (ENHMOD==1)
    call calc_enhance_1()
@@ -3538,16 +3508,24 @@ Q_b_tot = Q_bm + Q_tld
    !%% call calc_enhance_4()
    !%%    (for anisotropic flow enhancement factor,
    !%%     use values read from output of previous simulation)
+#if ((defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+   errormsg = ' >>> sico_init: Parameter ENHMOD must be between 1 and 3 for ANF_DAT==3 for AD purposes!'
+   call error(errormsg)
+#endif /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
 #elif (ENHMOD==5)
    !%% call calc_enhance_5()
    !%%    (for anisotropic flow enhancement factor,
    !%%     use values read from output of previous simulation)
+#if ((defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+   errormsg = ' >>> sico_init: Parameter ENHMOD must be between 1 and 3 for ANF_DAT==3 for AD purposes!'
+   call error(errormsg)
+#endif /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
 #else
    errormsg = ' >>> sico_init: Parameter ENHMOD must be between 1 and 5!'
    call error(errormsg)
 #endif
 
-#endif /* (!(ANF_DAT==3) || defined(LEGACY_RESTART)) */
+#endif /* (!(ANF_DAT==3) || defined(LEGACY_RESTART)) */ /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
 
 #else
 
@@ -3683,7 +3661,7 @@ call flag_update_gf_gl_cf()
 call calc_vxy_b_init()
 call calc_dzs_dxy_aux(dxi, deta)
 
-#if (!(ANF_DAT==3) || defined(LEGACY_RESTART))
+#if (!(ANF_DAT==3) || defined(LEGACY_RESTART) || (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF)))
 
 #if (DYNAMICS==1 || DYNAMICS==2 || DYNAMICS==3)
 
@@ -3710,7 +3688,7 @@ errormsg = ' >>> sico_init: DYNAMICS must be between 0 and 3!'
 call error(errormsg)
 #endif
 
-#endif /* (!(ANF_DAT==3) || defined(LEGACY_RESTART)) */
+#endif /* (!(ANF_DAT==3) || defined(LEGACY_RESTART)) */ /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
 
 call calc_dxyz(dxi, deta, dzeta_c, dzeta_t)
 
