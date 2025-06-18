@@ -1410,6 +1410,7 @@ contains
         n_cts(j,i)    = n_cts_conv(i,j)
         kc_cts(j,i)   = kc_cts_conv(i,j)
 
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
         temp_maat(j,i)   = real(temp_maat_conv(i,j),dp)
         temp_s(j,i)      = real(temp_s_conv(i,j),dp)
         accum(j,i)       = real(accum_conv(i,j),dp)
@@ -1419,6 +1420,7 @@ contains
         as_perp(j,i)     = real(as_perp_conv(i,j),dp)
         as_perp_apl(j,i) = real(as_perp_apl_conv(i,j),dp)
         smb_corr(j,i)    = real(smb_corr_conv(i,j),dp)
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
         z_sl(j,i) = real(z_sl_conv(i,j),dp)
 

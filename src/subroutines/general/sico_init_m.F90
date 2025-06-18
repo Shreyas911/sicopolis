@@ -3471,6 +3471,23 @@ call disc_fields()
 #endif
 
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+call boundary(time_init, dtime, dxi, deta)
+
+do i=0, IMAX
+do j=0, JMAX
+
+   if ((mask(j,i)==0).or.(mask(j,i)==3)) then
+                 ! grounded or floating ice
+      as_perp_apl(j,i) = as_perp(j,i)
+   else          ! mask==1 or 2, ice-free land or sea
+      as_perp_apl(j,i) = 0.0_dp
+   end if
+
+end do
+end do
+
+smb_corr = 0.0_dp
+
 #if (ENHMOD==1)
    call calc_enhance_1()
 #elif (ENHMOD==2)
