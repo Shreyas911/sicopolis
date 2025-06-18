@@ -223,9 +223,12 @@ real(dp) :: rho_g, rhosw_g
 real(dp), dimension(0:JMAX,0:IMAX) :: rhoa_g_inv
 #endif
 
-#if ((defined(ALLOW_NODIFF) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE)) && defined(LEGACY_RESTART))
+#if ((defined(ALLOW_NODIFF) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE)) && (defined(LEGACY_RESTART) || (BASAL_HYDROLOGY > 0) || (CALCMOD==1)))
 errormsg = ' >>> sico_init: ' &
-           // 'Although many parts of LEGACY_RESTART are used in the AD setup, using the LEGACY_RESTART flag with AD might be wrong!'
+           // 'Although many parts of LEGACY_RESTART are used in the AD setup, using the LEGACY_RESTART flag with AD might be wrong!' &
+           // 'BASAL_HYDROLOGY > 0 might be an issue, especially with ANF_DAT==3, where you might have to activate q_w, q_w_x, q_w_y, H_w!' &
+           // 'CALCMOD==1 will need all sorts of temperate domain parameter activation as well as zm, am_perp, and other CTS parameters!' &
+           // 'TEMP_INIT==5 uses read_tms_nc in a very different way and AD might not work with it!'
 call error(errormsg)
 #endif
 

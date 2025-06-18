@@ -1514,10 +1514,6 @@ contains
 #if (CALCMOD==1)
         H_c(j,i)  = real(H_cold_conv(i,j),dp)
         H_t(j,i)  = real(H_temp_conv(i,j),dp)
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
-        errormsg = ' >>> read_tms_nc: AD setup and ANF_DAT==3 and CALCMOD==1 are not compatible!'
-        call error(errormsg)
-#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 #elif (CALCMOD==0 || CALCMOD==2 || CALCMOD==3 || CALCMOD==-1)
         H_c(j,i)  = H(j,i)
         H_t(j,i)  = 0.0_dp
@@ -1581,8 +1577,6 @@ contains
 #if (CALCMOD==1)
         dH_c_dtau(j,i) = real(dH_c_dtau_conv(i,j),dp)*sec2year
         dH_t_dtau(j,i) = real(dH_t_dtau_conv(i,j),dp)*sec2year
-        errormsg = ' >>> read_tms_nc: AD setup and ANF_DAT==3 and CALCMOD==1 are not compatible!'
-        call error(errormsg)
 #elif (CALCMOD==0 || CALCMOD==2 || CALCMOD==3 || CALCMOD==-1)
         dH_c_dtau(j,i) = dH_dtau(j,i)
         dH_t_dtau(j,i) = 0.0_dp
@@ -1632,9 +1626,11 @@ contains
         q_w_x(j,i)   = real(q_w_x_conv(i,j),dp)*sec2year
         q_w_y(j,i)   = real(q_w_y_conv(i,j),dp)*sec2year
         H_w(j,i)     = real(H_w_conv(i,j),dp)
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
         ratio_sl_sia_x(j,i) = real(ratio_sl_sia_x_conv(i,j),dp)
         ratio_sl_sia_y(j,i) = real(ratio_sl_sia_y_conv(i,j),dp)
         ratio_sl_sia(j,i)   = real(ratio_sl_sia_conv(i,j),dp)
+#endif
 
         if (flag_shelfy_stream_x_conv(i,j) == 1) then
            flag_shelfy_stream_x(j,i) = .true.
@@ -1748,6 +1744,7 @@ contains
      end do
      end do
 
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
      if (.not.flag_ratio_sl_sia) then
               ! reconstruct ratio_sl_sia from ratio_sl_sia_x/y
 
@@ -1765,6 +1762,7 @@ contains
         end do
 
      end if
+#endif
 
      if (.not.flag_vis_ave_g) then   ! reconstruct vis_ave_g from vis_int_g
 
