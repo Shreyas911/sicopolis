@@ -1425,10 +1425,12 @@ contains
         z_sl(j,i) = real(z_sl_conv(i,j),dp)
 
 #if (DISC>0)   /* Ice discharge parameterization */
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
         dis_perp(j,i)    = real(dis_perp_conv(i,j),dp)
         cst_dist(j,i)    = real(cst_dist_conv(i,j),dp)
         cos_grad_tc(j,i) = real(cos_grad_tc_conv(i,j),dp)
         mask_mar(j,i)    = mask_mar_conv(i,j)
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 #endif
 
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
@@ -1523,12 +1525,14 @@ contains
         Q_bm(j,i)    = real(Q_bm_conv(i,j),dp)*sec2year
         Q_tld(j,i)   = real(Q_tld_conv(i,j),dp)*sec2year
         am_perp(j,i) = real(am_perp_conv(i,j),dp)*sec2year
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
         qx(j,i)      = real(qx_conv(i,j),dp)*sec2year
         qy(j,i)      = real(qy_conv(i,j),dp)*sec2year
         vx_m_sia(j,i) = real(vx_m_sia_conv(i,j),dp)*sec2year
         vy_m_sia(j,i) = real(vy_m_sia_conv(i,j),dp)*sec2year
         vx_m_ssa(j,i) = real(vx_m_ssa_conv(i,j),dp)*sec2year
         vy_m_ssa(j,i) = real(vy_m_ssa_conv(i,j),dp)*sec2year
+#endif
         dzs_dtau(j,i)  = real(dzs_dtau_conv(i,j),dp)*sec2year
         dzm_dtau(j,i)  = real(dzm_dtau_conv(i,j),dp)*sec2year
         dzb_dtau(j,i)  = real(dzb_dtau_conv(i,j),dp)*sec2year
@@ -1584,12 +1588,14 @@ contains
         dH_t_dtau(j,i) = 0.0_dp
 #endif
 #endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
         vx_b_g(j,i)  = real(vx_b_g_conv(i,j),dp)*sec2year
         vy_b_g(j,i)  = real(vy_b_g_conv(i,j),dp)*sec2year
         vz_b(j,i)    = real(vz_b_conv(i,j),dp)*sec2year
         vx_s_g(j,i)  = real(vx_s_g_conv(i,j),dp)*sec2year
         vy_s_g(j,i)  = real(vy_s_g_conv(i,j),dp)*sec2year
         vz_s(j,i)    = real(vz_s_conv(i,j),dp)*sec2year
+#endif
         temp_b(j,i)  = real(temp_b_conv(i,j),dp)
         temph_b(j,i) = real(temph_b_conv(i,j),dp)
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
@@ -1704,9 +1710,11 @@ contains
         end do
 
         do kt=0, KTMAX
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
            vx_t(kt,j,i)    = real(vx_t_conv(i,j,kt),dp)*sec2year
            vy_t(kt,j,i)    = real(vy_t_conv(i,j,kt),dp)*sec2year
            vz_t(kt,j,i)    = real(vz_t_conv(i,j,kt),dp)*sec2year
+#endif
            omega_t(kt,j,i) = real(omega_t_conv(i,j,kt),dp)
            age_t(kt,j,i)   = real(age_t_conv(i,j,kt),dp)*year2sec
            enth_t(kt,j,i)  = real(enth_t_conv(i,j,kt),dp)
@@ -1715,9 +1723,11 @@ contains
         end do
 
         do kc=0, KCMAX
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
            vx_c(kc,j,i)    = real(vx_c_conv(i,j,kc),dp)*sec2year
            vy_c(kc,j,i)    = real(vy_c_conv(i,j,kc),dp)*sec2year
            vz_c(kc,j,i)    = real(vz_c_conv(i,j,kc),dp)*sec2year
+#endif
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
            temp_c(kc,j,i)  = real(temp_c_conv(i,j,kc),dp)
            age_c(kc,j,i)   = real(age_c_conv(i,j,kc),dp)*year2sec
