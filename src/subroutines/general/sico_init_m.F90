@@ -223,6 +223,12 @@ real(dp) :: rho_g, rhosw_g
 real(dp), dimension(0:JMAX,0:IMAX) :: rhoa_g_inv
 #endif
 
+#if ((defined(ALLOW_NODIFF) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE)) && defined(LEGACY_RESTART))
+errormsg = ' >>> sico_init: ' &
+           // 'Although many parts of LEGACY_RESTART are used in the AD setup, using the LEGACY_RESTART flag with AD might be wrong!'
+call error(errormsg)
+#endif
+
 write(unit=6, fmt='(/a)') ' -------- sico_init --------'
 
 !-------- Name of the computational domain --------

@@ -393,10 +393,10 @@ contains
     do ctrl_index = 1, NUM_CTRL_GENARR3D
       if (trim(adjustl(xx_genarr3d_vars(ctrl_index))) .EQ. 'xx_omega_c') then
         igen_omega_c = ctrl_index
-#if (!(ANF_DAT==3) || defined(LEGACY_RESTART))
+#if !(ANF_DAT==3)
         errormsg = ' >>> ctrl_map_ini_genarr3d: ' &
           //'omega_c as a control param is only compatible with ' &
-          //'ANF_DAT == 3 and !defined(LEGACY_RESTART) for now !'
+          //'ANF_DAT == 3 for now !'
         call error(errormsg)
 #endif
       else if (trim(adjustl(xx_genarr3d_vars(ctrl_index))) .EQ. 'xx_temp_c') then
@@ -417,7 +417,7 @@ contains
   
     end do
 
-#if ((ANF_DAT==3) && !defined(LEGACY_RESTART))
+#if (ANF_DAT==3)
     if (igen_omega_c .GT. 0) then
       call ctrl_map_genarr3d(omega_c, igen_omega_c)
     end if
