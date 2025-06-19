@@ -1423,6 +1423,7 @@ contains
         smb_corr(j,i)    = real(smb_corr_conv(i,j),dp)
 #endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
+! SSG : Not an active control for DA (i.e. z_sld and z_slb don't exist).
         z_sl(j,i) = real(z_sl_conv(i,j),dp)
 
 #if (DISC>0)   /* Ice discharge parameterization */
@@ -1446,6 +1447,7 @@ contains
 #else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
         zs(j,i)   = zs(j,i) + real(zs_conv(i,j),dp)
 #endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+! SSG : Not sensitive controls for DA (zero gradients).
         zm(j,i)   = real(zm_conv(i,j),dp)
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
         zb(j,i)   = real(zb_conv(i,j),dp)
@@ -1525,6 +1527,7 @@ contains
         Q_bm(j,i)    = real(Q_bm_conv(i,j),dp)*sec2year
         Q_tld(j,i)   = real(Q_tld_conv(i,j),dp)*sec2year
 #endif
+! SSG : Not an active control for DA (i.e. am_perpd and am_perpb don't exist).
         am_perp(j,i) = real(am_perp_conv(i,j),dp)*sec2year
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
 ! SSG : Computed using calls to various velocity subroutines in sico_init later.
@@ -1535,6 +1538,7 @@ contains
         vx_m_ssa(j,i) = real(vx_m_ssa_conv(i,j),dp)*sec2year
         vy_m_ssa(j,i) = real(vy_m_ssa_conv(i,j),dp)*sec2year
 #endif
+! SSG : Not sensitive controls for DA (zero gradients).
         dzs_dtau(j,i)  = real(dzs_dtau_conv(i,j),dp)*sec2year
         dzm_dtau(j,i)  = real(dzm_dtau_conv(i,j),dp)*sec2year
         dzb_dtau(j,i)  = real(dzb_dtau_conv(i,j),dp)*sec2year
@@ -1678,9 +1682,11 @@ contains
            flag_grounded_front_b_2(j,i) = .false.
         end if
 
+! SSG : Not an active control for DA (i.e. vis_ave_gd and vis_ave_gb and vis_int_gd and vis_int_gb don't exist).
         vis_ave_g(j,i)  = real(vis_ave_g_conv(i,j),dp)
         vis_int_g(j,i)  = real(vis_int_g_conv(i,j),dp)
 
+! SSG : TODO, temp_r should be computed from temp_c. It should not be an independent control.
         do kr=0, KRMAX
            temp_r(kr,j,i) = real(temp_r_conv(i,j,kr),dp)
         end do
