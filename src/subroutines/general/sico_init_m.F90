@@ -3514,6 +3514,8 @@ Q_b_tot = Q_bm + Q_tld
 
 #if (!(ANF_DAT==3) || defined(LEGACY_RESTART) || (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF)))
 
+! SSG : Compute enh_c, enh_t.
+
 #if (ENHMOD==1)
    call calc_enhance_1()
 #elif (ENHMOD==2)
@@ -3607,6 +3609,8 @@ end do
 
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
 
+! SSG : Compute wss.
+
 !-------- Term abbreviations --------
 
 do i=0, IMAX
@@ -3679,6 +3683,9 @@ call calc_dzs_dxy_aux(dxi, deta)
 
 #if (!(ANF_DAT==3) || defined(LEGACY_RESTART) || (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF)))
 
+! SSG : Computing the various velocity fields and associated fields like ratio_sl_sia_x, ratio_sl_sia_y, ratio_sl_sia.
+! SSG : Compute Q_bm, Q_tld, Q_b_tot, temp_b, temph_b, p_b_w, q_w, q_w_x, q_w_y, H_w in the middle because of the interdependency.
+
 #if (DYNAMICS==1 || DYNAMICS==2 || DYNAMICS==3)
 
 call calc_vxy_b_sia(time)
@@ -3688,8 +3695,10 @@ call calc_vxy_sia(dzeta_c, dzeta_t)
 call calc_vxy_ssa(dxi, deta, dzeta_c, dzeta_t)
 #endif
 
-! SSG : Q_bm depends on vx_t, vy_t but vz_b depends on Q_b_tot = Q_bm + Q_tld.
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+
+! SSG : Q_bm depends on vx_t, vy_t (computed above) but vz_b (computed below) depends on Q_b_tot = Q_bm + Q_tld.
+! SSG : Compute Q_bm, Q_tld, Q_b_tot, temp_b, temph_b, p_b_w, q_w, q_w_x, q_w_y, H_w.
 
 !-------- Melting temperature --------
 
@@ -3734,6 +3743,7 @@ call error(errormsg)
 call calc_dxyz(dxi, deta, dzeta_c, dzeta_t)
 
 !-------- Initial enthalpies --------
+! SSG : Compute enthalphy as function of temp and omega.
 
 #if (CALCMOD==0 || CALCMOD==-1)
 

@@ -1411,6 +1411,7 @@ contains
         kc_cts(j,i)   = kc_cts_conv(i,j)
 
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
+! SSG : Computed using call to boundary in sico_init later. as_perp_apl does give a slightly different value though.
         temp_maat(j,i)   = real(temp_maat_conv(i,j),dp)
         temp_s(j,i)      = real(temp_s_conv(i,j),dp)
         accum(j,i)       = real(accum_conv(i,j),dp)
@@ -1426,6 +1427,7 @@ contains
 
 #if (DISC>0)   /* Ice discharge parameterization */
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
+! SSG : Computed using call to disc_param and disc_fields in sico_init later.
         dis_perp(j,i)    = real(dis_perp_conv(i,j),dp)
         cst_dist(j,i)    = real(cst_dist_conv(i,j),dp)
         cos_grad_tc(j,i) = real(cos_grad_tc_conv(i,j),dp)
@@ -1519,11 +1521,13 @@ contains
         H_t(j,i)  = 0.0_dp
 #endif
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
+! SSG : Computed using call to calc_qbm in sico_init later.
         Q_bm(j,i)    = real(Q_bm_conv(i,j),dp)*sec2year
         Q_tld(j,i)   = real(Q_tld_conv(i,j),dp)*sec2year
 #endif
         am_perp(j,i) = real(am_perp_conv(i,j),dp)*sec2year
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
+! SSG : Computed using calls to various velocity subroutines in sico_init later.
         qx(j,i)      = real(qx_conv(i,j),dp)*sec2year
         qy(j,i)      = real(qy_conv(i,j),dp)*sec2year
         vx_m_sia(j,i) = real(vx_m_sia_conv(i,j),dp)*sec2year
@@ -1585,19 +1589,24 @@ contains
 #endif
 #endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
+! SSG : Computed using calls to various velocity subroutines in sico_init later.
         vx_b_g(j,i)  = real(vx_b_g_conv(i,j),dp)*sec2year
         vy_b_g(j,i)  = real(vy_b_g_conv(i,j),dp)*sec2year
         vz_b(j,i)    = real(vz_b_conv(i,j),dp)*sec2year
         vx_s_g(j,i)  = real(vx_s_g_conv(i,j),dp)*sec2year
         vy_s_g(j,i)  = real(vy_s_g_conv(i,j),dp)*sec2year
         vz_s(j,i)    = real(vz_s_conv(i,j),dp)*sec2year
+! SSG : Computed using calls to calc_temp_melt and calc_temp_bas in sico_init later.
         temp_b(j,i)  = real(temp_b_conv(i,j),dp)
         temph_b(j,i) = real(temph_b_conv(i,j),dp)
+! SSG : Computed using calls to calc_pressure_water_bas in sico_init later.
         p_b_w(j,i)   = real(p_b_w_conv(i,j),dp)
+! SSG : Computed using calls to calc_thk_water_bas in sico_init later.
         q_w(j,i)     = real(q_w_conv(i,j),dp)*sec2year
         q_w_x(j,i)   = real(q_w_x_conv(i,j),dp)*sec2year
         q_w_y(j,i)   = real(q_w_y_conv(i,j),dp)*sec2year
         H_w(j,i)     = real(H_w_conv(i,j),dp)
+! SSG : Computed using calls to various velocity subroutines in sico_init later.
         ratio_sl_sia_x(j,i) = real(ratio_sl_sia_x_conv(i,j),dp)
         ratio_sl_sia_y(j,i) = real(ratio_sl_sia_y_conv(i,j),dp)
         ratio_sl_sia(j,i)   = real(ratio_sl_sia_conv(i,j),dp)
@@ -1678,24 +1687,27 @@ contains
 
         do kt=0, KTMAX
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
+! SSG : Computed using calls to various velocity subroutines in sico_init later.
            vx_t(kt,j,i)    = real(vx_t_conv(i,j,kt),dp)*sec2year
            vy_t(kt,j,i)    = real(vy_t_conv(i,j,kt),dp)*sec2year
            vz_t(kt,j,i)    = real(vz_t_conv(i,j,kt),dp)*sec2year
 #endif
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
+! SSG : Compute omega_t and age_t from omega_c and age_c later in this subroutine.
            omega_t(kt,j,i) = real(omega_t_conv(i,j,kt),dp)
            age_t(kt,j,i)   = real(age_t_conv(i,j,kt),dp)*year2sec
-#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
-! SSG : enth_t is a function of enth_c and temp_t and omega_t and is recalculated in sico_init anyway, so not included in the AD guardrail.
+! SSG : enth_t is a function of enth_c and temp_t and omega_t and is computed in sico_init.
            enth_t(kt,j,i)  = real(enth_t_conv(i,j,kt),dp)
-! SSG : enh_c depends on age_c, so instead of reading from a file we calculate it for AD activation graph purposes.
-! SSG : This is done in sico_init since it already uses module calc_enhance_m.
+! SSG : enh_t is a function of enh_c and age_t and is computed in sico_init.
            enh_t(kt,j,i)   = real(enh_t_conv(i,j,kt),dp)
 #endif
+! SSG : Just a diagnositc quantity.
            strain_heating_t(kt,j,i) = real(strain_heating_t_conv(i,j,kt),dp)
         end do
 
         do kc=0, KCMAX
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
+! SSG : Computed using calls to various velocity subroutines in sico_init later.
            vx_c(kc,j,i)    = real(vx_c_conv(i,j,kc),dp)*sec2year
            vy_c(kc,j,i)    = real(vy_c_conv(i,j,kc),dp)*sec2year
            vz_c(kc,j,i)    = real(vz_c_conv(i,j,kc),dp)*sec2year
@@ -1703,24 +1715,33 @@ contains
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
            temp_c(kc,j,i)  = real(temp_c_conv(i,j,kc),dp)
            age_c(kc,j,i)   = real(age_c_conv(i,j,kc),dp)*year2sec
-! SSG : enth_c is a function of temp_c and omega_c and is recalculated in sico_init anyway, so not included in the AD guardrail.
+! SSG : enth_c is a function of temp_c and omega_c and is computed in sico_init.
            enth_c(kc,j,i)  = real(enth_c_conv(i,j,kc),dp)
            omega_c(kc,j,i) = real(omega_c_conv(i,j,kc),dp)
-! SSG : enh_c depends on age_c, so instead of reading from a file we calculate it for AD activation graph purposes.
-! SSG : This is done in sico_init since it already uses module calc_enhance_m.
+! SSG : enh_c depends on age_c and is computed in sico_init.
            enh_c(kc,j,i)   = real(enh_c_conv(i,j,kc),dp)
 #else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
            temp_c(kc,j,i)  = temp_c(kc,j,i) + real(temp_c_conv(i,j,kc),dp)
            age_c(kc,j,i)   = (age_c(kc,j,i) + real(age_c_conv(i,j,kc),dp))*year2sec
            omega_c(kc,j,i) = omega_c(kc,j,i) + real(omega_c_conv(i,j,kc),dp)
 #endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+! SSG : Just a diagnositc quantity.
            strain_heating_c(kc,j,i) = real(strain_heating_c_conv(i,j,kc),dp)
         end do
+
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+        do kt=0, KTMAX
+! SSG : Compute omega_t and age_t from omega_c and age_c.
+           omega_t(kt,j,i) = omega_c(0,j,i)
+           age_t(kt,j,i)   = age_c(0,j,i)
+        end do
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
      end do
      end do
 
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
+! SSG : Computed using calls to various velocity subroutines in sico_init later.
      if (.not.flag_ratio_sl_sia) then
               ! reconstruct ratio_sl_sia from ratio_sl_sia_x/y
 
