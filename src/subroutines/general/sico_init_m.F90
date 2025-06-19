@@ -98,6 +98,10 @@ subroutine sico_init(dtime, dtime_temp, dtime_wss, dtime_out, dtime_ser, &
 #endif /* NORMAL */
 
 #if (defined(ALLOW_NODIFF) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
+  use calc_temp_melt_bas_m
+  use calc_bas_melt_m
+  use calc_thk_water_bas_m
+  use calc_pressure_water_bas_m
   use calc_gia_m
 #endif /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
 
@@ -3503,7 +3507,10 @@ smb_corr = 0.0_dp
 
 #endif /* (!(ANF_DAT==3) || defined(LEGACY_RESTART)) */ /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
 
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF))
+! SSG : For AD setup, it is recomputed. See the call to calc_qbm below.
 Q_b_tot = Q_bm + Q_tld
+#endif
 
 #if (!(ANF_DAT==3) || defined(LEGACY_RESTART) || (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF)))
 
@@ -3680,6 +3687,31 @@ call calc_vxy_sia(dzeta_c, dzeta_t)
 #if (MARGIN==3 || DYNAMICS==2 || DYNAMICS==3)
 call calc_vxy_ssa(dxi, deta, dzeta_c, dzeta_t)
 #endif
+
+! SSG : Q_bm depends on vx_t, vy_t but vz_b depends on Q_b_tot = Q_bm + Q_tld.
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+
+!-------- Melting temperature --------
+
+call calc_temp_melt()
+
+!-------- Basal temperature --------
+
+call calc_temp_bas()
+
+!-------- Basal melting rate --------
+
+call calc_qbm(time, dzeta_c, dzeta_r)
+
+!-------- Effective thickness of subglacial water  --------
+
+call calc_thk_water_bas()
+
+!-------- Basal water pressure --------
+
+call calc_pressure_water_bas()
+
+#endif /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
 
 call calc_vz_grounded(dxi, deta, dzeta_c, dzeta_t)
 

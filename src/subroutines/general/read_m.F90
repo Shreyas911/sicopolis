@@ -1449,6 +1449,7 @@ contains
         zb(j,i)   = real(zb_conv(i,j),dp)
         zl(j,i)   = real(zl_conv(i,j),dp)
         zl0(j,i)  = real(zl0_conv(i,j),dp)
+        wss(j,i)  = real(wss_conv(i,j),dp)
 #else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
         zb(j,i)   = zb(j,i) + real(zb_conv(i,j),dp)
         zl(j,i)   = zl(j,i) + real(zl_conv(i,j),dp)
@@ -1464,7 +1465,6 @@ contains
             zl0(j,i)  = zl0(j,i) + real(zl0_conv(i,j),dp)
         end if
 #endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
-        wss(j,i)  = real(wss_conv(i,j),dp)
 
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
         H(j,i)    = real(H_conv(i,j),dp)
@@ -1518,8 +1518,10 @@ contains
         H_c(j,i)  = H(j,i)
         H_t(j,i)  = 0.0_dp
 #endif
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
         Q_bm(j,i)    = real(Q_bm_conv(i,j),dp)*sec2year
         Q_tld(j,i)   = real(Q_tld_conv(i,j),dp)*sec2year
+#endif
         am_perp(j,i) = real(am_perp_conv(i,j),dp)*sec2year
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
         qx(j,i)      = real(qx_conv(i,j),dp)*sec2year
@@ -1589,44 +1591,13 @@ contains
         vx_s_g(j,i)  = real(vx_s_g_conv(i,j),dp)*sec2year
         vy_s_g(j,i)  = real(vy_s_g_conv(i,j),dp)*sec2year
         vz_s(j,i)    = real(vz_s_conv(i,j),dp)*sec2year
-#endif
         temp_b(j,i)  = real(temp_b_conv(i,j),dp)
         temph_b(j,i) = real(temph_b_conv(i,j),dp)
-#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
         p_b_w(j,i)   = real(p_b_w_conv(i,j),dp)
-#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
-
-! SSG : p_b_w depends on z_sl and zb, so instead of reading from a file we calculate it for AD activation graph purposes.
-! SSG : Snippet from calc_pressure_water_bas
-
-#if (!defined(BASAL_WATER_PRESSURE) || BASAL_WATER_PRESSURE==0)
-
-        p_b_w(j,i) = 0.0_dp
-                   ! zero everywhere
-
-#elif (BASAL_WATER_PRESSURE==1)
-
-        p_b_w(j,i) = RHO_SW*G*(z_sl(j,i)-zb(j,i))
-                   ! ocean pressure without cut-off (can become negative)
-
-#elif (BASAL_WATER_PRESSURE==2)
-
-        p_b_w(j,i) = RHO_SW*G*max((z_sl(j,i)-zb(j,i)), 0.0_dp)
-                   ! ocean pressure with cut-off
-
-#else
-
-        errormsg = ' >>> read_tms_nc: ' &
-                 // 'Parameter BASAL_WATER_PRESSURE must be 0, 1 or 2!'
-        call error(errormsg)
-
-#endif
-#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
         q_w(j,i)     = real(q_w_conv(i,j),dp)*sec2year
         q_w_x(j,i)   = real(q_w_x_conv(i,j),dp)*sec2year
         q_w_y(j,i)   = real(q_w_y_conv(i,j),dp)*sec2year
         H_w(j,i)     = real(H_w_conv(i,j),dp)
-#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
         ratio_sl_sia_x(j,i) = real(ratio_sl_sia_x_conv(i,j),dp)
         ratio_sl_sia_y(j,i) = real(ratio_sl_sia_y_conv(i,j),dp)
         ratio_sl_sia(j,i)   = real(ratio_sl_sia_conv(i,j),dp)
@@ -1713,8 +1684,13 @@ contains
 #endif
            omega_t(kt,j,i) = real(omega_t_conv(i,j,kt),dp)
            age_t(kt,j,i)   = real(age_t_conv(i,j,kt),dp)*year2sec
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
+! SSG : enth_t is a function of enth_c and temp_t and omega_t and is recalculated in sico_init anyway, so not included in the AD guardrail.
            enth_t(kt,j,i)  = real(enth_t_conv(i,j,kt),dp)
+! SSG : enh_c depends on age_c, so instead of reading from a file we calculate it for AD activation graph purposes.
+! SSG : This is done in sico_init since it already uses module calc_enhance_m.
            enh_t(kt,j,i)   = real(enh_t_conv(i,j,kt),dp)
+#endif
            strain_heating_t(kt,j,i) = real(strain_heating_t_conv(i,j,kt),dp)
         end do
 
@@ -1730,7 +1706,7 @@ contains
 ! SSG : enth_c is a function of temp_c and omega_c and is recalculated in sico_init anyway, so not included in the AD guardrail.
            enth_c(kc,j,i)  = real(enth_c_conv(i,j,kc),dp)
            omega_c(kc,j,i) = real(omega_c_conv(i,j,kc),dp)
-! SSG : enh_c depends on age, so instead of reading from a file we calculate it for AD activation graph purposes.
+! SSG : enh_c depends on age_c, so instead of reading from a file we calculate it for AD activation graph purposes.
 ! SSG : This is done in sico_init since it already uses module calc_enhance_m.
            enh_c(kc,j,i)   = real(enh_c_conv(i,j,kc),dp)
 #else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
