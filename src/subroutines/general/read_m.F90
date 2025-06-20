@@ -1682,9 +1682,13 @@ contains
            flag_grounded_front_b_2(j,i) = .false.
         end if
 
-! SSG : Not an active control for DA (i.e. vis_ave_gd and vis_ave_gb and vis_int_gd and vis_int_gb don't exist).
+! SSG : vis_int_g computed using calls to various velocity subroutines in sico_init later.
+! SSG : vis_ave_g computed using vis_int_g later in sico_init. Has about 50-60% the value of vis_ave_g_conv.
+! SSG : Not an active control for DA (i.e. vis_ave_gd and vis_ave_gb and vis_int_gd and vis_int_gb don't exist) anyway.
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
         vis_ave_g(j,i)  = real(vis_ave_g_conv(i,j),dp)
         vis_int_g(j,i)  = real(vis_int_g_conv(i,j),dp)
+#endif
 
 ! SSG : TODO, temp_r should be computed from temp_c. It should not be an independent control.
         do kr=0, KRMAX
@@ -1697,8 +1701,6 @@ contains
            vx_t(kt,j,i)    = real(vx_t_conv(i,j,kt),dp)*sec2year
            vy_t(kt,j,i)    = real(vy_t_conv(i,j,kt),dp)*sec2year
            vz_t(kt,j,i)    = real(vz_t_conv(i,j,kt),dp)*sec2year
-#endif
-#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
 ! SSG : Compute omega_t and age_t from omega_c and age_c later in this subroutine.
            omega_t(kt,j,i) = real(omega_t_conv(i,j,kt),dp)
            age_t(kt,j,i)   = real(age_t_conv(i,j,kt),dp)*year2sec
@@ -1717,8 +1719,6 @@ contains
            vx_c(kc,j,i)    = real(vx_c_conv(i,j,kc),dp)*sec2year
            vy_c(kc,j,i)    = real(vy_c_conv(i,j,kc),dp)*sec2year
            vz_c(kc,j,i)    = real(vz_c_conv(i,j,kc),dp)*sec2year
-#endif
-#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
            temp_c(kc,j,i)  = real(temp_c_conv(i,j,kc),dp)
            age_c(kc,j,i)   = real(age_c_conv(i,j,kc),dp)*year2sec
 ! SSG : enth_c is a function of temp_c and omega_c and is computed in sico_init.
@@ -1765,8 +1765,8 @@ contains
         end do
 
      end if
-#endif
 
+! SSG : vis_int_g is computed in sico_init in the various velocity subroutines, so we copy this snippet there to calculate vis_ave_g.
      if (.not.flag_vis_ave_g) then   ! reconstruct vis_ave_g from vis_int_g
 
 #if (defined(VISC_MIN) && defined(VISC_MAX))
@@ -1804,6 +1804,7 @@ contains
         end do
 
      end if   ! (.not.flag_vis_ave_g)
+#endif
 
   else   ! flag_temp_age_only == .true.
 

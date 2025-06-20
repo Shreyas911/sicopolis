@@ -225,6 +225,7 @@ real(dp) :: load_ice_water(0:JMAX,0:IMAX)
 real(dp) :: dtime_inv
 real(dp) :: rho_g, rhosw_g
 real(dp), dimension(0:JMAX,0:IMAX) :: rhoa_g_inv
+real(dp) :: visc_min, visc_max, visc_init
 #endif
 
 #if (defined(ALLOW_NODIFF) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
@@ -3701,6 +3702,42 @@ call calc_vxy_ssa(dxi, deta, dzeta_c, dzeta_t)
 
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
 
+! SSG : Since vis_int_g is computed in some of the subroutines above, compute vis_ave_g from it.
+
+#if (defined(VISC_MIN) && defined(VISC_MAX))
+visc_min = VISC_MIN
+visc_max = VISC_MAX
+#else
+visc_min = 1.0e+10_dp   ! Pa s
+visc_max = 1.0e+25_dp   ! Pa s
+#endif
+
+#if (defined(VISC_INIT_SSA))
+visc_init = VISC_INIT_SSA
+#else
+visc_init = 1.0e+15_dp   ! Pa s
+#endif
+
+do i=0, IMAX
+do j=0, JMAX
+
+   if ((mask(j,i)==0).or.(mask(j,i)==3)) then
+          ! grounded or floating ice
+
+      vis_ave_g(j,i) = vis_int_g(j,i)/max(H(j,i), eps_dp)
+
+      vis_ave_g(j,i) = max(min(vis_ave_g(j,i), visc_max), visc_min)
+
+   else   ! (mask(j,i)==1).or.(mask(j,i)==2),
+          ! ice-free land or ocean
+
+      vis_ave_g(j,i) = visc_init   ! dummy value
+
+   end if
+
+end do
+end do
+
 ! SSG : Q_bm depends on vx_t, vy_t (computed above) but vz_b (computed below) depends on Q_b_tot = Q_bm + Q_tld.
 ! SSG : Compute Q_bm, Q_tld, Q_b_tot, temp_b, temph_b, p_b_w, q_w, q_w_x, q_w_y, H_w.
 
@@ -3735,6 +3772,70 @@ call calc_vz_floating(dxi, deta, dzeta_c)
 #elif (DYNAMICS==0)
 
 call calc_vxy_static()
+
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+
+! SSG : Since vis_int_g is computed in some of the subroutines above, compute vis_ave_g from it.
+
+#if (defined(VISC_MIN) && defined(VISC_MAX))
+visc_min = VISC_MIN
+visc_max = VISC_MAX
+#else
+visc_min = 1.0e+10_dp   ! Pa s
+visc_max = 1.0e+25_dp   ! Pa s
+#endif
+
+#if (defined(VISC_INIT_SSA))
+visc_init = VISC_INIT_SSA
+#else
+visc_init = 1.0e+15_dp   ! Pa s
+#endif
+
+do i=0, IMAX
+do j=0, JMAX
+
+   if ((mask(j,i)==0).or.(mask(j,i)==3)) then
+          ! grounded or floating ice
+
+      vis_ave_g(j,i) = vis_int_g(j,i)/max(H(j,i), eps_dp)
+
+      vis_ave_g(j,i) = max(min(vis_ave_g(j,i), visc_max), visc_min)
+
+   else   ! (mask(j,i)==1).or.(mask(j,i)==2),
+          ! ice-free land or ocean
+
+      vis_ave_g(j,i) = visc_init   ! dummy value
+
+   end if
+
+end do
+end do
+
+! SSG : Q_bm depends on vx_t, vy_t (computed above) but vz_b (computed below) depends on Q_b_tot = Q_bm + Q_tld.
+! SSG : Compute Q_bm, Q_tld, Q_b_tot, temp_b, temph_b, p_b_w, q_w, q_w_x, q_w_y, H_w.
+
+!-------- Melting temperature --------
+
+call calc_temp_melt()
+
+!-------- Basal temperature --------
+
+call calc_temp_bas()
+
+!-------- Basal melting rate --------
+
+call calc_qbm(time, dzeta_c, dzeta_r)
+
+!-------- Effective thickness of subglacial water  --------
+
+call calc_thk_water_bas()
+
+!-------- Basal water pressure --------
+
+call calc_pressure_water_bas()
+
+#endif /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
+
 call calc_vz_static()
 
 #else
