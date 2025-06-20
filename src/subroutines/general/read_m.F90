@@ -1444,17 +1444,15 @@ contains
 
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
         zs(j,i)   = real(zs_conv(i,j),dp)
-#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
-        zs(j,i)   = zs(j,i) + real(zs_conv(i,j),dp)
-#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
-! SSG : Not sensitive controls for DA (zero gradients).
+! SSG : zm is computed below from zb and H_t.
         zm(j,i)   = real(zm_conv(i,j),dp)
-#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
         zb(j,i)   = real(zb_conv(i,j),dp)
         zl(j,i)   = real(zl_conv(i,j),dp)
         zl0(j,i)  = real(zl0_conv(i,j),dp)
+! SSG : wss is computed in sico_init since it is a function of H_c.
         wss(j,i)  = real(wss_conv(i,j),dp)
 #else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+        zs(j,i)   = zs(j,i) + real(zs_conv(i,j),dp)
         zb(j,i)   = zb(j,i) + real(zb_conv(i,j),dp)
         zl(j,i)   = zl(j,i) + real(zl_conv(i,j),dp)
         !! SSG: zl0 can be read in sico_init immediately after the call to read_tms_nc.
@@ -1522,12 +1520,16 @@ contains
         H_c(j,i)  = H(j,i)
         H_t(j,i)  = 0.0_dp
 #endif
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+! SSG : Compute zm from zb and H_t.
+        zm(j,i) = zb(j,i) + H_t(j,i)
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
 ! SSG : Computed using call to calc_qbm in sico_init later.
         Q_bm(j,i)    = real(Q_bm_conv(i,j),dp)*sec2year
         Q_tld(j,i)   = real(Q_tld_conv(i,j),dp)*sec2year
 #endif
-! SSG : Not an active control for DA (i.e. am_perpd and am_perpb don't exist).
+! SSG : Not an active control for DA (i.e. am_perpd and am_perpb don't exist, at least for enthalphy setup).
         am_perp(j,i) = real(am_perp_conv(i,j),dp)*sec2year
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
 ! SSG : Computed using calls to various velocity subroutines in sico_init later.
