@@ -162,7 +162,6 @@ contains
 
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
   real(dp)     :: H_ice, freeboard_ratio
-  real(dp)     :: cqtlde(0:KCMAX), aqtlde(0:KCMAX)
   freeboard_ratio = (RHO_SW-RHO)/RHO_SW
 #endif
 
@@ -1742,34 +1741,6 @@ contains
         end do
 
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
-! SSG : Snippet from calc_temp_enth_2 to calculate Q_tld from omega_c and H_c.
-! SSG : In my case, Q_tld == 0.0 initially but after tuning omega_c, this might change.
-! SSG : This calculation might only be valid when using the enthalphy method.
-        Q_tld(j,i) = 0.0_dp
-
-! SSG : Glaciated land and temperate base.
-        if (mask(j,i) == 0 .and. n_cts(j,i) == 0) then
-
-           do kc=0, kc_cts(j,i)
-
-              if (omega_c(kc,j,i) > OMEGA_MAX) then
-                 if (flag_aa_nonzero) then
-                    aqtlde(kc) = (aa*eaz_c(kc))/(ea-1.0_dp)*dzeta_c/dtime_temp
-                 else
-                    aqtlde(kc) = dzeta_c/dtime_temp
-                 end if
-                 cqtlde(kc) = aqtlde(kc)*H_c(j,i)
-
-                 Q_tld(j,i) = Q_tld(j,i) + cqtlde(kc)*(omega_c(kc,j,i)-OMEGA_MAX)
-                 omega_c(kc,j,i) = OMEGA_MAX
-
-! SSG : Not calculating enth_c here unlike OG snippet since it is calculated in sico_init later.
-              end if
-
-           end do
-
-        end if
-
 ! SSG : Compute omega_t and age_t from omega_c and age_c.
         do kt=0, KTMAX
            omega_t(kt,j,i) = omega_c(0,j,i)

@@ -226,6 +226,7 @@ real(dp) :: dtime_inv
 real(dp) :: rho_g, rhosw_g
 real(dp), dimension(0:JMAX,0:IMAX) :: rhoa_g_inv
 real(dp) :: visc_min, visc_max, visc_init
+real(dp), dimension(0:KCMAX) :: cqtlde, aqtlde
 #endif
 
 #if (defined(ALLOW_NODIFF) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
@@ -3482,6 +3483,52 @@ vis_int_g = 0.0_dp
 #elif (ANF_DAT==3)
 
 call topography3(dxi, deta, anfdatname)
+
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+! SSG : This whole snippet could also be in read_tms_nc at the end.
+! SSG : But it leads to a weird error where read_tms_nc_b does not have zl_conv, zs_conv, zb_conv.
+! SSG : Leads to garbage values.
+! SSG : Necessary for calculating Q_tld below.
+do kc=0, KCMAX
+
+   if (flag_aa_nonzero) then
+      aqtlde(kc) = (aa*eaz_c(kc))/(ea-1.0_dp)*1.0_dp/(real(KCMAX,dp)*DTIME_TEMP0*year2sec)
+   else
+      aqtlde(kc) = 1.0_dp/(real(KCMAX,dp)*DTIME_TEMP0*year2sec)
+   end if
+
+end do
+
+! SSG : Snippet from calc_temp_enth_2 to calculate Q_tld from omega_c and H_c.
+! SSG : In my case, Q_tld == Q_tld_conv == 0.0 initially but after tuning omega_c, this might change.
+! SSG : This calculation might only be valid when using the enthalphy method.
+do i=0, IMAX
+do j=0, JMAX
+
+   Q_tld(j,i) = 0.0_dp
+
+! SSG : Glaciated land and temperate base.
+   if (mask(j,i) == 0 .and. n_cts(j,i) == 0) then
+
+      do kc=0, kc_cts(j,i)
+
+         if (omega_c(kc,j,i) > OMEGA_MAX) then
+
+            cqtlde(kc) = aqtlde(kc)*H_c(j,i)
+            Q_tld(j,i) = Q_tld(j,i) + cqtlde(kc)*(omega_c(kc,j,i)-OMEGA_MAX)
+
+            omega_c(kc,j,i) = OMEGA_MAX
+
+! SSG : Not calculating enth_c here unlike OG snippet since it is calculated in sico_init later.
+         end if
+
+      end do
+
+   end if
+
+end do
+end do
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 #if (defined(GRL) && DISC>0) /* Ice discharge parameterization for Greenland */
 call disc_param(dtime)
