@@ -1,24 +1,4 @@
-fsubroutine adjustl:
-intrinsic:
-shape: (param 1, result)
-type: (arrayType(character(),dimColons(dimColon(none(),none()))), arrayType(character(),dimColons(dimColon(none(),none()))))
-ReadNotWritten: (1, 0)
-ReadThenWritten: (0, 0)
-NotReadThenWritten: (0, 1)
-deps:  (id,
-	1, 0)
-
-subroutine adjustr:
-intrinsic:
-shape: (param 1, result)
-type: (arraytype(character(),dimcolons(dimcolon(none(),none()))), arraytype(character(),dimcolons(dimcolon(none(),none()))))
-readnotwritten: (1, 0)
-readthenwritten: (0, 0)
-notreadthenwritten: (0, 1)
-deps:  (id,
-	1, 0)
-
-unction ceiling:
+function ceiling:
 intrinsic:
 shape: (param 1, result)
 type: (float(), integer())
