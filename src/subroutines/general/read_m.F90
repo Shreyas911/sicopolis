@@ -2413,7 +2413,11 @@ contains
   integer(i4b) :: ios, istat, istat2
   integer(i4b) :: n
   real(dp)     :: d_aux
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
   real(dp)     :: year2sec_aux, stress_dev_scale, strain_rate_scale, RF_scale
+#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+  real(dp)     :: year2sec_aux, stress_dev_scale, strain_rate_scale
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
   character(len=256) :: filename_with_path
   character(len=256) :: filename_aux
   character(len=  3) :: ch_nc_test
@@ -2575,8 +2579,18 @@ contains
 
 #endif
 
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
+! SSG : This computation has been moved to sico_init for AD setup.
+! SSG : If not done, it leads to weird issues where RF is 0 in AD mode and the nf90_get_var command to read it from the file is missing.
      RF = RF * RF_scale
 
+#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+  else
+
+! SSG : Default value for RF_scale since it is multiplied to RF in all cases in sico_init.
+     RF_scale = 1.0_dp
+
+#endif
   end if
 
 !  ------ Reading the heat conductivity

@@ -502,6 +502,13 @@ call read_phys_para()
      ! read tabulated values of the
      ! rate factor, heat conductivity and specific heat
 
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+! SSG : This snippet was in read_phys_para.
+! SSG : But it leads to a weird error where read_phys_para_b does not have nf90_get_var call for RF.
+! SSG : RF has a zero value in read_phys_para_b and this destroys the n_glen gradient.
+RF = RF * RF_scale
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+
 call ice_mat_eqs_pars(RF, R_T, KAPPA, C, -190, 10)
 
 !  ------ Some auxiliary quantities required for the enthalpy method

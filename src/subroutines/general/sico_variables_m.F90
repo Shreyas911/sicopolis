@@ -1585,6 +1585,9 @@ character, parameter :: end_of_line = char(10)
 
 #if (defined(ALLOW_NODIFF) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
 
+real(dp) :: RF_scale
+   !! A local variable from read_phys_para made global so that RF's computation can be moved to sico_init
+
 real(dp) :: fc, fc_data, fc_reg, fc_bm5, fc_ac, fc_svc, fc_vxc, fc_vyc, fc_zsc, fc_zlc
    !! Scalar cost functions (total, model-data misfit component, prior or regularization component)
 
