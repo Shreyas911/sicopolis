@@ -179,51 +179,48 @@ contains
 #if (defined(SURFVEL_COST) || defined(FAKE_SURFVEL_COST))
     do i=0, IMAX
       do j=0, JMAX
-        if (zs_BedMachine_data(j,i) .ge. -50.0) then
-
 #if !defined(SURF_VXVY_COST)
 
 #if !defined(ALLOW_TAPENADE)
-          vs(j,i) = sqrt(vx_s_g(j,i)**2 + vy_s_g(j,i)**2)*year2sec
+        vs(j,i) = sqrt(vx_s_g(j,i)**2 + vy_s_g(j,i)**2)*year2sec
 #else /* ALLOW_TAPENADE: guarding against non-differentiable sqrt(0) */
-          if ((vx_s_g(j,i)**2 + vy_s_g(j,i)**2) > 0) then
-            vs(j,i) = sqrt(vx_s_g(j,i)**2 + vy_s_g(j,i)**2)*year2sec
-          else
-            vs(j,i) = 0.0
-          end if
-#endif
-          fc = fc &
-#ifdef ALLOW_SURFVEL_UNCERT
-          + 0.5*(vs(j,i) - vs_MEaSUREs_data(j,i))**2/vs_unc_MEaSUREs_data(j,i)**2
-#else
-          + 0.5*(vs(j,i) - vs_MEaSUREs_data(j,i))**2
-#endif
-
-#else
-
-          fc = fc &
-#ifdef ALLOW_SURFVEL_UNCERT
-          + 0.5*(vx_s_g(j,i) - vx_MEaSUREs_data(j,i)*sec2year)**2/(vx_unc_MEaSUREs_data(j,i)*sec2year)**2 &
-          + 0.5*(vy_s_g(j,i) - vy_MEaSUREs_data(j,i)*sec2year)**2/(vy_unc_MEaSUREs_data(j,i)*sec2year)**2
-#else
-          + 0.5*(vx_s_g(j,i) - vx_MEaSUREs_data(j,i)*sec2year)**2 &
-          + 0.5*(vy_s_g(j,i) - vy_MEaSUREs_data(j,i)*sec2year)**2
-#endif
-          fc_vxc = fc_vxc &
-#ifdef ALLOW_SURFVEL_UNCERT
-          + 0.5*(vx_s_g(j,i) - vx_MEaSUREs_data(j,i)*sec2year)**2/(vx_unc_MEaSUREs_data(j,i)*sec2year)**2
-#else
-          + 0.5*(vx_s_g(j,i) - vx_MEaSUREs_data(j,i)*sec2year)**2
-#endif
-          fc_vyc = fc_vyc &
-#ifdef ALLOW_SURFVEL_UNCERT
-          + 0.5*(vy_s_g(j,i) - vy_MEaSUREs_data(j,i)*sec2year)**2/(vy_unc_MEaSUREs_data(j,i)*sec2year)**2
-#else
-          + 0.5*(vy_s_g(j,i) - vy_MEaSUREs_data(j,i)*sec2year)**2
-#endif
-
-#endif
+        if ((vx_s_g(j,i)**2 + vy_s_g(j,i)**2) > 0) then
+          vs(j,i) = sqrt(vx_s_g(j,i)**2 + vy_s_g(j,i)**2)*year2sec
+        else
+          vs(j,i) = 0.0
         end if
+#endif
+        fc = fc &
+#ifdef ALLOW_SURFVEL_UNCERT
+        + 0.5*(vs(j,i) - vs_MEaSUREs_data(j,i))**2/vs_unc_MEaSUREs_data(j,i)**2
+#else
+        + 0.5*(vs(j,i) - vs_MEaSUREs_data(j,i))**2
+#endif
+
+#else
+
+        fc = fc &
+#ifdef ALLOW_SURFVEL_UNCERT
+        + 0.5*(vx_s_g(j,i) - vx_MEaSUREs_data(j,i)*sec2year)**2/(vx_unc_MEaSUREs_data(j,i)*sec2year)**2 &
+        + 0.5*(vy_s_g(j,i) - vy_MEaSUREs_data(j,i)*sec2year)**2/(vy_unc_MEaSUREs_data(j,i)*sec2year)**2
+#else
+        + 0.5*(vx_s_g(j,i) - vx_MEaSUREs_data(j,i)*sec2year)**2 &
+        + 0.5*(vy_s_g(j,i) - vy_MEaSUREs_data(j,i)*sec2year)**2
+#endif
+        fc_vxc = fc_vxc &
+#ifdef ALLOW_SURFVEL_UNCERT
+        + 0.5*(vx_s_g(j,i) - vx_MEaSUREs_data(j,i)*sec2year)**2/(vx_unc_MEaSUREs_data(j,i)*sec2year)**2
+#else
+        + 0.5*(vx_s_g(j,i) - vx_MEaSUREs_data(j,i)*sec2year)**2
+#endif
+        fc_vyc = fc_vyc &
+#ifdef ALLOW_SURFVEL_UNCERT
+        + 0.5*(vy_s_g(j,i) - vy_MEaSUREs_data(j,i)*sec2year)**2/(vy_unc_MEaSUREs_data(j,i)*sec2year)**2
+#else
+        + 0.5*(vy_s_g(j,i) - vy_MEaSUREs_data(j,i)*sec2year)**2
+#endif
+
+#endif
       end do
     end do
 
