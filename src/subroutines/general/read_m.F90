@@ -2490,6 +2490,7 @@ contains
      if (istat == nf90_noerr) then
         call check( nf90_get_var(ncid, ncv, RF), thisroutine )
         flag_RF_dimless = .true.
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
         istat2 = nf90_get_att(ncid, ncv, 'stress_dev_scale', d_aux)
         if (istat2 == nf90_noerr) then
            stress_dev_scale = d_aux
@@ -2523,6 +2524,11 @@ contains
                     //'          has no attribute ''year2sec''!'
            call error(errormsg)
         end if
+#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+        stress_dev_scale = 100000.0
+        strain_rate_scale = 2.5000000000000001E-002
+        year2sec_aux = 31556925.445000000
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
      else
         istat2 = nf90_inq_varid(ncid, 'RF', ncv)
         if (istat2 == nf90_noerr) then
