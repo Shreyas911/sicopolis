@@ -1293,16 +1293,34 @@ n_slide_regions = N_SLIDE_REGIONS
 write(10, fmt=trim(fmt2)) 'BASAL_WATER_PRESSURE = ', BASAL_WATER_PRESSURE
 #endif
 
+#if (defined(C_SLIDE_DIMLESS))
+c_slide_aux = C_SLIDE_DIMLESS
+#elif (defined(C_SLIDE))
 c_slide_aux = C_SLIDE
+#else
+errormsg = ' >>> sico_init: Either ''C_SLIDE_DIMLESS'' or ''C_SLIDE'' ' &
+         //                 end_of_line &
+         //'                must be defined in the run-specs header!'
+call error(errormsg)
+#endif
 gamma_slide_aux = GAMMA_SLIDE
 p_weert_aux = P_WEERT
 q_weert_aux = Q_WEERT
 
+#if (defined(C_SLIDE_DIMLESS))
+write(10, fmt=trim(fmt3)) 'C_SLIDE_DIMLESS =', c_slide_aux(1)
+#if (N_SLIDE_REGIONS>1)
+do n=2, n_slide_regions
+   write(10, fmt=trim(fmt3)) '                 ', c_slide_aux(n)
+end do
+#endif
+#elif (defined(C_SLIDE))
 write(10, fmt=trim(fmt3)) 'C_SLIDE =', c_slide_aux(1)
 #if (N_SLIDE_REGIONS>1)
 do n=2, n_slide_regions
    write(10, fmt=trim(fmt3)) '         ', c_slide_aux(n)
 end do
+#endif
 #endif
 
 write(10, fmt=trim(fmt3)) 'GAMMA_SLIDE =', gamma_slide_aux(1)
