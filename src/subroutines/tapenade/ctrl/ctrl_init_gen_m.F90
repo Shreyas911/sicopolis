@@ -24,6 +24,9 @@ contains
 #ifdef DO_CTRL_GENARR3D
     call ctrl_map_ini_genarr3d()
 #endif
+#ifdef DO_CTRL_GENARR3DR
+    call ctrl_map_ini_genarr3dr()
+#endif
 #ifdef DO_CTRL_GENTIM2D
     call ctrl_map_ini_gentim2d()
 #endif

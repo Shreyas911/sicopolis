@@ -30,7 +30,7 @@ module ad_output_m
 
     implicit none
 
-    integer(i4b) :: i, j, kc, tad
+    integer(i4b) :: i, j, kc, kr, tad
     integer(i4b) :: ctrl_index
     integer(i4b) :: ios
     integer(i4b) :: cmode
@@ -45,16 +45,16 @@ module ad_output_m
     !     nc2d:      Vector with the dimensions of a 2-d array
     !     nc3d:      Vector with the dimensions of a 3-d array
     integer(i4b) :: nc1cor_i(1), nc1cor_j(1), &
-                    nc1cor_kc(1), nc1cor_tad(1), &
+                    nc1cor_kc(1), nc1cor_kr(1), nc1cor_tad(1), &
                     nc2cor_ij(2), nc2cor_ijtad(3), &
-                    nc3cor_ijkc(3)
+                    nc3cor_ijkc(3), nc3cor_ijkr(3)
     !     nc1cor(1): Corner of a 1-d array
     !     nc2cor(2): Corner of a 2-d array
     !     nc3cor(3): Corner of a 3-d array
     integer(i4b) :: nc1cnt_i(1), nc1cnt_j(1), &
-                    nc1cnt_kc(1), nc1cnt_tad(1), &
+                    nc1cnt_kc(1), nc1cnt_kr(1), nc1cnt_tad(1), &
                     nc2cnt_ij(2), nc2cnt_ijtad(3), &
-                    nc3cnt_ijkc(3)
+                    nc3cnt_ijkc(3), nc3cnt_ijkr(3)
     !     nc1cnt(1): Count of a 1-d array
     !     nc2cnt(2): Count of a 2-d array
     !     nc3cnt(3): Count of a 3-d array
@@ -63,7 +63,7 @@ module ad_output_m
     !     nc0cor_fc: Defined specially for fc
     !     nc0cnt_fc: Defined specially for fc
 
-    real(dp) :: xi_conv(0:IMAX), eta_conv(0:JMAX), sigma_level_c_conv(0:KCMAX)
+    real(dp) :: xi_conv(0:IMAX), eta_conv(0:JMAX), sigma_level_c_conv(0:KCMAX), zeta_r_conv(0:KRMAX)
 
     real(dp), dimension(1) :: fc_arr, fc_data_arr, fc_bm5_arr, fc_ac_arr, fc_svc_arr, fc_vxc_arr, fc_vyc_arr, fc_zsc_arr, fc_zlc_arr, fc_reg_arr
 #ifdef ALLOW_TAP_TLM
@@ -104,6 +104,13 @@ module ad_output_m
     real(dp), dimension(NUM_CTRL_GENARR3D,0:IMAX,0:JMAX,0:KCMAX) :: xx_genarr3d_conv
 #ifdef ALLOW_TAP_ADJ
     real(dp), dimension(NUM_CTRL_GENARR3D,0:IMAX,0:JMAX,0:KCMAX) :: xx_genarr3db_conv
+#endif /* ALLOW_TAP_ADJ */
+#endif
+
+#ifdef DO_CTRL_GENARR3DR
+    real(dp), dimension(NUM_CTRL_GENARR3DR,0:IMAX,0:JMAX,0:KRMAX) :: xx_genarr3dr_conv
+#ifdef ALLOW_TAP_ADJ
+    real(dp), dimension(NUM_CTRL_GENARR3DR,0:IMAX,0:JMAX,0:KRMAX) :: xx_genarr3drb_conv
 #endif /* ALLOW_TAP_ADJ */
 #endif
 
@@ -152,6 +159,9 @@ module ad_output_m
     nc1cor_kc = (/ 1 /)
     nc1cnt_kc = (/ KCMAX+1 /)
 
+    nc1cor_kr = (/ 1 /)
+    nc1cnt_kr = (/ KRMAX+1 /)
+
     nc1cor_tad = (/ 1 /)
     nc1cnt_tad = (/ NTDAMAX+1 /)
     
@@ -160,6 +170,9 @@ module ad_output_m
     
     nc3cor_ijkc = (/ 1, 1, 1 /)
     nc3cnt_ijkc = (/ IMAX+1, JMAX+1, KCMAX+1 /)
+
+    nc3cor_ijkr = (/ 1, 1, 1 /)
+    nc3cnt_ijkr = (/ IMAX+1, JMAX+1, KRMAX+1 /)
 
     nc2cor_ijtad = (/ 1, 1, 1 /)
     nc2cnt_ijtad = (/ IMAX+1, JMAX+1, NTDAMAX+1 /)
@@ -192,12 +205,12 @@ module ad_output_m
     !-------- File initialization --------
 
     if (allocated(coord_id)) deallocate(coord_id); 
-    allocate(coord_id(5))
+    allocate(coord_id(6))
 
     coord_id(1) = 'x'; coord_id(2) = 'y'
     coord_id(3) = 'zeta_c'; coord_id(4) = 'time_ad'
-    coord_id(5) = 'fc_dummy_dim'
-    
+    coord_id(5) = 'fc_dummy_dim'; coord_id(6) = 'zeta_r'
+
     !  ------ Open NetCDF file
     
     call set_cmode(cmode, n_deflate_level, flag_shuffle)
@@ -209,7 +222,7 @@ module ad_output_m
                 //'              NetCDF AD-output file!'
         call error(errormsg)
     end if
-    
+
     !  ------ Global attributes
     
     call date_and_time(ch_date, ch_time, ch_zone)
@@ -230,6 +243,8 @@ module ad_output_m
     call check( nf90_def_dim(ncid, trim(coord_id(4)), 1, ncd), thisroutine )
 #endif
     call check( nf90_def_dim(ncid, trim(coord_id(5)), 1, ncd), thisroutine )
+
+    call check( nf90_def_dim(ncid, trim(coord_id(6)), KRMAX+1, ncd), thisroutine )
 
     !    ---- x (= xi)
 
@@ -291,6 +306,25 @@ module ad_output_m
     call check( nf90_put_att(ncid, ncv, 'type', 'ignore'), &
                 thisroutine )
 
+    !    ---- zeta_r
+
+    call check( nf90_inq_dimid(ncid, trim(coord_id(6)), nc1d), &
+          thisroutine )
+
+    call check( nf90_def_var(ncid, 'zeta_r', NF90_DOUBLE, nc1d, ncv), &
+          thisroutine )
+
+    buffer = 'up'
+    call check( nf90_put_att(ncid, ncv, 'positive', trim(buffer)), &
+          thisroutine )
+    buffer = 'bedrock_kr_layer_uniform_coordinate'
+    call check( nf90_put_att(ncid, ncv, 'standard_name', trim(buffer)), &
+          thisroutine )
+    buffer = 'coordinate of the grid point kr (uniform kr)'
+    call check( nf90_put_att(ncid, ncv, 'long_name', trim(buffer)), &
+          thisroutine )
+    call check( nf90_put_att(ncid, ncv, 'type', 'ignore'), &
+                thisroutine )
 
 #ifdef DO_CTRL_GENTIM2D
     !    ---- time_ad
@@ -772,6 +806,57 @@ module ad_output_m
     end do
 #endif
 
+#ifdef DO_CTRL_GENARR3DR
+    !    ---- Define xx_genarr3dr variables
+    do ctrl_index = 1, NUM_CTRL_GENARR3DR
+
+      call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc3d(1)), &
+                thisroutine )
+      call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc3d(2)), &
+                thisroutine )
+      call check( nf90_inq_dimid(ncid, trim(coord_id(6)), nc3d(3)), &
+                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid, trim(adjustl(xx_genarr3dr_vars(ctrl_index))), &
+                NF90_DOUBLE, nc3d, ncv, &
+                deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                thisroutine )
+#else
+      call check( nf90_def_var(ncid, trim(adjustl(xx_genarr3dr_vars(ctrl_index))), &
+                NF90_DOUBLE, nc3d, ncv), &
+                thisroutine )
+#endif
+
+      call check( nf90_put_att(ncid, ncv, 'type', 'nodiff'), &
+                  thisroutine )
+
+#ifdef ALLOW_TAP_ADJ
+      call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc3d(1)), &
+                thisroutine )
+      call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc3d(2)), &
+                thisroutine )
+      call check( nf90_inq_dimid(ncid, trim(coord_id(3)), nc3d(3)), &
+                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid, trim(adjustl(xx_genarr3dr_vars(ctrl_index)))//'b', &
+                NF90_DOUBLE, nc3d, ncv, &
+                deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                thisroutine )
+#else
+      call check( nf90_def_var(ncid, trim(adjustl(xx_genarr3dr_vars(ctrl_index)))//'b', &
+                NF90_DOUBLE, nc3d, ncv), &
+                thisroutine )
+#endif
+
+      call check( nf90_put_att(ncid, ncv, 'type', 'adj'), &
+                  thisroutine )
+#endif /* ALLOW_TAP_ADJ */
+
+    end do
+#endif
+
 #ifdef DO_CTRL_GENTIM2D
     !    ---- Define xx_gentim2d variables
     do ctrl_index = 1, NUM_CTRL_GENTIM2D
@@ -841,6 +926,10 @@ module ad_output_m
       sigma_level_c_conv(kc) = eaz_c_quotient(kc)
     end do
 
+    do kr=0, KRMAX
+      zeta_r_conv(kr) = zeta_r(kr)
+    end do
+
 #ifdef DO_CTRL_GENTIM2D
     do tad=0, NTDAMAX
       time_ad_conv(tad) = tad*DTIME_INTERP0
@@ -860,6 +949,11 @@ module ad_output_m
     call check( nf90_inq_varid(ncid, 'sigma_level_c', ncv), thisroutine )
     call check( nf90_put_var(ncid, ncv, sigma_level_c_conv, &
                              start=nc1cor_kc, count=nc1cnt_kc), &
+                thisroutine )
+
+    call check( nf90_inq_varid(ncid, 'zeta_r', ncv), thisroutine )
+    call check( nf90_put_var(ncid, ncv, zeta_r_conv, &
+                             start=nc1cor_kr, count=nc1cnt_kr), &
                 thisroutine )
 
 #ifdef DO_CTRL_GENTIM2D
@@ -1037,6 +1131,21 @@ module ad_output_m
     end do
 #endif
 
+#ifdef DO_CTRL_GENARR3DR
+    do i=0, IMAX
+    do j=0, JMAX
+    do kr=0, KRMAX
+    do ctrl_index = 1, NUM_CTRL_GENARR3DR
+      xx_genarr3dr_conv(ctrl_index,i,j,kr) = xx_genarr3dr_orig(ctrl_index,kr,j,i)
+#ifdef ALLOW_TAP_ADJ
+      xx_genarr3drb_conv(ctrl_index,i,j,kr) = xx_genarr3drb(ctrl_index,kr,j,i)
+#endif /* ALLOW_TAP_ADJ */
+    end do
+    end do
+    end do
+    end do
+#endif
+
 #ifdef DO_CTRL_GENTIM2D
     do i=0, IMAX
     do j=0, JMAX
@@ -1152,6 +1261,26 @@ module ad_output_m
                   thisroutine )
       call check( nf90_put_var(ncid, ncv, xx_genarr3db_conv(ctrl_index,:,:,:), &
                                start=nc3cor_ijkc, count=nc3cnt_ijkc), &
+                  thisroutine )
+#endif /* ALLOW_TAP_ADJ */
+    end do
+#endif
+
+#ifdef DO_CTRL_GENARR3DR
+    do ctrl_index = 1, NUM_CTRL_GENARR3DR
+
+      call check( nf90_inq_varid(ncid, trim(adjustl(xx_genarr3dr_vars(ctrl_index))), &
+                  ncv), &
+                  thisroutine )
+      call check( nf90_put_var(ncid, ncv, xx_genarr3dr_conv(ctrl_index,:,:,:), &
+                               start=nc3cor_ijkr, count=nc3cnt_ijkr), &
+                  thisroutine )
+#ifdef ALLOW_TAP_ADJ
+      call check( nf90_inq_varid(ncid, trim(adjustl(xx_genarr3dr_vars(ctrl_index)))//'b', &
+                  ncv), &
+                  thisroutine )
+      call check( nf90_put_var(ncid, ncv, xx_genarr3drb_conv(ctrl_index,:,:,:), &
+                               start=nc3cor_ijkr, count=nc3cnt_ijkr), &
                   thisroutine )
 #endif /* ALLOW_TAP_ADJ */
     end do

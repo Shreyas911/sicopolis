@@ -12,6 +12,9 @@ module ctrl_map_genarr_m
 #ifdef DO_CTRL_GENARR3D
   public :: ctrl_map_ini_genarr3d, ctrl_map_genarr3d
 #endif
+#ifdef DO_CTRL_GENARR3DR
+  public :: ctrl_map_ini_genarr3dr, ctrl_map_genarr3dr
+#endif
 
 #if (defined(DO_CTRL_GENARR2D) || defined(DO_CTRL_GENARR3D))
 contains
@@ -477,6 +480,98 @@ contains
 #endif
 
   end subroutine ctrl_map_genarr3d
+#endif
+
+#ifdef DO_CTRL_GENARR3DR
+  subroutine ctrl_map_ini_genarr3dr
+
+    implicit none
+
+    integer(i4b)        :: ctrl_index
+    integer(i4b)        :: igen_temp_r
+
+#ifdef XX_GENARR3DR_VARS_ARR
+    xx_genarr3dr_vars            = XX_GENARR3DR_VARS_ARR
+#endif
+#ifdef XX_GENARR3DR_PREPROC_ARR
+    xx_genarr3dr_preproc         = XX_GENARR3DR_PREPROC_ARR
+#endif
+#ifdef XX_GENARR3DR_LOG10INITVAL_ARR
+    xx_genarr3dr_log10initval    = XX_GENARR3DR_LOG10INITVAL_ARR
+#endif
+
+    igen_temp_r = 0
+
+#ifdef XX_GENARR3DR_VARS_ARR
+    do ctrl_index = 1, NUM_CTRL_GENARR3DR
+      if (trim(adjustl(xx_genarr3dr_vars(ctrl_index))) .EQ. 'xx_temp_r') then
+        igen_temp_r = ctrl_index
+#if !(ANF_DAT==3)
+        errormsg = ' >>> ctrl_map_ini_genarr3dr: ' &
+          //'temp_r as a control param is only compatible with ' &
+          //'ANF_DAT == 3 for now !'
+        call error(errormsg)
+#endif
+      else
+        errormsg = ' >>> ctrl_map_ini_genarr3dr: ' &
+          //"This control variable is not in the genctrl3dr setup yet!"
+        call error(errormsg)
+      end if
+
+    end do
+
+#if (ANF_DAT==3)
+    if (igen_temp_r .GT. 0) then
+      call ctrl_map_genarr3dr(temp_r, igen_temp_r)
+    end if
+#endif
+#endif
+
+  end subroutine ctrl_map_ini_genarr3dr
+
+  subroutine ctrl_map_genarr3dr(fld, iarr)
+
+    implicit none
+
+    real(dp), dimension(0:KRMAX,0:JMAX,0:IMAX)  :: fld
+    integer(i4b)                                :: iarr, k3
+    logical                                     :: dolog10ctrl
+    real(dp)                                    :: log10initval, ln10
+#ifdef XX_GENARR3DR_PREPROC_ARR
+    character(128), dimension(NUMCTRLPROCARR3DR) :: preprocs
+#endif
+
+    ln10 = log(10.0)
+    dolog10ctrl = .FALSE.
+
+#ifdef XX_GENARR3DR_PREPROC_ARR
+
+    read (unit=xx_genarr3dr_preproc(iarr),fmt=*) preprocs
+
+    do k3 = 1, NUMCTRLPROCARR3DR
+      if (preprocs(k3) .EQ. 'log10ctrl') then
+        dolog10ctrl = .TRUE.
+#if (defined(XX_GENARR3DR_LOG10INITVAL_ARR) && !defined(AD_INPUT_PATH))
+        log10initval = xx_genarr3dr_log10initval(iarr)
+#endif
+      end if
+    end do
+
+    if (dolog10ctrl) then
+#if (defined(XX_GENARR3DR_LOG10INITVAL_ARR) && !defined(AD_INPUT_PATH))
+      xx_genarr3dr(iarr,:,:,:) = xx_genarr3dr(iarr,:,:,:) + log10initval
+#endif
+      xx_genarr3dr(iarr,:,:,:) = EXP(ln10 * xx_genarr3dr(iarr,:,:,:))
+      fld = xx_genarr3dr(iarr,:,:,:)
+    else
+      fld = fld + xx_genarr3dr(iarr,:,:,:)
+    endif
+
+#else
+    fld = fld + xx_genarr3dr(iarr,:,:,:)
+#endif
+
+  end subroutine ctrl_map_genarr3dr
 #endif
 
 end module ctrl_map_genarr_m 

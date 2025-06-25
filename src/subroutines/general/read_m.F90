@@ -1693,12 +1693,9 @@ contains
         vis_int_g(j,i)  = real(vis_int_g_conv(i,j),dp)
 #endif
 
-#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
-! SSG : temp_r computed from temp_c and q_geo below (although in a bit of a hackey way).
         do kr=0, KRMAX
-           temp_r(kr,j,i) = real(temp_r_conv(i,j,kr),dp)
+           temp_r(kr,j,i) = temp_r(kr,j,i) + real(temp_r_conv(i,j,kr),dp)
         end do
-#endif
 
         do kt=0, KTMAX
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
@@ -1746,18 +1743,6 @@ contains
            omega_t(kt,j,i) = omega_c(0,j,i)
            age_t(kt,j,i)   = age_c(0,j,i)
         end do
-
-! SSG : Compute temp_r from temp_c and q_geo.
-! SSG : This is a bit of hack since I am using a snippet from init_temp_r, which simply initializes a linear profile.
-! SSG : It makes use of the geothermal heat flux. It also ensures temp_c(0,:,:) == temp_r(KRMAX,:,:).
-! SSG : It's still not equal to temp_r_conv below ice columns though.
-       do kr=0, KRMAX
-           temp_r(kr,j,i) = temp_c(0,j,i) &
-                          + (q_geo(j,i)/KAPPA_R) &
-                            *H_R*(1.0_dp-zeta_r(kr))
-                 ! linear temperature distribution according to the
-                 ! geothermal heat flux
-       end do
 #endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
      end do

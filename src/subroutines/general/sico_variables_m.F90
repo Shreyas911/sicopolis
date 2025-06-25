@@ -1702,6 +1702,7 @@ real(dp), dimension(0:JMAX,0:IMAX) :: vx_unc_MEaSUREs_data, vy_unc_MEaSUREs_data
 ! The differentiation command doesn't have to change then.
    real(dp), dimension(NUM_CTRL_GENARR2D,0:JMAX,0:IMAX)    :: xx_genarr2d, xx_genarr2d_orig
    real(dp), dimension(NUM_CTRL_GENARR3D,0:KCMAX,0:JMAX,0:IMAX) :: xx_genarr3d, xx_genarr3d_orig
+   real(dp), dimension(NUM_CTRL_GENARR3DR,0:KRMAX,0:JMAX,0:IMAX) :: xx_genarr3dr, xx_genarr3dr_orig
    real(dp), dimension(NUM_CTRL_GENTIM2D,0:NTDAMAX,0:JMAX,0:IMAX) :: xx_gentim2d, xx_gentim2d_orig
 #ifdef DO_CTRL_GENARR2D
 #if defined(DO_GENCTRL_PRIOR)
@@ -1720,6 +1721,15 @@ real(dp), dimension(0:JMAX,0:IMAX) :: vx_unc_MEaSUREs_data, vy_unc_MEaSUREs_data
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR3D)      :: xx_genarr3d_vars
    character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR3D)      :: xx_genarr3d_preproc
    real(dp), dimension(NUM_CTRL_GENARR3D)                       :: xx_genarr3d_log10initval
+#endif
+#ifdef DO_CTRL_GENARR3DR
+#if defined(DO_GENCTRL_PRIOR)
+   real(dp), dimension(NUM_CTRL_GENARR3DR,0:KRMAX,0:JMAX,0:IMAX) :: xx_genarr3dr_prior, xx_genarr3dr_prior_X
+   real(dp), dimension(NUM_CTRL_GENARR3DR)                       :: genarr3dr_gamma_arr, genarr3dr_delta_arr, genarr3dr_sigma_arr
+#endif
+   character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR3DR)      :: xx_genarr3dr_vars
+   character(CTRL_STRLENGTH), dimension(NUM_CTRL_GENARR3DR)      :: xx_genarr3dr_preproc
+   real(dp), dimension(NUM_CTRL_GENARR3DR)                       :: xx_genarr3dr_log10initval
 #endif
 #if(defined(DTIME_INTERP0) && defined(NTDAMAX) && defined(DO_CTRL_GENTIM2D))
 #if defined(DO_GENCTRL_PRIOR)

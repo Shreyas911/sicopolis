@@ -17,11 +17,13 @@
 
 #define DO_CTRL_GENARR2D
 #define DO_CTRL_GENARR3D
+#define DO_CTRL_GENARR3DR
 #define DO_CTRL_GENTIM2D
 !       Flags to enable specific codes for various types of genctrl
 
 #define NUM_CTRL_GENARR2D 23
 #define NUM_CTRL_GENARR3D 3
+#define NUM_CTRL_GENARR3DR 1
 #define NUM_CTRL_GENTIM2D 1
 !       Number of control variables,
 !       Has to be 0 for all 3 as dummy value when not in use.
@@ -131,6 +133,13 @@
                                     'xx_omega_c',\
                                     'xx_age_c' ]
 !       List of 3D time-invariant control variables
+
+!-------- Settings for genarr3DR --------
+
+#define XX_GENARR3DR_VARS_ARR    [ character(CTRL_STRLENGTH) ::\
+                                    'xx_temp_r' ]
+
+!       List of 3DR (bedrock) time-invariant control variables
 
 !-------- Settings for gentim2D --------
 

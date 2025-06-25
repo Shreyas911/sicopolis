@@ -177,6 +177,7 @@ program tapenade_main
         omega_c         = 0.0 ! Only compatible with ANF_DAT==3
         temp_c          = 0.0 ! Not compatible with ANF_DAT==1 and TEMP_INIT==5
         age_c           = 0.0 ! Not compatible with ANF_DAT==1 and TEMP_INIT==5
+        temp_r          = 0.0 ! Only compatible with ANF_DAT==3
         delta_tda       = 0.0 ! Not compatible with TSURFACE>4
 
 !@ python_automated_tlm IO write @

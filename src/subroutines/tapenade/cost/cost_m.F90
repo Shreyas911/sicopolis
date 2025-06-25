@@ -43,7 +43,7 @@ module cost_m
 
   implicit none
 
-  public :: cost_final, laplace_smoothing_2D_reg_cost, laplace_smoothing_3D_reg_cost
+  public :: cost_final, laplace_smoothing_2D_reg_cost, laplace_smoothing_3D_reg_cost, laplace_smoothing_3DR_reg_cost
 
 contains
  
@@ -74,7 +74,7 @@ contains
   
   implicit none
   
-  integer(i4b) :: i, j, k, kc, kt, tad, ios, KDATA, ctrl_index
+  integer(i4b) :: i, j, k, kc, kr, tad, ios, ctrl_index
   character(len=64), parameter :: thisroutine = 'cost_final'
   real(dp), dimension(0:JMAX,0:IMAX) :: vs
 
@@ -95,10 +95,7 @@ contains
 
 #if (defined(AGE_COST) || defined(FAKE_AGE_COST))
 
-#if (CALCMOD!=1)
-  KDATA = KCMAX
-#else 
-  KDATA = KCMAX + KTMAX
+#if (CALCMOD==1)
   errormsg = ' >>> '//trim(thisroutine)//': Age model-data misfit not compatible' &
   //               end_of_line &
   //'              with CALCMOD==1!'
@@ -107,7 +104,7 @@ contains
  
   do i=0, IMAX 
     do j=0, JMAX
-      do k=0, KDATA
+      do k=0, KCMAX
 #ifdef ALLOW_AGE_UNCERT
         ! only counting points that are real in the data: 
         if (age_unc_data(k,j,i) .gt. 0.0 .and. age_data(k,j,i) .ge. 0.0 .and. age_data(k,j,i) .le. 134000.0 .and. H_BedMachine_data(j,i) .ge. 2000.0) then
@@ -266,7 +263,18 @@ contains
                                        xx_genarr3d_prior_X(ctrl_index,:,:,:), &
                                        genarr3d_gamma_arr(ctrl_index), &
                                        genarr3d_delta_arr(ctrl_index), &
-                                       genarr2d_sigma_arr(ctrl_index))
+                                       genarr3d_sigma_arr(ctrl_index))
+  end do
+#endif
+
+#if (defined(DO_CTRL_GENARR3DR) && defined(XX_GENARR3DR_VARS_ARR))
+  do ctrl_index = 1, NUM_CTRL_GENARR3DR
+    call laplace_smoothing_3DR_reg_cost(xx_genarr3dr_orig(ctrl_index,:,:,:), &
+                                        xx_genarr3dr_prior(ctrl_index,:,:,:), &
+                                        xx_genarr3dr_prior_X(ctrl_index,:,:,:), &
+                                        genarr3dr_gamma_arr(ctrl_index), &
+                                        genarr3dr_delta_arr(ctrl_index), &
+                                        genarr3dr_sigma_arr(ctrl_index))
   end do
 #endif
 
@@ -396,5 +404,48 @@ contains
   end do
 
   end subroutine laplace_smoothing_3D_reg_cost
+
+  subroutine laplace_smoothing_3DR_reg_cost(field, field_prior, field_prior_X, gamm, delta, sigma)
+
+  implicit none
+
+  real(dp), dimension(0:KRMAX,0:JMAX,0:IMAX) :: field, field_prior, field_prior_X
+
+  integer(i4b) :: i, j, kr
+  character(len=64), parameter :: thisroutine = 'laplace_smoothing_3DR_reg_cost'
+  real(dp) :: delta, gamm, sigma
+  real(dp), dimension(1:KRMAX) :: delta_z
+
+  do kr=1, KRMAX
+    delta_z(kr) = 1.e6*(zeta_r(kr)-zeta_r(kr-1))
+  end do
+
+  field(:,:,:) = field(:,:,:) / (field_prior_X(:,:,:)*sigma)
+  field_prior(:,:,:) = field_prior(:,:,:) / (field_prior_X(:,:,:)*sigma)
+
+  do i=0,IMAX
+    do j=0,JMAX
+      fc_reg = fc_reg + 0.5*(delta*(field(0,j,i)-field_prior(0,j,i)) &
+                                         - gamm*((field(1,j,i) - field(0,j,i)) &
+                                         -(field_prior(1,j,i) - field_prior(0,j,i))) / delta_z(1)**2)**2
+      fc_reg = fc_reg + 0.5*(delta*(field(KRMAX,j,i)-field_prior(KRMAX,j,i)) &
+                                         - gamm*((field(KRMAX-1,j,i) - field(KRMAX,j,i)) &
+                                         -(field_prior(KRMAX-1,j,i) - field_prior(KRMAX,j,i))) / delta_z(KRMAX)**2)**2
+    end do
+  end do
+
+  do i=0,IMAX
+    do j=0,JMAX
+      do kr=1, KRMAX-1
+        fc_reg = fc_reg &
+        + 0.5*(delta*(field(kr,j,i)-field_prior(kr,j,i)) &
+            - gamm*(((field(kr+1,j,i)-field(kr,j,i))/delta_z(kr+1) - (field(kr,j,i)-field(kr-1,j,i))/delta_z(kr))*(2.0/(delta_z(kr) + delta_z(kr+1))) &
+            -((field_prior(kr+1,j,i)-field_prior(kr,j,i))/delta_z(kr+1) - (field_prior(kr,j,i)-field_prior(kr-1,j,i))/delta_z(kr))*(2.0/(delta_z(kr) + delta_z(kr+1)))))**2
+      end do
+    end do
+  end do
+
+  end subroutine laplace_smoothing_3DR_reg_cost
+
 
 end module cost_m
