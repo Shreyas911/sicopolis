@@ -45,6 +45,13 @@ module ad_input_m
 #endif /* ALLOW_TAP_TLM */
 #endif
 
+#ifdef DO_CTRL_GENARR3DR
+        real(dp), dimension(NUM_CTRL_GENARR3DR,0:IMAX,0:JMAX,0:KRMAX) :: xx_genarr3dr_conv
+#ifdef ALLOW_TAP_TLM
+        real(dp), dimension(NUM_CTRL_GENARR3DR,0:IMAX,0:JMAX,0:KRMAX) :: xx_genarr3drd_conv
+#endif /* ALLOW_TAP_TLM */
+#endif
+
 #ifdef DO_CTRL_GENTIM2D
         real(dp), dimension(NUM_CTRL_GENTIM2D,0:IMAX,0:JMAX,0:NTDAMAX) :: xx_gentim2d_conv
 #ifdef ALLOW_TAP_TLM
@@ -92,6 +99,9 @@ module ad_input_m
 #endif
 #ifdef DO_CTRL_GENARR3D
         xx_genarr3d_vars            = XX_GENARR3D_VARS_ARR
+#endif
+#ifdef DO_CTRL_GENARR3DR
+        xx_genarr3dr_vars            = XX_GENARR3DR_VARS_ARR
 #endif
 #ifdef DO_CTRL_GENTIM2D
         xx_gentim2d_vars            = XX_GENTIM2D_VARS_ARR
@@ -148,6 +158,17 @@ module ad_input_m
 #ifdef ALLOW_TAP_TLM
             call check( nf90_inq_varid(ncid, trim(adjustl(xx_genarr3d_vars(ctrl_index)))//'d', ncv) )
             call check( nf90_get_var(ncid, ncv, xx_genarr3dd_conv(ctrl_index,:,:,:)) )
+#endif /* ALLOW_TAP_TLM */
+        end do
+#endif
+
+#ifdef DO_CTRL_GENARR3DR
+        do ctrl_index = 1, NUM_CTRL_GENARR3DR
+            call check( nf90_inq_varid(ncid, trim(adjustl(xx_genarr3dr_vars(ctrl_index))), ncv) )
+            call check( nf90_get_var(ncid, ncv, xx_genarr3dr_conv(ctrl_index,:,:,:)) )
+#ifdef ALLOW_TAP_TLM
+            call check( nf90_inq_varid(ncid, trim(adjustl(xx_genarr3dr_vars(ctrl_index)))//'d', ncv) )
+            call check( nf90_get_var(ncid, ncv, xx_genarr3drd_conv(ctrl_index,:,:,:)) )
 #endif /* ALLOW_TAP_TLM */
         end do
 #endif
@@ -229,6 +250,22 @@ module ad_input_m
             xx_genarr3d_orig(ctrl_index,kc,j,i) = xx_genarr3d_conv(ctrl_index,i,j,kc)
 #ifdef ALLOW_TAP_TLM
             xx_genarr3dd(ctrl_index,kc,j,i) = xx_genarr3dd_conv(ctrl_index,i,j,kc)
+#endif /* ALLOW_TAP_TLM */
+        end do
+        end do
+        end do
+        end do
+#endif
+
+#ifdef DO_CTRL_GENARR3DR
+        do i = 0, IMAX
+        do j = 0, JMAX
+        do kc = 0, KRMAX
+        do ctrl_index = 1, NUM_CTRL_GENARR3DR
+            xx_genarr3dr(ctrl_index,kc,j,i) = xx_genarr3dr_conv(ctrl_index,i,j,kc)
+            xx_genarr3dr_orig(ctrl_index,kc,j,i) = xx_genarr3dr_conv(ctrl_index,i,j,kc)
+#ifdef ALLOW_TAP_TLM
+            xx_genarr3drd(ctrl_index,kc,j,i) = xx_genarr3drd_conv(ctrl_index,i,j,kc)
 #endif /* ALLOW_TAP_TLM */
         end do
         end do
@@ -367,6 +404,22 @@ year2sec = 3.1556925445e+07_dp
         end do
 #endif
 
+#ifdef DO_CTRL_GENARR3DR
+        call check( nf90_inq_varid(ncid, "genarr3dr_gamma_arr", ncv) )
+        call check( nf90_get_var(ncid, ncv, genarr3dr_gamma_arr) )
+
+        call check( nf90_inq_varid(ncid, "genarr3dr_delta_arr", ncv) )
+        call check( nf90_get_var(ncid, ncv, genarr3dr_delta_arr) )
+
+        call check( nf90_inq_varid(ncid, "genarr3dr_sigma_arr", ncv) )
+        call check( nf90_get_var(ncid, ncv, genarr3dr_sigma_arr) )
+
+        do ctrl_index = 1, NUM_CTRL_GENARR3DR
+            call check( nf90_inq_varid(ncid, trim(adjustl(xx_genarr3dr_vars(ctrl_index))), ncv) )
+            call check( nf90_get_var(ncid, ncv, xx_genarr3dr_conv(ctrl_index,:,:,:)) )
+        end do
+#endif
+
 #ifdef DO_CTRL_GENTIM2D
         call check( nf90_inq_varid(ncid, "gentim2d_gamma_arr", ncv) )
         call check( nf90_get_var(ncid, ncv, gentim2d_gamma_arr) )
@@ -402,6 +455,18 @@ year2sec = 3.1556925445e+07_dp
         do kc = 0, KCMAX
         do ctrl_index = 1, NUM_CTRL_GENARR3D
             xx_genarr3d_prior(ctrl_index,kc,j,i) = xx_genarr3d_conv(ctrl_index,i,j,kc)
+        end do
+        end do
+        end do
+        end do
+#endif
+
+#ifdef DO_CTRL_GENARR3DR
+        do i = 0, IMAX
+        do j = 0, JMAX
+        do kc = 0, KRMAX
+        do ctrl_index = 1, NUM_CTRL_GENARR3DR
+            xx_genarr3dr_prior(ctrl_index,kc,j,i) = xx_genarr3dr_conv(ctrl_index,i,j,kc)
         end do
         end do
         end do
@@ -447,6 +512,13 @@ year2sec = 3.1556925445e+07_dp
         end do
 #endif
 
+#ifdef DO_CTRL_GENARR3DR
+        do ctrl_index = 1, NUM_CTRL_GENARR3DR
+            call check( nf90_inq_varid(ncid, trim(adjustl(xx_genarr3dr_vars(ctrl_index)))//'d', ncv) )
+            call check( nf90_get_var(ncid, ncv, xx_genarr3dr_conv(ctrl_index,:,:,:)) )
+        end do
+#endif
+
 #ifdef DO_CTRL_GENTIM2D
         do ctrl_index = 1, NUM_CTRL_GENTIM2D
             call check( nf90_inq_varid(ncid, trim(adjustl(xx_gentim2d_vars(ctrl_index)))//'d', ncv) )
@@ -473,6 +545,18 @@ year2sec = 3.1556925445e+07_dp
         do kc = 0, KCMAX
         do ctrl_index = 1, NUM_CTRL_GENARR3D
             xx_genarr3d_prior_X(ctrl_index,kc,j,i) = xx_genarr3d_conv(ctrl_index,i,j,kc)
+        end do
+        end do
+        end do
+        end do
+#endif
+
+#ifdef DO_CTRL_GENARR3DR
+        do i = 0, IMAX
+        do j = 0, JMAX
+        do kc = 0, KRMAX
+        do ctrl_index = 1, NUM_CTRL_GENARR3DR
+            xx_genarr3dr_prior_X(ctrl_index,kc,j,i) = xx_genarr3dr_conv(ctrl_index,i,j,kc)
         end do
         end do
         end do
