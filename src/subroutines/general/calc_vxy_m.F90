@@ -136,6 +136,7 @@ else
 
 end if
 
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
 if (flag_c_slide_dimless) then
    do n=1, n_slide_regions
       c_slide_aux(n) = c_slide_aux(n) &
@@ -144,6 +145,7 @@ if (flag_c_slide_dimless) then
                            / tau_b_scale**p_weert_aux(n) )
    end do
 end if
+#endif /* NORMAL */
 
 #else
 
@@ -172,7 +174,10 @@ do j=0, JMAX
 #else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
       p_weert(j,i)         = p_weert(j,i) + p_weert_aux(n_slide_region(j,i))
       q_weert(j,i)         = q_weert(j,i) + q_weert_aux(n_slide_region(j,i))
-      c_slide_init(j,i)    = (c_slide_init(j,i) + c_slide_aux(n_slide_region(j,i)))*sec2year
+      c_slide_init(j,i)    = (c_slide_init(j,i) + c_slide_aux(n_slide_region(j,i))) &
+                             * ( v_b_scale &
+                                 * N_b_scale**q_weert(j,i) &
+                                 / tau_b_scale**p_weert(j,i) ) * sec2year
 #endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
       gamma_slide_inv(j,i) = gamma_slide_inv_aux(n_slide_region(j,i))
       sub_melt_flag(j,i)   = (gamma_slide_aux(n_slide_region(j,i)) >= eps)
