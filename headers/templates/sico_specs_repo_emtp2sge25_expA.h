@@ -4,7 +4,7 @@
 
 !-------- Basic settings --------
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2025-06-17'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2025-06-27'
 !                      Date of last change
 
 !-------- Domain --------
@@ -398,15 +398,9 @@
 !                         1 : Nye-Glen flow law (power law)
 !                         4 : Smith-Morland (polynomial) flow law
 
-#define N_POWER_LAW_INT 3
+#define N_POWER_LAW_REAL 3.0d0
 !                         Stress exponent for the Nye-Glen flow law
-!                         (integer value, only for FLOW_LAW==1)
-
-#define N_POWER_LAW_REAL 9999.9d0
-!                         Stress exponent for the Nye-Glen flow law
-!                         (real value, only for FLOW_LAW==1,
-!                          and only used if N_POWER_LAW_INT is undefined
-!                          or non-positive, otherwise ignored)
+!                         (real value, only for FLOW_LAW==1)
 
 #define FIN_VISC 1
 !                         1 : Unmodified Nye-Glen flow law with
