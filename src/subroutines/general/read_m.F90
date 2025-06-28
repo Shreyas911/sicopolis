@@ -1444,7 +1444,7 @@ contains
 
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
         zs(j,i)   = real(zs_conv(i,j),dp)
-! SSG : zm is computed below from zb and H_t.
+! SSG : zm is computed in sico_init from zb and H_t.
         zm(j,i)   = real(zm_conv(i,j),dp)
         zb(j,i)   = real(zb_conv(i,j),dp)
         zl(j,i)   = real(zl_conv(i,j),dp)
@@ -1469,50 +1469,8 @@ contains
 #endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
+! SSG : H, H_c, H_t are computed in sico_init later.
         H(j,i)    = real(H_conv(i,j),dp)
-#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
-! SSG : THE SNIPPET OF CODE BELOW IS FROM TOPOGRAPHY1.
-        if (mask(j,i) <= 1) then
-
-            zb(j,i) = zl(j,i)   ! ensure consistency
-
-        else if (mask(j,i) == 2) then
-
-#if (MARGIN==1 || MARGIN==2)
-            zs(j,i) = zl(j,i)   ! ensure
-            zb(j,i) = zl(j,i)   ! consistency
-#elif (MARGIN==3)
-            zs(j,i) = 0.0_dp    ! present-day
-            zb(j,i) = 0.0_dp    ! sea level
-#endif
-
-        else if (mask(j,i) == 3) then
-
-#if (MARGIN==1 || (MARGIN==2 && MARINE_ICE_FORMATION==1))
-            mask(j,i) = 2   ! floating ice cut off
-            zs(j,i) = zl(j,i)
-            zb(j,i) = zl(j,i)
-#elif (MARGIN==2 && MARINE_ICE_FORMATION==2)
-            mask(j,i) = 0   ! floating ice becomes "underwater ice"
-            H_ice   = zs(j,i)-zb(j,i)   ! ice thickness
-            zs(j,i) = zl(j,i)+H_ice
-            zb(j,i) = zl(j,i)
-#elif (MARGIN==3)
-            H_ice = zs(j,i)-zb(j,i)   ! ice thickness
-            zs(j,i) = freeboard_ratio*H_ice   ! ensure properly
-            zb(j,i) = zs(j,i)-H_ice           ! floating ice
-#endif
-
-        end if
-
-! SSG : THIS LINE IS COMMENTED OUT FROM TOPOGRAPHY1, ZM IS MORE APPROPRIATE TO READ FROM FILE (ALREADY DONE ABOVE).
-! SSG : IT MAKES NO DIFFERENCE EITHER WAYS, SINCE THE ADJOINT ZMB == 0.0
-!        zm(j,i)   = zb(j,i)
-! SSG : THIS LINE IS DIFFERENT FROM TOPOGRAPHY1, ZB INSTEAD OF ZM IS MORE APPROPRIATE HERE.
-        H(j,i)    = H(j,i) + zs(j,i)-zb(j,i)
-! SSG : OLD VERSION WHICH DID NOT ENSURE CORRECT RELATIONSHIP BETWEEN ZS, ZL, ZB, ZM, H AFTER TUNING
-!        H(j,i)    = H(j,i) + real(H_conv(i,j),dp)
-#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 #if (CALCMOD==1)
         H_c(j,i)  = real(H_cold_conv(i,j),dp)
         H_t(j,i)  = real(H_temp_conv(i,j),dp)
@@ -1520,14 +1478,9 @@ contains
         H_c(j,i)  = H(j,i)
         H_t(j,i)  = 0.0_dp
 #endif
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
-! SSG : Compute zm from zb and H_t.
-        zm(j,i) = zb(j,i) + H_t(j,i)
-#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
-#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
 ! SSG : Computed using call to calc_qbm in sico_init later.
         Q_bm(j,i)    = real(Q_bm_conv(i,j),dp)*sec2year
-! SSG : Computed below using omega_c, H_c.
+! SSG : Computed from omega_c, H_c in sico_init.
         Q_tld(j,i)   = real(Q_tld_conv(i,j),dp)*sec2year
 #endif
 ! SSG : Not an active control for DA (i.e. am_perpd and am_perpb don't exist, at least for enthalphy setup).
@@ -1543,59 +1496,18 @@ contains
 #endif
 ! SSG : Not sensitive controls for DA (zero gradients).
         dzs_dtau(j,i)  = real(dzs_dtau_conv(i,j),dp)*sec2year
+#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
+! SSG : dzm_dtau is computed in sico_init from dzb_dtau and dH_t_dtau later.
         dzm_dtau(j,i)  = real(dzm_dtau_conv(i,j),dp)*sec2year
+#endif
+! SSG : Not sensitive controls for DA (zero gradients).
         dzb_dtau(j,i)  = real(dzb_dtau_conv(i,j),dp)*sec2year
         dzl_dtau(j,i)  = real(dzl_dtau_conv(i,j),dp)*sec2year
 #if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
+! SSG : dH_dtau, dH_c_dtau, dH_t_dtau are computed in sico_init later.
         dH_dtau(j,i)   = real(dH_dtau_conv(i,j),dp)*sec2year
-#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
-! SSG : THE SNIPPET OF CODE BELOW IS TIME DERIVATIVE OF ABOVE SNIPPET FROM TOPOGRAPHY1.
-        if (mask(j,i) <= 1) then
-
-            dzb_dtau(j,i) = dzl_dtau(j,i)   ! ensure consistency
-
-        else if (mask(j,i) == 2) then
-
-#if (MARGIN==1 || MARGIN==2)
-            dzs_dtau(j,i) = dzl_dtau(j,i)   ! ensure
-            dzb_dtau(j,i) = dzl_dtau(j,i)   ! consistency
-#elif (MARGIN==3)
-            dzs_dtau(j,i) = 0.0_dp    ! present-day
-            dzb_dtau(j,i) = 0.0_dp    ! sea level
-#endif
-
-        else if (mask(j,i) == 3) then
-
-#if (MARGIN==1 || (MARGIN==2 && MARINE_ICE_FORMATION==1))
-            mask(j,i) = 2                ! floating ice cut off
-            dzs_dtau(j,i) = dzl_dtau(j,i)
-            dzb_dtau(j,i) = dzl_dtau(j,i)
-#elif (MARGIN==2 && MARINE_ICE_FORMATION==2)
-            mask(j,i) = 0                ! floating ice becomes "underwater ice"
-            dzs_dtau(j,i) = dzl_dtau(j,i)+dzs_dtau(j,i)-dzb_dtau(j,i)
-            dzb_dtau(j,i) = dzl_dtau(j,i)
-#elif (MARGIN==3)
-            dzs_dtau(j,i) = freeboard_ratio*(dzs_dtau(j,i)-dzb_dtau(j,i))   ! ensure properly
-            dzb_dtau(j,i) = dzs_dtau(j,i)-(dzs_dtau(j,i)-dzb_dtau(j,i))     ! floating ice
-#endif
-
-        end if
-
-        dH_dtau(j,i)    = dH_dtau(j,i) + dzs_dtau(j,i)-dzb_dtau(j,i)
-#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
-#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
         dH_c_dtau(j,i) = real(dH_c_dtau_conv(i,j),dp)*sec2year
         dH_t_dtau(j,i) = real(dH_t_dtau_conv(i,j),dp)*sec2year
-#else /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
-#if (CALCMOD==1)
-        dH_c_dtau(j,i) = real(dH_c_dtau_conv(i,j),dp)*sec2year
-        dH_t_dtau(j,i) = real(dH_t_dtau_conv(i,j),dp)*sec2year
-#elif (CALCMOD==0 || CALCMOD==2 || CALCMOD==3 || CALCMOD==-1)
-        dH_c_dtau(j,i) = dH_dtau(j,i)
-        dH_t_dtau(j,i) = 0.0_dp
-#endif
-#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
-#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
 ! SSG : Computed using calls to various velocity subroutines in sico_init later.
         vx_b_g(j,i)  = real(vx_b_g_conv(i,j),dp)*sec2year
         vy_b_g(j,i)  = real(vy_b_g_conv(i,j),dp)*sec2year
