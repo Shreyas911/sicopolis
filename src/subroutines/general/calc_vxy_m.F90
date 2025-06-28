@@ -61,14 +61,14 @@ integer(i4b) :: n_slide_regions
 integer(i4b) :: i_f, j_f, n_filter
 
 #if (!defined(N_SLIDE_REGIONS) || N_SLIDE_REGIONS<=1)
-integer(i4b) :: p_weert_aux(1)
-integer(i4b) :: q_weert_aux(1)
+real(dp) :: p_weert_aux(1)
+real(dp) :: q_weert_aux(1)
 real(dp) :: c_slide_aux(1)
 real(dp) :: gamma_slide_aux(1)
 real(dp) :: gamma_slide_inv_aux(1)
 #else
-integer(i4b) :: p_weert_aux(N_SLIDE_REGIONS)
-integer(i4b) :: q_weert_aux(N_SLIDE_REGIONS)
+real(dp) :: p_weert_aux(N_SLIDE_REGIONS)
+real(dp) :: q_weert_aux(N_SLIDE_REGIONS)
 real(dp) :: c_slide_aux(N_SLIDE_REGIONS)
 real(dp) :: gamma_slide_aux(N_SLIDE_REGIONS)
 real(dp) :: gamma_slide_inv_aux(N_SLIDE_REGIONS)
@@ -92,8 +92,8 @@ n_slide_regions = N_SLIDE_REGIONS
 
 #if (SLIDE_LAW==0)
 
-p_weert_aux = 1
-q_weert_aux = 0
+p_weert_aux = 1.0_dp
+q_weert_aux = 0.0_dp
 c_slide_aux = 0.0_dp   ! no-slip
 gamma_slide_aux = 1.0_dp
 flag_c_slide_dimless = .false.
@@ -103,8 +103,8 @@ v_b_scale   = 1.0_dp   ! dummy value
 
 #elif (SLIDE_LAW==1)
 
-p_weert_aux = P_WEERT
-q_weert_aux = Q_WEERT
+p_weert_aux = real(P_WEERT,dp)
+q_weert_aux = real(Q_WEERT,dp)
 
 #if (defined(C_SLIDE_DIMLESS))
    flag_c_slide_dimless = .true.
@@ -180,7 +180,7 @@ end do
 
 do i=0, IMAX
 do j=0, JMAX
-   p_weert_inv(j,i) = 1.0_dp/max(real(p_weert(j,i),dp), eps)
+   p_weert_inv(j,i) = 1.0_dp/max(p_weert(j,i), eps)
 end do
 end do
 
@@ -619,7 +619,7 @@ do j=0, JMAX
 #elif (SLIDE_LAW==1)
 
       cvxy1 = c_slide(j,i) &
-              * ( (tau_b(j,i)+eps_dp)**(p_weert(j,i)-1) &
+              * ( (tau_b(j,i)+eps_dp)**(p_weert(j,i)-1.0_dp) &
                   /(p_b_red_lim(j,i)+eps_dp)**q_weert(j,i) ) &
               * p_b(j,i)
       ctau1 = 1.0_dp/(c_slide(j,i)+eps_dp)**p_weert_inv(j,i) &
@@ -1533,8 +1533,8 @@ real(dp) :: flui_init
 #endif
 
 c_slide = 0.0_dp
-p_weert = 0
-q_weert = 0
+p_weert = 0.0_dp
+q_weert = 0.0_dp
 
 call calc_pressure_water_bas()   ! compute p_b_w
 
