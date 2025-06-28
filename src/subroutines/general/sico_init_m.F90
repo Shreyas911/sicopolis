@@ -227,8 +227,7 @@ real(dp) :: rho_g, rhosw_g
 real(dp), dimension(0:JMAX,0:IMAX) :: rhoa_g_inv
 real(dp) :: visc_min, visc_max, visc_init
 real(dp), dimension(0:KCMAX) :: cqtlde, aqtlde
-real(dp) :: H_ice, freeboard_ratio
-#endif
+#endif /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
 
 #if (defined(ALLOW_NODIFF) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
 #if (defined(LEGACY_RESTART) || (BASAL_HYDROLOGY > 0) || (CALCMOD==1) || (TEMP_INIT==5) || (DYNAMICS > 1) || (MARGIN > 1))
@@ -3511,85 +3510,6 @@ vis_int_g = 0.0_dp
 call topography3(dxi, deta, anfdatname)
 
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
-
-freeboard_ratio = (RHO_SW-RHO)/RHO_SW
-
-do i=0, IMAX
-do j=0, JMAX
-
-! SSG : The snippet of code below is modified from topography1.
-! SSG : The time derivatives are also computed the same way to ensure complete consistency.
-! SSG : zbb is most likely going to be 0 but that was not the case when this snippet was in read_tms_nc.
-! SSG : Especially with O3 compiler flags.
-! SSG : I think Tapenade hates computation in the same subroutine where you are reading from a file.
-   if (mask(j,i) <= 1) then
-
-      zb(j,i) = zl(j,i)   ! ensure consistency
-      dzb_dtau(j,i) = dzl_dtau(j,i)   ! ensure consistency
-
-   else if (mask(j,i) == 2) then
-
-#if (MARGIN==1 || MARGIN==2)
-      zs(j,i) = zl(j,i)   ! ensure
-      zb(j,i) = zl(j,i)   ! consistency
-      dzs_dtau(j,i) = dzl_dtau(j,i)   ! ensure
-      dzb_dtau(j,i) = dzl_dtau(j,i)   ! consistency
-#elif (MARGIN==3)
-      zs(j,i) = 0.0_dp    ! present-day
-      zb(j,i) = 0.0_dp    ! sea level
-      dzs_dtau(j,i) = 0.0_dp    ! present-day
-      dzb_dtau(j,i) = 0.0_dp    ! sea level
-#endif
-
-   else if (mask(j,i) == 3) then
-
-#if (MARGIN==1 || (MARGIN==2 && MARINE_ICE_FORMATION==1))
-      mask(j,i) = 2   ! floating ice cut off
-      zs(j,i) = zl(j,i)
-      zb(j,i) = zl(j,i)
-      dzs_dtau(j,i) = dzl_dtau(j,i)
-      dzb_dtau(j,i) = dzl_dtau(j,i)
-#elif (MARGIN==2 && MARINE_ICE_FORMATION==2)
-      mask(j,i) = 0   ! floating ice becomes "underwater ice"
-      H_ice   = zs(j,i)-zb(j,i)   ! ice thickness
-      zs(j,i) = zl(j,i)+H_ice
-      zb(j,i) = zl(j,i)
-      dzs_dtau(j,i) = dzl_dtau(j,i)+dzs_dtau(j,i)-dzb_dtau(j,i)
-      dzb_dtau(j,i) = dzl_dtau(j,i)
-#elif (MARGIN==3)
-      H_ice = zs(j,i)-zb(j,i)   ! ice thickness
-      zs(j,i) = freeboard_ratio*H_ice   ! ensure properly
-      zb(j,i) = zs(j,i)-H_ice           ! floating ice
-      dzs_dtau(j,i) = freeboard_ratio*(dzs_dtau(j,i)-dzb_dtau(j,i))   ! ensure properly
-      dzb_dtau(j,i) = dzs_dtau(j,i)-(dzs_dtau(j,i)-dzb_dtau(j,i))     ! floating ice
-#endif
-
-   end if
-
-! SSG : This line is commented out from topography1, zm is more appropriately calculated from zb and H_t below.
-! SSG : Since zmb == 0.0, doesn't make any difference either ways.
-!        zm(j,i)   = zb(j,i)
-! SSG : Since zm is calculated later, this line is different from topography1, zb instead of zm is better here.
-   H(j,i)    = H(j,i) + zs(j,i)-zb(j,i)
-   dH_dtau(j,i) = dH_dtau(j,i) + dzs_dtau(j,i)-dzb_dtau(j,i)
-#if (CALCMOD==1)
-! SSG : CALCMOD==1 doesn't work with AD anyway. The simulation will immediately error out due to our guardrails.
-!   H_c(j,i)  = real(H_cold_conv(i,j),dp)
-!   H_t(j,i)  = real(H_temp_conv(i,j),dp)
-!   dH_c_dtau(j,i) = real(dH_c_dtau_conv(i,j),dp)*sec2year
-!   dH_t_dtau(j,i) = real(dH_t_dtau_conv(i,j),dp)*sec2year
-#elif (CALCMOD==0 || CALCMOD==2 || CALCMOD==3 || CALCMOD==-1)
-   H_c(j,i)  = H(j,i)
-   H_t(j,i)  = 0.0_dp
-   dH_c_dtau(j,i) = dH_dtau(j,i)
-   dH_t_dtau(j,i) = 0.0_dp
-#endif
-! SSG : Compute zm from zb and H_t.
-   zm(j,i) = zb(j,i) + H_t(j,i)
-   dzm_dtau(j,i) = dzb_dtau(j,i) + dH_t_dtau(j,i)
-end do
-end do
-
 ! SSG : This whole snippet could also be in read_tms_nc at the end.
 ! SSG : But it leads to a weird error where read_tms_nc_b does not have zl_conv, zs_conv, zb_conv.
 ! SSG : Leads to garbage values.
@@ -5584,9 +5504,96 @@ character(len=256) :: filename_with_path
 
 real(dp), dimension(0:JMAX,0:IMAX) :: field2d_aux
 
+#if (defined(ALLOW_NODIFF) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
+real(dp) :: H_ice, freeboard_ratio
+#endif /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
+
 !-------- Read data from time-slice file of previous simulation --------
 
 call read_tms_nc(anfdatname)
+
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+
+freeboard_ratio = (RHO_SW-RHO)/RHO_SW
+
+do i=0, IMAX
+do j=0, JMAX
+
+! SSG : The snippet of code below is modified from topography1.
+! SSG : Has to be placed before call to topograd, otherwise incorrect computation of vz_c, vz_t.
+! SSG : The time derivatives are also computed the same way to ensure complete consistency.
+! SSG : zbb is most likely going to be 0 but that was not the case when this snippet was in read_tms_nc.
+! SSG : Especially with O3 compiler flags.
+! SSG : I think Tapenade hates computation in the same subroutine where you are reading from a file.
+   if (mask(j,i) <= 1) then
+
+      zb(j,i) = zl(j,i)   ! ensure consistency
+      dzb_dtau(j,i) = dzl_dtau(j,i)   ! ensure consistency
+
+   else if (mask(j,i) == 2) then
+
+#if (MARGIN==1 || MARGIN==2)
+      zs(j,i) = zl(j,i)   ! ensure
+      zb(j,i) = zl(j,i)   ! consistency
+      dzs_dtau(j,i) = dzl_dtau(j,i)   ! ensure
+      dzb_dtau(j,i) = dzl_dtau(j,i)   ! consistency
+#elif (MARGIN==3)
+      zs(j,i) = 0.0_dp    ! present-day
+      zb(j,i) = 0.0_dp    ! sea level
+      dzs_dtau(j,i) = 0.0_dp    ! present-day
+      dzb_dtau(j,i) = 0.0_dp    ! sea level
+#endif
+
+   else if (mask(j,i) == 3) then
+
+#if (MARGIN==1 || (MARGIN==2 && MARINE_ICE_FORMATION==1))
+      mask(j,i) = 2   ! floating ice cut off
+      zs(j,i) = zl(j,i)
+      zb(j,i) = zl(j,i)
+      dzs_dtau(j,i) = dzl_dtau(j,i)
+      dzb_dtau(j,i) = dzl_dtau(j,i)
+#elif (MARGIN==2 && MARINE_ICE_FORMATION==2)
+      mask(j,i) = 0   ! floating ice becomes "underwater ice"
+      H_ice   = zs(j,i)-zb(j,i)   ! ice thickness
+      zs(j,i) = zl(j,i)+H_ice
+      zb(j,i) = zl(j,i)
+      dzs_dtau(j,i) = dzl_dtau(j,i)+dzs_dtau(j,i)-dzb_dtau(j,i)
+      dzb_dtau(j,i) = dzl_dtau(j,i)
+#elif (MARGIN==3)
+      H_ice = zs(j,i)-zb(j,i)   ! ice thickness
+      zs(j,i) = freeboard_ratio*H_ice   ! ensure properly
+      zb(j,i) = zs(j,i)-H_ice           ! floating ice
+      dzs_dtau(j,i) = freeboard_ratio*(dzs_dtau(j,i)-dzb_dtau(j,i))   ! ensure properly
+      dzb_dtau(j,i) = dzs_dtau(j,i)-(dzs_dtau(j,i)-dzb_dtau(j,i))     ! floating ice
+#endif
+
+   end if
+
+! SSG : This line is commented out from topography1, zm is more appropriately calculated from zb and H_t below.
+! SSG : Since zmb == 0.0, doesn't make any difference either ways.
+!        zm(j,i)   = zb(j,i)
+! SSG : Since zm is calculated later, this line is different from topography1, zb instead of zm is better here.
+   H(j,i)    = H(j,i) + zs(j,i)-zb(j,i)
+   dH_dtau(j,i) = dH_dtau(j,i) + dzs_dtau(j,i)-dzb_dtau(j,i)
+#if (CALCMOD==1)
+! SSG : CALCMOD==1 doesn't work with AD anyway. The simulation will immediately error out due to our guardrails.
+!   H_c(j,i)  = real(H_cold_conv(i,j),dp)
+!   H_t(j,i)  = real(H_temp_conv(i,j),dp)
+!   dH_c_dtau(j,i) = real(dH_c_dtau_conv(i,j),dp)*sec2year
+!   dH_t_dtau(j,i) = real(dH_t_dtau_conv(i,j),dp)*sec2year
+#elif (CALCMOD==0 || CALCMOD==2 || CALCMOD==3 || CALCMOD==-1)
+   H_c(j,i)  = H(j,i)
+   H_t(j,i)  = 0.0_dp
+   dH_c_dtau(j,i) = dH_dtau(j,i)
+   dH_t_dtau(j,i) = 0.0_dp
+#endif
+! SSG : Compute zm from zb and H_t.
+   zm(j,i) = zb(j,i) + H_t(j,i)
+   dzm_dtau(j,i) = dzb_dtau(j,i) + dH_t_dtau(j,i)
+end do
+end do
+
+#endif /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
 
 !-------- Read topography of the relaxed bedrock --------
 
