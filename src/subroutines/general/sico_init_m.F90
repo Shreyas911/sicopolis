@@ -230,6 +230,23 @@ real(dp), dimension(0:KCMAX) :: cqtlde, aqtlde
 #endif /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
 
 #if (defined(ALLOW_NODIFF) || defined(ALLOW_GRDCHK) || defined(ALLOW_TAPENADE))
+#if (!defined(ANT) && !defined(GRL))
+errormsg = ' >>> sico_init: ' &
+           // 'Only GRL and ANT have been tested with AD setup!'
+call error(errormsg)
+#endif
+#if ( \
+  ((defined(ANT) || defined(GRL)) && defined(INITMIP_SMB_ANOM_FILE)) || \
+  (defined(ANT) && defined(INITMIP_BMB_ANOM_FILE)) || \
+  (defined(ANT) && defined(LARMIP_REGIONS_FILE)) || \
+  (defined(ANT) && ICE_SHELF_COLLAPSE_MASK == 1) || \
+  (defined(GRL) && RETREAT_MASK == 1) \
+)
+errormsg = ' >>> sico_init: ' &
+           // 'It might be unsafe to use these flags with AD setup since Tapenade has been known (anecdotally) to have issues when' &
+           // 'reading using nf90 directives in the same file and performing other operations. The I/O in sico_init_m should probably be separated!'
+call error(errormsg)
+#endif
 #if (defined(LEGACY_RESTART) || (BASAL_HYDROLOGY > 0) || (CALCMOD==1) || (TEMP_INIT==5) || (DYNAMICS > 1) || (MARGIN > 1))
 errormsg = ' >>> sico_init: ' &
            // 'Although many parts of LEGACY_RESTART are used in the AD setup, using the LEGACY_RESTART flag with AD might be wrong!' &
@@ -240,7 +257,13 @@ errormsg = ' >>> sico_init: ' &
            // 'MARGIN > 1 might not have issues by itself, but combined with DYNAMICS > 1, it might not work. Careful testing needed!'
 call error(errormsg)
 #endif
+#if ((FLOATING_ICE_BASAL_MELTING==6) || (TSURFACE==6 && ACCSURFACE==6 && ABLSURFACE==6))
+errormsg = ' >>> sico_init: ' &
+           // 'It might be unsafe to use these flags with AD setup since Tapenade has been known (anecdotally) to have issues when' &
+           // 'reading using nf90 directives in the same file and performing other operations. The I/O in sico_init_m should probably be separated!'
+call error(errormsg)
 #endif
+#endif /* ALLOW_{NODIFF,GRDCHK,TAPENADE} */
 
 write(unit=6, fmt='(/a)') ' -------- sico_init --------'
 
