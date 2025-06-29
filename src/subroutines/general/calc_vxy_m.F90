@@ -106,6 +106,11 @@ v_b_scale   = 1.0_dp   ! dummy value
 p_weert_aux = real(P_WEERT,dp)
 q_weert_aux = real(Q_WEERT,dp)
 
+do n=1, n_slide_regions
+   if (p_weert_aux(n) < eps) p_weert_aux(n) = eps
+   if (q_weert_aux(n) < eps) q_weert_aux(n) = 0.0_dp
+end do
+
 #if (defined(C_SLIDE_DIMLESS))
    flag_c_slide_dimless = .true.
    c_slide_aux = C_SLIDE_DIMLESS
