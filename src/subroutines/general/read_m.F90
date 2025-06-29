@@ -2355,15 +2355,12 @@ contains
 
 #if (FLOW_LAW==1)
 
-#if (N_POWER_LAW_INT>=1)
+#if (defined(N_POWER_LAW))
      RF_scale = (strain_rate_scale/year2sec_aux) &
-                             /stress_dev_scale**N_POWER_LAW_INT
-#elif (defined(N_POWER_LAW_REAL))
-     RF_scale = (strain_rate_scale/year2sec_aux) &
-                             /stress_dev_scale**N_POWER_LAW_REAL
+                             /stress_dev_scale**real(N_POWER_LAW,dp)
 #else
      RF_scale = (strain_rate_scale/year2sec_aux) &
-                             /stress_dev_scale**3
+                             /stress_dev_scale**3.0_dp
                                 ! using default power-law exponent n=3
 #endif
 

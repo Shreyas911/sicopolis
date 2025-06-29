@@ -351,52 +351,26 @@ implicit none
 real(dp)             :: creep
 real(dp), intent(in) :: sigma_val
 
-#if (FLOW_LAW==4)
+#if (FLOW_LAW==1)
+real(dp) :: d_n_power_law
+#elif (FLOW_LAW==4)
 real(dp) :: sm_coeff_1, sm_coeff_2, sm_coeff_3
 #endif
 
 #if (FLOW_LAW==1)
 
+#if (defined(N_POWER_LAW))
+d_n_power_law = real(N_POWER_LAW,dp)
+#else
+d_n_power_law = 3.0_dp   ! default n=3
+#endif
+
 #if (FIN_VISC==1)
-
-#if (N_POWER_LAW_INT==1)
-creep = 1.0_dp
-#elif (N_POWER_LAW_INT==2)
-creep = sigma_val
-#elif (N_POWER_LAW_INT==3)
-creep = sigma_val*sigma_val
-#elif (N_POWER_LAW_INT==4)
-creep = sigma_val*sigma_val*sigma_val
-#elif (N_POWER_LAW_INT>=5)
-creep = sigma_val**(N_POWER_LAW_INT-1)
-#elif (defined(N_POWER_LAW_REAL))
-creep = sigma_val**(N_POWER_LAW_REAL-1.0_dp)
-#else
-creep = sigma_val*sigma_val   ! default n=3
-#endif
+creep = sigma_val**(d_n_power_law-1.0_dp)
         ! Nye-Glen flow law
-
 #elif (FIN_VISC==2)
-
-#if (N_POWER_LAW_INT==1)
-creep = 1.0_dp   ! SIGMA_RES ignored here
-#elif (N_POWER_LAW_INT==2)
-creep = sigma_val + SIGMA_RES
-#elif (N_POWER_LAW_INT==3)
-creep = sigma_val*sigma_val + SIGMA_RES*SIGMA_RES
-#elif (N_POWER_LAW_INT==4)
-creep = sigma_val*sigma_val*sigma_val + SIGMA_RES*SIGMA_RES*SIGMA_RES
-#elif (N_POWER_LAW_INT>=5)
-creep = sigma_val**(N_POWER_LAW_INT-1) &
-           + SIGMA_RES**(N_POWER_LAW_INT-1)
-#elif (defined(N_POWER_LAW_REAL))
-creep = sigma_val**(N_POWER_LAW_REAL-1.0_dp) &
-           + SIGMA_RES**(N_POWER_LAW_REAL-1.0_dp)
-#else
-creep = sigma_val*sigma_val + SIGMA_RES*SIGMA_RES   ! default n=3
-#endif
+creep = sigma_val**(d_n_power_law-1.0_dp) + SIGMA_RES**(d_n_power_law-1.0_dp)
         ! Nye-Glen flow law with additional finite viscosity
-
 #endif
 
 #elif (FLOW_LAW==4)
@@ -480,10 +454,8 @@ de_val_m = max(de_val, de_min)
 
 #if (FIN_VISC==1)
 
-#if (N_POWER_LAW_INT>=1)
-d_inv_n_power_law = 1.0_dp/real(N_POWER_LAW_INT,dp)
-#elif (defined(N_POWER_LAW_REAL))
-d_inv_n_power_law = 1.0_dp/N_POWER_LAW_REAL
+#if (defined(N_POWER_LAW))
+d_inv_n_power_law = 1.0_dp/real(N_POWER_LAW,dp)
 #else
 d_inv_n_power_law = 1.0_dp/3.0_dp   ! default n=3
 #endif
@@ -494,10 +466,8 @@ viscosity = 0.5_dp * de_val_m**(d_inv_n_power_law-1.0_dp) &
 
 #elif (FIN_VISC==2)
 
-#if (N_POWER_LAW_INT>=1)
-d_n_power_law = real(N_POWER_LAW_INT,dp)
-#elif (defined(N_POWER_LAW_REAL))
-d_n_power_law = N_POWER_LAW_REAL
+#if (defined(N_POWER_LAW))
+d_n_power_law = real(N_POWER_LAW,dp)
 #else
 d_n_power_law = 3.0_dp   ! default n=3
 #endif

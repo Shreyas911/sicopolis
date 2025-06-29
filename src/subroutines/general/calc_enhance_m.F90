@@ -380,12 +380,10 @@ contains
   frac_dust = 0.0_dp
 #endif
 
-#if (N_POWER_LAW_INT>=1)
-  d_n_power_law = real(N_POWER_LAW_INT,dp)
-#elif (defined(N_POWER_LAW_REAL))
-  d_n_power_law = N_POWER_LAW_REAL
+#if (defined(N_POWER_LAW))
+  d_n_power_law = real(N_POWER_LAW,dp)
 #else
-  d_n_power_law = real(3,dp)
+  d_n_power_law = 3.0_dp
 #endif
 
 #if (FLOW_LAW==1)

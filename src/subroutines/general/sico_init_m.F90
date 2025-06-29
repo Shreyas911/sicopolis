@@ -448,23 +448,13 @@ call calc_c_int_inv_table()
 
 #if (FLOW_LAW==1)
 
-#if (N_POWER_LAW_INT>=1)
+#if (!defined(N_POWER_LAW))
 
-! Nye-Glen flow law with integer exponent
+! Nye-Glen flow law with default exponent n=3
 
-#elif (defined(N_POWER_LAW_REAL))
-
-! Nye-Glen flow law with real exponent
-
-#else
-
-! Nye-Glen flow law with default integer exponent n=3
-
-warningmsg = ' >>> sico_init: Nye-Glen flow law exponent' &
-           //         end_of_line &
-           //'        neither defined by N_POWER_LAW_INT' &
-           //         end_of_line &
-           //'        nor by N_POWER_LAW_REAL -> default value n=3 assumed.'
+warningmsg = ' >>> sico_init: Nye-Glen flow law exponent not defined' &
+           //                 end_of_line &
+           //'                by N_POWER_LAW -> default value n=3 assumed.'
 call warning(warningmsg)
 
 #endif
@@ -1558,10 +1548,8 @@ write(10, fmt=trim(fmt1)) ' '
 
 write(10, fmt=trim(fmt2)) 'FLOW_LAW = ', FLOW_LAW
 #if (FLOW_LAW==1)
-#if (N_POWER_LAW_INT>=1)
-write(10, fmt=trim(fmt2)) 'N_POWER_LAW_INT = ', N_POWER_LAW_INT
-#elif (defined(N_POWER_LAW_REAL))
-write(10, fmt=trim(fmt3)) 'N_POWER_LAW_REAL =', N_POWER_LAW_REAL
+#if (defined(N_POWER_LAW))
+write(10, fmt=trim(fmt3)) 'N_POWER_LAW =', real(N_POWER_LAW,dp)
 #endif
 write(10, fmt=trim(fmt2)) 'FIN_VISC = ', FIN_VISC
 #if (FIN_VISC==2)
