@@ -3813,25 +3813,28 @@ visc_init = VISC_INIT_SSA
 visc_init = 1.0e+15_dp   ! Pa s
 #endif
 
-do i=0, IMAX
-do j=0, JMAX
+! SSG: vis_ave_g is read in read_tms_nc since the code block below doesn't give the right value.
+! SSG: It is not an active variable for AD (at least in my case).
 
-   if ((mask(j,i)==0).or.(mask(j,i)==3)) then
-          ! grounded or floating ice
-
-      vis_ave_g(j,i) = vis_int_g(j,i)/max(H(j,i), eps_dp)
-
-      vis_ave_g(j,i) = max(min(vis_ave_g(j,i), visc_max), visc_min)
-
-   else   ! (mask(j,i)==1).or.(mask(j,i)==2),
-          ! ice-free land or ocean
-
-      vis_ave_g(j,i) = visc_init   ! dummy value
-
-   end if
-
-end do
-end do
+!do i=0, IMAX
+!do j=0, JMAX
+!
+!   if ((mask(j,i)==0).or.(mask(j,i)==3)) then
+!          ! grounded or floating ice
+!
+!      vis_ave_g(j,i) = vis_int_g(j,i)/max(H(j,i), eps_dp)
+!
+!      vis_ave_g(j,i) = max(min(vis_ave_g(j,i), visc_max), visc_min)
+!
+!   else   ! (mask(j,i)==1).or.(mask(j,i)==2),
+!          ! ice-free land or ocean
+!
+!      vis_ave_g(j,i) = visc_init   ! dummy value
+!
+!   end if
+!
+!end do
+!end do
 
 ! SSG : Q_bm depends on vx_t, vy_t (computed above) but vz_b (computed below) depends on Q_b_tot = Q_bm + Q_tld.
 ! SSG : Compute Q_bm, Q_tld, Q_b_tot, temp_b, temph_b, p_b_w, q_w, q_w_x, q_w_y, H_w.

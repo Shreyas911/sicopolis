@@ -1597,13 +1597,11 @@ contains
            flag_grounded_front_b_2(j,i) = .false.
         end if
 
-! SSG : vis_int_g computed using calls to various velocity subroutines in sico_init later.
-! SSG : vis_ave_g computed using vis_int_g later in sico_init. Has about 50-60% the value of vis_ave_g_conv.
+! SSG : vis_int_g computed using calls to various velocity subroutines in sico_init later. Identically 0 in my case.
+! SSG : vis_ave_g can be computed using vis_int_g later in sico_init. Has about 50-60% the value of vis_ave_g_conv.
 ! SSG : Not an active control for DA (i.e. vis_ave_gd and vis_ave_gb and vis_int_gd and vis_int_gb don't exist) anyway.
-#if (!defined(ALLOW_TAPENADE) && !defined(ALLOW_GRDCHK) && !defined(ALLOW_NODIFF)) /* NORMAL */
         vis_ave_g(j,i)  = real(vis_ave_g_conv(i,j),dp)
         vis_int_g(j,i)  = real(vis_int_g_conv(i,j),dp)
-#endif
 
         do kr=0, KRMAX
            temp_r(kr,j,i) = temp_r(kr,j,i) + real(temp_r_conv(i,j,kr),dp)
