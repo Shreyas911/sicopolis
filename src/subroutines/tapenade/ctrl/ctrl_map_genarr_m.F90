@@ -187,9 +187,9 @@ contains
 #endif
       else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_n_glen_da_dummy2d_scalar') then
         igen_n_glen_da_dummy2d_scalar = ctrl_index
-#if (FLOW_LAW != 1 || !defined(N_POWER_LAW_REAL) || N_POWER_LAW_INT > 0)
+#if (FLOW_LAW != 1)
         errormsg = ' >>> ctrl_map_ini_genarr2d: ' &
-        //'n_glen_da_dummy2d_scalar as a control param is only compatible with FLOW_LAW == 1, and defined(N_POWER_LAW_REAL) and N_POWER_LAW_INT undefined or < 0!'
+        //'n_glen_da_dummy2d_scalar as a control param is only compatible with FLOW_LAW == 1!'
         call error(errormsg)
 #endif
       else if (trim(adjustl(xx_genarr2d_vars(ctrl_index))) .EQ. 'xx_zs') then
