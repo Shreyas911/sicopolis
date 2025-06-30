@@ -2456,20 +2456,20 @@ contains
 
 #if (FLOW_LAW==1)
 
-#if (N_POWER_LAW_INT>=1)
-     RF_scale = (strain_rate_scale/year2sec_aux) &
-                             /stress_dev_scale**N_POWER_LAW_INT
-#elif (defined(N_POWER_LAW_REAL))
+#if (defined(N_POWER_LAW))
      RF_scale = (strain_rate_scale/year2sec_aux) &
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
-              /stress_dev_scale**(N_POWER_LAW_REAL + n_glen_da_scalar)
+                             /stress_dev_scale**(real(N_POWER_LAW,dp) + n_glen_da_scalar)
 #else /* NORMAL */
-                             /stress_dev_scale**N_POWER_LAW_REAL
+                             /stress_dev_scale**real(N_POWER_LAW,dp)
 #endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
-
 #else
      RF_scale = (strain_rate_scale/year2sec_aux) &
-                             /stress_dev_scale**3
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+                             /stress_dev_scale**(3.0_dp + n_glen_da_scalar)
+#else /* NORMAL */
+                             /stress_dev_scale**3.0_dp
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
                                 ! using default power-law exponent n=3
 #endif
 

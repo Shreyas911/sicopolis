@@ -470,17 +470,19 @@ contains
   frac_dust = 0.0_dp
 #endif
 
-#if (N_POWER_LAW_INT>=1)
-  d_n_power_law = real(N_POWER_LAW_INT,dp)
-#elif (defined(N_POWER_LAW_REAL))
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
-  d_n_power_law = N_POWER_LAW_REAL + n_glen_da_scalar
-#else /* NORMAL */
-  d_n_power_law = N_POWER_LAW_REAL
-#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+#if (defined(N_POWER_LAW))
+  d_n_power_law = real(N_POWER_LAW,dp) + n_glen_da_scalar
 #else
-  d_n_power_law = real(3,dp)
+  d_n_power_law = 3.0_dp + n_glen_da_scalar
 #endif
+#else /* NORMAL */
+#if (defined(N_POWER_LAW))
+  d_n_power_law = real(N_POWER_LAW,dp)
+#else
+  d_n_power_law = 3.0_dp
+#endif
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 #if (FLOW_LAW==1)
   enh_mult = exp(-d_n_power_law*2.0_dp*frac_dust)

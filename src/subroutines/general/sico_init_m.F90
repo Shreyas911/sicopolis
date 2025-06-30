@@ -156,13 +156,13 @@ real(dp), dimension(0:IMAX,0:JMAX) :: field2d_tra_aux
 
 integer(i4b) :: n_slide_regions
 #if (!defined(N_SLIDE_REGIONS) || N_SLIDE_REGIONS<=1)
-integer(i4b) :: p_weert_aux(1)
-integer(i4b) :: q_weert_aux(1)
+real(dp) :: p_weert_aux(1)
+real(dp) :: q_weert_aux(1)
 real(dp) :: c_slide_aux(1)
 real(dp) :: gamma_slide_aux(1)
 #else
-integer(i4b) :: p_weert_aux(N_SLIDE_REGIONS)
-integer(i4b) :: q_weert_aux(N_SLIDE_REGIONS)
+real(dp) :: p_weert_aux(N_SLIDE_REGIONS)
+real(dp) :: q_weert_aux(N_SLIDE_REGIONS)
 real(dp) :: c_slide_aux(N_SLIDE_REGIONS)
 real(dp) :: gamma_slide_aux(N_SLIDE_REGIONS)
 #endif
@@ -543,23 +543,13 @@ call calc_c_int_inv_table()
 
 #if (FLOW_LAW==1)
 
-#if (N_POWER_LAW_INT>=1)
+#if (!defined(N_POWER_LAW))
 
-! Nye-Glen flow law with integer exponent
+! Nye-Glen flow law with default exponent n=3
 
-#elif (defined(N_POWER_LAW_REAL))
-
-! Nye-Glen flow law with real exponent
-
-#else
-
-! Nye-Glen flow law with default integer exponent n=3
-
-warningmsg = ' >>> sico_init: Nye-Glen flow law exponent' &
-           //         end_of_line &
-           //'        neither defined by N_POWER_LAW_INT' &
-           //         end_of_line &
-           //'        nor by N_POWER_LAW_REAL -> default value n=3 assumed.'
+warningmsg = ' >>> sico_init: Nye-Glen flow law exponent not defined' &
+           //                 end_of_line &
+           //'                by N_POWER_LAW -> default value n=3 assumed.'
 call warning(warningmsg)
 
 #endif
@@ -1663,10 +1653,8 @@ write(10, fmt=trim(fmt1)) ' '
 
 write(10, fmt=trim(fmt2)) 'FLOW_LAW = ', FLOW_LAW
 #if (FLOW_LAW==1)
-#if (N_POWER_LAW_INT>=1)
-write(10, fmt=trim(fmt2)) 'N_POWER_LAW_INT = ', N_POWER_LAW_INT
-#elif (defined(N_POWER_LAW_REAL))
-write(10, fmt=trim(fmt3)) 'N_POWER_LAW_REAL =', N_POWER_LAW_REAL
+#if (defined(N_POWER_LAW))
+write(10, fmt=trim(fmt3)) 'N_POWER_LAW =', real(N_POWER_LAW,dp)
 #endif
 write(10, fmt=trim(fmt2)) 'FIN_VISC = ', FIN_VISC
 #if (FIN_VISC==2)
@@ -2126,8 +2114,8 @@ errormsg = ' >>> sico_init: Either ''C_SLIDE_DIMLESS'' or ''C_SLIDE'' ' &
 call error(errormsg)
 #endif
 gamma_slide_aux = GAMMA_SLIDE
-p_weert_aux = P_WEERT
-q_weert_aux = Q_WEERT
+p_weert_aux = real(P_WEERT,dp)
+q_weert_aux = real(Q_WEERT,dp)
 
 #if (defined(C_SLIDE_DIMLESS))
 write(10, fmt=trim(fmt3)) 'C_SLIDE_DIMLESS =', c_slide_aux(1)
@@ -2152,17 +2140,17 @@ do n=2, n_slide_regions
 end do
 #endif
 
-write(10, fmt=trim(fmt2)) 'P_WEERT = ', p_weert_aux(1)
+write(10, fmt=trim(fmt3)) 'P_WEERT =', p_weert_aux(1)
 #if (N_SLIDE_REGIONS>1)
 do n=2, n_slide_regions
-   write(10, fmt=trim(fmt2)) '          ', p_weert_aux(n)
+   write(10, fmt=trim(fmt3)) '         ', p_weert_aux(n)
 end do
 #endif
 
-write(10, fmt=trim(fmt2)) 'Q_WEERT = ', q_weert_aux(1)
+write(10, fmt=trim(fmt3)) 'Q_WEERT =', q_weert_aux(1)
 #if (N_SLIDE_REGIONS>1)
 do n=2, n_slide_regions
-   write(10, fmt=trim(fmt2)) '          ', q_weert_aux(n)
+   write(10, fmt=trim(fmt3)) '         ', q_weert_aux(n)
 end do
 #endif
 

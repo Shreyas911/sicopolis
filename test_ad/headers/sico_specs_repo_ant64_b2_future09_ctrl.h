@@ -4,7 +4,7 @@
 
 !-------- Basic settings --------
 
-#define RUN_SPECS_HEADER_LAST_CHANGED '2025-06-27'
+#define RUN_SPECS_HEADER_LAST_CHANGED '2025-06-29'
 !                      Date of last change
 
 !-------- Domain --------
@@ -399,9 +399,9 @@
 !                         1 : Nye-Glen flow law (power law)
 !                         4 : Smith-Morland (polynomial) flow law
 
-#define N_POWER_LAW_REAL 3.0d0
+#define N_POWER_LAW 3.0d0
 !                         Stress exponent for the Nye-Glen flow law
-!                         (real value, only for FLOW_LAW==1)
+!                         (real or integer, only for FLOW_LAW==1)
 
 #define FIN_VISC 2
 !                         1 : Unmodified Nye-Glen flow law with
@@ -1075,7 +1075,7 @@
 
 #define SLIDE_LAW 1
 !                       0 : No-slip
-!                       1 : Weertman-Budd sliding law
+!                       1 : Weertman-Budd sliding law (v_b ~ tau_b^p/N_b^q)
 
 #define N_SLIDE_REGIONS 1
 !                       Number of regions with different sliding laws
@@ -1107,7 +1107,7 @@
 !                       Set to 0.0d0 for no smoothing.
 !                       Values > 0 only make sense for
 !                       dimensionless sliding coefficients (C_SLIDE_DIMLESS),
-!                       or for constant Weertman exponents p and q!
+!                       or for constant Weertman-Budd exponents p and q!
 
 #define GAMMA_SLIDE 1.0d0
 !                       Sub-melt sliding coefficient, in K
@@ -1117,12 +1117,15 @@
 !                       irrespective of the basal temperature.
 
 #define P_WEERT 3
-!                       Weertman exponent p (integer) for the basal shear stress
+!                       Weertman-Budd exponent p (real or integer)
+!                       for the basal shear stress
 !                       (N_SLIDE_REGIONS separate values)
 
 #define Q_WEERT 2
-!                       Weertman exponent q (integer) for the basal pressure
-!                       (N_SLIDE_REGIONS separate values)
+!                       Weertman-Budd exponent q (real or integer)
+!                       for the basal pressure
+!                       (N_SLIDE_REGIONS separate values;
+!                        set to 0.0d0 or 0 for pure Weertman sliding)
 
 #define TIME_RAMP_UP_SLIDE 0.0d0
 !                       Ramp-up time (in a) for basal sliding:

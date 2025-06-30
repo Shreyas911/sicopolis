@@ -320,61 +320,34 @@ implicit none
 real(dp)             :: creep
 real(dp), intent(in) :: sigma_val
 
-#if (FLOW_LAW==4)
+#if (FLOW_LAW==1)
+real(dp) :: d_n_power_law
+#elif (FLOW_LAW==4)
 real(dp) :: sm_coeff_1, sm_coeff_2, sm_coeff_3
 #endif
 
 #if (FLOW_LAW==1)
 
+#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
+#if (defined(N_POWER_LAW))
+d_n_power_law = real(N_POWER_LAW,dp) + n_glen_da_scalar
+#else
+d_n_power_law = 3.0_dp + n_glen_da_scalar ! default n=3
+#endif
+#else /* NORMAL */
+#if (defined(N_POWER_LAW))
+d_n_power_law = real(N_POWER_LAW,dp)
+#else
+d_n_power_law = 3.0_dp   ! default n=3
+#endif
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+
 #if (FIN_VISC==1)
-
-#if (N_POWER_LAW_INT==1)
-creep = 1.0_dp
-#elif (N_POWER_LAW_INT==2)
-creep = sigma_val
-#elif (N_POWER_LAW_INT==3)
-creep = sigma_val*sigma_val
-#elif (N_POWER_LAW_INT==4)
-creep = sigma_val*sigma_val*sigma_val
-#elif (N_POWER_LAW_INT>=5)
-creep = sigma_val**(N_POWER_LAW_INT-1)
-#elif (defined(N_POWER_LAW_REAL))
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
-creep = sigma_val**(N_POWER_LAW_REAL + n_glen_da_scalar - 1.0_dp)
-#else /* NORMAL */
-creep = sigma_val**(N_POWER_LAW_REAL-1.0_dp)
-#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
-#else
-creep = sigma_val*sigma_val   ! default n=3
-#endif
+creep = sigma_val**(d_n_power_law-1.0_dp)
         ! Nye-Glen flow law
-
 #elif (FIN_VISC==2)
-
-#if (N_POWER_LAW_INT==1)
-creep = 1.0_dp   ! SIGMA_RES ignored here
-#elif (N_POWER_LAW_INT==2)
-creep = sigma_val + SIGMA_RES
-#elif (N_POWER_LAW_INT==3)
-creep = sigma_val*sigma_val + SIGMA_RES*SIGMA_RES
-#elif (N_POWER_LAW_INT==4)
-creep = sigma_val*sigma_val*sigma_val + SIGMA_RES*SIGMA_RES*SIGMA_RES
-#elif (N_POWER_LAW_INT>=5)
-creep = sigma_val**(N_POWER_LAW_INT-1) &
-           + SIGMA_RES**(N_POWER_LAW_INT-1)
-#elif (defined(N_POWER_LAW_REAL))
-#if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
-creep = sigma_val**(N_POWER_LAW_REAL + n_glen_da_scalar -1.0_dp) &
-           + SIGMA_RES**(N_POWER_LAW_REAL + n_glen_da_scalar -1.0_dp)
-#else /* NORMAL */
-creep = sigma_val**(N_POWER_LAW_REAL-1.0_dp) &
-           + SIGMA_RES**(N_POWER_LAW_REAL-1.0_dp)
-#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
-#else
-creep = sigma_val*sigma_val + SIGMA_RES*SIGMA_RES   ! default n=3
-#endif
+creep = sigma_val**(d_n_power_law-1.0_dp) + SIGMA_RES**(d_n_power_law-1.0_dp)
         ! Nye-Glen flow law with additional finite viscosity
-
 #endif
 
 #elif (FLOW_LAW==4)
@@ -458,17 +431,19 @@ de_val_m = max(de_val, de_min)
 
 #if (FIN_VISC==1)
 
-#if (N_POWER_LAW_INT>=1)
-d_inv_n_power_law = 1.0_dp/real(N_POWER_LAW_INT,dp)
-#elif (defined(N_POWER_LAW_REAL))
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
-d_inv_n_power_law = 1.0_dp/(N_POWER_LAW_REAL + n_glen_da_scalar)
+#if (defined(N_POWER_LAW))
+d_inv_n_power_law = 1.0_dp/(real(N_POWER_LAW,dp) + n_glen_da_scalar)
+#else
+d_inv_n_power_law = 1.0_dp/(3.0_dp + n_glen_da_scalar)   ! default n=3
+#endif
 #else /* NORMAL */
-d_inv_n_power_law = 1.0_dp/N_POWER_LAW_REAL
-#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+#if (defined(N_POWER_LAW))
+d_inv_n_power_law = 1.0_dp/real(N_POWER_LAW,dp)
 #else
 d_inv_n_power_law = 1.0_dp/3.0_dp   ! default n=3
 #endif
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 viscosity = 0.5_dp * de_val_m**(d_inv_n_power_law-1.0_dp) &
                    * (enh_val*ratefac_val)**(-d_inv_n_power_law)
@@ -476,17 +451,19 @@ viscosity = 0.5_dp * de_val_m**(d_inv_n_power_law-1.0_dp) &
 
 #elif (FIN_VISC==2)
 
-#if (N_POWER_LAW_INT>=1)
-d_n_power_law = real(N_POWER_LAW_INT,dp)
-#elif (defined(N_POWER_LAW_REAL))
 #if (defined(ALLOW_TAPENADE) || defined(ALLOW_GRDCHK) || defined(ALLOW_NODIFF))
-d_n_power_law = N_POWER_LAW_REAL + n_glen_da_scalar
+#if (defined(N_POWER_LAW))
+d_n_power_law = real(N_POWER_LAW,dp) + n_glen_da_scalar
+#else
+d_n_power_law = 3.0_dp + n_glen_da_scalar   ! default n=3
+#endif
 #else /* NORMAL */
-d_n_power_law = N_POWER_LAW_REAL
-#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
+#if (defined(N_POWER_LAW))
+d_n_power_law = real(N_POWER_LAW,dp)
 #else
 d_n_power_law = 3.0_dp   ! default n=3
 #endif
+#endif /* ALLOW_{TAPENADE,GRDCHK,NODIFF} */
 
 viscosity = visc_iter(de_val_m, ratefac_val, enh_val, d_n_power_law, SIGMA_RES)
             ! Nye-Glen flow with additional finite viscosity
