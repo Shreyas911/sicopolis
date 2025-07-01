@@ -836,7 +836,7 @@ module ad_output_m
                 thisroutine )
       call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc3d(2)), &
                 thisroutine )
-      call check( nf90_inq_dimid(ncid, trim(coord_id(3)), nc3d(3)), &
+      call check( nf90_inq_dimid(ncid, trim(coord_id(6)), nc3d(3)), &
                 thisroutine )
 
 #if (NETCDF4_ENABLED==1)
