@@ -361,6 +361,9 @@ contains
     end do
   end do
 
+  field(:,:) = field(:,:) * (field_prior_X(:,:)*sigma)
+  field_prior(:,:) = field_prior(:,:) * (field_prior_X(:,:)*sigma)
+
   end subroutine laplace_smoothing_2D_reg_cost
 
   subroutine laplace_smoothing_3D_reg_cost(field, field_prior, field_prior_X, gamm, delta, sigma)
@@ -403,6 +406,9 @@ contains
     end do
   end do
 
+  field(:,:,:) = field(:,:,:) * (field_prior_X(:,:,:)*sigma)
+  field_prior(:,:,:) = field_prior(:,:,:) * (field_prior_X(:,:,:)*sigma)
+
   end subroutine laplace_smoothing_3D_reg_cost
 
   subroutine laplace_smoothing_3DR_reg_cost(field, field_prior, field_prior_X, gamm, delta, sigma)
@@ -444,6 +450,9 @@ contains
       end do
     end do
   end do
+
+  field(:,:,:) = field(:,:,:) * (field_prior_X(:,:,:)*sigma)
+  field_prior(:,:,:) = field_prior(:,:,:) * (field_prior_X(:,:,:)*sigma)
 
   end subroutine laplace_smoothing_3DR_reg_cost
 
