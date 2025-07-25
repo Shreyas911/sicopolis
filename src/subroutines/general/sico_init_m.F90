@@ -5533,6 +5533,19 @@ freeboard_ratio = (RHO_SW-RHO)/RHO_SW
 do i=0, IMAX
 do j=0, JMAX
 
+! SSG : Guardrail to ensure zs >= zl, useful when tuning these initial fields.
+! SSG : If mask says frozen land ice, give it 10.0 metres of ice which is also value of H_offset in data interpolation.
+! SSG : else block  in this snippet might be unsafe for MARGIN > 1 and needs to be more generalized in the future.
+   if (zs(j,i) <= zl(j,i)) then
+      if (mask(j,i) == 0) then
+        zs(j,i) = zl(j,i) + 10.0
+        dzs_dtau(j,i) = dzl_dtau(j,i)
+      else
+        zs(j,i) = zl(j,i)
+        dzs_dtau(j,i) = dzl_dtau(j,i)
+      end if
+   endif
+
 ! SSG : The snippet of code below is modified from topography1.
 ! SSG : Has to be placed before call to topograd, otherwise incorrect computation of vz_c, vz_t.
 ! SSG : The time derivatives are also computed the same way to ensure complete consistency.
