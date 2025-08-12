@@ -314,40 +314,42 @@ contains
   character(len=64), parameter :: thisroutine = 'laplace_smoothing_2D_reg_cost'
   real(dp) :: delta, gamm, sigma
 
+  print *, SUM(field), SUM(field_prior_X), SUM(DX/field_prior_X), SUM(field_prior), delta, gamm, sigma
+
   field(:,:) = field(:,:) / (field_prior_X(:,:)*sigma)
   field_prior(:,:) = field_prior(:,:) / (field_prior_X(:,:)*sigma)
 
-  fc_reg = fc_reg + 0.5*(delta*(field(0,0)-field_prior(0,0)) &
+  fc_reg = fc_reg + 0.5*DX**2*(delta*(field(0,0)-field_prior(0,0)) &
                                - gamm*((field(0,1) + field(1,0) - 2*field(0,0)) &
                                -(field_prior(0,1) + field_prior(1,0) - 2*field_prior(0,0))) / DX**2)**2
-  fc_reg = fc_reg + 0.5*(delta*(field(JMAX,0)-field_prior(JMAX,0)) &
+  fc_reg = fc_reg + 0.5*DX**2*(delta*(field(JMAX,0)-field_prior(JMAX,0)) &
                                - gamm*((field(JMAX,1) + field(JMAX-1,0) - 2*field(JMAX,0)) &
                                -(field_prior(JMAX,1) + field_prior(JMAX-1,0) - 2*field_prior(JMAX,0))) / DX**2)**2
-  fc_reg = fc_reg + 0.5*(delta*(field(0,IMAX)-field_prior(0,IMAX)) &
+  fc_reg = fc_reg + 0.5*DX**2*(delta*(field(0,IMAX)-field_prior(0,IMAX)) &
                                - gamm*((field(0,IMAX-1) + field(1,IMAX) - 2*field(0,IMAX)) &
                                -(field_prior(0,IMAX-1) + field_prior(1,IMAX) - 2*field_prior(0,IMAX))) / DX**2)**2
-  fc_reg = fc_reg + 0.5*(delta*(field(JMAX,IMAX)-field_prior(JMAX,IMAX)) &
+  fc_reg = fc_reg + 0.5*DX**2*(delta*(field(JMAX,IMAX)-field_prior(JMAX,IMAX)) &
                                - gamm*((field(JMAX,IMAX-1) + field(JMAX-1,IMAX) - 2*field(JMAX,IMAX)) &
                                -(field_prior(JMAX,IMAX-1) + field_prior(JMAX-1,IMAX) - 2*field_prior(JMAX,IMAX))) / DX**2)**2
 
   do i=1, IMAX-1
     fc_reg = fc_reg &
-           + 0.5*(delta*(field(0,i)-field_prior(0,i)) &
+           + 0.5*DX**2*(delta*(field(0,i)-field_prior(0,i)) &
                         - gamm*(((field(1,i) - field(0,i)) - (field_prior(1,i) - field_prior(0,i))) / DX**2 &
                         + ((field(0,i-1) - 2*field(0,i) + field(0,i+1)) - (field_prior(0,i-1) - 2*field_prior(0,i) + field_prior(0,i+1))) / DX**2))**2
     fc_reg = fc_reg &
-           + 0.5*(delta*(field(JMAX,i)-field_prior(JMAX,i)) &
+           + 0.5*DX**2*(delta*(field(JMAX,i)-field_prior(JMAX,i)) &
                         - gamm*(((field(JMAX-1,i) - field(JMAX,i)) - (field_prior(JMAX-1,i) - field_prior(JMAX,i))) / DX**2 &
                         + ((field(JMAX,i-1) - 2*field(JMAX,i) + field(JMAX,i+1)) - (field_prior(JMAX,i-1) - 2*field_prior(JMAX,i) + field_prior(JMAX,i+1))) / DX**2))**2
   end do
 
   do j=1, JMAX-1
     fc_reg = fc_reg &
-           + 0.5*(delta*(field(j,0)-field_prior(j,0)) &
+           + 0.5*DX**2*(delta*(field(j,0)-field_prior(j,0)) &
                         - gamm*(((field(j-1,0) - 2*field(j,0) + field(j+1,0)) - (field_prior(j-1,0) - 2*field_prior(j,0) + field_prior(j+1,0))) / DX**2 &
                                  + ((field(j,1) - field(j,0)) - (field_prior(j,1) - field_prior(j,0))) / DX**2))**2
     fc_reg = fc_reg &
-           + 0.5*(delta*(field(j,IMAX)-field_prior(j,IMAX)) &
+           + 0.5*DX**2*(delta*(field(j,IMAX)-field_prior(j,IMAX)) &
                         - gamm*(((field(j-1,IMAX) - 2*field(j,IMAX) + field(j+1,IMAX)) - (field_prior(j-1,IMAX) - 2*field_prior(j,IMAX) + field_prior(j+1,IMAX))) / DX**2 &
                                 + ((field(j,IMAX-1) - field(j,IMAX)) - (field_prior(j,IMAX-1) - field_prior(j,IMAX))) / DX**2))**2
   end do
@@ -355,7 +357,7 @@ contains
   do i=1, IMAX-1
     do j=1, JMAX-1
       fc_reg = fc_reg &
-      + 0.5*(delta*(field(j,i)-field_prior(j,i)) &
+      + 0.5*DX**2*(delta*(field(j,i)-field_prior(j,i)) &
           - gamm*((field(j,i-1) - 2*field(j,i) + field(j,i+1)) - (field_prior(j,i-1) - 2*field_prior(j,i) + field_prior(j,i+1))) / DX**2 &
           - gamm*((field(j-1,i) - 2*field(j,i) + field(j+1,i)) - (field_prior(j-1,i) - 2*field_prior(j,i) + field_prior(j+1,i))) / DX**2)**2
     end do
@@ -363,6 +365,8 @@ contains
 
   field(:,:) = field(:,:) * (field_prior_X(:,:)*sigma)
   field_prior(:,:) = field_prior(:,:) * (field_prior_X(:,:)*sigma)
+
+  print *, fc_reg
 
   end subroutine laplace_smoothing_2D_reg_cost
 
@@ -386,10 +390,10 @@ contains
 
   do i=0,IMAX
     do j=0,JMAX
-      fc_reg = fc_reg + 0.5*(delta*(field(0,j,i)-field_prior(0,j,i)) &
+      fc_reg = fc_reg + 0.5*delta_z(1)**2*(delta*(field(0,j,i)-field_prior(0,j,i)) &
                                          - gamm*((field(1,j,i) - field(0,j,i)) &
                                          -(field_prior(1,j,i) - field_prior(0,j,i))) / delta_z(1)**2)**2
-      fc_reg = fc_reg + 0.5*(delta*(field(KCMAX,j,i)-field_prior(KCMAX,j,i)) &
+      fc_reg = fc_reg + 0.5*delta_z(KCMAX)**2*(delta*(field(KCMAX,j,i)-field_prior(KCMAX,j,i)) &
                                          - gamm*((field(KCMAX-1,j,i) - field(KCMAX,j,i)) &
                                          -(field_prior(KCMAX-1,j,i) - field_prior(KCMAX,j,i))) / delta_z(KCMAX)**2)**2
     end do
@@ -399,7 +403,7 @@ contains
     do j=0,JMAX
       do kc=1, KCMAX-1
         fc_reg = fc_reg &
-        + 0.5*(delta*(field(kc,j,i)-field_prior(kc,j,i)) &
+        + 0.5*((delta_z(kc) + delta_z(kc+1))/2.0)**2*(delta*(field(kc,j,i)-field_prior(kc,j,i)) &
             - gamm*(((field(kc+1,j,i)-field(kc,j,i))/delta_z(kc+1) - (field(kc,j,i)-field(kc-1,j,i))/delta_z(kc))*(2.0/(delta_z(kc) + delta_z(kc+1))) &
             -((field_prior(kc+1,j,i)-field_prior(kc,j,i))/delta_z(kc+1) - (field_prior(kc,j,i)-field_prior(kc-1,j,i))/delta_z(kc))*(2.0/(delta_z(kc) + delta_z(kc+1)))))**2
       end do
@@ -431,10 +435,10 @@ contains
 
   do i=0,IMAX
     do j=0,JMAX
-      fc_reg = fc_reg + 0.5*(delta*(field(0,j,i)-field_prior(0,j,i)) &
+      fc_reg = fc_reg + 0.5*delta_z(1)**2*(delta*(field(0,j,i)-field_prior(0,j,i)) &
                                          - gamm*((field(1,j,i) - field(0,j,i)) &
                                          -(field_prior(1,j,i) - field_prior(0,j,i))) / delta_z(1)**2)**2
-      fc_reg = fc_reg + 0.5*(delta*(field(KRMAX,j,i)-field_prior(KRMAX,j,i)) &
+      fc_reg = fc_reg + 0.5*delta_z(KRMAX)**2*(delta*(field(KRMAX,j,i)-field_prior(KRMAX,j,i)) &
                                          - gamm*((field(KRMAX-1,j,i) - field(KRMAX,j,i)) &
                                          -(field_prior(KRMAX-1,j,i) - field_prior(KRMAX,j,i))) / delta_z(KRMAX)**2)**2
     end do
@@ -444,7 +448,7 @@ contains
     do j=0,JMAX
       do kr=1, KRMAX-1
         fc_reg = fc_reg &
-        + 0.5*(delta*(field(kr,j,i)-field_prior(kr,j,i)) &
+        + 0.5*((delta_z(kr) + delta_z(kr+1))/2.0)**2*(delta*(field(kr,j,i)-field_prior(kr,j,i)) &
             - gamm*(((field(kr+1,j,i)-field(kr,j,i))/delta_z(kr+1) - (field(kr,j,i)-field(kr-1,j,i))/delta_z(kr))*(2.0/(delta_z(kr) + delta_z(kr+1))) &
             -((field_prior(kr+1,j,i)-field_prior(kr,j,i))/delta_z(kr+1) - (field_prior(kr,j,i)-field_prior(kr-1,j,i))/delta_z(kr))*(2.0/(delta_z(kr) + delta_z(kr+1)))))**2
       end do
