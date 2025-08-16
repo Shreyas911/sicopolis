@@ -77,6 +77,7 @@ contains
   integer(i4b) :: i, j, k, kc, kr, tad, ios, ctrl_index
   character(len=64), parameter :: thisroutine = 'cost_final'
   real(dp), dimension(0:JMAX,0:IMAX) :: vs
+  real(dp) :: V_total
 
   !-------- Initialize the cost functions:
   fc = 0.0
@@ -89,6 +90,7 @@ contains
   fc_vyc = 0.0
   fc_zsc = 0.0
   fc_zlc = 0.0
+  fc_vc = 0.0
 
   !-------- Read any necessary NetCDF cost files:
   call read_cost_data()
@@ -230,14 +232,43 @@ contains
 #endif
 #endif
 
+#if defined(V_COST)
+
+    V_total = 0.0
+    do i=0, IMAX
+      do j=0, JMAX
+        V_total = V_total  + H(j,i)*cell_area(j,i)
+        V_unc_da_dummy2d_BedMachine_data(j, i) = V_unc_da_dummy2d_BedMachine_data(j, i) * sqrt((IMAX + 1)*(JMAX + 1))
+      end do
+    end do
+
+    V_da_dummy2d(:, :) = V_total
+
+    do i=0, IMAX
+      do j=0, JMAX
+        fc = fc &
+#ifdef ALLOW_V_UNCERT
+        + 0.5*(V_da_dummy2d(j,i) - V_da_dummy2d_BedMachine_data(j,i))**2/V_unc_da_dummy2d_BedMachine_data(j,i)**2
+#else
+        + 0.5*(V_da_dummy2d(j,i) - V_da_dummy2d_BedMachine_data(j,i))**2
+#endif
+      end do
+    end do
+
+  fc_vc = fc - (fc_ac + fc_bm5 + fc_zsc + fc_zlc + fc_svc + fc_vxc + fc_vyc)
+  print *, 'Final V cost, fc_vc = ', fc_vc
+#endif
+
 #if (!defined(BEDMACHINE_COST) && !defined(AGE_COST) && !defined(SURFVEL_COST) && !defined(ZS_COST) && !defined(ZL_COST))
 #if (!defined(FAKE_BEDMACHINE_COST) && !defined(FAKE_AGE_COST) && !defined(FAKE_SURFVEL_COST) && !defined(FAKE_ZS_COST) && !defined(FAKE_ZL_COST))
+#if !defined(V_COST)
     do i=0, IMAX
       do j=0, JMAX
         !--- Total volume cost function:
         fc = fc + H(j,i)*cell_area(j,i)
       end do
     end do
+#endif
 #endif
 #endif
 

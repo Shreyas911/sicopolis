@@ -86,6 +86,10 @@ module ad_input_m
 #endif
 #endif
 
+#if defined(V_COST)
+        real(dp), dimension(0:IMAX,0:JMAX)         :: V_da_dummy2db_conv
+#endif
+
 #endif /* ALLOW_TAP_ADJ && ALLOW_TAP_ADJ_AT_ACTION */
 
         character(len=64), parameter :: thisroutine = 'ad_input'
@@ -222,6 +226,11 @@ module ad_input_m
 #endif
 #endif
 
+#if defined(V_COST)
+        call check( nf90_inq_varid(ncid, 'V_da_dummy2db', ncv) )
+        call check( nf90_get_var(ncid, ncv, V_da_dummy2db_conv) )
+#endif
+
 #endif /* ALLOW_TAP_ADJ && ALLOW_TAP_ADJ_AT_ACTION */
 
         !  ------ Close NetCDF file
@@ -353,6 +362,14 @@ year2sec = 3.1556925445e+07_dp
         end do
         end do
 
+#endif
+
+#if defined(V_COST)
+        do i = 0, IMAX
+        do j = 0, JMAX
+            V_da_dummy2db(j,i) = V_da_dummy2db_conv(i,j)
+        end do
+        end do
 #endif
 
 #endif /* ALLOW_TAP_ADJ && ALLOW_TAP_ADJ_AT_ACTION */

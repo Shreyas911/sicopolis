@@ -89,6 +89,10 @@ subroutine read_cost_data()
     real(dp), dimension(0:IMAX,0:JMAX) :: vx_unc_MEaSUREs_data_conv, vy_unc_MEaSUREs_data_conv
 #endif
 #endif
+#if defined(V_COST)
+    real(dp), dimension(0:IMAX,0:JMAX) :: V_da_dummy2d_BedMachine_data_conv
+    real(dp), dimension(0:IMAX,0:JMAX) :: V_unc_da_dummy2d_BedMachine_data_conv
+#endif
 
     !-------- Create file name --------
     
@@ -631,6 +635,51 @@ subroutine read_cost_data()
         end do
     end do
 #endif
+
+#if defined(V_COST)
+#if (IMAX==168)
+    filename = 'bm5_data_10kms'//trim(filename_extension)
+#elif (IMAX==42)
+    filename = 'bm5_data_40kms'//trim(filename_extension)
+#elif (IMAX==105)
+    filename = 'bm5_data_16kms'//trim(filename_extension)
+#else
+    errormsg = ' >>> '//trim(thisroutine)//': Error when looking for a' &
+    //               end_of_line &
+    //'              BedMachine data file!'
+    call error(errormsg)
+#endif
+    filename_with_path = trim(temp_path)//'/'//trim(filename)
+
+    !  ------ Open NetCDF file
+    ios = nf90_open(trim(filename_with_path), NF90_NOWRITE, ncid)
+
+    if (ios /= nf90_noerr) then
+        errormsg = ' >>> '//trim(thisroutine)//': Error when opening a' &
+        //               end_of_line &
+        //'              NetCDF BedMachine data file!'
+        call error(errormsg)
+    end if
+
+    call check( nf90_inq_varid(ncid, 'V_dummy2d', ncv), thisroutine )
+    call check( nf90_get_var(ncid, ncv, V_da_dummy2d_BedMachine_data_conv), thisroutine )
+#ifdef ALLOW_V_UNCERT
+    call check( nf90_inq_varid(ncid, V_UNCERT_FIELD, ncv), thisroutine )
+    call check( nf90_get_var(ncid, ncv, V_unc_da_dummy2d_BedMachine_data_conv), thisroutine )
+#endif
+    !  ------ Close NetCDF file
+    call check( nf90_close(ncid) )
+
+    do i = 0, IMAX
+        do j = 0, JMAX
+            V_da_dummy2d_BedMachine_data(j,i) = V_da_dummy2d_BedMachine_data_conv(i,j)
+#ifdef ALLOW_V_UNCERT
+            V_unc_da_dummy2d_BedMachine_data(j,i) = V_unc_da_dummy2d_BedMachine_data_conv(i,j)
+#endif
+        end do
+    end do
+#endif
+
 
 end subroutine read_cost_data
   

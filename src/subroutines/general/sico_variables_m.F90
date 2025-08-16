@@ -1586,7 +1586,7 @@ character, parameter :: end_of_line = char(10)
 real(dp) :: RF_scale
    !! A local variable from read_phys_para made global so that RF's computation can be moved to sico_init
 
-real(dp) :: fc, fc_data, fc_reg, fc_bm5, fc_ac, fc_svc, fc_vxc, fc_vyc, fc_zsc, fc_zlc
+real(dp) :: fc, fc_data, fc_reg, fc_bm5, fc_ac, fc_svc, fc_vxc, fc_vyc, fc_zsc, fc_zlc, fc_vc
    !! Scalar cost functions (total, model-data misfit component, prior or regularization component)
 
 #if (defined(PARAM_RHO_A)) 
@@ -1685,6 +1685,15 @@ real(dp), dimension(0:JMAX,0:IMAX) :: vx_MEaSUREs_data, vy_MEaSUREs_data
 real(dp), dimension(0:JMAX,0:IMAX) :: vx_unc_MEaSUREs_data, vy_unc_MEaSUREs_data
 #endif
 
+#endif
+
+#endif
+
+#if defined(V_COST)
+
+real(dp), dimension(0:JMAX,0:IMAX) :: V_da_dummy2d, V_da_dummy2d_BedMachine_data
+#if defined(ALLOW_V_UNCERT)
+real(dp), dimension(0:JMAX,0:IMAX) :: V_unc_da_dummy2d_BedMachine_data
 #endif
 
 #endif

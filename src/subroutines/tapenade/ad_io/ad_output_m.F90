@@ -90,6 +90,9 @@ module ad_output_m
     real(dp), dimension(0:IMAX,0:JMAX)         :: vx_s_gd_conv, vy_s_gd_conv
 #endif
 #endif
+#if (defined(BEDMACHINE_COST) || defined(FAKE_BEDMACHINE_COST))
+    real(dp), dimension(0:IMAX,0:JMAX)         :: V_da_dummy2dd_conv
+#endif
 #endif /* ALLOW_TAP_TLM_A_ACTION */
 #endif /* ALLOW_TAP_TLM */
 
@@ -705,6 +708,28 @@ module ad_output_m
 
 #endif
 
+#if defined(V_COST)
+      !    ---- Define V_da_dummy2dd
+      call check( nf90_inq_dimid(ncid, trim(coord_id(1)), nc2d(1)), &
+                thisroutine )
+      call check( nf90_inq_dimid(ncid, trim(coord_id(2)), nc2d(2)), &
+                thisroutine )
+
+#if (NETCDF4_ENABLED==1)
+      call check( nf90_def_var(ncid, 'V_da_dummy2dd', &
+                NF90_DOUBLE, nc2d, ncv, &
+                deflate_level=n_deflate_level, shuffle=flag_shuffle), &
+                thisroutine )
+#else
+      call check( nf90_def_var(ncid, 'V_da_dummy2dd', &
+                NF90_DOUBLE, nc2d, ncv), &
+                thisroutine )
+#endif
+
+      call check( nf90_put_att(ncid, ncv, 'type', 'tlmhessaction'), &
+                  thisroutine )
+#endif
+
 #endif /* ALLOW_TAP_TLM_A_ACTION */
 #endif /* ALLOW_TAP_TLM */
 
@@ -1099,6 +1124,14 @@ module ad_output_m
     end do
 #endif
 
+#if defined(V_COST)
+    do i=0, IMAX
+    do j=0, JMAX
+      V_da_dummy2dd_conv(i,j) = V_da_dummy2dd(j,i)
+    end do
+    end do
+#endif
+
 #endif /* ALLOW_TAP_TLM_A_ACTION */
 
 #endif /* ALLOW_TAP_TLM */
@@ -1222,6 +1255,15 @@ module ad_output_m
                                start=nc2cor_ij, count=nc2cnt_ij), &
                   thisroutine )
 #endif
+#endif
+
+#if defined(V_COST)
+      call check( nf90_inq_varid(ncid, 'V_da_dummy2dd', &
+                  ncv), &
+                  thisroutine )
+      call check( nf90_put_var(ncid, ncv, V_da_dummy2dd_conv, &
+                               start=nc2cor_ij, count=nc2cnt_ij), &
+                  thisroutine )
 #endif
 
 #endif /* ALLOW_TAP_TLM && ALLOW_TAP_TLM_A_ACTION */
