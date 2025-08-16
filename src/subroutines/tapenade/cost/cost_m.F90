@@ -390,10 +390,10 @@ contains
 
   do i=0,IMAX
     do j=0,JMAX
-      fc_reg = fc_reg + 0.5*delta_z(1)**2*(delta*(field(0,j,i)-field_prior(0,j,i)) &
+      fc_reg = fc_reg + 0.5*delta_z(1)*(delta*(field(0,j,i)-field_prior(0,j,i)) &
                                          - gamm*((field(1,j,i) - field(0,j,i)) &
                                          -(field_prior(1,j,i) - field_prior(0,j,i))) / delta_z(1)**2)**2
-      fc_reg = fc_reg + 0.5*delta_z(KCMAX)**2*(delta*(field(KCMAX,j,i)-field_prior(KCMAX,j,i)) &
+      fc_reg = fc_reg + 0.5*delta_z(KCMAX)*(delta*(field(KCMAX,j,i)-field_prior(KCMAX,j,i)) &
                                          - gamm*((field(KCMAX-1,j,i) - field(KCMAX,j,i)) &
                                          -(field_prior(KCMAX-1,j,i) - field_prior(KCMAX,j,i))) / delta_z(KCMAX)**2)**2
     end do
@@ -403,7 +403,7 @@ contains
     do j=0,JMAX
       do kc=1, KCMAX-1
         fc_reg = fc_reg &
-        + 0.5*((delta_z(kc) + delta_z(kc+1))/2.0)**2*(delta*(field(kc,j,i)-field_prior(kc,j,i)) &
+        + 0.5*((delta_z(kc) + delta_z(kc+1))/2.0)*(delta*(field(kc,j,i)-field_prior(kc,j,i)) &
             - gamm*(((field(kc+1,j,i)-field(kc,j,i))/delta_z(kc+1) - (field(kc,j,i)-field(kc-1,j,i))/delta_z(kc))*(2.0/(delta_z(kc) + delta_z(kc+1))) &
             -((field_prior(kc+1,j,i)-field_prior(kc,j,i))/delta_z(kc+1) - (field_prior(kc,j,i)-field_prior(kc-1,j,i))/delta_z(kc))*(2.0/(delta_z(kc) + delta_z(kc+1)))))**2
       end do
@@ -435,10 +435,10 @@ contains
 
   do i=0,IMAX
     do j=0,JMAX
-      fc_reg = fc_reg + 0.5*delta_z(1)**2*(delta*(field(0,j,i)-field_prior(0,j,i)) &
+      fc_reg = fc_reg + 0.5*delta_z(1)*(delta*(field(0,j,i)-field_prior(0,j,i)) &
                                          - gamm*((field(1,j,i) - field(0,j,i)) &
                                          -(field_prior(1,j,i) - field_prior(0,j,i))) / delta_z(1)**2)**2
-      fc_reg = fc_reg + 0.5*delta_z(KRMAX)**2*(delta*(field(KRMAX,j,i)-field_prior(KRMAX,j,i)) &
+      fc_reg = fc_reg + 0.5*delta_z(KRMAX)*(delta*(field(KRMAX,j,i)-field_prior(KRMAX,j,i)) &
                                          - gamm*((field(KRMAX-1,j,i) - field(KRMAX,j,i)) &
                                          -(field_prior(KRMAX-1,j,i) - field_prior(KRMAX,j,i))) / delta_z(KRMAX)**2)**2
     end do
@@ -448,7 +448,7 @@ contains
     do j=0,JMAX
       do kr=1, KRMAX-1
         fc_reg = fc_reg &
-        + 0.5*((delta_z(kr) + delta_z(kr+1))/2.0)**2*(delta*(field(kr,j,i)-field_prior(kr,j,i)) &
+        + 0.5*((delta_z(kr) + delta_z(kr+1))/2.0)*(delta*(field(kr,j,i)-field_prior(kr,j,i)) &
             - gamm*(((field(kr+1,j,i)-field(kr,j,i))/delta_z(kr+1) - (field(kr,j,i)-field(kr-1,j,i))/delta_z(kr))*(2.0/(delta_z(kr) + delta_z(kr+1))) &
             -((field_prior(kr+1,j,i)-field_prior(kr,j,i))/delta_z(kr+1) - (field_prior(kr,j,i)-field_prior(kr-1,j,i))/delta_z(kr))*(2.0/(delta_z(kr) + delta_z(kr+1)))))**2
       end do
