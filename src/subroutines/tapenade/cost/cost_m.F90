@@ -238,7 +238,7 @@ contains
     do i=0, IMAX
       do j=0, JMAX
         V_total = V_total  + H(j,i)*cell_area(j,i)
-        V_unc_da_dummy2d_BedMachine_data(j, i) = V_unc_da_dummy2d_BedMachine_data(j, i) * sqrt((IMAX + 1)*(JMAX + 1))
+        V_unc_da_dummy2d_BedMachine_data(j, i) = V_unc_da_dummy2d_BedMachine_data(j, i) * sqrt(real((IMAX + 1)*(JMAX + 1)))
       end do
     end do
 
