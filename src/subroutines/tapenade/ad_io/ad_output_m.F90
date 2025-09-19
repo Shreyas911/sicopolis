@@ -90,7 +90,7 @@ module ad_output_m
     real(dp), dimension(0:IMAX,0:JMAX)         :: vx_s_gd_conv, vy_s_gd_conv
 #endif
 #endif
-#if (defined(BEDMACHINE_COST) || defined(FAKE_BEDMACHINE_COST))
+#if defined(V_COST)
     real(dp), dimension(0:IMAX,0:JMAX)         :: V_da_dummy2dd_conv
 #endif
 #endif /* ALLOW_TAP_TLM_A_ACTION */
